@@ -25,6 +25,7 @@
       produceHint:"Record finished 4oz bags off the line. Adds bags, consumes film + seasoning.",
       countHint:"Cycle count: scan item + slot, enter the counted quantity; the system adjusts.",
       locHint:"What is in each location now.", purchHint:"Reorder alerts plus full purchase orders.",
+      locMap:"Rack map", locList:"List", locOccupied:"Occupied", locEmpty:"Empty", locBlocked:"Blocked", locSection:"Section", locDocks:"Dock doors", locZones:"Zones & staging", locClickHint:"Top-down view of the racks. Green = occupied, click any slot to see what is stored there. Bay 01 is at the dock end.", locNothing:"Nothing stored in this slot.", locSlot:"Slot", locBaysUsed:"slots used", locOfficeEnd:"office end", locFarEnd:"far end",
       reorderSug:"Reorder suggestions", purchOrders:"Purchase orders", newPO:"New PO", createDraft:"Create draft PO",
       chooseSupplier:"Supplier", poExpected:"Expected", poCost:"Unit cost", addLines:"Set quantities to order (0 = skip).",
       savePO:"Save draft PO", markOrdered:"Mark as ordered", receivePO:"Receive", confirmReceipt:"Confirm receipt",
@@ -104,6 +105,7 @@
       produceHint:"Registre bolsas 4oz de la linea. Suma bolsas, consume film + sazon.",
       countHint:"Conteo ciclico: escanee articulo + slot, ingrese la cantidad contada.",
       locHint:"Lo que hay en cada ubicacion ahora.", purchHint:"Alertas de reorden mas ordenes de compra.",
+      locMap:"Mapa de racks", locList:"Lista", locOccupied:"Ocupado", locEmpty:"Vacio", locBlocked:"Bloqueado", locSection:"Seccion", locDocks:"Puertas de muelle", locZones:"Zonas y staging", locClickHint:"Vista superior de los racks. Verde = ocupado, haga clic en un slot para ver que hay. La bahia 01 esta junto a los muelles.", locNothing:"Nada almacenado en este slot.", locSlot:"Slot", locBaysUsed:"slots usados", locOfficeEnd:"lado oficina", locFarEnd:"lado lejano",
       reorderSug:"Sugerencias de reorden", purchOrders:"Ordenes de compra", newPO:"Nueva orden", createDraft:"Crear borrador",
       chooseSupplier:"Proveedor", poExpected:"Esperado", poCost:"Costo unit.", addLines:"Indique cantidades a pedir (0 = omitir).",
       savePO:"Guardar borrador", markOrdered:"Marcar como ordenada", receivePO:"Recibir", confirmReceipt:"Confirmar recibo",
@@ -183,6 +185,7 @@
       produceHint:"Registre sacos 4oz da linha. Adiciona sacos, consome filme + tempero.",
       countHint:"Contagem ciclica: escaneie item + slot, digite a quantidade contada.",
       locHint:"O que ha em cada local agora.", purchHint:"Alertas de reposicao mais ordens de compra.",
+      locMap:"Mapa de racks", locList:"Lista", locOccupied:"Ocupado", locEmpty:"Vazio", locBlocked:"Bloqueado", locSection:"Secao", locDocks:"Portas de doca", locZones:"Zonas e staging", locClickHint:"Vista de cima dos racks. Verde = ocupado, clique em um slot para ver o que ha. A baia 01 fica junto as docas.", locNothing:"Nada armazenado neste slot.", locSlot:"Slot", locBaysUsed:"slots usados", locOfficeEnd:"lado escritorio", locFarEnd:"lado distante",
       reorderSug:"Sugestoes de reposicao", purchOrders:"Ordens de compra", newPO:"Nova ordem", createDraft:"Criar rascunho",
       chooseSupplier:"Fornecedor", poExpected:"Esperado", poCost:"Custo unit.", addLines:"Defina as quantidades a pedir (0 = pular).",
       savePO:"Salvar rascunho", markOrdered:"Marcar como pedida", receivePO:"Receber", confirmReceipt:"Confirmar recebimento",
@@ -401,6 +404,10 @@
   let orderView = "open"; // orders: "open" | "complete"
   let orderAddOpen = false;
   let peopleView = "dir"; // People: "dir" | "org"
+  let locView = "map";    // Locations: "map" | "list"
+  let locSel = null;      // selected slot/zone code in the rack map
+  // Physically blocked rack slots (numbering unchanged; not storable) - Troy's real floor
+  const BLOCKED_SLOTS = new Set(["A-23-L1","B-15-L4","B-16-L4","B-17-L4","B-21-L4","B-22-L4","C-21-L4","C-22-L4","D-17-L4","D-18-L4","D-23-L4","D-24-L4"]);
   let odocFile = null; // order-doc upload state
   let rdView = "pending"; // R&D: "pending" | "received"
   let rdAddOpen = false;
@@ -1084,15 +1091,93 @@
       '<h2 class="sub2">' + L("qaTitle") + '</h2><table><thead><tr><th>' + L("item") + '</th><th>' + L("status") +
       '</th><th class="right">' + L("onhand") + '</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>';
   }
-  function viewLocations() {
+  // Build { location: {qty, items:[{name,code,qty,unit}]} } from raw stock rows in ONE pass.
+  function locOccupancy() {
+    const map = {};
+    (DB.stock() || []).forEach(r => {
+      const q = Number(r.qty) || 0; if (q <= 0) return;
+      const it = DB.itemByCode(r.item_id) || { name: r.item_id, code: r.item_id, unit: "" };
+      const e = map[r.location] || (map[r.location] = { qty: 0, items: [] });
+      e.qty += q; e.items.push({ name: it.name, code: it.code, qty: q, unit: it.unit });
+    });
+    return map;
+  }
+  function locContentsCard(code, occ) {
+    const e = occ[code];
+    const rows = (e && e.items.length)
+      ? e.items.map(x => '<tr><td>' + esc(x.name) + '</td><td class="right"><b>' + fmt(x.qty) + '</b> ' + esc(x.unit) + '</td><td class="muted sm">' + esc(x.code) + '</td></tr>').join("")
+      : '<tr><td colspan="3" class="muted">' + L("locNothing") + '</td></tr>';
+    return '<div class="card locsel"><div class="suprow"><h2 class="loc" style="margin:0">' + L("locSlot") + ' ' + esc(code) + '</h2>' +
+      '<button class="ghost sm" onclick="UI.locPick(\'\')">&#10005;</button></div>' +
+      '<table><tbody>' + rows + '</tbody></table></div>';
+  }
+  function rackSectionHtml(sec, bays, occ) {
+    const levels = ["L4", "L3", "L2", "L1"]; // top to floor
+    let used = 0, total = 0;
+    let head = '<tr><th class="rk-lvl"></th>';
+    for (let b = 1; b <= bays; b++) head += '<th class="rk-bay">' + String(b).padStart(2, "0") + '</th>';
+    head += '</tr>';
+    const body = levels.map(lv => {
+      let tds = '<td class="rk-lvl">' + lv + '</td>';
+      for (let b = 1; b <= bays; b++) {
+        const code = sec + "-" + String(b).padStart(2, "0") + "-" + lv;
+        const blocked = BLOCKED_SLOTS.has(code);
+        const has = occ[code] && occ[code].qty > 0;
+        if (!blocked) total++;
+        if (has) used++;
+        const cls = blocked ? "blocked" : has ? "occ" : "empty";
+        const sel = locSel === code ? " sel" : "";
+        const title = blocked ? code + " (blocked)" : has ? code + " - " + occ[code].items.length + " item(s)" : code + " (empty)";
+        tds += '<td class="rk-cell"><span class="slot ' + cls + sel + '" title="' + esc(title) + '"' +
+          (blocked ? "" : ' onclick="UI.locPick(\'' + code + '\')"') + '></span></td>';
+      }
+      return '<tr>' + tds + '</tr>';
+    }).join("");
+    return '<div class="racksec"><div class="suprow"><h3 style="margin:0">' + L("locSection") + ' ' + sec + '</h3>' +
+      '<span class="muted sm">' + used + ' / ' + total + ' ' + L("locBaysUsed") + '</span></div>' +
+      '<div class="tblwrap"><table class="rackgrid"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div></div>';
+  }
+  function zoneTileHtml(code, occ) {
+    const has = occ[code] && occ[code].qty > 0;
+    const sel = locSel === code ? " sel" : "";
+    return '<div class="ztile ' + (has ? "occ" : "empty") + sel + '" onclick="UI.locPick(\'' + code + '\')">' +
+      '<div class="zc">' + esc(code) + '</div>' + (has ? '<div class="zq">' + occ[code].items.length + '</div>' : '') + '</div>';
+  }
+  function viewLocationsMap() {
+    const occ = locOccupancy();
+    const cfg = DB.config || { sections: ["A", "B", "C", "D"], baysPerSection: 28, docks: [11,12,13,14,15,16,17,18,19],
+      zones: ["RECEIVING","RETURNS","QA-HOLD","QUARANTINE","WIP","PACKOUT","CAGE","PROD-WEIGH","PROD-PACK","SHIPPING","ST-01","ST-02","ST-03","ST-04","ST-05","ST-06","ST-07","ST-08"] };
+    const legend = '<div class="racklegend"><span class="rl"><span class="slot occ"></span>' + L("locOccupied") + '</span>' +
+      '<span class="rl"><span class="slot empty"></span>' + L("locEmpty") + '</span>' +
+      '<span class="rl"><span class="slot blocked"></span>' + L("locBlocked") + '</span></div>';
+    const sections = (cfg.sections || []).map(s => rackSectionHtml(s, cfg.baysPerSection || 28, occ)).join("");
+    // docks strip (19 office end .. 11 far end)
+    const docks = (cfg.docks || []).slice().sort((a, b) => b - a).map(d => zoneTileHtml("DOCK-" + d, occ)).join("");
+    const zones = (cfg.zones || []).map(z => zoneTileHtml(z, occ)).join("");
+    const sel = locSel ? locContentsCard(locSel, occ) : "";
+    return '<div class="card"><div class="suprow"><h2 style="margin:0">' + L("locations") + '</h2>' +
+      '<div class="ordtabs"><button class="' + (locView === "map" ? "active" : "") + '" onclick="UI.locView(\'map\')">' + L("locMap") + '</button>' +
+      '<button class="' + (locView === "list" ? "active" : "") + '" onclick="UI.locView(\'list\')">' + L("locList") + '</button></div></div>' +
+      '<p class="hint">' + L("locClickHint") + '</p>' + legend + '</div>' +
+      sel +
+      '<div class="card"><div class="rackmap">' + sections + '</div></div>' +
+      '<div class="card"><h2 class="sub2">' + L("locDocks") + '</h2><p class="hint" style="margin-bottom:8px">19 = ' + L("locOfficeEnd") + ' &middot; 11 = ' + L("locFarEnd") + '</p><div class="ztiles">' + docks + '</div>' +
+      '<h2 class="sub2" style="margin-top:16px">' + L("locZones") + '</h2><div class="ztiles">' + zones + '</div></div>';
+  }
+  function viewLocationsList() {
     const used = DB.allLocations().filter(loc => DB.items().some(i => DB.atLoc(i.id, loc) > 0));
-    const head = '<div class="card"><h2>' + L("locations") + '</h2><p class="hint">' + L("locHint") + '</p></div>';
+    const head = '<div class="card"><div class="suprow"><h2 style="margin:0">' + L("locations") + '</h2>' +
+      '<div class="ordtabs"><button class="' + (locView === "map" ? "active" : "") + '" onclick="UI.locView(\'map\')">' + L("locMap") + '</button>' +
+      '<button class="' + (locView === "list" ? "active" : "") + '" onclick="UI.locView(\'list\')">' + L("locList") + '</button></div></div>' +
+      '<p class="hint">' + L("locHint") + '</p></div>';
+    if (!used.length) return head + '<div class="card"><p class="muted">' + L("locNothing") + '</p></div>';
     return head + used.map(loc => {
       const here = DB.items().map(i => ({ i, q: DB.atLoc(i.id, loc) })).filter(x => x.q > 0);
       const body = here.map(x => '<tr><td>' + x.i.name + '</td><td class="right"><b>' + fmt(x.q) + '</b> ' + x.i.unit + '</td><td class="muted sm">' + x.i.code + '</td></tr>').join("");
       return '<div class="card"><h2 class="loc">' + loc + '</h2><table><tbody>' + body + '</tbody></table></div>';
     }).join("");
   }
+  function viewLocations() { return locView === "list" ? viewLocationsList() : viewLocationsMap(); }
   const PO_PILL = { draft:"low", ordered:"low", partial:"low", received:"ok", cancelled:"out" };
   function poStatusPill(s) { return '<span class="pill ' + (PO_PILL[s] || "low") + '">' + L("st_" + s) + '</span>'; }
   function suggestQty(i) { const oh = DB.onHand(i.id); return Math.max(i.reorder - oh, Math.round(i.reorder * 0.5)); }
@@ -1297,6 +1382,8 @@
   // ---------- actions ----------
   const UI = {
     cat(c) { catFilter = c; render(); },
+    locView(v) { locView = v; locSel = null; render(); },
+    locPick(code) { locSel = code || null; render(); },
     lookup(inId, outId) { const o = $(outId); if (!o) return; const v = $(inId).value.trim();
       if (!v) { o.innerHTML = ""; return; } const it = DB.itemByCode(v);
       if (it) { o.className = "found"; o.innerHTML = "&#10003; " + L("found") + ": <b>" + it.name + "</b> &middot; " + L("onhand") + " " + fmt(DB.onHand(it.id)) + " " + it.unit; }
