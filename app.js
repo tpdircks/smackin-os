@@ -53,6 +53,7 @@
       rd:"R&D", roleRnd:"R&D",
       mixing:"Mixing", pmac:"P-Mac", roleMixing:"Mixing (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mixing", grpPmac:"P-Mac",
       deptSoon:"This area is being set up. Allen's team screens will live here - tell us what you'd like tracked and we'll build it in.",
+      conHint:"Scan each material as it moves from the racking into this room. Records real-time usage and removes it from inventory. Lot # required on every scan.", conLot:"Lot # (required)", conBtn:"Log usage", conRecent:"Recent usage", conNone:"Nothing logged yet.", conWhen:"When", conMat:"Material", conBy:"By", conErr:"Scan an item, quantity, and lot #", conNotInList:"not in item list",
       grpReceiving:"Receiving", grpInventory:"Inventory", grpProduction:"Fulfillment", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpSystem:"System",
       people:"People", hrHint:"Team directory and org chart. Non-sensitive info only - no pay or personal data.", hrGate:"This section shows employee information. Enter the manager PIN to view.",
       hrDir:"Directory", hrOrg:"Org chart", hrRole:"Role", hrDept:"Department", hrStart:"Started", hrMgr:"Reports to", hrSearchP:"Search name or role...", hrCount:"people", hrNoMatch:"No matching people.", hrYr:"yr", hrMo:"mo",
@@ -130,6 +131,7 @@
       rd:"I+D", roleRnd:"I+D",
       mixing:"Mezcla", pmac:"P-Mac", roleMixing:"Mezcla (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mezcla", grpPmac:"P-Mac",
       deptSoon:"Esta area se esta configurando. Aqui viviran las pantallas del equipo de Allen - diganos que desea controlar y lo agregamos.",
+      conHint:"Escanee cada material al pasar del estante a esta sala. Registra el uso en tiempo real y lo descuenta del inventario. Numero de lote requerido en cada escaneo.", conLot:"Lote # (requerido)", conBtn:"Registrar uso", conRecent:"Uso reciente", conNone:"Nada registrado aun.", conWhen:"Cuando", conMat:"Material", conBy:"Por", conErr:"Escanee articulo, cantidad y lote #", conNotInList:"no esta en la lista",
       grpReceiving:"Recibo", grpInventory:"Inventario", grpProduction:"Fulfillment", grpPurchasing:"Compras", grpRnd:"I+D", grpHr:"RH", grpSystem:"Sistema",
       people:"Personal", hrHint:"Directorio del equipo y organigrama. Solo informacion no sensible - sin pago ni datos personales.", hrGate:"Esta seccion muestra informacion de empleados. Ingrese el PIN de gerente para ver.",
       hrDir:"Directorio", hrOrg:"Organigrama", hrRole:"Puesto", hrDept:"Departamento", hrStart:"Ingreso", hrMgr:"Reporta a", hrSearchP:"Buscar nombre o puesto...", hrCount:"personas", hrNoMatch:"Sin coincidencias.", hrYr:"ano", hrMo:"mes",
@@ -207,6 +209,7 @@
       rd:"P&D", roleRnd:"P&D",
       mixing:"Mistura", pmac:"P-Mac", roleMixing:"Mistura (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mistura", grpPmac:"P-Mac",
       deptSoon:"Esta area esta sendo configurada. As telas da equipe do Allen ficarao aqui - diga o que deseja acompanhar e vamos incluir.",
+      conHint:"Escaneie cada material ao passar da prateleira para esta sala. Registra o uso em tempo real e baixa do estoque. Numero de lote obrigatorio em cada leitura.", conLot:"Lote # (obrigatorio)", conBtn:"Registrar uso", conRecent:"Uso recente", conNone:"Nada registrado ainda.", conWhen:"Quando", conMat:"Material", conBy:"Por", conErr:"Escaneie item, quantidade e lote #", conNotInList:"nao esta na lista",
       grpReceiving:"Recebimento", grpInventory:"Estoque", grpProduction:"Fulfillment", grpPurchasing:"Compras", grpRnd:"P&D", grpHr:"RH", grpSystem:"Sistema",
       people:"Pessoas", hrHint:"Diretorio da equipe e organograma. Apenas informacoes nao sensiveis - sem salario ou dados pessoais.", hrGate:"Esta secao mostra informacoes de funcionarios. Digite o PIN de gerente para ver.",
       hrDir:"Diretorio", hrOrg:"Organograma", hrRole:"Cargo", hrDept:"Departamento", hrStart:"Inicio", hrMgr:"Reporta a", hrSearchP:"Buscar nome ou cargo...", hrCount:"pessoas", hrNoMatch:"Nenhuma correspondencia.", hrYr:"ano", hrMo:"mes",
@@ -1174,8 +1177,26 @@
       '<p class="hint">' + L("deptSoon") + '</p>' +
       '<div class="deptplaceholder"><span class="navico" style="font-size:34px">' + (NAV_ICON[nameKey] || "") + '</span></div></div>';
   }
-  function viewMixing() { return viewDept("mixing"); }
-  function viewPmac() { return viewDept("pmac"); }
+  function viewConsume(dept, titleKey) {
+    const list = DB.consumption().filter(c => c.department === dept)
+      .slice().sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || ""))).slice(0, 60);
+    const rows = list.length ? list.map(c => '<tr><td><b>' + esc(c.item_code) + '</b>' +
+        (c.item_name ? '<div class="muted sm">' + esc(c.item_name) + '</div>' : '') + '</td>' +
+        '<td class="right">' + fmt(c.qty) + '</td><td class="sm">' + esc(c.lot || "") + '</td>' +
+        '<td class="muted sm">' + esc(c.operator || "") + '</td>' +
+        '<td class="muted sm">' + (c.created_at ? String(c.created_at).slice(0, 16).replace("T", " ") : "") + '</td></tr>').join("")
+      : '<tr><td colspan="5" class="muted">' + L("conNone") + '</td></tr>';
+    return '<div class="card"><h2>' + L(titleKey) + '</h2><p class="hint">' + L("conHint") + '</p>' +
+      itemScan("con-code", "con-qty") +
+      '<div class="row"><div><label>' + L("qty") + '</label><input id="con-qty" type="number" min="0" step="any" inputmode="decimal" placeholder="' + L("enter") + '"></div>' +
+      '<div><label>' + L("conLot") + '</label><input id="con-lot" autocomplete="off" placeholder="LOT..."></div></div>' +
+      opField() +
+      '<button class="primary" onclick="UI.consume(\'' + dept + '\')">' + L("conBtn") + '</button>' +
+      '<h3 class="sub2" style="margin-top:16px">' + L("conRecent") + '</h3>' +
+      '<table><thead><tr><th>' + L("conMat") + '</th><th class="right">' + L("qty") + '</th><th>' + L("conLot") + '</th><th>' + L("conBy") + '</th><th>' + L("conWhen") + '</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+  function viewMixing() { return viewConsume("Mixing", "mixing"); }
+  function viewPmac() { return viewConsume("P-Mac", "pmac"); }
   function tenureStr(s) {
     if (!s) return "";
     const d = new Date(s + "T00:00:00"); if (isNaN(d.getTime())) return "";
@@ -1470,6 +1491,16 @@
     async odocDelete(id) { if (!confirm(L("odocConfirmDel"))) return; await DB.deleteOrderDoc(id, opVal()); toast(L("spoDelete") + " ✓"); },
     odocSearch(val) { const q = (val || "").toLowerCase().trim();
       document.querySelectorAll("#odocBody .odcust").forEach(c => { const t = c.getAttribute("data-txt") || ""; c.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
+    // ---- Mixing / P-Mac consumption (scan material out to production) ----
+    async consume(dept) {
+      const code = ($("con-code") ? $("con-code").value : "").trim();
+      const qty = parseFloat($("con-qty") ? $("con-qty").value : "") || 0;
+      const lot = ($("con-lot") ? $("con-lot").value : "").trim();
+      if (!code || !qty || !lot) return toast(L("conErr"));
+      const res = await DB.consume(code, qty, lot, dept, opVal());
+      toast(L("conBtn") + " ✓" + (res && res.itemFound === false ? " (" + code + " " + L("conNotInList") + ")" : ""));
+      render();
+    },
     // ---- Purchase Orders ----
     poNew(sk) { purchSup = sk || null; purchMode = "new"; active = "purchasing"; closeDrawer(); render(); },
     poBack() { purchMode = "list"; render(); },

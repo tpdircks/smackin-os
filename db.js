@@ -12,7 +12,7 @@ window.DB = (function () {
   const seed = window.SMACKIN_SEED;
   let mode = "local";
   let sb = null;                  // supabase client
-  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [] };
+  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [] };
   let subscribers = [];
 
   function emit() { subscribers.forEach(fn => { try { fn(); } catch (e) {} }); }
@@ -45,9 +45,9 @@ window.DB = (function () {
     loadOrSeed() {
       let raw = null;
       try { raw = localStorage.getItem(KEY); } catch (e) {}
-      if (raw) { cache = JSON.parse(raw); if (!cache.pos) cache.pos = []; if (!cache.log) cache.log = []; if (!cache.seasLots) cache.seasLots = []; if (!cache.orders) cache.orders = []; if (!cache.rdRequests) cache.rdRequests = []; if (!cache.supplierPos) cache.supplierPos = []; if (!cache.orderDocs) cache.orderDocs = []; return; }
+      if (raw) { cache = JSON.parse(raw); if (!cache.pos) cache.pos = []; if (!cache.log) cache.log = []; if (!cache.seasLots) cache.seasLots = []; if (!cache.orders) cache.orders = []; if (!cache.rdRequests) cache.rdRequests = []; if (!cache.supplierPos) cache.supplierPos = []; if (!cache.orderDocs) cache.orderDocs = []; if (!cache.consumption) cache.consumption = []; return; }
       const s = seed.build();
-      cache = { items: s.items, suppliers: s.suppliers, stock: s.stock, pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [] };
+      cache = { items: s.items, suppliers: s.suppliers, stock: s.stock, pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [] };
       this.save();
     },
     save() { try { localStorage.setItem(KEY, JSON.stringify(cache)); } catch (e) {} },
@@ -65,7 +65,7 @@ window.DB = (function () {
   // ---------- CLOUD backend (Supabase) ----------
   const cloud = {
     async loadAll() {
-      const [it, su, st, lg, po, pl, sl, od, rd, sp, odc] = await Promise.all([
+      const [it, su, st, lg, po, pl, sl, od, rd, sp, odc, con] = await Promise.all([
         sb.from("items").select("*"),
         sb.from("suppliers").select("*"),
         sb.from("stock").select("*"),
@@ -76,7 +76,8 @@ window.DB = (function () {
         sb.from("orders").select("*").order("created_at", { ascending: false }).limit(2000),
         sb.from("rd_requests").select("*").order("created_at", { ascending: false }).limit(2000),
         sb.from("supplier_pos").select("*").order("created_at", { ascending: false }).limit(2000),
-        sb.from("order_docs").select("*").order("created_at", { ascending: false }).limit(3000)
+        sb.from("order_docs").select("*").order("created_at", { ascending: false }).limit(3000),
+        sb.from("consumption").select("*").order("created_at", { ascending: false }).limit(3000)
       ]);
       cache.items = it.data || [];
       cache.suppliers = su.data || [];
@@ -112,6 +113,10 @@ window.DB = (function () {
         id: r.id, customer: r.customer, po_num: r.po_num, doc_type: r.doc_type, notes: r.notes,
         file_name: r.file_name, file_url: r.file_url, file_path: r.file_path,
         uploaded_by: r.uploaded_by, created_at: r.created_at
+      }));
+      cache.consumption = (con && con.data ? con.data : []).map(r => ({
+        id: r.id, item_code: r.item_code, item_name: r.item_name, qty: Number(r.qty) || 0,
+        lot: r.lot, department: r.department, operator: r.operator, created_at: r.created_at
       }));
       const lines = pl.data || [];
       cache.pos = (po.data || []).map(p => ({
@@ -523,6 +528,26 @@ window.DB = (function () {
   }
   function orderDocs() { return cache.orderDocs || []; }
 
+  // ---------- Consumption (Mixing / P-Mac scan-out to production) ----------
+  function consumption() { return cache.consumption || []; }
+  async function consume(itemCode, qty, lot, dept, op) {
+    itemCode = (itemCode || "").trim();
+    const item = itemByCode(itemCode);
+    const q = Number(qty) || 0;
+    if (item && q > 0) { try { await adjustTotal(item, Math.max(onHand(item.id) - q, 0), op); } catch (e) {} }
+    const row = { item_code: itemCode, item_name: item ? (item.name || item.flavor || "") : "", qty: q,
+      lot: lot || "", department: dept || "", operator: op || "" };
+    const logEntry = { a: "Consumed (" + dept + ")", d: itemCode + " x" + q + (lot ? "  lot " + lot : ""), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      await sb.from("consumption").insert(row);
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      row.id = "CON-" + Date.now().toString(36); row.created_at = new Date().toISOString();
+      cache.consumption.unshift(row); local.addLog(logEntry); local.save();
+    }
+    emit(); return { ok: true, itemFound: !!item };
+  }
+
   // ---------- Purchase Orders ----------
   function pad2(n) { return String(n).padStart(2, "0"); }
   function nextPONumber() {
@@ -644,6 +669,7 @@ window.DB = (function () {
     rdRequests, createRdRequest, updateRdRequest, setRdStatus, deleteRdRequest, sendRdEmail,
     supplierPos, createSupplierPO, deleteSupplierPO,
     orderDocs, createOrderDoc, deleteOrderDoc,
+    consumption, consume,
     config: (seed ? seed.CONFIG : null), allLocations: (seed ? seed.allLocations : () => []),
     SNAPSHOT: (seed ? seed.SNAPSHOT : ""),
     recvSuppliers: (seed && seed.RECV_SUPPLIERS) || [], recvCategories: (seed && seed.RECV_CATEGORIES) || [],
