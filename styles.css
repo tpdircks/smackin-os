@@ -104,6 +104,30 @@ input.adjq{padding:7px;font-size:15px}
 .htile.alert{background:var(--red)}
 .htile .n{font-size:26px;font-weight:800}
 .htile .l{font-size:12px;opacity:.9}
+/* Dashboard: essential-items per-flavor table + status tints */
+.tblwrap{overflow-x:auto}
+.esstable{width:100%;border-collapse:collapse}
+.esstable th{font-size:12px;color:#667;font-weight:700;text-align:left;padding:6px 10px;border-bottom:2px solid var(--line);white-space:nowrap}
+.esstable th.right,.esstable td.right{text-align:right}
+.esstable td{padding:7px 10px;border-bottom:1px solid var(--line);font-size:13px;white-space:nowrap}
+.esstable tbody tr:hover{background:#f7f9fc}
+td.ess-ok{background:var(--greenbg);color:#1d5631}
+td.ess-low{background:var(--amberbg);color:#7a4d05}
+td.ess-out{background:var(--redbg);color:var(--red)}
+td.ess-na{color:#aab2bd}
+.esslegend{display:flex;gap:8px;margin:2px 0 12px}
+.ess-key{font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px}
+.ess-key.ok{background:var(--greenbg);color:#1d5631}
+.ess-key.low{background:var(--amberbg);color:#7a4d05}
+.ess-key.out{background:var(--redbg);color:var(--red)}
+.btiles{display:flex;gap:10px;flex-wrap:wrap}
+.btile{flex:1;min-width:110px;border:1px solid var(--line);border-radius:9px;padding:11px 13px;background:#fff}
+.btile .n{font-size:19px;font-weight:800;color:var(--navy)}
+.btile .n .u{font-size:11px;font-weight:600;opacity:.6}
+.btile .l{font-size:11px;color:#667;margin-top:2px}
+.btile.ess-ok{border-left:4px solid var(--green)}
+.btile.ess-low{border-left:4px solid var(--amber)}
+.btile.ess-out{border-left:4px solid var(--red)}
 .deptplaceholder{margin-top:14px;padding:34px;border:2px dashed var(--line,#d9d9d9);border-radius:12px;text-align:center;opacity:.55}
 /* People / HR directory */
 .pdept{margin-top:16px}

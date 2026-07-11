@@ -5,7 +5,7 @@
 (function () {
   "use strict";
   const T = {
-    en: { dash:"Overview", home:"Home", receive:"Receive", putaway:"Put-Away", move:"Move / Pick", produce:"Produce",
+    en: { dash:"Overview", home:"Dashboard", receive:"Receive", putaway:"Put-Away", move:"Move / Pick", produce:"Produce",
       count:"Count", locations:"Locations", purchasing:"Purchasing", labels:"Labels", log:"Activity", settings:"Settings",
       onhand:"On hand", item:"Item", unit:"Unit", qty:"Qty", lot:"Lot", status:"Status", reorder:"Reorder pt",
       scanItem:"Scan or type item code / UPC", to:"To location", from:"From location",
@@ -62,9 +62,10 @@
       alOnhand:"On hand", alReorder:"Reorder pt", alSuggest:"Suggested order", alSupplier:"Supplier", alDraftPO:"Draft PO",
       alDays:"days", alExpired:"expired", alLeft:"left", alQuar:"Quarantine",
       alSummaryOut:"Out", alSummaryLow:"Low", alSummaryExp:"Expiring lots",
-      homeTitle:"Command Center", homeHint:"What needs attention at the SLC Fulfillment Center right now.",
+      homeTitle:"Dashboard", homeHint:"Live stock health for the SLC Fulfillment Center - the essentials at a glance.",
       hOut:"Out of stock", hLow:"Low / reorder", hExp:"Expiring lots", hOpen:"Open orders", hIssues:"Order issues", hRd:"R&D pending",
       hAttention:"Needs attention now", hAllClear:"All clear - nothing urgent right now.", hSnapshot:"On-hand snapshot", hSeeAll:"See all",
+      hEssential:"Essential items - stock by flavor", hFlavor:"Flavor", essFilm:"Film 4oz", hBase:"Base materials", hCovered:"OK", hLowShort:"Low", hOutShort:"Out",
       supplierpos:"Supplier POs", spoHint:"Upload the POs you create in outside systems (Excel or PDF). The file is stored and the details are read in automatically when the format is recognized.",
       spoDrop:"Drop a PO file here, or click to choose  (.xlsx, .csv, .pdf)", spoVendor:"Vendor", spoPO:"PO #", spoDate:"PO date", spoTotal:"Total", spoItems:"Line items", spoNotes:"Notes", spoFile:"File", spoUploadedBy:"Uploaded by",
       spoSave:"Save PO", spoCancel:"Clear", spoSaved:"Supplier PO saved", spoNoFile:"Choose a file first", spoParsed:"Read from file", spoDownload:"Download", spoDelete:"Deleted", spoList:"Uploaded supplier POs", spoNone:"No supplier POs yet. Upload one above.", spoSearchP:"Search vendor, PO #...", spoConfirmDel:"Delete this supplier PO?",
@@ -83,7 +84,7 @@
       rdSending:"Sending...", rdPdfTitle:"SAMPLE / R&D REQUEST", rdReqNo:"Request #", rdDate:"Date", rdTo:"To", rdFrom:"Requested by",
       rdEmailSubject:"Sample request from Smackin' Snacks", rdConfirmRecv:"Mark this request as received?",
       settingsHint:"Mode, layout, and demo controls." },
-    es: { dash:"Resumen", home:"Inicio", receive:"Recibir", putaway:"Almacenar", move:"Mover / Sacar", produce:"Producir",
+    es: { dash:"Resumen", home:"Panel", receive:"Recibir", putaway:"Almacenar", move:"Mover / Sacar", produce:"Producir",
       count:"Conteo", locations:"Ubicaciones", purchasing:"Compras", labels:"Etiquetas", log:"Actividad", settings:"Ajustes",
       onhand:"Disponible", item:"Articulo", unit:"Unidad", qty:"Cant.", lot:"Lote", status:"Estado", reorder:"Punto reorden",
       scanItem:"Escanee o escriba codigo / UPC", to:"Hacia ubicacion", from:"Desde ubicacion",
@@ -140,9 +141,10 @@
       alOnhand:"Disponible", alReorder:"Punto reorden", alSuggest:"Orden sugerida", alSupplier:"Proveedor", alDraftPO:"Borrador OC",
       alDays:"dias", alExpired:"vencido", alLeft:"restan", alQuar:"Cuarentena",
       alSummaryOut:"Agotado", alSummaryLow:"Bajo", alSummaryExp:"Lotes por vencer",
-      homeTitle:"Centro de mando", homeHint:"Lo que necesita atencion en el centro de distribucion SLC ahora.",
+      homeTitle:"Panel de control", homeHint:"Estado del inventario en vivo del centro SLC - lo esencial de un vistazo.",
       hOut:"Agotado", hLow:"Bajo / reorden", hExp:"Lotes por vencer", hOpen:"Ordenes abiertas", hIssues:"Ordenes con problema", hRd:"I+D pendiente",
       hAttention:"Necesita atencion ahora", hAllClear:"Todo en orden - nada urgente ahora.", hSnapshot:"Resumen de disponible", hSeeAll:"Ver todo",
+      hEssential:"Articulos esenciales - stock por sabor", hFlavor:"Sabor", essFilm:"Film 4oz", hBase:"Materiales base", hCovered:"OK", hLowShort:"Bajo", hOutShort:"Agotado",
       supplierpos:"OC Proveedor", spoHint:"Suba las OC que crea en sistemas externos (Excel o PDF). El archivo se guarda y los datos se leen automaticamente cuando se reconoce el formato.",
       spoDrop:"Suelte un archivo de OC aqui, o haga clic para elegir  (.xlsx, .csv, .pdf)", spoVendor:"Proveedor", spoPO:"OC #", spoDate:"Fecha OC", spoTotal:"Total", spoItems:"Lineas", spoNotes:"Notas", spoFile:"Archivo", spoUploadedBy:"Subido por",
       spoSave:"Guardar OC", spoCancel:"Limpiar", spoSaved:"OC de proveedor guardada", spoNoFile:"Elija un archivo primero", spoParsed:"Leido del archivo", spoDownload:"Descargar", spoDelete:"Eliminado", spoList:"OC de proveedor subidas", spoNone:"Aun no hay OC de proveedor. Suba una arriba.", spoSearchP:"Buscar proveedor, OC #...", spoConfirmDel:"Eliminar esta OC de proveedor?",
@@ -161,7 +163,7 @@
       rdSending:"Enviando...", rdPdfTitle:"SOLICITUD DE MUESTRA / I+D", rdReqNo:"Solicitud #", rdDate:"Fecha", rdTo:"Para", rdFrom:"Solicitado por",
       rdEmailSubject:"Solicitud de muestra de Smackin' Snacks", rdConfirmRecv:"Marcar esta solicitud como recibida?",
       settingsHint:"Modo, distribucion y controles demo." },
-    pt: { dash:"Visao geral", home:"Inicio", receive:"Receber", putaway:"Armazenar", move:"Mover / Separar", produce:"Produzir",
+    pt: { dash:"Visao geral", home:"Painel", receive:"Receber", putaway:"Armazenar", move:"Mover / Separar", produce:"Produzir",
       count:"Contagem", locations:"Locais", purchasing:"Compras", labels:"Etiquetas", log:"Atividade", settings:"Configuracoes",
       onhand:"Em estoque", item:"Item", unit:"Unid.", qty:"Qtd.", lot:"Lote", status:"Status", reorder:"Ponto de reposicao",
       scanItem:"Escaneie ou digite codigo / UPC", to:"Para o local", from:"Do local",
@@ -218,9 +220,10 @@
       alOnhand:"Em estoque", alReorder:"Ponto reposicao", alSuggest:"Pedido sugerido", alSupplier:"Fornecedor", alDraftPO:"Rascunho OC",
       alDays:"dias", alExpired:"vencido", alLeft:"restam", alQuar:"Quarentena",
       alSummaryOut:"Esgotado", alSummaryLow:"Baixo", alSummaryExp:"Lotes vencendo",
-      homeTitle:"Central de comando", homeHint:"O que precisa de atencao no centro de distribuicao SLC agora.",
+      homeTitle:"Painel", homeHint:"Saude do estoque ao vivo do centro SLC - o essencial em um relance.",
       hOut:"Esgotado", hLow:"Baixo / reposicao", hExp:"Lotes vencendo", hOpen:"Pedidos abertos", hIssues:"Pedidos com problema", hRd:"P&D pendente",
       hAttention:"Precisa de atencao agora", hAllClear:"Tudo certo - nada urgente agora.", hSnapshot:"Resumo em estoque", hSeeAll:"Ver tudo",
+      hEssential:"Itens essenciais - estoque por sabor", hFlavor:"Sabor", essFilm:"Filme 4oz", hBase:"Materiais base", hCovered:"OK", hLowShort:"Baixo", hOutShort:"Esgotado",
       supplierpos:"OC Fornecedor", spoHint:"Envie as OCs que voce cria em sistemas externos (Excel ou PDF). O arquivo e armazenado e os dados sao lidos automaticamente quando o formato e reconhecido.",
       spoDrop:"Solte um arquivo de OC aqui, ou clique para escolher  (.xlsx, .csv, .pdf)", spoVendor:"Fornecedor", spoPO:"OC #", spoDate:"Data OC", spoTotal:"Total", spoItems:"Linhas", spoNotes:"Observacoes", spoFile:"Arquivo", spoUploadedBy:"Enviado por",
       spoSave:"Salvar OC", spoCancel:"Limpar", spoSaved:"OC de fornecedor salva", spoNoFile:"Escolha um arquivo primeiro", spoParsed:"Lido do arquivo", spoDownload:"Baixar", spoDelete:"Excluido", spoList:"OCs de fornecedor enviadas", spoNone:"Ainda nao ha OCs de fornecedor. Envie uma acima.", spoSearchP:"Buscar fornecedor, OC #...", spoConfirmDel:"Excluir esta OC de fornecedor?",
@@ -535,11 +538,31 @@
     const attention = rows.length
       ? '<div class="card"><h2 class="sub2">' + L("hAttention") + '</h2><table><tbody>' + rows.join("") + '</tbody></table></div>'
       : '<div class="card"><p class="ok pill big">&#127807; ' + L("hAllClear") + '</p></div>';
+    // ---- Essential items: per-flavor stock health (finished bags, film, seasoning) ----
+    const bc = code => DB.itemByCode(code);
+    const flav = items.filter(i => i.category === "bag4" && /^B4-S\d/.test(i.code))
+      .map(i => ({ code: i.code.replace("B4-", ""), name: i.flavor }))
+      .sort((a, b) => (a.code < b.code ? -1 : a.code > b.code ? 1 : 0));
+    const ec = it => { if (!it) return '<td class="right ess-na">&mdash;</td>';
+      const st = statusOf(it); return '<td class="right ess-' + st + '"><b>' + fmt(DB.onHand(it.id)) + '</b></td>'; };
+    const frows = flav.map(f =>
+      '<tr><td><b>' + f.name + '</b></td>' +
+      ec(bc("B4-" + f.code)) + ec(bc("B15-" + f.code)) + ec(bc("F4-" + f.code)) + ec(bc("SEAS-" + f.code)) + '</tr>').join("");
+    const essTable = '<div class="card"><div class="suprow"><h2 class="sub2" style="margin:0;flex:1">' + L("hEssential") + '</h2>' +
+      '<a class="order sm" onclick="UI_go(\'dash\')" style="cursor:pointer">' + L("hSeeAll") + '</a></div>' +
+      '<div class="esslegend"><span class="ess-key ok">' + L("hCovered") + '</span><span class="ess-key low">' + L("hLowShort") + '</span><span class="ess-key out">' + L("hOutShort") + '</span></div>' +
+      '<div class="tblwrap"><table class="esstable"><thead><tr><th>' + L("hFlavor") + '</th><th class="right">' + L("bag4") + '</th><th class="right">' + L("bag15") + '</th><th class="right">' + L("essFilm") + '</th><th class="right">' + L("seasoning") + '</th></tr></thead><tbody>' + frows + '</tbody></table></div></div>';
+    // ---- Base materials strip (raw seed / malto / oil / stevia gate all production) ----
+    const baseTiles = ["SEED-WHITE", "SEED-BROWN", "MALTO", "OIL", "STEVIA"].map(c => {
+      const it = bc(c); if (!it) return ""; const st = statusOf(it);
+      return '<div class="btile ess-' + st + '"><div class="n">' + fmt(DB.onHand(it.id)) + '<span class="u"> ' + it.unit + '</span></div><div class="l">' + esc(it.name.split(" - ")[0].split(" (")[0]) + '</div></div>';
+    }).join("");
     const snapshot = '<div class="card"><div class="suprow"><h2 class="sub2" style="margin:0;flex:1">' + L("hSnapshot") + '</h2><a class="order sm" onclick="UI_go(\'dash\')" style="cursor:pointer">' + L("hSeeAll") + '</a></div>' +
       '<div class="kpis" style="margin-top:10px"><div class="kpi"><div class="n">' + items.length + '</div><div class="l">' + L("totalItems") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(bag4) + '</div><div class="l">' + L("bag4") + '</div></div>' +
-      '<div class="kpi"><div class="n">' + fmt(bag15) + '</div><div class="l">' + L("bag15") + '</div></div></div></div>';
-    return '<div class="card"><h2>' + L("homeTitle") + '</h2><p class="hint">' + L("homeHint") + '</p><div class="htiles">' + tiles + '</div></div>' + attention + snapshot;
+      '<div class="kpi"><div class="n">' + fmt(bag15) + '</div><div class="l">' + L("bag15") + '</div></div></div>' +
+      '<h2 class="sub2" style="margin:16px 0 8px">' + L("hBase") + '</h2><div class="btiles">' + baseTiles + '</div></div>';
+    return '<div class="card"><h2>' + L("homeTitle") + '</h2><p class="hint">' + L("homeHint") + '</p><div class="htiles">' + tiles + '</div></div>' + attention + essTable + snapshot;
   }
   function viewDash() {
     let its = DB.items().filter(i => catFilter === "all" || i.category === catFilter);
