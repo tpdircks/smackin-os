@@ -69,6 +69,7 @@
       spoSave:"Save PO", spoCancel:"Clear", spoSaved:"Supplier PO saved", spoNoFile:"Choose a file first", spoParsed:"Read from file", spoDownload:"Download", spoDelete:"Deleted", spoList:"Uploaded supplier POs", spoNone:"No supplier POs yet. Upload one above.", spoSearchP:"Search vendor, PO #...", spoConfirmDel:"Delete this supplier PO?",
       orderdocs:"Order Docs", odocHint:"Store the paperwork for fulfilled orders (BOL, packing list, pull sheet, labels, invoice) by customer and PO - like SPS. Searchable so CS can pull any order's docs fast.",
       odocDrop:"Choose a file to store  (PDF, Excel, image, Word)", odocCustomer:"Customer", odocPO:"PO / Order #", odocType:"Document type", odocSave:"Store document", odocArchive:"Document archive", odocNone:"No documents stored yet. Add one above.", odocSearchP:"Search customer, PO, doc type...", odocSaved:"Document stored", odocConfirmDel:"Delete this document?", odocNoFile:"Choose a file first",
+      poCreate:"+ Create PO", poNewTitle:"New Purchase Order", poVendorAddr:"Vendor address", poVendorEmail:"Vendor email", poVendorPhone:"Vendor phone", poShipTo:"Ship to", poPreparedBy:"Prepared by", poAddLine:"+ Add line", poItemNo:"Item #", poDesc:"Description", poQtyL:"Qty", poPriceL:"Price", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Shipping", poTaxL:"Tax", poOtherL:"Other", poGrandL:"Total", poSaveBtn:"Save PO", poBackList:"Back to list", poSavedMsg:"PO saved", poNeedVendor:"Enter a vendor first",
       rdHint:"Request samples and ingredients here. Each request generates a PDF and is tracked Pending until it arrives.",
       rdPending:"Pending", rdDone:"Received", rdAdd:"+ New request", rdSave:"Save request", rdCancel:"Cancel",
       rdType:"Request type", rdCompany:"Company / supplier", rdContact:"Contact name", rdEmail:"Contact email",
@@ -145,6 +146,7 @@
       spoSave:"Guardar OC", spoCancel:"Limpiar", spoSaved:"OC de proveedor guardada", spoNoFile:"Elija un archivo primero", spoParsed:"Leido del archivo", spoDownload:"Descargar", spoDelete:"Eliminado", spoList:"OC de proveedor subidas", spoNone:"Aun no hay OC de proveedor. Suba una arriba.", spoSearchP:"Buscar proveedor, OC #...", spoConfirmDel:"Eliminar esta OC de proveedor?",
       orderdocs:"Docs de Orden", odocHint:"Guarde el papeleo de ordenes cumplidas (BOL, lista de empaque, hoja de picking, etiquetas, factura) por cliente y OC - como SPS. Buscable para que servicio al cliente encuentre los documentos rapido.",
       odocDrop:"Elija un archivo para guardar  (PDF, Excel, imagen, Word)", odocCustomer:"Cliente", odocPO:"OC / # de Orden", odocType:"Tipo de documento", odocSave:"Guardar documento", odocArchive:"Archivo de documentos", odocNone:"Aun no hay documentos. Agregue uno arriba.", odocSearchP:"Buscar cliente, OC, tipo...", odocSaved:"Documento guardado", odocConfirmDel:"Eliminar este documento?", odocNoFile:"Elija un archivo primero",
+      poCreate:"+ Crear OC", poNewTitle:"Nueva Orden de Compra", poVendorAddr:"Direccion del proveedor", poVendorEmail:"Correo del proveedor", poVendorPhone:"Telefono del proveedor", poShipTo:"Enviar a", poPreparedBy:"Preparado por", poAddLine:"+ Agregar linea", poItemNo:"Articulo #", poDesc:"Descripcion", poQtyL:"Cant", poPriceL:"Precio", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Envio", poTaxL:"Impuesto", poOtherL:"Otro", poGrandL:"Total", poSaveBtn:"Guardar OC", poBackList:"Volver a la lista", poSavedMsg:"OC guardada", poNeedVendor:"Ingrese un proveedor primero",
       rdHint:"Solicite muestras e ingredientes aqui. Cada solicitud genera un PDF y se sigue como Pendiente hasta que llega.",
       rdPending:"Pendiente", rdDone:"Recibido", rdAdd:"+ Nueva solicitud", rdSave:"Guardar solicitud", rdCancel:"Cancelar",
       rdType:"Tipo de solicitud", rdCompany:"Empresa / proveedor", rdContact:"Nombre de contacto", rdEmail:"Correo de contacto",
@@ -221,6 +223,7 @@
       spoSave:"Salvar OC", spoCancel:"Limpar", spoSaved:"OC de fornecedor salva", spoNoFile:"Escolha um arquivo primeiro", spoParsed:"Lido do arquivo", spoDownload:"Baixar", spoDelete:"Excluido", spoList:"OCs de fornecedor enviadas", spoNone:"Ainda nao ha OCs de fornecedor. Envie uma acima.", spoSearchP:"Buscar fornecedor, OC #...", spoConfirmDel:"Excluir esta OC de fornecedor?",
       orderdocs:"Docs de Pedido", odocHint:"Armazene a papelada de pedidos concluidos (BOL, lista de embalagem, folha de separacao, etiquetas, fatura) por cliente e OC - como o SPS. Pesquisavel para o SAC encontrar os documentos rapido.",
       odocDrop:"Escolha um arquivo para armazenar  (PDF, Excel, imagem, Word)", odocCustomer:"Cliente", odocPO:"OC / No do Pedido", odocType:"Tipo de documento", odocSave:"Armazenar documento", odocArchive:"Arquivo de documentos", odocNone:"Nenhum documento ainda. Adicione um acima.", odocSearchP:"Buscar cliente, OC, tipo...", odocSaved:"Documento armazenado", odocConfirmDel:"Excluir este documento?", odocNoFile:"Escolha um arquivo primeiro",
+      poCreate:"+ Criar OC", poNewTitle:"Nova Ordem de Compra", poVendorAddr:"Endereco do fornecedor", poVendorEmail:"Email do fornecedor", poVendorPhone:"Telefone do fornecedor", poShipTo:"Enviar para", poPreparedBy:"Preparado por", poAddLine:"+ Adicionar linha", poItemNo:"Item #", poDesc:"Descricao", poQtyL:"Qtd", poPriceL:"Preco", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Frete", poTaxL:"Imposto", poOtherL:"Outro", poGrandL:"Total", poSaveBtn:"Salvar OC", poBackList:"Voltar a lista", poSavedMsg:"OC salva", poNeedVendor:"Insira um fornecedor primeiro",
       rdHint:"Solicite amostras e ingredientes aqui. Cada solicitacao gera um PDF e e acompanhada como Pendente ate chegar.",
       rdPending:"Pendente", rdDone:"Recebido", rdAdd:"+ Nova solicitacao", rdSave:"Salvar solicitacao", rdCancel:"Cancelar",
       rdType:"Tipo de solicitacao", rdCompany:"Empresa / fornecedor", rdContact:"Nome do contato", rdEmail:"E-mail do contato",
@@ -355,6 +358,9 @@
     mixing:"\u{1F963}", pmac:"\u{1F527}", people:"\u{1F465}", orderdocs:"\u{1F4C1}" };
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
   let spoSort = { key: "created", dir: -1 };  // Supplier POs table sort (v25)
+  let spoView = "list";   // Supplier POs: "list" | "create" (Excel-style PO entry form)
+  let poRows = 4;         // number of line-item rows shown in the Create-PO form
+  const PO_PREPARERS = ["Michelle", "Matt", "Troy"];
   function spoSortList(list) {
     const k = spoSort.key, dir = spoSort.dir;
     const val = s => {
@@ -835,6 +841,7 @@
     return { vendor: "", po_num: "", po_date: "", total: "", item_count: 0, lines: "[]", recognized: false };
   }
   function viewSupplierPos() {
+    if (spoView === "create") return viewPoCreate();
     const list = spoSortList(DB.supplierPos());
     let form;
     if (!spoParsed) {
@@ -861,7 +868,9 @@
         '<td class="right">' + money(s.total) + '</td><td class="right muted">' + (s.item_count || 0) + '</td>' +
         '<td>' + dl + '</td><td><button class="ghost sm danger" onclick="UI.spoDelete(\'' + s.id + '\')">&#10005;</button></td></tr>';
     }).join("") : '<tr><td colspan="7" class="muted">' + L("spoNone") + '</td></tr>';
-    return '<div class="card"><h2>' + L("supplierpos") + '</h2><p class="hint">' + L("spoHint") + '</p>' + form + '</div>' +
+    return '<div class="card"><div class="spohead"><h2>' + L("supplierpos") + '</h2>' +
+      '<button class="primary sm" onclick="UI.poCreateOpen()">' + L("poCreate") + '</button></div>' +
+      '<p class="hint">' + L("spoHint") + '</p>' + form + '</div>' +
       '<div class="card"><h2 class="sub2">' + L("spoList") + ' (' + list.length + ')</h2>' +
       '<input id="spoSearch" autocomplete="off" oninput="UI.spoSearch(this.value)" placeholder="' + L("spoSearchP") + '" style="margin-bottom:10px">' +
       '<table><thead><tr>' +
@@ -871,6 +880,44 @@
       '<th class="right sortable" onclick="UI.spoSortBy(\'total\')">' + L("spoTotal") + spoArrow("total") + '</th>' +
       '<th class="right sortable" onclick="UI.spoSortBy(\'item_count\')">' + L("spoItems") + spoArrow("item_count") + '</th>' +
       '<th>' + L("spoFile") + '</th><th></th></tr></thead><tbody id="spoBody">' + rows + '</tbody></table></div>';
+  }
+  function poRowInner(i) {
+    return '<td><input id="pl-item-' + i + '" autocomplete="off"></td>' +
+      '<td><input id="pl-desc-' + i + '" autocomplete="off"></td>' +
+      '<td><input id="pl-qty-' + i + '" type="number" min="0" step="any" inputmode="decimal" oninput="UI.poRecalc()"></td>' +
+      '<td><input id="pl-price-' + i + '" type="number" min="0" step="any" inputmode="decimal" oninput="UI.poRecalc()"></td>' +
+      '<td class="right"><span id="pl-tot-' + i + '">$0.00</span></td>';
+  }
+  function viewPoCreate() {
+    const vendors = Array.from(new Set(DB.supplierPos().map(s => s.vendor).filter(Boolean))).sort();
+    const ships = Array.from(new Set(DB.supplierPos().map(s => s.ship_to).filter(Boolean)));
+    if (!ships.some(s => /4250 W/i.test(s))) ships.unshift("1736 S 4250 W, Salt Lake City, UT 84104");
+    const dl = '<datalist id="dl-po-vendor">' + vendors.map(v => '<option value="' + esc(v) + '"></option>').join("") + '</datalist>' +
+      '<datalist id="dl-po-shipto">' + ships.map(v => '<option value="' + esc(v) + '"></option>').join("") + '</datalist>';
+    let rows = "";
+    for (let i = 0; i < poRows; i++) rows += '<tr>' + poRowInner(i) + '</tr>';
+    const today = new Date().toISOString().slice(0, 10);
+    return dl + '<div class="card"><div class="spohead"><h2>' + L("poNewTitle") + '</h2>' +
+      '<button class="ghost sm" onclick="UI.poBack()">' + L("poBackList") + '</button></div>' +
+      '<div class="row"><div><label>' + L("spoVendor") + '</label><input id="po-vendor" list="dl-po-vendor" autocomplete="off" onchange="UI.poVendorFill()" onblur="UI.poVendorFill()"></div>' +
+      '<div><label>' + L("spoPO") + '</label><input id="po-num" autocomplete="off"></div>' +
+      '<div><label>' + L("spoDate") + '</label><input id="po-date" value="' + today + '"></div></div>' +
+      '<div class="row"><div><label>' + L("poVendorAddr") + '</label><input id="po-vaddr" autocomplete="off"></div>' +
+      '<div><label>' + L("poVendorEmail") + '</label><input id="po-vemail" autocomplete="off"></div>' +
+      '<div><label>' + L("poVendorPhone") + '</label><input id="po-vphone" autocomplete="off"></div></div>' +
+      '<div><label>' + L("poShipTo") + '</label><input id="po-shipto" list="dl-po-shipto" autocomplete="off"></div>' +
+      '<h3 class="sub2" style="margin-top:14px">' + L("spoItems") + '</h3>' +
+      '<table class="potable"><thead><tr><th>' + L("poItemNo") + '</th><th>' + L("poDesc") + '</th><th>' + L("poQtyL") + '</th><th>' + L("poPriceL") + '</th><th class="right">' + L("poLineTot") + '</th></tr></thead><tbody id="po-lines">' + rows + '</tbody></table>' +
+      '<button class="ghost sm" onclick="UI.poAddLine()">' + L("poAddLine") + '</button>' +
+      '<div class="pototals">' +
+      '<div><span>' + L("poSubtotalL") + '</span><b id="po-subtotal">$0.00</b></div>' +
+      '<div><span>' + L("poShippingL") + '</span><input id="po-shipping" type="number" min="0" step="any" inputmode="decimal" oninput="UI.poRecalc()"></div>' +
+      '<div><span>' + L("poTaxL") + '</span><input id="po-tax" type="number" min="0" step="any" inputmode="decimal" oninput="UI.poRecalc()"></div>' +
+      '<div><span>' + L("poOtherL") + '</span><input id="po-other" type="number" min="0" step="any" inputmode="decimal" oninput="UI.poRecalc()"></div>' +
+      '<div class="grand"><span>' + L("poGrandL") + '</span><b id="po-grand">$0.00</b></div></div>' +
+      '<div class="row" style="margin-top:10px"><div><label>' + L("poPreparedBy") + '</label><select id="po-by">' + PO_PREPARERS.map(n => "<option>" + n + "</option>").join("") + '</select></div>' +
+      '<div><label>' + L("spoNotes") + '</label><input id="po-notes" autocomplete="off"></div></div>' +
+      '<button class="primary" onclick="UI.poCreate()">' + L("poSaveBtn") + '</button></div>';
   }
   function viewOrderDocs() {
     const list = DB.orderDocs().slice().sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
@@ -1361,6 +1408,53 @@
     spoSearch(val) { const q = (val || "").toLowerCase().trim();
       document.querySelectorAll("#spoBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
     spoSortBy(k) { if (spoSort.key === k) spoSort.dir *= -1; else spoSort = { key: k, dir: (k === "total" || k === "item_count" || k === "po_date") ? -1 : 1 }; render(); },
+    // ---- Create PO (Excel-style entry form) ----
+    poCreateOpen() { spoView = "create"; poRows = 4; render(); },
+    poBack() { spoView = "list"; render(); },
+    poAddLine() { const tb = $("po-lines"); if (!tb) return; const i = tb.querySelectorAll("tr").length; const tr = document.createElement("tr"); tr.innerHTML = poRowInner(i); tb.appendChild(tr); },
+    poRecalc() {
+      let sub = 0;
+      document.querySelectorAll("#po-lines tr").forEach(tr => {
+        const q = parseFloat((tr.querySelector("[id^=pl-qty-]") || {}).value) || 0;
+        const p = parseFloat((tr.querySelector("[id^=pl-price-]") || {}).value) || 0;
+        const lt = q * p; sub += lt;
+        const ts = tr.querySelector("[id^=pl-tot-]"); if (ts) ts.textContent = money(lt);
+      });
+      const g = id => { const e = $(id); return e ? parseFloat(e.value) || 0 : 0; };
+      const grand = sub + g("po-shipping") + g("po-tax") + g("po-other");
+      if ($("po-subtotal")) $("po-subtotal").textContent = money(sub);
+      if ($("po-grand")) $("po-grand").textContent = money(grand);
+    },
+    poVendorFill() {
+      const e = $("po-vendor"); const v = e ? (e.value || "").trim() : ""; if (!v) return;
+      const recs = DB.supplierPos().filter(s => (s.vendor || "").toLowerCase() === v.toLowerCase()).sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
+      const src = recs.find(s => s.vendor_addr || s.vendor_email || s.vendor_phone || s.ship_to) || recs[0];
+      if (!src) return;
+      const set = (id, val) => { const el = $(id); if (el && !el.value && val) el.value = val; };
+      set("po-vaddr", src.vendor_addr); set("po-vemail", src.vendor_email); set("po-vphone", src.vendor_phone); set("po-shipto", src.ship_to);
+    },
+    async poCreate() {
+      const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
+      const vendor = v("po-vendor"); if (!vendor) return toast(L("poNeedVendor"));
+      const lines = []; let sub = 0;
+      document.querySelectorAll("#po-lines tr").forEach(tr => {
+        const g = sel => { const el = tr.querySelector(sel); return el ? (el.value || "").trim() : ""; };
+        const item = g("[id^=pl-item-]"), desc = g("[id^=pl-desc-]"), qty = g("[id^=pl-qty-]"), price = g("[id^=pl-price-]");
+        if (!item && !desc && !qty && !price) return;
+        const lt = (parseFloat(qty) || 0) * (parseFloat(price) || 0); sub += lt;
+        lines.push({ item: item, desc: desc, qty: qty, price: price, total: String(Math.round(lt * 100) / 100) });
+      });
+      const gg = id => parseFloat(v(id)) || 0;
+      const grand = sub + gg("po-shipping") + gg("po-tax") + gg("po-other");
+      const rec = { vendor: vendor, po_num: v("po-num"), po_date: v("po-date"),
+        vendor_addr: v("po-vaddr"), vendor_email: v("po-vemail"), vendor_phone: v("po-vphone"), ship_to: v("po-shipto"),
+        lines: JSON.stringify(lines), item_count: lines.length,
+        subtotal: String(Math.round(sub * 100) / 100), shipping: v("po-shipping"), tax: v("po-tax"), other: v("po-other"),
+        total: String(Math.round(grand * 100) / 100), prepared_by: v("po-by"), notes: v("po-notes") };
+      const res = await DB.createSupplierPO(rec, null, rec.prepared_by);
+      if (res && res.ok === false) return toast(res.msg || "error");
+      spoView = "list"; toast(L("poSavedMsg")); render();
+    },
     // ---- Order Docs (fulfilled-order paperwork) ----
     odocFile(input) { const f = input.files && input.files[0]; if (!f) return; odocFile = f; render(); },
     odocClear() { odocFile = null; render(); },

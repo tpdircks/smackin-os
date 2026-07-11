@@ -104,7 +104,9 @@ window.DB = (function () {
       cache.supplierPos = (sp && sp.data ? sp.data : []).map(r => ({
         id: r.id, vendor: r.vendor, po_num: r.po_num, po_date: r.po_date, total: r.total,
         item_count: r.item_count, lines: r.lines, file_name: r.file_name, file_url: r.file_url,
-        file_path: r.file_path, notes: r.notes, uploaded_by: r.uploaded_by, created_at: r.created_at
+        file_path: r.file_path, notes: r.notes, uploaded_by: r.uploaded_by, created_at: r.created_at,
+        vendor_addr: r.vendor_addr, vendor_email: r.vendor_email, vendor_phone: r.vendor_phone,
+        ship_to: r.ship_to, subtotal: r.subtotal, shipping: r.shipping, tax: r.tax, other: r.other, prepared_by: r.prepared_by
       }));
       cache.orderDocs = (odc && odc.data ? odc.data : []).map(r => ({
         id: r.id, customer: r.customer, po_num: r.po_num, doc_type: r.doc_type, notes: r.notes,
@@ -455,7 +457,9 @@ window.DB = (function () {
     }
     const row = { vendor: rec.vendor || "", po_num: rec.po_num || "", po_date: rec.po_date || "",
       total: rec.total || "", item_count: Number(rec.item_count) || 0, lines: rec.lines || "",
-      notes: rec.notes || "", file_name: file_name, file_path: file_path, file_url: file_url, uploaded_by: op || "" };
+      notes: rec.notes || "", file_name: file_name, file_path: file_path, file_url: file_url, uploaded_by: op || "",
+      vendor_addr: rec.vendor_addr || "", vendor_email: rec.vendor_email || "", vendor_phone: rec.vendor_phone || "",
+      ship_to: rec.ship_to || "", subtotal: rec.subtotal || "", shipping: rec.shipping || "", tax: rec.tax || "", other: rec.other || "", prepared_by: rec.prepared_by || "" };
     const logEntry = { a: "Supplier PO", d: (row.vendor || "") + " " + (row.po_num || "") + (file_name ? " [" + file_name + "]" : ""), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
       await sb.from("supplier_pos").insert(row);

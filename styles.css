@@ -134,6 +134,16 @@ input.adjq{padding:7px;font-size:15px}
 .odchip a:hover{text-decoration:underline}
 .odfn{font-weight:400;color:#888;font-size:11px}
 .odx{border:none;background:transparent;color:#b00;cursor:pointer;font-size:12px;padding:0 2px;line-height:1}
+/* Create-PO form */
+.spohead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.potable input{width:100%;box-sizing:border-box;padding:5px 6px}
+.potable td{padding:3px 4px;vertical-align:middle}
+.potable th:nth-child(3),.potable th:nth-child(4){width:90px}
+.pototals{margin:12px 0;max-width:340px;margin-left:auto}
+.pototals>div{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:3px 0}
+.pototals>div>span:first-child{color:#667}
+.pototals input{width:120px;text-align:right;padding:4px 6px}
+.pototals .grand{border-top:2px solid var(--navy,#04223B);margin-top:4px;padding-top:8px;font-size:17px;font-weight:800;color:var(--navy,#04223B)}
 th.sortable{cursor:pointer;user-select:none;white-space:nowrap}
 th.sortable:hover{color:var(--orange,#F26B21)}
 .spodrop{margin:8px 0 4px}
@@ -164,4 +174,7 @@ td.expd{color:var(--red);font-weight:700}
   main{width:100%;max-width:none;padding:12px}
 }
 @media print{
-  header,nav,.hint,.ghost,.primary,#modeBad
+  header,nav,.hint,.ghost,.primary,#modeBadge,.lang{display:none!important}
+  .card{box-shadow:none;border:0;padding:0}
+  .lbl{page-break-inside:avoid}
+}
