@@ -1,0 +1,650 @@
+/* ============================================================================
+   Smackin' Inventory — data layer
+   One interface, two backends:
+     - CLOUD  : Supabase (Postgres + realtime) when config keys are present
+     - LOCAL  : browser localStorage fallback (single device) otherwise
+   The UI (app.js) only ever calls DB.* and never talks to a backend directly.
+   ============================================================================ */
+window.DB = (function () {
+  "use strict";
+  const KEY = "smackin_inv_app_v1";
+  const cfg = window.SMACKIN_CONFIG || {};
+  const seed = window.SMACKIN_SEED;
+  let mode = "local";
+  let sb = null;                  // supabase client
+  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [] };
+  let subscribers = [];
+
+  function emit() { subscribers.forEach(fn => { try { fn(); } catch (e) {} }); }
+  function onChange(fn) { subscribers.push(fn); }
+
+  // ---------- derived reads (work the same in both modes) ----------
+  function items() { return cache.items; }
+  function suppliers() { return cache.suppliers; }
+  function stock() { return cache.stock; }
+  function purchaseOrders() { return cache.pos || []; }
+  function log() { return cache.log; }
+  function seasLots() { return cache.seasLots || []; }
+  function orders() { return cache.orders || []; }
+  function rdRequests() { return cache.rdRequests || []; }
+  function supplierPos() { return cache.supplierPos || []; }
+  function supplierName(id) { const s = cache.suppliers.find(x => x.id === id); return s ? s.name : id; }
+  function itemByCode(code) {
+    code = (code || "").trim().toLowerCase();
+    if (!code) return null;
+    return cache.items.find(i =>
+      (i.code || "").toLowerCase() === code ||
+      (i.id || "").toLowerCase() === code ||
+      (i.name || "").toLowerCase() === code) || null;
+  }
+  function onHand(id) { return cache.stock.filter(r => r.item_id === id).reduce((s, r) => s + Number(r.qty), 0); }
+  function atLoc(id, loc) { return cache.stock.filter(r => r.item_id === id && r.location === loc).reduce((s, r) => s + Number(r.qty), 0); }
+
+  // ---------- LOCAL backend ----------
+  const local = {
+    loadOrSeed() {
+      let raw = null;
+      try { raw = localStorage.getItem(KEY); } catch (e) {}
+      if (raw) { cache = JSON.parse(raw); if (!cache.pos) cache.pos = []; if (!cache.log) cache.log = []; if (!cache.seasLots) cache.seasLots = []; if (!cache.orders) cache.orders = []; if (!cache.rdRequests) cache.rdRequests = []; if (!cache.supplierPos) cache.supplierPos = []; if (!cache.orderDocs) cache.orderDocs = []; return; }
+      const s = seed.build();
+      cache = { items: s.items, suppliers: s.suppliers, stock: s.stock, pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [] };
+      this.save();
+    },
+    save() { try { localStorage.setItem(KEY, JSON.stringify(cache)); } catch (e) {} },
+    delta(item_id, location, d, lot) {
+      lot = lot || null;
+      let row = cache.stock.find(r => r.item_id === item_id && r.location === location && (r.lot || null) === lot);
+      if (!row) { row = { item_id, location, qty: 0, lot }; cache.stock.push(row); }
+      row.qty = Number(row.qty) + d;
+      if (row.qty <= 0) cache.stock = cache.stock.filter(r => r !== row);
+    },
+    addLog(entry) { cache.log.unshift(entry); if (cache.log.length > 500) cache.log.pop(); },
+    reset() { try { localStorage.removeItem(KEY); } catch (e) {} this.loadOrSeed(); }
+  };
+
+  // ---------- CLOUD backend (Supabase) ----------
+  const cloud = {
+    async loadAll() {
+      const [it, su, st, lg, po, pl, sl, od, rd, sp, odc] = await Promise.all([
+        sb.from("items").select("*"),
+        sb.from("suppliers").select("*"),
+        sb.from("stock").select("*"),
+        sb.from("transactions").select("*").order("ts", { ascending: false }).limit(500),
+        sb.from("purchase_orders").select("*").order("created_at", { ascending: false }),
+        sb.from("po_lines").select("*"),
+        sb.from("seasoning_lots").select("*").order("exp", { ascending: true }),
+        sb.from("orders").select("*").order("created_at", { ascending: false }).limit(2000),
+        sb.from("rd_requests").select("*").order("created_at", { ascending: false }).limit(2000),
+        sb.from("supplier_pos").select("*").order("created_at", { ascending: false }).limit(2000),
+        sb.from("order_docs").select("*").order("created_at", { ascending: false }).limit(3000)
+      ]);
+      cache.items = it.data || [];
+      cache.suppliers = su.data || [];
+      cache.stock = (st.data || []).map(r => ({ item_id: r.item_id, location: r.location, qty: Number(r.qty), lot: r.lot }));
+      cache.log = (lg.data || []).map(r => ({ t: r.ts, a: r.action, d: r.detail, u: r.operator }));
+      cache.seasLots = (sl && sl.data ? sl.data : []).map(r => ({
+        id: r.id, flavor_code: r.flavor_code, product: r.product, lot: r.lot,
+        manufacturer: r.manufacturer, exp: r.exp, weight: Number(r.weight) || 0,
+        status: r.status || "Good", received_at: r.received_at
+      }));
+      cache.orders = (od && od.data ? od.data : []).map(r => ({
+        id: r.id, customer: r.customer, customer_po: r.customer_po, appointment: r.appointment,
+        order_id: r.order_id, stripe_link: r.stripe_link, invoice_date: r.invoice_date,
+        ship_date: r.ship_date, tracking: r.tracking, carrier: r.carrier,
+        status: r.status || "Open", notes: r.notes, entered_by: r.entered_by, created_at: r.created_at
+      }));
+      cache.rdRequests = (rd && rd.data ? rd.data : []).map(r => ({
+        id: r.id, req_no: r.req_no, req_type: r.req_type, company: r.company,
+        contact_name: r.contact_name, contact_email: r.contact_email, items: r.items,
+        quantity: r.quantity, needed_by: r.needed_by, purpose: r.purpose,
+        requested_by: r.requested_by, status: r.status || "Pending",
+        sent_at: r.sent_at, received_at: r.received_at, follow_up: r.follow_up,
+        notes: r.notes, created_at: r.created_at
+      }));
+      cache.supplierPos = (sp && sp.data ? sp.data : []).map(r => ({
+        id: r.id, vendor: r.vendor, po_num: r.po_num, po_date: r.po_date, total: r.total,
+        item_count: r.item_count, lines: r.lines, file_name: r.file_name, file_url: r.file_url,
+        file_path: r.file_path, notes: r.notes, uploaded_by: r.uploaded_by, created_at: r.created_at
+      }));
+      cache.orderDocs = (odc && odc.data ? odc.data : []).map(r => ({
+        id: r.id, customer: r.customer, po_num: r.po_num, doc_type: r.doc_type, notes: r.notes,
+        file_name: r.file_name, file_url: r.file_url, file_path: r.file_path,
+        uploaded_by: r.uploaded_by, created_at: r.created_at
+      }));
+      const lines = pl.data || [];
+      cache.pos = (po.data || []).map(p => ({
+        id: p.id, supplier: p.supplier, status: p.status, created: p.created_at,
+        ordered: p.ordered, expected: p.expected, operator: p.operator,
+        lines: lines.filter(x => x.po_id === p.id).map(x => ({ item_id: x.item_id, qty: Number(x.qty), cost: Number(x.cost), received: Number(x.received) }))
+      }));
+    },
+    // One-time bootstrap: load the item master + opening stock into an empty cloud DB.
+    async seedAll() {
+      const s = seed.build();
+      const chunk = (arr, n) => { const o = []; for (let i = 0; i < arr.length; i += n) o.push(arr.slice(i, i + n)); return o; };
+      if (s.suppliers && s.suppliers.length) await sb.from("suppliers").insert(s.suppliers);
+      for (const c of chunk(s.items, 100)) await sb.from("items").insert(c);
+      const stockRows = s.stock.map(r => ({ item_id: r.item_id, location: r.location, lot: r.lot || "", qty: r.qty }));
+      for (const c of chunk(stockRows, 100)) await sb.from("stock").insert(c);
+    },
+    async delta(item_id, location, d, lot) {
+      // atomic per-row upsert via Postgres function fn_apply_delta (see schema.sql)
+      await sb.rpc("fn_apply_delta", { p_item: item_id, p_loc: location, p_delta: d, p_lot: lot || null });
+    },
+    async addLog(entry) {
+      await sb.from("transactions").insert({ action: entry.a, detail: entry.d, operator: entry.u });
+    },
+    subscribeRealtime() {
+      sb.channel("inv")
+        .on("postgres_changes", { event: "*", schema: "public", table: "stock" }, async () => { await cloud.loadAll(); emit(); })
+        .on("postgres_changes", { event: "*", schema: "public", table: "transactions" }, async () => { await cloud.loadAll(); emit(); })
+        .subscribe();
+    }
+  };
+
+  // ---------- public transaction API ----------
+  // Each tx applies one or more stock deltas, writes an audit log row, refreshes, emits.
+  async function applyDeltas(deltas, logEntry) {
+    if (mode === "cloud") {
+      for (const d of deltas) await cloud.delta(d.item_id, d.location, d.delta, d.lot);
+      await cloud.addLog(logEntry);
+      await cloud.loadAll();
+    } else {
+      deltas.forEach(d => local.delta(d.item_id, d.location, d.delta, d.lot));
+      local.addLog(logEntry);
+      local.save();
+    }
+    emit();
+  }
+
+  function fmt(n) { return (Math.round(n * 100) / 100).toLocaleString(); }
+
+  // meta: { supplier, invoice, category, pallets, condition, status }
+  async function receive(item, qty, lot, op, meta) {
+    meta = meta || {};
+    const loc = meta.condition === "Defective - Hold" ? "QA-HOLD" : "RECEIVING";
+    const parts = [];
+    if (meta.supplier) parts.push("from " + meta.supplier);
+    if (meta.invoice) parts.push("inv " + meta.invoice);
+    if (meta.pallets) parts.push(meta.pallets + " pal");
+    if (lot) parts.push("lot " + lot);
+    if (meta.condition && meta.condition !== "Good") parts.push("[" + meta.condition + "]");
+    if (meta.status && meta.status !== "Received") parts.push(meta.status);
+    const extra = parts.length ? " (" + parts.join(", ") + ")" : "";
+    await applyDeltas(
+      [{ item_id: item.id, location: loc, delta: qty, lot: lot || null }],
+      { a: "Receive", d: fmt(qty) + " " + item.unit + " " + item.flavor + extra + " -> " + loc, u: op, t: new Date().toISOString() }
+    );
+    return { ok: true, location: loc };
+  }
+  async function move(item, from, to, qty, op) {
+    const avail = atLoc(item.id, from);
+    const mv = Math.min(qty, avail);
+    if (mv <= 0) return { ok: false, msg: "Nothing at " + from };
+    await applyDeltas(
+      [{ item_id: item.id, location: from, delta: -mv }, { item_id: item.id, location: to, delta: mv }],
+      { a: (from === "RECEIVING" ? "Put-Away" : "Move"), d: fmt(mv) + " " + item.unit + " " + item.flavor + " " + from + " -> " + to, u: op, t: new Date().toISOString() }
+    );
+    return { ok: true };
+  }
+  async function adjust(item, loc, newQty, op) {
+    const cur = atLoc(item.id, loc);
+    await applyDeltas(
+      [{ item_id: item.id, location: loc, delta: newQty - cur }],
+      { a: "Count/Adjust", d: item.flavor + " @ " + loc + ": " + fmt(cur) + " -> " + fmt(newQty), u: op, t: new Date().toISOString() }
+    );
+  }
+  // Set an item's TOTAL on-hand (location handled automatically) — spreadsheet-style counting.
+  async function adjustTotal(item, newTotal, op) {
+    newTotal = Number(newTotal);
+    const rows = cache.stock.filter(r => r.item_id === item.id);
+    const cur = rows.reduce((s, r) => s + Number(r.qty), 0);
+    if (newTotal === cur) return { ok: true, unchanged: true };
+    let loc;
+    if (rows.length) {
+      loc = rows.slice().sort((a, b) => Number(b.qty) - Number(a.qty))[0].location;
+      const primaryCur = rows.filter(r => r.location === loc).reduce((s, r) => s + Number(r.qty), 0);
+      const others = cur - primaryCur;
+      await adjust(item, loc, Math.max(newTotal - others, 0), op);
+    } else {
+      loc = "RECEIVING";
+      await adjust(item, loc, newTotal, op);
+    }
+    return { ok: true, location: loc };
+  }
+  // Produce finished 4oz bags: +bags, consume 1 film (4oz) impression/bag + seasoning.
+  const SEAS_LB_PER_BAG = 0.0035;
+  async function produce(flavorCode, qty, loc, op) {
+    const bagItem = itemByCode("B4-" + flavorCode) || cache.items.find(i => i.id === "BAG4-" + flavorCode);
+    const deltas = [{ item_id: "BAG4-" + flavorCode, location: loc, delta: qty }];
+    let detail = "+" + fmt(qty) + " bags " + (bagItem ? bagItem.flavor : flavorCode) + " -> " + loc;
+    // consume film from wherever it sits
+    let filmNeed = qty, filmUsed = 0;
+    cache.stock.filter(r => r.item_id === "FILM4-" + flavorCode).forEach(r => {
+      if (filmNeed <= 0) return;
+      const take = Math.min(r.qty, filmNeed);
+      deltas.push({ item_id: "FILM4-" + flavorCode, location: r.location, delta: -take });
+      filmNeed -= take; filmUsed += take;
+    });
+    let seasNeed = qty * SEAS_LB_PER_BAG, seasUsed = 0;
+    cache.stock.filter(r => r.item_id === "SEAS-" + flavorCode).forEach(r => {
+      if (seasNeed <= 0) return;
+      const take = Math.min(r.qty, seasNeed);
+      deltas.push({ item_id: "SEAS-" + flavorCode, location: r.location, delta: -take });
+      seasNeed -= take; seasUsed += take;
+    });
+    detail += " | -" + fmt(filmUsed) + " film, -" + fmt(seasUsed) + " lb seasoning";
+    await applyDeltas(deltas, { a: "Produce", d: detail, u: op, t: new Date().toISOString() });
+  }
+  // ---------- Returns (customer + Amazon) ----------
+  // meta: { channel, reason, disposition, rma }
+  // Restock -> RETURNS zone; Damaged - Hold -> QA-HOLD; Scrap -> log only (no stock)
+  async function returnStock(item, qty, op, meta) {
+    meta = meta || {};
+    const disp = meta.disposition || "Restock";
+    const loc = disp === "Restock" ? "RETURNS" : disp === "Damaged - Hold" ? "QA-HOLD" : null;
+    const parts = [];
+    if (meta.channel) parts.push(meta.channel);
+    if (meta.rma) parts.push("RMA " + meta.rma);
+    if (meta.reason) parts.push(meta.reason);
+    parts.push("[" + disp + "]");
+    const detail = fmt(qty) + " " + item.unit + " " + item.flavor + " (" + parts.join(", ") + ")" + (loc ? " -> " + loc : " (scrapped)");
+    const deltas = loc ? [{ item_id: item.id, location: loc, delta: qty, lot: null }] : [];
+    await applyDeltas(deltas, { a: "Return", d: detail, u: op, t: new Date().toISOString() });
+    return { ok: true, location: loc };
+  }
+
+  // ---------- Seasoning lot registry (Lot / Exp / Manufacturer / Weight, FEFO) ----------
+  function seasLocalId() { return "SL-" + Date.now().toString(36) + "-" + Math.floor(Math.random() * 1000); }
+  async function addSeasLot(rec, op) {
+    const row = {
+      flavor_code: rec.flavor_code || "", product: rec.product || "", lot: rec.lot || "",
+      manufacturer: rec.manufacturer || "", exp: rec.exp || null, weight: Number(rec.weight) || 0,
+      status: "Good", received_at: new Date().toISOString()
+    };
+    const logEntry = { a: "Seasoning lot", d: (row.product || row.flavor_code) + " lot " + row.lot + " " + fmt(row.weight) + " lb (exp " + (row.exp || "n/a") + ")", u: op, t: row.received_at };
+    if (mode === "cloud") {
+      await sb.from("seasoning_lots").insert(row);
+      await cloud.addLog(logEntry);
+      await cloud.loadAll();
+    } else {
+      row.id = seasLocalId();
+      cache.seasLots.push(row);
+      local.addLog(logEntry); local.save();
+    }
+    emit();
+    return { ok: true };
+  }
+  async function setSeasLotStatus(id, status, op) {
+    const lot = (cache.seasLots || []).find(l => String(l.id) === String(id));
+    const logEntry = { a: "Seasoning " + status, d: lot ? ((lot.product || lot.flavor_code) + " lot " + lot.lot) : String(id), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      await sb.from("seasoning_lots").update({ status }).eq("id", id);
+      await cloud.addLog(logEntry);
+      await cloud.loadAll();
+    } else {
+      if (lot) lot.status = status;
+      local.addLog(logEntry); local.save();
+    }
+    emit();
+  }
+  // Move any Good lot past its expiration into Quarantine. Returns count moved.
+  async function quarantineExpiredSeas(op) {
+    const today = new Date().toISOString().slice(0, 10);
+    const expired = (cache.seasLots || []).filter(l => l.status === "Good" && l.exp && String(l.exp).slice(0, 10) < today);
+    for (const l of expired) await setSeasLotStatus(l.id, "Quarantine", op || "system");
+    return expired.length;
+  }
+
+  // ---------- Orders (non-SPS / Stripe outbound order log) ----------
+  const ORDER_FIELDS = ["customer","customer_po","appointment","order_id","stripe_link","invoice_date","ship_date","tracking","carrier","status","notes","entered_by"];
+  function orderLocalId() { return "OR-" + Date.now().toString(36) + "-" + Math.floor(Math.random() * 1000); }
+  function cleanOrder(rec) { const o = {}; ORDER_FIELDS.forEach(f => { if (rec[f] !== undefined && rec[f] !== null) o[f] = rec[f]; }); if (!o.status) o.status = "Open"; return o; }
+  async function createOrder(rec, op) {
+    const row = cleanOrder(rec);
+    const logEntry = { a: "Order added", d: (row.customer || "") + " " + (row.customer_po || row.order_id || ""), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      await sb.from("orders").insert(row);
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      row.id = orderLocalId(); row.created_at = new Date().toISOString();
+      cache.orders.unshift(row); local.addLog(logEntry); local.save();
+    }
+    emit(); return { ok: true };
+  }
+  async function updateOrder(id, patch, op) {
+    const p = cleanOrder(patch);
+    const cur = (cache.orders || []).find(o => String(o.id) === String(id));
+    const logEntry = { a: "Order updated", d: (cur ? (cur.customer + " " + (cur.customer_po || cur.order_id || "")) : String(id)), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      await sb.from("orders").update(p).eq("id", id);
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      if (cur) Object.assign(cur, p); local.addLog(logEntry); local.save();
+    }
+    emit(); return { ok: true };
+  }
+  async function setOrderStatus(id, status, op) {
+    const cur = (cache.orders || []).find(o => String(o.id) === String(id));
+    const logEntry = { a: "Order " + status, d: (cur ? (cur.customer + " " + (cur.customer_po || cur.order_id || "")) : String(id)), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      await sb.from("orders").update({ status }).eq("id", id);
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      if (cur) cur.status = status; local.addLog(logEntry); local.save();
+    }
+    emit();
+  }
+  async function deleteOrder(id, op) {
+    if (mode === "cloud") { await sb.from("orders").delete().eq("id", id); await cloud.loadAll(); }
+    else { cache.orders = cache.orders.filter(o => String(o.id) !== String(id)); local.addLog({ a: "Order deleted", d: String(id), u: op, t: new Date().toISOString() }); local.save(); }
+    emit();
+  }
+
+  // ---------- R&D / sample requests ----------
+  const RD_FIELDS = ["req_no","req_type","company","contact_name","contact_email","items","quantity","needed_by","purpose","requested_by","status","sent_at","received_at","follow_up","notes"];
+  function rdLocalId() { return "RD-" + Date.now().toString(36) + "-" + Math.floor(Math.random() * 1000); }
+  function cleanRd(rec) { const o = {}; RD_FIELDS.forEach(f => { if (rec[f] !== undefined && rec[f] !== null) o[f] = rec[f]; }); if (!o.status) o.status = "Pending"; return o; }
+  function nextRdNumber() {
+    const d = new Date();
+    const ymd = "" + d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate());
+    const n = (cache.rdRequests || []).filter(r => (r.req_no || "").indexOf("RND-" + ymd) === 0).length + 1;
+    return "RND-" + ymd + "-" + pad2(n);
+  }
+  async function createRdRequest(rec, op) {
+    const row = cleanRd(rec);
+    if (!row.req_no) row.req_no = nextRdNumber();
+    const logEntry = { a: "R&D request", d: row.req_no + " " + (row.company || "") + " - " + (row.items || ""), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      const { data } = await sb.from("rd_requests").insert(row).select();
+      await cloud.addLog(logEntry); await cloud.loadAll();
+      emit(); return { ok: true, id: data && data[0] ? data[0].id : null, req_no: row.req_no };
+    } else {
+      row.id = rdLocalId(); row.created_at = new Date().toISOString();
+      cache.rdRequests.unshift(row); local.addLog(logEntry); local.save();
+      emit(); return { ok: true, id: row.id, req_no: row.req_no };
+    }
+  }
+  async function updateRdRequest(id, patch, op) {
+    const p = cleanRd(patch);
+    const cur = (cache.rdRequests || []).find(r => String(r.id) === String(id));
+    const logEntry = { a: "R&D updated", d: (cur ? cur.req_no : String(id)), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      await sb.from("rd_requests").update(p).eq("id", id);
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      if (cur) Object.assign(cur, p); local.addLog(logEntry); local.save();
+    }
+    emit(); return { ok: true };
+  }
+  async function setRdStatus(id, status, op) {
+    const cur = (cache.rdRequests || []).find(r => String(r.id) === String(id));
+    const patch = { status }; if (status === "Received") patch.received_at = new Date().toISOString();
+    const logEntry = { a: "R&D " + status, d: (cur ? cur.req_no + " " + (cur.company || "") : String(id)), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      await sb.from("rd_requests").update(patch).eq("id", id);
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      if (cur) Object.assign(cur, patch); local.addLog(logEntry); local.save();
+    }
+    emit();
+  }
+  async function deleteRdRequest(id, op) {
+    if (mode === "cloud") { await sb.from("rd_requests").delete().eq("id", id); await cloud.loadAll(); }
+    else { cache.rdRequests = cache.rdRequests.filter(r => String(r.id) !== String(id)); local.addLog({ a: "R&D deleted", d: String(id), u: op, t: new Date().toISOString() }); local.save(); }
+    emit();
+  }
+  // Relay the request email through the Supabase Edge Function (which holds the Resend key).
+  // payload: { to, cc, subject, html, pdfBase64, pdfName }. Returns {ok, msg}.
+  async function sendRdEmail(id, payload, op) {
+    if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) return { ok: false, msg: "not-configured" };
+    const url = cfg.SUPABASE_URL.replace(/\/+$/, "") + "/functions/v1/send-rd-request";
+    let resp;
+    try {
+      resp = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + cfg.SUPABASE_ANON_KEY, "apikey": cfg.SUPABASE_ANON_KEY },
+        body: JSON.stringify(payload)
+      });
+    } catch (e) { return { ok: false, msg: "network" }; }
+    if (resp.status === 404) return { ok: false, msg: "not-configured" };
+    let body = {}; try { body = await resp.json(); } catch (e) {}
+    if (!resp.ok || body.error) return { ok: false, msg: (body && (body.error || body.message)) || ("http " + resp.status) };
+    // record that it was sent (status stays Pending until goods arrive)
+    await updateRdRequest(id, { sent_at: new Date().toISOString() }, op || "system");
+    return { ok: true, id: body.id || null };
+  }
+
+  // Fire-and-forget email to Troy when a new order is added (reuses the send-rd-request
+  // relay). Silently no-ops until the email backend (Resend) is configured.
+  const NOTIFY_TO = "troy.dircks@smackinsnacks.com";
+  async function notifyNewOrder(o) {
+    o = o || {};
+    if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) return { ok: false, msg: "not-configured" };
+    const url = cfg.SUPABASE_URL.replace(/\/+$/, "") + "/functions/v1/send-rd-request";
+    const html = '<div style="font-family:Arial,sans-serif;color:#222">' +
+      '<p>A new order was just added in Smackin\' OS:</p><table style="border-collapse:collapse">' +
+      ['Customer:' + (o.customer || ''), 'Customer PO#:' + (o.customer_po || ''),
+       'Order / INV #:' + (o.order_id || ''), 'Ship date:' + (o.ship_date || o.invoice_date || ''),
+       'Carrier:' + (o.carrier || ''), 'Tracking:' + (o.tracking || '')]
+        .map(function (r) { var p = r.split(':'); return '<tr><td style="padding:3px 12px 3px 0;color:#667">' + p[0] + '</td><td style="padding:3px 0"><b>' + (p.slice(1).join(':') || '') + '</b></td></tr>'; }).join('') +
+      '</table></div>';
+    try {
+      const r = await fetch(url, { method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + cfg.SUPABASE_ANON_KEY, "apikey": cfg.SUPABASE_ANON_KEY },
+        body: JSON.stringify({ to: NOTIFY_TO, subject: "New order: " + (o.customer || "") + " " + (o.customer_po || ""), html: html }) });
+      if (r.status === 404) return { ok: false, msg: "not-configured" };
+      const b = await r.json().catch(() => ({}));
+      return (r.ok && !b.error) ? { ok: true } : { ok: false, msg: b.error || ("http " + r.status) };
+    } catch (e) { return { ok: false, msg: "network" }; }
+  }
+
+  // ---------- Supplier POs (uploaded from external systems) ----------
+  const SPO_BUCKET = "supplier-pos";
+  async function createSupplierPO(rec, file, op) {
+    let file_name = file ? file.name : "", file_path = "", file_url = "";
+    if (mode === "cloud" && file) {
+      try {
+        const path = Date.now() + "_" + (file.name || "po").replace(/[^\w.\-]+/g, "_");
+        const up = await sb.storage.from(SPO_BUCKET).upload(path, file, { upsert: false, contentType: file.type || undefined });
+        if (up.error) return { ok: false, msg: up.error.message || "upload failed" };
+        file_path = path;
+        const pub = sb.storage.from(SPO_BUCKET).getPublicUrl(path);
+        file_url = (pub && pub.data && pub.data.publicUrl) || "";
+      } catch (e) { return { ok: false, msg: String(e) }; }
+    }
+    const row = { vendor: rec.vendor || "", po_num: rec.po_num || "", po_date: rec.po_date || "",
+      total: rec.total || "", item_count: Number(rec.item_count) || 0, lines: rec.lines || "",
+      notes: rec.notes || "", file_name: file_name, file_path: file_path, file_url: file_url, uploaded_by: op || "" };
+    const logEntry = { a: "Supplier PO", d: (row.vendor || "") + " " + (row.po_num || "") + (file_name ? " [" + file_name + "]" : ""), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      await sb.from("supplier_pos").insert(row);
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      row.id = "SPO-" + Date.now().toString(36); row.created_at = new Date().toISOString();
+      if (file && !file_url) row.file_url = URL.createObjectURL(file);
+      cache.supplierPos.unshift(row); local.addLog(logEntry); local.save();
+    }
+    emit(); return { ok: true };
+  }
+  async function deleteSupplierPO(id, op) {
+    const cur = (cache.supplierPos || []).find(s => String(s.id) === String(id));
+    if (mode === "cloud") {
+      if (cur && cur.file_path) { try { await sb.storage.from(SPO_BUCKET).remove([cur.file_path]); } catch (e) {} }
+      await sb.from("supplier_pos").delete().eq("id", id); await cloud.loadAll();
+    } else {
+      cache.supplierPos = cache.supplierPos.filter(s => String(s.id) !== String(id));
+      local.addLog({ a: "Supplier PO deleted", d: cur ? (cur.vendor + " " + cur.po_num) : String(id), u: op, t: new Date().toISOString() }); local.save();
+    }
+    emit();
+  }
+
+  // ---------- Order Docs (fulfilled-order paperwork, SPS-style archive) ----------
+  const ODOC_BUCKET = "order-docs";
+  async function createOrderDoc(rec, file, op) {
+    let file_name = file ? file.name : "", file_path = "", file_url = "";
+    if (mode === "cloud" && file) {
+      try {
+        const path = Date.now() + "_" + (file.name || "doc").replace(/[^\w.\-]+/g, "_");
+        const up = await sb.storage.from(ODOC_BUCKET).upload(path, file, { upsert: false, contentType: file.type || undefined });
+        if (up.error) return { ok: false, msg: up.error.message || "upload failed" };
+        file_path = path;
+        const pub = sb.storage.from(ODOC_BUCKET).getPublicUrl(path);
+        file_url = (pub && pub.data && pub.data.publicUrl) || "";
+      } catch (e) { return { ok: false, msg: String(e) }; }
+    }
+    const row = { customer: rec.customer || "", po_num: rec.po_num || "", doc_type: rec.doc_type || "",
+      notes: rec.notes || "", file_name: file_name, file_path: file_path, file_url: file_url, uploaded_by: op || "" };
+    const logEntry = { a: "Order doc", d: (row.customer || "") + " " + (row.po_num || "") + " " + (row.doc_type || "") + (file_name ? " [" + file_name + "]" : ""), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      await sb.from("order_docs").insert(row);
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      row.id = "ODC-" + Date.now().toString(36); row.created_at = new Date().toISOString();
+      if (file && !file_url) row.file_url = URL.createObjectURL(file);
+      cache.orderDocs.unshift(row); local.addLog(logEntry); local.save();
+    }
+    emit(); return { ok: true };
+  }
+  async function deleteOrderDoc(id, op) {
+    const cur = (cache.orderDocs || []).find(s => String(s.id) === String(id));
+    if (mode === "cloud") {
+      if (cur && cur.file_path) { try { await sb.storage.from(ODOC_BUCKET).remove([cur.file_path]); } catch (e) {} }
+      await sb.from("order_docs").delete().eq("id", id); await cloud.loadAll();
+    } else {
+      cache.orderDocs = cache.orderDocs.filter(s => String(s.id) !== String(id));
+      local.addLog({ a: "Order doc deleted", d: cur ? (cur.customer + " " + cur.po_num) : String(id), u: op, t: new Date().toISOString() }); local.save();
+    }
+    emit();
+  }
+  function orderDocs() { return cache.orderDocs || []; }
+
+  // ---------- Purchase Orders ----------
+  function pad2(n) { return String(n).padStart(2, "0"); }
+  function nextPONumber() {
+    const d = new Date();
+    const ymd = "" + d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate());
+    const n = (cache.pos || []).filter(p => (p.id || "").indexOf("PO-" + ymd) === 0).length + 1;
+    return "PO-" + ymd + "-" + pad2(n);
+  }
+  // lines: [{ item_id, qty, cost }]
+  async function createPO(supplierId, lines, expected, op) {
+    const id = nextPONumber();
+    const po = {
+      id, supplier: supplierId, status: "draft",
+      created: new Date().toISOString(), ordered: null, expected: expected || null, operator: op,
+      lines: lines.map(l => ({ item_id: l.item_id, qty: Number(l.qty), cost: Number(l.cost) || 0, received: 0 }))
+    };
+    const logEntry = { a: "PO created", d: po.id + " " + supplierName(supplierId) + " (" + po.lines.length + " lines)", u: op, t: po.created };
+    if (mode === "cloud") {
+      await sb.from("purchase_orders").insert({ id: po.id, supplier: po.supplier, status: po.status, expected: po.expected, operator: op });
+      for (const l of po.lines) await sb.from("po_lines").insert({ po_id: po.id, item_id: l.item_id, qty: l.qty, cost: l.cost, received: 0 });
+      await cloud.addLog(logEntry);
+      await cloud.loadAll();
+    } else {
+      cache.pos.unshift(po);
+      local.addLog(logEntry);
+      local.save();
+    }
+    emit();
+    return po;
+  }
+  async function setPOStatus(poId, status, op) {
+    const po = (cache.pos || []).find(p => p.id === poId);
+    if (!po) return;
+    const logEntry = { a: "PO " + status, d: poId + " " + supplierName(po.supplier), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      const patch = { status }; if (status === "ordered") patch.ordered = new Date().toISOString();
+      await sb.from("purchase_orders").update(patch).eq("id", poId);
+      await cloud.addLog(logEntry);
+      await cloud.loadAll();
+    } else {
+      po.status = status; if (status === "ordered" && !po.ordered) po.ordered = new Date().toISOString();
+      local.addLog(logEntry);
+      local.save();
+    }
+    emit();
+  }
+  async function deletePO(poId, op) {
+    if (mode === "cloud") {
+      await sb.from("po_lines").delete().eq("po_id", poId);
+      await sb.from("purchase_orders").delete().eq("id", poId);
+      await cloud.loadAll();
+    } else {
+      cache.pos = cache.pos.filter(p => p.id !== poId);
+      local.addLog({ a: "PO deleted", d: poId, u: op, t: new Date().toISOString() });
+      local.save();
+    }
+    emit();
+  }
+  // receipts: { lineIndex: qtyReceivedNow }. Adds received stock to RECEIVING, closes when fully received.
+  async function receivePO(poId, receipts, op) {
+    const po = (cache.pos || []).find(p => p.id === poId);
+    if (!po) return { ok: false, msg: "PO not found" };
+    const deltas = []; let any = 0; const detail = [];
+    po.lines.forEach((l, idx) => {
+      let q = Number(receipts[idx] || 0);
+      const outstanding = l.qty - l.received;
+      if (q > outstanding) q = outstanding;
+      if (!(q > 0)) return;
+      deltas.push({ item_id: l.item_id, location: "RECEIVING", delta: q, lot: null });
+      l.received += q; any += q;
+      const it = cache.items.find(i => i.id === l.item_id);
+      detail.push((it ? it.code : l.item_id) + " +" + fmt(q));
+    });
+    if (any <= 0) return { ok: false, msg: "Nothing to receive" };
+    po.status = po.lines.every(l => l.received >= l.qty) ? "received" : "partial";
+    const logEntry = { a: "PO receive", d: poId + ": " + detail.join(", ") + " -> RECEIVING (" + po.status + ")", u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      for (const d of deltas) await cloud.delta(d.item_id, d.location, d.delta, d.lot);
+      for (const l of po.lines) await sb.from("po_lines").update({ received: l.received }).eq("po_id", poId).eq("item_id", l.item_id);
+      await sb.from("purchase_orders").update({ status: po.status }).eq("id", poId);
+      await cloud.addLog(logEntry);
+      await cloud.loadAll();
+    } else {
+      deltas.forEach(d => local.delta(d.item_id, d.location, d.delta, d.lot));
+      local.addLog(logEntry);
+      local.save();
+    }
+    emit();
+    return { ok: true, status: po.status };
+  }
+
+  async function resetDemo() {
+    if (mode === "local") { local.reset(); emit(); }
+  }
+
+  // ---------- init ----------
+  async function init() {
+    if (cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY && window.supabase) {
+      try {
+        sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+        await cloud.loadAll();
+        if (!cache.items.length) { await cloud.seedAll(); await cloud.loadAll(); }  // first-run bootstrap
+        cloud.subscribeRealtime();
+        mode = "cloud";
+        return;
+      } catch (e) { console.warn("Cloud init failed, falling back to local:", e); }
+    }
+    mode = "local";
+    local.loadOrSeed();
+  }
+
+  return {
+    init, onChange, get mode() { return mode; },
+    items, suppliers, stock, log, itemByCode, onHand, atLoc,
+    purchaseOrders, supplierName, createPO, setPOStatus, deletePO, receivePO,
+    receive, move, adjust, adjustTotal, produce, resetDemo,
+    returnStock, seasLots, addSeasLot, setSeasLotStatus, quarantineExpiredSeas,
+    orders, createOrder, updateOrder, setOrderStatus, deleteOrder, notifyNewOrder,
+    rdRequests, createRdRequest, updateRdRequest, setRdStatus, deleteRdRequest, sendRdEmail,
+    supplierPos, createSupplierPO, deleteSupplierPO,
+    orderDocs, createOrderDoc, deleteOrderDoc,
+    config: (seed ? seed.CONFIG : null), allLocations: (seed ? seed.allLocations : () => []),
+    SNAPSHOT: (seed ? seed.SNAPSHOT : ""),
+    recvSuppliers: (seed && seed.RECV_SUPPLIERS) || [], recvCategories: (seed && seed.RECV_CATEGORIES) || [],
+    recvStatuses: (seed && seed.RECV_STATUSES) || [], conditions: (seed && seed.CONDITIONS) || [],
+    returnChannels: (seed && seed.RETURN_CHANNELS) || [], returnReasons: (seed && seed.RETURN_REASONS) || [],
+    returnDispositions: (seed && seed.RETURN_DISPOSITIONS) || []
+  };
+})();

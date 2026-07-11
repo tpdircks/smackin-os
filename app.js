@@ -1,0 +1,1216 @@
+/* ============================================================================
+   Smackin' Inventory — UI layer (talks only to window.DB)
+   Scanners: keyboard-wedge (focus a field + scan) AND camera (Scan button).
+   ============================================================================ */
+(function () {
+  "use strict";
+  const T = {
+    en: { dash:"Overview", home:"Home", receive:"Receive", putaway:"Put-Away", move:"Move / Pick", produce:"Produce",
+      count:"Count", locations:"Locations", purchasing:"Purchasing", labels:"Labels", log:"Activity", settings:"Settings",
+      onhand:"On hand", item:"Item", unit:"Unit", qty:"Qty", lot:"Lot", status:"Status", reorder:"Reorder pt",
+      scanItem:"Scan or type item code / UPC", to:"To location", from:"From location",
+      submitReceive:"Receive", submitPut:"Put away", submitMove:"Move / pick", submitProduce:"Record production", submitCount:"Save count",
+      operator:"Operator", enter:"Enter quantity", newqty:"Counted quantity", pickFlavor:"Finished flavor (4oz)", qtyBags:"Qty (bags)",
+      found:"Found", notfound:"Not found", badloc:"Invalid location", camera:"Scan", totalItems:"Items", lowItems:"Low / out",
+      bag4:"4oz bags", bag15:"1.5oz bags", supplier:"Supplier", need:"Suggested order", order:"Order",
+      allgood:"Everything is above its reorder point.", reset:"Reset demo data", when:"When", action:"Action", detail:"Detail",
+      noLog:"No activity yet.", empty:"Empty", cloud:"CLOUD", localmode:"LOCAL",
+      printLoc:"Print all location labels", printItem:"Print item labels", newLpn:"New pallet label (LPN)", print:"Print",
+      labelsHint:"Print barcodes on your thermal label printer. Location labels are permanent; a pallet LPN is one barcode per incoming pallet.",
+      dashHint:"Live on hand across every location. Filter by category.",
+      receiveHint:"Scan an item, enter qty + details, receive into stock in one step.",
+      rSupplier:"Supplier", rInvoice:"Invoice / PO #", rCategory:"Category", rPallets:"Pallets", rCondition:"Condition", rStatus:"Status",
+      putHint:"Scan item + destination slot (A-05-L3) or zone. Moves from RECEIVING.",
+      moveHint:"Scan item, pick from and to (slot, WIP, Pack-Out, Shipping...).",
+      produceHint:"Record finished 4oz bags off the line. Adds bags, consumes film + seasoning.",
+      countHint:"Cycle count: scan item + slot, enter the counted quantity; the system adjusts.",
+      locHint:"What is in each location now.", purchHint:"Reorder alerts plus full purchase orders.",
+      reorderSug:"Reorder suggestions", purchOrders:"Purchase orders", newPO:"New PO", createDraft:"Create draft PO",
+      chooseSupplier:"Supplier", poExpected:"Expected", poCost:"Unit cost", addLines:"Set quantities to order (0 = skip).",
+      savePO:"Save draft PO", markOrdered:"Mark as ordered", receivePO:"Receive", confirmReceipt:"Confirm receipt",
+      cancelPO:"Cancel PO", deletePO:"Delete", backList:"Back", orderedQ:"Ordered", received:"Received", outstanding:"Outstanding",
+      noPOs:"No purchase orders yet.", poCreated:"PO created", poTotal:"Est. total", recvNow:"Receive now",
+      st_draft:"Draft", st_ordered:"Ordered", st_partial:"Partial", st_received:"Received", st_cancelled:"Cancelled",
+      returns:"Returns", seasoning:"Seasoning", qa:"QA Hold",
+      role:"View", roleAll:"Manager (all)", roleReceiving:"Receiving", roleProduction:"Fulfillment",
+      returnsHint:"Log a customer or Amazon return. Restock goes to RETURNS; damaged goes to QA hold.",
+      rChannel:"Channel", rReason:"Reason", rDisposition:"Disposition", rRMA:"Order / RMA #",
+      submitReturn:"Log return", recentReturns:"Recent returns", noReturns:"No returns logged yet.",
+      seasHint:"Track seasoning by lot with expiration (FEFO). Flag expired lots to quarantine.",
+      slProduct:"Product / flavor", slLot:"Lot #", slMfr:"Manufacturer", slExp:"Expiration", slWeight:"Weight (lbs)",
+      addLot:"Add lot", seasLotsTitle:"Seasoning lots (earliest expiration first)", quarantineExpired:"Quarantine expired lots",
+      noLots:"No seasoning lots yet.", markQuar:"Quarantine", markGood:"Mark good", expiredTag:"EXPIRED", quarTag:"QUARANTINE", goodTag:"GOOD",
+      qaHint:"Items received as defective or damaged sit here. Convert good ones back to stock or scrap them.",
+      qaTitle:"On QA / Defective hold", convertGood:"Move to good stock", scrapIt:"Scrap", qaEmpty:"Nothing on QA hold.",
+      columns:"Columns", colCategory:"Category", colItem:"Item", colOnhand:"On hand", colReorder:"Reorder", colStatus:"Status", resetCols:"Reset",
+      pinTitle:"Enter PIN to make changes", pinHint:"Only staff with the PIN can add or change inventory. Viewing is open to everyone.", pinWrong:"Wrong PIN - try again", pinBtn:"Unlock", locked:"Editing locked", unlocked:"Editing unlocked", lockBtn:"Lock editing",
+      adjust:"Adjust", adjustHint:"Set the current count for any item: type the number you counted and Save. Use the search box to find items fast. Leave a box blank to keep it unchanged.", searchItems:"Search item name or code", newCount:"New count", saveCounts:"Save counts", noChanges:"No counts entered", savedN:"Counts saved",
+      orders:"Orders", ordersHint:"Non-SPS / Stripe orders. Newest on top; completed orders move to the archive.",
+      ordOpen:"Open", ordComplete:"Complete", ordAdd:"+ Add order", ordSave:"Save order", ordCancel:"Cancel",
+      oCustomer:"Customer", oPO:"Customer PO #", oOrderId:"Order ID", oInvDate:"Invoice date", oShipDate:"Ship date",
+      oTracking:"Tracking / BOL / PRO", oCarrier:"Carrier", oAppt:"Appointment / Opendock", oNotes:"Notes", oStripe:"Stripe link", oStatus:"Status",
+      markComplete:"Mark complete", reopen:"Reopen", noOpenOrders:"No open orders. Add one above.", noCompleteOrders:"No completed orders yet.", ordAdded:"Order added", ordSearchP:"Search customer, PO, tracking...", oLegShip:"Shipped", oLegIP:"In process", oLegIssue:"Issue", oEnteredBy:"Entered by", oOther:"Other...", oByOther:"Or type a name", oByPrefix:"by",
+      rd:"R&D", roleRnd:"R&D",
+      mixing:"Mixing", pmac:"P-Mac", roleMixing:"Mixing (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mixing", grpPmac:"P-Mac",
+      deptSoon:"This area is being set up. Allen's team screens will live here - tell us what you'd like tracked and we'll build it in.",
+      grpReceiving:"Receiving", grpInventory:"Inventory", grpProduction:"Fulfillment", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpSystem:"System",
+      people:"People", hrHint:"Team directory and org chart. Non-sensitive info only - no pay or personal data.", hrGate:"This section shows employee information. Enter the manager PIN to view.",
+      hrDir:"Directory", hrOrg:"Org chart", hrRole:"Role", hrDept:"Department", hrStart:"Started", hrMgr:"Reports to", hrSearchP:"Search name or role...", hrCount:"people", hrNoMatch:"No matching people.", hrYr:"yr", hrMo:"mo",
+      alerts:"Alerts", alertsHint:"What needs attention now: items to reorder and seasoning lots nearing expiration.",
+      alOut:"Out of stock", alLow:"Low - reorder soon", alExp:"Seasoning expiring / expired", alNone:"No alerts - everything is stocked and in date.",
+      alOnhand:"On hand", alReorder:"Reorder pt", alSuggest:"Suggested order", alSupplier:"Supplier", alDraftPO:"Draft PO",
+      alDays:"days", alExpired:"expired", alLeft:"left", alQuar:"Quarantine",
+      alSummaryOut:"Out", alSummaryLow:"Low", alSummaryExp:"Expiring lots",
+      homeTitle:"Command Center", homeHint:"What needs attention at the SLC Fulfillment Center right now.",
+      hOut:"Out of stock", hLow:"Low / reorder", hExp:"Expiring lots", hOpen:"Open orders", hIssues:"Order issues", hRd:"R&D pending",
+      hAttention:"Needs attention now", hAllClear:"All clear - nothing urgent right now.", hSnapshot:"On-hand snapshot", hSeeAll:"See all",
+      supplierpos:"Supplier POs", spoHint:"Upload the POs you create in outside systems (Excel or PDF). The file is stored and the details are read in automatically when the format is recognized.",
+      spoDrop:"Drop a PO file here, or click to choose  (.xlsx, .csv, .pdf)", spoVendor:"Vendor", spoPO:"PO #", spoDate:"PO date", spoTotal:"Total", spoItems:"Line items", spoNotes:"Notes", spoFile:"File", spoUploadedBy:"Uploaded by",
+      spoSave:"Save PO", spoCancel:"Clear", spoSaved:"Supplier PO saved", spoNoFile:"Choose a file first", spoParsed:"Read from file", spoDownload:"Download", spoDelete:"Deleted", spoList:"Uploaded supplier POs", spoNone:"No supplier POs yet. Upload one above.", spoSearchP:"Search vendor, PO #...", spoConfirmDel:"Delete this supplier PO?",
+      orderdocs:"Order Docs", odocHint:"Store the paperwork for fulfilled orders (BOL, packing list, pull sheet, labels, invoice) by customer and PO - like SPS. Searchable so CS can pull any order's docs fast.",
+      odocDrop:"Choose a file to store  (PDF, Excel, image, Word)", odocCustomer:"Customer", odocPO:"PO / Order #", odocType:"Document type", odocSave:"Store document", odocArchive:"Document archive", odocNone:"No documents stored yet. Add one above.", odocSearchP:"Search customer, PO, doc type...", odocSaved:"Document stored", odocConfirmDel:"Delete this document?", odocNoFile:"Choose a file first",
+      rdHint:"Request samples and ingredients here. Each request generates a PDF and is tracked Pending until it arrives.",
+      rdPending:"Pending", rdDone:"Received", rdAdd:"+ New request", rdSave:"Save request", rdCancel:"Cancel",
+      rdType:"Request type", rdCompany:"Company / supplier", rdContact:"Contact name", rdEmail:"Contact email",
+      rdItems:"What you are requesting", rdQty:"Quantity", rdNeed:"Needed by", rdPurpose:"Purpose / project", rdReqBy:"Requested by",
+      rdFollow:"Follow-up date", rdNotesF:"Notes", rdMarkRecv:"Mark received", rdReopenB:"Reopen",
+      rdDownload:"Download PDF", rdSend:"Email request", rdSentTag:"SENT", rdOverdue:"OVERDUE",
+      rdNoPending:"No pending requests. Add one above.", rdNoReceived:"No received requests yet.",
+      rdAdded:"Request created", rdSearchP:"Search company, item, request #...",
+      rdSendOk:"Request emailed", rdSendNo:"Sending is not set up yet - download the PDF and email it.", rdSendFail:"Could not send - download the PDF and email it.",
+      rdSending:"Sending...", rdPdfTitle:"SAMPLE / R&D REQUEST", rdReqNo:"Request #", rdDate:"Date", rdTo:"To", rdFrom:"Requested by",
+      rdEmailSubject:"Sample request from Smackin' Snacks", rdConfirmRecv:"Mark this request as received?",
+      settingsHint:"Mode, layout, and demo controls." },
+    es: { dash:"Resumen", home:"Inicio", receive:"Recibir", putaway:"Almacenar", move:"Mover / Sacar", produce:"Producir",
+      count:"Conteo", locations:"Ubicaciones", purchasing:"Compras", labels:"Etiquetas", log:"Actividad", settings:"Ajustes",
+      onhand:"Disponible", item:"Articulo", unit:"Unidad", qty:"Cant.", lot:"Lote", status:"Estado", reorder:"Punto reorden",
+      scanItem:"Escanee o escriba codigo / UPC", to:"Hacia ubicacion", from:"Desde ubicacion",
+      submitReceive:"Recibir", submitPut:"Almacenar", submitMove:"Mover / sacar", submitProduce:"Registrar produccion", submitCount:"Guardar conteo",
+      operator:"Operador", enter:"Ingrese cantidad", newqty:"Cantidad contada", pickFlavor:"Sabor terminado (4oz)", qtyBags:"Cant. (bolsas)",
+      found:"Encontrado", notfound:"No encontrado", badloc:"Ubicacion invalida", camera:"Escanear", totalItems:"Articulos", lowItems:"Bajo / agotado",
+      bag4:"Bolsas 4oz", bag15:"Bolsas 1.5oz", supplier:"Proveedor", need:"Orden sugerida", order:"Ordenar",
+      allgood:"Todo esta sobre su punto de reorden.", reset:"Reiniciar datos demo", when:"Cuando", action:"Accion", detail:"Detalle",
+      noLog:"Sin actividad.", empty:"Vacio", cloud:"NUBE", localmode:"LOCAL",
+      printLoc:"Imprimir etiquetas de ubicacion", printItem:"Imprimir etiquetas de articulo", newLpn:"Nueva etiqueta de pallet (LPN)", print:"Imprimir",
+      labelsHint:"Imprima codigos en su impresora termica. Las de ubicacion son permanentes; el LPN es un codigo por pallet entrante.",
+      dashHint:"Disponible en vivo en todas las ubicaciones. Filtre por categoria.",
+      receiveHint:"Escanee un articulo, ingrese cant. + detalles, reciba al inventario en un paso.",
+      rSupplier:"Proveedor", rInvoice:"Factura / OC #", rCategory:"Categoria", rPallets:"Pallets", rCondition:"Condicion", rStatus:"Estado",
+      putHint:"Escanee articulo + slot destino (A-05-L3) o zona. Sale de RECIBO.",
+      moveHint:"Escanee articulo, elija desde y hacia (slot, WIP, Empaque, Embarque...).",
+      produceHint:"Registre bolsas 4oz de la linea. Suma bolsas, consume film + sazon.",
+      countHint:"Conteo ciclico: escanee articulo + slot, ingrese la cantidad contada.",
+      locHint:"Lo que hay en cada ubicacion ahora.", purchHint:"Alertas de reorden mas ordenes de compra.",
+      reorderSug:"Sugerencias de reorden", purchOrders:"Ordenes de compra", newPO:"Nueva orden", createDraft:"Crear borrador",
+      chooseSupplier:"Proveedor", poExpected:"Esperado", poCost:"Costo unit.", addLines:"Indique cantidades a pedir (0 = omitir).",
+      savePO:"Guardar borrador", markOrdered:"Marcar como ordenada", receivePO:"Recibir", confirmReceipt:"Confirmar recibo",
+      cancelPO:"Cancelar orden", deletePO:"Eliminar", backList:"Volver", orderedQ:"Pedido", received:"Recibido", outstanding:"Pendiente",
+      noPOs:"Aun no hay ordenes de compra.", poCreated:"Orden creada", poTotal:"Total est.", recvNow:"Recibir ahora",
+      st_draft:"Borrador", st_ordered:"Ordenada", st_partial:"Parcial", st_received:"Recibida", st_cancelled:"Cancelada",
+      returns:"Devoluciones", seasoning:"Sazon", qa:"Retencion QA",
+      role:"Vista", roleAll:"Gerente (todo)", roleReceiving:"Recibo", roleProduction:"Fulfillment",
+      returnsHint:"Registre una devolucion de cliente o Amazon. Reingreso va a DEVOLUCIONES; danado va a retencion QA.",
+      rChannel:"Canal", rReason:"Motivo", rDisposition:"Disposicion", rRMA:"Orden / RMA #",
+      submitReturn:"Registrar devolucion", recentReturns:"Devoluciones recientes", noReturns:"Sin devoluciones aun.",
+      seasHint:"Controle la sazon por lote con vencimiento (FEFO). Marque lotes vencidos a cuarentena.",
+      slProduct:"Producto / sabor", slLot:"Lote #", slMfr:"Fabricante", slExp:"Vencimiento", slWeight:"Peso (lbs)",
+      addLot:"Agregar lote", seasLotsTitle:"Lotes de sazon (vencimiento mas proximo primero)", quarantineExpired:"Cuarentena de vencidos",
+      noLots:"Sin lotes de sazon aun.", markQuar:"Cuarentena", markGood:"Marcar bueno", expiredTag:"VENCIDO", quarTag:"CUARENTENA", goodTag:"BUENO",
+      qaHint:"Los articulos recibidos como defectuosos o danados quedan aqui. Convierta los buenos a inventario o descartelos.",
+      qaTitle:"En retencion QA / Defectuoso", convertGood:"Pasar a inventario bueno", scrapIt:"Descartar", qaEmpty:"Nada en retencion QA.",
+      columns:"Columnas", colCategory:"Categoria", colItem:"Articulo", colOnhand:"Disponible", colReorder:"Reorden", colStatus:"Estado", resetCols:"Reiniciar",
+      pinTitle:"Ingrese el PIN para hacer cambios", pinHint:"Solo el personal con el PIN puede agregar o cambiar inventario. Ver es libre para todos.", pinWrong:"PIN incorrecto - intente de nuevo", pinBtn:"Desbloquear", locked:"Edicion bloqueada", unlocked:"Edicion desbloqueada", lockBtn:"Bloquear edicion",
+      adjust:"Ajustar", adjustHint:"Fije el conteo actual de cualquier articulo: escriba la cantidad que conto y Guarde. Use el buscador para encontrar articulos rapido. Deje la casilla vacia para no cambiarlo.", searchItems:"Buscar nombre o codigo", newCount:"Nuevo conteo", saveCounts:"Guardar conteos", noChanges:"No ingreso conteos", savedN:"Conteos guardados",
+      orders:"Ordenes", ordersHint:"Ordenes no-SPS / Stripe. Las mas nuevas arriba; las completadas pasan al archivo.",
+      ordOpen:"Abiertas", ordComplete:"Completadas", ordAdd:"+ Agregar orden", ordSave:"Guardar orden", ordCancel:"Cancelar",
+      oCustomer:"Cliente", oPO:"OC del cliente #", oOrderId:"ID de orden", oInvDate:"Fecha factura", oShipDate:"Fecha envio",
+      oTracking:"Rastreo / BOL / PRO", oCarrier:"Transportista", oAppt:"Cita / Opendock", oNotes:"Notas", oStripe:"Enlace Stripe", oStatus:"Estado",
+      markComplete:"Marcar completada", reopen:"Reabrir", noOpenOrders:"Sin ordenes abiertas. Agregue una arriba.", noCompleteOrders:"Aun no hay ordenes completadas.", ordAdded:"Orden agregada", ordSearchP:"Buscar cliente, OC, rastreo...", oLegShip:"Enviado", oLegIP:"En proceso", oLegIssue:"Problema", oEnteredBy:"Ingresado por", oOther:"Otro...", oByOther:"O escriba un nombre", oByPrefix:"por",
+      rd:"I+D", roleRnd:"I+D",
+      mixing:"Mezcla", pmac:"P-Mac", roleMixing:"Mezcla (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mezcla", grpPmac:"P-Mac",
+      deptSoon:"Esta area se esta configurando. Aqui viviran las pantallas del equipo de Allen - diganos que desea controlar y lo agregamos.",
+      grpReceiving:"Recibo", grpInventory:"Inventario", grpProduction:"Fulfillment", grpPurchasing:"Compras", grpRnd:"I+D", grpHr:"RH", grpSystem:"Sistema",
+      people:"Personal", hrHint:"Directorio del equipo y organigrama. Solo informacion no sensible - sin pago ni datos personales.", hrGate:"Esta seccion muestra informacion de empleados. Ingrese el PIN de gerente para ver.",
+      hrDir:"Directorio", hrOrg:"Organigrama", hrRole:"Puesto", hrDept:"Departamento", hrStart:"Ingreso", hrMgr:"Reporta a", hrSearchP:"Buscar nombre o puesto...", hrCount:"personas", hrNoMatch:"Sin coincidencias.", hrYr:"ano", hrMo:"mes",
+      alerts:"Alertas", alertsHint:"Lo que necesita atencion ahora: articulos por reordenar y lotes de sazon por vencer.",
+      alOut:"Agotado", alLow:"Bajo - reordenar pronto", alExp:"Sazon por vencer / vencida", alNone:"Sin alertas - todo con stock y vigente.",
+      alOnhand:"Disponible", alReorder:"Punto reorden", alSuggest:"Orden sugerida", alSupplier:"Proveedor", alDraftPO:"Borrador OC",
+      alDays:"dias", alExpired:"vencido", alLeft:"restan", alQuar:"Cuarentena",
+      alSummaryOut:"Agotado", alSummaryLow:"Bajo", alSummaryExp:"Lotes por vencer",
+      homeTitle:"Centro de mando", homeHint:"Lo que necesita atencion en el centro de distribucion SLC ahora.",
+      hOut:"Agotado", hLow:"Bajo / reorden", hExp:"Lotes por vencer", hOpen:"Ordenes abiertas", hIssues:"Ordenes con problema", hRd:"I+D pendiente",
+      hAttention:"Necesita atencion ahora", hAllClear:"Todo en orden - nada urgente ahora.", hSnapshot:"Resumen de disponible", hSeeAll:"Ver todo",
+      supplierpos:"OC Proveedor", spoHint:"Suba las OC que crea en sistemas externos (Excel o PDF). El archivo se guarda y los datos se leen automaticamente cuando se reconoce el formato.",
+      spoDrop:"Suelte un archivo de OC aqui, o haga clic para elegir  (.xlsx, .csv, .pdf)", spoVendor:"Proveedor", spoPO:"OC #", spoDate:"Fecha OC", spoTotal:"Total", spoItems:"Lineas", spoNotes:"Notas", spoFile:"Archivo", spoUploadedBy:"Subido por",
+      spoSave:"Guardar OC", spoCancel:"Limpiar", spoSaved:"OC de proveedor guardada", spoNoFile:"Elija un archivo primero", spoParsed:"Leido del archivo", spoDownload:"Descargar", spoDelete:"Eliminado", spoList:"OC de proveedor subidas", spoNone:"Aun no hay OC de proveedor. Suba una arriba.", spoSearchP:"Buscar proveedor, OC #...", spoConfirmDel:"Eliminar esta OC de proveedor?",
+      orderdocs:"Docs de Orden", odocHint:"Guarde el papeleo de ordenes cumplidas (BOL, lista de empaque, hoja de picking, etiquetas, factura) por cliente y OC - como SPS. Buscable para que servicio al cliente encuentre los documentos rapido.",
+      odocDrop:"Elija un archivo para guardar  (PDF, Excel, imagen, Word)", odocCustomer:"Cliente", odocPO:"OC / # de Orden", odocType:"Tipo de documento", odocSave:"Guardar documento", odocArchive:"Archivo de documentos", odocNone:"Aun no hay documentos. Agregue uno arriba.", odocSearchP:"Buscar cliente, OC, tipo...", odocSaved:"Documento guardado", odocConfirmDel:"Eliminar este documento?", odocNoFile:"Elija un archivo primero",
+      rdHint:"Solicite muestras e ingredientes aqui. Cada solicitud genera un PDF y se sigue como Pendiente hasta que llega.",
+      rdPending:"Pendiente", rdDone:"Recibido", rdAdd:"+ Nueva solicitud", rdSave:"Guardar solicitud", rdCancel:"Cancelar",
+      rdType:"Tipo de solicitud", rdCompany:"Empresa / proveedor", rdContact:"Nombre de contacto", rdEmail:"Correo de contacto",
+      rdItems:"Que esta solicitando", rdQty:"Cantidad", rdNeed:"Necesario para", rdPurpose:"Proposito / proyecto", rdReqBy:"Solicitado por",
+      rdFollow:"Fecha de seguimiento", rdNotesF:"Notas", rdMarkRecv:"Marcar recibido", rdReopenB:"Reabrir",
+      rdDownload:"Descargar PDF", rdSend:"Enviar solicitud", rdSentTag:"ENVIADO", rdOverdue:"VENCIDO",
+      rdNoPending:"Sin solicitudes pendientes. Agregue una arriba.", rdNoReceived:"Aun no hay solicitudes recibidas.",
+      rdAdded:"Solicitud creada", rdSearchP:"Buscar empresa, articulo, solicitud #...",
+      rdSendOk:"Solicitud enviada por correo", rdSendNo:"El envio aun no esta configurado - descargue el PDF y enviela.", rdSendFail:"No se pudo enviar - descargue el PDF y enviela.",
+      rdSending:"Enviando...", rdPdfTitle:"SOLICITUD DE MUESTRA / I+D", rdReqNo:"Solicitud #", rdDate:"Fecha", rdTo:"Para", rdFrom:"Solicitado por",
+      rdEmailSubject:"Solicitud de muestra de Smackin' Snacks", rdConfirmRecv:"Marcar esta solicitud como recibida?",
+      settingsHint:"Modo, distribucion y controles demo." },
+    pt: { dash:"Visao geral", home:"Inicio", receive:"Receber", putaway:"Armazenar", move:"Mover / Separar", produce:"Produzir",
+      count:"Contagem", locations:"Locais", purchasing:"Compras", labels:"Etiquetas", log:"Atividade", settings:"Configuracoes",
+      onhand:"Em estoque", item:"Item", unit:"Unid.", qty:"Qtd.", lot:"Lote", status:"Status", reorder:"Ponto de reposicao",
+      scanItem:"Escaneie ou digite codigo / UPC", to:"Para o local", from:"Do local",
+      submitReceive:"Receber", submitPut:"Armazenar", submitMove:"Mover / separar", submitProduce:"Registrar producao", submitCount:"Salvar contagem",
+      operator:"Operador", enter:"Digite a quantidade", newqty:"Quantidade contada", pickFlavor:"Sabor finalizado (4oz)", qtyBags:"Qtd. (sacos)",
+      found:"Encontrado", notfound:"Nao encontrado", badloc:"Local invalido", camera:"Escanear", totalItems:"Itens", lowItems:"Baixo / esgotado",
+      bag4:"Sacos 4oz", bag15:"Sacos 1.5oz", supplier:"Fornecedor", need:"Pedido sugerido", order:"Pedir",
+      allgood:"Tudo esta acima do ponto de reposicao.", reset:"Reiniciar dados demo", when:"Quando", action:"Acao", detail:"Detalhe",
+      noLog:"Sem atividade ainda.", empty:"Vazio", cloud:"NUVEM", localmode:"LOCAL",
+      printLoc:"Imprimir etiquetas de local", printItem:"Imprimir etiquetas de item", newLpn:"Nova etiqueta de palete (LPN)", print:"Imprimir",
+      labelsHint:"Imprima codigos na sua impressora termica. As de local sao permanentes; o LPN e um codigo por palete recebido.",
+      dashHint:"Estoque ao vivo em todos os locais. Filtre por categoria.",
+      receiveHint:"Escaneie um item, digite qtd. + detalhes e receba no estoque em um passo.",
+      rSupplier:"Fornecedor", rInvoice:"Fatura / OC #", rCategory:"Categoria", rPallets:"Paletes", rCondition:"Condicao", rStatus:"Status",
+      putHint:"Escaneie item + local destino (A-05-L3) ou zona. Sai de RECEBIMENTO.",
+      moveHint:"Escaneie item, escolha de e para (slot, WIP, Empacotamento, Expedicao...).",
+      produceHint:"Registre sacos 4oz da linha. Adiciona sacos, consome filme + tempero.",
+      countHint:"Contagem ciclica: escaneie item + slot, digite a quantidade contada.",
+      locHint:"O que ha em cada local agora.", purchHint:"Alertas de reposicao mais ordens de compra.",
+      reorderSug:"Sugestoes de reposicao", purchOrders:"Ordens de compra", newPO:"Nova ordem", createDraft:"Criar rascunho",
+      chooseSupplier:"Fornecedor", poExpected:"Esperado", poCost:"Custo unit.", addLines:"Defina as quantidades a pedir (0 = pular).",
+      savePO:"Salvar rascunho", markOrdered:"Marcar como pedida", receivePO:"Receber", confirmReceipt:"Confirmar recebimento",
+      cancelPO:"Cancelar ordem", deletePO:"Excluir", backList:"Voltar", orderedQ:"Pedido", received:"Recebido", outstanding:"Pendente",
+      noPOs:"Ainda nao ha ordens de compra.", poCreated:"Ordem criada", poTotal:"Total est.", recvNow:"Receber agora",
+      st_draft:"Rascunho", st_ordered:"Pedida", st_partial:"Parcial", st_received:"Recebida", st_cancelled:"Cancelada",
+      returns:"Devolucoes", seasoning:"Tempero", qa:"Retencao QA",
+      role:"Visao", roleAll:"Gerente (tudo)", roleReceiving:"Recebimento", roleProduction:"Fulfillment",
+      returnsHint:"Registre uma devolucao de cliente ou Amazon. Reposicao vai para DEVOLUCOES; danificado vai para retencao QA.",
+      rChannel:"Canal", rReason:"Motivo", rDisposition:"Destino", rRMA:"Pedido / RMA #",
+      submitReturn:"Registrar devolucao", recentReturns:"Devolucoes recentes", noReturns:"Nenhuma devolucao registrada ainda.",
+      seasHint:"Controle o tempero por lote com validade (FEFO). Marque lotes vencidos para quarentena.",
+      slProduct:"Produto / sabor", slLot:"Lote #", slMfr:"Fabricante", slExp:"Validade", slWeight:"Peso (lbs)",
+      addLot:"Adicionar lote", seasLotsTitle:"Lotes de tempero (validade mais proxima primeiro)", quarantineExpired:"Quarentena de vencidos",
+      noLots:"Nenhum lote de tempero ainda.", markQuar:"Quarentena", markGood:"Marcar bom", expiredTag:"VENCIDO", quarTag:"QUARENTENA", goodTag:"BOM",
+      qaHint:"Itens recebidos como defeituosos ou danificados ficam aqui. Converta os bons de volta ao estoque ou descarte-os.",
+      qaTitle:"Em retencao QA / Defeituoso", convertGood:"Passar para estoque bom", scrapIt:"Descartar", qaEmpty:"Nada em retencao QA.",
+      columns:"Colunas", colCategory:"Categoria", colItem:"Item", colOnhand:"Em estoque", colReorder:"Reposicao", colStatus:"Status", resetCols:"Reiniciar",
+      pinTitle:"Digite o PIN para fazer alteracoes", pinHint:"Somente a equipe com o PIN pode adicionar ou alterar o estoque. Visualizar e livre para todos.", pinWrong:"PIN incorreto - tente de novo", pinBtn:"Desbloquear", locked:"Edicao bloqueada", unlocked:"Edicao desbloqueada", lockBtn:"Bloquear edicao",
+      adjust:"Ajustar", adjustHint:"Defina a contagem atual de qualquer item: digite a quantidade que contou e Salve. Use a busca para achar itens rapido. Deixe a caixa vazia para nao alterar.", searchItems:"Buscar nome ou codigo", newCount:"Nova contagem", saveCounts:"Salvar contagens", noChanges:"Nenhuma contagem inserida", savedN:"Contagens salvas",
+      orders:"Pedidos", ordersHint:"Pedidos nao-SPS / Stripe. Os mais novos no topo; os concluidos vao para o arquivo.",
+      ordOpen:"Abertos", ordComplete:"Concluidos", ordAdd:"+ Adicionar pedido", ordSave:"Salvar pedido", ordCancel:"Cancelar",
+      oCustomer:"Cliente", oPO:"OC do cliente #", oOrderId:"ID do pedido", oInvDate:"Data da fatura", oShipDate:"Data de envio",
+      oTracking:"Rastreio / BOL / PRO", oCarrier:"Transportadora", oAppt:"Agendamento / Opendock", oNotes:"Observacoes", oStripe:"Link Stripe", oStatus:"Status",
+      markComplete:"Marcar concluido", reopen:"Reabrir", noOpenOrders:"Sem pedidos abertos. Adicione um acima.", noCompleteOrders:"Ainda nao ha pedidos concluidos.", ordAdded:"Pedido adicionado", ordSearchP:"Buscar cliente, OC, rastreio...", oLegShip:"Enviado", oLegIP:"Em processo", oLegIssue:"Problema", oEnteredBy:"Inserido por", oOther:"Outro...", oByOther:"Ou digite um nome", oByPrefix:"por",
+      rd:"P&D", roleRnd:"P&D",
+      mixing:"Mistura", pmac:"P-Mac", roleMixing:"Mistura (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mistura", grpPmac:"P-Mac",
+      deptSoon:"Esta area esta sendo configurada. As telas da equipe do Allen ficarao aqui - diga o que deseja acompanhar e vamos incluir.",
+      grpReceiving:"Recebimento", grpInventory:"Estoque", grpProduction:"Fulfillment", grpPurchasing:"Compras", grpRnd:"P&D", grpHr:"RH", grpSystem:"Sistema",
+      people:"Pessoas", hrHint:"Diretorio da equipe e organograma. Apenas informacoes nao sensiveis - sem salario ou dados pessoais.", hrGate:"Esta secao mostra informacoes de funcionarios. Digite o PIN de gerente para ver.",
+      hrDir:"Diretorio", hrOrg:"Organograma", hrRole:"Cargo", hrDept:"Departamento", hrStart:"Inicio", hrMgr:"Reporta a", hrSearchP:"Buscar nome ou cargo...", hrCount:"pessoas", hrNoMatch:"Nenhuma correspondencia.", hrYr:"ano", hrMo:"mes",
+      alerts:"Alertas", alertsHint:"O que precisa de atencao agora: itens para repor e lotes de tempero perto do vencimento.",
+      alOut:"Esgotado", alLow:"Baixo - repor em breve", alExp:"Tempero vencendo / vencido", alNone:"Sem alertas - tudo em estoque e no prazo.",
+      alOnhand:"Em estoque", alReorder:"Ponto reposicao", alSuggest:"Pedido sugerido", alSupplier:"Fornecedor", alDraftPO:"Rascunho OC",
+      alDays:"dias", alExpired:"vencido", alLeft:"restam", alQuar:"Quarentena",
+      alSummaryOut:"Esgotado", alSummaryLow:"Baixo", alSummaryExp:"Lotes vencendo",
+      homeTitle:"Central de comando", homeHint:"O que precisa de atencao no centro de distribuicao SLC agora.",
+      hOut:"Esgotado", hLow:"Baixo / reposicao", hExp:"Lotes vencendo", hOpen:"Pedidos abertos", hIssues:"Pedidos com problema", hRd:"P&D pendente",
+      hAttention:"Precisa de atencao agora", hAllClear:"Tudo certo - nada urgente agora.", hSnapshot:"Resumo em estoque", hSeeAll:"Ver tudo",
+      supplierpos:"OC Fornecedor", spoHint:"Envie as OCs que voce cria em sistemas externos (Excel ou PDF). O arquivo e armazenado e os dados sao lidos automaticamente quando o formato e reconhecido.",
+      spoDrop:"Solte um arquivo de OC aqui, ou clique para escolher  (.xlsx, .csv, .pdf)", spoVendor:"Fornecedor", spoPO:"OC #", spoDate:"Data OC", spoTotal:"Total", spoItems:"Linhas", spoNotes:"Observacoes", spoFile:"Arquivo", spoUploadedBy:"Enviado por",
+      spoSave:"Salvar OC", spoCancel:"Limpar", spoSaved:"OC de fornecedor salva", spoNoFile:"Escolha um arquivo primeiro", spoParsed:"Lido do arquivo", spoDownload:"Baixar", spoDelete:"Excluido", spoList:"OCs de fornecedor enviadas", spoNone:"Ainda nao ha OCs de fornecedor. Envie uma acima.", spoSearchP:"Buscar fornecedor, OC #...", spoConfirmDel:"Excluir esta OC de fornecedor?",
+      orderdocs:"Docs de Pedido", odocHint:"Armazene a papelada de pedidos concluidos (BOL, lista de embalagem, folha de separacao, etiquetas, fatura) por cliente e OC - como o SPS. Pesquisavel para o SAC encontrar os documentos rapido.",
+      odocDrop:"Escolha um arquivo para armazenar  (PDF, Excel, imagem, Word)", odocCustomer:"Cliente", odocPO:"OC / No do Pedido", odocType:"Tipo de documento", odocSave:"Armazenar documento", odocArchive:"Arquivo de documentos", odocNone:"Nenhum documento ainda. Adicione um acima.", odocSearchP:"Buscar cliente, OC, tipo...", odocSaved:"Documento armazenado", odocConfirmDel:"Excluir este documento?", odocNoFile:"Escolha um arquivo primeiro",
+      rdHint:"Solicite amostras e ingredientes aqui. Cada solicitacao gera um PDF e e acompanhada como Pendente ate chegar.",
+      rdPending:"Pendente", rdDone:"Recebido", rdAdd:"+ Nova solicitacao", rdSave:"Salvar solicitacao", rdCancel:"Cancelar",
+      rdType:"Tipo de solicitacao", rdCompany:"Empresa / fornecedor", rdContact:"Nome do contato", rdEmail:"E-mail do contato",
+      rdItems:"O que voce esta solicitando", rdQty:"Quantidade", rdNeed:"Necessario ate", rdPurpose:"Finalidade / projeto", rdReqBy:"Solicitado por",
+      rdFollow:"Data de acompanhamento", rdNotesF:"Observacoes", rdMarkRecv:"Marcar recebido", rdReopenB:"Reabrir",
+      rdDownload:"Baixar PDF", rdSend:"Enviar solicitacao", rdSentTag:"ENVIADO", rdOverdue:"ATRASADO",
+      rdNoPending:"Sem solicitacoes pendentes. Adicione uma acima.", rdNoReceived:"Ainda nao ha solicitacoes recebidas.",
+      rdAdded:"Solicitacao criada", rdSearchP:"Buscar empresa, item, solicitacao #...",
+      rdSendOk:"Solicitacao enviada por e-mail", rdSendNo:"O envio ainda nao esta configurado - baixe o PDF e envie.", rdSendFail:"Nao foi possivel enviar - baixe o PDF e envie.",
+      rdSending:"Enviando...", rdPdfTitle:"SOLICITACAO DE AMOSTRA / P&D", rdReqNo:"Solicitacao #", rdDate:"Data", rdTo:"Para", rdFrom:"Solicitado por",
+      rdEmailSubject:"Solicitacao de amostra da Smackin' Snacks", rdConfirmRecv:"Marcar esta solicitacao como recebida?",
+      settingsHint:"Modo, layout e controles demo." }
+  };
+  let lang = "en"; const L = k => (T[lang][k] !== undefined ? T[lang][k] : k);
+  let active = "home"; let catFilter = "all";
+  let purchMode = "list"; let purchSup = null; let receivingPOid = null;
+  const TABS = ["home","dash","alerts","adjust","receive","putaway","returns","orders","orderdocs","rd","qa","move","produce","seasoning","mixing","pmac","count","locations","purchasing","supplierpos","people","labels","log","settings"];
+
+  // ---- Role presets: which tabs each role sees (home always first) ----
+  const ROLE_TABS = {
+    all: TABS.slice(),
+    receiving: ["home","alerts","dash","adjust","receive","putaway","returns","qa","count","locations","labels"],
+    production: ["home","alerts","dash","adjust","produce","seasoning","move","orders","orderdocs","count","locations"],
+    mixing: ["home","alerts","mixing","seasoning","produce","count"],
+    pmac: ["home","alerts","pmac","labels"],
+    rnd: ["home","rd"]
+  };
+  const RD_TYPES = ["Seasoning sample","Ingredient sample","Packaging sample","Equipment / other"];
+  const ORDER_ENTERERS = ["Allie","Josh","Alex","Troy","Salvador"];
+  const ODOC_TYPES = ["BOL","Packing List","Pull Sheet","Labels","Commercial Invoice","ASN","Other"];
+  const ODOC_UPLOADERS = ["Javier","Ken","Adriana","Jesus","Troy"];
+  // ---- People directory (LIVE roster pulled from Gusto 2026-07-10; non-sensitive only, NO pay) ----
+  // name | job title | department | manager. Manager links drive the org chart.
+  const PEOPLE = [
+    ["Brian Waddick","CEO","Executive",""],
+    ["Cole Schaefer","CEO","Executive","Brian Waddick"],
+    ["Matt Bollinger","VP of Operations","Operations Management","Cole Schaefer"],
+    ["Allen Back","Manufacturing Manager","Operations Management","Matt Bollinger"],
+    ["Troy Dircks","Fulfillment Manager","Operations Management","Matt Bollinger"],
+    ["Josh Laughlin","VP of Sales","Sales","Brian Waddick"],
+    ["Max DeWolf","VP of Marketing","Marketing","Cole Schaefer"],
+    ["Amanda Wright","Director of HR","Executive","Cole Schaefer"],
+    ["Michelle Nydegger","Human Resource Manager","Human Resources","Amanda Wright"],
+    ["Brittney Christensen","QA Manager","Quality","Matt Bollinger"],
+    ["Lizeth Toloza","Quality Control Lead","Quality","Brittney Christensen"],
+    ["Natalie Acuna","QA Tech","Quality","Brittney Christensen"],
+    ["Ken Tschanz","Shipping Manager","Shipping","Troy Dircks"],
+    ["Jesus Arias","Fulfillment Supervisor","Fulfillment","Troy Dircks"],
+    ["Lenny Hernandez Criado","Fulfillment Lead","Fulfillment","Troy Dircks"],
+    ["Jhonny Oviedo","Fulfillment Lead","Fulfillment","Troy Dircks"],
+    ["Adri De Camargo","Inventory Specialist","Operations","Troy Dircks"],
+    ["Edgar Marquina","Forklift Operator","Operations","Troy Dircks"],
+    ["Alejandra Crispin","Fulfillment Associate","Fulfillment","Troy Dircks"],
+    ["Bris Morales","Fulfillment Associate","Fulfillment","Troy Dircks"],
+    ["Britney Herrera","Fulfillment Associate","Fulfillment","Troy Dircks"],
+    ["Dayana Ojeda","Fulfillment Associate","Fulfillment","Troy Dircks"],
+    ["Desiree Moran","Fulfillment Associate","Fulfillment","Troy Dircks"],
+    ["Erika Bolivar Zambrano","Fulfillment Associate","Fulfillment","Troy Dircks"],
+    ["Genry Colmenares","Fulfillment Associate","Fulfillment","Troy Dircks"],
+    ["Lady Juarez","Fulfillment Associate","Fulfillment","Troy Dircks"],
+    ["Marelis Castillo","Fulfillment Associate","Fulfillment","Troy Dircks"],
+    ["Margarita Jaimes","Fulfillment Associate","Fulfillment","Troy Dircks"],
+    ["Mariely Vega","Fulfillment Associate","Fulfillment","Troy Dircks"],
+    ["Maritza Pedraza","Fulfillment Associate","Fulfillment","Troy Dircks"],
+    ["Marlyn Castillo","Fulfillment Associate","Fulfillment","Troy Dircks"],
+    ["Nicholas Matson","Fulfillment Associate","Fulfillment","Troy Dircks"],
+    ["Saide Rojas","Fulfillment Associate","Fulfillment","Troy Dircks"],
+    ["Viviana Zambrano","Fulfillment Associate","Fulfillment","Troy Dircks"],
+    ["Wuilman Mora","Fulfillment Associate","Fulfillment","Troy Dircks"],
+    ["Yarianny Fonseca","Fulfillment Associate","Fulfillment","Troy Dircks"],
+    ["Yenni Lopez de Pena","Fulfillment Associate","Fulfillment","Troy Dircks"],
+    ["Yoiner Pena","Fulfillment Associate","Fulfillment","Troy Dircks"],
+    ["Zuleika Tirado","Fulfillment Associate","Fulfillment","Troy Dircks"],
+    ["Leo Ontiveros","Manufacturing Supervisor","Mixing","Allen Back"],
+    ["Wilson Delgado","Manufacturing Supervisor","Manufacturing","Allen Back"],
+    ["Daniel Henshaw","Contracted Maintenance Technician","Manufacturing","Allen Back"],
+    ["Antony Garcia","Mixing Operator","Mixing","Allen Back"],
+    ["Darwin Zambrano","Mixing Operator","Mixing","Allen Back"],
+    ["David Burgett","Mixing Operator","Mixing","Allen Back"],
+    ["Esmar Sandrea-Nunez","Mixing Operator","Mixing","Allen Back"],
+    ["Jeison Rangel","Mixing Operator","Mixing","Allen Back"],
+    ["Luis Herrera","Mixing Operator","Mixing","Allen Back"],
+    ["Wesley Hallett","Mixing Operator","Mixing","Allen Back"],
+    ["Gladys Delgado Cuenca","Dish Washer","Mixing","Allen Back"],
+    ["Melvin Gonzalez","Dish Washer","Mixing","Allen Back"],
+    ["Oscar Roa","Packaging Lead","Packaging","Allen Back"],
+    ["Alfredo Rodriguez Sequera","Packaging Operator","Packaging","Allen Back"],
+    ["Emerson Estupinan","Packaging Operator","Packaging","Allen Back"],
+    ["Franklin Omana Maldonado","Packaging Operator","Packaging","Allen Back"],
+    ["Jhonattan Barragan Jaimes","Packaging Operator","Packaging","Allen Back"],
+    ["Johnni Puertas","Packaging Operator","Packaging","Allen Back"],
+    ["Leonel Marquez-Dimas","Packaging Operator","Packaging","Allen Back"],
+    ["Luvencio Rondon Sanchez","Packaging Operator","Packaging","Allen Back"],
+    ["Pedro Chacin Angarita","Packaging Operator","Packaging","Allen Back"],
+    ["Brandon Androes","Maintenance Technician","Technician","Matt Bollinger"],
+    ["Brandon Coronado","Maintenance Technician Apprentice","Technician","Matt Bollinger"],
+    ["Dallas Martinez","Technician","Technician","Matt Bollinger"],
+    ["Todd Herre","Maintenance Technician","Technician","Matt Bollinger"],
+    ["Gloria Perez","Cleaner","Operations","Matt Bollinger"],
+    ["Alex Wonderlic","Director of Sales - Grocery","Sales","Josh Laughlin"],
+    ["Allie Gale","Director of Sales - Convenience","Sales","Josh Laughlin"],
+    ["Alex Case","Marketplace Manager","Marketing","Max DeWolf"],
+    ["Ben Trusiak","Director of Partnerships","Marketing","Max DeWolf"],
+    ["Eli Johnson","Director of E-Commerce","Marketing","Max DeWolf"],
+    ["Marc Anderson","Director of Creative","Marketing","Max DeWolf"],
+    ["Ryan Moede","Art Director - Digital","Marketing","Marc Anderson"],
+    ["Eric Williams","TikTok Content Creator","Marketing","Max DeWolf"],
+    ["Isaac Heilman","TikTok Content Creator","Marketing","Max DeWolf"],
+    ["Olivia King","Live Streamer","Marketing","Max DeWolf"],
+    ["Megan Matthai","Marketing","Marketing","Max DeWolf"],
+    ["Peter Albertson","Marketing","Marketing","Max DeWolf"],
+    ["Rajil Wasif","Marketing","Marketing","Max DeWolf"],
+    ["Brian Lepro","Independent Contractor","Contractor",""]
+  ].map(a => ({ n:a[0], r:a[1], d:a[2], m:a[3] }));
+  // ---- left sidebar: tabs grouped by department (NetSuite-style) ----
+  const NAV_GROUPS = [
+    { key:"", items:["home","alerts"] },
+    { key:"grpReceiving", items:["receive","putaway","returns","qa"] },
+    { key:"grpInventory", items:["dash","adjust","count","locations","labels"] },
+    { key:"grpProduction", items:["produce","seasoning","move","orders","orderdocs"] },
+    { key:"grpMixing", items:["mixing"] },
+    { key:"grpPmac", items:["pmac"] },
+    { key:"grpPurchasing", items:["purchasing","supplierpos"] },
+    { key:"grpRnd", items:["rd"] },
+    { key:"grpHr", items:["people"] },
+    { key:"grpSystem", items:["log","settings"] }
+  ];
+  const NAV_ICON = { home:"\u{1F3E0}", dash:"\u{1F4CA}", alerts:"\u{1F514}", adjust:"\u{270F}\u{FE0F}", receive:"\u{1F4E5}", putaway:"\u{1F4E6}",
+    returns:"\u{21A9}\u{FE0F}", qa:"\u{26D4}", orders:"\u{1F9FE}", purchasing:"\u{1F6D2}", rd:"\u{1F9EA}",
+    move:"\u{1F500}", produce:"\u{1F3ED}", seasoning:"\u{1F9C2}", count:"\u{1F522}", locations:"\u{1F4CD}",
+    labels:"\u{1F3F7}\u{FE0F}", log:"\u{1F4DC}", settings:"\u{2699}\u{FE0F}", supplierpos:"\u{1F4C4}",
+    mixing:"\u{1F963}", pmac:"\u{1F527}", people:"\u{1F465}", orderdocs:"\u{1F4C1}" };
+  let spoFile = null, spoParsed = null;  // supplier-PO upload state
+  let spoSort = { key: "created", dir: -1 };  // Supplier POs table sort
+  function spoSortList(list) {
+    const k = spoSort.key, dir = spoSort.dir;
+    const val = s => {
+      if (k === "total") return parseFloat(String(s.total || "").replace(/[^0-9.\-]/g, "")) || 0;
+      if (k === "item_count") return Number(s.item_count) || 0;
+      if (k === "po_date") return Date.parse(s.po_date) || 0;
+      if (k === "created") return String(s.created_at || "");
+      return (s[k] || "").toString().toLowerCase();
+    };
+    return list.slice().sort((a, b) => { const va = val(a), vb = val(b); return va < vb ? -dir : va > vb ? dir : 0; });
+  }
+  function spoArrow(k) { return spoSort.key === k ? (spoSort.dir > 0 ? " ▲" : " ▼") : ""; }
+  function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;"); }
+  function money(v) { if (v == null || v === "") return ""; const n = parseFloat(String(v).replace(/[$,\s]/g, "")); if (isNaN(n)) return String(v); return "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+  // ---- persisted UI prefs (role + dashboard columns) ----
+  const PREFS_KEY = "smackin_ui_prefs_v1";
+  const ALL_COLS = ["category","item","onhand","reorder","status"];
+  const COL_LBL = { category:"colCategory", item:"colItem", onhand:"colOnhand", reorder:"colReorder", status:"colStatus" };
+  let prefs = { role:"all", colOrder: ALL_COLS.slice(), colHidden: [], sortKey:"", sortDir:1 };
+  (function loadPrefs(){ try { const p = JSON.parse(localStorage.getItem(PREFS_KEY)); if (p) {
+    prefs.role = p.role || "all";
+    prefs.colOrder = (Array.isArray(p.colOrder) && p.colOrder.length ? p.colOrder : ALL_COLS.slice()).filter(c => ALL_COLS.indexOf(c) >= 0);
+    ALL_COLS.forEach(c => { if (prefs.colOrder.indexOf(c) < 0) prefs.colOrder.push(c); });
+    prefs.colHidden = Array.isArray(p.colHidden) ? p.colHidden : [];
+    prefs.sortKey = p.sortKey || ""; prefs.sortDir = p.sortDir || 1;
+  } } catch (e) {} })();
+  function savePrefs(){ try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch (e) {} }
+  function visibleTabs(){ return ROLE_TABS[prefs.role] || TABS; }
+  let colPanel = false; // dashboard column editor open?
+  let dragCol = null;
+  let orderView = "open"; // orders: "open" | "complete"
+  let orderAddOpen = false;
+  let peopleView = "dir"; // People: "dir" | "org"
+  let odocFile = null; // order-doc upload state
+  let rdView = "pending"; // R&D: "pending" | "received"
+  let rdAddOpen = false;
+  // ---- new-order counter (badge on the Orders tab, per-device) ----
+  const ORDERS_SEEN_KEY = "smackin_orders_seen_v1";
+  let ordersSeen = (function(){ try { return localStorage.getItem(ORDERS_SEEN_KEY) || ""; } catch(e){ return ""; } })();
+  function markOrdersSeen(){ ordersSeen = new Date().toISOString(); try { localStorage.setItem(ORDERS_SEEN_KEY, ordersSeen); } catch(e){} }
+  function newOrdersCount(){ return DB.orders().filter(o => (o.created_at || "") > ordersSeen && (o.status || "Open") !== "Complete").length; }
+  const CATS = ["all","bag4","bag15","film4","film15","seasoning","seed","bucket","packaging","display","mastercase"];
+  const CATLBL = { all:"All", bag4:"Bags 4oz", bag15:"Bags 1.5oz", film4:"Film 4oz", film15:"Film 1.5oz",
+    seasoning:"Seasoning", seed:"Seed/Base", bucket:"Buckets", packaging:"Packaging", display:"Displays", mastercase:"Sleeves" };
+
+  const $ = id => document.getElementById(id);
+  const fmt = n => (Math.round(n * 100) / 100).toLocaleString();
+  const selOpts = (arr, sel) => (arr || []).map(o => '<option' + (o === sel ? ' selected' : '') + '>' + o + '</option>').join("");
+  function toast(m) { const t = $("toast"); t.textContent = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 1700); }
+  function statusOf(it) { const oh = DB.onHand(it.id); if (oh <= 0) return "out"; if (oh < it.reorder) return "low"; return "ok"; }
+  // ---- alerts helpers ----
+  const EXPIRY_WARN_DAYS = 30;
+  function daysUntil(dstr) { if (!dstr) return null; const d = new Date(String(dstr).slice(0, 10) + "T00:00:00"); if (isNaN(d.getTime())) return null; const t = new Date(new Date().toISOString().slice(0, 10) + "T00:00:00"); return Math.round((d - t) / 86400000); }
+  function expiringLots() { return DB.seasLots().filter(l => { const du = daysUntil(l.exp); return (l.status || "Good") !== "Quarantine" && du !== null && du <= EXPIRY_WARN_DAYS; }); }
+  function alertCount() { return DB.items().filter(i => i.reorder > 0 && DB.onHand(i.id) < i.reorder).length + expiringLots().length; }
+  function validLoc(code) { code = (code || "").trim().toUpperCase();
+    return DB.allLocations().indexOf(code) >= 0 || /^[A-E]-\d{2}-L[1-4]$/.test(code); }
+
+  function setLang(l) { lang = l; ["en","es","pt"].forEach(x => { const b = $("lang-" + x); if (b) b.classList.toggle("active", l === x); }); render(); }
+  function go(t) { active = t; if (t !== "purchasing") { purchMode = "list"; receivingPOid = null; } if (t === "orders") markOrdersSeen(); closeDrawer(); render(); }
+  function opVal() { const e = $("op"); return e ? e.value : "Troy"; }
+
+  // ---------- edit lock (PIN) — viewing is open, changes require the PIN ----------
+  const EDIT_PIN = "2210";
+  let unlocked = (function(){ try { return sessionStorage.getItem("smk_unlocked") === "1"; } catch (e) { return false; } })();
+  function lockEdits() { unlocked = false; try { sessionStorage.removeItem("smk_unlocked"); } catch (e) {} toast(L("locked")); render(); }
+  function pinPrompt() {
+    return new Promise(res => {
+      let m = document.getElementById("pinModal");
+      if (!m) { m = document.createElement("div"); m.id = "pinModal"; m.className = "cammodal"; document.body.appendChild(m); }
+      m.innerHTML = '<div class="cambox pinbox"><h3>' + L("pinTitle") + '</h3><p class="hint">' + L("pinHint") + '</p>' +
+        '<input id="pinIn" type="password" inputmode="numeric" autocomplete="off" placeholder="&#8226;&#8226;&#8226;&#8226;">' +
+        '<div class="poactions"><button class="primary sm" id="pinOk">' + L("pinBtn") + '</button>' +
+        '<button class="ghost sm" id="pinCancel">' + L("backList") + '</button></div></div>';
+      m.style.display = "flex";
+      const inp = document.getElementById("pinIn"); setTimeout(() => inp.focus(), 30);
+      const done = v => { m.style.display = "none"; res(v); };
+      document.getElementById("pinOk").onclick = () => done(inp.value.trim());
+      document.getElementById("pinCancel").onclick = () => done(null);
+      inp.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); done(inp.value.trim()); } if (e.key === "Escape") done(null); };
+    });
+  }
+  async function ensureUnlocked() {
+    if (unlocked) return true;
+    const v = await pinPrompt();
+    if (v === null) return false;
+    if (v === EDIT_PIN) { unlocked = true; try { sessionStorage.setItem("smk_unlocked", "1"); } catch (e) {} toast(L("unlocked")); render(); return true; }
+    toast(L("pinWrong")); return false;
+  }
+
+  // ---------- shared field builders ----------
+  function opField(def) {
+    return '<label>' + L("operator") + '</label><select id="op">' +
+      ["Jesus","Adriana","Marlin","Edgar","Troy"].map(n => '<option' + (n === def ? ' selected' : '') + '>' + n + "</option>").join("") + "</select>";
+  }
+  function itemScan(id, nextId) {
+    return '<div class="scan"><label>' + L("scanItem") + '</label>' +
+      '<div class="scanrow"><input id="' + id + '" list="dl-items" autocomplete="off" autofocus ' +
+      'placeholder="B4-S01 / SEED-WHITE / 850047865199" ' +
+      'oninput="UI.lookup(\'' + id + '\',\'' + id + '-f\')" ' +
+      'onkeydown="if(event.key===\'Enter\'){event.preventDefault();var n=document.getElementById(\'' + (nextId||"") + '\');if(n)n.focus();}">' +
+      '<button type="button" class="cambtn" onclick="UI.cam(\'' + id + '\')">' + L("camera") + '</button></div>' +
+      '<div id="' + id + '-f"></div></div>';
+  }
+  function locInput(id, labelKey) {
+    return '<label>' + L(labelKey) + '</label><div class="scanrow">' +
+      '<input id="' + id + '" list="dl-locs" autocomplete="off" placeholder="A-05-L3 / ST-02 / DOCK-12">' +
+      '<button type="button" class="cambtn" onclick="UI.cam(\'' + id + '\')">' + L("camera") + '</button></div>';
+  }
+
+  // ---------- views ----------
+  // dashboard column definitions: header (with alignment) + cell renderer + sort value
+  const COL_DEF = {
+    category: { th: () => '<th data-sort="category">' + L("colCategory") + '</th>',
+      td: i => '<td><span class="tag">' + (CATLBL[i.category] || i.category) + '</span></td>',
+      val: i => (CATLBL[i.category] || i.category) },
+    item: { th: () => '<th data-sort="item">' + L("colItem") + '</th>',
+      td: i => '<td><b>' + i.name + '</b><div class="muted sm">' + i.code + '</div></td>',
+      val: i => i.name.toLowerCase() },
+    onhand: { th: () => '<th class="right" data-sort="onhand">' + L("colOnhand") + '</th>',
+      td: i => '<td class="right"><b>' + fmt(DB.onHand(i.id)) + '</b> ' + i.unit + '</td>',
+      val: i => DB.onHand(i.id) },
+    reorder: { th: () => '<th class="right" data-sort="reorder">' + L("colReorder") + '</th>',
+      td: i => '<td class="right muted">' + fmt(i.reorder) + '</td>', val: i => i.reorder },
+    status: { th: () => '<th data-sort="status">' + L("colStatus") + '</th>',
+      td: i => { const st = statusOf(i); return '<td><span class="pill ' + st + '">' + (st === "out" ? "OUT" : st === "low" ? "LOW" : "OK") + '</span></td>'; },
+      val: i => { const st = statusOf(i); return st === "out" ? 0 : st === "low" ? 1 : 2; } }
+  };
+  function shownCols() { return prefs.colOrder.filter(c => prefs.colHidden.indexOf(c) < 0); }
+  function colControls() {
+    if (!colPanel) return '<div class="colctl"><button class="ghost sm" onclick="UI.colPanel()">&#9776; ' + L("columns") + '</button></div>';
+    const chips = prefs.colOrder.map(c =>
+      '<div class="colchip' + (prefs.colHidden.indexOf(c) < 0 ? " on" : "") + '" draggable="true" ' +
+      'ondragstart="UI.colDrag(\'' + c + '\')" ondragover="event.preventDefault()" ondrop="UI.colDrop(\'' + c + '\')">' +
+      '<span class="grip">&#8942;&#8942;</span>' +
+      '<label class="coltog"><input type="checkbox" ' + (prefs.colHidden.indexOf(c) < 0 ? "checked" : "") + ' onchange="UI.colToggle(\'' + c + '\')"> ' + L(COL_LBL[c]) + '</label></div>').join("");
+    return '<div class="colctl open"><div class="colctlhead"><b>' + L("columns") + '</b>' +
+      '<span><button class="ghost sm" onclick="UI.colReset()">' + L("resetCols") + '</button>' +
+      '<button class="ghost sm" onclick="UI.colPanel()">&#10005;</button></span></div>' +
+      '<div class="colchips">' + chips + '</div><p class="footnote">Drag to reorder &middot; check to show.</p></div>';
+  }
+  function viewHome() {
+    const items = DB.items();
+    const out = items.filter(i => i.reorder > 0 && DB.onHand(i.id) <= 0);
+    const low = items.filter(i => i.reorder > 0 && DB.onHand(i.id) > 0 && DB.onHand(i.id) < i.reorder);
+    const lots = expiringLots().slice().sort((a, b) => daysUntil(a.exp) - daysUntil(b.exp));
+    const expiredLots = lots.filter(l => daysUntil(l.exp) < 0);
+    const orders = DB.orders();
+    const openO = orders.filter(o => !orderIsComplete(o));
+    const issues = orders.filter(o => orderIssue(o));
+    const rdPend = DB.rdRequests().filter(r => !rdIsReceived(r));
+    const rdOver = rdPend.filter(r => rdIsOverdue(r));
+    const bag4 = items.filter(i => i.category === "bag4").reduce((s, i) => s + DB.onHand(i.id), 0);
+    const bag15 = items.filter(i => i.category === "bag15").reduce((s, i) => s + DB.onHand(i.id), 0);
+    const tile = (n, label, tab, alert) => '<div class="htile' + (alert ? " alert" : "") + '" onclick="UI_go(\'' + tab + '\')"><div class="n">' + n + '</div><div class="l">' + label + '</div></div>';
+    const tiles =
+      tile(out.length, L("hOut"), "alerts", out.length > 0) +
+      tile(low.length, L("hLow"), "alerts", false) +
+      tile(lots.length, L("hExp"), "alerts", expiredLots.length > 0) +
+      tile(openO.length, L("hOpen"), "orders", false) +
+      tile(issues.length, L("hIssues"), "orders", issues.length > 0) +
+      tile(rdPend.length, L("hRd"), "rd", rdOver.length > 0);
+    const rows = [];
+    out.slice(0, 6).forEach(i => rows.push('<tr class="o-issue"><td><span class="pill out">' + L("alOut") + '</span></td><td><b>' + i.name + '</b><div class="muted sm">' + i.code + '</div></td><td class="right"><b>0</b> ' + i.unit + '</td><td class="muted sm">' + L("alSuggest") + ' ' + fmt(suggestQty(i)) + '</td></tr>'));
+    issues.slice(0, 6).forEach(o => rows.push('<tr class="o-issue"><td><span class="pill out">' + L("oLegIssue") + '</span></td><td><b>' + (o.customer || "") + '</b><div class="muted sm">' + (o.customer_po || "") + '</div></td><td class="sm">' + (o.ship_date || "") + '</td><td class="muted sm">' + (o.notes || "") + '</td></tr>'));
+    expiredLots.slice(0, 6).forEach(l => rows.push('<tr class="o-issue"><td><span class="pill out">' + L("expiredTag") + '</span></td><td><b>' + (l.product || l.flavor_code) + '</b><div class="muted sm">' + (l.lot || "") + '</div></td><td class="sm">' + (l.exp || "").slice(0, 10) + '</td><td class="muted sm">' + Math.abs(daysUntil(l.exp)) + ' ' + L("alDays") + ' ' + L("alExpired") + '</td></tr>'));
+    rdOver.slice(0, 6).forEach(r => rows.push('<tr class="o-ip"><td><span class="pill low">' + L("rdOverdue") + '</span></td><td><b>' + (r.company || "") + '</b><div class="muted sm">' + (r.items || "") + '</div></td><td class="sm">' + ((r.needed_by || "").slice(0, 10)) + '</td><td class="muted sm">' + (r.requested_by || "") + '</td></tr>'));
+    const attention = rows.length
+      ? '<div class="card"><h2 class="sub2">' + L("hAttention") + '</h2><table><tbody>' + rows.join("") + '</tbody></table></div>'
+      : '<div class="card"><p class="ok pill big">&#127807; ' + L("hAllClear") + '</p></div>';
+    const snapshot = '<div class="card"><div class="suprow"><h2 class="sub2" style="margin:0;flex:1">' + L("hSnapshot") + '</h2><a class="order sm" onclick="UI_go(\'dash\')" style="cursor:pointer">' + L("hSeeAll") + '</a></div>' +
+      '<div class="kpis" style="margin-top:10px"><div class="kpi"><div class="n">' + items.length + '</div><div class="l">' + L("totalItems") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(bag4) + '</div><div class="l">' + L("bag4") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(bag15) + '</div><div class="l">' + L("bag15") + '</div></div></div></div>';
+    return '<div class="card"><h2>' + L("homeTitle") + '</h2><p class="hint">' + L("homeHint") + '</p><div class="htiles">' + tiles + '</div></div>' + attention + snapshot;
+  }
+  function viewDash() {
+    let its = DB.items().filter(i => catFilter === "all" || i.category === catFilter);
+    const cols = shownCols();
+    if (prefs.sortKey && COL_DEF[prefs.sortKey]) {
+      const vf = COL_DEF[prefs.sortKey].val;
+      its = its.slice().sort((a, b) => { const x = vf(a), y = vf(b); return (x < y ? -1 : x > y ? 1 : 0) * prefs.sortDir; });
+    }
+    const bag4 = DB.items().filter(i => i.category === "bag4").reduce((s, i) => s + DB.onHand(i.id), 0);
+    const bag15 = DB.items().filter(i => i.category === "bag15").reduce((s, i) => s + DB.onHand(i.id), 0);
+    const low = DB.items().filter(i => statusOf(i) !== "ok").length;
+    const head = cols.map(c => {
+      let th = COL_DEF[c].th();
+      if (prefs.sortKey === c) th = th.replace("</th>", ' <span class="sortar">' + (prefs.sortDir > 0 ? "&#9650;" : "&#9660;") + "</span></th>");
+      return th.replace("<th", '<th onclick="UI.sort(\'' + c + '\')" style="cursor:pointer"');
+    }).join("");
+    const rows = its.map(i => '<tr>' + cols.map(c => COL_DEF[c].td(i)).join("") + '</tr>').join("");
+    const cbar = CATS.map(c => '<button class="' + (c === catFilter ? "active" : "") + '" onclick="UI.cat(\'' + c + '\')">' + (CATLBL[c] || c) + "</button>").join("");
+    return '<div class="card"><h2>' + L("dash") + '</h2><p class="hint">' + L("dashHint") + '</p>' +
+      '<div class="kpis"><div class="kpi"><div class="n">' + DB.items().length + '</div><div class="l">' + L("totalItems") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(bag4) + '</div><div class="l">' + L("bag4") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(bag15) + '</div><div class="l">' + L("bag15") + '</div></div>' +
+      '<div class="kpi ' + (low ? "alert" : "") + '"><div class="n">' + low + '</div><div class="l">' + L("lowItems") + '</div></div></div>' +
+      '<div class="catbar">' + cbar + '</div>' + colControls() +
+      '<table><thead><tr>' + head + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+  function viewAlerts() {
+    const out = DB.items().filter(i => i.reorder > 0 && DB.onHand(i.id) <= 0);
+    const low = DB.items().filter(i => i.reorder > 0 && DB.onHand(i.id) > 0 && DB.onHand(i.id) < i.reorder);
+    const lots = expiringLots().slice().sort((a, b) => (daysUntil(a.exp) - daysUntil(b.exp)));
+    const stockRow = i => {
+      const oh = DB.onHand(i.id); const sup = DB.suppliers().find(s => s.id === i.supplier);
+      const supCell = sup ? (sup.order_url && sup.order_url !== "#" ? '<a class="order sm" href="' + sup.order_url + '" target="_blank" rel="noopener">' + sup.name + ' &#8599;</a>' : sup.name) : (i.supplier || "&mdash;");
+      const draft = i.supplier ? ' <button class="ghost sm" onclick="UI.poNew(\'' + i.supplier + '\')">' + L("alDraftPO") + '</button>' : "";
+      return '<tr><td><b>' + i.name + '</b><div class="muted sm">' + i.code + '</div></td>' +
+        '<td class="right"><b>' + fmt(oh) + '</b> ' + i.unit + '</td><td class="right muted">' + fmt(i.reorder) + '</td>' +
+        '<td class="right"><b>' + fmt(suggestQty(i)) + '</b> ' + i.unit + '</td><td>' + supCell + draft + '</td></tr>';
+    };
+    const stockTable = arr => '<table><thead><tr><th>' + L("item") + '</th><th class="right">' + L("alOnhand") + '</th><th class="right">' + L("alReorder") +
+      '</th><th class="right">' + L("alSuggest") + '</th><th>' + L("alSupplier") + '</th></tr></thead><tbody>' + arr.map(stockRow).join("") + '</tbody></table>';
+    const lotRow = l => {
+      const du = daysUntil(l.exp); const exp = (l.exp || "").slice(0, 10);
+      const badge = du < 0 ? '<span class="pill out">' + Math.abs(du) + ' ' + L("alDays") + ' ' + L("alExpired") + '</span>'
+        : '<span class="pill low">' + du + ' ' + L("alDays") + ' ' + L("alLeft") + '</span>';
+      return '<tr><td><b>' + (l.product || l.flavor_code) + '</b></td><td>' + (l.lot || "&mdash;") + '</td>' +
+        '<td' + (du < 0 ? ' class="expd"' : "") + '>' + exp + '</td><td>' + badge + '</td>' +
+        '<td><button class="ghost sm danger" onclick="UI.seasStatus(\'' + l.id + '\',\'Quarantine\')">' + L("alQuar") + '</button></td></tr>';
+    };
+    const anyExpired = lots.some(l => daysUntil(l.exp) < 0);
+    let html = '<div class="card"><h2>' + L("alerts") + '</h2><p class="hint">' + L("alertsHint") + '</p>' +
+      '<div class="kpis"><div class="kpi' + (out.length ? " alert" : "") + '"><div class="n">' + out.length + '</div><div class="l">' + L("alSummaryOut") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + low.length + '</div><div class="l">' + L("alSummaryLow") + '</div></div>' +
+      '<div class="kpi' + (anyExpired ? " alert" : "") + '"><div class="n">' + lots.length + '</div><div class="l">' + L("alSummaryExp") + '</div></div></div></div>';
+    if (!out.length && !low.length && !lots.length) return html + '<div class="card"><p class="ok pill big">' + L("alNone") + '</p></div>';
+    if (out.length) html += '<div class="card"><h2 class="sub2">' + L("alOut") + ' (' + out.length + ')</h2>' + stockTable(out) + '</div>';
+    if (low.length) html += '<div class="card"><h2 class="sub2">' + L("alLow") + ' (' + low.length + ')</h2>' + stockTable(low) + '</div>';
+    if (lots.length) html += '<div class="card"><h2 class="sub2">' + L("alExp") + ' (' + lots.length + ')</h2>' +
+      '<table><thead><tr><th>' + L("slProduct") + '</th><th>' + L("slLot") + '</th><th>' + L("slExp") + '</th><th>' + L("alDays") + '</th><th></th></tr></thead><tbody>' + lots.map(lotRow).join("") + '</tbody></table></div>';
+    return html;
+  }
+  function viewAdjust() {
+    const its = DB.items().slice().sort((a, b) => (CATLBL[a.category] || a.category).localeCompare(CATLBL[b.category] || b.category) || a.name.localeCompare(b.name));
+    const rows = its.map(i => {
+      const oh = DB.onHand(i.id);
+      const txt = (i.name + " " + i.code + " " + (CATLBL[i.category] || i.category)).toLowerCase();
+      return '<tr data-txt="' + txt.replace(/"/g, "") + '"><td><span class="tag">' + (CATLBL[i.category] || i.category) + '</span></td>' +
+        '<td><b>' + i.name + '</b><div class="muted sm">' + i.code + '</div></td>' +
+        '<td class="right muted">' + fmt(oh) + ' ' + i.unit + '</td>' +
+        '<td><input class="adjq" id="adj-' + i.id + '" type="number" min="0" inputmode="numeric" placeholder="' + fmt(oh) + '" data-cur="' + oh + '"></td></tr>';
+    }).join("");
+    return '<div class="card"><h2>' + L("adjust") + '</h2><p class="hint">' + L("adjustHint") + '</p>' +
+      opField("Adriana") +
+      '<label style="margin-top:12px">' + L("searchItems") + '</label><input id="adjSearch" autocomplete="off" oninput="UI.adjSearch(this.value)" placeholder="' + L("searchItems") + '">' +
+      '<table style="margin-top:10px"><thead><tr><th>' + L("colCategory") + '</th><th>' + L("item") + '</th><th class="right">' + L("onhand") + '</th><th>' + L("newCount") + '</th></tr></thead><tbody id="adjBody">' + rows + '</tbody></table>' +
+      '<button class="primary" onclick="UI.saveAdjust()">' + L("saveCounts") + '</button></div>';
+  }
+  function orderIsComplete(o) { return (o.status || "Open") === "Complete"; }
+  // ---- order state for color coding (green=shipped, tan=in process, red=issue) ----
+  function orderShipped(o) { const t = (o.tracking || "").trim();
+    return !!t && !/^ip$/i.test(t) && /(1z|\d{3,}|pick|deliver|ship|xpo|estes|fedex|ups|odfl|r\+l|saia|old dominion)/i.test(t); }
+  function orderIssue(o) { const x = ((o.notes || "") + " " + (o.tracking || "")).toLowerCase();
+    return /\b(issue|problem|hold|damage|short|delay|delayed|back ?order|missing|wrong|re ?ship|refus|lost|rejected)\b/.test(x); }
+  function orderStateClass(o) { return orderIssue(o) ? "o-issue" : (orderShipped(o) ? "o-ship" : "o-ip"); }
+  function viewOrders() {
+    const all = DB.orders().slice().sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
+    const openList = all.filter(o => !orderIsComplete(o));
+    const compList = all.filter(o => orderIsComplete(o));
+    const list = orderView === "complete" ? compList : openList;
+    const toggle = '<div class="ordtabs">' +
+      '<button class="' + (orderView === "open" ? "active" : "") + '" onclick="UI.ordView(\'open\')">' + L("ordOpen") + ' (' + openList.length + ')</button>' +
+      '<button class="' + (orderView === "complete" ? "active" : "") + '" onclick="UI.ordView(\'complete\')">' + L("ordComplete") + ' (' + compList.length + ')</button></div>';
+    const addForm = orderAddOpen ? (
+      '<div class="ordform">' +
+      '<div class="row"><div><label>' + L("oCustomer") + '</label><input id="o-cust" autocomplete="off"></div>' +
+      '<div><label>' + L("oPO") + '</label><input id="o-po" autocomplete="off"></div>' +
+      '<div><label>' + L("oOrderId") + '</label><input id="o-oid" autocomplete="off"></div></div>' +
+      '<div class="row"><div><label>' + L("oInvDate") + '</label><input id="o-inv" autocomplete="off" placeholder="mm/dd/yyyy"></div>' +
+      '<div><label>' + L("oShipDate") + '</label><input id="o-ship" autocomplete="off" placeholder="mm/dd/yyyy"></div>' +
+      '<div><label>' + L("oCarrier") + '</label><input id="o-carr" autocomplete="off" placeholder="XPO / UPS / ESTES..."></div></div>' +
+      '<div class="row"><div><label>' + L("oTracking") + '</label><input id="o-trk" autocomplete="off"></div>' +
+      '<div><label>' + L("oAppt") + ' <span class="muted">(opt.)</span></label><input id="o-appt" autocomplete="off"></div>' +
+      '<div><label>' + L("oStripe") + ' <span class="muted">(opt.)</span></label><input id="o-stripe" autocomplete="off"></div></div>' +
+      '<div><label>' + L("oNotes") + '</label><input id="o-notes" autocomplete="off"></div>' +
+      '<div class="row"><div><label>' + L("oEnteredBy") + '</label><select id="o-by">' + ORDER_ENTERERS.map(n => '<option>' + n + '</option>').join("") + '<option value="__other">' + L("oOther") + '</option></select></div>' +
+      '<div><label>' + L("oByOther") + ' <span class="muted">(opt.)</span></label><input id="o-by-other" autocomplete="off"></div></div>' +
+      '<button class="primary" onclick="UI.ordAdd()">' + L("ordSave") + '</button> ' +
+      '<button class="ghost" style="margin-top:14px" onclick="UI.ordAddToggle()">' + L("ordCancel") + '</button></div>'
+    ) : "";
+    const rows = list.length ? list.map(o => {
+      const txt = ((o.customer || "") + " " + (o.customer_po || "") + " " + (o.order_id || "") + " " + (o.tracking || "") + " " + (o.carrier || "")).toLowerCase().replace(/"/g, "");
+      const trk = o.tracking ? (o.tracking + (o.carrier ? ' <span class="muted sm">' + o.carrier + '</span>' : "")) : (o.carrier || "&mdash;");
+      const stripe = o.stripe_link ? ' <a class="order sm" href="' + o.stripe_link + '" target="_blank" rel="noopener">Stripe &#8599;</a>' : "";
+      const act = orderIsComplete(o)
+        ? '<button class="ghost sm" onclick="UI.ordReopen(\'' + o.id + '\')">' + L("reopen") + '</button>'
+        : '<button class="ghost sm" onclick="UI.ordComplete(\'' + o.id + '\')">' + L("markComplete") + '</button>';
+      return '<tr class="' + orderStateClass(o) + '" data-txt="' + txt + (o.entered_by ? " " + o.entered_by.toLowerCase() : "") + '"><td><b>' + (o.customer || "&mdash;") + '</b>' + (o.appointment ? '<div class="muted sm">' + o.appointment + '</div>' : "") + (o.entered_by ? '<div class="muted sm">' + L("oByPrefix") + ' ' + o.entered_by + '</div>' : "") + '</td>' +
+        '<td>' + (o.customer_po || "&mdash;") + '<div class="muted sm">' + (o.order_id || "") + '</div></td>' +
+        '<td class="muted sm">' + (o.ship_date || o.invoice_date || "") + '</td>' +
+        '<td>' + trk + stripe + '</td>' +
+        '<td>' + (o.notes ? '<span class="sm">' + o.notes + '</span>' : "") + '</td>' +
+        '<td>' + act + '</td></tr>';
+    }).join("") : '<tr><td colspan="6" class="muted">' + (orderView === "complete" ? L("noCompleteOrders") : L("noOpenOrders")) + '</td></tr>';
+    return '<div class="card"><div class="suprow"><h2>' + L("orders") + '</h2>' +
+      '<button class="primary sm" onclick="UI.ordAddToggle()">' + L("ordAdd") + '</button></div>' +
+      '<p class="hint">' + L("ordersHint") + '</p>' + toggle +
+      '<div class="ordlegend"><span class="lg lg-ship"></span>' + L("oLegShip") + '<span class="lg lg-ip"></span>' + L("oLegIP") + '<span class="lg lg-issue"></span>' + L("oLegIssue") + '</div>' + addForm +
+      '<input id="ordSearch" autocomplete="off" style="margin-top:10px" oninput="UI.ordSearch(this.value)" placeholder="' + L("ordSearchP") + '">' +
+      '<table style="margin-top:10px"><thead><tr><th>' + L("oCustomer") + '</th><th>' + L("oPO") + '</th><th>' + L("oShipDate") + '</th><th>' + L("oTracking") + '</th><th>' + L("oNotes") + '</th><th></th></tr></thead><tbody id="ordBody">' + rows + '</tbody></table></div>';
+  }
+  // ---------- R&D / sample requests ----------
+  function rdIsReceived(r) { return (r.status || "Pending") === "Received"; }
+  function rdIsOverdue(r) { const nb = (r.needed_by || "").slice(0, 10); return nb && nb < new Date().toISOString().slice(0, 10) && !rdIsReceived(r); }
+  function rdOp() { const e = $("rd-op"); return e ? e.value : "Troy"; }
+  function viewRD() {
+    const all = DB.rdRequests().slice().sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
+    const pend = all.filter(r => !rdIsReceived(r));
+    const recv = all.filter(r => rdIsReceived(r));
+    const list = rdView === "received" ? recv : pend;
+    const toggle = '<div class="ordtabs">' +
+      '<button class="' + (rdView === "pending" ? "active" : "") + '" onclick="UI.rdView(\'pending\')">' + L("rdPending") + ' (' + pend.length + ')</button>' +
+      '<button class="' + (rdView === "received" ? "active" : "") + '" onclick="UI.rdView(\'received\')">' + L("rdDone") + ' (' + recv.length + ')</button></div>';
+    const addForm = rdAddOpen ? (
+      '<div class="ordform">' +
+      '<div class="row"><div><label>' + L("rdType") + '</label><select id="rd-type">' + RD_TYPES.map(t => '<option>' + t + '</option>').join("") + '</select></div>' +
+      '<div><label>' + L("rdCompany") + '</label><input id="rd-co" autocomplete="off"></div>' +
+      '<div><label>' + L("rdContact") + ' <span class="muted">(opt.)</span></label><input id="rd-cn" autocomplete="off"></div></div>' +
+      '<div class="row"><div><label>' + L("rdEmail") + '</label><input id="rd-em" type="email" autocomplete="off" placeholder="name@company.com"></div>' +
+      '<div><label>' + L("rdQty") + '</label><input id="rd-qty" autocomplete="off" placeholder="2 lb / 3 samples"></div>' +
+      '<div><label>' + L("rdNeed") + ' <span class="muted">(opt.)</span></label><input id="rd-need" type="date"></div></div>' +
+      '<div><label>' + L("rdItems") + '</label><input id="rd-items" autocomplete="off" placeholder="Describe the sample / ingredient requested"></div>' +
+      '<div class="row"><div><label>' + L("rdPurpose") + ' <span class="muted">(opt.)</span></label><input id="rd-purp" autocomplete="off"></div>' +
+      '<div><label>' + L("rdFollow") + ' <span class="muted">(opt.)</span></label><input id="rd-follow" type="date"></div></div>' +
+      '<div><label>' + L("rdNotesF") + ' <span class="muted">(opt.)</span></label><input id="rd-notes" autocomplete="off"></div>' +
+      '<label>' + L("rdReqBy") + '</label><select id="rd-op">' + ["Michelle", "Troy", "Allie", "Adriana", "Ken"].map(n => "<option>" + n + "</option>").join("") + '</select>' +
+      '<button class="primary" onclick="UI.rdAdd()">' + L("rdSave") + '</button> ' +
+      '<button class="ghost" style="margin-top:14px" onclick="UI.rdAddToggle()">' + L("rdCancel") + '</button></div>'
+    ) : "";
+    const rows = list.length ? list.map(r => {
+      const txt = ((r.req_no || "") + " " + (r.company || "") + " " + (r.items || "") + " " + (r.contact_name || "") + " " + (r.req_type || "")).toLowerCase().replace(/"/g, "");
+      const over = rdIsOverdue(r);
+      const needCell = ((r.needed_by || "").slice(0, 10) || "&mdash;") + (over ? ' <span class="pill out">' + L("rdOverdue") + '</span>' : "");
+      const sentTag = r.sent_at ? ' <span class="tag">' + L("rdSentTag") + '</span>' : "";
+      const statusPill = rdIsReceived(r) ? '<span class="pill ok">' + L("rdDone") + '</span>' : '<span class="pill low">' + L("rdPending") + '</span>';
+      const act = rdIsReceived(r)
+        ? '<button class="ghost sm" onclick="UI.rdReopen(\'' + r.id + '\')">' + L("rdReopenB") + '</button>'
+        : '<button class="ghost sm" onclick="UI.rdSend(\'' + r.id + '\')">' + L("rdSend") + '</button>' +
+          '<button class="ghost sm" onclick="UI.rdReceived(\'' + r.id + '\')">' + L("rdMarkRecv") + '</button>';
+      return '<tr data-txt="' + txt + '"><td><b>' + (r.company || "&mdash;") + '</b><div class="muted sm">' + (r.req_no || "") + (r.contact_name ? " &middot; " + r.contact_name : "") + '</div></td>' +
+        '<td>' + (r.items || "&mdash;") + '<div class="muted sm">' + (r.req_type || "") + (r.quantity ? " &middot; " + r.quantity : "") + '</div></td>' +
+        '<td class="sm">' + needCell + '</td>' +
+        '<td>' + statusPill + sentTag + '</td>' +
+        '<td><button class="ghost sm" onclick="UI.rdPdf(\'' + r.id + '\')">' + L("rdDownload") + '</button>' + act + '</td></tr>';
+    }).join("") : '<tr><td colspan="5" class="muted">' + (rdView === "received" ? L("rdNoReceived") : L("rdNoPending")) + '</td></tr>';
+    return '<div class="card"><div class="suprow"><h2>' + L("rd") + '</h2>' +
+      '<button class="primary sm" onclick="UI.rdAddToggle()">' + L("rdAdd") + '</button></div>' +
+      '<p class="hint">' + L("rdHint") + '</p>' + toggle + addForm +
+      '<input id="rdSearch" autocomplete="off" style="margin-top:10px" oninput="UI.rdSearch(this.value)" placeholder="' + L("rdSearchP") + '">' +
+      '<table style="margin-top:10px"><thead><tr><th>' + L("rdCompany") + '</th><th>' + L("rdItems") + '</th><th>' + L("rdNeed") + '</th><th>' + L("status") + '</th><th></th></tr></thead><tbody id="rdBody">' + rows + '</tbody></table></div>';
+  }
+  function rdDoc(r) {
+    const jsPDFctor = window.jspdf && window.jspdf.jsPDF; if (!jsPDFctor) return null;
+    const doc = new jsPDFctor({ unit: "pt", format: "letter" });
+    const M = 54, W = 612, RM = W - M; let y = 58;
+    const navy = [31, 56, 100], grey = [90, 90, 90], ink = [34, 34, 34];
+    const rule = yy => { doc.setDrawColor(210, 216, 226); doc.setLineWidth(1); doc.line(M, yy, RM, yy); };
+    doc.setFont("helvetica", "bold"); doc.setFontSize(20); doc.setTextColor(navy[0], navy[1], navy[2]);
+    doc.text("SMACKIN' SNACKS", M, y);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(grey[0], grey[1], grey[2]);
+    doc.text("SLC Fulfillment Center", M, y + 15);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(180, 120, 10);
+    doc.text("BETA - PROTOTYPE", RM, y - 6, { align: "right" });
+    y += 30; rule(y); y += 26;
+    doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(ink[0], ink[1], ink[2]);
+    doc.text(L("rdPdfTitle"), M, y); y += 22;
+    doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(ink[0], ink[1], ink[2]);
+    doc.text(L("rdReqNo") + ": " + (r.req_no || ""), M, y);
+    doc.text(L("rdDate") + ": " + new Date().toISOString().slice(0, 10), RM, y, { align: "right" }); y += 24;
+    doc.setFont("helvetica", "bold"); doc.text(L("rdTo") + ":", M, y);
+    doc.setFont("helvetica", "normal");
+    const toLines = []; if (r.company) toLines.push(r.company);
+    const cc = []; if (r.contact_name) cc.push(r.contact_name); if (r.contact_email) cc.push(r.contact_email);
+    if (cc.length) toLines.push(cc.join("   |   "));
+    doc.text(toLines.length ? toLines : ["-"], M + 34, y); y += (toLines.length || 1) * 14 + 12;
+    doc.setFont("helvetica", "bold"); doc.text(L("rdFrom") + ":", M, y);
+    doc.setFont("helvetica", "normal"); doc.text((r.requested_by || "-") + (r.req_type ? "   (" + r.req_type + ")" : ""), M + 80, y); y += 22;
+    rule(y); y += 16;
+    doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(grey[0], grey[1], grey[2]);
+    doc.text(L("rdItems").toUpperCase(), M, y); doc.text(L("rdQty").toUpperCase(), 372, y); doc.text(L("rdNeed").toUpperCase(), 466, y);
+    y += 6; rule(y); y += 16;
+    doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(ink[0], ink[1], ink[2]);
+    const itemLines = doc.splitTextToSize(r.items || "-", 300);
+    doc.text(itemLines, M, y); doc.text(r.quantity || "-", 372, y); doc.text((r.needed_by || "-").slice(0, 10), 466, y);
+    y += Math.max(itemLines.length * 13, 16) + 16; rule(y); y += 22;
+    const block = (labelKey, val) => {
+      if (!val) return;
+      doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(grey[0], grey[1], grey[2]);
+      doc.text(L(labelKey).toUpperCase(), M, y); y += 14;
+      doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(ink[0], ink[1], ink[2]);
+      const ls = doc.splitTextToSize(val, RM - M); doc.text(ls, M, y); y += ls.length * 13 + 14;
+    };
+    block("rdPurpose", r.purpose); block("rdNotesF", r.notes);
+    doc.setFontSize(8); doc.setTextColor(grey[0], grey[1], grey[2]);
+    doc.text("Generated by Smackin' OS (BETA)  -  " + (r.req_no || ""), M, 762);
+    return doc;
+  }
+  function rdEmailHtml(r) {
+    const row = (k, v) => v ? '<tr><td style="padding:4px 12px 4px 0;color:#667;font-size:13px">' + k + '</td><td style="padding:4px 0;font-size:13px"><b>' + v + '</b></td></tr>' : "";
+    return '<div style="font-family:Arial,sans-serif;color:#222;max-width:560px">' +
+      '<p>Hello' + (r.contact_name ? " " + r.contact_name : "") + ',</p>' +
+      '<p>Please see the attached sample request from Smackin\' Snacks. Details are below.</p>' +
+      '<table style="border-collapse:collapse">' +
+      row(L("rdReqNo"), r.req_no) + row(L("rdItems"), r.items) + row(L("rdQty"), r.quantity) +
+      row(L("rdNeed"), (r.needed_by || "").slice(0, 10)) + row(L("rdPurpose"), r.purpose) +
+      row(L("rdFrom"), r.requested_by) + '</table>' +
+      (r.notes ? '<p style="font-size:13px">' + r.notes + '</p>' : "") +
+      '<p style="font-size:13px">Thank you,<br>Smackin\' Snacks</p></div>';
+  }
+  // ---------- Supplier POs (upload from external systems) ----------
+  function spoParseFile(file) {
+    return new Promise(res => {
+      const ext = (file.name.split(".").pop() || "").toLowerCase();
+      const empty = { vendor: "", po_num: "", po_date: "", total: "", item_count: 0, lines: "[]", recognized: false };
+      if (ext === "pdf" || !window.XLSX) { res(empty); return; }
+      const reader = new FileReader();
+      reader.onload = e => { try {
+        const wb = XLSX.read(e.target.result, { type: "array" });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        res(spoExtract(XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" })));
+      } catch (err) { res(empty); } };
+      reader.onerror = () => res(empty);
+      reader.readAsArrayBuffer(file);
+    });
+  }
+  function spoExtract(grid) {
+    const flat = grid.map(r => (r || []).map(c => (c == null ? "" : String(c))));
+    const nrm = s => s.toLowerCase().replace(/[^a-z0-9#]/g, "");
+    const headerRow = pred => { for (let i = 0; i < flat.length; i++) { if (pred(flat[i].map(nrm))) return i; } return -1; };
+    const bel = headerRow(h => h.some(x => x.indexOf("belmarkitem") >= 0));
+    if (bel >= 0) {
+      const H = flat[bel].map(nrm), ci = n => H.findIndex(x => x === n || x.indexOf(n) >= 0);
+      const cPO = H.findIndex(x => x === "po"), cItem = ci("belmarkitem"), cDesc = ci("description"), cQty = ci("qtyordered"), cDate = ci("orderdate");
+      let po = "", date = "", total = "";
+      flat.forEach(row => row.forEach((cell, k) => { const t = (cell || "").toString().trim();
+        if (!po && /purchase order\s*#/i.test(t)) po = t.replace(/.*purchase order\s*#/i, "").trim();
+        if (!po && /^PO\s*#/i.test(t)) po = t.replace(/^PO\s*#/i, "").trim();
+        if (!total && /total price/i.test(t)) { const n = parseFloat(((row[k + 1] || row[k + 2] || "") + "").replace(/[,$]/g, "")); if (n) total = String(Math.round(n * 100) / 100); }
+      }));
+      const lines = [];
+      for (let r = bel + 1; r < flat.length; r++) { const row = flat[r]; if (!row.join("").trim()) continue;
+        const g = i => i >= 0 ? (row[i] || "").trim() : "";
+        if (!po && cPO >= 0) po = g(cPO); if (!date) date = g(cDate);
+        if (!g(cItem) && !g(cDesc)) continue;
+        lines.push({ item: g(cItem), desc: g(cDesc), qty: g(cQty) }); }
+      return { vendor: "Belmark", po_num: po, po_date: date, total: total, item_count: lines.length, lines: JSON.stringify(lines), recognized: true };
+    }
+    let po = "", date = "", vendor = "";
+    flat.forEach(row => row.forEach(c => { const t = c.trim();
+      if (!po && /^PO\s*#/i.test(t)) po = t.replace(/^PO\s*#/i, "").trim();
+      if (!date && /^Date:/i.test(t)) date = t.replace(/^Date:/i, "").trim(); }));
+    for (let i = 0; i < flat.length; i++) { if (flat[i].some(c => /vendor information/i.test(c))) {
+      for (let j = i + 1; j < Math.min(i + 4, flat.length); j++) { const cand = (flat[j][0] || "").trim(); if (cand && !/smackin/i.test(cand)) { vendor = cand; break; } } break; } }
+    const hdr = headerRow(h => h.some(x => x === "item#" || x === "item") && h.some(x => x.indexOf("descrip") >= 0));
+    const num = v => parseFloat((v || "").toString().replace(/[,$\s]/g, ""));
+    const lines = []; let sumT = 0;
+    if (hdr >= 0) { const H = flat[hdr].map(nrm);
+      const cI = H.findIndex(x => x === "item#" || x === "item"), cD = H.findIndex(x => x.indexOf("descrip") >= 0),
+        cQ = H.findIndex(x => x === "quantity" || x === "qty"), cP = H.findIndex(x => x.indexOf("unitprice") >= 0 || x === "price"), cT = H.findIndex(x => x === "total");
+      for (let r = hdr + 1; r < flat.length; r++) { const row = flat[r], g = i => i >= 0 ? (row[i] || "").trim() : "";
+        const item = g(cI), desc = g(cD), qty = g(cQ), price = g(cP);
+        // skip the summary block (Subtotal/Shipping/Tax/Other/Total) and blank filler rows
+        if (/\b(sub ?total|shipping|tax|other|grand ?total|^total)\b/i.test((item + " " + desc).trim())) continue;
+        if (!item) continue;                              // a real line needs an item code
+        if (!num(qty) && !num(price)) continue;           // ...and a quantity or price
+        const lt = g(cT); sumT += num(lt) || 0;
+        lines.push({ item: item, desc: desc, qty: qty, price: price, total: lt }); } }
+    // Prefer the labeled grand "Total" amount over summing the column (avoids double-counting subtotal/total rows)
+    let grand = 0;
+    for (let r = 0; r < flat.length; r++) { if (r === hdr) continue; const row = flat[r]; const norms = row.map(nrm);
+      if (norms.some(x => x === "total")) { row.forEach(c => { const n = num(c); if (!isNaN(n) && n > grand) grand = n; }); } }
+    const total = grand > 0 ? grand : (sumT > 0 ? sumT : 0);
+    if (po || vendor || lines.length) return { vendor: vendor, po_num: po, po_date: date, total: total ? String(Math.round(total * 100) / 100) : "", item_count: lines.length, lines: JSON.stringify(lines), recognized: !!(po || vendor) };
+    return { vendor: "", po_num: "", po_date: "", total: "", item_count: 0, lines: "[]", recognized: false };
+  }
+  function viewSupplierPos() {
+    const list = spoSortList(DB.supplierPos());
+    let form;
+    if (!spoParsed) {
+      form = '<div class="spodrop"><input type="file" id="spo-input" accept=".xlsx,.xls,.csv,.pdf" style="display:none" onchange="UI.spoFile(this)">' +
+        '<label for="spo-input" class="spodroplabel">&#128228; ' + L("spoDrop") + '</label></div>';
+    } else {
+      const p = spoParsed;
+      form = '<div class="ordform"><p class="hint">' + (p.recognized ? "&#10003; " + L("spoParsed") : "&#128206;") + " &middot; " + esc(spoFile ? spoFile.name : "") + '</p>' +
+        '<div class="row"><div><label>' + L("spoVendor") + '</label><input id="spo-vendor" value="' + esc(p.vendor) + '"></div>' +
+        '<div><label>' + L("spoPO") + '</label><input id="spo-po" value="' + esc(p.po_num) + '"></div>' +
+        '<div><label>' + L("spoDate") + '</label><input id="spo-date" value="' + esc(p.po_date) + '"></div></div>' +
+        '<div class="row"><div><label>' + L("spoTotal") + '</label><input id="spo-total" value="' + esc(p.total) + '"></div>' +
+        '<div><label>' + L("spoItems") + '</label><input value="' + (p.item_count || 0) + '" disabled></div>' +
+        '<div><label>' + L("spoUploadedBy") + '</label><select id="op">' + ["Michelle", "Matt", "Troy"].map(n => "<option>" + n + "</option>").join("") + '</select></div></div>' +
+        '<div><label>' + L("spoNotes") + '</label><input id="spo-notes"></div>' +
+        '<button class="primary" onclick="UI.spoSave()">' + L("spoSave") + '</button> ' +
+        '<button class="ghost" style="margin-top:14px" onclick="UI.spoClear()">' + L("spoCancel") + '</button></div>';
+    }
+    const rows = list.length ? list.map(s => {
+      const txt = ((s.vendor || "") + " " + (s.po_num || "") + " " + (s.file_name || "")).toLowerCase().replace(/"/g, "");
+      const dl = s.file_url ? '<a class="order sm" href="' + s.file_url + '" target="_blank" rel="noopener">' + L("spoDownload") + '</a>' : (s.file_name ? '<span class="muted sm">' + s.file_name + '</span>' : "&mdash;");
+      return '<tr data-txt="' + txt + '"><td><b>' + (s.vendor || "&mdash;") + '</b>' + (s.uploaded_by ? '<div class="muted sm">' + L("oByPrefix") + " " + s.uploaded_by + '</div>' : "") + '</td>' +
+        '<td>' + (s.po_num || "&mdash;") + '</td><td class="sm">' + (s.po_date || "") + '</td>' +
+        '<td class="right">' + money(s.total) + '</td><td class="right muted">' + (s.item_count || 0) + '</td>' +
+        '<td>' + dl + '</td><td><button class="ghost sm danger" onclick="UI.spoDelete(\'' + s.id + '\')">&#10005;</button></td></tr>';
+    }).join("") : '<tr><td colspan="7" class="muted">' + L("spoNone") + '</td></tr>';
+    return '<div class="card"><h2>' + L("supplierpos") + '</h2><p class="hint">' + L("spoHint") + '</p>' + form + '</div>' +
+      '<div class="card"><h2 class="sub2">' + L("spoList") + ' (' + list.length + ')</h2>' +
+      '<input id="spoSearch" autocomplete="off" oninput="UI.spoSearch(this.value)" placeholder="' + L("spoSearchP") + '" style="margin-bottom:10px">' +
+      '<table><thead><tr>' +
+      '<th class="sortable" onclick="UI.spoSortBy(\'vendor\')">' + L("spoVendor") + spoArrow("vendor") + '</th>' +
+      '<th class="sortable" onclick="UI.spoSortBy(\'po_num\')">' + L("spoPO") + spoArrow("po_num") + '</th>' +
+      '<th class="sortable" onclick="UI.spoSortBy(\'po_date\')">' + L("spoDate") + spoArrow("po_date") + '</th>' +
+      '<th class="right sortable" onclick="UI.spoSortBy(\'total\')">' + L("spoTotal") + spoArrow("total") + '</th>' +
+      '<th class="right sortable" onclick="UI.spoSortBy(\'item_count\')">' + L("spoItems") + spoArrow("item_count") + '</th>' +
+      '<th>' + L("spoFile") + '</th><th></th></tr></thead><tbody id="spoBody">' + rows + '</tbody></table></div>';
+  }
+  function viewOrderDocs() {
+    const list = DB.orderDocs().slice().sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
+    const form = '<div class="ordform">' +
+      '<div class="spodrop"><input type="file" id="odoc-input" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.docx" style="display:none" onchange="UI.odocFile(this)">' +
+      '<label for="odoc-input" class="spodroplabel">&#128193; ' + L("odocDrop") + '</label></div>' +
+      (odocFile ? '<p class="hint">&#128206; ' + esc(odocFile.name) + '</p>' : '') +
+      '<div class="row"><div><label>' + L("odocCustomer") + '</label><input id="odoc-cust" list="dl-odoc-cust" autocomplete="off"></div>' +
+      '<div><label>' + L("odocPO") + '</label><input id="odoc-po" autocomplete="off"></div></div>' +
+      '<div class="row"><div><label>' + L("odocType") + '</label><select id="odoc-type">' + ODOC_TYPES.map(t => "<option>" + t + "</option>").join("") + '</select></div>' +
+      '<div><label>' + L("spoUploadedBy") + '</label><select id="op">' + ODOC_UPLOADERS.map(n => "<option>" + n + "</option>").join("") + '</select></div></div>' +
+      '<div><label>' + L("spoNotes") + '</label><input id="odoc-notes" autocomplete="off"></div>' +
+      '<button class="primary" onclick="UI.odocSave()">' + L("odocSave") + '</button>' +
+      (odocFile ? ' <button class="ghost" onclick="UI.odocClear()">' + L("spoCancel") + '</button>' : '') + '</div>';
+    const custs = Array.from(new Set(DB.orders().map(o => o.customer).concat(list.map(d => d.customer)).filter(Boolean))).sort();
+    const dl = '<datalist id="dl-odoc-cust">' + custs.map(c => '<option value="' + esc(c) + '"></option>').join("") + '</datalist>';
+    let body;
+    if (!list.length) { body = '<p class="muted">' + L("odocNone") + '</p>'; }
+    else {
+      const byCust = {};
+      list.forEach(d => { const c = d.customer || "(none)"; (byCust[c] = byCust[c] || []).push(d); });
+      body = Object.keys(byCust).sort().map(c => {
+        const txt = (c + " " + byCust[c].map(d => (d.po_num || "") + " " + (d.doc_type || "") + " " + (d.file_name || "")).join(" ")).toLowerCase().replace(/"/g, "");
+        const byPo = {};
+        byCust[c].forEach(d => { const p = d.po_num || "(no PO)"; (byPo[p] = byPo[p] || []).push(d); });
+        const pos = Object.keys(byPo).sort().map(p => {
+          const chips = byPo[p].map(d => {
+            const label = d.doc_type || "Doc";
+            const inner = d.file_url ? '<a href="' + d.file_url + '" target="_blank" rel="noopener">' + esc(label) + '</a>' : esc(label);
+            return '<span class="odchip">' + inner + (d.file_name ? '<span class="odfn">' + esc(d.file_name) + '</span>' : '') + '<button class="odx" title="x" onclick="UI.odocDelete(\'' + d.id + '\')">&#10005;</button></span>';
+          }).join("");
+          return '<div class="odpo"><div class="odpohead">' + L("odocPO") + ' ' + esc(p) + '</div><div class="odchips">' + chips + '</div></div>';
+        }).join("");
+        return '<div class="odcust" data-txt="' + txt + '"><div class="odcusthead">' + esc(c) + ' <span class="muted">(' + byCust[c].length + ')</span></div>' + pos + '</div>';
+      }).join("");
+    }
+    return dl + '<div class="card"><h2>' + L("orderdocs") + '</h2><p class="hint">' + L("odocHint") + '</p>' + form + '</div>' +
+      '<div class="card"><h2 class="sub2">' + L("odocArchive") + ' (' + list.length + ')</h2>' +
+      '<input id="odocSearch" autocomplete="off" oninput="UI.odocSearch(this.value)" placeholder="' + L("odocSearchP") + '" style="margin-bottom:10px">' +
+      '<div id="odocBody">' + body + '</div></div>';
+  }
+  function viewReceive() {
+    return '<div class="card"><h2>' + L("receive") + '</h2><p class="hint">' + L("receiveHint") + '</p>' +
+      itemScan("r-code", "r-qty") +
+      '<div class="row"><div><label>' + L("qty") + '</label><input id="r-qty" type="number" min="0" placeholder="' + L("enter") + '"></div>' +
+      '<div><label>' + L("rPallets") + ' <span class="muted">(opt.)</span></label><input id="r-pal" type="number" min="0" step="0.1" placeholder="0"></div>' +
+      '<div><label>' + L("lot") + ' <span class="muted">(opt.)</span></label><input id="r-lot" autocomplete="off" placeholder="LOT-0701"></div></div>' +
+      '<div class="row"><div><label>' + L("rSupplier") + '</label><select id="r-sup"><option value=""></option>' + selOpts(DB.recvSuppliers) + '</select></div>' +
+      '<div><label>' + L("rInvoice") + ' <span class="muted">(opt.)</span></label><input id="r-inv" autocomplete="off" placeholder="INV-..."></div>' +
+      '<div><label>' + L("rCategory") + '</label><select id="r-cat"><option value=""></option>' + selOpts(DB.recvCategories) + '</select></div></div>' +
+      '<div class="row"><div><label>' + L("rCondition") + '</label><select id="r-cond">' + selOpts(DB.conditions) + '</select></div>' +
+      '<div><label>' + L("rStatus") + '</label><select id="r-stat">' + selOpts(DB.recvStatuses) + '</select></div></div>' +
+      opField("Adriana") + '<button class="primary" onclick="UI.receive()">' + L("submitReceive") + '</button></div>';
+  }
+  function viewPut() {
+    return '<div class="card"><h2>' + L("putaway") + '</h2><p class="hint">' + L("putHint") + '</p>' +
+      itemScan("p-code", "p-loc") +
+      '<div class="row"><div>' + locInput("p-loc", "to") + '</div><div><label>' + L("qty") + '</label><input id="p-qty" type="number" min="0" placeholder="' + L("enter") + '"></div></div>' +
+      opField("Adriana") + '<button class="primary" onclick="UI.put()">' + L("submitPut") + '</button></div>';
+  }
+  function viewMove() {
+    return '<div class="card"><h2>' + L("move") + '</h2><p class="hint">' + L("moveHint") + '</p>' +
+      itemScan("m-code", "m-from") +
+      '<div class="row"><div>' + locInput("m-from", "from") + '</div><div>' + locInput("m-to", "to") + '</div>' +
+      '<div><label>' + L("qty") + '</label><input id="m-qty" type="number" min="0" placeholder="' + L("enter") + '"></div></div>' +
+      opField("Adriana") + '<button class="primary" onclick="UI.move()">' + L("submitMove") + '</button></div>';
+  }
+  function viewProduce() {
+    const fin = DB.items().filter(i => i.category === "bag4");
+    return '<div class="card"><h2>' + L("produce") + '</h2><p class="hint">' + L("produceHint") + '</p>' +
+      '<div class="row"><div><label>' + L("pickFlavor") + '</label><select id="pr-item">' +
+      fin.map(i => '<option value="' + i.id + '">' + i.flavor + "</option>").join("") + '</select></div>' +
+      '<div><label>' + L("qtyBags") + '</label><input id="pr-qty" type="number" min="0" placeholder="' + L("enter") + '"></div>' +
+      '<div>' + locInput("pr-loc", "to") + '</div></div>' +
+      opField() + '<button class="primary" onclick="UI.produce()">' + L("submitProduce") + '</button></div>';
+  }
+  function viewCount() {
+    return '<div class="card"><h2>' + L("count") + '</h2><p class="hint">' + L("countHint") + '</p>' +
+      itemScan("c-code", "c-loc") +
+      '<div class="row"><div>' + locInput("c-loc", "to") + '</div><div><label>' + L("newqty") + '</label><input id="c-qty" type="number" min="0" placeholder="' + L("newqty") + '"></div></div>' +
+      opField("Adriana") + '<button class="primary" onclick="UI.count()">' + L("submitCount") + '</button></div>';
+  }
+  function viewReturns() {
+    const recent = DB.log().filter(e => e.a === "Return").slice(0, 25);
+    const list = recent.length
+      ? '<table><thead><tr><th>' + L("when") + '</th><th>' + L("detail") + '</th><th>' + L("operator") + '</th></tr></thead><tbody>' +
+        recent.map(e => '<tr><td class="muted sm">' + (e.t ? new Date(e.t).toLocaleString() : "") + '</td><td>' + e.d + '</td><td>' + e.u + '</td></tr>').join("") + '</tbody></table>'
+      : '<p class="muted">' + L("noReturns") + '</p>';
+    return '<div class="card"><h2>' + L("returns") + '</h2><p class="hint">' + L("returnsHint") + '</p>' +
+      itemScan("ret-code", "ret-qty") +
+      '<div class="row"><div><label>' + L("qty") + '</label><input id="ret-qty" type="number" min="0" placeholder="' + L("enter") + '"></div>' +
+      '<div><label>' + L("rChannel") + '</label><select id="ret-chan">' + selOpts(DB.returnChannels) + '</select></div>' +
+      '<div><label>' + L("rRMA") + ' <span class="muted">(opt.)</span></label><input id="ret-rma" autocomplete="off" placeholder="RMA / order #"></div></div>' +
+      '<div class="row"><div><label>' + L("rReason") + '</label><select id="ret-reason">' + selOpts(DB.returnReasons) + '</select></div>' +
+      '<div><label>' + L("rDisposition") + '</label><select id="ret-disp">' + selOpts(DB.returnDispositions) + '</select></div></div>' +
+      opField() + '<button class="primary" onclick="UI.doReturn()">' + L("submitReturn") + '</button>' +
+      '<h2 class="sub2" style="margin-top:18px">' + L("recentReturns") + '</h2>' + list + '</div>';
+  }
+  function viewSeasoning() {
+    const seas = DB.items().filter(i => i.category === "seasoning" && /^SEAS-/.test(i.id));
+    const opts = seas.map(i => '<option value="' + i.id.replace("SEAS-", "") + '|' + i.flavor + '">' + i.flavor + '</option>').join("");
+    const today = new Date().toISOString().slice(0, 10);
+    const lots = DB.seasLots().slice().sort((a, b) => (a.exp || "9999") < (b.exp || "9999") ? -1 : 1);
+    const body = lots.length ? lots.map(l => {
+      const exp = l.exp ? String(l.exp).slice(0, 10) : "";
+      const isExp = exp && exp < today;
+      const stat = l.status === "Quarantine" ? '<span class="pill out">' + L("quarTag") + '</span>'
+        : isExp ? '<span class="pill low">' + L("expiredTag") + '</span>' : '<span class="pill ok">' + L("goodTag") + '</span>';
+      const act = l.status === "Quarantine"
+        ? '<button class="ghost sm" onclick="UI.seasStatus(\'' + l.id + '\',\'Good\')">' + L("markGood") + '</button>'
+        : '<button class="ghost sm danger" onclick="UI.seasStatus(\'' + l.id + '\',\'Quarantine\')">' + L("markQuar") + '</button>';
+      return '<tr><td><b>' + (l.product || l.flavor_code) + '</b></td><td>' + (l.lot || "&mdash;") + '</td><td class="muted sm">' + (l.manufacturer || "&mdash;") +
+        '</td><td' + (isExp ? ' class="expd"' : "") + '>' + (exp || "&mdash;") + '</td><td class="right">' + fmt(l.weight) + '</td><td>' + stat + '</td><td>' + act + '</td></tr>';
+    }).join("") : '<tr><td colspan="7" class="muted">' + L("noLots") + '</td></tr>';
+    return '<div class="card"><h2>' + L("seasoning") + '</h2><p class="hint">' + L("seasHint") + '</p>' +
+      '<div class="row"><div><label>' + L("slProduct") + '</label><select id="sl-prod">' + opts + '</select></div>' +
+      '<div><label>' + L("slLot") + '</label><input id="sl-lot" autocomplete="off" placeholder="# 6105"></div>' +
+      '<div><label>' + L("slMfr") + '</label><input id="sl-mfr" autocomplete="off" placeholder="Commercial Creations"></div></div>' +
+      '<div class="row"><div><label>' + L("slExp") + '</label><input id="sl-exp" type="date"></div>' +
+      '<div><label>' + L("slWeight") + '</label><input id="sl-wt" type="number" min="0" step="0.1" placeholder="0"></div>' +
+      '<div style="align-self:end">' + opField() + '</div></div>' +
+      '<button class="primary" onclick="UI.addSeasLot()">' + L("addLot") + '</button> ' +
+      '<button class="ghost" style="margin-top:14px" onclick="UI.quarExpired()">' + L("quarantineExpired") + '</button>' +
+      '<h2 class="sub2" style="margin-top:18px">' + L("seasLotsTitle") + '</h2>' +
+      '<table><thead><tr><th>' + L("slProduct") + '</th><th>' + L("slLot") + '</th><th>' + L("slMfr") + '</th><th>' + L("slExp") +
+      '</th><th class="right">' + L("slWeight") + '</th><th>' + L("status") + '</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>';
+  }
+  function viewQA() {
+    const hold = [];
+    ["QA-HOLD", "QUARANTINE"].forEach(z => DB.items().forEach(i => { const q = DB.atLoc(i.id, z); if (q > 0) hold.push({ i, z, q }); }));
+    const body = hold.length ? hold.map(x =>
+      '<tr><td><b>' + x.i.name + '</b><div class="muted sm">' + x.i.code + '</div></td><td>' + x.z + '</td>' +
+      '<td class="right"><b>' + fmt(x.q) + '</b> ' + x.i.unit + '</td>' +
+      '<td><button class="ghost sm" onclick="UI.qaConvert(\'' + x.i.id + '\',\'' + x.z + '\')">' + L("convertGood") + '</button>' +
+      '<button class="ghost sm danger" onclick="UI.qaScrap(\'' + x.i.id + '\',\'' + x.z + '\')">' + L("scrapIt") + '</button></td></tr>').join("")
+      : '<tr><td colspan="4" class="muted">' + L("qaEmpty") + '</td></tr>';
+    return '<div class="card"><h2>' + L("qa") + '</h2><p class="hint">' + L("qaHint") + '</p>' +
+      '<h2 class="sub2">' + L("qaTitle") + '</h2><table><thead><tr><th>' + L("item") + '</th><th>' + L("status") +
+      '</th><th class="right">' + L("onhand") + '</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>';
+  }
+  function viewLocations() {
+    const used = DB.allLocations().filter(loc => DB.items().some(i => DB.atLoc(i.id, loc) > 0));
+    const head = '<div class="card"><h2>' + L("locations") + '</h2><p class="hint">' + L("locHint") + '</p></div>';
+    return head + used.map(loc => {
+      const here = DB.items().map(i => ({ i, q: DB.atLoc(i.id, loc) })).filter(x => x.q > 0);
+      const body = here.map(x => '<tr><td>' + x.i.name + '</td><td class="right"><b>' + fmt(x.q) + '</b> ' + x.i.unit + '</td><td class="muted sm">' + x.i.code + '</td></tr>').join("");
+      return '<div class="card"><h2 class="loc">' + loc + '</h2><table><tbody>' + body + '</tbody></table></div>';
+    }).join("");
+  }
+  const PO_PILL = { draft:"low", ordered:"low", partial:"low", received:"ok", cancelled:"out" };
+  function poStatusPill(s) { return '<span class="pill ' + (PO_PILL[s] || "low") + '">' + L("st_" + s) + '</span>'; }
+  function suggestQty(i) { const oh = DB.onHand(i.id); return Math.max(i.reorder - oh, Math.round(i.reorder * 0.5)); }
+
+  function viewPurchasing() {
+    if (purchMode === "new") return viewPONew();
+    let html = '<div class="card"><div class="suprow"><h2>' + L("purchasing") + '</h2>' +
+      '<button class="primary sm" onclick="UI.poNew(\'\')">+ ' + L("newPO") + '</button></div>' +
+      '<p class="hint">' + L("purchHint") + '</p></div>';
+
+    // --- reorder suggestions, grouped by supplier ---
+    const low = DB.items().filter(i => statusOf(i) !== "ok" && i.supplier);
+    if (low.length) {
+      const bySup = {}; low.forEach(i => { (bySup[i.supplier] = bySup[i.supplier] || []).push(i); });
+      html += '<div class="card"><h2 class="sub2">' + L("reorderSug") + '</h2>';
+      Object.keys(bySup).forEach(sk => {
+        const sup = (DB.suppliers().find(s => s.id === sk)) || { name: sk, order_url: "#" };
+        const rows = bySup[sk].map(i => '<tr><td><b>' + i.name + '</b><div class="muted sm">' + i.code + '</div></td>' +
+          '<td class="right">' + fmt(DB.onHand(i.id)) + ' ' + i.unit + '</td><td class="right muted">' + fmt(i.reorder) +
+          '</td><td class="right"><b>' + fmt(suggestQty(i)) + '</b> ' + i.unit + '</td></tr>').join("");
+        html += '<div class="poblock"><div class="suprow"><h3 class="sup">' + sup.name + '</h3><span>' +
+          '<a class="order" href="' + sup.order_url + '" target="_blank" rel="noopener">' + L("order") + ' &#8599;</a> ' +
+          '<button class="ghost sm" onclick="UI.poNew(\'' + sk + '\')">' + L("createDraft") + '</button></span></div>' +
+          '<table><thead><tr><th>' + L("item") + '</th><th class="right">' + L("onhand") + '</th><th class="right">' + L("reorder") +
+          '</th><th class="right">' + L("need") + '</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+      });
+      html += '</div>';
+    } else {
+      html += '<div class="card"><p class="ok pill big">' + L("allgood") + '</p></div>';
+    }
+
+    // --- existing purchase orders ---
+    const pos = DB.purchaseOrders();
+    html += '<div class="card"><h2 class="sub2">' + L("purchOrders") + '</h2>';
+    html += pos.length ? pos.map(poCard).join("") : '<p class="muted">' + L("noPOs") + '</p>';
+    html += '</div>';
+    return html;
+  }
+
+  function poCard(po) {
+    const receiving = receivingPOid === po.id;
+    const total = po.lines.reduce((s, l) => s + l.qty * (l.cost || 0), 0);
+    const rows = po.lines.map((l, idx) => {
+      const it = DB.items().find(i => i.id === l.item_id) || { name: l.item_id, code: "", unit: "" };
+      const out = l.qty - l.received;
+      let recvInput = "";
+      if (receiving) recvInput = out > 0
+        ? '<td><input id="rcv-' + po.id + '-' + idx + '" type="number" min="0" max="' + out + '" value="' + out + '"></td>'
+        : '<td class="muted sm">&#10003;</td>';
+      return '<tr><td>' + it.name + '<div class="muted sm">' + (it.code || "") + '</div></td>' +
+        '<td class="right">' + fmt(l.qty) + ' ' + it.unit + '</td>' +
+        '<td class="right">' + fmt(l.received) + '</td>' +
+        '<td class="right muted">' + fmt(out) + '</td>' +
+        '<td class="right muted">' + (l.cost ? money(l.cost) : "&mdash;") + '</td>' + recvInput + '</tr>';
+    }).join("");
+    let actions = "";
+    if (po.status === "draft") actions =
+      '<button class="ghost sm" onclick="UI.poOrder(\'' + po.id + '\')">' + L("markOrdered") + '</button>' +
+      '<button class="ghost sm danger" onclick="UI.poDelete(\'' + po.id + '\')">' + L("deletePO") + '</button>';
+    else if (po.status === "ordered" || po.status === "partial") actions = receiving
+      ? '<button class="primary sm" onclick="UI.poReceiveConfirm(\'' + po.id + '\')">' + L("confirmReceipt") + '</button>' +
+        '<button class="ghost sm" onclick="UI.poReceiveCancel()">' + L("backList") + '</button>'
+      : '<button class="primary sm" onclick="UI.poReceiveOpen(\'' + po.id + '\')">' + L("receivePO") + '</button>' +
+        '<button class="ghost sm danger" onclick="UI.poCancel(\'' + po.id + '\')">' + L("cancelPO") + '</button>';
+    const meta = (po.expected ? L("poExpected") + ": " + po.expected : "") + (total ? ' &middot; ' + L("poTotal") + " " + money(total) : "");
+    return '<div class="poblock"><div class="suprow"><h3>' + po.id + ' &middot; ' + DB.supplierName(po.supplier) + ' ' + poStatusPill(po.status) + '</h3>' +
+      '<span class="muted sm">' + meta + '</span></div>' +
+      '<table><thead><tr><th>' + L("item") + '</th><th class="right">' + L("orderedQ") + '</th><th class="right">' + L("received") +
+      '</th><th class="right">' + L("outstanding") + '</th><th class="right">' + L("poCost") + '</th>' +
+      (receiving ? '<th class="right">' + L("recvNow") + '</th>' : "") + '</tr></thead><tbody>' + rows + '</tbody></table>' +
+      (actions ? '<div class="poactions">' + actions + '</div>' : "") + '</div>';
+  }
+
+  function viewPONew() {
+    const sups = DB.suppliers();
+    const sk = purchSup || (sups[0] && sups[0].id) || "";
+    const supItems = DB.items().filter(i => i.supplier === sk);
+    const supOpts = sups.map(s => '<option value="' + s.id + '"' + (s.id === sk ? " selected" : "") + '>' + s.name + '</option>').join("");
+    const rows = supItems.map(i => {
+      const sugg = statusOf(i) !== "ok" ? suggestQty(i) : "";
+      return '<tr><td>' + i.name + '<div class="muted sm">' + i.code + '</div></td>' +
+        '<td class="right muted">' + fmt(DB.onHand(i.id)) + ' ' + i.unit + '</td>' +
+        '<td><input id="poq-' + i.id + '" type="number" min="0" value="' + sugg + '"></td>' +
+        '<td><input id="poc-' + i.id + '" type="number" min="0" step="0.01" placeholder="0.00"></td></tr>';
+    }).join("");
+    return '<div class="card"><div class="suprow"><h2>' + L("newPO") + '</h2>' +
+      '<button class="ghost sm" onclick="UI.poBack()">' + L("backList") + '</button></div>' +
+      '<div class="row"><div><label>' + L("chooseSupplier") + '</label><select id="po-sup" onchange="UI.poSupChange()">' + supOpts + '</select></div>' +
+      '<div><label>' + L("poExpected") + '</label><input id="po-exp" type="date"></div></div>' +
+      '<p class="hint">' + L("addLines") + '</p>' +
+      (supItems.length
+        ? '<table><thead><tr><th>' + L("item") + '</th><th class="right">' + L("onhand") + '</th><th>' + L("qty") + '</th><th>' + L("poCost") + ' $</th></tr></thead><tbody>' + rows + '</tbody></table>'
+        : '<p class="muted">&mdash;</p>') +
+      opField() + '<button class="primary" onclick="UI.poSave()">' + L("savePO") + '</button></div>';
+  }
+  function viewLabels() {
+    return '<div class="card"><h2>' + L("labels") + '</h2><p class="hint">' + L("labelsHint") + '</p>' +
+      '<button class="ghost" onclick="UI.labels(\'loc\')">' + L("printLoc") + '</button>' +
+      '<button class="ghost" onclick="UI.labels(\'item\')">' + L("printItem") + '</button>' +
+      '<button class="ghost" onclick="UI.labels(\'lpn\')">' + L("newLpn") + '</button>' +
+      '<div id="labelArea"></div></div>';
+  }
+  function viewDept(nameKey) {
+    return '<div class="card"><h2>' + L(nameKey) + '</h2>' +
+      '<p class="hint">' + L("deptSoon") + '</p>' +
+      '<div class="deptplaceholder"><span class="navico" style="font-size:34px">' + (NAV_ICON[nameKey] || "") + '</span></div></div>';
+  }
+  function viewMixing() { return viewDept("mixing"); }
+  function viewPmac() { return viewDept("pmac"); }
+  function tenureStr(s) {
+    if (!s) return "";
+    const d = new Date(s + "T00:00:00"); if (isNaN(d.getTime())) return "";
+    const now = new Date();
+    let m = (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth());
+    if (now.getDate() < d.getDate()) m--;
+    if (m < 0) m = 0;
+    const y = Math.floor(m / 12), mo = m % 12;
+    return (y ? y + " " + L("hrYr") + " " : "") + mo + " " + L("hrMo");
+  }
+  function personCard(pr) {
+    const init = (pr.n || "?").trim().slice(0, 1).toUpperCase();
+    return '<div class="pcard"><div class="pav">' + esc(init) + '</div>' +
+      '<div class="pmeta"><div class="pname">' + esc(pr.n) + '</div>' +
+      '<div class="prole">' + esc(pr.r || "") + '</div>' +
+      '</div></div>';
+  }
+  function orgHtml() {
+    const kids = {};
+    PEOPLE.forEach(p => { const m = p.m || "__root"; (kids[m] = kids[m] || []).push(p); });
+    const names = new Set(PEOPLE.map(p => p.n));
+    const roots = PEOPLE.filter(p => !p.m || !names.has(p.m));
+    function node(p) {
+      const ch = (kids[p.n] || []).slice().sort((a, b) => (a.r || "").localeCompare(b.r || "") || a.n.localeCompare(b.n));
+      return '<li><div class="onode"><span class="oname">' + esc(p.n) + '</span><span class="orole">' + esc(p.r || "") + '</span></div>' +
+        (ch.length ? '<ul>' + ch.map(node).join("") + '</ul>' : '') + '</li>';
+    }
+    return '<ul class="orgtree">' + roots.map(node).join("") + '</ul>';
+  }
+  function viewPeople() {
+    if (!unlocked) return '<div class="card"><h2>' + L("people") + '</h2><p class="hint">' + L("hrGate") + '</p>' +
+      '<button class="primary" onclick="UI.hrUnlock()">' + L("pinBtn") + '</button></div>';
+    const toggle = '<div class="ordtabs">' +
+      '<button class="' + (peopleView === "dir" ? "active" : "") + '" onclick="UI.peopleView(\'dir\')">' + L("hrDir") + ' (' + PEOPLE.length + ')</button>' +
+      '<button class="' + (peopleView === "org" ? "active" : "") + '" onclick="UI.peopleView(\'org\')">' + L("hrOrg") + '</button></div>';
+    let body;
+    if (peopleView === "org") { body = orgHtml(); }
+    else {
+      const byDept = {};
+      PEOPLE.forEach(p => { (byDept[p.d] = byDept[p.d] || []).push(p); });
+      const order = ["Operations Management", "Fulfillment", "Operations", "Shipping", "Mixing", "Packaging", "Manufacturing", "Quality", "Technician", "Human Resources", "Executive", "Sales", "Marketing", "Contractor"];
+      const depts = Object.keys(byDept).sort((a, b) => { const ia = order.indexOf(a), ib = order.indexOf(b); return ((ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib)) || a.localeCompare(b); });
+      body = '<input class="search" id="pSearch" autocomplete="off" placeholder="' + L("hrSearchP") + '" oninput="UI.peopleSearch(this.value)">' +
+        depts.map(d => '<div class="pdept"><div class="pdepthead">' + esc(d || "Other") + ' <span class="muted">(' + byDept[d].length + ')</span></div>' +
+          '<div class="pgrid">' + byDept[d].map(pr => '<div class="pcell" data-txt="' + esc((pr.n + ' ' + pr.r).toLowerCase()) + '">' + personCard(pr) + '</div>').join("") + '</div></div>').join("");
+    }
+    return '<div class="card"><h2>' + L("people") + '</h2><p class="hint">' + L("hrHint") + '</p>' + toggle + body + '</div>';
+  }
+  function viewLog() {
+    const rows = DB.log().length ? DB.log().map(e =>
+      '<tr><td class="muted sm">' + (e.t ? new Date(e.t).toLocaleString() : "") + '</td><td><b>' + e.a + '</b></td><td>' + e.d + '</td><td>' + e.u + '</td></tr>').join("")
+      : '<tr><td colspan="4" class="muted">' + L("noLog") + '</td></tr>';
+    return '<div class="card"><h2>' + L("log") + '</h2><table><thead><tr><th>' + L("when") + '</th><th>' + L("action") + '</th><th>' + L("detail") + '</th><th>' + L("operator") + '</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+  function viewSettings() {
+    const c = DB.config || {};
+    const layout = "Sections " + (c.sections || []).join("/") + ", " + (c.baysPerSection || "?") + " bays x " + ((c.levels || []).length) + " levels; docks 19-11. Snapshot " + DB.SNAPSHOT + ".";
+    const MODEMSG = {
+      cloud: { en: "CLOUD mode: connected to Supabase. All devices share live data.",
+        es: "Modo NUBE: conectado a Supabase. Todos los dispositivos comparten datos.",
+        pt: "Modo NUVEM: conectado ao Supabase. Todos os dispositivos compartilham dados ao vivo." },
+      local: { en: "LOCAL mode: data saved only in this browser. Add Supabase keys in config.js to enable cloud + multi-scanner sync.",
+        es: "Modo LOCAL: datos solo en este navegador. Agregue claves de Supabase en config.js para nube + multi-escaner.",
+        pt: "Modo LOCAL: dados salvos apenas neste navegador. Adicione as chaves do Supabase em config.js para nuvem + multi-leitor." }
+    };
+    const modeLine = (MODEMSG[DB.mode === "cloud" ? "cloud" : "local"])[lang] || MODEMSG[DB.mode === "cloud" ? "cloud" : "local"].en;
+    return '<div class="card"><h2>' + L("settings") + '</h2><p class="hint">' + L("settingsHint") + '</p>' +
+      '<p><span class="pill ' + (DB.mode === "cloud" ? "ok" : "low") + '">' + (DB.mode === "cloud" ? L("cloud") : L("localmode")) + '</span></p>' +
+      '<p class="footnote">' + modeLine + '</p><p class="footnote">' + layout + '</p>' +
+      '<p style="margin-top:10px"><span class="pill ' + (unlocked ? "ok" : "low") + '">' + (unlocked ? L("unlocked") : L("locked")) + '</span>' +
+      (unlocked ? ' <button class="ghost sm" onclick="UI.lock()">' + L("lockBtn") + '</button>' : "") + '</p>' +
+      (DB.mode === "local" ? '<button class="ghost" onclick="UI.reset()">' + L("reset") + '</button>' : "") + '</div>';
+  }
+
+  // ---------- actions ----------
+  const UI = {
+    cat(c) { catFilter = c; render(); },
+    lookup(inId, outId) { const o = $(outId); if (!o) return; const v = $(inId).value.trim();
+      if (!v) { o.innerHTML = ""; return; } const it = DB.itemByCode(v);
+      if (it) { o.className = "found"; o.innerHTML = "&#10003; " + L("found") + ": <b>" + it.name + "</b> &middot; " + L("onhand") + " " + fmt(DB.onHand(it.id)) + " " + it.unit; }
+      else { o.className = "found notfound"; o.innerHTML = "&#10007; " + L("notfound"); } },
+    async receive() {
+      const v = id => { const e = $(id); return e ? (e.value || "") : ""; };
+      const it = DB.itemByCode(v("r-code")); const q = parseFloat(v("r-qty")); const lot = v("r-lot").trim();
+      if (!i
