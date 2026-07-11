@@ -354,7 +354,7 @@
     labels:"\u{1F3F7}\u{FE0F}", log:"\u{1F4DC}", settings:"\u{2699}\u{FE0F}", supplierpos:"\u{1F4C4}",
     mixing:"\u{1F963}", pmac:"\u{1F527}", people:"\u{1F465}", orderdocs:"\u{1F4C1}" };
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
-  let spoSort = { key: "created", dir: -1 };  // Supplier POs table sort
+  let spoSort = { key: "created", dir: -1 };  // Supplier POs table sort (v25)
   function spoSortList(list) {
     const k = spoSort.key, dir = spoSort.dir;
     const val = s => {
@@ -1213,4 +1213,278 @@
     async receive() {
       const v = id => { const e = $(id); return e ? (e.value || "") : ""; };
       const it = DB.itemByCode(v("r-code")); const q = parseFloat(v("r-qty")); const lot = v("r-lot").trim();
-      if (!i
+      if (!it) return toast(L("notfound")); if (!(q > 0)) return toast(L("enter"));
+      const meta = { supplier: v("r-sup"), invoice: v("r-inv").trim(), category: v("r-cat"),
+        pallets: v("r-pal"), condition: v("r-cond") || "Good", status: v("r-stat") || "Received" };
+      const r = await DB.receive(it, q, lot, $("op").value, meta);
+      toast("+" + fmt(q) + " " + it.name + (r && r.location === "QA-HOLD" ? " -> QA-HOLD" : "")); go("receive"); },
+    async put() { const it = DB.itemByCode($("p-code").value); const loc = ($("p-loc").value || "").trim().toUpperCase(); const q = parseFloat($("p-qty").value);
+      if (!it) return toast(L("notfound")); if (!validLoc(loc)) return toast(L("badloc")); if (!(q > 0)) return toast(L("enter"));
+      const r = await DB.move(it, "RECEIVING", loc, q, $("op").value); if (!r.ok) return toast(r.msg); toast(it.name + " -> " + loc); go("putaway"); },
+    async move() { const it = DB.itemByCode($("m-code").value); const f = ($("m-from").value || "").trim().toUpperCase(); const t = ($("m-to").value || "").trim().toUpperCase(); const q = parseFloat($("m-qty").value);
+      if (!it) return toast(L("notfound")); if (!validLoc(f) || !validLoc(t)) return toast(L("badloc")); if (!(q > 0)) return toast(L("enter"));
+      const r = await DB.move(it, f, t, q, $("op").value); if (!r.ok) return toast(r.msg); toast(it.name + ": " + f + " -> " + t); go("move"); },
+    async produce() { const id = $("pr-item").value; const q = parseFloat($("pr-qty").value); const loc = ($("pr-loc").value || "PACKOUT").trim().toUpperCase();
+      if (!(q > 0)) return toast(L("enter")); if (!validLoc(loc)) return toast(L("badloc"));
+      await DB.produce(id.replace("BAG4-", ""), q, loc, $("op").value); toast(fmt(q) + " bags produced"); go("produce"); },
+    async count() { const it = DB.itemByCode($("c-code").value); const loc = ($("c-loc").value || "").trim().toUpperCase(); const q = parseFloat($("c-qty").value);
+      if (!it) return toast(L("notfound")); if (!validLoc(loc)) return toast(L("badloc")); if (!(q >= 0)) return toast(L("newqty"));
+      await DB.adjust(it, loc, q, $("op").value); toast(L("count") + " ok"); go("count"); },
+    async reset() { if (confirm("Reset demo data?")) { await DB.resetDemo(); toast("reset"); go("dash"); } },
+    // ---- Returns ----
+    async doReturn() {
+      const it = DB.itemByCode($("ret-code").value); const q = parseFloat($("ret-qty").value);
+      if (!it) return toast(L("notfound")); if (!(q > 0)) return toast(L("enter"));
+      const meta = { channel: $("ret-chan").value, reason: $("ret-reason").value,
+        disposition: $("ret-disp").value, rma: ($("ret-rma").value || "").trim() };
+      const r = await DB.returnStock(it, q, $("op").value, meta);
+      toast(L("submitReturn") + " ✓" + (r.location ? " -> " + r.location : "")); go("returns");
+    },
+    // ---- Seasoning lots ----
+    async addSeasLot() {
+      const pv = ($("sl-prod").value || "").split("|"); const wt = parseFloat($("sl-wt").value);
+      if (!pv[0]) return toast(L("notfound")); if (!(wt > 0)) return toast(L("enter"));
+      await DB.addSeasLot({ flavor_code: pv[0], product: pv[1] || pv[0], lot: ($("sl-lot").value || "").trim(),
+        manufacturer: ($("sl-mfr").value || "").trim(), exp: $("sl-exp").value || null, weight: wt }, $("op").value);
+      toast(L("addLot") + " ✓"); go("seasoning");
+    },
+    async seasStatus(id, status) { await DB.setSeasLotStatus(id, status, opVal()); toast(status); },
+    async quarExpired() { const n = await DB.quarantineExpiredSeas(opVal()); toast(n ? n + " -> " + L("quarTag") : L("allgood")); },
+    // ---- QA hold review ----
+    async qaConvert(itemId, zone) {
+      const it = DB.items().find(i => i.id === itemId); if (!it) return;
+      const q = DB.atLoc(itemId, zone); if (!(q > 0)) return;
+      const r = await DB.move(it, zone, "RECEIVING", q, opVal()); if (!r.ok) return toast(r.msg);
+      toast(it.name + " -> RECEIVING"); render();
+    },
+    async qaScrap(itemId, zone) {
+      const it = DB.items().find(i => i.id === itemId); if (!it) return;
+      if (!confirm(L("scrapIt") + "?")) return;
+      await DB.adjust(it, zone, 0, opVal()); toast(L("scrapIt") + " ✓"); render();
+    },
+    // ---- role + dashboard columns ----
+    setRole(r) { prefs.role = r; savePrefs(); if (visibleTabs().indexOf(active) < 0) active = "home"; render(); },
+    colPanel() { colPanel = !colPanel; render(); },
+    colToggle(c) { const i = prefs.colHidden.indexOf(c);
+      if (i < 0) { if (shownCols().length <= 1) return toast("!"); prefs.colHidden.push(c); } else prefs.colHidden.splice(i, 1);
+      savePrefs(); render(); },
+    colReset() { prefs.colOrder = ALL_COLS.slice(); prefs.colHidden = []; prefs.sortKey = ""; savePrefs(); render(); },
+    colDrag(c) { dragCol = c; },
+    colDrop(c) { if (!dragCol || dragCol === c) return; const o = prefs.colOrder.slice();
+      o.splice(o.indexOf(dragCol), 1); o.splice(o.indexOf(c), 0, dragCol); prefs.colOrder = o; dragCol = null; savePrefs(); render(); },
+    sort(c) { if (prefs.sortKey === c) prefs.sortDir = -prefs.sortDir; else { prefs.sortKey = c; prefs.sortDir = 1; } savePrefs(); render(); },
+    // ---- Adjust (spreadsheet-style counts) ----
+    adjSearch(v) { const q = (v || "").toLowerCase().trim();
+      document.querySelectorAll("#adjBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
+    async saveAdjust() {
+      const changes = [];
+      document.querySelectorAll("#adjBody input.adjq").forEach(inp => {
+        const v = (inp.value || "").trim(); if (v === "") return;
+        const nv = parseFloat(v); if (!(nv >= 0)) return;
+        const cur = parseFloat(inp.getAttribute("data-cur"));
+        if (nv !== cur) changes.push({ id: inp.id.replace("adj-", ""), qty: nv });
+      });
+      if (!changes.length) return toast(L("noChanges"));
+      for (const c of changes) { const it = DB.items().find(i => i.id === c.id); if (it) await DB.adjustTotal(it, c.qty, opVal()); }
+      toast(L("savedN") + " (" + changes.length + ")"); render();
+    },
+    // ---- Orders ----
+    ordView(v) { orderView = v; render(); },
+    ordAddToggle() { orderAddOpen = !orderAddOpen; render(); },
+    ordSearch(val) { const q = (val || "").toLowerCase().trim();
+      document.querySelectorAll("#ordBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
+    async ordAdd() {
+      const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
+      const cust = v("o-cust"); if (!cust) return toast(L("oCustomer"));
+      let by = v("o-by-other") || v("o-by") || "Allie"; if (by === "__other") by = "Other";
+      const rec = { customer: cust, customer_po: v("o-po"), order_id: v("o-oid"), invoice_date: v("o-inv"),
+        ship_date: v("o-ship"), tracking: v("o-trk"), carrier: v("o-carr"), appointment: v("o-appt"),
+        stripe_link: v("o-stripe"), notes: v("o-notes"), entered_by: by, status: "Open" };
+      await DB.createOrder(rec, by);
+      try { DB.notifyNewOrder(rec); } catch (e) {}  // emails Troy once the backend is configured; no-ops otherwise
+      orderAddOpen = false; orderView = "open"; toast(L("ordAdded")); render();
+    },
+    async ordComplete(id) { await DB.setOrderStatus(id, "Complete", opVal()); toast(L("markComplete") + " ✓"); },
+    async ordReopen(id) { await DB.setOrderStatus(id, "Open", opVal()); toast(L("reopen") + " ✓"); },
+    // ---- People / HR ----
+    async hrUnlock() { await ensureUnlocked(); },
+    peopleView(v) { peopleView = v; render(); },
+    peopleSearch(val) { const q = (val || "").toLowerCase().trim();
+      document.querySelectorAll("#view .pcell").forEach(c => { const t = c.getAttribute("data-txt") || ""; c.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; });
+      document.querySelectorAll("#view .pdept").forEach(d => { const any = Array.from(d.querySelectorAll(".pcell")).some(c => c.style.display !== "none"); d.style.display = any ? "" : "none"; }); },
+    // ---- R&D / sample requests ----
+    rdView(v) { rdView = v; render(); },
+    rdAddToggle() { rdAddOpen = !rdAddOpen; render(); },
+    rdSearch(val) { const q = (val || "").toLowerCase().trim();
+      document.querySelectorAll("#rdBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
+    async rdAdd() {
+      const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
+      const co = v("rd-co"), items = v("rd-items");
+      if (!co) return toast(L("rdCompany")); if (!items) return toast(L("rdItems"));
+      const by = $("rd-op") ? $("rd-op").value : "";
+      await DB.createRdRequest({ req_type: v("rd-type"), company: co, contact_name: v("rd-cn"), contact_email: v("rd-em"),
+        items: items, quantity: v("rd-qty"), needed_by: v("rd-need"), purpose: v("rd-purp"),
+        follow_up: v("rd-follow"), notes: v("rd-notes"), requested_by: by, status: "Pending" }, by || "Troy");
+      rdAddOpen = false; rdView = "pending"; toast(L("rdAdded")); render();
+    },
+    async rdReceived(id) { if (!confirm(L("rdConfirmRecv"))) return; await DB.setRdStatus(id, "Received", rdOp()); toast(L("rdMarkRecv") + " ✓"); },
+    async rdReopen(id) { await DB.setRdStatus(id, "Pending", rdOp()); toast(L("rdReopenB") + " ✓"); },
+    rdPdf(id) { const r = DB.rdRequests().find(x => String(x.id) === String(id)); if (!r) return;
+      const doc = rdDoc(r); if (!doc) return toast("PDF lib not loaded"); doc.save((r.req_no || "request") + ".pdf"); },
+    async rdSend(id) {
+      const r = DB.rdRequests().find(x => String(x.id) === String(id)); if (!r) return;
+      if (!r.contact_email) return toast(L("rdEmail"));
+      const doc = rdDoc(r); if (!doc) return toast("PDF lib not loaded");
+      const b64 = doc.output("datauristring").split(",")[1];
+      toast(L("rdSending"));
+      const res = await DB.sendRdEmail(id, { to: r.contact_email, subject: L("rdEmailSubject") + " - " + (r.req_no || ""),
+        html: rdEmailHtml(r), pdfBase64: b64, pdfName: (r.req_no || "request") + ".pdf" }, rdOp());
+      if (res.ok) { toast(L("rdSendOk")); render(); }
+      else if (res.msg === "not-configured") { toast(L("rdSendNo")); }
+      else { toast(L("rdSendFail")); }
+    },
+    // ---- Supplier POs (upload) ----
+    async spoFile(input) { const f = input.files && input.files[0]; if (!f) return; spoFile = f; toast(L("spoParsed"));
+      spoParsed = (await spoParseFile(f)) || { vendor: "", po_num: "", po_date: "", total: "", item_count: 0, lines: "[]", recognized: false }; render(); },
+    spoClear() { spoFile = null; spoParsed = null; render(); },
+    async spoSave() {
+      if (!spoFile) return toast(L("spoNoFile"));
+      const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
+      const by = $("op") ? $("op").value : "";
+      const rec = { vendor: v("spo-vendor"), po_num: v("spo-po"), po_date: v("spo-date"), total: v("spo-total"),
+        item_count: (spoParsed && spoParsed.item_count) || 0, lines: (spoParsed && spoParsed.lines) || "[]", notes: v("spo-notes") };
+      const res = await DB.createSupplierPO(rec, spoFile, by);
+      if (!res.ok) return toast(res.msg || "error");
+      spoFile = null; spoParsed = null; toast(L("spoSaved")); render();
+    },
+    async spoDelete(id) { if (!confirm(L("spoConfirmDel"))) return; await DB.deleteSupplierPO(id, opVal()); toast(L("spoDelete") + " ✓"); },
+    spoSearch(val) { const q = (val || "").toLowerCase().trim();
+      document.querySelectorAll("#spoBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
+    spoSortBy(k) { if (spoSort.key === k) spoSort.dir *= -1; else spoSort = { key: k, dir: (k === "total" || k === "item_count" || k === "po_date") ? -1 : 1 }; render(); },
+    // ---- Order Docs (fulfilled-order paperwork) ----
+    odocFile(input) { const f = input.files && input.files[0]; if (!f) return; odocFile = f; render(); },
+    odocClear() { odocFile = null; render(); },
+    async odocSave() {
+      if (!odocFile) return toast(L("odocNoFile"));
+      const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
+      const by = $("op") ? $("op").value : "";
+      const rec = { customer: v("odoc-cust"), po_num: v("odoc-po"), doc_type: v("odoc-type"), notes: v("odoc-notes") };
+      const res = await DB.createOrderDoc(rec, odocFile, by);
+      if (!res.ok) return toast(res.msg || "error");
+      odocFile = null; toast(L("odocSaved")); render();
+    },
+    async odocDelete(id) { if (!confirm(L("odocConfirmDel"))) return; await DB.deleteOrderDoc(id, opVal()); toast(L("spoDelete") + " ✓"); },
+    odocSearch(val) { const q = (val || "").toLowerCase().trim();
+      document.querySelectorAll("#odocBody .odcust").forEach(c => { const t = c.getAttribute("data-txt") || ""; c.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
+    // ---- Purchase Orders ----
+    poNew(sk) { purchSup = sk || null; purchMode = "new"; active = "purchasing"; closeDrawer(); render(); },
+    poBack() { purchMode = "list"; render(); },
+    poSupChange() { purchSup = $("po-sup").value; render(); },
+    async poSave() {
+      const sk = $("po-sup").value, exp = $("po-exp").value || null, lines = [];
+      DB.items().filter(i => i.supplier === sk).forEach(i => {
+        const qe = $("poq-" + i.id), ce = $("poc-" + i.id);
+        const q = qe ? parseFloat(qe.value) : 0, c = ce ? parseFloat(ce.value) || 0 : 0;
+        if (q > 0) lines.push({ item_id: i.id, qty: q, cost: c });
+      });
+      if (!lines.length) return toast(L("enter"));
+      await DB.createPO(sk, lines, exp, opVal()); toast(L("poCreated")); purchMode = "list"; render();
+    },
+    async poOrder(id) { await DB.setPOStatus(id, "ordered", opVal()); toast(id); },
+    async poCancel(id) { if (confirm(L("cancelPO") + " " + id + "?")) await DB.setPOStatus(id, "cancelled", opVal()); },
+    async poDelete(id) { if (confirm(L("deletePO") + " " + id + "?")) await DB.deletePO(id, opVal()); },
+    poReceiveOpen(id) { receivingPOid = id; render(); },
+    poReceiveCancel() { receivingPOid = null; render(); },
+    async poReceiveConfirm(id) {
+      const po = DB.purchaseOrders().find(p => p.id === id); if (!po) return;
+      const r = {}; po.lines.forEach((l, idx) => { const e = $("rcv-" + id + "-" + idx); if (e) r[idx] = parseFloat(e.value) || 0; });
+      const res = await DB.receivePO(id, r, opVal()); if (!res.ok) return toast(res.msg);
+      receivingPOid = null; toast(L("received") + " &#10003;"); render();
+    },
+    labels(kind) {
+      const area = $("labelArea"); let list = [];
+      if (kind === "loc") list = DB.allLocations().map(c => ({ code: c, name: c }));
+      else if (kind === "item") list = DB.items().map(i => ({ code: i.code, name: i.name }));
+      else if (kind === "lpn") { const lpn = "LPN-" + Date.now().toString().slice(-8); list = [{ code: lpn, name: "Pallet " + lpn }]; }
+      area.innerHTML = '<div class="labelgrid" id="labelgrid">' +
+        list.map((x, n) => '<div class="lbl"><svg id="bc' + n + '"></svg><div class="lblcap">' + x.name + '</div></div>').join("") +
+        '</div><button class="primary" onclick="window.print()">' + L("print") + '</button>';
+      list.forEach((x, n) => { try { JsBarcode("#bc" + n, x.code, { format: "CODE128", width: 2, height: 48, fontSize: 13, margin: 6 }); } catch (e) {} });
+    },
+    async cam(targetId) {
+      if (!window.Html5Qrcode) { toast("Camera lib not loaded"); return; }
+      let modal = $("camModal");
+      if (!modal) { modal = document.createElement("div"); modal.id = "camModal"; modal.className = "cammodal";
+        modal.innerHTML = '<div class="cambox"><div id="reader"></div><button class="ghost" id="camClose">Close</button></div>';
+        document.body.appendChild(modal); }
+      modal.style.display = "flex";
+      const reader = new Html5Qrcode("reader");
+      const stop = () => { reader.stop().then(() => { modal.style.display = "none"; }).catch(() => { modal.style.display = "none"; }); };
+      $("camClose").onclick = stop;
+      reader.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
+        const f = $(targetId); if (f) { f.value = text; f.dispatchEvent(new Event("input")); }
+        stop(); toast(text);
+      }).catch(() => toast("Camera unavailable"));
+    },
+    setLang
+  };
+  window.UI = UI;
+  UI.lock = lockEdits;
+  // Gate every write action behind the PIN. Viewing stays open.
+  ["saveAdjust","ordAdd","ordComplete","ordReopen","receive","put","move","produce","count","doReturn","addSeasLot","seasStatus","quarExpired","qaConvert","qaScrap","poSave","poOrder","poCancel","poDelete","poReceiveConfirm","reset"].forEach(fn => {
+    const orig = UI[fn];
+    if (typeof orig !== "function") return;
+    UI[fn] = async function () { if (!(await ensureUnlocked())) return; return orig.apply(UI, arguments); };
+  });
+
+  function refreshDatalists() {
+    $("dl-items").innerHTML = DB.items().map(i => '<option value="' + i.code + '">' + i.name + "</option>").join("");
+    $("dl-locs").innerHTML = DB.allLocations().map(l => '<option value="' + l + '"></option>').join("");
+  }
+  function closeDrawer() { const n = $("nav"), b = $("navBackdrop"); if (n) n.classList.remove("open"); if (b) b.classList.remove("show"); }
+  function renderNav() {
+    const vis = visibleTabs();
+    const roleSel = '<select class="rolesel" title="' + L("role") + '" onchange="UI.setRole(this.value)">' +
+      [["all", "roleAll"], ["receiving", "roleReceiving"], ["production", "roleProduction"], ["mixing", "roleMixing"], ["pmac", "rolePmac"], ["rnd", "roleRnd"]].map(([v, k]) =>
+        '<option value="' + v + '"' + (prefs.role === v ? " selected" : "") + '>' + L(k) + '</option>').join("") + '</select>';
+    let html = roleSel;
+    NAV_GROUPS.forEach(g => {
+      const items = g.items.filter(t => vis.indexOf(t) >= 0);
+      if (!items.length) return;
+      html += '<div class="navgroup">' + (g.key ? '<div class="navlabel">' + L(g.key) + '</div>' : "");
+      html += items.map(tb => {
+        let badge = "";
+        if (tb === "orders" && newOrdersCount() > 0) badge = '<span class="navbadge">' + newOrdersCount() + '</span>';
+        else if (tb === "alerts" && alertCount() > 0) badge = '<span class="navbadge alert">' + alertCount() + '</span>';
+        return '<button class="navitem ' + (tb === active ? "active" : "") + '" onclick="UI_go(\'' + tb + '\')">' +
+          '<span class="navico">' + (NAV_ICON[tb] || "") + '</span><span>' + L(tb) + '</span>' + badge + '</button>';
+      }).join("");
+      html += '</div>';
+    });
+    $("nav").innerHTML = html;
+  }
+  window.UI_go = go;
+  function render() {
+    renderNav(); refreshDatalists();
+    const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
+      move: viewMove, produce: viewProduce, seasoning: viewSeasoning, mixing: viewMixing, pmac: viewPmac,
+      count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, people: viewPeople, labels: viewLabels, log: viewLog, settings: viewSettings };
+    $("view").innerHTML = (map[active] || viewHome)();
+    $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
+    $("modeBadge").className = "modebadge " + (DB.mode === "cloud" ? "ok" : "low");
+  }
+
+  // ---------- boot ----------
+  window.addEventListener("DOMContentLoaded", async () => {
+    $("lang-en").onclick = () => setLang("en");
+    $("lang-es").onclick = () => setLang("es");
+    if ($("lang-pt")) $("lang-pt").onclick = () => setLang("pt");
+    if ($("navToggle")) $("navToggle").onclick = () => { const n = $("nav"), b = $("navBackdrop"); const open = !n.classList.contains("open"); n.classList.toggle("open", open); if (b) b.classList.toggle("show", open); };
+    if ($("navBackdrop")) $("navBackdrop").onclick = closeDrawer;
+    await DB.init();
+    if (!ordersSeen) markOrdersSeen();  // first run: existing orders are not "new"
+    DB.onChange(render);
+    render();
+    if ("serviceWorker" in navigator) { try { navigator.serviceWorker.register("service-worker.js"); } catch (e) {} }
+  });
+})();
