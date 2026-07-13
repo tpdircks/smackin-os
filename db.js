@@ -367,6 +367,26 @@ window.DB = (function () {
     emit();
     return { ok: true };
   }
+  async function updateShipping(id, rec, op) {
+    const patch = {
+      ship_date: rec.ship_date || null, ship_type: rec.ship_type || "", recipient: rec.recipient || "",
+      address: rec.address || "", carrier: rec.carrier || "", tracking: rec.tracking || "",
+      requested_by: rec.requested_by || "", contents: rec.contents || "", status: rec.status || "Shipped",
+      cost: Number(rec.cost) || 0, notes: rec.notes || ""
+    };
+    const logEntry = { a: "Shipment edited", d: (patch.recipient || "") + (patch.tracking ? " (" + patch.tracking + ")" : ""), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      await sb.from("shipping_log").update(patch).eq("id", id);
+      await cloud.addLog(logEntry);
+      await cloud.loadAll();
+    } else {
+      const s = (cache.shippingLog || []).find(x => String(x.id) === String(id));
+      if (s) Object.assign(s, patch);
+      local.addLog(logEntry); local.save();
+    }
+    emit();
+    return { ok: true };
+  }
   async function deleteShipping(id, op) {
     if (mode === "cloud") {
       await sb.from("shipping_log").delete().eq("id", id);
@@ -412,6 +432,37 @@ window.DB = (function () {
       row.id = "RCV-" + Date.now().toString(36) + "-" + Math.floor(Math.random() * 1000);
       if (file && !file_url) row.file_url = URL.createObjectURL(file);
       cache.receivingLog.unshift(row);
+      local.addLog(logEntry); local.save();
+    }
+    emit();
+    return { ok: true };
+  }
+  async function updateReceivingLog(id, rec, file, op) {
+    let filePatch = {};
+    if (mode === "cloud" && file) {
+      try {
+        const path = "recv_" + Date.now() + "_" + (file.name || "doc").replace(/[^\w.\-]+/g, "_");
+        const up = await sb.storage.from(RECV_BUCKET).upload(path, file, { upsert: false, contentType: file.type || undefined });
+        if (up.error) return { ok: false, msg: up.error.message || "upload failed" };
+        const pub = sb.storage.from(RECV_BUCKET).getPublicUrl(path);
+        filePatch = { file_name: file.name, file_path: path, file_url: (pub && pub.data && pub.data.publicUrl) || "" };
+      } catch (e) { return { ok: false, msg: String(e) }; }
+    }
+    const patch = Object.assign({
+      recv_date: rec.recv_date || null, supplier: rec.supplier || "", po_num: rec.po_num || "",
+      carrier: rec.carrier || "", tracking: rec.tracking || "", contents: rec.contents || "",
+      qty_ordered: rec.qty_ordered === "" || rec.qty_ordered == null ? null : Number(rec.qty_ordered),
+      qty_received: rec.qty_received === "" || rec.qty_received == null ? null : Number(rec.qty_received),
+      condition: rec.condition || "Good", received_by: rec.received_by || "", notes: rec.notes || ""
+    }, filePatch);
+    const logEntry = { a: "Receiving edited", d: (patch.supplier || "") + (patch.po_num ? " PO " + patch.po_num : ""), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      await sb.from("receiving_log").update(patch).eq("id", id);
+      await cloud.addLog(logEntry);
+      await cloud.loadAll();
+    } else {
+      const s = (cache.receivingLog || []).find(x => String(x.id) === String(id));
+      if (s) Object.assign(s, patch);
       local.addLog(logEntry); local.save();
     }
     emit();
@@ -842,8 +893,8 @@ window.DB = (function () {
     returnStock, seasLots, addSeasLot, setSeasLotStatus, quarantineExpiredSeas,
     seedLots, addSeedLot, setSeedLotStatus,
     stockBuild, setStockBuildOnHand,
-    shippingLog, addShipping, setShippingStatus, deleteShipping,
-    receivingLog, addReceivingLog, deleteReceivingLog,
+    shippingLog, addShipping, setShippingStatus, updateShipping, deleteShipping,
+    receivingLog, addReceivingLog, updateReceivingLog, deleteReceivingLog,
     orders, createOrder, updateOrder, setOrderStatus, deleteOrder, notifyNewOrder,
     rdRequests, createRdRequest, updateRdRequest, setRdStatus, deleteRdRequest, sendRdEmail,
     supplierPos, createSupplierPO, deleteSupplierPO,

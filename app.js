@@ -82,6 +82,7 @@
       shlDate:"Date", shlType:"Type", shlRecipient:"Recipient", shlAddress:"Address", shlCarrier:"Carrier", shlTracking:"Tracking #", shlReqBy:"Requested by", shlCost:"Cost", shlContents:"What was sent", shlStatus:"Status", shlNotes:"Notes", shlSave:"Log shipment", shlArchive:"Shipment log", shlNone:"No shipments logged yet. Add one above.", shlSearchP:"Search recipient, tracking, type...", shlLogged:"Shipment logged", shlConfirmDel:"Delete this shipment entry?",
       recvlog:"Receiving Log", rlHint:"Log every inbound shipment and attach the paperwork (packing slip, BOL, invoice). Pick the carrier and the PRO/tracking # becomes a clickable link.",
       rlDrop:"Attach paperwork  (PDF, Excel, image, Word)", rlDate:"Date", rlSupplier:"Supplier", rlPO:"PO #", rlCarrier:"Carrier", rlTracking:"Tracking / PRO #", rlContents:"What was received", rlQtyOrd:"Qty ordered", rlQtyRec:"Qty received", rlShortOver:"Short/Over", rlCondition:"Condition", rlReceivedBy:"Received by", rlNotes:"Notes", rlDoc:"Doc", rlSave:"Log receipt", rlArchive:"Receiving log", rlNone:"No receipts logged yet. Add one above.", rlSearchP:"Search supplier, PO, carrier...", rlLogged:"Receipt logged", rlConfirmDel:"Delete this receiving entry?",
+      editRow:"Edit", editingRow:"Editing this entry - change what you need, then Save.", saveChanges:"Save changes", saved:"Saved", rlKeepDoc:"current file kept unless you attach a new one",
       poCreate:"+ Create PO", poNewTitle:"New Purchase Order", poVendorAddr:"Vendor address", poVendorEmail:"Vendor email", poVendorPhone:"Vendor phone", poShipTo:"Ship to", poPreparedBy:"Prepared by", poAddLine:"+ Add line", poItemNo:"Item #", poDesc:"Description", poQtyL:"Qty", poPriceL:"Price", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Shipping", poTaxL:"Tax", poOtherL:"Other", poGrandL:"Total", poSaveBtn:"Save PO", poBackList:"Back to list", poSavedMsg:"PO saved", poNeedVendor:"Enter a vendor first",
       rdHint:"Request samples and ingredients here. Each request generates a PDF and is tracked Pending until it arrives.",
       rdPending:"Pending", rdDone:"Received", rdAdd:"+ New request", rdSave:"Save request", rdCancel:"Cancel",
@@ -172,6 +173,7 @@
       shlDate:"Fecha", shlType:"Tipo", shlRecipient:"Destinatario", shlAddress:"Direccion", shlCarrier:"Transportista", shlTracking:"# de Rastreo", shlReqBy:"Solicitado por", shlCost:"Costo", shlContents:"Que se envio", shlStatus:"Estado", shlNotes:"Notas", shlSave:"Registrar envio", shlArchive:"Registro de envios", shlNone:"Aun no hay envios. Agregue uno arriba.", shlSearchP:"Buscar destinatario, rastreo, tipo...", shlLogged:"Envio registrado", shlConfirmDel:"Eliminar este registro de envio?",
       recvlog:"Registro de Recibo", rlHint:"Registre cada envio entrante y adjunte el papeleo (remito, BOL, factura). Elija el transportista y el # PRO/rastreo se vuelve un enlace.",
       rlDrop:"Adjuntar papeleo  (PDF, Excel, imagen, Word)", rlDate:"Fecha", rlSupplier:"Proveedor", rlPO:"# OC", rlCarrier:"Transportista", rlTracking:"# Rastreo / PRO", rlContents:"Que se recibio", rlQtyOrd:"Cant. pedida", rlQtyRec:"Cant. recibida", rlShortOver:"Faltante/Sobrante", rlCondition:"Condicion", rlReceivedBy:"Recibido por", rlNotes:"Notas", rlDoc:"Doc", rlSave:"Registrar recibo", rlArchive:"Registro de recibo", rlNone:"Aun no hay recibos. Agregue uno arriba.", rlSearchP:"Buscar proveedor, OC, transportista...", rlLogged:"Recibo registrado", rlConfirmDel:"Eliminar este registro de recibo?",
+      editRow:"Editar", editingRow:"Editando esta entrada - cambie lo necesario y guarde.", saveChanges:"Guardar cambios", saved:"Guardado", rlKeepDoc:"se conserva el archivo actual salvo que adjunte uno nuevo",
       poCreate:"+ Crear OC", poNewTitle:"Nueva Orden de Compra", poVendorAddr:"Direccion del proveedor", poVendorEmail:"Correo del proveedor", poVendorPhone:"Telefono del proveedor", poShipTo:"Enviar a", poPreparedBy:"Preparado por", poAddLine:"+ Agregar linea", poItemNo:"Articulo #", poDesc:"Descripcion", poQtyL:"Cant", poPriceL:"Precio", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Envio", poTaxL:"Impuesto", poOtherL:"Otro", poGrandL:"Total", poSaveBtn:"Guardar OC", poBackList:"Volver a la lista", poSavedMsg:"OC guardada", poNeedVendor:"Ingrese un proveedor primero",
       rdHint:"Solicite muestras e ingredientes aqui. Cada solicitud genera un PDF y se sigue como Pendiente hasta que llega.",
       rdPending:"Pendiente", rdDone:"Recibido", rdAdd:"+ Nueva solicitud", rdSave:"Guardar solicitud", rdCancel:"Cancelar",
@@ -262,6 +264,7 @@
       shlDate:"Data", shlType:"Tipo", shlRecipient:"Destinatario", shlAddress:"Endereco", shlCarrier:"Transportadora", shlTracking:"No de Rastreio", shlReqBy:"Solicitado por", shlCost:"Custo", shlContents:"O que foi enviado", shlStatus:"Status", shlNotes:"Notas", shlSave:"Registrar envio", shlArchive:"Registro de envios", shlNone:"Nenhum envio ainda. Adicione um acima.", shlSearchP:"Buscar destinatario, rastreio, tipo...", shlLogged:"Envio registrado", shlConfirmDel:"Excluir este registro de envio?",
       recvlog:"Registro de Recebimento", rlHint:"Registre cada envio recebido e anexe a papelada (romaneio, BOL, fatura). Escolha a transportadora e o no PRO/rastreio vira um link.",
       rlDrop:"Anexar papelada  (PDF, Excel, imagem, Word)", rlDate:"Data", rlSupplier:"Fornecedor", rlPO:"No OC", rlCarrier:"Transportadora", rlTracking:"Rastreio / PRO", rlContents:"O que foi recebido", rlQtyOrd:"Qtd pedida", rlQtyRec:"Qtd recebida", rlShortOver:"Falta/Sobra", rlCondition:"Condicao", rlReceivedBy:"Recebido por", rlNotes:"Notas", rlDoc:"Doc", rlSave:"Registrar recebimento", rlArchive:"Registro de recebimento", rlNone:"Nenhum recebimento ainda. Adicione um acima.", rlSearchP:"Buscar fornecedor, OC, transportadora...", rlLogged:"Recebimento registrado", rlConfirmDel:"Excluir este registro de recebimento?",
+      editRow:"Editar", editingRow:"Editando esta entrada - altere o necessario e salve.", saveChanges:"Salvar alteracoes", saved:"Salvo", rlKeepDoc:"o arquivo atual e mantido a menos que anexe um novo",
       poCreate:"+ Criar OC", poNewTitle:"Nova Ordem de Compra", poVendorAddr:"Endereco do fornecedor", poVendorEmail:"Email do fornecedor", poVendorPhone:"Telefone do fornecedor", poShipTo:"Enviar para", poPreparedBy:"Preparado por", poAddLine:"+ Adicionar linha", poItemNo:"Item #", poDesc:"Descricao", poQtyL:"Qtd", poPriceL:"Preco", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Frete", poTaxL:"Imposto", poOtherL:"Outro", poGrandL:"Total", poSaveBtn:"Salvar OC", poBackList:"Voltar a lista", poSavedMsg:"OC salva", poNeedVendor:"Insira um fornecedor primeiro",
       rdHint:"Solicite amostras e ingredientes aqui. Cada solicitacao gera um PDF e e acompanhada como Pendente ate chegar.",
       rdPending:"Pendente", rdDone:"Recebido", rdAdd:"+ Nova solicitacao", rdSave:"Salvar solicitacao", rdCancel:"Cancelar",
@@ -492,6 +495,7 @@
   let shipSearch = "";                        // Shipping Log filter text
   let recvSortKey = "recv_date", recvSortDir = -1;  // Receiving Log sort state
   let recvFile = null;                        // Receiving Log paperwork upload state
+  let shipEditId = null, recvEditId = null, orderEditId = null;  // inline-edit: id of record being edited
   let locSel = null;      // selected slot/zone code in the rack map
   // Physically blocked rack slots (numbering unchanged; not storable) - Troy's real floor
   const BLOCKED_SLOTS = new Set(["A-23-L1","B-15-L4","B-16-L4","B-17-L4","B-21-L4","B-22-L4","C-21-L4","C-22-L4","D-17-L4","D-18-L4","D-23-L4","D-24-L4"]);
@@ -776,22 +780,26 @@
     const toggle = '<div class="ordtabs">' +
       '<button class="' + (orderView === "open" ? "active" : "") + '" onclick="UI.ordView(\'open\')">' + L("ordOpen") + ' (' + openList.length + ')</button>' +
       '<button class="' + (orderView === "complete" ? "active" : "") + '" onclick="UI.ordView(\'complete\')">' + L("ordComplete") + ' (' + compList.length + ')</button></div>';
-    const addForm = orderAddOpen ? (
+    const eo = orderEditId ? (DB.orders().find(o => String(o.id) === String(orderEditId)) || {}) : {};
+    const oediting = !!(orderEditId && eo.id);
+    const oav = x => esc(x == null ? "" : x);
+    const addForm = (orderAddOpen || oediting) ? (
       '<div class="ordform">' +
-      '<div class="row"><div><label>' + L("oCustomer") + '</label><input id="o-cust" autocomplete="off"></div>' +
-      '<div><label>' + L("oPO") + '</label><input id="o-po" autocomplete="off"></div>' +
-      '<div><label>' + L("oOrderId") + '</label><input id="o-oid" autocomplete="off"></div></div>' +
-      '<div class="row"><div><label>' + L("oInvDate") + '</label><input id="o-inv" autocomplete="off" placeholder="mm/dd/yyyy"></div>' +
-      '<div><label>' + L("oShipDate") + '</label><input id="o-ship" autocomplete="off" placeholder="mm/dd/yyyy"></div>' +
-      '<div><label>' + L("oCarrier") + '</label><input id="o-carr" autocomplete="off" placeholder="XPO / UPS / ESTES..."></div></div>' +
-      '<div class="row"><div><label>' + L("oTracking") + '</label><input id="o-trk" autocomplete="off"></div>' +
-      '<div><label>' + L("oAppt") + ' <span class="muted">(opt.)</span></label><input id="o-appt" autocomplete="off"></div>' +
-      '<div><label>' + L("oStripe") + ' <span class="muted">(opt.)</span></label><input id="o-stripe" autocomplete="off"></div></div>' +
-      '<div><label>' + L("oNotes") + '</label><input id="o-notes" autocomplete="off"></div>' +
-      '<div class="row"><div><label>' + L("oEnteredBy") + '</label><select id="o-by">' + ORDER_ENTERERS.map(n => '<option>' + n + '</option>').join("") + '<option value="__other">' + L("oOther") + '</option></select></div>' +
+      (oediting ? '<p class="hint">&#9998; ' + L("editingRow") + '</p>' : '') +
+      '<div class="row"><div><label>' + L("oCustomer") + '</label><input id="o-cust" autocomplete="off" value="' + oav(eo.customer) + '"></div>' +
+      '<div><label>' + L("oPO") + '</label><input id="o-po" autocomplete="off" value="' + oav(eo.customer_po) + '"></div>' +
+      '<div><label>' + L("oOrderId") + '</label><input id="o-oid" autocomplete="off" value="' + oav(eo.order_id) + '"></div></div>' +
+      '<div class="row"><div><label>' + L("oInvDate") + '</label><input id="o-inv" autocomplete="off" placeholder="mm/dd/yyyy" value="' + oav(eo.invoice_date) + '"></div>' +
+      '<div><label>' + L("oShipDate") + '</label><input id="o-ship" autocomplete="off" placeholder="mm/dd/yyyy" value="' + oav(eo.ship_date) + '"></div>' +
+      '<div><label>' + L("oCarrier") + '</label><input id="o-carr" autocomplete="off" placeholder="XPO / UPS / ESTES..." value="' + oav(eo.carrier) + '"></div></div>' +
+      '<div class="row"><div><label>' + L("oTracking") + '</label><input id="o-trk" autocomplete="off" value="' + oav(eo.tracking) + '"></div>' +
+      '<div><label>' + L("oAppt") + ' <span class="muted">(opt.)</span></label><input id="o-appt" autocomplete="off" value="' + oav(eo.appointment) + '"></div>' +
+      '<div><label>' + L("oStripe") + ' <span class="muted">(opt.)</span></label><input id="o-stripe" autocomplete="off" value="' + oav(eo.stripe_link) + '"></div></div>' +
+      '<div><label>' + L("oNotes") + '</label><input id="o-notes" autocomplete="off" value="' + oav(eo.notes) + '"></div>' +
+      '<div class="row"><div><label>' + L("oEnteredBy") + '</label><select id="o-by">' + ORDER_ENTERERS.map(n => '<option' + (oediting && eo.entered_by === n ? ' selected' : '') + '>' + n + '</option>').join("") + '<option value="__other">' + L("oOther") + '</option></select></div>' +
       '<div><label>' + L("oByOther") + ' <span class="muted">(opt.)</span></label><input id="o-by-other" autocomplete="off"></div></div>' +
-      '<button class="primary" onclick="UI.ordAdd()">' + L("ordSave") + '</button> ' +
-      '<button class="ghost" style="margin-top:14px" onclick="UI.ordAddToggle()">' + L("ordCancel") + '</button></div>'
+      '<button class="primary" onclick="UI.ordAdd()">' + (oediting ? L("saveChanges") : L("ordSave")) + '</button> ' +
+      '<button class="ghost" style="margin-top:14px" onclick="UI.' + (oediting ? "ordEditCancel" : "ordAddToggle") + '()">' + L("ordCancel") + '</button></div>'
     ) : "";
     const rows = list.length ? list.map(o => {
       const txt = ((o.customer || "") + " " + (o.customer_po || "") + " " + (o.order_id || "") + " " + (o.tracking || "") + " " + (o.carrier || "")).toLowerCase().replace(/"/g, "");
@@ -805,7 +813,7 @@
         '<td class="muted sm">' + (o.ship_date || o.invoice_date || "") + '</td>' +
         '<td>' + trk + stripe + '</td>' +
         '<td>' + (o.notes ? '<span class="sm">' + o.notes + '</span>' : "") + '</td>' +
-        '<td>' + act + '</td></tr>';
+        '<td>' + act + ' <button class="ghost sm" title="' + L("editRow") + '" onclick="UI.ordEdit(\'' + o.id + '\')">&#9998;</button></td></tr>';
     }).join("") : '<tr><td colspan="6" class="muted">' + (orderView === "complete" ? L("noCompleteOrders") : L("noOpenOrders")) + '</td></tr>';
     return '<div class="card"><div class="suprow"><h2>' + L("orders") + '</h2>' +
       '<button class="primary sm" onclick="UI.ordAddToggle()">' + L("ordAdd") + '</button></div>' +
@@ -1109,20 +1117,26 @@
   }
   function viewShippingLog() {
     const today = new Date().toISOString().slice(0, 10);
+    const ed = shipEditId ? (DB.shippingLog().find(s => String(s.id) === String(shipEditId)) || {}) : {};
+    const editing = !!(shipEditId && ed.id);
+    const av = x => esc(x == null ? "" : x);
+    const selOpt = (arr, cur, def) => arr.map(t => '<option' + (t === (cur != null && cur !== "" ? cur : def) ? " selected" : "") + '>' + t + '</option>').join("");
     const form = '<div class="ordform">' +
-      '<div class="row"><div><label>' + L("shlDate") + '</label><input id="shl-date" type="date" value="' + today + '"></div>' +
-      '<div><label>' + L("shlType") + '</label><select id="shl-type">' + SHIP_TYPES.map(t => "<option>" + t + "</option>").join("") + '</select></div>' +
-      '<div><label>' + L("shlStatus") + '</label><select id="shl-status">' + SHIP_STATUSES.map(t => '<option' + (t === "Shipped" ? " selected" : "") + '>' + t + '</option>').join("") + '</select></div></div>' +
-      '<div class="row"><div><label>' + L("shlRecipient") + '</label><input id="shl-recipient" autocomplete="off"></div>' +
-      '<div><label>' + L("shlReqBy") + '</label><input id="shl-reqby" list="dl-shl-reqby" autocomplete="off"></div></div>' +
-      '<div><label>' + L("shlAddress") + '</label><input id="shl-address" autocomplete="off"></div>' +
-      '<div class="row"><div><label>' + L("shlCarrier") + '</label><select id="shl-carrier">' + SHIP_CARRIERS.map(t => "<option>" + t + "</option>").join("") + '</select></div>' +
-      '<div><label>' + L("shlTracking") + '</label><input id="shl-tracking" autocomplete="off"></div>' +
-      '<div><label>' + L("shlCost") + ' <span class="muted">(opt.)</span></label><input id="shl-cost" type="number" min="0" step="0.01" placeholder="0.00"></div></div>' +
-      '<div><label>' + L("shlContents") + '</label><input id="shl-contents" autocomplete="off"></div>' +
-      '<div><label>' + L("shlNotes") + ' <span class="muted">(opt.)</span></label><input id="shl-notes" autocomplete="off"></div>' +
+      (editing ? '<p class="hint">&#9998; ' + L("editingRow") + '</p>' : '') +
+      '<div class="row"><div><label>' + L("shlDate") + '</label><input id="shl-date" type="date" value="' + (editing && ed.ship_date ? (ed.ship_date + "").slice(0, 10) : today) + '"></div>' +
+      '<div><label>' + L("shlType") + '</label><select id="shl-type">' + selOpt(SHIP_TYPES, ed.ship_type, "Sample") + '</select></div>' +
+      '<div><label>' + L("shlStatus") + '</label><select id="shl-status">' + selOpt(SHIP_STATUSES, ed.status, "Shipped") + '</select></div></div>' +
+      '<div class="row"><div><label>' + L("shlRecipient") + '</label><input id="shl-recipient" autocomplete="off" value="' + av(ed.recipient) + '"></div>' +
+      '<div><label>' + L("shlReqBy") + '</label><input id="shl-reqby" list="dl-shl-reqby" autocomplete="off" value="' + av(ed.requested_by) + '"></div></div>' +
+      '<div><label>' + L("shlAddress") + '</label><input id="shl-address" autocomplete="off" value="' + av(ed.address) + '"></div>' +
+      '<div class="row"><div><label>' + L("shlCarrier") + '</label><select id="shl-carrier">' + selOpt(SHIP_CARRIERS, ed.carrier, "UPS") + '</select></div>' +
+      '<div><label>' + L("shlTracking") + '</label><input id="shl-tracking" autocomplete="off" value="' + av(ed.tracking) + '"></div>' +
+      '<div><label>' + L("shlCost") + ' <span class="muted">(opt.)</span></label><input id="shl-cost" type="number" min="0" step="0.01" placeholder="0.00" value="' + (editing && Number(ed.cost) ? Number(ed.cost) : "") + '"></div></div>' +
+      '<div><label>' + L("shlContents") + '</label><input id="shl-contents" autocomplete="off" value="' + av(ed.contents) + '"></div>' +
+      '<div><label>' + L("shlNotes") + ' <span class="muted">(opt.)</span></label><input id="shl-notes" autocomplete="off" value="' + av(ed.notes) + '"></div>' +
       opField("Troy") +
-      '<button class="primary" onclick="UI.shlSave()">' + L("shlSave") + '</button></div>';
+      '<button class="primary" onclick="UI.shlSave()">' + (editing ? L("saveChanges") : L("shlSave")) + '</button>' +
+      (editing ? ' <button class="ghost" style="margin-top:14px" onclick="UI.shlEditCancel()">' + L("ordCancel") + '</button>' : '') + '</div>';
     const reqDl = '<datalist id="dl-shl-reqby">' + SHIP_REQUESTERS.map(n => '<option value="' + n + '"></option>').join("") + '</datalist>';
     let list = DB.shippingLog().slice();
     const vf = { ship_date: s => s.ship_date || "", ship_type: s => s.ship_type || "", recipient: s => (s.recipient || "").toLowerCase(), carrier: s => s.carrier || "", requested_by: s => (s.requested_by || "").toLowerCase(), status: s => s.status || "", cost: s => Number(s.cost) || 0 };
@@ -1142,7 +1156,8 @@
         '<td>' + esc(s.contents || "") + '</td>' +
         '<td><span class="pill ' + stColor(s.status) + '">' + esc(s.status || "") + '</span></td>' +
         '<td class="right">' + (Number(s.cost) ? '$' + Number(s.cost).toFixed(2) : '&mdash;') + '</td>' +
-        '<td>' + adv + ' <button class="ghost sm danger" onclick="UI.shlDelete(\'' + s.id + '\')">&#10005;</button></td></tr>';
+        '<td>' + adv + ' <button class="ghost sm" title="' + L("editRow") + '" onclick="UI.shlEdit(\'' + s.id + '\')">&#9998;</button>' +
+        ' <button class="ghost sm danger" onclick="UI.shlDelete(\'' + s.id + '\')">&#10005;</button></td></tr>';
     }).join("");
     const totalCost = list.reduce((a, s) => a + (Number(s.cost) || 0), 0);
     const table = list.length ? '<table><thead><tr>' +
@@ -1157,23 +1172,30 @@
   }
   function viewReceivingLog() {
     const today = new Date().toISOString().slice(0, 10);
+    const ed = recvEditId ? (DB.receivingLog().find(s => String(s.id) === String(recvEditId)) || {}) : {};
+    const editing = !!(recvEditId && ed.id);
+    const av = x => esc(x == null ? "" : x);
+    const selOpt = (arr, cur, def) => arr.map(t => '<option' + (t === (cur != null && cur !== "" ? cur : def) ? " selected" : "") + '>' + t + '</option>').join("");
+    const qv = n => (n != null && n !== "" ? n : "");
     const form = '<div class="ordform">' +
+      (editing ? '<p class="hint">&#9998; ' + L("editingRow") + (ed.file_name ? ' &middot; ' + L("rlKeepDoc") : '') + '</p>' : '') +
       '<div class="spodrop"><input type="file" id="rl-input" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.docx" style="display:none" onchange="UI.rlFile(this)">' +
       '<label for="rl-input" class="spodroplabel">&#128193; ' + L("rlDrop") + '</label></div>' +
       (recvFile ? '<p class="hint">&#128206; ' + esc(recvFile.name) + ' <button class="ghost sm" onclick="UI.rlClear()">' + L("spoCancel") + '</button></p>' : '') +
-      '<div class="row"><div><label>' + L("rlDate") + '</label><input id="rl-date" type="date" value="' + today + '"></div>' +
-      '<div><label>' + L("rlSupplier") + '</label><input id="rl-supplier" autocomplete="off"></div>' +
-      '<div><label>' + L("rlPO") + '</label><input id="rl-po" autocomplete="off"></div></div>' +
-      '<div class="row"><div><label>' + L("rlCarrier") + '</label><select id="rl-carrier"><option value=""></option>' + SHIP_CARRIERS.map(t => "<option>" + t + "</option>").join("") + '</select></div>' +
-      '<div><label>' + L("rlTracking") + ' <span class="muted">(PRO)</span></label><input id="rl-tracking" autocomplete="off"></div>' +
-      '<div><label>' + L("rlCondition") + '</label><select id="rl-condition">' + RECV_LOG_CONDITIONS.map(t => "<option>" + t + "</option>").join("") + '</select></div></div>' +
-      '<div><label>' + L("rlContents") + '</label><input id="rl-contents" autocomplete="off"></div>' +
-      '<div class="row"><div><label>' + L("rlQtyOrd") + ' <span class="muted">(opt.)</span></label><input id="rl-qord" type="number" min="0" placeholder="0"></div>' +
-      '<div><label>' + L("rlQtyRec") + ' <span class="muted">(opt.)</span></label><input id="rl-qrec" type="number" min="0" placeholder="0"></div>' +
-      '<div><label>' + L("rlReceivedBy") + '</label><input id="rl-by" list="dl-rl-by" autocomplete="off"></div></div>' +
-      '<div><label>' + L("rlNotes") + ' <span class="muted">(opt.)</span></label><input id="rl-notes" autocomplete="off"></div>' +
+      '<div class="row"><div><label>' + L("rlDate") + '</label><input id="rl-date" type="date" value="' + (editing && ed.recv_date ? (ed.recv_date + "").slice(0, 10) : today) + '"></div>' +
+      '<div><label>' + L("rlSupplier") + '</label><input id="rl-supplier" autocomplete="off" value="' + av(ed.supplier) + '"></div>' +
+      '<div><label>' + L("rlPO") + '</label><input id="rl-po" autocomplete="off" value="' + av(ed.po_num) + '"></div></div>' +
+      '<div class="row"><div><label>' + L("rlCarrier") + '</label><select id="rl-carrier"><option value=""' + (!ed.carrier ? ' selected' : '') + '></option>' + selOpt(SHIP_CARRIERS, ed.carrier, "") + '</select></div>' +
+      '<div><label>' + L("rlTracking") + ' <span class="muted">(PRO)</span></label><input id="rl-tracking" autocomplete="off" value="' + av(ed.tracking) + '"></div>' +
+      '<div><label>' + L("rlCondition") + '</label><select id="rl-condition">' + selOpt(RECV_LOG_CONDITIONS, ed.condition, "Good") + '</select></div></div>' +
+      '<div><label>' + L("rlContents") + '</label><input id="rl-contents" autocomplete="off" value="' + av(ed.contents) + '"></div>' +
+      '<div class="row"><div><label>' + L("rlQtyOrd") + ' <span class="muted">(opt.)</span></label><input id="rl-qord" type="number" min="0" placeholder="0" value="' + qv(ed.qty_ordered) + '"></div>' +
+      '<div><label>' + L("rlQtyRec") + ' <span class="muted">(opt.)</span></label><input id="rl-qrec" type="number" min="0" placeholder="0" value="' + qv(ed.qty_received) + '"></div>' +
+      '<div><label>' + L("rlReceivedBy") + '</label><input id="rl-by" list="dl-rl-by" autocomplete="off" value="' + av(ed.received_by) + '"></div></div>' +
+      '<div><label>' + L("rlNotes") + ' <span class="muted">(opt.)</span></label><input id="rl-notes" autocomplete="off" value="' + av(ed.notes) + '"></div>' +
       opField("Adriana") +
-      '<button class="primary" onclick="UI.rlSave()">' + L("rlSave") + '</button>' + '</div>';
+      '<button class="primary" onclick="UI.rlSave()">' + (editing ? L("saveChanges") : L("rlSave")) + '</button>' +
+      (editing ? ' <button class="ghost" style="margin-top:14px" onclick="UI.rlEditCancel()">' + L("ordCancel") + '</button>' : '') + '</div>';
     const byDl = '<datalist id="dl-rl-by">' + RECV_LOG_RECEIVERS.map(n => '<option value="' + n + '"></option>').join("") + '</datalist>';
     let list = DB.receivingLog().slice();
     const vf = { recv_date: s => s.recv_date || "", supplier: s => (s.supplier || "").toLowerCase(), po_num: s => s.po_num || "", carrier: s => s.carrier || "", condition: s => s.condition || "", received_by: s => (s.received_by || "").toLowerCase() };
@@ -1197,7 +1219,8 @@
         '<td><span class="pill ' + cColor(s.condition) + '">' + esc(s.condition || "") + '</span></td>' +
         '<td class="muted">' + esc(s.received_by || "") + '</td>' +
         '<td class="center">' + doc + '</td>' +
-        '<td><button class="ghost sm danger" onclick="UI.rlDelete(\'' + s.id + '\')">&#10005;</button></td></tr>';
+        '<td><button class="ghost sm" title="' + L("editRow") + '" onclick="UI.rlEdit(\'' + s.id + '\')">&#9998;</button>' +
+        ' <button class="ghost sm danger" onclick="UI.rlDelete(\'' + s.id + '\')">&#10005;</button></td></tr>';
     }).join("");
     const table = list.length ? '<table><thead><tr>' +
       th("recv_date", L("rlDate")) + th("supplier", L("rlSupplier")) + th("po_num", L("rlPO")) +
@@ -1905,15 +1928,19 @@
     shlSort(key) { if (shipSortKey === key) shipSortDir = -shipSortDir; else { shipSortKey = key; shipSortDir = (key === "ship_date" || key === "cost") ? -1 : 1; } render(); },
     shlSearch(val) { const q = (val || "").toLowerCase().trim();
       document.querySelectorAll("#shlBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
+    shlEdit(id) { shipEditId = id; render(); window.scrollTo(0, 0); },
+    shlEditCancel() { shipEditId = null; render(); },
     async shlSave() {
       const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
       const recipient = v("shl-recipient"); if (!recipient) return toast(L("shlRecipient"));
       const by = opVal();
-      await DB.addShipping({ ship_date: v("shl-date"), ship_type: v("shl-type"), recipient: recipient,
+      const rec = { ship_date: v("shl-date"), ship_type: v("shl-type"), recipient: recipient,
         address: v("shl-address"), carrier: v("shl-carrier"), tracking: v("shl-tracking"),
         requested_by: v("shl-reqby"), contents: v("shl-contents"), status: v("shl-status"),
-        cost: v("shl-cost"), notes: v("shl-notes") }, by);
-      toast(L("shlLogged") + " ✓"); render();
+        cost: v("shl-cost"), notes: v("shl-notes") };
+      if (shipEditId) { await DB.updateShipping(shipEditId, rec, by); shipEditId = null; toast(L("saved") + " ✓"); }
+      else { await DB.addShipping(rec, by); toast(L("shlLogged") + " ✓"); }
+      render();
     },
     async shlStatus(id, status) { await DB.setShippingStatus(id, status, opVal()); toast(status + " ✓"); },
     async shlDelete(id) { if (!confirm(L("shlConfirmDel"))) return; await DB.deleteShipping(id, opVal()); toast("✓"); render(); },
@@ -1923,16 +1950,22 @@
     rlSort(key) { if (recvSortKey === key) recvSortDir = -recvSortDir; else { recvSortKey = key; recvSortDir = (key === "recv_date") ? -1 : 1; } render(); },
     rlSearch(val) { const q = (val || "").toLowerCase().trim();
       document.querySelectorAll("#rlBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
+    rlEdit(id) { recvEditId = id; recvFile = null; render(); window.scrollTo(0, 0); },
+    rlEditCancel() { recvEditId = null; recvFile = null; render(); },
     async rlSave() {
       const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
       const supplier = v("rl-supplier"); if (!supplier) return toast(L("rlSupplier"));
       const by = opVal();
-      const res = await DB.addReceivingLog({ recv_date: v("rl-date"), supplier: supplier, po_num: v("rl-po"),
+      const rec = { recv_date: v("rl-date"), supplier: supplier, po_num: v("rl-po"),
         carrier: v("rl-carrier"), tracking: v("rl-tracking"), contents: v("rl-contents"),
         qty_ordered: v("rl-qord"), qty_received: v("rl-qrec"), condition: v("rl-condition"),
-        received_by: v("rl-by"), notes: v("rl-notes") }, recvFile, by);
+        received_by: v("rl-by"), notes: v("rl-notes") };
+      let res;
+      if (recvEditId) { res = await DB.updateReceivingLog(recvEditId, rec, recvFile, by); }
+      else { res = await DB.addReceivingLog(rec, recvFile, by); }
       if (res && res.ok === false) return toast(res.msg || "error");
-      recvFile = null; toast(L("rlLogged") + " ✓"); render();
+      const wasEdit = !!recvEditId; recvEditId = null; recvFile = null;
+      toast((wasEdit ? L("saved") : L("rlLogged")) + " ✓"); render();
     },
     async rlDelete(id) { if (!confirm(L("rlConfirmDel"))) return; await DB.deleteReceivingLog(id, opVal()); toast("✓"); render(); },
     // ---- Orders ----
@@ -1940,13 +1973,17 @@
     ordAddToggle() { orderAddOpen = !orderAddOpen; render(); },
     ordSearch(val) { const q = (val || "").toLowerCase().trim();
       document.querySelectorAll("#ordBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
+    ordEdit(id) { orderEditId = id; orderAddOpen = false; render(); window.scrollTo(0, 0); },
+    ordEditCancel() { orderEditId = null; render(); },
     async ordAdd() {
       const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
       const cust = v("o-cust"); if (!cust) return toast(L("oCustomer"));
       let by = v("o-by-other") || v("o-by") || "Allie"; if (by === "__other") by = "Other";
       const rec = { customer: cust, customer_po: v("o-po"), order_id: v("o-oid"), invoice_date: v("o-inv"),
         ship_date: v("o-ship"), tracking: v("o-trk"), carrier: v("o-carr"), appointment: v("o-appt"),
-        stripe_link: v("o-stripe"), notes: v("o-notes"), entered_by: by, status: "Open" };
+        stripe_link: v("o-stripe"), notes: v("o-notes"), entered_by: by };
+      if (orderEditId) { await DB.updateOrder(orderEditId, rec, by); orderEditId = null; toast(L("saved") + " ✓"); render(); return; }
+      rec.status = "Open";
       await DB.createOrder(rec, by);
       try { DB.notifyNewOrder(rec); } catch (e) {}  // emails Troy once the backend is configured; no-ops otherwise
       orderAddOpen = false; orderView = "open"; toast(L("ordAdded")); render();
