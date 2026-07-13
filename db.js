@@ -12,7 +12,7 @@ window.DB = (function () {
   const seed = window.SMACKIN_SEED;
   let mode = "local";
   let sb = null;                  // supabase client
-  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [] };
+  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {} };
   let subscribers = [];
 
   function emit() { subscribers.forEach(fn => { try { fn(); } catch (e) {} }); }
@@ -26,6 +26,7 @@ window.DB = (function () {
   function log() { return cache.log; }
   function seasLots() { return cache.seasLots || []; }
   function seedLots() { return cache.seedLots || []; }
+  function stockBuild() { return cache.stockBuild || {}; }
   function orders() { return cache.orders || []; }
   function rdRequests() { return cache.rdRequests || []; }
   function supplierPos() { return cache.supplierPos || []; }
@@ -46,9 +47,9 @@ window.DB = (function () {
     loadOrSeed() {
       let raw = null;
       try { raw = localStorage.getItem(KEY); } catch (e) {}
-      if (raw) { cache = JSON.parse(raw); if (!cache.pos) cache.pos = []; if (!cache.log) cache.log = []; if (!cache.seasLots) cache.seasLots = []; if (!cache.orders) cache.orders = []; if (!cache.rdRequests) cache.rdRequests = []; if (!cache.supplierPos) cache.supplierPos = []; if (!cache.orderDocs) cache.orderDocs = []; if (!cache.consumption) cache.consumption = []; if (!cache.seedLots) cache.seedLots = []; return; }
+      if (raw) { cache = JSON.parse(raw); if (!cache.pos) cache.pos = []; if (!cache.log) cache.log = []; if (!cache.seasLots) cache.seasLots = []; if (!cache.orders) cache.orders = []; if (!cache.rdRequests) cache.rdRequests = []; if (!cache.supplierPos) cache.supplierPos = []; if (!cache.orderDocs) cache.orderDocs = []; if (!cache.consumption) cache.consumption = []; if (!cache.seedLots) cache.seedLots = []; if (!cache.stockBuild) cache.stockBuild = {}; return; }
       const s = seed.build();
-      cache = { items: s.items, suppliers: s.suppliers, stock: s.stock, pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [] };
+      cache = { items: s.items, suppliers: s.suppliers, stock: s.stock, pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {} };
       this.save();
     },
     save() { try { localStorage.setItem(KEY, JSON.stringify(cache)); } catch (e) {} },
@@ -66,7 +67,7 @@ window.DB = (function () {
   // ---------- CLOUD backend (Supabase) ----------
   const cloud = {
     async loadAll() {
-      const [it, su, st, lg, po, pl, sl, od, rd, sp, odc, con, sdl] = await Promise.all([
+      const [it, su, st, lg, po, pl, sl, od, rd, sp, odc, con, sdl, sbd] = await Promise.all([
         sb.from("items").select("*"),
         sb.from("suppliers").select("*"),
         sb.from("stock").select("*"),
@@ -79,7 +80,8 @@ window.DB = (function () {
         sb.from("supplier_pos").select("*").order("created_at", { ascending: false }).limit(2000),
         sb.from("order_docs").select("*").order("created_at", { ascending: false }).limit(3000),
         sb.from("consumption").select("*").order("created_at", { ascending: false }).limit(3000),
-        sb.from("seed_lots").select("*").order("created_at", { ascending: false }).limit(3000)
+        sb.from("seed_lots").select("*").order("created_at", { ascending: false }).limit(3000),
+        sb.from("stock_build").select("*").limit(500)
       ]);
       cache.items = it.data || [];
       cache.suppliers = su.data || [];
@@ -124,6 +126,8 @@ window.DB = (function () {
         id: r.id, seed_code: r.seed_code, product: r.product, lot: r.lot, supplier: r.supplier,
         received_date: r.received_date, weight: Number(r.weight) || 0, status: r.status || "Good", created_at: r.created_at
       }));
+      cache.stockBuild = {};
+      (sbd && sbd.data ? sbd.data : []).forEach(r => { cache.stockBuild[r.item_key] = { on_hand: Number(r.on_hand) || 0, updated_by: r.updated_by, updated_at: r.updated_at }; });
       const lines = pl.data || [];
       cache.pos = (po.data || []).map(p => ({
         id: p.id, supplier: p.supplier, status: p.status, created: p.created_at,
@@ -342,6 +346,20 @@ window.DB = (function () {
       local.addLog(logEntry); local.save();
     }
     emit();
+  }
+
+  // ---------- Stock Build (live on-hand vs goals; on-hand entered in-app) ----------
+  async function setStockBuildOnHand(itemKey, onHand, op) {
+    const row = { item_key: itemKey, on_hand: Number(onHand) || 0, updated_by: op || "", updated_at: new Date().toISOString() };
+    if (mode === "cloud") {
+      await sb.from("stock_build").upsert(row, { onConflict: "item_key" });
+      await cloud.loadAll();
+    } else {
+      cache.stockBuild[itemKey] = { on_hand: row.on_hand, updated_by: row.updated_by, updated_at: row.updated_at };
+      local.save();
+    }
+    emit();
+    return { ok: true };
   }
 
   // ---------- Orders (non-SPS / Stripe outbound order log) ----------
@@ -707,6 +725,7 @@ window.DB = (function () {
     receive, move, adjust, adjustTotal, produce, resetDemo,
     returnStock, seasLots, addSeasLot, setSeasLotStatus, quarantineExpiredSeas,
     seedLots, addSeedLot, setSeedLotStatus,
+    stockBuild, setStockBuildOnHand,
     orders, createOrder, updateOrder, setOrderStatus, deleteOrder, notifyNewOrder,
     rdRequests, createRdRequest, updateRdRequest, setRdStatus, deleteRdRequest, sendRdEmail,
     supplierPos, createSupplierPO, deleteSupplierPO,

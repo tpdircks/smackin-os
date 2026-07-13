@@ -44,6 +44,7 @@
       noLots:"No seasoning lots yet.", markQuar:"Quarantine", markGood:"Mark good", expiredTag:"EXPIRED", quarTag:"QUARANTINE", goodTag:"GOOD",
       seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdReceived:"Received", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
       skus:"SKUs", skusHint:"Finished-goods / retail SKU catalog - bundles, singles, and cases with bag count and flavor contents. Reference only.", skuCode:"SKU", skuTitle:"Product", skuBags:"Bags", skuComp:"Contents", skuSearchP:"Search SKU, product, or flavor...", skuCount:"SKUs",
+      stockbuild:"Stock Build", sbHint:"Live build progress vs goals. Update On Hand as you go - the whole team sees it instantly. Yellow field = enter today's count.", sbGoal:"Goal", sbOnHand:"On hand", sbToBuild:"To build", sbPallets:"Pallets", sbDone:"Done", sbTotalGoal:"Total goal", sbComplete:"Complete", sbSaved:"Saved", sbRetail:"Retail", sbEcom:"E-Commerce", sb12pk:"12-Pack Boxes",
       qaHint:"Items received as defective or damaged sit here. Convert good ones back to stock or scrap them.",
       qaTitle:"On QA / Defective hold", convertGood:"Move to good stock", scrapIt:"Scrap", qaEmpty:"Nothing on QA hold.",
       columns:"Columns", colCategory:"Category", colItem:"Item", colOnhand:"On hand", colReorder:"Reorder", colStatus:"Status", resetCols:"Reset",
@@ -127,6 +128,7 @@
       noLots:"Sin lotes de sazon aun.", markQuar:"Cuarentena", markGood:"Marcar bueno", expiredTag:"VENCIDO", quarTag:"CUARENTENA", goodTag:"BUENO",
       seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdReceived:"Recibido", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
       skus:"SKUs", skusHint:"Catalogo de SKU de producto terminado / retail - paquetes, individuales y cajas con cantidad de bolsas y sabores. Solo referencia.", skuCode:"SKU", skuTitle:"Producto", skuBags:"Bolsas", skuComp:"Contenido", skuSearchP:"Buscar SKU, producto o sabor...", skuCount:"SKUs",
+      stockbuild:"Construir Inventario", sbHint:"Progreso de construccion vs metas en vivo. Actualice En Mano segun avanza - todo el equipo lo ve al instante. Campo amarillo = ingrese el conteo de hoy.", sbGoal:"Meta", sbOnHand:"En mano", sbToBuild:"Por hacer", sbPallets:"Paletas", sbDone:"Listo", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Guardado", sbRetail:"Minorista", sbEcom:"Comercio Electronico", sb12pk:"Cajas de 12",
       qaHint:"Los articulos recibidos como defectuosos o danados quedan aqui. Convierta los buenos a inventario o descartelos.",
       qaTitle:"En retencion QA / Defectuoso", convertGood:"Pasar a inventario bueno", scrapIt:"Descartar", qaEmpty:"Nada en retencion QA.",
       columns:"Columnas", colCategory:"Categoria", colItem:"Articulo", colOnhand:"Disponible", colReorder:"Reorden", colStatus:"Estado", resetCols:"Reiniciar",
@@ -210,6 +212,7 @@
       noLots:"Nenhum lote de tempero ainda.", markQuar:"Quarentena", markGood:"Marcar bom", expiredTag:"VENCIDO", quarTag:"QUARENTENA", goodTag:"BOM",
       seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdReceived:"Recebido", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
       skus:"SKUs", skusHint:"Catalogo de SKU de produto acabado / varejo - pacotes, individuais e caixas com contagem de sacos e sabores. Apenas referencia.", skuCode:"SKU", skuTitle:"Produto", skuBags:"Sacos", skuComp:"Conteudo", skuSearchP:"Buscar SKU, produto ou sabor...", skuCount:"SKUs",
+      stockbuild:"Construir Estoque", sbHint:"Progresso de construcao vs metas ao vivo. Atualize Em Estoque conforme avanca - toda a equipe ve na hora. Campo amarelo = insira a contagem de hoje.", sbGoal:"Meta", sbOnHand:"Em estoque", sbToBuild:"A fazer", sbPallets:"Paletes", sbDone:"Pronto", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Salvo", sbRetail:"Varejo", sbEcom:"E-Commerce", sb12pk:"Caixas de 12",
       qaHint:"Itens recebidos como defeituosos ou danificados ficam aqui. Converta os bons de volta ao estoque ou descarte-os.",
       qaTitle:"Em retencao QA / Defeituoso", convertGood:"Passar para estoque bom", scrapIt:"Descartar", qaEmpty:"Nada em retencao QA.",
       columns:"Colunas", colCategory:"Categoria", colItem:"Item", colOnhand:"Em estoque", colReorder:"Reposicao", colStatus:"Status", resetCols:"Reiniciar",
@@ -258,7 +261,7 @@
   let lang = "en"; const L = k => (T[lang][k] !== undefined ? T[lang][k] : k);
   let active = "home"; let catFilter = "all";
   let purchMode = "list"; let purchSup = null; let receivingPOid = null;
-  const TABS = ["home","dash","alerts","adjust","receive","putaway","returns","orders","orderdocs","rd","qa","move","produce","seasoning","seed","skus","mixing","pmac","count","locations","purchasing","supplierpos","people","labels","log","settings"];
+  const TABS = ["home","dash","alerts","adjust","receive","putaway","returns","orders","orderdocs","rd","qa","move","produce","stockbuild","seasoning","seed","skus","mixing","pmac","count","locations","purchasing","supplierpos","people","labels","log","settings"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -273,6 +276,43 @@
   const ORDER_ENTERERS = ["Allie","Josh","Alex","Troy","Salvador"];
   const ODOC_TYPES = ["BOL","Packing List","Pull Sheet","Labels","Commercial Invoice","ASN","Other"];
   const ODOC_UPLOADERS = ["Javier","Ken","Adriana","Jesus","Troy"];
+  // ---- Stock Build goals (from Jesus's "Stock Build Goals.xlsx"; on-hand entered live in-app) ----
+  // cat | sub(Others only) | name | goal | unit | pallet size (for full-pallet calc) | bagsPer (Walmart)
+  const SB_ITEMS = [
+    { cat:"Target", name:"OG Original", goal:160, unit:"cases", pallet:32 },
+    { cat:"Target", name:"Cinnamon Churro", goal:160, unit:"cases", pallet:32 },
+    { cat:"Target", name:"Backyard BBQ", goal:160, unit:"cases", pallet:32 },
+    { cat:"Target", name:"Garlic Parmesan", goal:160, unit:"cases", pallet:32 },
+    { cat:"Target", name:"Dill Pickle", goal:160, unit:"cases", pallet:32 },
+    { cat:"Target", name:"Cheddar Jalapeno", goal:160, unit:"cases", pallet:32 },
+    { cat:"Target", name:"Ranch", goal:160, unit:"cases", pallet:32 },
+    { cat:"Walmart", name:"Cinnamon Churro", goal:165, unit:"boxes", pallet:165, bagsPer:12 },
+    { cat:"Walmart", name:"Backyard BBQ", goal:165, unit:"boxes", pallet:165, bagsPer:12 },
+    { cat:"Walmart", name:"Garlic Parmesan", goal:165, unit:"boxes", pallet:165, bagsPer:12 },
+    { cat:"Walmart", name:"Cheddar Jalapeno", goal:165, unit:"boxes", pallet:165, bagsPer:12 },
+    { cat:"Master Case", name:"Garlic Parmesan", goal:480, unit:"cases", pallet:30 },
+    { cat:"Master Case", name:"OG Original", goal:180, unit:"cases", pallet:30 },
+    { cat:"Master Case", name:"Cracked Pepper", goal:150, unit:"cases", pallet:30 },
+    { cat:"Master Case", name:"Dill Pickle", goal:480, unit:"cases", pallet:30 },
+    { cat:"Master Case", name:"Cinnamon Churro", goal:480, unit:"cases", pallet:30 },
+    { cat:"Master Case", name:"Backyard BBQ", goal:480, unit:"cases", pallet:30 },
+    { cat:"Master Case", name:"Cheddar Jalapeno", goal:480, unit:"cases", pallet:30 },
+    { cat:"Master Case", name:"Ranch", goal:480, unit:"cases", pallet:30 },
+    { cat:"Master Case", name:"Sour Cream & Onion", goal:150, unit:"cases", pallet:30 },
+    { cat:"Master Case", name:"Maple Brown Sugar", goal:150, unit:"cases", pallet:30 },
+    { cat:"Master Case", name:"Lemon Pepper", goal:150, unit:"cases", pallet:30 },
+    { cat:"Others", sub:"Retail", name:"4VAR Display (48 bags, 4oz)", goal:44, unit:"units" },
+    { cat:"Others", sub:"Retail", name:"VP-54 Bucket (54 bags, 1.5oz)", goal:120, unit:"units" },
+    { cat:"Others", sub:"E-Com", name:"VP-12 Variety Pack (12 bags, 4oz)", goal:400, unit:"units" },
+    { cat:"Others", sub:"E-Com", name:"VP-36 Variety Pack (36 bags, 1.5oz)", goal:400, unit:"units" },
+    { cat:"Others", sub:"12-Pack Boxes", name:"Backyard BBQ", goal:100, unit:"boxes" },
+    { cat:"Others", sub:"12-Pack Boxes", name:"Dill Pickle", goal:100, unit:"boxes" },
+    { cat:"Others", sub:"12-Pack Boxes", name:"Cinnamon Churro", goal:100, unit:"boxes" },
+    { cat:"Others", sub:"12-Pack Boxes", name:"Garlic Parmesan", goal:100, unit:"boxes" },
+    { cat:"Others", sub:"12-Pack Boxes", name:"Cracked Pepper", goal:100, unit:"boxes" },
+    { cat:"Others", sub:"12-Pack Boxes", name:"Ranch", goal:100, unit:"boxes" }
+  ].map(x => Object.assign(x, { key: (x.cat + "|" + (x.sub || "") + "|" + x.name).replace(/[^A-Za-z0-9]+/g, "_") }));
+  const SB_CATS = ["Target", "Walmart", "Master Case", "Others"];
   // ---- People directory (LIVE roster pulled from Gusto 2026-07-10; non-sensitive only, NO pay) ----
   // name | job title | department | manager. Manager links drive the org chart.
   const PEOPLE = [
@@ -361,7 +401,7 @@
     { key:"", items:["home","alerts"] },
     { key:"grpReceiving", items:["receive","putaway","returns","qa"] },
     { key:"grpInventory", items:["dash","adjust","count","locations","seasoning","seed","skus","labels"] },
-    { key:"grpProduction", items:["produce","move","orders","orderdocs"] },
+    { key:"grpProduction", items:["produce","stockbuild","move","orders","orderdocs"] },
     { key:"grpMixing", items:["mixing"] },
     { key:"grpPmac", items:["pmac"] },
     { key:"grpPurchasing", items:["purchasing","supplierpos"] },
@@ -373,7 +413,7 @@
     returns:"\u{21A9}\u{FE0F}", qa:"\u{26D4}", orders:"\u{1F9FE}", purchasing:"\u{1F6D2}", rd:"\u{1F9EA}",
     move:"\u{1F500}", produce:"\u{1F3ED}", seasoning:"\u{1F9C2}", count:"\u{1F522}", locations:"\u{1F4CD}",
     labels:"\u{1F3F7}\u{FE0F}", log:"\u{1F4DC}", settings:"\u{2699}\u{FE0F}", supplierpos:"\u{1F4C4}",
-    mixing:"\u{1F963}", pmac:"\u{1F527}", people:"\u{1F465}", orderdocs:"\u{1F4C1}", seed:"\u{1F33B}", skus:"\u{1F6CD}\u{FE0F}" };
+    mixing:"\u{1F963}", pmac:"\u{1F527}", people:"\u{1F465}", orderdocs:"\u{1F4C1}", seed:"\u{1F33B}", skus:"\u{1F6CD}\u{FE0F}", stockbuild:"\u{1F3D7}\u{FE0F}" };
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
   let spoSort = { key: "created", dir: -1 };  // Supplier POs table sort (v25)
   let spoView = "list";   // Supplier POs: "list" | "create" (Excel-style PO entry form)
@@ -533,7 +573,7 @@
     const expiredLots = lots.filter(l => daysUntil(l.exp) < 0);
     const orders = DB.orders();
     const openO = orders.filter(o => !orderIsComplete(o));
-    const issues = orders.filter(o => orderIssue(o));
+    const issues = orders.filter(o => !orderIsComplete(o) && orderIssue(o));
     const rdPend = DB.rdRequests().filter(r => !rdIsReceived(r));
     const rdOver = rdPend.filter(r => rdIsOverdue(r));
     const bag4 = items.filter(i => i.category === "bag4").reduce((s, i) => s + DB.onHand(i.id), 0);
@@ -1126,6 +1166,49 @@
       '<div class="muted sm" id="sku-count" style="margin:8px 0">' + all.length + ' ' + L("skuCount") + '</div>' +
       '<table><thead><tr><th>' + L("skuCode") + '</th><th>' + L("skuTitle") + '</th><th class="right">' + L("skuBags") + '</th><th>' + L("skuComp") + '</th></tr></thead><tbody id="sku-body">' + rows + '</tbody></table></div>';
   }
+  function viewStockBuild() {
+    const oh = DB.stockBuild ? DB.stockBuild() : {};
+    const val = k => Number((oh[k] || {}).on_hand) || 0;
+    let gGoal = 0, gOn = 0;
+    SB_ITEMS.forEach(i => { gGoal += i.goal; gOn += Math.min(val(i.key), i.goal); });
+    const gPct = gGoal ? Math.round(gOn / gGoal * 100) : 0;
+    const gToBuild = Math.max(gGoal - gOn, 0);
+    const summary = '<div class="card"><h2>' + L("stockbuild") + '</h2><p class="hint">' + L("sbHint") + '</p>' +
+      '<div class="kpis"><div class="kpi"><div class="n">' + fmt(gGoal) + '</div><div class="l">' + L("sbTotalGoal") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(gOn) + '</div><div class="l">' + L("sbOnHand") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(gToBuild) + '</div><div class="l">' + L("sbToBuild") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + gPct + '%</div><div class="l">' + L("sbComplete") + '</div></div></div></div>';
+    const barCls = p => p >= 100 ? "ok" : p >= 50 ? "low" : "out";
+    const rowHtml = i => {
+      const on = val(i.key), goal = i.goal, toBuild = Math.max(goal - on, 0);
+      const pct = goal ? Math.round(on / goal * 100) : 0;
+      const pallets = i.pallet ? (Math.ceil(toBuild / i.pallet * 10) / 10) : null;
+      return '<tr><td><b>' + esc(i.name) + '</b></td>' +
+        '<td class="right muted">' + fmt(goal) + '</td>' +
+        '<td class="right"><input class="sbin" type="number" min="0" step="1" value="' + on + '" onchange="UI.sbSet(\'' + i.key + '\',this.value)"></td>' +
+        '<td class="right"><b>' + fmt(toBuild) + '</b></td>' +
+        '<td class="right muted sm">' + (pallets != null ? pallets : "—") + '</td>' +
+        '<td style="min-width:130px"><div class="sbbar"><span class="sbfill ' + barCls(pct) + '" style="width:' + Math.min(pct, 100) + '%"></span></div><span class="sm muted">' + pct + '%</span></td></tr>';
+    };
+    const thead = '<thead><tr><th>' + L("item") + '</th><th class="right">' + L("sbGoal") + '</th><th class="right">' + L("sbOnHand") + '</th><th class="right">' + L("sbToBuild") + '</th><th class="right">' + L("sbPallets") + '</th><th>' + L("sbDone") + '</th></tr></thead>';
+    const catBlock = cat => {
+      const items = SB_ITEMS.filter(i => i.cat === cat);
+      let cGoal = 0, cOn = 0; items.forEach(i => { cGoal += i.goal; cOn += Math.min(val(i.key), i.goal); });
+      const cPct = cGoal ? Math.round(cOn / cGoal * 100) : 0;
+      const head = '<div class="suprow"><h2 class="sub2" style="margin:0">' + esc(cat) + '</h2><span class="muted sm">' + fmt(cOn) + ' / ' + fmt(cGoal) + ' (' + cPct + '%)</span></div>';
+      let body = "";
+      if (cat === "Others") {
+        ["Retail", "E-Com", "12-Pack Boxes"].forEach(sub => {
+          const subItems = items.filter(i => i.sub === sub);
+          if (!subItems.length) return;
+          const subLbl = sub === "Retail" ? L("sbRetail") : sub === "E-Com" ? L("sbEcom") : L("sb12pk");
+          body += '<tr class="sbsub"><td colspan="6">' + esc(subLbl) + '</td></tr>' + subItems.map(rowHtml).join("");
+        });
+      } else { body = items.map(rowHtml).join(""); }
+      return '<div class="card">' + head + '<div class="tblwrap"><table class="sbtable">' + thead + '<tbody>' + body + '</tbody></table></div></div>';
+    };
+    return summary + SB_CATS.map(catBlock).join("");
+  }
   function viewQA() {
     const hold = [];
     ["QA-HOLD", "QUARANTINE"].forEach(z => DB.items().forEach(i => { const q = DB.atLoc(i.id, z); if (q > 0) hold.push({ i, z, q }); }));
@@ -1537,6 +1620,7 @@
     skuFilter(v) { const q = (v || "").toLowerCase().trim(); let n = 0;
       document.querySelectorAll('#sku-body tr').forEach(tr => { const show = !q || (tr.getAttribute('data-h') || "").indexOf(q) >= 0; tr.style.display = show ? "" : "none"; if (show) n++; });
       const c = document.getElementById('sku-count'); if (c) c.textContent = n + ' ' + L("skuCount"); },
+    async sbSet(key, v) { await DB.setStockBuildOnHand(key, parseFloat(v) || 0, opVal()); toast(L("sbSaved") + " ✓"); render(); },
     // ---- QA hold review ----
     async qaConvert(itemId, zone) {
       const it = DB.items().find(i => i.id === itemId); if (!it) return;
@@ -1811,7 +1895,7 @@
   function render() {
     renderNav(); refreshDatalists();
     const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
-      move: viewMove, produce: viewProduce, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, mixing: viewMixing, pmac: viewPmac,
+      move: viewMove, produce: viewProduce, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, people: viewPeople, labels: viewLabels, log: viewLog, settings: viewSettings };
     $("view").innerHTML = (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");

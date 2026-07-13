@@ -162,6 +162,19 @@ td.ess-na{color:#aab2bd}
 .floorplan .fp-lbl{font-size:7.5px;font-weight:800;fill:#04223B}
 .floorplan .fp-dk{font-size:7.5px;font-weight:800;fill:#5a4600}
 .floorplan .fp-red{font-size:7px;font-weight:800;fill:#B52024}
+/* Stock Build */
+.sbtable{width:100%;border-collapse:collapse}
+.sbtable th{font-size:11px;color:#667;font-weight:700;text-align:left;padding:5px 8px;border-bottom:2px solid var(--line);white-space:nowrap}
+.sbtable th.right,.sbtable td.right{text-align:right}
+.sbtable td{padding:5px 8px;border-bottom:1px solid var(--line);font-size:13px;white-space:nowrap}
+.sbtable tr.sbsub td{background:var(--navy);color:#fff;font-weight:800;font-size:11px;letter-spacing:.5px;text-transform:uppercase;padding:5px 8px}
+input.sbin{width:74px;text-align:right;padding:4px 6px;border:1px solid var(--yellow);background:#FFFBEA;border-radius:6px;font-size:13px;font-weight:700}
+input.sbin:focus{outline:2px solid var(--orange);background:#fff}
+.sbbar{display:inline-block;width:90px;height:9px;background:#eef1f5;border-radius:5px;overflow:hidden;vertical-align:middle;margin-right:6px}
+.sbfill{display:block;height:100%}
+.sbfill.ok{background:var(--green)}
+.sbfill.low{background:var(--yellow)}
+.sbfill.out{background:var(--red)}
 .deptplaceholder{margin-top:14px;padding:34px;border:2px dashed var(--line,#d9d9d9);border-radius:12px;text-align:center;opacity:.55}
 /* People / HR directory */
 .pdept{margin-top:16px}
