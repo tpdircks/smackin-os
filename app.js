@@ -34,7 +34,7 @@
       cancelPO:"Cancel PO", deletePO:"Delete", backList:"Back", orderedQ:"Ordered", received:"Received", outstanding:"Outstanding",
       noPOs:"No purchase orders yet.", poCreated:"PO created", poTotal:"Est. total", recvNow:"Receive now",
       st_draft:"Draft", st_ordered:"Ordered", st_partial:"Partial", st_received:"Received", st_cancelled:"Cancelled",
-      returns:"Returns", seasoning:"Seasoning", qa:"QA Hold",
+      returns:"Returns", seasoning:"Seasoning", qa:"Quarantine",
       role:"View", roleAll:"Manager (all)", roleReceiving:"Receiving", roleProduction:"Fulfillment",
       returnsHint:"Log a customer or Amazon return. Restock goes to RETURNS; damaged goes to QA hold.",
       rChannel:"Channel", rReason:"Reason", rDisposition:"Disposition", rRMA:"Order / RMA #",
@@ -47,8 +47,8 @@
       skus:"SKUs", skusHint:"Finished-goods / retail SKU catalog - bundles, singles, and cases with bag count and flavor contents. Reference only.", skuCode:"SKU", skuTitle:"Product", skuBags:"Bags", skuComp:"Contents", skuSearchP:"Search SKU, product, or flavor...", skuCount:"SKUs",
       stockbuild:"Stock Build", sbHint:"Live build progress vs goals. Update On Hand as you go - the whole team sees it instantly. Yellow field = enter today's count.", sbGoal:"Goal", sbOnHand:"On hand", sbToBuild:"To build", sbPallets:"Pallets", sbDone:"Done", sbTotalGoal:"Total goal", sbComplete:"Complete", sbSaved:"Saved", sbRetail:"Retail", sbEcom:"E-Commerce", sb12pk:"12-Pack Boxes",
       retailprod:"Retail Production", rpHint:"When a pallet is made, scan its product barcode (or pick it), enter the quantity, and it is added to stock instantly. Print the barcode sheet with the button below and post it at the line.", rpScanP:"Scan product barcode", rpPickProduct:"Or pick a product...", rpQty:"Quantity made", rpAdd:"Add to stock", rpAdded:"Added to stock", rpCurrent:"Current on hand", rpRecent:"Recent production", rpNone:"Nothing added yet.", rpPrint:"Print product barcodes", rpNotFound:"Barcode not recognized",
-      qaHint:"Items received as defective or damaged sit here. Convert good ones back to stock or scrap them.",
-      qaTitle:"On QA / Defective hold", convertGood:"Move to good stock", scrapIt:"Scrap", qaEmpty:"Nothing on QA hold.",
+      qaHint:"Quarantined product - do NOT touch (wrapped in red film). Usually expired or has incorrect info. Release good ones back to stock or scrap them.",
+      qaTitle:"On quarantine hold (red film - do not touch)", convertGood:"Release to good stock", scrapIt:"Scrap", qaEmpty:"Nothing in quarantine.",
       columns:"Columns", colCategory:"Category", colItem:"Item", colOnhand:"On hand", colReorder:"Reorder", colStatus:"Status", resetCols:"Reset",
       pinTitle:"Enter PIN to make changes", pinHint:"Only staff with the PIN can add or change inventory. Viewing is open to everyone.", pinWrong:"Wrong PIN - try again", pinBtn:"Unlock", locked:"Editing locked", unlocked:"Editing unlocked", lockBtn:"Lock editing",
       adjust:"Adjust", adjustHint:"Set the current count for any item: type the number you counted and Save. Use the search box to find items fast. Leave a box blank to keep it unchanged.", searchItems:"Search item name or code", newCount:"New count", saveCounts:"Save counts", noChanges:"No counts entered", savedN:"Counts saved",
@@ -120,7 +120,7 @@
       cancelPO:"Cancelar orden", deletePO:"Eliminar", backList:"Volver", orderedQ:"Pedido", received:"Recibido", outstanding:"Pendiente",
       noPOs:"Aun no hay ordenes de compra.", poCreated:"Orden creada", poTotal:"Total est.", recvNow:"Recibir ahora",
       st_draft:"Borrador", st_ordered:"Ordenada", st_partial:"Parcial", st_received:"Recibida", st_cancelled:"Cancelada",
-      returns:"Devoluciones", seasoning:"Sazon", qa:"Retencion QA",
+      returns:"Devoluciones", seasoning:"Sazon", qa:"Cuarentena",
       role:"Vista", roleAll:"Gerente (todo)", roleReceiving:"Recibo", roleProduction:"Fulfillment",
       returnsHint:"Registre una devolucion de cliente o Amazon. Reingreso va a DEVOLUCIONES; danado va a retencion QA.",
       rChannel:"Canal", rReason:"Motivo", rDisposition:"Disposicion", rRMA:"Orden / RMA #",
@@ -133,8 +133,8 @@
       skus:"SKUs", skusHint:"Catalogo de SKU de producto terminado / retail - paquetes, individuales y cajas con cantidad de bolsas y sabores. Solo referencia.", skuCode:"SKU", skuTitle:"Producto", skuBags:"Bolsas", skuComp:"Contenido", skuSearchP:"Buscar SKU, producto o sabor...", skuCount:"SKUs",
       stockbuild:"Construir Inventario", sbHint:"Progreso de construccion vs metas en vivo. Actualice En Mano segun avanza - todo el equipo lo ve al instante. Campo amarillo = ingrese el conteo de hoy.", sbGoal:"Meta", sbOnHand:"En mano", sbToBuild:"Por hacer", sbPallets:"Paletas", sbDone:"Listo", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Guardado", sbRetail:"Minorista", sbEcom:"Comercio Electronico", sb12pk:"Cajas de 12",
       retailprod:"Produccion Retail", rpHint:"Cuando se hace una paleta, escanee su codigo de producto (o eligalo), ingrese la cantidad y se agrega al inventario al instante. Imprima la hoja de codigos con el boton de abajo y pongala en la linea.", rpScanP:"Escanee codigo del producto", rpPickProduct:"O elija un producto...", rpQty:"Cantidad hecha", rpAdd:"Agregar al inventario", rpAdded:"Agregado al inventario", rpCurrent:"En mano actual", rpRecent:"Produccion reciente", rpNone:"Nada agregado aun.", rpPrint:"Imprimir codigos de producto", rpNotFound:"Codigo no reconocido",
-      qaHint:"Los articulos recibidos como defectuosos o danados quedan aqui. Convierta los buenos a inventario o descartelos.",
-      qaTitle:"En retencion QA / Defectuoso", convertGood:"Pasar a inventario bueno", scrapIt:"Descartar", qaEmpty:"Nada en retencion QA.",
+      qaHint:"Producto en cuarentena - NO tocar (envuelto en film rojo). Generalmente vencido o con informacion incorrecta. Libere los buenos a inventario o descartelos.",
+      qaTitle:"En cuarentena (film rojo - no tocar)", convertGood:"Liberar a inventario bueno", scrapIt:"Descartar", qaEmpty:"Nada en cuarentena.",
       columns:"Columnas", colCategory:"Categoria", colItem:"Articulo", colOnhand:"Disponible", colReorder:"Reorden", colStatus:"Estado", resetCols:"Reiniciar",
       pinTitle:"Ingrese el PIN para hacer cambios", pinHint:"Solo el personal con el PIN puede agregar o cambiar inventario. Ver es libre para todos.", pinWrong:"PIN incorrecto - intente de nuevo", pinBtn:"Desbloquear", locked:"Edicion bloqueada", unlocked:"Edicion desbloqueada", lockBtn:"Bloquear edicion",
       adjust:"Ajustar", adjustHint:"Fije el conteo actual de cualquier articulo: escriba la cantidad que conto y Guarde. Use el buscador para encontrar articulos rapido. Deje la casilla vacia para no cambiarlo.", searchItems:"Buscar nombre o codigo", newCount:"Nuevo conteo", saveCounts:"Guardar conteos", noChanges:"No ingreso conteos", savedN:"Conteos guardados",
@@ -206,7 +206,7 @@
       cancelPO:"Cancelar ordem", deletePO:"Excluir", backList:"Voltar", orderedQ:"Pedido", received:"Recebido", outstanding:"Pendente",
       noPOs:"Ainda nao ha ordens de compra.", poCreated:"Ordem criada", poTotal:"Total est.", recvNow:"Receber agora",
       st_draft:"Rascunho", st_ordered:"Pedida", st_partial:"Parcial", st_received:"Recebida", st_cancelled:"Cancelada",
-      returns:"Devolucoes", seasoning:"Tempero", qa:"Retencao QA",
+      returns:"Devolucoes", seasoning:"Tempero", qa:"Quarentena",
       role:"Visao", roleAll:"Gerente (tudo)", roleReceiving:"Recebimento", roleProduction:"Fulfillment",
       returnsHint:"Registre uma devolucao de cliente ou Amazon. Reposicao vai para DEVOLUCOES; danificado vai para retencao QA.",
       rChannel:"Canal", rReason:"Motivo", rDisposition:"Destino", rRMA:"Pedido / RMA #",
@@ -219,8 +219,8 @@
       skus:"SKUs", skusHint:"Catalogo de SKU de produto acabado / varejo - pacotes, individuais e caixas com contagem de sacos e sabores. Apenas referencia.", skuCode:"SKU", skuTitle:"Produto", skuBags:"Sacos", skuComp:"Conteudo", skuSearchP:"Buscar SKU, produto ou sabor...", skuCount:"SKUs",
       stockbuild:"Construir Estoque", sbHint:"Progresso de construcao vs metas ao vivo. Atualize Em Estoque conforme avanca - toda a equipe ve na hora. Campo amarelo = insira a contagem de hoje.", sbGoal:"Meta", sbOnHand:"Em estoque", sbToBuild:"A fazer", sbPallets:"Paletes", sbDone:"Pronto", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Salvo", sbRetail:"Varejo", sbEcom:"E-Commerce", sb12pk:"Caixas de 12",
       retailprod:"Producao Varejo", rpHint:"Quando um palete e feito, escaneie o codigo do produto (ou escolha), insira a quantidade e ela e adicionada ao estoque na hora. Imprima a folha de codigos com o botao abaixo e coloque na linha.", rpScanP:"Escaneie codigo do produto", rpPickProduct:"Ou escolha um produto...", rpQty:"Quantidade feita", rpAdd:"Adicionar ao estoque", rpAdded:"Adicionado ao estoque", rpCurrent:"Em estoque atual", rpRecent:"Producao recente", rpNone:"Nada adicionado ainda.", rpPrint:"Imprimir codigos de produto", rpNotFound:"Codigo nao reconhecido",
-      qaHint:"Itens recebidos como defeituosos ou danificados ficam aqui. Converta os bons de volta ao estoque ou descarte-os.",
-      qaTitle:"Em retencao QA / Defeituoso", convertGood:"Passar para estoque bom", scrapIt:"Descartar", qaEmpty:"Nada em retencao QA.",
+      qaHint:"Produto em quarentena - NAO tocar (embrulhado em filme vermelho). Geralmente vencido ou com informacao incorreta. Libere os bons para o estoque ou descarte-os.",
+      qaTitle:"Em quarentena (filme vermelho - nao tocar)", convertGood:"Liberar para estoque bom", scrapIt:"Descartar", qaEmpty:"Nada em quarentena.",
       columns:"Colunas", colCategory:"Categoria", colItem:"Item", colOnhand:"Em estoque", colReorder:"Reposicao", colStatus:"Status", resetCols:"Reiniciar",
       pinTitle:"Digite o PIN para fazer alteracoes", pinHint:"Somente a equipe com o PIN pode adicionar ou alterar o estoque. Visualizar e livre para todos.", pinWrong:"PIN incorreto - tente de novo", pinBtn:"Desbloquear", locked:"Edicao bloqueada", unlocked:"Edicao desbloqueada", lockBtn:"Bloquear edicao",
       adjust:"Ajustar", adjustHint:"Defina a contagem atual de qualquer item: digite a quantidade que contou e Salve. Use a busca para achar itens rapido. Deixe a caixa vazia para nao alterar.", searchItems:"Buscar nome ou codigo", newCount:"Nova contagem", saveCounts:"Salvar contagens", noChanges:"Nenhuma contagem inserida", savedN:"Contagens salvas",
@@ -411,7 +411,7 @@
     { key:"grpSystem", items:["log","settings"] }
   ];
   const NAV_ICON = { home:"\u{1F3E0}", dash:"\u{1F4CA}", alerts:"\u{1F514}", adjust:"\u{270F}\u{FE0F}", receive:"\u{1F4E5}", putaway:"\u{1F4E6}",
-    returns:"\u{21A9}\u{FE0F}", qa:"\u{26D4}", orders:"\u{1F9FE}", purchasing:"\u{1F6D2}", rd:"\u{1F9EA}",
+    returns:"\u{21A9}\u{FE0F}", qa:"\u{1F7E5}", orders:"\u{1F9FE}", purchasing:"\u{1F6D2}", rd:"\u{1F9EA}",
     move:"\u{1F500}", produce:"\u{1F3ED}", seasoning:"\u{1F9C2}", count:"\u{1F522}", locations:"\u{1F4CD}",
     labels:"\u{1F3F7}\u{FE0F}", log:"\u{1F4DC}", settings:"\u{2699}\u{FE0F}", supplierpos:"\u{1F4C4}",
     mixing:"\u{1F963}", pmac:"\u{1F527}", people:"\u{1F465}", orderdocs:"\u{1F4C1}", seed:"\u{1F33B}", skus:"\u{1F6CD}\u{FE0F}", stockbuild:"\u{1F3D7}\u{FE0F}", retailprod:"\u{1F4E6}" };
@@ -527,7 +527,7 @@
   // Writes the composed code into the field with id=fid. Shared by Receive + Put-Away.
   function locPickerBlock(fid) {
     const cfg = DB.config || { sections: ["A","B","C","D"], baysPerSection: 28, levels: ["L1","L2","L3","L4"],
-      zones: ["RECEIVING","ST-01","ST-02","ST-03","ST-04","ST-05","ST-06","ST-07","ST-08","WIP","PACKOUT","CAGE","QA-HOLD"], docks: [] };
+      zones: ["RECEIVING","ST-01","ST-02","ST-03","ST-04","ST-05","ST-06","ST-07","ST-08","WIP","PACKOUT","CAGE","QUARANTINE"], docks: [] };
     const secChip = s => '<button class="pchip' + (puSec === s ? " on" : "") + '" data-k="sec" data-v="' + s + '" onclick="UI.puPick(\'sec\',\'' + s + '\')">' + s + '</button>';
     const lvlChip = l => '<button class="pchip' + (puLevel === l ? " on" : "") + '" data-k="lvl" data-v="' + l + '" onclick="UI.puPick(\'lvl\',\'' + l + '\')">' + l + '</button>';
     let bayChips = "";
@@ -1329,7 +1329,7 @@
   function viewLocationsMap() {
     const occ = locOccupancy();
     const cfg = DB.config || { sections: ["A", "B", "C", "D"], baysPerSection: 28, docks: [11,12,13,14,15,16,17,18,19],
-      zones: ["RECEIVING","RETURNS","QA-HOLD","QUARANTINE","WIP","PACKOUT","CAGE","PROD-WEIGH","PROD-PACK","SHIPPING","ST-01","ST-02","ST-03","ST-04","ST-05","ST-06","ST-07","ST-08"] };
+      zones: ["RECEIVING","RETURNS","QUARANTINE","WIP","PACKOUT","CAGE","PROD-WEIGH","PROD-PACK","SHIPPING","ST-01","ST-02","ST-03","ST-04","ST-05","ST-06","ST-07","ST-08"] };
     const legend = '<div class="racklegend"><span class="rl"><span class="slot occ"></span>' + L("locOccupied") + '</span>' +
       '<span class="rl"><span class="slot empty"></span>' + L("locEmpty") + '</span>' +
       '<span class="rl"><span class="slot blocked"></span>' + L("locBlocked") + '</span></div>';
@@ -1363,7 +1363,7 @@
   function viewLocationsFloor() {
     const occ = locOccupancy();
     const cfg = DB.config || { docks: [11,12,13,14,15,16,17,18,19],
-      zones: ["RECEIVING","RETURNS","QA-HOLD","QUARANTINE","WIP","PACKOUT","CAGE","PROD-WEIGH","PROD-PACK","SHIPPING","ST-01","ST-02","ST-03","ST-04","ST-05","ST-06","ST-07","ST-08"] };
+      zones: ["RECEIVING","RETURNS","QUARANTINE","WIP","PACKOUT","CAGE","PROD-WEIGH","PROD-PACK","SHIPPING","ST-01","ST-02","ST-03","ST-04","ST-05","ST-06","ST-07","ST-08"] };
     // racking run: light-blue rect, clickable -> rack grid; optional big section letter
     const rk = (x, y, w, h, lbl, vert) => {
       let t = "";

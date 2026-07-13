@@ -179,7 +179,7 @@ window.DB = (function () {
   // meta: { supplier, invoice, category, pallets, condition, status }
   async function receive(item, qty, lot, op, meta) {
     meta = meta || {};
-    const loc = meta.condition === "Defective - Hold" ? "QA-HOLD" : (meta.location || "RECEIVING");
+    const loc = meta.condition === "Quarantine" ? "QUARANTINE" : (meta.location || "RECEIVING");
     const parts = [];
     if (meta.supplier) parts.push("from " + meta.supplier);
     if (meta.invoice) parts.push("inv " + meta.invoice);
@@ -255,11 +255,11 @@ window.DB = (function () {
   }
   // ---------- Returns (customer + Amazon) ----------
   // meta: { channel, reason, disposition, rma }
-  // Restock -> RETURNS zone; Damaged - Hold -> QA-HOLD; Scrap -> log only (no stock)
+  // Restock -> RETURNS zone; Quarantine -> QUARANTINE; Scrap -> log only (no stock)
   async function returnStock(item, qty, op, meta) {
     meta = meta || {};
     const disp = meta.disposition || "Restock";
-    const loc = disp === "Restock" ? "RETURNS" : disp === "Damaged - Hold" ? "QA-HOLD" : null;
+    const loc = disp === "Restock" ? "RETURNS" : disp === "Quarantine" ? "QUARANTINE" : null;
     const parts = [];
     if (meta.channel) parts.push(meta.channel);
     if (meta.rma) parts.push("RMA " + meta.rma);
