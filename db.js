@@ -179,7 +179,7 @@ window.DB = (function () {
   // meta: { supplier, invoice, category, pallets, condition, status }
   async function receive(item, qty, lot, op, meta) {
     meta = meta || {};
-    const loc = meta.condition === "Defective - Hold" ? "QA-HOLD" : "RECEIVING";
+    const loc = meta.condition === "Defective - Hold" ? "QA-HOLD" : (meta.location || "RECEIVING");
     const parts = [];
     if (meta.supplier) parts.push("from " + meta.supplier);
     if (meta.invoice) parts.push("inv " + meta.invoice);
