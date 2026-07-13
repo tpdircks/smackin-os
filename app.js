@@ -20,7 +20,8 @@
       dashHint:"Live on hand across every location. Filter by category.",
       receiveHint:"Scan an item, enter qty + details, receive into stock in one step.",
       rSupplier:"Supplier", rInvoice:"Invoice / PO #", rCategory:"Category", rPallets:"Pallets", rCondition:"Condition", rStatus:"Status",
-      putHint:"Scan item + destination slot (A-05-L3) or zone. Moves from RECEIVING.",
+      putHint:"Scan the item, then scan the slot barcode OR tap Section - Bay - Level. Moves from Receiving in real time.",
+      puDest:"Destination", puSection:"Section", puBay:"Bay", puLevel:"Level", puZones:"Floor / zones", puScanLoc:"A-05-L3 / scan slot barcode",
       moveHint:"Scan item, pick from and to (slot, WIP, Pack-Out, Shipping...).",
       produceHint:"Record finished 4oz bags off the line. Adds bags, consumes film + seasoning.",
       countHint:"Cycle count: scan item + slot, enter the counted quantity; the system adjusts.",
@@ -104,7 +105,8 @@
       dashHint:"Disponible en vivo en todas las ubicaciones. Filtre por categoria.",
       receiveHint:"Escanee un articulo, ingrese cant. + detalles, reciba al inventario en un paso.",
       rSupplier:"Proveedor", rInvoice:"Factura / OC #", rCategory:"Categoria", rPallets:"Pallets", rCondition:"Condicion", rStatus:"Estado",
-      putHint:"Escanee articulo + slot destino (A-05-L3) o zona. Sale de RECIBO.",
+      putHint:"Escanee el articulo, luego escanee el codigo del slot O toque Seccion - Bahia - Nivel. Sale de Recibo en tiempo real.",
+      puDest:"Destino", puSection:"Seccion", puBay:"Bahia", puLevel:"Nivel", puZones:"Piso / zonas", puScanLoc:"A-05-L3 / escanee slot",
       moveHint:"Escanee articulo, elija desde y hacia (slot, WIP, Empaque, Embarque...).",
       produceHint:"Registre bolsas 4oz de la linea. Suma bolsas, consume film + sazon.",
       countHint:"Conteo ciclico: escanee articulo + slot, ingrese la cantidad contada.",
@@ -188,7 +190,8 @@
       dashHint:"Estoque ao vivo em todos os locais. Filtre por categoria.",
       receiveHint:"Escaneie um item, digite qtd. + detalhes e receba no estoque em um passo.",
       rSupplier:"Fornecedor", rInvoice:"Fatura / OC #", rCategory:"Categoria", rPallets:"Paletes", rCondition:"Condicao", rStatus:"Status",
-      putHint:"Escaneie item + local destino (A-05-L3) ou zona. Sai de RECEBIMENTO.",
+      putHint:"Escaneie o item, depois escaneie o codigo do slot OU toque Secao - Baia - Nivel. Sai de Recebimento em tempo real.",
+      puDest:"Destino", puSection:"Secao", puBay:"Baia", puLevel:"Nivel", puZones:"Piso / zonas", puScanLoc:"A-05-L3 / escaneie slot",
       moveHint:"Escaneie item, escolha de e para (slot, WIP, Empacotamento, Expedicao...).",
       produceHint:"Registre sacos 4oz da linha. Adiciona sacos, consome filme + tempero.",
       countHint:"Contagem ciclica: escaneie item + slot, digite a quantidade contada.",
@@ -449,6 +452,7 @@
   let orderAddOpen = false;
   let peopleView = "dir"; // People: "dir" | "org"
   let locView = "map";    // Locations: "floor" | "map" | "list" (rack grid is default; floor plan optional)
+  let puSec = "", puBay = "", puLevel = "";  // Put-Away location picker state (Section/Bay/Level)
   let locSel = null;      // selected slot/zone code in the rack map
   // Physically blocked rack slots (numbering unchanged; not storable) - Troy's real floor
   const BLOCKED_SLOTS = new Set(["A-23-L1","B-15-L4","B-16-L4","B-17-L4","B-21-L4","B-22-L4","C-21-L4","C-22-L4","D-17-L4","D-18-L4","D-23-L4","D-24-L4"]);
@@ -1050,9 +1054,27 @@
       opField("Adriana") + '<button class="primary" onclick="UI.receive()">' + L("submitReceive") + '</button></div>';
   }
   function viewPut() {
+    const cfg = DB.config || { sections: ["A","B","C","D"], baysPerSection: 28, levels: ["L1","L2","L3","L4"],
+      zones: ["RECEIVING","ST-01","ST-02","ST-03","ST-04","ST-05","ST-06","ST-07","ST-08","WIP","PACKOUT","CAGE","QA-HOLD"], docks: [] };
+    const secChip = s => '<button class="pchip' + (puSec === s ? " on" : "") + '" data-k="sec" data-v="' + s + '" onclick="UI.puPick(\'sec\',\'' + s + '\')">' + s + '</button>';
+    const lvlChip = l => '<button class="pchip' + (puLevel === l ? " on" : "") + '" data-k="lvl" data-v="' + l + '" onclick="UI.puPick(\'lvl\',\'' + l + '\')">' + l + '</button>';
+    let bayChips = "";
+    for (let b = 1; b <= (cfg.baysPerSection || 28); b++) { const bb = String(b).padStart(2, "0");
+      bayChips += '<button class="pchip bay' + (puBay === bb ? " on" : "") + '" data-k="bay" data-v="' + bb + '" onclick="UI.puPick(\'bay\',\'' + bb + '\')">' + bb + '</button>'; }
+    const zones = (cfg.zones || []).concat((cfg.docks || []).map(d => "DOCK-" + d));
+    const zoneChips = zones.map(z => '<button class="pchip zone" onclick="UI.puZone(\'' + z + '\')">' + esc(z) + '</button>').join("");
+    const preview = (puSec && puBay && puLevel) ? (puSec + "-" + puBay + "-" + puLevel) : "—";
     return '<div class="card"><h2>' + L("putaway") + '</h2><p class="hint">' + L("putHint") + '</p>' +
       itemScan("p-code", "p-loc") +
-      '<div class="row"><div>' + locInput("p-loc", "to") + '</div><div><label>' + L("qty") + '</label><input id="p-qty" type="number" min="0" placeholder="' + L("enter") + '"></div></div>' +
+      '<div class="row"><div><label>' + L("qty") + '</label><input id="p-qty" type="number" min="0" placeholder="' + L("enter") + '"></div></div>' +
+      '<div class="pudest"><label>' + L("puDest") + '</label>' +
+      '<div class="scanrow"><input id="p-loc" list="dl-locs" autocomplete="off" value="' + esc(preview === "—" ? "" : preview) + '" placeholder="' + L("puScanLoc") + '" oninput="UI.puSync()">' +
+      '<button type="button" class="cambtn" onclick="UI.cam(\'p-loc\')">' + L("camera") + '</button></div>' +
+      '<div class="pupreview">&#8594; <b id="pu-code">' + preview + '</b> <span id="pu-warn" class="sm" style="color:var(--red);font-weight:700"></span></div>' +
+      '<div class="pgrp"><span class="plab">' + L("puSection") + '</span><div class="pchips">' + cfg.sections.map(secChip).join("") + '</div></div>' +
+      '<div class="pgrp"><span class="plab">' + L("puBay") + '</span><div class="pchips baywrap">' + bayChips + '</div></div>' +
+      '<div class="pgrp"><span class="plab">' + L("puLevel") + '</span><div class="pchips">' + (cfg.levels || ["L1","L2","L3","L4"]).map(lvlChip).join("") + '</div></div>' +
+      '<div class="pgrp"><span class="plab">' + L("puZones") + '</span><div class="pchips">' + zoneChips + '</div></div></div>' +
       opField("Adriana") + '<button class="primary" onclick="UI.put()">' + L("submitPut") + '</button></div>';
   }
   function viewMove() {
@@ -1572,9 +1594,28 @@
         pallets: v("r-pal"), condition: v("r-cond") || "Good", status: v("r-stat") || "Received" };
       const r = await DB.receive(it, q, lot, $("op").value, meta);
       toast("+" + fmt(q) + " " + it.name + (r && r.location === "QA-HOLD" ? " -> QA-HOLD" : "")); go("receive"); },
+    // ---- Put-Away location picker (tap Section/Bay/Level, or scan/type the slot) ----
+    puPick(kind, val) {
+      if (kind === "sec") puSec = (puSec === val ? "" : val);
+      else if (kind === "bay") puBay = (puBay === val ? "" : val);
+      else if (kind === "lvl") puLevel = (puLevel === val ? "" : val);
+      const code = (puSec && puBay && puLevel) ? (puSec + "-" + puBay + "-" + puLevel) : "";
+      const loc = $("p-loc"); if (loc) loc.value = code;
+      UI._puRefresh(code);
+    },
+    puZone(z) { puSec = ""; puBay = ""; puLevel = ""; const loc = $("p-loc"); if (loc) loc.value = z; UI._puRefresh(z); },
+    puSync() { const v = ($("p-loc").value || "").trim().toUpperCase(); const m = v.match(/^([A-E])-(\d{2})-(L[1-4])$/);
+      if (m) { puSec = m[1]; puBay = m[2]; puLevel = m[3]; } else { puSec = ""; puBay = ""; puLevel = ""; } UI._puRefresh(v); },
+    _puRefresh(code) {
+      const c = $("pu-code"); if (c) c.textContent = code || "—";
+      document.querySelectorAll(".pudest .pchip[data-k]").forEach(b => { const k = b.getAttribute("data-k"), val = b.getAttribute("data-v");
+        b.classList.toggle("on", (k === "sec" && val === puSec) || (k === "bay" && val === puBay) || (k === "lvl" && val === puLevel)); });
+      const w = $("pu-warn"); if (w) w.textContent = (code && BLOCKED_SLOTS.has(code)) ? ("⛔ " + L("locBlocked")) : "";
+    },
     async put() { const it = DB.itemByCode($("p-code").value); const loc = ($("p-loc").value || "").trim().toUpperCase(); const q = parseFloat($("p-qty").value);
-      if (!it) return toast(L("notfound")); if (!validLoc(loc)) return toast(L("badloc")); if (!(q > 0)) return toast(L("enter"));
-      const r = await DB.move(it, "RECEIVING", loc, q, $("op").value); if (!r.ok) return toast(r.msg); toast(it.name + " -> " + loc); go("putaway"); },
+      if (!it) return toast(L("notfound")); if (!validLoc(loc)) return toast(L("badloc")); if (BLOCKED_SLOTS.has(loc)) return toast("⛔ " + L("locBlocked")); if (!(q > 0)) return toast(L("enter"));
+      const r = await DB.move(it, "RECEIVING", loc, q, $("op").value); if (!r.ok) return toast(r.msg);
+      puSec = ""; puBay = ""; puLevel = ""; toast(it.name + " → " + loc); go("putaway"); },
     async move() { const it = DB.itemByCode($("m-code").value); const f = ($("m-from").value || "").trim().toUpperCase(); const t = ($("m-to").value || "").trim().toUpperCase(); const q = parseFloat($("m-qty").value);
       if (!it) return toast(L("notfound")); if (!validLoc(f) || !validLoc(t)) return toast(L("badloc")); if (!(q > 0)) return toast(L("enter"));
       const r = await DB.move(it, f, t, q, $("op").value); if (!r.ok) return toast(r.msg); toast(it.name + ": " + f + " -> " + t); go("move"); },

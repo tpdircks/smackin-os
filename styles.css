@@ -175,6 +175,18 @@ input.sbin:focus{outline:2px solid var(--orange);background:#fff}
 .sbfill.ok{background:var(--green)}
 .sbfill.low{background:var(--yellow)}
 .sbfill.out{background:var(--red)}
+/* Put-Away location picker */
+.pudest{margin:12px 0;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fafbfc}
+.pupreview{font-size:19px;margin:8px 0 12px;color:var(--navy)}
+.pupreview b{font-size:22px;letter-spacing:.5px}
+.pgrp{display:flex;align-items:flex-start;gap:10px;margin:8px 0}
+.plab{font-size:11px;font-weight:800;text-transform:uppercase;color:#8a97a8;min-width:66px;padding-top:9px}
+.pchips{display:flex;flex-wrap:wrap;gap:6px;flex:1}
+.pchip{background:#fff;border:1px solid var(--line);border-radius:8px;padding:9px 14px;font-size:15px;font-weight:700;cursor:pointer;color:var(--navy);min-width:40px;text-align:center}
+.pchip:hover{border-color:var(--blue)}
+.pchip.on{background:var(--orange);color:#fff;border-color:var(--orange)}
+.pchip.bay{padding:8px 9px;min-width:40px}
+.pchip.zone{background:var(--light);font-size:12px;font-weight:600;padding:7px 11px}
 .deptplaceholder{margin-top:14px;padding:34px;border:2px dashed var(--line,#d9d9d9);border-radius:12px;text-align:center;opacity:.55}
 /* People / HR directory */
 .pdept{margin-top:16px}
