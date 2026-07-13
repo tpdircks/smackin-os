@@ -495,7 +495,7 @@
   let shipSearch = "";                        // Shipping Log filter text
   let recvSortKey = "recv_date", recvSortDir = -1;  // Receiving Log sort state
   let recvFile = null;                        // Receiving Log paperwork upload state
-  let shipEditId = null, recvEditId = null, orderEditId = null;  // inline-edit: id of record being edited
+  let shipEditId = null, recvEditId = null, orderEditId = null, seasEditId = null, seedEditId = null;  // inline-edit: id of record being edited
   let locSel = null;      // selected slot/zone code in the rack map
   // Physically blocked rack slots (numbering unchanged; not storable) - Troy's real floor
   const BLOCKED_SLOTS = new Set(["A-23-L1","B-15-L4","B-16-L4","B-17-L4","B-21-L4","B-22-L4","C-21-L4","C-22-L4","D-17-L4","D-18-L4","D-23-L4","D-24-L4"]);
@@ -1294,7 +1294,10 @@
   }
   function viewSeasoning() {
     const seas = DB.items().filter(i => i.category === "seasoning" && /^SEAS-/.test(i.id));
-    const opts = seas.map(i => '<option value="' + i.id.replace("SEAS-", "") + '|' + i.flavor + '">' + i.flavor + '</option>').join("");
+    const sed = seasEditId ? (DB.seasLots().find(l => String(l.id) === String(seasEditId)) || {}) : {};
+    const sediting = !!(seasEditId && sed.id);
+    const av = x => esc(x == null ? "" : x);
+    const opts = seas.map(i => { const code = i.id.replace("SEAS-", ""); return '<option value="' + code + '|' + i.flavor + '"' + (sediting && sed.flavor_code === code ? ' selected' : '') + '>' + i.flavor + '</option>'; }).join("");
     const today = new Date().toISOString().slice(0, 10);
     const lots = DB.seasLots().slice().sort((a, b) => (a.exp || "9999") < (b.exp || "9999") ? -1 : 1);
     const body = lots.length ? lots.map(l => {
@@ -1306,26 +1309,30 @@
         ? '<button class="ghost sm" onclick="UI.seasStatus(\'' + l.id + '\',\'Good\')">' + L("markGood") + '</button>'
         : '<button class="ghost sm danger" onclick="UI.seasStatus(\'' + l.id + '\',\'Quarantine\')">' + L("markQuar") + '</button>';
       return '<tr><td><b>' + (l.product || l.flavor_code) + '</b></td><td>' + (l.lot || "&mdash;") + '</td><td class="muted sm">' + (l.manufacturer || "&mdash;") +
-        '</td><td' + (isExp ? ' class="expd"' : "") + '>' + (exp || "&mdash;") + '</td><td class="right">' + fmt(l.weight) + '</td><td>' + stat + '</td><td>' + act + '</td></tr>';
+        '</td><td' + (isExp ? ' class="expd"' : "") + '>' + (exp || "&mdash;") + '</td><td class="right">' + fmt(l.weight) + '</td><td>' + stat + '</td><td>' + act + ' <button class="ghost sm" title="' + L("editRow") + '" onclick="UI.seasEdit(\'' + l.id + '\')">&#9998;</button></td></tr>';
     }).join("") : '<tr><td colspan="7" class="muted">' + L("noLots") + '</td></tr>';
     return '<div class="card"><h2>' + L("seasoning") + '</h2><p class="hint">' + L("seasHint") + '</p>' +
+      (sediting ? '<p class="hint">&#9998; ' + L("editingRow") + '</p>' : '') +
       '<div class="row"><div><label>' + L("slProduct") + '</label><select id="sl-prod">' + opts + '</select></div>' +
-      '<div><label>' + L("slLot") + '</label><input id="sl-lot" autocomplete="off" placeholder="# 6105"></div>' +
-      '<div><label>' + L("slMfr") + '</label><input id="sl-mfr" autocomplete="off" placeholder="Commercial Creations"></div></div>' +
-      '<div class="row"><div><label>' + L("slExp") + '</label><input id="sl-exp" type="date"></div>' +
-      '<div><label>' + L("slWeight") + '</label><input id="sl-wt" type="number" min="0" step="0.1" placeholder="0"></div>' +
+      '<div><label>' + L("slLot") + '</label><input id="sl-lot" autocomplete="off" placeholder="# 6105" value="' + av(sed.lot) + '"></div>' +
+      '<div><label>' + L("slMfr") + '</label><input id="sl-mfr" autocomplete="off" placeholder="Commercial Creations" value="' + av(sed.manufacturer) + '"></div></div>' +
+      '<div class="row"><div><label>' + L("slExp") + '</label><input id="sl-exp" type="date" value="' + (sediting && sed.exp ? (sed.exp + "").slice(0, 10) : "") + '"></div>' +
+      '<div><label>' + L("slWeight") + '</label><input id="sl-wt" type="number" min="0" step="0.1" placeholder="0" value="' + (sediting && Number(sed.weight) ? Number(sed.weight) : "") + '"></div>' +
       '<div style="align-self:end">' + opField() + '</div></div>' +
-      '<button class="primary" onclick="UI.addSeasLot()">' + L("addLot") + '</button> ' +
-      '<button class="ghost" style="margin-top:14px" onclick="UI.quarExpired()">' + L("quarantineExpired") + '</button>' +
+      '<button class="primary" onclick="UI.addSeasLot()">' + (sediting ? L("saveChanges") : L("addLot")) + '</button> ' +
+      (sediting ? '<button class="ghost" style="margin-top:14px" onclick="UI.seasEditCancel()">' + L("ordCancel") + '</button>' : '<button class="ghost" style="margin-top:14px" onclick="UI.quarExpired()">' + L("quarantineExpired") + '</button>') +
       '<h2 class="sub2" style="margin-top:18px">' + L("seasLotsTitle") + '</h2>' +
       '<table class="sortable"><thead><tr><th>' + L("slProduct") + '</th><th>' + L("slLot") + '</th><th>' + L("slMfr") + '</th><th>' + L("slExp") +
       '</th><th class="right">' + L("slWeight") + '</th><th>' + L("status") + '</th><th data-nosort></th></tr></thead><tbody>' + body + '</tbody></table></div>';
   }
   function viewSeed() {
     const seeds = DB.items().filter(i => /^SEED-/.test(i.id));
-    const opts = seeds.map(i => '<option value="' + i.id + '|' + esc(i.name) + '">' + esc(i.name) + '</option>').join("");
+    const sedt = seedEditId ? ((DB.seedLots ? DB.seedLots() : []).find(l => String(l.id) === String(seedEditId)) || {}) : {};
+    const sdediting = !!(seedEditId && sedt.id);
+    const av2 = x => esc(x == null ? "" : x);
+    const opts = seeds.map(i => '<option value="' + i.id + '|' + esc(i.name) + '"' + (sdediting && sedt.seed_code === i.id ? ' selected' : '') + '>' + esc(i.name) + '</option>').join("");
     const sups = (Array.isArray(DB.recvSuppliers) && DB.recvSuppliers.length ? DB.recvSuppliers : ["Sunrich", "Other"]);
-    const supOpts = sups.map(s => '<option' + (s === "Sunrich" ? " selected" : "") + '>' + esc(s) + '</option>').join("");
+    const supOpts = sups.map(s => '<option' + (s === (sdediting && sedt.supplier ? sedt.supplier : "Sunrich") ? " selected" : "") + '>' + esc(s) + '</option>').join("");
     const lots = (DB.seedLots ? DB.seedLots() : []).slice().sort((a, b) => (a.received_at || a.created_at || "") < (b.received_at || b.created_at || "") ? 1 : -1);
     const body = lots.length ? lots.map(l => {
       const rec = String(l.received_date || l.received_at || "").slice(0, 10);
@@ -1334,17 +1341,19 @@
         ? '<button class="ghost sm" onclick="UI.seedStatus(\'' + l.id + '\',\'Good\')">' + L("markGood") + '</button>'
         : '<button class="ghost sm danger" onclick="UI.seedStatus(\'' + l.id + '\',\'Quarantine\')">' + L("markQuar") + '</button>';
       return '<tr><td><b>' + esc(l.product || l.seed_code || "") + '</b></td><td>' + esc(l.lot || "—") + '</td><td class="muted sm">' + esc(l.supplier || "—") +
-        '</td><td>' + (rec || "—") + '</td><td class="right">' + fmt(l.weight) + '</td><td>' + stat + '</td><td>' + act + '</td></tr>';
+        '</td><td>' + (rec || "—") + '</td><td class="right">' + fmt(l.weight) + '</td><td>' + stat + '</td><td>' + act + ' <button class="ghost sm" title="' + L("editRow") + '" onclick="UI.seedEdit(\'' + l.id + '\')">&#9998;</button></td></tr>';
     }).join("") : '<tr><td colspan="7" class="muted">' + L("noSeedLots") + '</td></tr>';
     const today = new Date().toISOString().slice(0, 10);
     return '<div class="card"><h2>' + L("seed") + '</h2><p class="hint">' + L("seedHint") + '</p>' +
+      (sdediting ? '<p class="hint">&#9998; ' + L("editingRow") + '</p>' : '') +
       '<div class="row"><div><label>' + L("sdType") + '</label><select id="sd-type">' + opts + '</select></div>' +
-      '<div><label>' + L("slLot") + '</label><input id="sd-lot" autocomplete="off" placeholder="# 4471"></div>' +
+      '<div><label>' + L("slLot") + '</label><input id="sd-lot" autocomplete="off" placeholder="# 4471" value="' + av2(sedt.lot) + '"></div>' +
       '<div><label>' + L("supplier") + '</label><select id="sd-sup">' + supOpts + '</select></div></div>' +
-      '<div class="row"><div><label>' + L("sdReceived") + '</label><input id="sd-rec" type="date" value="' + today + '"></div>' +
-      '<div><label>' + L("slWeight") + '</label><input id="sd-wt" type="number" min="0" step="0.1" placeholder="0"></div>' +
+      '<div class="row"><div><label>' + L("sdReceived") + '</label><input id="sd-rec" type="date" value="' + (sdediting && sedt.received_date ? (sedt.received_date + "").slice(0, 10) : today) + '"></div>' +
+      '<div><label>' + L("slWeight") + '</label><input id="sd-wt" type="number" min="0" step="0.1" placeholder="0" value="' + (sdediting && Number(sedt.weight) ? Number(sedt.weight) : "") + '"></div>' +
       '<div style="align-self:end">' + opField("Adriana") + '</div></div>' +
-      '<button class="primary" onclick="UI.addSeedLot()">' + L("addLot") + '</button>' +
+      '<button class="primary" onclick="UI.addSeedLot()">' + (sdediting ? L("saveChanges") : L("addLot")) + '</button>' +
+      (sdediting ? ' <button class="ghost" style="margin-top:14px" onclick="UI.seedEditCancel()">' + L("ordCancel") + '</button>' : '') +
       '<h2 class="sub2" style="margin-top:18px">' + L("seedLotsTitle") + '</h2>' +
       '<table class="sortable"><thead><tr><th>' + L("sdType") + '</th><th>' + L("slLot") + '</th><th>' + L("supplier") + '</th><th>' + L("sdReceived") +
       '</th><th class="right">' + L("slWeight") + '</th><th>' + L("status") + '</th><th data-nosort></th></tr></thead><tbody>' + body + '</tbody></table></div>';
@@ -1865,20 +1874,28 @@
       toast(L("submitReturn") + " ✓" + (r.location ? " -> " + r.location : "")); go("returns");
     },
     // ---- Seasoning lots ----
+    seasEdit(id) { seasEditId = id; render(); window.scrollTo(0, 0); },
+    seasEditCancel() { seasEditId = null; render(); },
     async addSeasLot() {
       const pv = ($("sl-prod").value || "").split("|"); const wt = parseFloat($("sl-wt").value);
       if (!pv[0]) return toast(L("notfound")); if (!(wt > 0)) return toast(L("enter"));
-      await DB.addSeasLot({ flavor_code: pv[0], product: pv[1] || pv[0], lot: ($("sl-lot").value || "").trim(),
-        manufacturer: ($("sl-mfr").value || "").trim(), exp: $("sl-exp").value || null, weight: wt }, $("op").value);
+      const rec = { flavor_code: pv[0], product: pv[1] || pv[0], lot: ($("sl-lot").value || "").trim(),
+        manufacturer: ($("sl-mfr").value || "").trim(), exp: $("sl-exp").value || null, weight: wt };
+      if (seasEditId) { await DB.updateSeasLot(seasEditId, rec, $("op").value); seasEditId = null; toast(L("saved") + " ✓"); render(); return; }
+      await DB.addSeasLot(rec, $("op").value);
       toast(L("addLot") + " ✓"); go("seasoning");
     },
     async seasStatus(id, status) { await DB.setSeasLotStatus(id, status, opVal()); toast(status); },
     async quarExpired() { const n = await DB.quarantineExpiredSeas(opVal()); toast(n ? n + " -> " + L("quarTag") : L("allgood")); },
+    seedEdit(id) { seedEditId = id; render(); window.scrollTo(0, 0); },
+    seedEditCancel() { seedEditId = null; render(); },
     async addSeedLot() {
       const tv = (($("sd-type") || {}).value || "").split("|"); const wt = parseFloat(($("sd-wt") || {}).value);
       if (!tv[0]) return toast(L("notfound")); if (!(wt > 0)) return toast(L("enter"));
-      await DB.addSeedLot({ seed_code: tv[0], product: tv[1] || tv[0], lot: (($("sd-lot") || {}).value || "").trim(),
-        supplier: ($("sd-sup") || {}).value || "", received_date: ($("sd-rec") || {}).value || null, weight: wt }, opVal());
+      const rec = { seed_code: tv[0], product: tv[1] || tv[0], lot: (($("sd-lot") || {}).value || "").trim(),
+        supplier: ($("sd-sup") || {}).value || "", received_date: ($("sd-rec") || {}).value || null, weight: wt };
+      if (seedEditId) { await DB.updateSeedLot(seedEditId, rec, opVal()); seedEditId = null; toast(L("saved") + " ✓"); render(); return; }
+      await DB.addSeedLot(rec, opVal());
       toast(L("addLot") + " ✓"); go("seed");
     },
     async seedStatus(id, status) { await DB.setSeedLotStatus(id, status, opVal()); toast(status); },

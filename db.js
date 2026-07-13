@@ -322,6 +322,19 @@ window.DB = (function () {
     }
     emit();
   }
+  async function updateSeasLot(id, patch, op) {
+    const p = { flavor_code: patch.flavor_code || "", product: patch.product || "", lot: patch.lot || "",
+      manufacturer: patch.manufacturer || "", exp: patch.exp || null, weight: Number(patch.weight) || 0 };
+    const logEntry = { a: "Seasoning edited", d: (p.product || p.flavor_code) + " lot " + p.lot, u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      await sb.from("seasoning_lots").update(p).eq("id", id);
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      const l = (cache.seasLots || []).find(x => String(x.id) === String(id)); if (l) Object.assign(l, p);
+      local.addLog(logEntry); local.save();
+    }
+    emit(); return { ok: true };
+  }
   // Move any Good lot past its expiration into Quarantine. Returns count moved.
   async function quarantineExpiredSeas(op) {
     const today = new Date().toISOString().slice(0, 10);
@@ -513,6 +526,19 @@ window.DB = (function () {
       local.addLog(logEntry); local.save();
     }
     emit();
+  }
+  async function updateSeedLot(id, patch, op) {
+    const p = { seed_code: patch.seed_code || "", product: patch.product || "", lot: patch.lot || "",
+      supplier: patch.supplier || "", received_date: patch.received_date || null, weight: Number(patch.weight) || 0 };
+    const logEntry = { a: "Seed edited", d: (p.product || p.seed_code) + " lot " + p.lot, u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      await sb.from("seed_lots").update(p).eq("id", id);
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      const l = (cache.seedLots || []).find(x => String(x.id) === String(id)); if (l) Object.assign(l, p);
+      local.addLog(logEntry); local.save();
+    }
+    emit(); return { ok: true };
   }
 
   // ---------- Stock Build (live on-hand vs goals; on-hand entered in-app) ----------
@@ -890,8 +916,8 @@ window.DB = (function () {
     items, suppliers, stock, log, itemByCode, onHand, atLoc,
     purchaseOrders, supplierName, createPO, setPOStatus, deletePO, receivePO,
     receive, move, adjust, adjustTotal, produce, resetDemo,
-    returnStock, seasLots, addSeasLot, setSeasLotStatus, quarantineExpiredSeas,
-    seedLots, addSeedLot, setSeedLotStatus,
+    returnStock, seasLots, addSeasLot, setSeasLotStatus, updateSeasLot, quarantineExpiredSeas,
+    seedLots, addSeedLot, setSeedLotStatus, updateSeedLot,
     stockBuild, setStockBuildOnHand,
     shippingLog, addShipping, setShippingStatus, updateShipping, deleteShipping,
     receivingLog, addReceivingLog, updateReceivingLog, deleteReceivingLog,
