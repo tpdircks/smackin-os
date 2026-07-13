@@ -43,6 +43,7 @@
       addLot:"Add lot", seasLotsTitle:"Seasoning lots (earliest expiration first)", quarantineExpired:"Quarantine expired lots",
       noLots:"No seasoning lots yet.", markQuar:"Quarantine", markGood:"Mark good", expiredTag:"EXPIRED", quarTag:"QUARANTINE", goodTag:"GOOD",
       seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdReceived:"Received", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
+      skus:"SKUs", skusHint:"Finished-goods / retail SKU catalog - bundles, singles, and cases with bag count and flavor contents. Reference only.", skuCode:"SKU", skuTitle:"Product", skuBags:"Bags", skuComp:"Contents", skuSearchP:"Search SKU, product, or flavor...", skuCount:"SKUs",
       qaHint:"Items received as defective or damaged sit here. Convert good ones back to stock or scrap them.",
       qaTitle:"On QA / Defective hold", convertGood:"Move to good stock", scrapIt:"Scrap", qaEmpty:"Nothing on QA hold.",
       columns:"Columns", colCategory:"Category", colItem:"Item", colOnhand:"On hand", colReorder:"Reorder", colStatus:"Status", resetCols:"Reset",
@@ -125,6 +126,7 @@
       addLot:"Agregar lote", seasLotsTitle:"Lotes de sazon (vencimiento mas proximo primero)", quarantineExpired:"Cuarentena de vencidos",
       noLots:"Sin lotes de sazon aun.", markQuar:"Cuarentena", markGood:"Marcar bueno", expiredTag:"VENCIDO", quarTag:"CUARENTENA", goodTag:"BUENO",
       seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdReceived:"Recibido", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
+      skus:"SKUs", skusHint:"Catalogo de SKU de producto terminado / retail - paquetes, individuales y cajas con cantidad de bolsas y sabores. Solo referencia.", skuCode:"SKU", skuTitle:"Producto", skuBags:"Bolsas", skuComp:"Contenido", skuSearchP:"Buscar SKU, producto o sabor...", skuCount:"SKUs",
       qaHint:"Los articulos recibidos como defectuosos o danados quedan aqui. Convierta los buenos a inventario o descartelos.",
       qaTitle:"En retencion QA / Defectuoso", convertGood:"Pasar a inventario bueno", scrapIt:"Descartar", qaEmpty:"Nada en retencion QA.",
       columns:"Columnas", colCategory:"Categoria", colItem:"Articulo", colOnhand:"Disponible", colReorder:"Reorden", colStatus:"Estado", resetCols:"Reiniciar",
@@ -207,6 +209,7 @@
       addLot:"Adicionar lote", seasLotsTitle:"Lotes de tempero (validade mais proxima primeiro)", quarantineExpired:"Quarentena de vencidos",
       noLots:"Nenhum lote de tempero ainda.", markQuar:"Quarentena", markGood:"Marcar bom", expiredTag:"VENCIDO", quarTag:"QUARENTENA", goodTag:"BOM",
       seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdReceived:"Recebido", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
+      skus:"SKUs", skusHint:"Catalogo de SKU de produto acabado / varejo - pacotes, individuais e caixas com contagem de sacos e sabores. Apenas referencia.", skuCode:"SKU", skuTitle:"Produto", skuBags:"Sacos", skuComp:"Conteudo", skuSearchP:"Buscar SKU, produto ou sabor...", skuCount:"SKUs",
       qaHint:"Itens recebidos como defeituosos ou danificados ficam aqui. Converta os bons de volta ao estoque ou descarte-os.",
       qaTitle:"Em retencao QA / Defeituoso", convertGood:"Passar para estoque bom", scrapIt:"Descartar", qaEmpty:"Nada em retencao QA.",
       columns:"Colunas", colCategory:"Categoria", colItem:"Item", colOnhand:"Em estoque", colReorder:"Reposicao", colStatus:"Status", resetCols:"Reiniciar",
@@ -255,7 +258,7 @@
   let lang = "en"; const L = k => (T[lang][k] !== undefined ? T[lang][k] : k);
   let active = "home"; let catFilter = "all";
   let purchMode = "list"; let purchSup = null; let receivingPOid = null;
-  const TABS = ["home","dash","alerts","adjust","receive","putaway","returns","orders","orderdocs","rd","qa","move","produce","seasoning","seed","mixing","pmac","count","locations","purchasing","supplierpos","people","labels","log","settings"];
+  const TABS = ["home","dash","alerts","adjust","receive","putaway","returns","orders","orderdocs","rd","qa","move","produce","seasoning","seed","skus","mixing","pmac","count","locations","purchasing","supplierpos","people","labels","log","settings"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -357,7 +360,7 @@
   const NAV_GROUPS = [
     { key:"", items:["home","alerts"] },
     { key:"grpReceiving", items:["receive","putaway","returns","qa"] },
-    { key:"grpInventory", items:["dash","adjust","count","locations","seasoning","seed","labels"] },
+    { key:"grpInventory", items:["dash","adjust","count","locations","seasoning","seed","skus","labels"] },
     { key:"grpProduction", items:["produce","move","orders","orderdocs"] },
     { key:"grpMixing", items:["mixing"] },
     { key:"grpPmac", items:["pmac"] },
@@ -370,7 +373,7 @@
     returns:"\u{21A9}\u{FE0F}", qa:"\u{26D4}", orders:"\u{1F9FE}", purchasing:"\u{1F6D2}", rd:"\u{1F9EA}",
     move:"\u{1F500}", produce:"\u{1F3ED}", seasoning:"\u{1F9C2}", count:"\u{1F522}", locations:"\u{1F4CD}",
     labels:"\u{1F3F7}\u{FE0F}", log:"\u{1F4DC}", settings:"\u{2699}\u{FE0F}", supplierpos:"\u{1F4C4}",
-    mixing:"\u{1F963}", pmac:"\u{1F527}", people:"\u{1F465}", orderdocs:"\u{1F4C1}", seed:"\u{1F33B}" };
+    mixing:"\u{1F963}", pmac:"\u{1F527}", people:"\u{1F465}", orderdocs:"\u{1F4C1}", seed:"\u{1F33B}", skus:"\u{1F6CD}\u{FE0F}" };
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
   let spoSort = { key: "created", dir: -1 };  // Supplier POs table sort (v25)
   let spoView = "list";   // Supplier POs: "list" | "create" (Excel-style PO entry form)
@@ -410,7 +413,7 @@
   let orderView = "open"; // orders: "open" | "complete"
   let orderAddOpen = false;
   let peopleView = "dir"; // People: "dir" | "org"
-  let locView = "floor";  // Locations: "floor" | "map" | "list"
+  let locView = "map";    // Locations: "floor" | "map" | "list" (rack grid is default; floor plan optional)
   let locSel = null;      // selected slot/zone code in the rack map
   // Physically blocked rack slots (numbering unchanged; not storable) - Troy's real floor
   const BLOCKED_SLOTS = new Set(["A-23-L1","B-15-L4","B-16-L4","B-17-L4","B-21-L4","B-22-L4","C-21-L4","C-22-L4","D-17-L4","D-18-L4","D-23-L4","D-24-L4"]);
@@ -1112,6 +1115,17 @@
       '<table><thead><tr><th>' + L("sdType") + '</th><th>' + L("slLot") + '</th><th>' + L("supplier") + '</th><th>' + L("sdReceived") +
       '</th><th class="right">' + L("slWeight") + '</th><th>' + L("status") + '</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>';
   }
+  function viewSkus() {
+    const all = (window.SMACKIN_SKUS || []);
+    const rows = all.map(s => {
+      const hay = ((s.s || "") + " " + (s.t || "") + " " + (s.c || "")).toLowerCase();
+      return '<tr data-h="' + esc(hay) + '"><td><b>' + esc(s.s) + '</b></td><td>' + esc(s.t) + '</td><td class="right">' + esc(s.b) + '</td><td class="muted sm">' + esc(s.c || "—") + '</td></tr>';
+    }).join("");
+    return '<div class="card"><h2>' + L("skus") + '</h2><p class="hint">' + L("skusHint") + '</p>' +
+      '<input id="sku-q" style="width:100%;max-width:420px" oninput="UI.skuFilter(this.value)" placeholder="' + L("skuSearchP") + '" autocomplete="off">' +
+      '<div class="muted sm" id="sku-count" style="margin:8px 0">' + all.length + ' ' + L("skuCount") + '</div>' +
+      '<table><thead><tr><th>' + L("skuCode") + '</th><th>' + L("skuTitle") + '</th><th class="right">' + L("skuBags") + '</th><th>' + L("skuComp") + '</th></tr></thead><tbody id="sku-body">' + rows + '</tbody></table></div>';
+  }
   function viewQA() {
     const hold = [];
     ["QA-HOLD", "QUARANTINE"].forEach(z => DB.items().forEach(i => { const q = DB.atLoc(i.id, z); if (q > 0) hold.push({ i, z, q }); }));
@@ -1520,6 +1534,9 @@
       toast(L("addLot") + " ✓"); go("seed");
     },
     async seedStatus(id, status) { await DB.setSeedLotStatus(id, status, opVal()); toast(status); },
+    skuFilter(v) { const q = (v || "").toLowerCase().trim(); let n = 0;
+      document.querySelectorAll('#sku-body tr').forEach(tr => { const show = !q || (tr.getAttribute('data-h') || "").indexOf(q) >= 0; tr.style.display = show ? "" : "none"; if (show) n++; });
+      const c = document.getElementById('sku-count'); if (c) c.textContent = n + ' ' + L("skuCount"); },
     // ---- QA hold review ----
     async qaConvert(itemId, zone) {
       const it = DB.items().find(i => i.id === itemId); if (!it) return;
@@ -1794,7 +1811,7 @@
   function render() {
     renderNav(); refreshDatalists();
     const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
-      move: viewMove, produce: viewProduce, seasoning: viewSeasoning, seed: viewSeed, mixing: viewMixing, pmac: viewPmac,
+      move: viewMove, produce: viewProduce, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, people: viewPeople, labels: viewLabels, log: viewLog, settings: viewSettings };
     $("view").innerHTML = (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
