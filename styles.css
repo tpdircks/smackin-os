@@ -187,6 +187,9 @@ input.sbin:focus{outline:2px solid var(--orange);background:#fff}
 .pchip.on{background:var(--orange);color:#fff;border-color:var(--orange)}
 .pchip.bay{padding:8px 9px;min-width:40px}
 .pchip.zone{background:var(--light);font-size:12px;font-weight:600;padding:7px 11px}
+/* Retail Production */
+.rpsel{margin:10px 0;padding:12px 14px;border-left:4px solid var(--orange);background:var(--light);border-radius:8px}
+.rpsel .rpname{font-size:17px;color:var(--navy)}
 .deptplaceholder{margin-top:14px;padding:34px;border:2px dashed var(--line,#d9d9d9);border-radius:12px;text-align:center;opacity:.55}
 /* People / HR directory */
 .pdept{margin-top:16px}

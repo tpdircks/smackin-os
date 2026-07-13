@@ -46,6 +46,7 @@
       seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdReceived:"Received", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
       skus:"SKUs", skusHint:"Finished-goods / retail SKU catalog - bundles, singles, and cases with bag count and flavor contents. Reference only.", skuCode:"SKU", skuTitle:"Product", skuBags:"Bags", skuComp:"Contents", skuSearchP:"Search SKU, product, or flavor...", skuCount:"SKUs",
       stockbuild:"Stock Build", sbHint:"Live build progress vs goals. Update On Hand as you go - the whole team sees it instantly. Yellow field = enter today's count.", sbGoal:"Goal", sbOnHand:"On hand", sbToBuild:"To build", sbPallets:"Pallets", sbDone:"Done", sbTotalGoal:"Total goal", sbComplete:"Complete", sbSaved:"Saved", sbRetail:"Retail", sbEcom:"E-Commerce", sb12pk:"12-Pack Boxes",
+      retailprod:"Retail Production", rpHint:"When a pallet is made, scan its product barcode (or pick it), enter the quantity, and it is added to stock instantly. Print the barcode sheet with the button below and post it at the line.", rpScanP:"Scan product barcode", rpPickProduct:"Or pick a product...", rpQty:"Quantity made", rpAdd:"Add to stock", rpAdded:"Added to stock", rpCurrent:"Current on hand", rpRecent:"Recent production", rpNone:"Nothing added yet.", rpPrint:"Print product barcodes", rpNotFound:"Barcode not recognized",
       qaHint:"Items received as defective or damaged sit here. Convert good ones back to stock or scrap them.",
       qaTitle:"On QA / Defective hold", convertGood:"Move to good stock", scrapIt:"Scrap", qaEmpty:"Nothing on QA hold.",
       columns:"Columns", colCategory:"Category", colItem:"Item", colOnhand:"On hand", colReorder:"Reorder", colStatus:"Status", resetCols:"Reset",
@@ -131,6 +132,7 @@
       seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdReceived:"Recibido", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
       skus:"SKUs", skusHint:"Catalogo de SKU de producto terminado / retail - paquetes, individuales y cajas con cantidad de bolsas y sabores. Solo referencia.", skuCode:"SKU", skuTitle:"Producto", skuBags:"Bolsas", skuComp:"Contenido", skuSearchP:"Buscar SKU, producto o sabor...", skuCount:"SKUs",
       stockbuild:"Construir Inventario", sbHint:"Progreso de construccion vs metas en vivo. Actualice En Mano segun avanza - todo el equipo lo ve al instante. Campo amarillo = ingrese el conteo de hoy.", sbGoal:"Meta", sbOnHand:"En mano", sbToBuild:"Por hacer", sbPallets:"Paletas", sbDone:"Listo", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Guardado", sbRetail:"Minorista", sbEcom:"Comercio Electronico", sb12pk:"Cajas de 12",
+      retailprod:"Produccion Retail", rpHint:"Cuando se hace una paleta, escanee su codigo de producto (o eligalo), ingrese la cantidad y se agrega al inventario al instante. Imprima la hoja de codigos con el boton de abajo y pongala en la linea.", rpScanP:"Escanee codigo del producto", rpPickProduct:"O elija un producto...", rpQty:"Cantidad hecha", rpAdd:"Agregar al inventario", rpAdded:"Agregado al inventario", rpCurrent:"En mano actual", rpRecent:"Produccion reciente", rpNone:"Nada agregado aun.", rpPrint:"Imprimir codigos de producto", rpNotFound:"Codigo no reconocido",
       qaHint:"Los articulos recibidos como defectuosos o danados quedan aqui. Convierta los buenos a inventario o descartelos.",
       qaTitle:"En retencion QA / Defectuoso", convertGood:"Pasar a inventario bueno", scrapIt:"Descartar", qaEmpty:"Nada en retencion QA.",
       columns:"Columnas", colCategory:"Categoria", colItem:"Articulo", colOnhand:"Disponible", colReorder:"Reorden", colStatus:"Estado", resetCols:"Reiniciar",
@@ -216,6 +218,7 @@
       seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdReceived:"Recebido", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
       skus:"SKUs", skusHint:"Catalogo de SKU de produto acabado / varejo - pacotes, individuais e caixas com contagem de sacos e sabores. Apenas referencia.", skuCode:"SKU", skuTitle:"Produto", skuBags:"Sacos", skuComp:"Conteudo", skuSearchP:"Buscar SKU, produto ou sabor...", skuCount:"SKUs",
       stockbuild:"Construir Estoque", sbHint:"Progresso de construcao vs metas ao vivo. Atualize Em Estoque conforme avanca - toda a equipe ve na hora. Campo amarelo = insira a contagem de hoje.", sbGoal:"Meta", sbOnHand:"Em estoque", sbToBuild:"A fazer", sbPallets:"Paletes", sbDone:"Pronto", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Salvo", sbRetail:"Varejo", sbEcom:"E-Commerce", sb12pk:"Caixas de 12",
+      retailprod:"Producao Varejo", rpHint:"Quando um palete e feito, escaneie o codigo do produto (ou escolha), insira a quantidade e ela e adicionada ao estoque na hora. Imprima a folha de codigos com o botao abaixo e coloque na linha.", rpScanP:"Escaneie codigo do produto", rpPickProduct:"Ou escolha um produto...", rpQty:"Quantidade feita", rpAdd:"Adicionar ao estoque", rpAdded:"Adicionado ao estoque", rpCurrent:"Em estoque atual", rpRecent:"Producao recente", rpNone:"Nada adicionado ainda.", rpPrint:"Imprimir codigos de produto", rpNotFound:"Codigo nao reconhecido",
       qaHint:"Itens recebidos como defeituosos ou danificados ficam aqui. Converta os bons de volta ao estoque ou descarte-os.",
       qaTitle:"Em retencao QA / Defeituoso", convertGood:"Passar para estoque bom", scrapIt:"Descartar", qaEmpty:"Nada em retencao QA.",
       columns:"Colunas", colCategory:"Categoria", colItem:"Item", colOnhand:"Em estoque", colReorder:"Reposicao", colStatus:"Status", resetCols:"Reiniciar",
@@ -264,7 +267,7 @@
   let lang = "en"; const L = k => (T[lang][k] !== undefined ? T[lang][k] : k);
   let active = "home"; let catFilter = "all";
   let purchMode = "list"; let purchSup = null; let receivingPOid = null;
-  const TABS = ["home","dash","alerts","adjust","receive","putaway","returns","orders","orderdocs","rd","qa","move","produce","stockbuild","seasoning","seed","skus","mixing","pmac","count","locations","purchasing","supplierpos","people","labels","log","settings"];
+  const TABS = ["home","dash","alerts","adjust","receive","putaway","returns","orders","orderdocs","rd","qa","move","produce","retailprod","stockbuild","seasoning","seed","skus","mixing","pmac","count","locations","purchasing","supplierpos","people","labels","log","settings"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -399,7 +402,7 @@
     { key:"", items:["home","alerts"] },
     { key:"grpReceiving", items:["receive","putaway","returns","qa"] },
     { key:"grpInventory", items:["dash","adjust","count","locations","seasoning","seed","skus","labels"] },
-    { key:"grpProduction", items:["produce","stockbuild","move","orders","orderdocs"] },
+    { key:"grpProduction", items:["produce","retailprod","stockbuild","move","orders","orderdocs"] },
     { key:"grpMixing", items:["mixing"] },
     { key:"grpPmac", items:["pmac"] },
     { key:"grpPurchasing", items:["purchasing","supplierpos"] },
@@ -411,7 +414,7 @@
     returns:"\u{21A9}\u{FE0F}", qa:"\u{26D4}", orders:"\u{1F9FE}", purchasing:"\u{1F6D2}", rd:"\u{1F9EA}",
     move:"\u{1F500}", produce:"\u{1F3ED}", seasoning:"\u{1F9C2}", count:"\u{1F522}", locations:"\u{1F4CD}",
     labels:"\u{1F3F7}\u{FE0F}", log:"\u{1F4DC}", settings:"\u{2699}\u{FE0F}", supplierpos:"\u{1F4C4}",
-    mixing:"\u{1F963}", pmac:"\u{1F527}", people:"\u{1F465}", orderdocs:"\u{1F4C1}", seed:"\u{1F33B}", skus:"\u{1F6CD}\u{FE0F}", stockbuild:"\u{1F3D7}\u{FE0F}" };
+    mixing:"\u{1F963}", pmac:"\u{1F527}", people:"\u{1F465}", orderdocs:"\u{1F4C1}", seed:"\u{1F33B}", skus:"\u{1F6CD}\u{FE0F}", stockbuild:"\u{1F3D7}\u{FE0F}", retailprod:"\u{1F4E6}" };
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
   let spoSort = { key: "created", dir: -1 };  // Supplier POs table sort (v25)
   let spoView = "list";   // Supplier POs: "list" | "create" (Excel-style PO entry form)
@@ -453,6 +456,8 @@
   let peopleView = "dir"; // People: "dir" | "org"
   let locView = "map";    // Locations: "floor" | "map" | "list" (rack grid is default; floor plan optional)
   let puSec = "", puBay = "", puLevel = "";  // Put-Away location picker state (Section/Bay/Level)
+  let rpSel = "";                             // Retail Production: selected product key
+  let rpRecent = [];                          // Retail Production: recent adds this session
   let locSel = null;      // selected slot/zone code in the rack map
   // Physically blocked rack slots (numbering unchanged; not storable) - Troy's real floor
   const BLOCKED_SLOTS = new Set(["A-23-L1","B-15-L4","B-16-L4","B-17-L4","B-21-L4","B-22-L4","C-21-L4","C-22-L4","D-17-L4","D-18-L4","D-23-L4","D-24-L4"]);
@@ -1226,6 +1231,30 @@
     };
     return summary + SB_CATS.map(catBlock).join("");
   }
+  function viewRetailProd() {
+    const sel = SB_ITEMS.find(i => i.key === rpSel);
+    const oh = DB.stockBuild ? DB.stockBuild() : {};
+    const curOn = sel ? (Number((oh[sel.key] || {}).on_hand) || 0) : 0;
+    const opts = SB_ITEMS.map(i => '<option value="' + i.key + '"' + (i.key === rpSel ? ' selected' : '') + '>' + esc(i.cat + " - " + i.name) + '</option>').join("");
+    const selBlock = sel
+      ? '<div class="rpsel"><div class="rpname">' + esc(sel.cat) + ' &middot; <b>' + esc(sel.name) + '</b></div><div class="muted sm">' + L("rpCurrent") + ': <b>' + fmt(curOn) + '</b> / ' + fmt(sel.goal) + ' ' + esc(sel.unit) + '</div></div>'
+      : '';
+    const recent = rpRecent.length
+      ? '<table><thead><tr><th>' + L("item") + '</th><th class="right">' + L("qty") + '</th><th>' + L("when") + '</th></tr></thead><tbody>' +
+        rpRecent.slice(0, 10).map(r => '<tr><td>' + esc(r.name) + '</td><td class="right"><b>+' + fmt(r.qty) + '</b></td><td class="muted sm">' + esc(r.t) + '</td></tr>').join("") + '</tbody></table>'
+      : '<p class="muted">' + L("rpNone") + '</p>';
+    return '<div class="card"><div class="suprow"><h2 style="margin:0">' + L("retailprod") + '</h2>' +
+      '<button class="ghost sm" onclick="UI.rpPrint()">\u{1F5A8}\u{FE0F} ' + L("rpPrint") + '</button></div>' +
+      '<p class="hint">' + L("rpHint") + '</p>' +
+      '<div class="scan"><label>' + L("rpScanP") + '</label><div class="scanrow"><input id="rp-scan" autocomplete="off" autofocus placeholder="' + L("rpScanP") + '" onkeydown="if(event.key===\'Enter\'){event.preventDefault();UI.rpScan();}">' +
+      '<button type="button" class="cambtn" onclick="UI.cam(\'rp-scan\')">' + L("camera") + '</button></div></div>' +
+      '<div class="row"><div><label>' + L("rpPickProduct") + '</label><select id="rp-pick" onchange="UI.rpPick(this.value)"><option value="">' + L("rpPickProduct") + '</option>' + opts + '</select></div>' +
+      '<div><label>' + L("rpQty") + '</label><input id="rp-qty" type="number" min="0" placeholder="' + L("enter") + '"></div>' +
+      '<div style="align-self:end">' + opField("Jesus") + '</div></div>' +
+      selBlock +
+      '<button class="primary" onclick="UI.rpAdd()">' + L("rpAdd") + '</button>' +
+      '<h2 class="sub2" style="margin-top:18px">' + L("rpRecent") + '</h2>' + recent + '</div>';
+  }
   function viewQA() {
     const hold = [];
     ["QA-HOLD", "QUARANTINE"].forEach(z => DB.items().forEach(i => { const q = DB.atLoc(i.id, z); if (q > 0) hold.push({ i, z, q }); }));
@@ -1616,6 +1645,29 @@
       if (!it) return toast(L("notfound")); if (!validLoc(loc)) return toast(L("badloc")); if (BLOCKED_SLOTS.has(loc)) return toast("⛔ " + L("locBlocked")); if (!(q > 0)) return toast(L("enter"));
       const r = await DB.move(it, "RECEIVING", loc, q, $("op").value); if (!r.ok) return toast(r.msg);
       puSec = ""; puBay = ""; puLevel = ""; toast(it.name + " → " + loc); go("putaway"); },
+    // ---- Retail Production: scan product barcode -> qty -> add to Stock Build on-hand ----
+    rpScan() { const v = (($("rp-scan") || {}).value || "").trim();
+      const it = SB_ITEMS.find(i => i.key === v || i.key.toLowerCase() === v.toLowerCase());
+      if (!it) return toast(L("rpNotFound"));
+      rpSel = it.key; render(); setTimeout(() => { const q = $("rp-qty"); if (q) q.focus(); }, 40); },
+    rpPick(v) { rpSel = v || ""; render(); },
+    async rpAdd() { const it = SB_ITEMS.find(i => i.key === rpSel); const q = parseFloat(($("rp-qty") || {}).value);
+      if (!it) return toast(L("rpNotFound")); if (!(q > 0)) return toast(L("enter"));
+      const cur = Number((DB.stockBuild()[it.key] || {}).on_hand) || 0;
+      await DB.setStockBuildOnHand(it.key, cur + q, opVal());
+      rpRecent.unshift({ name: it.cat + " - " + it.name, qty: q, t: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) });
+      rpSel = ""; toast(L("rpAdded") + " +" + fmt(q)); render(); },
+    rpPrint() {
+      const w = window.open("", "_blank"); if (!w) return toast("Popup blocked - allow popups");
+      const cards = SB_ITEMS.map(i => '<div class="c"><div class="cat">' + esc(i.cat) + '</div><div class="nm">' + esc(i.name) + '</div><svg class="bc" data-code="' + esc(i.key) + '"></svg></div>').join("");
+      w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Retail Line Product Barcodes</title>' +
+        '<scr' + 'ipt src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></scr' + 'ipt>' +
+        '<style>body{font-family:Arial;margin:16px;color:#04223B}h1{font-size:18px}.grid{display:flex;flex-wrap:wrap;gap:10px}.c{border:1px solid #ccc;border-radius:8px;padding:8px 8px 4px;width:31%;box-sizing:border-box;text-align:center;page-break-inside:avoid}.cat{font-size:10px;color:#888;text-transform:uppercase;font-weight:bold}.nm{font-size:13px;font-weight:bold;margin:2px 0 4px}.bc{width:100%;height:56px}</style></head><body>' +
+        '<h1>Smackin\' Snacks &mdash; Retail Line Product Barcodes</h1><div class="grid">' + cards + '</div>' +
+        '<scr' + 'ipt>window.onload=function(){document.querySelectorAll(".bc").forEach(function(s){try{JsBarcode(s,s.getAttribute("data-code"),{format:"CODE128",displayValue:true,fontSize:9,height:42,margin:3});}catch(e){}});setTimeout(function(){window.print();},700);};</scr' + 'ipt>' +
+        '</body></html>');
+      w.document.close();
+    },
     async move() { const it = DB.itemByCode($("m-code").value); const f = ($("m-from").value || "").trim().toUpperCase(); const t = ($("m-to").value || "").trim().toUpperCase(); const q = parseFloat($("m-qty").value);
       if (!it) return toast(L("notfound")); if (!validLoc(f) || !validLoc(t)) return toast(L("badloc")); if (!(q > 0)) return toast(L("enter"));
       const r = await DB.move(it, f, t, q, $("op").value); if (!r.ok) return toast(r.msg); toast(it.name + ": " + f + " -> " + t); go("move"); },
@@ -1931,7 +1983,7 @@
   function render() {
     renderNav(); refreshDatalists();
     const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
-      move: viewMove, produce: viewProduce, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, mixing: viewMixing, pmac: viewPmac,
+      move: viewMove, produce: viewProduce, retailprod: viewRetailProd, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, people: viewPeople, labels: viewLabels, log: viewLog, settings: viewSettings };
     $("view").innerHTML = (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
