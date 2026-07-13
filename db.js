@@ -12,7 +12,7 @@ window.DB = (function () {
   const seed = window.SMACKIN_SEED;
   let mode = "local";
   let sb = null;                  // supabase client
-  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [] };
+  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [] };
   let subscribers = [];
 
   function emit() { subscribers.forEach(fn => { try { fn(); } catch (e) {} }); }
@@ -25,6 +25,7 @@ window.DB = (function () {
   function purchaseOrders() { return cache.pos || []; }
   function log() { return cache.log; }
   function seasLots() { return cache.seasLots || []; }
+  function seedLots() { return cache.seedLots || []; }
   function orders() { return cache.orders || []; }
   function rdRequests() { return cache.rdRequests || []; }
   function supplierPos() { return cache.supplierPos || []; }
@@ -45,9 +46,9 @@ window.DB = (function () {
     loadOrSeed() {
       let raw = null;
       try { raw = localStorage.getItem(KEY); } catch (e) {}
-      if (raw) { cache = JSON.parse(raw); if (!cache.pos) cache.pos = []; if (!cache.log) cache.log = []; if (!cache.seasLots) cache.seasLots = []; if (!cache.orders) cache.orders = []; if (!cache.rdRequests) cache.rdRequests = []; if (!cache.supplierPos) cache.supplierPos = []; if (!cache.orderDocs) cache.orderDocs = []; if (!cache.consumption) cache.consumption = []; return; }
+      if (raw) { cache = JSON.parse(raw); if (!cache.pos) cache.pos = []; if (!cache.log) cache.log = []; if (!cache.seasLots) cache.seasLots = []; if (!cache.orders) cache.orders = []; if (!cache.rdRequests) cache.rdRequests = []; if (!cache.supplierPos) cache.supplierPos = []; if (!cache.orderDocs) cache.orderDocs = []; if (!cache.consumption) cache.consumption = []; if (!cache.seedLots) cache.seedLots = []; return; }
       const s = seed.build();
-      cache = { items: s.items, suppliers: s.suppliers, stock: s.stock, pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [] };
+      cache = { items: s.items, suppliers: s.suppliers, stock: s.stock, pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [] };
       this.save();
     },
     save() { try { localStorage.setItem(KEY, JSON.stringify(cache)); } catch (e) {} },
@@ -65,7 +66,7 @@ window.DB = (function () {
   // ---------- CLOUD backend (Supabase) ----------
   const cloud = {
     async loadAll() {
-      const [it, su, st, lg, po, pl, sl, od, rd, sp, odc, con] = await Promise.all([
+      const [it, su, st, lg, po, pl, sl, od, rd, sp, odc, con, sdl] = await Promise.all([
         sb.from("items").select("*"),
         sb.from("suppliers").select("*"),
         sb.from("stock").select("*"),
@@ -77,7 +78,8 @@ window.DB = (function () {
         sb.from("rd_requests").select("*").order("created_at", { ascending: false }).limit(2000),
         sb.from("supplier_pos").select("*").order("created_at", { ascending: false }).limit(2000),
         sb.from("order_docs").select("*").order("created_at", { ascending: false }).limit(3000),
-        sb.from("consumption").select("*").order("created_at", { ascending: false }).limit(3000)
+        sb.from("consumption").select("*").order("created_at", { ascending: false }).limit(3000),
+        sb.from("seed_lots").select("*").order("created_at", { ascending: false }).limit(3000)
       ]);
       cache.items = it.data || [];
       cache.suppliers = su.data || [];
@@ -117,6 +119,10 @@ window.DB = (function () {
       cache.consumption = (con && con.data ? con.data : []).map(r => ({
         id: r.id, item_code: r.item_code, item_name: r.item_name, qty: Number(r.qty) || 0,
         lot: r.lot, department: r.department, operator: r.operator, created_at: r.created_at
+      }));
+      cache.seedLots = (sdl && sdl.data ? sdl.data : []).map(r => ({
+        id: r.id, seed_code: r.seed_code, product: r.product, lot: r.lot, supplier: r.supplier,
+        received_date: r.received_date, weight: Number(r.weight) || 0, status: r.status || "Good", created_at: r.created_at
       }));
       const lines = pl.data || [];
       cache.pos = (po.data || []).map(p => ({
@@ -301,6 +307,41 @@ window.DB = (function () {
     const expired = (cache.seasLots || []).filter(l => l.status === "Good" && l.exp && String(l.exp).slice(0, 10) < today);
     for (const l of expired) await setSeasLotStatus(l.id, "Quarantine", op || "system");
     return expired.length;
+  }
+
+  // ---------- Seed lot registry (Type / Lot / Supplier / Received / Weight - recall trace) ----------
+  function seedLocalId() { return "SD-" + Date.now().toString(36) + "-" + Math.floor(Math.random() * 1000); }
+  async function addSeedLot(rec, op) {
+    const row = {
+      seed_code: rec.seed_code || "", product: rec.product || "", lot: rec.lot || "",
+      supplier: rec.supplier || "", received_date: rec.received_date || null, weight: Number(rec.weight) || 0,
+      status: "Good", created_at: new Date().toISOString()
+    };
+    const logEntry = { a: "Seed lot", d: (row.product || row.seed_code) + " lot " + row.lot + " " + fmt(row.weight) + " lb (" + (row.supplier || "n/a") + ")", u: op, t: row.created_at };
+    if (mode === "cloud") {
+      await sb.from("seed_lots").insert(row);
+      await cloud.addLog(logEntry);
+      await cloud.loadAll();
+    } else {
+      row.id = seedLocalId();
+      cache.seedLots.push(row);
+      local.addLog(logEntry); local.save();
+    }
+    emit();
+    return { ok: true };
+  }
+  async function setSeedLotStatus(id, status, op) {
+    const lot = (cache.seedLots || []).find(l => String(l.id) === String(id));
+    const logEntry = { a: "Seed " + status, d: lot ? ((lot.product || lot.seed_code) + " lot " + lot.lot) : String(id), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      await sb.from("seed_lots").update({ status }).eq("id", id);
+      await cloud.addLog(logEntry);
+      await cloud.loadAll();
+    } else {
+      if (lot) lot.status = status;
+      local.addLog(logEntry); local.save();
+    }
+    emit();
   }
 
   // ---------- Orders (non-SPS / Stripe outbound order log) ----------
@@ -665,6 +706,7 @@ window.DB = (function () {
     purchaseOrders, supplierName, createPO, setPOStatus, deletePO, receivePO,
     receive, move, adjust, adjustTotal, produce, resetDemo,
     returnStock, seasLots, addSeasLot, setSeasLotStatus, quarantineExpiredSeas,
+    seedLots, addSeedLot, setSeedLotStatus,
     orders, createOrder, updateOrder, setOrderStatus, deleteOrder, notifyNewOrder,
     rdRequests, createRdRequest, updateRdRequest, setRdStatus, deleteRdRequest, sendRdEmail,
     supplierPos, createSupplierPO, deleteSupplierPO,

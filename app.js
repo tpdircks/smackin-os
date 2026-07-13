@@ -42,6 +42,7 @@
       slProduct:"Product / flavor", slLot:"Lot #", slMfr:"Manufacturer", slExp:"Expiration", slWeight:"Weight (lbs)",
       addLot:"Add lot", seasLotsTitle:"Seasoning lots (earliest expiration first)", quarantineExpired:"Quarantine expired lots",
       noLots:"No seasoning lots yet.", markQuar:"Quarantine", markGood:"Mark good", expiredTag:"EXPIRED", quarTag:"QUARANTINE", goodTag:"GOOD",
+      seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdReceived:"Received", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
       qaHint:"Items received as defective or damaged sit here. Convert good ones back to stock or scrap them.",
       qaTitle:"On QA / Defective hold", convertGood:"Move to good stock", scrapIt:"Scrap", qaEmpty:"Nothing on QA hold.",
       columns:"Columns", colCategory:"Category", colItem:"Item", colOnhand:"On hand", colReorder:"Reorder", colStatus:"Status", resetCols:"Reset",
@@ -123,6 +124,7 @@
       slProduct:"Producto / sabor", slLot:"Lote #", slMfr:"Fabricante", slExp:"Vencimiento", slWeight:"Peso (lbs)",
       addLot:"Agregar lote", seasLotsTitle:"Lotes de sazon (vencimiento mas proximo primero)", quarantineExpired:"Cuarentena de vencidos",
       noLots:"Sin lotes de sazon aun.", markQuar:"Cuarentena", markGood:"Marcar bueno", expiredTag:"VENCIDO", quarTag:"CUARENTENA", goodTag:"BUENO",
+      seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdReceived:"Recibido", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
       qaHint:"Los articulos recibidos como defectuosos o danados quedan aqui. Convierta los buenos a inventario o descartelos.",
       qaTitle:"En retencion QA / Defectuoso", convertGood:"Pasar a inventario bueno", scrapIt:"Descartar", qaEmpty:"Nada en retencion QA.",
       columns:"Columnas", colCategory:"Categoria", colItem:"Articulo", colOnhand:"Disponible", colReorder:"Reorden", colStatus:"Estado", resetCols:"Reiniciar",
@@ -204,6 +206,7 @@
       slProduct:"Produto / sabor", slLot:"Lote #", slMfr:"Fabricante", slExp:"Validade", slWeight:"Peso (lbs)",
       addLot:"Adicionar lote", seasLotsTitle:"Lotes de tempero (validade mais proxima primeiro)", quarantineExpired:"Quarentena de vencidos",
       noLots:"Nenhum lote de tempero ainda.", markQuar:"Quarentena", markGood:"Marcar bom", expiredTag:"VENCIDO", quarTag:"QUARENTENA", goodTag:"BOM",
+      seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdReceived:"Recebido", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
       qaHint:"Itens recebidos como defeituosos ou danificados ficam aqui. Converta os bons de volta ao estoque ou descarte-os.",
       qaTitle:"Em retencao QA / Defeituoso", convertGood:"Passar para estoque bom", scrapIt:"Descartar", qaEmpty:"Nada em retencao QA.",
       columns:"Colunas", colCategory:"Categoria", colItem:"Item", colOnhand:"Em estoque", colReorder:"Reposicao", colStatus:"Status", resetCols:"Reiniciar",
@@ -252,7 +255,7 @@
   let lang = "en"; const L = k => (T[lang][k] !== undefined ? T[lang][k] : k);
   let active = "home"; let catFilter = "all";
   let purchMode = "list"; let purchSup = null; let receivingPOid = null;
-  const TABS = ["home","dash","alerts","adjust","receive","putaway","returns","orders","orderdocs","rd","qa","move","produce","seasoning","mixing","pmac","count","locations","purchasing","supplierpos","people","labels","log","settings"];
+  const TABS = ["home","dash","alerts","adjust","receive","putaway","returns","orders","orderdocs","rd","qa","move","produce","seasoning","seed","mixing","pmac","count","locations","purchasing","supplierpos","people","labels","log","settings"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -354,7 +357,7 @@
   const NAV_GROUPS = [
     { key:"", items:["home","alerts"] },
     { key:"grpReceiving", items:["receive","putaway","returns","qa"] },
-    { key:"grpInventory", items:["dash","adjust","count","locations","seasoning","labels"] },
+    { key:"grpInventory", items:["dash","adjust","count","locations","seasoning","seed","labels"] },
     { key:"grpProduction", items:["produce","move","orders","orderdocs"] },
     { key:"grpMixing", items:["mixing"] },
     { key:"grpPmac", items:["pmac"] },
@@ -367,7 +370,7 @@
     returns:"\u{21A9}\u{FE0F}", qa:"\u{26D4}", orders:"\u{1F9FE}", purchasing:"\u{1F6D2}", rd:"\u{1F9EA}",
     move:"\u{1F500}", produce:"\u{1F3ED}", seasoning:"\u{1F9C2}", count:"\u{1F522}", locations:"\u{1F4CD}",
     labels:"\u{1F3F7}\u{FE0F}", log:"\u{1F4DC}", settings:"\u{2699}\u{FE0F}", supplierpos:"\u{1F4C4}",
-    mixing:"\u{1F963}", pmac:"\u{1F527}", people:"\u{1F465}", orderdocs:"\u{1F4C1}" };
+    mixing:"\u{1F963}", pmac:"\u{1F527}", people:"\u{1F465}", orderdocs:"\u{1F4C1}", seed:"\u{1F33B}" };
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
   let spoSort = { key: "created", dir: -1 };  // Supplier POs table sort (v25)
   let spoView = "list";   // Supplier POs: "list" | "create" (Excel-style PO entry form)
@@ -1081,6 +1084,34 @@
       '<table><thead><tr><th>' + L("slProduct") + '</th><th>' + L("slLot") + '</th><th>' + L("slMfr") + '</th><th>' + L("slExp") +
       '</th><th class="right">' + L("slWeight") + '</th><th>' + L("status") + '</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>';
   }
+  function viewSeed() {
+    const seeds = DB.items().filter(i => /^SEED-/.test(i.id));
+    const opts = seeds.map(i => '<option value="' + i.id + '|' + esc(i.name) + '">' + esc(i.name) + '</option>').join("");
+    const sups = (DB.recvSuppliers ? DB.recvSuppliers() : ["Sunrich", "Other"]);
+    const supOpts = sups.map(s => '<option' + (s === "Sunrich" ? " selected" : "") + '>' + esc(s) + '</option>').join("");
+    const lots = (DB.seedLots ? DB.seedLots() : []).slice().sort((a, b) => (a.received_at || a.created_at || "") < (b.received_at || b.created_at || "") ? 1 : -1);
+    const body = lots.length ? lots.map(l => {
+      const rec = String(l.received_date || l.received_at || "").slice(0, 10);
+      const stat = l.status === "Quarantine" ? '<span class="pill out">' + L("quarTag") + '</span>' : '<span class="pill ok">' + L("goodTag") + '</span>';
+      const act = l.status === "Quarantine"
+        ? '<button class="ghost sm" onclick="UI.seedStatus(\'' + l.id + '\',\'Good\')">' + L("markGood") + '</button>'
+        : '<button class="ghost sm danger" onclick="UI.seedStatus(\'' + l.id + '\',\'Quarantine\')">' + L("markQuar") + '</button>';
+      return '<tr><td><b>' + esc(l.product || l.seed_code || "") + '</b></td><td>' + esc(l.lot || "—") + '</td><td class="muted sm">' + esc(l.supplier || "—") +
+        '</td><td>' + (rec || "—") + '</td><td class="right">' + fmt(l.weight) + '</td><td>' + stat + '</td><td>' + act + '</td></tr>';
+    }).join("") : '<tr><td colspan="7" class="muted">' + L("noSeedLots") + '</td></tr>';
+    const today = new Date().toISOString().slice(0, 10);
+    return '<div class="card"><h2>' + L("seed") + '</h2><p class="hint">' + L("seedHint") + '</p>' +
+      '<div class="row"><div><label>' + L("sdType") + '</label><select id="sd-type">' + opts + '</select></div>' +
+      '<div><label>' + L("slLot") + '</label><input id="sd-lot" autocomplete="off" placeholder="# 4471"></div>' +
+      '<div><label>' + L("supplier") + '</label><select id="sd-sup">' + supOpts + '</select></div></div>' +
+      '<div class="row"><div><label>' + L("sdReceived") + '</label><input id="sd-rec" type="date" value="' + today + '"></div>' +
+      '<div><label>' + L("slWeight") + '</label><input id="sd-wt" type="number" min="0" step="0.1" placeholder="0"></div>' +
+      '<div style="align-self:end">' + opField("Adriana") + '</div></div>' +
+      '<button class="primary" onclick="UI.addSeedLot()">' + L("addLot") + '</button>' +
+      '<h2 class="sub2" style="margin-top:18px">' + L("seedLotsTitle") + '</h2>' +
+      '<table><thead><tr><th>' + L("sdType") + '</th><th>' + L("slLot") + '</th><th>' + L("supplier") + '</th><th>' + L("sdReceived") +
+      '</th><th class="right">' + L("slWeight") + '</th><th>' + L("status") + '</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>';
+  }
   function viewQA() {
     const hold = [];
     ["QA-HOLD", "QUARANTINE"].forEach(z => DB.items().forEach(i => { const q = DB.atLoc(i.id, z); if (q > 0) hold.push({ i, z, q }); }));
@@ -1481,6 +1512,14 @@
     },
     async seasStatus(id, status) { await DB.setSeasLotStatus(id, status, opVal()); toast(status); },
     async quarExpired() { const n = await DB.quarantineExpiredSeas(opVal()); toast(n ? n + " -> " + L("quarTag") : L("allgood")); },
+    async addSeedLot() {
+      const tv = (($("sd-type") || {}).value || "").split("|"); const wt = parseFloat(($("sd-wt") || {}).value);
+      if (!tv[0]) return toast(L("notfound")); if (!(wt > 0)) return toast(L("enter"));
+      await DB.addSeedLot({ seed_code: tv[0], product: tv[1] || tv[0], lot: (($("sd-lot") || {}).value || "").trim(),
+        supplier: ($("sd-sup") || {}).value || "", received_date: ($("sd-rec") || {}).value || null, weight: wt }, opVal());
+      toast(L("addLot") + " ✓"); go("seed");
+    },
+    async seedStatus(id, status) { await DB.setSeedLotStatus(id, status, opVal()); toast(status); },
     // ---- QA hold review ----
     async qaConvert(itemId, zone) {
       const it = DB.items().find(i => i.id === itemId); if (!it) return;
@@ -1755,7 +1794,7 @@
   function render() {
     renderNav(); refreshDatalists();
     const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
-      move: viewMove, produce: viewProduce, seasoning: viewSeasoning, mixing: viewMixing, pmac: viewPmac,
+      move: viewMove, produce: viewProduce, seasoning: viewSeasoning, seed: viewSeed, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, people: viewPeople, labels: viewLabels, log: viewLog, settings: viewSettings };
     $("view").innerHTML = (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
