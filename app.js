@@ -656,6 +656,11 @@
     const bag4 = DB.items().filter(i => i.category === "bag4").reduce((s, i) => s + DB.onHand(i.id), 0);
     const bag15 = DB.items().filter(i => i.category === "bag15").reduce((s, i) => s + DB.onHand(i.id), 0);
     const low = DB.items().filter(i => statusOf(i) !== "ok").length;
+    const sbOh = DB.stockBuild ? DB.stockBuild() : {};
+    const sbGoal = SB_ITEMS.reduce((s, i) => s + i.goal, 0);
+    const sbOn = SB_ITEMS.reduce((s, i) => s + (Number((sbOh[i.key] || {}).on_hand) || 0), 0);
+    const sbPct = sbGoal ? Math.round(sbOn / sbGoal * 100) : 0;
+    const sbToBuild = Math.max(sbGoal - sbOn, 0);
     const head = cols.map(c => {
       let th = COL_DEF[c].th();
       if (prefs.sortKey === c) th = th.replace("</th>", ' <span class="sortar">' + (prefs.sortDir > 0 ? "&#9650;" : "&#9660;") + "</span></th>");
@@ -667,7 +672,8 @@
       '<div class="kpis"><div class="kpi"><div class="n">' + DB.items().length + '</div><div class="l">' + L("totalItems") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(bag4) + '</div><div class="l">' + L("bag4") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(bag15) + '</div><div class="l">' + L("bag15") + '</div></div>' +
-      '<div class="kpi ' + (low ? "alert" : "") + '"><div class="n">' + low + '</div><div class="l">' + L("lowItems") + '</div></div></div>' +
+      '<div class="kpi ' + (low ? "alert" : "") + '"><div class="n">' + low + '</div><div class="l">' + L("lowItems") + '</div></div>' +
+      '<div class="kpi" style="cursor:pointer" onclick="UI_go(\'stockbuild\')"><div class="n">' + sbPct + '%</div><div class="l">' + L("stockbuild") + ' &#8250;</div><div class="muted sm">' + fmt(sbToBuild) + ' ' + L("sbToBuild") + '</div></div></div>' +
       '<div class="catbar">' + cbar + '</div>' + colControls() +
       '<table><thead><tr>' + head + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
   }
