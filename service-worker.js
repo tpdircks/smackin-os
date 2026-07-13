@@ -1,7 +1,7 @@
 /* Minimal offline cache for the app shell so scanners load fast and keep
    working through brief wifi drops. Data still requires connectivity in
    cloud mode; local mode works fully offline. */
-const CACHE = "smackin-inv-v29";
+const CACHE = "smackin-inv-v30";
 const ASSETS = [
   "./", "./index.html", "./styles.css",
   "./config.js", "./seed-data.js", "./db.js", "./app.js",

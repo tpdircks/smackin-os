@@ -25,7 +25,8 @@
       produceHint:"Record finished 4oz bags off the line. Adds bags, consumes film + seasoning.",
       countHint:"Cycle count: scan item + slot, enter the counted quantity; the system adjusts.",
       locHint:"What is in each location now.", purchHint:"Reorder alerts plus full purchase orders.",
-      locMap:"Rack map", locList:"List", locOccupied:"Occupied", locEmpty:"Empty", locBlocked:"Blocked", locSection:"Section", locDocks:"Dock doors", locZones:"Zones & staging", locClickHint:"Top-down view of the racks. Green = occupied, click any slot to see what is stored there. Bay 01 is at the dock end.", locNothing:"Nothing stored in this slot.", locSlot:"Slot", locBaysUsed:"slots used", locOfficeEnd:"office end", locFarEnd:"far end",
+      locMap:"Rack map", locList:"List", locFloor:"Floor plan", locOccupied:"Occupied", locEmpty:"Empty", locBlocked:"Blocked", locSection:"Section", locDocks:"Dock doors", locZones:"Zones & staging", locClickHint:"Top-down view of the racks. Green = occupied, click any slot to see what is stored there. Bay 01 is at the dock end.", locNothing:"Nothing stored in this slot.", locSlot:"Slot", locBaysUsed:"slots used", locOfficeEnd:"office end", locFarEnd:"far end",
+      locFloorNote:"Top-down map of the building - every place product is stored or moves through. Click a rack section or staging zone to see its contents. Section A/B/C/D letters are a best guess - tell me which physical run is which and I will lock them in.", locStorage:"Storage (racking)", locTransfer:"Production & transfer areas", locStaging:"Staging & work zones",
       reorderSug:"Reorder suggestions", purchOrders:"Purchase orders", newPO:"New PO", createDraft:"Create draft PO",
       chooseSupplier:"Supplier", poExpected:"Expected", poCost:"Unit cost", addLines:"Set quantities to order (0 = skip).",
       savePO:"Save draft PO", markOrdered:"Mark as ordered", receivePO:"Receive", confirmReceipt:"Confirm receipt",
@@ -105,7 +106,8 @@
       produceHint:"Registre bolsas 4oz de la linea. Suma bolsas, consume film + sazon.",
       countHint:"Conteo ciclico: escanee articulo + slot, ingrese la cantidad contada.",
       locHint:"Lo que hay en cada ubicacion ahora.", purchHint:"Alertas de reorden mas ordenes de compra.",
-      locMap:"Mapa de racks", locList:"Lista", locOccupied:"Ocupado", locEmpty:"Vacio", locBlocked:"Bloqueado", locSection:"Seccion", locDocks:"Puertas de muelle", locZones:"Zonas y staging", locClickHint:"Vista superior de los racks. Verde = ocupado, haga clic en un slot para ver que hay. La bahia 01 esta junto a los muelles.", locNothing:"Nada almacenado en este slot.", locSlot:"Slot", locBaysUsed:"slots usados", locOfficeEnd:"lado oficina", locFarEnd:"lado lejano",
+      locMap:"Mapa de racks", locList:"Lista", locFloor:"Plano", locOccupied:"Ocupado", locEmpty:"Vacio", locBlocked:"Bloqueado", locSection:"Seccion", locDocks:"Puertas de muelle", locZones:"Zonas y staging", locClickHint:"Vista superior de los racks. Verde = ocupado, haga clic en un slot para ver que hay. La bahia 01 esta junto a los muelles.", locNothing:"Nada almacenado en este slot.", locSlot:"Slot", locBaysUsed:"slots usados", locOfficeEnd:"lado oficina", locFarEnd:"lado lejano",
+      locFloorNote:"Plano superior del edificio - cada lugar donde se almacena o mueve producto. Haga clic en una seccion de rack o zona para ver su contenido. Las letras A/B/C/D son un estimado - digame que fila fisica es cual y las fijo.", locStorage:"Almacenamiento (racks)", locTransfer:"Areas de produccion y transferencia", locStaging:"Zonas de staging y trabajo",
       reorderSug:"Sugerencias de reorden", purchOrders:"Ordenes de compra", newPO:"Nueva orden", createDraft:"Crear borrador",
       chooseSupplier:"Proveedor", poExpected:"Esperado", poCost:"Costo unit.", addLines:"Indique cantidades a pedir (0 = omitir).",
       savePO:"Guardar borrador", markOrdered:"Marcar como ordenada", receivePO:"Recibir", confirmReceipt:"Confirmar recibo",
@@ -185,7 +187,8 @@
       produceHint:"Registre sacos 4oz da linha. Adiciona sacos, consome filme + tempero.",
       countHint:"Contagem ciclica: escaneie item + slot, digite a quantidade contada.",
       locHint:"O que ha em cada local agora.", purchHint:"Alertas de reposicao mais ordens de compra.",
-      locMap:"Mapa de racks", locList:"Lista", locOccupied:"Ocupado", locEmpty:"Vazio", locBlocked:"Bloqueado", locSection:"Secao", locDocks:"Portas de doca", locZones:"Zonas e staging", locClickHint:"Vista de cima dos racks. Verde = ocupado, clique em um slot para ver o que ha. A baia 01 fica junto as docas.", locNothing:"Nada armazenado neste slot.", locSlot:"Slot", locBaysUsed:"slots usados", locOfficeEnd:"lado escritorio", locFarEnd:"lado distante",
+      locMap:"Mapa de racks", locList:"Lista", locFloor:"Planta", locOccupied:"Ocupado", locEmpty:"Vazio", locBlocked:"Bloqueado", locSection:"Secao", locDocks:"Portas de doca", locZones:"Zonas e staging", locClickHint:"Vista de cima dos racks. Verde = ocupado, clique em um slot para ver o que ha. A baia 01 fica junto as docas.", locNothing:"Nada armazenado neste slot.", locSlot:"Slot", locBaysUsed:"slots usados", locOfficeEnd:"lado escritorio", locFarEnd:"lado distante",
+      locFloorNote:"Planta de cima do predio - cada lugar onde produto e armazenado ou movimentado. Clique em uma secao de rack ou zona para ver o conteudo. As letras A/B/C/D sao um palpite - diga qual fila fisica e qual e eu fixo.", locStorage:"Armazenamento (racks)", locTransfer:"Areas de producao e transferencia", locStaging:"Zonas de staging e trabalho",
       reorderSug:"Sugestoes de reposicao", purchOrders:"Ordens de compra", newPO:"Nova ordem", createDraft:"Criar rascunho",
       chooseSupplier:"Fornecedor", poExpected:"Esperado", poCost:"Custo unit.", addLines:"Defina as quantidades a pedir (0 = pular).",
       savePO:"Salvar rascunho", markOrdered:"Marcar como pedida", receivePO:"Receber", confirmReceipt:"Confirmar recebimento",
@@ -351,8 +354,8 @@
   const NAV_GROUPS = [
     { key:"", items:["home","alerts"] },
     { key:"grpReceiving", items:["receive","putaway","returns","qa"] },
-    { key:"grpInventory", items:["dash","adjust","count","locations","labels"] },
-    { key:"grpProduction", items:["produce","seasoning","move","orders","orderdocs"] },
+    { key:"grpInventory", items:["dash","adjust","count","locations","seasoning","labels"] },
+    { key:"grpProduction", items:["produce","move","orders","orderdocs"] },
     { key:"grpMixing", items:["mixing"] },
     { key:"grpPmac", items:["pmac"] },
     { key:"grpPurchasing", items:["purchasing","supplierpos"] },
@@ -404,7 +407,7 @@
   let orderView = "open"; // orders: "open" | "complete"
   let orderAddOpen = false;
   let peopleView = "dir"; // People: "dir" | "org"
-  let locView = "map";    // Locations: "map" | "list"
+  let locView = "floor";  // Locations: "floor" | "map" | "list"
   let locSel = null;      // selected slot/zone code in the rack map
   // Physically blocked rack slots (numbering unchanged; not storable) - Troy's real floor
   const BLOCKED_SLOTS = new Set(["A-23-L1","B-15-L4","B-16-L4","B-17-L4","B-21-L4","B-22-L4","C-21-L4","C-22-L4","D-17-L4","D-18-L4","D-23-L4","D-24-L4"]);
@@ -1156,7 +1159,7 @@
     const zones = (cfg.zones || []).map(z => zoneTileHtml(z, occ)).join("");
     const sel = locSel ? locContentsCard(locSel, occ) : "";
     return '<div class="card"><div class="suprow"><h2 style="margin:0">' + L("locations") + '</h2>' +
-      '<div class="ordtabs"><button class="' + (locView === "map" ? "active" : "") + '" onclick="UI.locView(\'map\')">' + L("locMap") + '</button>' +
+      '<div class="ordtabs"><button class="' + (locView === "floor" ? "active" : "") + '" onclick="UI.locView(\'floor\')">' + L("locFloor") + '</button><button class="' + (locView === "map" ? "active" : "") + '" onclick="UI.locView(\'map\')">' + L("locMap") + '</button>' +
       '<button class="' + (locView === "list" ? "active" : "") + '" onclick="UI.locView(\'list\')">' + L("locList") + '</button></div></div>' +
       '<p class="hint">' + L("locClickHint") + '</p>' + legend + '</div>' +
       sel +
@@ -1167,7 +1170,7 @@
   function viewLocationsList() {
     const used = DB.allLocations().filter(loc => DB.items().some(i => DB.atLoc(i.id, loc) > 0));
     const head = '<div class="card"><div class="suprow"><h2 style="margin:0">' + L("locations") + '</h2>' +
-      '<div class="ordtabs"><button class="' + (locView === "map" ? "active" : "") + '" onclick="UI.locView(\'map\')">' + L("locMap") + '</button>' +
+      '<div class="ordtabs"><button class="' + (locView === "floor" ? "active" : "") + '" onclick="UI.locView(\'floor\')">' + L("locFloor") + '</button><button class="' + (locView === "map" ? "active" : "") + '" onclick="UI.locView(\'map\')">' + L("locMap") + '</button>' +
       '<button class="' + (locView === "list" ? "active" : "") + '" onclick="UI.locView(\'list\')">' + L("locList") + '</button></div></div>' +
       '<p class="hint">' + L("locHint") + '</p></div>';
     if (!used.length) return head + '<div class="card"><p class="muted">' + L("locNothing") + '</p></div>';
@@ -1177,7 +1180,57 @@
       return '<div class="card"><h2 class="loc">' + loc + '</h2><table><tbody>' + body + '</tbody></table></div>';
     }).join("");
   }
-  function viewLocations() { return locView === "list" ? viewLocationsList() : viewLocationsMap(); }
+  function viewLocationsFloor() {
+    const occ = locOccupancy();
+    const cfg = DB.config || { docks: [11,12,13,14,15,16,17,18,19],
+      zones: ["RECEIVING","RETURNS","QA-HOLD","QUARANTINE","WIP","PACKOUT","CAGE","PROD-WEIGH","PROD-PACK","SHIPPING","ST-01","ST-02","ST-03","ST-04","ST-05","ST-06","ST-07","ST-08"] };
+    // racking run: light-blue rect, clickable -> rack grid; optional big section letter
+    const rk = (x, y, w, h, lbl, vert) => {
+      let t = "";
+      if (lbl) { const cx = x + w / 2, cy = y + h / 2;
+        t = vert ? '<text x="' + cx + '" y="' + cy + '" class="fp-sec" text-anchor="middle" transform="rotate(-90 ' + cx + ' ' + cy + ')">' + lbl + '</text>'
+                 : '<text x="' + cx + '" y="' + (cy + 3) + '" class="fp-sec" text-anchor="middle">' + lbl + '</text>'; }
+      return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="2" fill="#E1EEF7" stroke="#006DB6" class="fp-rk" onclick="UI.locView(\'map\')"><title>' + L("locStorage") + '</title></rect>' + t;
+    };
+    const box = (x, y, w, h, fill, stroke, lines, cls) => {
+      const t = lines.map((ln, i) => '<text x="' + (x + w / 2) + '" y="' + (y + h / 2 - (lines.length - 1) * 6 + i * 11 + 3) + '" text-anchor="middle" class="' + cls + '">' + esc(ln) + '</text>').join("");
+      return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="4" fill="' + fill + '" stroke="' + stroke + '"/>' + t;
+    };
+    const svg = '<svg viewBox="88 28 576 384" xmlns="http://www.w3.org/2000/svg" class="floorplan">' +
+      '<rect x="93" y="35" width="563" height="366" rx="6" fill="none" stroke="#04223B" stroke-width="2"/>' +
+      // racking runs (A/B/C/D letters are a best guess)
+      rk(101, 37, 374, 16, "A?", false) +
+      rk(101, 64, 13, 110, "", true) + rk(120, 64, 13, 110, "B?", true) + rk(138, 64, 13, 110, "", true) +
+      rk(101, 185, 13, 110, "", true) + rk(120, 185, 13, 110, "C?", true) + rk(138, 185, 13, 110, "", true) +
+      rk(342, 64, 87, 15, "", false) +
+      rk(440, 86, 14, 110, "", true) +
+      rk(484, 64, 13, 99, "D?", true) + rk(484, 174, 13, 82, "", true) +
+      // production & transfer boxes
+      box(200, 64, 98, 110, "#04223B", "#04223B", ["E-COM", "pick line"], "fp-wht") +
+      box(254, 196, 131, 110, "#E1EEF7", "#006DB6", ["FULFILLMENT", "Lines 1 & 2 + conveyor"], "fp-lbl") +
+      box(271, 312, 99, 19, "#04223B", "#04223B", ["Fulfillment desk -> door"], "fp-wht") +
+      box(506, 42, 140, 120, "#E0F4E8", "#00A341", ["P-MAC / BAGGING", "packaging line"], "fp-lbl") +
+      box(506, 168, 140, 88, "#E0F4E8", "#00A341", ["MIXING", "weigh / blend / coat"], "fp-lbl") +
+      box(506, 261, 140, 131, "#04223B", "#04223B", ["OFFICE SUITE", "R&D / control"], "fp-wht") +
+      box(101, 382, 374, 13, "#F2C61E", "#B58A00", ["DOCK DOORS   19 (office) -> 11 (far)"], "fp-dk") +
+      box(101, 360, 50, 19, "#FBE3E0", "#B52024", ["FIRE"], "fp-red") +
+      box(347, 338, 50, 15, "#FBE3E0", "#B52024", ["FIRE"], "fp-red") +
+      box(583, 374, 55, 16, "#FDE6CF", "#C77B07", ["FRONT"], "fp-red") +
+      '</svg>';
+    const sel = locSel ? locContentsCard(locSel, occ) : "";
+    const docks = (cfg.docks || []).slice().sort((a, b) => b - a).map(d => zoneTileHtml("DOCK-" + d, occ)).join("");
+    const zones = (cfg.zones || []).map(z => zoneTileHtml(z, occ)).join("");
+    return '<div class="card"><div class="suprow"><h2 style="margin:0">' + L("locations") + '</h2>' +
+      '<div class="ordtabs"><button class="active" onclick="UI.locView(\'floor\')">' + L("locFloor") + '</button>' +
+      '<button onclick="UI.locView(\'map\')">' + L("locMap") + '</button>' +
+      '<button onclick="UI.locView(\'list\')">' + L("locList") + '</button></div></div>' +
+      '<p class="hint">' + L("locFloorNote") + '</p></div>' +
+      sel +
+      '<div class="card"><div class="fpwrap">' + svg + '</div></div>' +
+      '<div class="card"><h2 class="sub2">' + L("locDocks") + '</h2><div class="ztiles">' + docks + '</div>' +
+      '<h2 class="sub2" style="margin-top:16px">' + L("locStaging") + '</h2><div class="ztiles">' + zones + '</div></div>';
+  }
+  function viewLocations() { return locView === "list" ? viewLocationsList() : locView === "floor" ? viewLocationsFloor() : viewLocationsMap(); }
   const PO_PILL = { draft:"low", ordered:"low", partial:"low", received:"ok", cancelled:"out" };
   function poStatusPill(s) { return '<span class="pill ' + (PO_PILL[s] || "low") + '">' + L("st_" + s) + '</span>'; }
   function suggestQty(i) { const oh = DB.onHand(i.id); return Math.max(i.reorder - oh, Math.round(i.reorder * 0.5)); }

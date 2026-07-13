@@ -152,6 +152,16 @@ td.ess-na{color:#aab2bd}
 .ztile .zc{font-size:12px;font-weight:800;color:var(--navy)}
 .ztile .zq{font-size:11px;color:#1d5631;margin-top:2px}
 .card.locsel{border-left:4px solid var(--orange)}
+/* floor plan (top-down building map) */
+.fpwrap{width:100%;overflow-x:auto}
+.floorplan{width:100%;min-width:640px;height:auto;display:block}
+.floorplan .fp-rk{cursor:pointer;transition:fill .1s}
+.floorplan .fp-rk:hover{fill:#cfe0f2}
+.floorplan .fp-sec{font-size:11px;font-weight:800;fill:#04223B}
+.floorplan .fp-wht{font-size:7.5px;font-weight:700;fill:#fff}
+.floorplan .fp-lbl{font-size:7.5px;font-weight:800;fill:#04223B}
+.floorplan .fp-dk{font-size:7.5px;font-weight:800;fill:#5a4600}
+.floorplan .fp-red{font-size:7px;font-weight:800;fill:#B52024}
 .deptplaceholder{margin-top:14px;padding:34px;border:2px dashed var(--line,#d9d9d9);border-radius:12px;text-align:center;opacity:.55}
 /* People / HR directory */
 .pdept{margin-top:16px}
