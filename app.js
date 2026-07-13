@@ -61,7 +61,7 @@
       mixing:"Mixing", pmac:"P-Mac", roleMixing:"Mixing (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mixing", grpPmac:"P-Mac",
       deptSoon:"This area is being set up. Allen's team screens will live here - tell us what you'd like tracked and we'll build it in.",
       conHint:"Scan each material as it moves from the racking into this room. Records real-time usage and removes it from inventory. Lot # required on every scan.", conLot:"Lot # (required)", conBtn:"Log usage", conRecent:"Recent usage", conNone:"Nothing logged yet.", conWhen:"When", conMat:"Material", conBy:"By", conErr:"Scan an item, quantity, and lot #", conNotInList:"not in item list",
-      grpReceiving:"Receiving", grpInventory:"Inventory", grpProduction:"Fulfillment", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpSystem:"System",
+      grpReceiving:"Receiving", grpInventory:"Inventory", grpProduction:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpSystem:"System",
       people:"People", hrHint:"Team directory and org chart. Non-sensitive info only - no pay or personal data.", hrGate:"This section shows employee information. Enter the manager PIN to view.",
       hrDir:"Directory", hrOrg:"Org chart", hrRole:"Role", hrDept:"Department", hrStart:"Started", hrMgr:"Reports to", hrSearchP:"Search name or role...", hrCount:"people", hrNoMatch:"No matching people.", hrYr:"yr", hrMo:"mo",
       alerts:"Alerts", alertsHint:"What needs attention now: items to reorder and seasoning lots nearing expiration.",
@@ -80,6 +80,8 @@
       odocDrop:"Choose a file to store  (PDF, Excel, image, Word)", odocCustomer:"Customer", odocPO:"PO / Order #", odocType:"Document type", odocSave:"Store document", odocArchive:"Document archive", odocNone:"No documents stored yet. Add one above.", odocSearchP:"Search customer, PO, doc type...", odocSaved:"Document stored", odocConfirmDel:"Delete this document?", odocNoFile:"Choose a file first",
       shiplog:"Shipping Log", shlHint:"Log every outbound shipment - samples, replacements, one-off customer sends. Pick the carrier and the tracking # becomes a clickable link.",
       shlDate:"Date", shlType:"Type", shlRecipient:"Recipient", shlAddress:"Address", shlCarrier:"Carrier", shlTracking:"Tracking #", shlReqBy:"Requested by", shlCost:"Cost", shlContents:"What was sent", shlStatus:"Status", shlNotes:"Notes", shlSave:"Log shipment", shlArchive:"Shipment log", shlNone:"No shipments logged yet. Add one above.", shlSearchP:"Search recipient, tracking, type...", shlLogged:"Shipment logged", shlConfirmDel:"Delete this shipment entry?",
+      recvlog:"Receiving Log", rlHint:"Log every inbound shipment and attach the paperwork (packing slip, BOL, invoice). Pick the carrier and the PRO/tracking # becomes a clickable link.",
+      rlDrop:"Attach paperwork  (PDF, Excel, image, Word)", rlDate:"Date", rlSupplier:"Supplier", rlPO:"PO #", rlCarrier:"Carrier", rlTracking:"Tracking / PRO #", rlContents:"What was received", rlQtyOrd:"Qty ordered", rlQtyRec:"Qty received", rlShortOver:"Short/Over", rlCondition:"Condition", rlReceivedBy:"Received by", rlNotes:"Notes", rlDoc:"Doc", rlSave:"Log receipt", rlArchive:"Receiving log", rlNone:"No receipts logged yet. Add one above.", rlSearchP:"Search supplier, PO, carrier...", rlLogged:"Receipt logged", rlConfirmDel:"Delete this receiving entry?",
       poCreate:"+ Create PO", poNewTitle:"New Purchase Order", poVendorAddr:"Vendor address", poVendorEmail:"Vendor email", poVendorPhone:"Vendor phone", poShipTo:"Ship to", poPreparedBy:"Prepared by", poAddLine:"+ Add line", poItemNo:"Item #", poDesc:"Description", poQtyL:"Qty", poPriceL:"Price", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Shipping", poTaxL:"Tax", poOtherL:"Other", poGrandL:"Total", poSaveBtn:"Save PO", poBackList:"Back to list", poSavedMsg:"PO saved", poNeedVendor:"Enter a vendor first",
       rdHint:"Request samples and ingredients here. Each request generates a PDF and is tracked Pending until it arrives.",
       rdPending:"Pending", rdDone:"Received", rdAdd:"+ New request", rdSave:"Save request", rdCancel:"Cancel",
@@ -149,7 +151,7 @@
       mixing:"Mezcla", pmac:"P-Mac", roleMixing:"Mezcla (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mezcla", grpPmac:"P-Mac",
       deptSoon:"Esta area se esta configurando. Aqui viviran las pantallas del equipo de Allen - diganos que desea controlar y lo agregamos.",
       conHint:"Escanee cada material al pasar del estante a esta sala. Registra el uso en tiempo real y lo descuenta del inventario. Numero de lote requerido en cada escaneo.", conLot:"Lote # (requerido)", conBtn:"Registrar uso", conRecent:"Uso reciente", conNone:"Nada registrado aun.", conWhen:"Cuando", conMat:"Material", conBy:"Por", conErr:"Escanee articulo, cantidad y lote #", conNotInList:"no esta en la lista",
-      grpReceiving:"Recibo", grpInventory:"Inventario", grpProduction:"Fulfillment", grpPurchasing:"Compras", grpRnd:"I+D", grpHr:"RH", grpSystem:"Sistema",
+      grpReceiving:"Recibo", grpInventory:"Inventario", grpProduction:"Fulfillment", grpShipping:"Envios", grpPurchasing:"Compras", grpRnd:"I+D", grpHr:"RH", grpSystem:"Sistema",
       people:"Personal", hrHint:"Directorio del equipo y organigrama. Solo informacion no sensible - sin pago ni datos personales.", hrGate:"Esta seccion muestra informacion de empleados. Ingrese el PIN de gerente para ver.",
       hrDir:"Directorio", hrOrg:"Organigrama", hrRole:"Puesto", hrDept:"Departamento", hrStart:"Ingreso", hrMgr:"Reporta a", hrSearchP:"Buscar nombre o puesto...", hrCount:"personas", hrNoMatch:"Sin coincidencias.", hrYr:"ano", hrMo:"mes",
       alerts:"Alertas", alertsHint:"Lo que necesita atencion ahora: articulos por reordenar y lotes de sazon por vencer.",
@@ -168,6 +170,8 @@
       odocDrop:"Elija un archivo para guardar  (PDF, Excel, imagen, Word)", odocCustomer:"Cliente", odocPO:"OC / # de Orden", odocType:"Tipo de documento", odocSave:"Guardar documento", odocArchive:"Archivo de documentos", odocNone:"Aun no hay documentos. Agregue uno arriba.", odocSearchP:"Buscar cliente, OC, tipo...", odocSaved:"Documento guardado", odocConfirmDel:"Eliminar este documento?", odocNoFile:"Elija un archivo primero",
       shiplog:"Registro de Envios", shlHint:"Registre cada envio saliente - muestras, reemplazos, envios puntuales a clientes. Elija el transportista y el # de rastreo se vuelve un enlace.",
       shlDate:"Fecha", shlType:"Tipo", shlRecipient:"Destinatario", shlAddress:"Direccion", shlCarrier:"Transportista", shlTracking:"# de Rastreo", shlReqBy:"Solicitado por", shlCost:"Costo", shlContents:"Que se envio", shlStatus:"Estado", shlNotes:"Notas", shlSave:"Registrar envio", shlArchive:"Registro de envios", shlNone:"Aun no hay envios. Agregue uno arriba.", shlSearchP:"Buscar destinatario, rastreo, tipo...", shlLogged:"Envio registrado", shlConfirmDel:"Eliminar este registro de envio?",
+      recvlog:"Registro de Recibo", rlHint:"Registre cada envio entrante y adjunte el papeleo (remito, BOL, factura). Elija el transportista y el # PRO/rastreo se vuelve un enlace.",
+      rlDrop:"Adjuntar papeleo  (PDF, Excel, imagen, Word)", rlDate:"Fecha", rlSupplier:"Proveedor", rlPO:"# OC", rlCarrier:"Transportista", rlTracking:"# Rastreo / PRO", rlContents:"Que se recibio", rlQtyOrd:"Cant. pedida", rlQtyRec:"Cant. recibida", rlShortOver:"Faltante/Sobrante", rlCondition:"Condicion", rlReceivedBy:"Recibido por", rlNotes:"Notas", rlDoc:"Doc", rlSave:"Registrar recibo", rlArchive:"Registro de recibo", rlNone:"Aun no hay recibos. Agregue uno arriba.", rlSearchP:"Buscar proveedor, OC, transportista...", rlLogged:"Recibo registrado", rlConfirmDel:"Eliminar este registro de recibo?",
       poCreate:"+ Crear OC", poNewTitle:"Nueva Orden de Compra", poVendorAddr:"Direccion del proveedor", poVendorEmail:"Correo del proveedor", poVendorPhone:"Telefono del proveedor", poShipTo:"Enviar a", poPreparedBy:"Preparado por", poAddLine:"+ Agregar linea", poItemNo:"Articulo #", poDesc:"Descripcion", poQtyL:"Cant", poPriceL:"Precio", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Envio", poTaxL:"Impuesto", poOtherL:"Otro", poGrandL:"Total", poSaveBtn:"Guardar OC", poBackList:"Volver a la lista", poSavedMsg:"OC guardada", poNeedVendor:"Ingrese un proveedor primero",
       rdHint:"Solicite muestras e ingredientes aqui. Cada solicitud genera un PDF y se sigue como Pendiente hasta que llega.",
       rdPending:"Pendiente", rdDone:"Recibido", rdAdd:"+ Nueva solicitud", rdSave:"Guardar solicitud", rdCancel:"Cancelar",
@@ -237,7 +241,7 @@
       mixing:"Mistura", pmac:"P-Mac", roleMixing:"Mistura (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mistura", grpPmac:"P-Mac",
       deptSoon:"Esta area esta sendo configurada. As telas da equipe do Allen ficarao aqui - diga o que deseja acompanhar e vamos incluir.",
       conHint:"Escaneie cada material ao passar da prateleira para esta sala. Registra o uso em tempo real e baixa do estoque. Numero de lote obrigatorio em cada leitura.", conLot:"Lote # (obrigatorio)", conBtn:"Registrar uso", conRecent:"Uso recente", conNone:"Nada registrado ainda.", conWhen:"Quando", conMat:"Material", conBy:"Por", conErr:"Escaneie item, quantidade e lote #", conNotInList:"nao esta na lista",
-      grpReceiving:"Recebimento", grpInventory:"Estoque", grpProduction:"Fulfillment", grpPurchasing:"Compras", grpRnd:"P&D", grpHr:"RH", grpSystem:"Sistema",
+      grpReceiving:"Recebimento", grpInventory:"Estoque", grpProduction:"Fulfillment", grpShipping:"Envios", grpPurchasing:"Compras", grpRnd:"P&D", grpHr:"RH", grpSystem:"Sistema",
       people:"Pessoas", hrHint:"Diretorio da equipe e organograma. Apenas informacoes nao sensiveis - sem salario ou dados pessoais.", hrGate:"Esta secao mostra informacoes de funcionarios. Digite o PIN de gerente para ver.",
       hrDir:"Diretorio", hrOrg:"Organograma", hrRole:"Cargo", hrDept:"Departamento", hrStart:"Inicio", hrMgr:"Reporta a", hrSearchP:"Buscar nome ou cargo...", hrCount:"pessoas", hrNoMatch:"Nenhuma correspondencia.", hrYr:"ano", hrMo:"mes",
       alerts:"Alertas", alertsHint:"O que precisa de atencao agora: itens para repor e lotes de tempero perto do vencimento.",
@@ -256,6 +260,8 @@
       odocDrop:"Escolha um arquivo para armazenar  (PDF, Excel, imagem, Word)", odocCustomer:"Cliente", odocPO:"OC / No do Pedido", odocType:"Tipo de documento", odocSave:"Armazenar documento", odocArchive:"Arquivo de documentos", odocNone:"Nenhum documento ainda. Adicione um acima.", odocSearchP:"Buscar cliente, OC, tipo...", odocSaved:"Documento armazenado", odocConfirmDel:"Excluir este documento?", odocNoFile:"Escolha um arquivo primeiro",
       shiplog:"Registro de Envios", shlHint:"Registre cada envio de saida - amostras, reposicoes, envios avulsos a clientes. Escolha a transportadora e o no de rastreio vira um link.",
       shlDate:"Data", shlType:"Tipo", shlRecipient:"Destinatario", shlAddress:"Endereco", shlCarrier:"Transportadora", shlTracking:"No de Rastreio", shlReqBy:"Solicitado por", shlCost:"Custo", shlContents:"O que foi enviado", shlStatus:"Status", shlNotes:"Notas", shlSave:"Registrar envio", shlArchive:"Registro de envios", shlNone:"Nenhum envio ainda. Adicione um acima.", shlSearchP:"Buscar destinatario, rastreio, tipo...", shlLogged:"Envio registrado", shlConfirmDel:"Excluir este registro de envio?",
+      recvlog:"Registro de Recebimento", rlHint:"Registre cada envio recebido e anexe a papelada (romaneio, BOL, fatura). Escolha a transportadora e o no PRO/rastreio vira um link.",
+      rlDrop:"Anexar papelada  (PDF, Excel, imagem, Word)", rlDate:"Data", rlSupplier:"Fornecedor", rlPO:"No OC", rlCarrier:"Transportadora", rlTracking:"Rastreio / PRO", rlContents:"O que foi recebido", rlQtyOrd:"Qtd pedida", rlQtyRec:"Qtd recebida", rlShortOver:"Falta/Sobra", rlCondition:"Condicao", rlReceivedBy:"Recebido por", rlNotes:"Notas", rlDoc:"Doc", rlSave:"Registrar recebimento", rlArchive:"Registro de recebimento", rlNone:"Nenhum recebimento ainda. Adicione um acima.", rlSearchP:"Buscar fornecedor, OC, transportadora...", rlLogged:"Recebimento registrado", rlConfirmDel:"Excluir este registro de recebimento?",
       poCreate:"+ Criar OC", poNewTitle:"Nova Ordem de Compra", poVendorAddr:"Endereco do fornecedor", poVendorEmail:"Email do fornecedor", poVendorPhone:"Telefone do fornecedor", poShipTo:"Enviar para", poPreparedBy:"Preparado por", poAddLine:"+ Adicionar linha", poItemNo:"Item #", poDesc:"Descricao", poQtyL:"Qtd", poPriceL:"Preco", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Frete", poTaxL:"Imposto", poOtherL:"Outro", poGrandL:"Total", poSaveBtn:"Salvar OC", poBackList:"Voltar a lista", poSavedMsg:"OC salva", poNeedVendor:"Insira um fornecedor primeiro",
       rdHint:"Solicite amostras e ingredientes aqui. Cada solicitacao gera um PDF e e acompanhada como Pendente ate chegar.",
       rdPending:"Pendente", rdDone:"Recebido", rdAdd:"+ Nova solicitacao", rdSave:"Salvar solicitacao", rdCancel:"Cancelar",
@@ -273,7 +279,7 @@
   let lang = "en"; const L = k => (T[lang][k] !== undefined ? T[lang][k] : k);
   let active = "home"; let catFilter = "all";
   let purchMode = "list"; let purchSup = null; let receivingPOid = null;
-  const TABS = ["home","dash","alerts","adjust","receive","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","stockbuild","seasoning","seed","skus","mixing","pmac","count","locations","purchasing","supplierpos","people","labels","log","settings"];
+  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","stockbuild","seasoning","seed","skus","mixing","pmac","count","locations","purchasing","supplierpos","people","labels","log","settings"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -292,6 +298,8 @@
   const SHIP_CARRIERS = ["UPS","FedEx","USPS","XPO","DHL","Other"];
   const SHIP_STATUSES = ["Pending","Shipped","Delivered","Returned"];
   const SHIP_REQUESTERS = ["Matt","Troy","Brittney","Ken","Javier","Adriana","Jesus","Other"];
+  const RECV_LOG_CONDITIONS = ["Good","Damaged","Short","Over","Hold"];
+  const RECV_LOG_RECEIVERS = ["Adriana","Jesus","Javier","Edgar","Marlin","Jhonny","Ken","Troy","Other"];
   function trackingUrl(carrier, num) {
     if (!num) return "";
     const n = encodeURIComponent(String(num).trim());
@@ -421,9 +429,10 @@
   // ---- left sidebar: tabs grouped by department (NetSuite-style) ----
   const NAV_GROUPS = [
     { key:"", items:["home","alerts"] },
-    { key:"grpReceiving", items:["receive","returns","qa"] },
+    { key:"grpReceiving", items:["receive","recvlog","returns","qa"] },
     { key:"grpInventory", items:["dash","adjust","count","move","locations","seasoning","seed","skus","labels"] },
-    { key:"grpProduction", items:["produce","retailprod","stockbuild","orders","orderdocs","shiplog"] },
+    { key:"grpProduction", items:["produce","retailprod","stockbuild","orders","orderdocs"] },
+    { key:"grpShipping", items:["shiplog"] },
     { key:"grpMixing", items:["mixing"] },
     { key:"grpPmac", items:["pmac"] },
     { key:"grpPurchasing", items:["purchasing","supplierpos"] },
@@ -435,7 +444,7 @@
     returns:"\u{21A9}\u{FE0F}", qa:"\u{1F7E5}", orders:"\u{1F9FE}", purchasing:"\u{1F6D2}", rd:"\u{1F9EA}",
     move:"\u{1F500}", produce:"\u{1F3ED}", seasoning:"\u{1F9C2}", count:"\u{1F522}", locations:"\u{1F4CD}",
     labels:"\u{1F3F7}\u{FE0F}", log:"\u{1F4DC}", settings:"\u{2699}\u{FE0F}", supplierpos:"\u{1F4C4}",
-    mixing:"\u{1F963}", pmac:"\u{1F527}", people:"\u{1F465}", orderdocs:"\u{1F4C1}", seed:"\u{1F33B}", skus:"\u{1F6CD}\u{FE0F}", stockbuild:"\u{1F3D7}\u{FE0F}", retailprod:"\u{1F4E6}", shiplog:"\u{1F69A}" };
+    mixing:"\u{1F963}", pmac:"\u{1F527}", people:"\u{1F465}", orderdocs:"\u{1F4C1}", seed:"\u{1F33B}", skus:"\u{1F6CD}\u{FE0F}", stockbuild:"\u{1F3D7}\u{FE0F}", retailprod:"\u{1F4E6}", shiplog:"\u{1F69A}", recvlog:"\u{1F4E5}" };
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
   let spoSort = { key: "created", dir: -1 };  // Supplier POs table sort (v25)
   let spoView = "list";   // Supplier POs: "list" | "create" (Excel-style PO entry form)
@@ -481,6 +490,8 @@
   let rpRecent = [];                          // Retail Production: recent adds this session
   let shipSortKey = "ship_date", shipSortDir = -1;  // Shipping Log sort state
   let shipSearch = "";                        // Shipping Log filter text
+  let recvSortKey = "recv_date", recvSortDir = -1;  // Receiving Log sort state
+  let recvFile = null;                        // Receiving Log paperwork upload state
   let locSel = null;      // selected slot/zone code in the rack map
   // Physically blocked rack slots (numbering unchanged; not storable) - Troy's real floor
   const BLOCKED_SLOTS = new Set(["A-23-L1","B-15-L4","B-16-L4","B-17-L4","B-21-L4","B-22-L4","C-21-L4","C-22-L4","D-17-L4","D-18-L4","D-23-L4","D-24-L4"]);
@@ -1142,6 +1153,61 @@
     return reqDl + '<div class="card"><h2>' + L("shiplog") + '</h2><p class="hint">' + L("shlHint") + '</p>' + form + '</div>' +
       '<div class="card"><h2 class="sub2">' + L("shlArchive") + ' (' + list.length + ')' + (totalCost ? ' &middot; $' + totalCost.toFixed(2) : '') + '</h2>' +
       '<input id="shlSearch" autocomplete="off" oninput="UI.shlSearch(this.value)" placeholder="' + L("shlSearchP") + '" style="margin-bottom:10px">' +
+      table + '</div>';
+  }
+  function viewReceivingLog() {
+    const today = new Date().toISOString().slice(0, 10);
+    const form = '<div class="ordform">' +
+      '<div class="spodrop"><input type="file" id="rl-input" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.docx" style="display:none" onchange="UI.rlFile(this)">' +
+      '<label for="rl-input" class="spodroplabel">&#128193; ' + L("rlDrop") + '</label></div>' +
+      (recvFile ? '<p class="hint">&#128206; ' + esc(recvFile.name) + ' <button class="ghost sm" onclick="UI.rlClear()">' + L("spoCancel") + '</button></p>' : '') +
+      '<div class="row"><div><label>' + L("rlDate") + '</label><input id="rl-date" type="date" value="' + today + '"></div>' +
+      '<div><label>' + L("rlSupplier") + '</label><input id="rl-supplier" autocomplete="off"></div>' +
+      '<div><label>' + L("rlPO") + '</label><input id="rl-po" autocomplete="off"></div></div>' +
+      '<div class="row"><div><label>' + L("rlCarrier") + '</label><select id="rl-carrier"><option value=""></option>' + SHIP_CARRIERS.map(t => "<option>" + t + "</option>").join("") + '</select></div>' +
+      '<div><label>' + L("rlTracking") + ' <span class="muted">(PRO)</span></label><input id="rl-tracking" autocomplete="off"></div>' +
+      '<div><label>' + L("rlCondition") + '</label><select id="rl-condition">' + RECV_LOG_CONDITIONS.map(t => "<option>" + t + "</option>").join("") + '</select></div></div>' +
+      '<div><label>' + L("rlContents") + '</label><input id="rl-contents" autocomplete="off"></div>' +
+      '<div class="row"><div><label>' + L("rlQtyOrd") + ' <span class="muted">(opt.)</span></label><input id="rl-qord" type="number" min="0" placeholder="0"></div>' +
+      '<div><label>' + L("rlQtyRec") + ' <span class="muted">(opt.)</span></label><input id="rl-qrec" type="number" min="0" placeholder="0"></div>' +
+      '<div><label>' + L("rlReceivedBy") + '</label><input id="rl-by" list="dl-rl-by" autocomplete="off"></div></div>' +
+      '<div><label>' + L("rlNotes") + ' <span class="muted">(opt.)</span></label><input id="rl-notes" autocomplete="off"></div>' +
+      opField("Adriana") +
+      '<button class="primary" onclick="UI.rlSave()">' + L("rlSave") + '</button>' + '</div>';
+    const byDl = '<datalist id="dl-rl-by">' + RECV_LOG_RECEIVERS.map(n => '<option value="' + n + '"></option>').join("") + '</datalist>';
+    let list = DB.receivingLog().slice();
+    const vf = { recv_date: s => s.recv_date || "", supplier: s => (s.supplier || "").toLowerCase(), po_num: s => s.po_num || "", carrier: s => s.carrier || "", condition: s => s.condition || "", received_by: s => (s.received_by || "").toLowerCase() };
+    const kf = vf[recvSortKey] || vf.recv_date;
+    list.sort((a, b) => { const x = kf(a), y = kf(b); return (x < y ? -1 : x > y ? 1 : 0) * recvSortDir; });
+    const th = (key, label, cls) => '<th' + (cls ? ' class="' + cls + '"' : '') + ' style="cursor:pointer" onclick="UI.rlSort(\'' + key + '\')">' + label + (recvSortKey === key ? ' <span class="sortar">' + (recvSortDir > 0 ? "&#9650;" : "&#9660;") + '</span>' : '') + '</th>';
+    const cColor = c => c === "Good" ? "ok" : (c === "Damaged" || c === "Hold") ? "out" : "low";
+    const rows = list.map(s => {
+      const url = trackingUrl(s.carrier, s.tracking);
+      const trk = s.tracking ? (url ? '<a href="' + url + '" target="_blank" rel="noopener">' + esc(s.tracking) + ' &#8599;</a>' : esc(s.tracking)) : '&mdash;';
+      const ov = (s.qty_ordered != null && s.qty_received != null) ? (Number(s.qty_ordered) - Number(s.qty_received)) : null;
+      const ovTxt = ov === null ? '&mdash;' : (ov === 0 ? '0' : (ov > 0 ? '-' + ov : '+' + Math.abs(ov)));
+      const doc = s.file_url ? '<a href="' + s.file_url + '" target="_blank" rel="noopener" title="' + esc(s.file_name || '') + '">&#128206;</a>' : '';
+      const txt = ((s.recv_date || "") + " " + (s.supplier || "") + " " + (s.po_num || "") + " " + (s.carrier || "") + " " + (s.tracking || "") + " " + (s.contents || "") + " " + (s.condition || "") + " " + (s.received_by || "")).toLowerCase().replace(/"/g, "");
+      return '<tr data-txt="' + txt + '"><td>' + esc((s.recv_date || "").slice(0, 10)) + '</td>' +
+        '<td><b>' + esc(s.supplier || "") + '</b></td><td>' + esc(s.po_num || "") + '</td>' +
+        '<td>' + esc(s.carrier || "") + '</td><td>' + trk + '</td>' +
+        '<td>' + esc(s.contents || "") + '</td>' +
+        '<td class="right">' + (s.qty_received != null ? fmt(s.qty_received) : '&mdash;') + '</td>' +
+        '<td class="right">' + ovTxt + '</td>' +
+        '<td><span class="pill ' + cColor(s.condition) + '">' + esc(s.condition || "") + '</span></td>' +
+        '<td class="muted">' + esc(s.received_by || "") + '</td>' +
+        '<td class="center">' + doc + '</td>' +
+        '<td><button class="ghost sm danger" onclick="UI.rlDelete(\'' + s.id + '\')">&#10005;</button></td></tr>';
+    }).join("");
+    const table = list.length ? '<table><thead><tr>' +
+      th("recv_date", L("rlDate")) + th("supplier", L("rlSupplier")) + th("po_num", L("rlPO")) +
+      th("carrier", L("rlCarrier")) + '<th>' + L("rlTracking") + '</th>' + '<th>' + L("rlContents") + '</th>' +
+      '<th class="right">' + L("rlQtyRec") + '</th>' + '<th class="right">' + L("rlShortOver") + '</th>' +
+      th("condition", L("rlCondition")) + th("received_by", L("rlReceivedBy")) + '<th>' + L("rlDoc") + '</th>' + '<th></th>' +
+      '</tr></thead><tbody id="rlBody">' + rows + '</tbody></table>' : '<p class="muted">' + L("rlNone") + '</p>';
+    return byDl + '<div class="card"><h2>' + L("recvlog") + '</h2><p class="hint">' + L("rlHint") + '</p>' + form + '</div>' +
+      '<div class="card"><h2 class="sub2">' + L("rlArchive") + ' (' + list.length + ')</h2>' +
+      '<input id="rlSearch" autocomplete="off" oninput="UI.rlSearch(this.value)" placeholder="' + L("rlSearchP") + '" style="margin-bottom:10px">' +
       table + '</div>';
   }
   function viewReceive() {
@@ -1851,6 +1917,24 @@
     },
     async shlStatus(id, status) { await DB.setShippingStatus(id, status, opVal()); toast(status + " ✓"); },
     async shlDelete(id) { if (!confirm(L("shlConfirmDel"))) return; await DB.deleteShipping(id, opVal()); toast("✓"); render(); },
+    // ---- Receiving Log ----
+    rlFile(input) { const f = input.files && input.files[0]; if (!f) return; recvFile = f; render(); },
+    rlClear() { recvFile = null; render(); },
+    rlSort(key) { if (recvSortKey === key) recvSortDir = -recvSortDir; else { recvSortKey = key; recvSortDir = (key === "recv_date") ? -1 : 1; } render(); },
+    rlSearch(val) { const q = (val || "").toLowerCase().trim();
+      document.querySelectorAll("#rlBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
+    async rlSave() {
+      const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
+      const supplier = v("rl-supplier"); if (!supplier) return toast(L("rlSupplier"));
+      const by = opVal();
+      const res = await DB.addReceivingLog({ recv_date: v("rl-date"), supplier: supplier, po_num: v("rl-po"),
+        carrier: v("rl-carrier"), tracking: v("rl-tracking"), contents: v("rl-contents"),
+        qty_ordered: v("rl-qord"), qty_received: v("rl-qrec"), condition: v("rl-condition"),
+        received_by: v("rl-by"), notes: v("rl-notes") }, recvFile, by);
+      if (res && res.ok === false) return toast(res.msg || "error");
+      recvFile = null; toast(L("rlLogged") + " ✓"); render();
+    },
+    async rlDelete(id) { if (!confirm(L("rlConfirmDel"))) return; await DB.deleteReceivingLog(id, opVal()); toast("✓"); render(); },
     // ---- Orders ----
     ordView(v) { orderView = v; render(); },
     ordAddToggle() { orderAddOpen = !orderAddOpen; render(); },
@@ -2088,7 +2172,7 @@
     renderNav(); refreshDatalists();
     const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
       move: viewMove, produce: viewProduce, retailprod: viewRetailProd, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, mixing: viewMixing, pmac: viewPmac,
-      count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, people: viewPeople, labels: viewLabels, log: viewLog, settings: viewSettings };
+      count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, labels: viewLabels, log: viewLog, settings: viewSettings };
     $("view").innerHTML = (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
     $("modeBadge").className = "modebadge " + (DB.mode === "cloud" ? "ok" : "low");

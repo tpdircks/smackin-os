@@ -12,7 +12,7 @@ window.DB = (function () {
   const seed = window.SMACKIN_SEED;
   let mode = "local";
   let sb = null;                  // supabase client
-  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [] };
+  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [] };
   let subscribers = [];
 
   function emit() { subscribers.forEach(fn => { try { fn(); } catch (e) {} }); }
@@ -28,6 +28,7 @@ window.DB = (function () {
   function seedLots() { return cache.seedLots || []; }
   function stockBuild() { return cache.stockBuild || {}; }
   function shippingLog() { return cache.shippingLog || []; }
+  function receivingLog() { return cache.receivingLog || []; }
   function orders() { return cache.orders || []; }
   function rdRequests() { return cache.rdRequests || []; }
   function supplierPos() { return cache.supplierPos || []; }
@@ -48,9 +49,9 @@ window.DB = (function () {
     loadOrSeed() {
       let raw = null;
       try { raw = localStorage.getItem(KEY); } catch (e) {}
-      if (raw) { cache = JSON.parse(raw); if (!cache.pos) cache.pos = []; if (!cache.log) cache.log = []; if (!cache.seasLots) cache.seasLots = []; if (!cache.orders) cache.orders = []; if (!cache.rdRequests) cache.rdRequests = []; if (!cache.supplierPos) cache.supplierPos = []; if (!cache.orderDocs) cache.orderDocs = []; if (!cache.consumption) cache.consumption = []; if (!cache.seedLots) cache.seedLots = []; if (!cache.stockBuild) cache.stockBuild = {}; if (!cache.shippingLog) cache.shippingLog = []; return; }
+      if (raw) { cache = JSON.parse(raw); if (!cache.pos) cache.pos = []; if (!cache.log) cache.log = []; if (!cache.seasLots) cache.seasLots = []; if (!cache.orders) cache.orders = []; if (!cache.rdRequests) cache.rdRequests = []; if (!cache.supplierPos) cache.supplierPos = []; if (!cache.orderDocs) cache.orderDocs = []; if (!cache.consumption) cache.consumption = []; if (!cache.seedLots) cache.seedLots = []; if (!cache.stockBuild) cache.stockBuild = {}; if (!cache.shippingLog) cache.shippingLog = []; if (!cache.receivingLog) cache.receivingLog = []; return; }
       const s = seed.build();
-      cache = { items: s.items, suppliers: s.suppliers, stock: s.stock, pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [] };
+      cache = { items: s.items, suppliers: s.suppliers, stock: s.stock, pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [] };
       this.save();
     },
     save() { try { localStorage.setItem(KEY, JSON.stringify(cache)); } catch (e) {} },
@@ -68,7 +69,7 @@ window.DB = (function () {
   // ---------- CLOUD backend (Supabase) ----------
   const cloud = {
     async loadAll() {
-      const [it, su, st, lg, po, pl, sl, od, rd, sp, odc, con, sdl, sbd, slog] = await Promise.all([
+      const [it, su, st, lg, po, pl, sl, od, rd, sp, odc, con, sdl, sbd, slog, rlog] = await Promise.all([
         sb.from("items").select("*"),
         sb.from("suppliers").select("*"),
         sb.from("stock").select("*"),
@@ -83,7 +84,8 @@ window.DB = (function () {
         sb.from("consumption").select("*").order("created_at", { ascending: false }).limit(3000),
         sb.from("seed_lots").select("*").order("created_at", { ascending: false }).limit(3000),
         sb.from("stock_build").select("*").limit(500),
-        sb.from("shipping_log").select("*").order("ship_date", { ascending: false }).limit(3000)
+        sb.from("shipping_log").select("*").order("ship_date", { ascending: false }).limit(3000),
+        sb.from("receiving_log").select("*").order("recv_date", { ascending: false }).limit(3000)
       ]);
       cache.items = it.data || [];
       cache.suppliers = su.data || [];
@@ -135,6 +137,13 @@ window.DB = (function () {
         address: r.address, carrier: r.carrier, tracking: r.tracking, requested_by: r.requested_by,
         contents: r.contents, status: r.status || "Shipped", cost: Number(r.cost) || 0,
         notes: r.notes, entered_by: r.entered_by, created_at: r.created_at
+      }));
+      cache.receivingLog = (rlog && rlog.data ? rlog.data : []).map(r => ({
+        id: r.id, recv_date: r.recv_date, supplier: r.supplier, po_num: r.po_num,
+        carrier: r.carrier, tracking: r.tracking, contents: r.contents,
+        qty_ordered: r.qty_ordered, qty_received: r.qty_received, condition: r.condition || "Good",
+        received_by: r.received_by, notes: r.notes, file_name: r.file_name, file_url: r.file_url,
+        file_path: r.file_path, entered_by: r.entered_by, created_at: r.created_at
       }));
       const lines = pl.data || [];
       cache.pos = (po.data || []).map(p => ({
@@ -364,6 +373,56 @@ window.DB = (function () {
       await cloud.loadAll();
     } else {
       cache.shippingLog = (cache.shippingLog || []).filter(x => String(x.id) !== String(id));
+      local.save();
+    }
+    emit();
+    return { ok: true };
+  }
+
+  // ---------- Receiving Log (inbound shipments + attached paperwork) ----------
+  const RECV_BUCKET = "supplier-pos"; // reuse the existing public bucket for receiving paperwork
+  async function addReceivingLog(rec, file, op) {
+    let file_name = file ? file.name : "", file_path = "", file_url = "";
+    if (mode === "cloud" && file) {
+      try {
+        const path = "recv_" + Date.now() + "_" + (file.name || "doc").replace(/[^\w.\-]+/g, "_");
+        const up = await sb.storage.from(RECV_BUCKET).upload(path, file, { upsert: false, contentType: file.type || undefined });
+        if (up.error) return { ok: false, msg: up.error.message || "upload failed" };
+        file_path = path;
+        const pub = sb.storage.from(RECV_BUCKET).getPublicUrl(path);
+        file_url = (pub && pub.data && pub.data.publicUrl) || "";
+      } catch (e) { return { ok: false, msg: String(e) }; }
+    }
+    const row = {
+      recv_date: rec.recv_date || new Date().toISOString().slice(0, 10),
+      supplier: rec.supplier || "", po_num: rec.po_num || "", carrier: rec.carrier || "",
+      tracking: rec.tracking || "", contents: rec.contents || "",
+      qty_ordered: rec.qty_ordered === "" || rec.qty_ordered == null ? null : Number(rec.qty_ordered),
+      qty_received: rec.qty_received === "" || rec.qty_received == null ? null : Number(rec.qty_received),
+      condition: rec.condition || "Good", received_by: rec.received_by || "",
+      notes: rec.notes || "", file_name: file_name, file_path: file_path, file_url: file_url,
+      entered_by: op || "", created_at: new Date().toISOString()
+    };
+    const logEntry = { a: "Receiving logged", d: (row.supplier || "") + (row.po_num ? " PO " + row.po_num : "") + (file_name ? " [" + file_name + "]" : ""), u: op, t: row.created_at };
+    if (mode === "cloud") {
+      await sb.from("receiving_log").insert(row);
+      await cloud.addLog(logEntry);
+      await cloud.loadAll();
+    } else {
+      row.id = "RCV-" + Date.now().toString(36) + "-" + Math.floor(Math.random() * 1000);
+      if (file && !file_url) row.file_url = URL.createObjectURL(file);
+      cache.receivingLog.unshift(row);
+      local.addLog(logEntry); local.save();
+    }
+    emit();
+    return { ok: true };
+  }
+  async function deleteReceivingLog(id, op) {
+    if (mode === "cloud") {
+      await sb.from("receiving_log").delete().eq("id", id);
+      await cloud.loadAll();
+    } else {
+      cache.receivingLog = (cache.receivingLog || []).filter(x => String(x.id) !== String(id));
       local.save();
     }
     emit();
@@ -784,6 +843,7 @@ window.DB = (function () {
     seedLots, addSeedLot, setSeedLotStatus,
     stockBuild, setStockBuildOnHand,
     shippingLog, addShipping, setShippingStatus, deleteShipping,
+    receivingLog, addReceivingLog, deleteReceivingLog,
     orders, createOrder, updateOrder, setOrderStatus, deleteOrder, notifyNewOrder,
     rdRequests, createRdRequest, updateRdRequest, setRdStatus, deleteRdRequest, sendRdEmail,
     supplierPos, createSupplierPO, deleteSupplierPO,
