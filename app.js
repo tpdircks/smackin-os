@@ -82,7 +82,7 @@
       shlDate:"Date", shlType:"Type", shlRecipient:"Recipient", shlAddress:"Address", shlCarrier:"Carrier", shlTracking:"Tracking #", shlReqBy:"Requested by", shlCost:"Cost", shlContents:"What was sent", shlStatus:"Status", shlNotes:"Notes", shlSave:"Log shipment", shlArchive:"Shipment log", shlNone:"No shipments logged yet. Add one above.", shlSearchP:"Search recipient, tracking, type...", shlLogged:"Shipment logged", shlConfirmDel:"Delete this shipment entry?",
       recvlog:"Receiving Log", rlHint:"Log every inbound shipment and attach the paperwork (packing slip, BOL, invoice). Pick the carrier and the PRO/tracking # becomes a clickable link.",
       rlDrop:"Attach paperwork  (PDF, Excel, image, Word)", rlDate:"Date", rlSupplier:"Supplier", rlPO:"PO #", rlCarrier:"Carrier", rlTracking:"Tracking / PRO #", rlContents:"What was received", rlQtyOrd:"Qty ordered", rlQtyRec:"Qty received", rlShortOver:"Short/Over", rlCondition:"Condition", rlReceivedBy:"Received by", rlNotes:"Notes", rlDoc:"Doc", rlSave:"Log receipt", rlArchive:"Receiving log", rlNone:"No receipts logged yet. Add one above.", rlSearchP:"Search supplier, PO, carrier...", rlLogged:"Receipt logged", rlConfirmDel:"Delete this receiving entry?",
-      editRow:"Edit", editingRow:"Editing this entry - change what you need, then Save.", saveChanges:"Save changes", saved:"Saved", rlKeepDoc:"current file kept unless you attach a new one",
+      editRow:"Edit", editingRow:"Editing this entry - change what you need, then Save.", saveChanges:"Save changes", saved:"Saved", rlKeepDoc:"current file kept unless you attach a new one", sortHint:"Click to sort",
       poCreate:"+ Create PO", poNewTitle:"New Purchase Order", poVendorAddr:"Vendor address", poVendorEmail:"Vendor email", poVendorPhone:"Vendor phone", poShipTo:"Ship to", poPreparedBy:"Prepared by", poAddLine:"+ Add line", poItemNo:"Item #", poDesc:"Description", poQtyL:"Qty", poPriceL:"Price", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Shipping", poTaxL:"Tax", poOtherL:"Other", poGrandL:"Total", poSaveBtn:"Save PO", poBackList:"Back to list", poSavedMsg:"PO saved", poNeedVendor:"Enter a vendor first",
       rdHint:"Request samples and ingredients here. Each request generates a PDF and is tracked Pending until it arrives.",
       rdPending:"Pending", rdDone:"Received", rdAdd:"+ New request", rdSave:"Save request", rdCancel:"Cancel",
@@ -173,7 +173,7 @@
       shlDate:"Fecha", shlType:"Tipo", shlRecipient:"Destinatario", shlAddress:"Direccion", shlCarrier:"Transportista", shlTracking:"# de Rastreo", shlReqBy:"Solicitado por", shlCost:"Costo", shlContents:"Que se envio", shlStatus:"Estado", shlNotes:"Notas", shlSave:"Registrar envio", shlArchive:"Registro de envios", shlNone:"Aun no hay envios. Agregue uno arriba.", shlSearchP:"Buscar destinatario, rastreo, tipo...", shlLogged:"Envio registrado", shlConfirmDel:"Eliminar este registro de envio?",
       recvlog:"Registro de Recibo", rlHint:"Registre cada envio entrante y adjunte el papeleo (remito, BOL, factura). Elija el transportista y el # PRO/rastreo se vuelve un enlace.",
       rlDrop:"Adjuntar papeleo  (PDF, Excel, imagen, Word)", rlDate:"Fecha", rlSupplier:"Proveedor", rlPO:"# OC", rlCarrier:"Transportista", rlTracking:"# Rastreo / PRO", rlContents:"Que se recibio", rlQtyOrd:"Cant. pedida", rlQtyRec:"Cant. recibida", rlShortOver:"Faltante/Sobrante", rlCondition:"Condicion", rlReceivedBy:"Recibido por", rlNotes:"Notas", rlDoc:"Doc", rlSave:"Registrar recibo", rlArchive:"Registro de recibo", rlNone:"Aun no hay recibos. Agregue uno arriba.", rlSearchP:"Buscar proveedor, OC, transportista...", rlLogged:"Recibo registrado", rlConfirmDel:"Eliminar este registro de recibo?",
-      editRow:"Editar", editingRow:"Editando esta entrada - cambie lo necesario y guarde.", saveChanges:"Guardar cambios", saved:"Guardado", rlKeepDoc:"se conserva el archivo actual salvo que adjunte uno nuevo",
+      editRow:"Editar", editingRow:"Editando esta entrada - cambie lo necesario y guarde.", saveChanges:"Guardar cambios", saved:"Guardado", rlKeepDoc:"se conserva el archivo actual salvo que adjunte uno nuevo", sortHint:"Clic para ordenar",
       poCreate:"+ Crear OC", poNewTitle:"Nueva Orden de Compra", poVendorAddr:"Direccion del proveedor", poVendorEmail:"Correo del proveedor", poVendorPhone:"Telefono del proveedor", poShipTo:"Enviar a", poPreparedBy:"Preparado por", poAddLine:"+ Agregar linea", poItemNo:"Articulo #", poDesc:"Descripcion", poQtyL:"Cant", poPriceL:"Precio", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Envio", poTaxL:"Impuesto", poOtherL:"Otro", poGrandL:"Total", poSaveBtn:"Guardar OC", poBackList:"Volver a la lista", poSavedMsg:"OC guardada", poNeedVendor:"Ingrese un proveedor primero",
       rdHint:"Solicite muestras e ingredientes aqui. Cada solicitud genera un PDF y se sigue como Pendiente hasta que llega.",
       rdPending:"Pendiente", rdDone:"Recibido", rdAdd:"+ Nueva solicitud", rdSave:"Guardar solicitud", rdCancel:"Cancelar",
@@ -264,7 +264,7 @@
       shlDate:"Data", shlType:"Tipo", shlRecipient:"Destinatario", shlAddress:"Endereco", shlCarrier:"Transportadora", shlTracking:"No de Rastreio", shlReqBy:"Solicitado por", shlCost:"Custo", shlContents:"O que foi enviado", shlStatus:"Status", shlNotes:"Notas", shlSave:"Registrar envio", shlArchive:"Registro de envios", shlNone:"Nenhum envio ainda. Adicione um acima.", shlSearchP:"Buscar destinatario, rastreio, tipo...", shlLogged:"Envio registrado", shlConfirmDel:"Excluir este registro de envio?",
       recvlog:"Registro de Recebimento", rlHint:"Registre cada envio recebido e anexe a papelada (romaneio, BOL, fatura). Escolha a transportadora e o no PRO/rastreio vira um link.",
       rlDrop:"Anexar papelada  (PDF, Excel, imagem, Word)", rlDate:"Data", rlSupplier:"Fornecedor", rlPO:"No OC", rlCarrier:"Transportadora", rlTracking:"Rastreio / PRO", rlContents:"O que foi recebido", rlQtyOrd:"Qtd pedida", rlQtyRec:"Qtd recebida", rlShortOver:"Falta/Sobra", rlCondition:"Condicao", rlReceivedBy:"Recebido por", rlNotes:"Notas", rlDoc:"Doc", rlSave:"Registrar recebimento", rlArchive:"Registro de recebimento", rlNone:"Nenhum recebimento ainda. Adicione um acima.", rlSearchP:"Buscar fornecedor, OC, transportadora...", rlLogged:"Recebimento registrado", rlConfirmDel:"Excluir este registro de recebimento?",
-      editRow:"Editar", editingRow:"Editando esta entrada - altere o necessario e salve.", saveChanges:"Salvar alteracoes", saved:"Salvo", rlKeepDoc:"o arquivo atual e mantido a menos que anexe um novo",
+      editRow:"Editar", editingRow:"Editando esta entrada - altere o necessario e salve.", saveChanges:"Salvar alteracoes", saved:"Salvo", rlKeepDoc:"o arquivo atual e mantido a menos que anexe um novo", sortHint:"Clique para ordenar",
       poCreate:"+ Criar OC", poNewTitle:"Nova Ordem de Compra", poVendorAddr:"Endereco do fornecedor", poVendorEmail:"Email do fornecedor", poVendorPhone:"Telefone do fornecedor", poShipTo:"Enviar para", poPreparedBy:"Preparado por", poAddLine:"+ Adicionar linha", poItemNo:"Item #", poDesc:"Descricao", poQtyL:"Qtd", poPriceL:"Preco", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Frete", poTaxL:"Imposto", poOtherL:"Outro", poGrandL:"Total", poSaveBtn:"Salvar OC", poBackList:"Voltar a lista", poSavedMsg:"OC salva", poNeedVendor:"Insira um fornecedor primeiro",
       rdHint:"Solicite amostras e ingredientes aqui. Cada solicitacao gera um PDF e e acompanhada como Pendente ate chegar.",
       rdPending:"Pendente", rdDone:"Recebido", rdAdd:"+ Nova solicitacao", rdSave:"Salvar solicitacao", rdCancel:"Cancelar",
@@ -727,7 +727,7 @@
         '<td class="right"><b>' + fmt(oh) + '</b> ' + i.unit + '</td><td class="right muted">' + fmt(i.reorder) + '</td>' +
         '<td class="right"><b>' + fmt(suggestQty(i)) + '</b> ' + i.unit + '</td><td>' + supCell + draft + '</td></tr>';
     };
-    const stockTable = arr => '<table><thead><tr><th>' + L("item") + '</th><th class="right">' + L("alOnhand") + '</th><th class="right">' + L("alReorder") +
+    const stockTable = arr => '<table class="sortable"><thead><tr><th>' + L("item") + '</th><th class="right">' + L("alOnhand") + '</th><th class="right">' + L("alReorder") +
       '</th><th class="right">' + L("alSuggest") + '</th><th>' + L("alSupplier") + '</th></tr></thead><tbody>' + arr.map(stockRow).join("") + '</tbody></table>';
     const lotRow = l => {
       const du = daysUntil(l.exp); const exp = (l.exp || "").slice(0, 10);
@@ -746,7 +746,7 @@
     if (out.length) html += '<div class="card"><h2 class="sub2">' + L("alOut") + ' (' + out.length + ')</h2>' + stockTable(out) + '</div>';
     if (low.length) html += '<div class="card"><h2 class="sub2">' + L("alLow") + ' (' + low.length + ')</h2>' + stockTable(low) + '</div>';
     if (lots.length) html += '<div class="card"><h2 class="sub2">' + L("alExp") + ' (' + lots.length + ')</h2>' +
-      '<table><thead><tr><th>' + L("slProduct") + '</th><th>' + L("slLot") + '</th><th>' + L("slExp") + '</th><th>' + L("alDays") + '</th><th></th></tr></thead><tbody>' + lots.map(lotRow).join("") + '</tbody></table></div>';
+      '<table class="sortable"><thead><tr><th>' + L("slProduct") + '</th><th>' + L("slLot") + '</th><th>' + L("slExp") + '</th><th>' + L("alDays") + '</th><th data-nosort></th></tr></thead><tbody>' + lots.map(lotRow).join("") + '</tbody></table></div>';
     return html;
   }
   function viewAdjust() {
@@ -820,7 +820,7 @@
       '<p class="hint">' + L("ordersHint") + '</p>' + toggle +
       '<div class="ordlegend"><span class="lg lg-ship"></span>' + L("oLegShip") + '<span class="lg lg-ip"></span>' + L("oLegIP") + '<span class="lg lg-issue"></span>' + L("oLegIssue") + '</div>' + addForm +
       '<input id="ordSearch" autocomplete="off" style="margin-top:10px" oninput="UI.ordSearch(this.value)" placeholder="' + L("ordSearchP") + '">' +
-      '<table style="margin-top:10px"><thead><tr><th>' + L("oCustomer") + '</th><th>' + L("oPO") + '</th><th>' + L("oShipDate") + '</th><th>' + L("oTracking") + '</th><th>' + L("oNotes") + '</th><th></th></tr></thead><tbody id="ordBody">' + rows + '</tbody></table></div>';
+      '<table class="sortable" style="margin-top:10px"><thead><tr><th>' + L("oCustomer") + '</th><th>' + L("oPO") + '</th><th>' + L("oShipDate") + '</th><th>' + L("oTracking") + '</th><th>' + L("oNotes") + '</th><th data-nosort></th></tr></thead><tbody id="ordBody">' + rows + '</tbody></table></div>';
   }
   // ---------- R&D / sample requests ----------
   function rdIsReceived(r) { return (r.status || "Pending") === "Received"; }
@@ -870,7 +870,7 @@
       '<button class="primary sm" onclick="UI.rdAddToggle()">' + L("rdAdd") + '</button></div>' +
       '<p class="hint">' + L("rdHint") + '</p>' + toggle + addForm +
       '<input id="rdSearch" autocomplete="off" style="margin-top:10px" oninput="UI.rdSearch(this.value)" placeholder="' + L("rdSearchP") + '">' +
-      '<table style="margin-top:10px"><thead><tr><th>' + L("rdCompany") + '</th><th>' + L("rdItems") + '</th><th>' + L("rdNeed") + '</th><th>' + L("status") + '</th><th></th></tr></thead><tbody id="rdBody">' + rows + '</tbody></table></div>';
+      '<table class="sortable" style="margin-top:10px"><thead><tr><th>' + L("rdCompany") + '</th><th>' + L("rdItems") + '</th><th>' + L("rdNeed") + '</th><th>' + L("status") + '</th><th data-nosort></th></tr></thead><tbody id="rdBody">' + rows + '</tbody></table></div>';
   }
   function rdDoc(r) {
     const jsPDFctor = window.jspdf && window.jspdf.jsPDF; if (!jsPDFctor) return null;
@@ -1318,8 +1318,8 @@
       '<button class="primary" onclick="UI.addSeasLot()">' + L("addLot") + '</button> ' +
       '<button class="ghost" style="margin-top:14px" onclick="UI.quarExpired()">' + L("quarantineExpired") + '</button>' +
       '<h2 class="sub2" style="margin-top:18px">' + L("seasLotsTitle") + '</h2>' +
-      '<table><thead><tr><th>' + L("slProduct") + '</th><th>' + L("slLot") + '</th><th>' + L("slMfr") + '</th><th>' + L("slExp") +
-      '</th><th class="right">' + L("slWeight") + '</th><th>' + L("status") + '</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>';
+      '<table class="sortable"><thead><tr><th>' + L("slProduct") + '</th><th>' + L("slLot") + '</th><th>' + L("slMfr") + '</th><th>' + L("slExp") +
+      '</th><th class="right">' + L("slWeight") + '</th><th>' + L("status") + '</th><th data-nosort></th></tr></thead><tbody>' + body + '</tbody></table></div>';
   }
   function viewSeed() {
     const seeds = DB.items().filter(i => /^SEED-/.test(i.id));
@@ -1346,8 +1346,8 @@
       '<div style="align-self:end">' + opField("Adriana") + '</div></div>' +
       '<button class="primary" onclick="UI.addSeedLot()">' + L("addLot") + '</button>' +
       '<h2 class="sub2" style="margin-top:18px">' + L("seedLotsTitle") + '</h2>' +
-      '<table><thead><tr><th>' + L("sdType") + '</th><th>' + L("slLot") + '</th><th>' + L("supplier") + '</th><th>' + L("sdReceived") +
-      '</th><th class="right">' + L("slWeight") + '</th><th>' + L("status") + '</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>';
+      '<table class="sortable"><thead><tr><th>' + L("sdType") + '</th><th>' + L("slLot") + '</th><th>' + L("supplier") + '</th><th>' + L("sdReceived") +
+      '</th><th class="right">' + L("slWeight") + '</th><th>' + L("status") + '</th><th data-nosort></th></tr></thead><tbody>' + body + '</tbody></table></div>';
   }
   function viewSkus() {
     const all = (window.SMACKIN_SKUS || []);
@@ -1358,7 +1358,7 @@
     return '<div class="card"><h2>' + L("skus") + '</h2><p class="hint">' + L("skusHint") + '</p>' +
       '<input id="sku-q" style="width:100%;max-width:420px" oninput="UI.skuFilter(this.value)" placeholder="' + L("skuSearchP") + '" autocomplete="off">' +
       '<div class="muted sm" id="sku-count" style="margin:8px 0">' + all.length + ' ' + L("skuCount") + '</div>' +
-      '<table><thead><tr><th>' + L("skuCode") + '</th><th>' + L("skuTitle") + '</th><th class="right">' + L("skuBags") + '</th><th>' + L("skuComp") + '</th></tr></thead><tbody id="sku-body">' + rows + '</tbody></table></div>';
+      '<table class="sortable"><thead><tr><th>' + L("skuCode") + '</th><th>' + L("skuTitle") + '</th><th class="right">' + L("skuBags") + '</th><th>' + L("skuComp") + '</th></tr></thead><tbody id="sku-body">' + rows + '</tbody></table></div>';
   }
   function viewStockBuild() {
     const oh = DB.stockBuild ? DB.stockBuild() : {};
@@ -1700,7 +1700,7 @@
       opField() +
       '<button class="primary" onclick="UI.consume(\'' + dept + '\')">' + L("conBtn") + '</button>' +
       '<h3 class="sub2" style="margin-top:16px">' + L("conRecent") + '</h3>' +
-      '<table><thead><tr><th>' + L("conMat") + '</th><th class="right">' + L("qty") + '</th><th>' + L("conLot") + '</th><th>' + L("conBy") + '</th><th>' + L("conWhen") + '</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+      '<table class="sortable"><thead><tr><th>' + L("conMat") + '</th><th class="right">' + L("qty") + '</th><th>' + L("conLot") + '</th><th>' + L("conBy") + '</th><th>' + L("conWhen") + '</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
   }
   function viewMixing() { return viewConsume("Mixing", "mixing"); }
   function viewPmac() { return viewConsume("P-Mac", "pmac"); }
@@ -1756,7 +1756,7 @@
     const rows = DB.log().length ? DB.log().map(e =>
       '<tr><td class="muted sm">' + (e.t ? new Date(e.t).toLocaleString() : "") + '</td><td><b>' + e.a + '</b></td><td>' + e.d + '</td><td>' + e.u + '</td></tr>').join("")
       : '<tr><td colspan="4" class="muted">' + L("noLog") + '</td></tr>';
-    return '<div class="card"><h2>' + L("log") + '</h2><table><thead><tr><th>' + L("when") + '</th><th>' + L("action") + '</th><th>' + L("detail") + '</th><th>' + L("operator") + '</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+    return '<div class="card"><h2>' + L("log") + '</h2><table class="sortable"><thead><tr><th>' + L("when") + '</th><th>' + L("action") + '</th><th>' + L("detail") + '</th><th>' + L("operator") + '</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
   }
   function viewSettings() {
     const c = DB.config || {};
@@ -2205,6 +2205,35 @@
     $("nav").innerHTML = html;
   }
   window.UI_go = go;
+  // Generic client-side sort for any <table class="sortable">: click a header to sort rows by
+  // that column (numeric-aware). Mark a header with data-nosort to skip it (e.g. action columns).
+  function sortTableByCol(tbl, idx) {
+    const tb = tbl.tBodies[0]; if (!tb) return;
+    const rows = Array.from(tb.rows).filter(r => r.cells.length > idx && !r.hasAttribute("data-nosort"));
+    if (rows.length < 2) return;
+    const dir = (tbl.__sortCol === idx) ? -(tbl.__sortDir || 1) : 1;
+    tbl.__sortCol = idx; tbl.__sortDir = dir;
+    const val = r => {
+      const c = r.cells[idx]; if (!c) return "";
+      const t = (c.innerText || "").trim();
+      const n = parseFloat(t.replace(/[$,%]/g, ""));
+      return (t !== "" && !isNaN(n) && /^[-+$]?[\d,]+(\.\d+)?%?$/.test(t)) ? n : t.toLowerCase();
+    };
+    rows.sort((a, b) => { const x = val(a), y = val(b); return (x < y ? -1 : x > y ? 1 : 0) * dir; });
+    rows.forEach(r => tb.appendChild(r));
+    const hs = tbl.tHead ? tbl.tHead.rows[0].cells : [];
+    Array.from(hs).forEach((th, i) => { const old = th.querySelector(".gsar"); if (old) old.remove(); if (i === idx) { const s = document.createElement("span"); s.className = "gsar"; s.textContent = dir > 0 ? " ▲" : " ▼"; th.appendChild(s); } });
+  }
+  function wireSortable() {
+    document.querySelectorAll("#view table.sortable").forEach(tbl => {
+      if (!tbl.tHead) return;
+      Array.from(tbl.tHead.rows[0].cells).forEach((th, idx) => {
+        if (th.hasAttribute("data-nosort")) return;
+        th.style.cursor = "pointer"; th.title = th.title || L("sortHint");
+        th.onclick = () => sortTableByCol(tbl, idx);
+      });
+    });
+  }
   function render() {
     renderNav(); refreshDatalists();
     const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
@@ -2213,6 +2242,7 @@
     $("view").innerHTML = (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
     $("modeBadge").className = "modebadge " + (DB.mode === "cloud" ? "ok" : "low");
+    try { wireSortable(); } catch (e) {}
   }
 
   // ---------- boot ----------
