@@ -305,12 +305,7 @@
     { cat:"Others", sub:"Retail", name:"VP-54 Bucket (54 bags, 1.5oz)", goal:120, unit:"units" },
     { cat:"Others", sub:"E-Com", name:"VP-12 Variety Pack (12 bags, 4oz)", goal:400, unit:"units" },
     { cat:"Others", sub:"E-Com", name:"VP-36 Variety Pack (36 bags, 1.5oz)", goal:400, unit:"units" },
-    { cat:"Others", sub:"12-Pack Boxes", name:"Backyard BBQ", goal:100, unit:"boxes" },
-    { cat:"Others", sub:"12-Pack Boxes", name:"Dill Pickle", goal:100, unit:"boxes" },
-    { cat:"Others", sub:"12-Pack Boxes", name:"Cinnamon Churro", goal:100, unit:"boxes" },
-    { cat:"Others", sub:"12-Pack Boxes", name:"Garlic Parmesan", goal:100, unit:"boxes" },
-    { cat:"Others", sub:"12-Pack Boxes", name:"Cracked Pepper", goal:100, unit:"boxes" },
-    { cat:"Others", sub:"12-Pack Boxes", name:"Ranch", goal:100, unit:"boxes" }
+    { cat:"Others", sub:"12-Pack Boxes", name:"All 12-packs", goal:800, unit:"boxes" }
   ].map(x => Object.assign(x, { key: (x.cat + "|" + (x.sub || "") + "|" + x.name).replace(/[^A-Za-z0-9]+/g, "_") }));
   const SB_CATS = ["Target", "Walmart", "Master Case", "Others"];
   // ---- People directory (LIVE roster pulled from Gusto 2026-07-10; non-sensitive only, NO pay) ----
@@ -1170,7 +1165,7 @@
     const oh = DB.stockBuild ? DB.stockBuild() : {};
     const val = k => Number((oh[k] || {}).on_hand) || 0;
     let gGoal = 0, gOn = 0;
-    SB_ITEMS.forEach(i => { gGoal += i.goal; gOn += Math.min(val(i.key), i.goal); });
+    SB_ITEMS.forEach(i => { gGoal += i.goal; gOn += val(i.key); });
     const gPct = gGoal ? Math.round(gOn / gGoal * 100) : 0;
     const gToBuild = Math.max(gGoal - gOn, 0);
     const summary = '<div class="card"><h2>' + L("stockbuild") + '</h2><p class="hint">' + L("sbHint") + '</p>' +
@@ -1193,7 +1188,7 @@
     const thead = '<thead><tr><th>' + L("item") + '</th><th class="right">' + L("sbGoal") + '</th><th class="right">' + L("sbOnHand") + '</th><th class="right">' + L("sbToBuild") + '</th><th class="right">' + L("sbPallets") + '</th><th>' + L("sbDone") + '</th></tr></thead>';
     const catBlock = cat => {
       const items = SB_ITEMS.filter(i => i.cat === cat);
-      let cGoal = 0, cOn = 0; items.forEach(i => { cGoal += i.goal; cOn += Math.min(val(i.key), i.goal); });
+      let cGoal = 0, cOn = 0; items.forEach(i => { cGoal += i.goal; cOn += val(i.key); });
       const cPct = cGoal ? Math.round(cOn / cGoal * 100) : 0;
       const head = '<div class="suprow"><h2 class="sub2" style="margin:0">' + esc(cat) + '</h2><span class="muted sm">' + fmt(cOn) + ' / ' + fmt(cGoal) + ' (' + cPct + '%)</span></div>';
       let body = "";
