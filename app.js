@@ -82,7 +82,7 @@
       shlDate:"Date", shlType:"Type", shlRecipient:"Recipient", shlAddress:"Address", shlCarrier:"Carrier", shlTracking:"Tracking #", shlReqBy:"Requested by", shlCost:"Cost", shlContents:"What was sent", shlStatus:"Status", shlNotes:"Notes", shlSave:"Log shipment", shlArchive:"Shipment log", shlNone:"No shipments logged yet. Add one above.", shlSearchP:"Search recipient, tracking, type...", shlLogged:"Shipment logged", shlConfirmDel:"Delete this shipment entry?",
       recvlog:"Receiving Log", rlHint:"Log every inbound shipment and attach the paperwork (packing slip, BOL, invoice). Pick the carrier and the PRO/tracking # becomes a clickable link.",
       rlDrop:"Attach paperwork  (PDF, Excel, image, Word)", rlDate:"Date", rlSupplier:"Supplier", rlPO:"PO #", rlCarrier:"Carrier", rlTracking:"Tracking / PRO #", rlContents:"What was received", rlQtyOrd:"Qty ordered", rlQtyRec:"Qty received", rlShortOver:"Short/Over", rlCondition:"Condition", rlReceivedBy:"Received by", rlNotes:"Notes", rlDoc:"Doc", rlSave:"Log receipt", rlArchive:"Receiving log", rlNone:"No receipts logged yet. Add one above.", rlSearchP:"Search supplier, PO, carrier...", rlLogged:"Receipt logged", rlConfirmDel:"Delete this receiving entry?",
-      editRow:"Edit", editingRow:"Editing this entry - change what you need, then Save.", saveChanges:"Save changes", saved:"Saved", rlKeepDoc:"current file kept unless you attach a new one", sortHint:"Click to sort",
+      editRow:"Edit", editingRow:"Editing this entry - change what you need, then Save.", saveChanges:"Save changes", saved:"Saved", rlKeepDoc:"current file kept unless you attach a new one", sortHint:"Click to sort", dlPdf:"Download PDF", dlExcel:"Download Excel",
       poCreate:"+ Create PO", poNewTitle:"New Purchase Order", poVendorAddr:"Vendor address", poVendorEmail:"Vendor email", poVendorPhone:"Vendor phone", poShipTo:"Ship to", poPreparedBy:"Prepared by", poAddLine:"+ Add line", poItemNo:"Item #", poDesc:"Description", poQtyL:"Qty", poPriceL:"Price", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Shipping", poTaxL:"Tax", poOtherL:"Other", poGrandL:"Total", poSaveBtn:"Save PO", poBackList:"Back to list", poSavedMsg:"PO saved", poNeedVendor:"Enter a vendor first",
       rdHint:"Request samples and ingredients here. Each request generates a PDF and is tracked Pending until it arrives.",
       rdPending:"Pending", rdDone:"Received", rdAdd:"+ New request", rdSave:"Save request", rdCancel:"Cancel",
@@ -173,7 +173,7 @@
       shlDate:"Fecha", shlType:"Tipo", shlRecipient:"Destinatario", shlAddress:"Direccion", shlCarrier:"Transportista", shlTracking:"# de Rastreo", shlReqBy:"Solicitado por", shlCost:"Costo", shlContents:"Que se envio", shlStatus:"Estado", shlNotes:"Notas", shlSave:"Registrar envio", shlArchive:"Registro de envios", shlNone:"Aun no hay envios. Agregue uno arriba.", shlSearchP:"Buscar destinatario, rastreo, tipo...", shlLogged:"Envio registrado", shlConfirmDel:"Eliminar este registro de envio?",
       recvlog:"Registro de Recibo", rlHint:"Registre cada envio entrante y adjunte el papeleo (remito, BOL, factura). Elija el transportista y el # PRO/rastreo se vuelve un enlace.",
       rlDrop:"Adjuntar papeleo  (PDF, Excel, imagen, Word)", rlDate:"Fecha", rlSupplier:"Proveedor", rlPO:"# OC", rlCarrier:"Transportista", rlTracking:"# Rastreo / PRO", rlContents:"Que se recibio", rlQtyOrd:"Cant. pedida", rlQtyRec:"Cant. recibida", rlShortOver:"Faltante/Sobrante", rlCondition:"Condicion", rlReceivedBy:"Recibido por", rlNotes:"Notas", rlDoc:"Doc", rlSave:"Registrar recibo", rlArchive:"Registro de recibo", rlNone:"Aun no hay recibos. Agregue uno arriba.", rlSearchP:"Buscar proveedor, OC, transportista...", rlLogged:"Recibo registrado", rlConfirmDel:"Eliminar este registro de recibo?",
-      editRow:"Editar", editingRow:"Editando esta entrada - cambie lo necesario y guarde.", saveChanges:"Guardar cambios", saved:"Guardado", rlKeepDoc:"se conserva el archivo actual salvo que adjunte uno nuevo", sortHint:"Clic para ordenar",
+      editRow:"Editar", editingRow:"Editando esta entrada - cambie lo necesario y guarde.", saveChanges:"Guardar cambios", saved:"Guardado", rlKeepDoc:"se conserva el archivo actual salvo que adjunte uno nuevo", sortHint:"Clic para ordenar", dlPdf:"Descargar PDF", dlExcel:"Descargar Excel",
       poCreate:"+ Crear OC", poNewTitle:"Nueva Orden de Compra", poVendorAddr:"Direccion del proveedor", poVendorEmail:"Correo del proveedor", poVendorPhone:"Telefono del proveedor", poShipTo:"Enviar a", poPreparedBy:"Preparado por", poAddLine:"+ Agregar linea", poItemNo:"Articulo #", poDesc:"Descripcion", poQtyL:"Cant", poPriceL:"Precio", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Envio", poTaxL:"Impuesto", poOtherL:"Otro", poGrandL:"Total", poSaveBtn:"Guardar OC", poBackList:"Volver a la lista", poSavedMsg:"OC guardada", poNeedVendor:"Ingrese un proveedor primero",
       rdHint:"Solicite muestras e ingredientes aqui. Cada solicitud genera un PDF y se sigue como Pendiente hasta que llega.",
       rdPending:"Pendiente", rdDone:"Recibido", rdAdd:"+ Nueva solicitud", rdSave:"Guardar solicitud", rdCancel:"Cancelar",
@@ -264,7 +264,7 @@
       shlDate:"Data", shlType:"Tipo", shlRecipient:"Destinatario", shlAddress:"Endereco", shlCarrier:"Transportadora", shlTracking:"No de Rastreio", shlReqBy:"Solicitado por", shlCost:"Custo", shlContents:"O que foi enviado", shlStatus:"Status", shlNotes:"Notas", shlSave:"Registrar envio", shlArchive:"Registro de envios", shlNone:"Nenhum envio ainda. Adicione um acima.", shlSearchP:"Buscar destinatario, rastreio, tipo...", shlLogged:"Envio registrado", shlConfirmDel:"Excluir este registro de envio?",
       recvlog:"Registro de Recebimento", rlHint:"Registre cada envio recebido e anexe a papelada (romaneio, BOL, fatura). Escolha a transportadora e o no PRO/rastreio vira um link.",
       rlDrop:"Anexar papelada  (PDF, Excel, imagem, Word)", rlDate:"Data", rlSupplier:"Fornecedor", rlPO:"No OC", rlCarrier:"Transportadora", rlTracking:"Rastreio / PRO", rlContents:"O que foi recebido", rlQtyOrd:"Qtd pedida", rlQtyRec:"Qtd recebida", rlShortOver:"Falta/Sobra", rlCondition:"Condicao", rlReceivedBy:"Recebido por", rlNotes:"Notas", rlDoc:"Doc", rlSave:"Registrar recebimento", rlArchive:"Registro de recebimento", rlNone:"Nenhum recebimento ainda. Adicione um acima.", rlSearchP:"Buscar fornecedor, OC, transportadora...", rlLogged:"Recebimento registrado", rlConfirmDel:"Excluir este registro de recebimento?",
-      editRow:"Editar", editingRow:"Editando esta entrada - altere o necessario e salve.", saveChanges:"Salvar alteracoes", saved:"Salvo", rlKeepDoc:"o arquivo atual e mantido a menos que anexe um novo", sortHint:"Clique para ordenar",
+      editRow:"Editar", editingRow:"Editando esta entrada - altere o necessario e salve.", saveChanges:"Salvar alteracoes", saved:"Salvo", rlKeepDoc:"o arquivo atual e mantido a menos que anexe um novo", sortHint:"Clique para ordenar", dlPdf:"Baixar PDF", dlExcel:"Baixar Excel",
       poCreate:"+ Criar OC", poNewTitle:"Nova Ordem de Compra", poVendorAddr:"Endereco do fornecedor", poVendorEmail:"Email do fornecedor", poVendorPhone:"Telefone do fornecedor", poShipTo:"Enviar para", poPreparedBy:"Preparado por", poAddLine:"+ Adicionar linha", poItemNo:"Item #", poDesc:"Descricao", poQtyL:"Qtd", poPriceL:"Preco", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Frete", poTaxL:"Imposto", poOtherL:"Outro", poGrandL:"Total", poSaveBtn:"Salvar OC", poBackList:"Voltar a lista", poSavedMsg:"OC salva", poNeedVendor:"Insira um fornecedor primeiro",
       rdHint:"Solicite amostras e ingredientes aqui. Cada solicitacao gera um PDF e e acompanhada como Pendente ate chegar.",
       rdPending:"Pendente", rdDone:"Recebido", rdAdd:"+ Nova solicitacao", rdSave:"Salvar solicitacao", rdCancel:"Cancelar",
@@ -1380,7 +1380,8 @@
       '<div class="kpis"><div class="kpi"><div class="n">' + fmt(gGoal) + '</div><div class="l">' + L("sbTotalGoal") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(gOn) + '</div><div class="l">' + L("sbOnHand") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(gToBuild) + '</div><div class="l">' + L("sbToBuild") + '</div></div>' +
-      '<div class="kpi"><div class="n">' + gPct + '%</div><div class="l">' + L("sbComplete") + '</div></div></div></div>';
+      '<div class="kpi"><div class="n">' + gPct + '%</div><div class="l">' + L("sbComplete") + '</div></div></div>' +
+      '<div style="margin-top:12px"><button class="ghost sm" onclick="UI.sbReportPdf()">&#11015; ' + L("dlPdf") + '</button> <button class="ghost sm" onclick="UI.sbReportXlsx()">&#11015; ' + L("dlExcel") + '</button></div></div>';
     const barCls = p => p >= 100 ? "ok" : p >= 50 ? "low" : "out";
     const rowHtml = i => {
       const on = val(i.key), goal = i.goal, toBuild = Math.max(goal - on, 0);
@@ -1903,6 +1904,37 @@
       document.querySelectorAll('#sku-body tr').forEach(tr => { const show = !q || (tr.getAttribute('data-h') || "").indexOf(q) >= 0; tr.style.display = show ? "" : "none"; if (show) n++; });
       const c = document.getElementById('sku-count'); if (c) c.textContent = n + ' ' + L("skuCount"); },
     async sbSet(key, v) { await DB.setStockBuildOnHand(key, parseFloat(v) || 0, opVal()); toast(L("sbSaved") + " ✓"); render(); },
+    _sbReportRows() {
+      const oh = DB.stockBuild ? DB.stockBuild() : {};
+      const val = k => Number((oh[k] || {}).on_hand) || 0;
+      const rows = SB_ITEMS.map(i => { const on = val(i.key); return { cat: i.cat, name: i.name, goal: i.goal, on: on, tb: Math.max(i.goal - on, 0), pct: i.goal ? Math.round(on / i.goal * 100) : 0 }; });
+      const g = rows.reduce((s, r) => s + r.goal, 0), o = rows.reduce((s, r) => s + r.on, 0);
+      return { rows, g, o, tb: Math.max(g - o, 0), pct: g ? Math.round(o / g * 100) : 0, date: new Date().toISOString().slice(0, 10) };
+    },
+    sbReportXlsx() {
+      const R = UI._sbReportRows();
+      const aoa = [["Smackin' Snacks - Stock Build Report", R.date], [], ["Category", "Item", "Goal", "On hand", "To build", "% Complete"]];
+      R.rows.forEach(r => aoa.push([r.cat, r.name, r.goal, r.on, r.tb, r.pct + "%"]));
+      aoa.push(["TOTAL", "", R.g, R.o, R.tb, R.pct + "%"]);
+      const ws = XLSX.utils.aoa_to_sheet(aoa); ws["!cols"] = [{ wch: 14 }, { wch: 30 }, { wch: 8 }, { wch: 9 }, { wch: 9 }, { wch: 11 }];
+      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Stock Build");
+      XLSX.writeFile(wb, "Stock Build Report " + R.date + ".xlsx");
+    },
+    sbReportPdf() {
+      const R = UI._sbReportRows(); const doc = new window.jspdf.jsPDF({ unit: "pt", format: "letter" });
+      let y = 46; doc.setFont("helvetica", "bold"); doc.setFontSize(15); doc.text("Smackin' Snacks - Stock Build Report", 40, y);
+      y += 16; doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(90); doc.text(R.date, 40, y);
+      y += 22; doc.setTextColor(20); doc.setFontSize(11); doc.setFont("helvetica", "bold");
+      doc.text("Goal " + fmt(R.g) + "     On hand " + fmt(R.o) + "     To build " + fmt(R.tb) + "     " + R.pct + "% complete", 40, y);
+      y += 20; doc.setFontSize(8.5);
+      const cols = [[40, "Category"], [130, "Item"], [400, "Goal"], [450, "On hand"], [510, "To build"]];
+      cols.forEach(c => doc.text(c[1], c[0], y)); y += 4; doc.setDrawColor(200); doc.line(40, y, 560, y); y += 12;
+      doc.setFont("helvetica", "normal");
+      R.rows.forEach(r => { if (y > 745) { doc.addPage(); y = 46; } doc.text(String(r.cat), 40, y); doc.text(String(r.name).slice(0, 46), 130, y); doc.text(String(r.goal), 400, y); doc.text(String(r.on), 450, y); doc.text(String(r.tb), 510, y); y += 13; });
+      y += 4; doc.setDrawColor(200); doc.line(40, y, 560, y); y += 13; doc.setFont("helvetica", "bold");
+      doc.text("TOTAL", 40, y); doc.text(String(R.g), 400, y); doc.text(String(R.o), 450, y); doc.text(String(R.tb), 510, y);
+      doc.save("Stock Build Report " + R.date + ".pdf");
+    },
     // ---- QA hold review ----
     async qaConvert(itemId, zone) {
       const it = DB.items().find(i => i.id === itemId); if (!it) return;
