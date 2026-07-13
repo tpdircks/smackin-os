@@ -1087,7 +1087,7 @@
   function viewSeed() {
     const seeds = DB.items().filter(i => /^SEED-/.test(i.id));
     const opts = seeds.map(i => '<option value="' + i.id + '|' + esc(i.name) + '">' + esc(i.name) + '</option>').join("");
-    const sups = (DB.recvSuppliers ? DB.recvSuppliers() : ["Sunrich", "Other"]);
+    const sups = (Array.isArray(DB.recvSuppliers) && DB.recvSuppliers.length ? DB.recvSuppliers : ["Sunrich", "Other"]);
     const supOpts = sups.map(s => '<option' + (s === "Sunrich" ? " selected" : "") + '>' + esc(s) + '</option>').join("");
     const lots = (DB.seedLots ? DB.seedLots() : []).slice().sort((a, b) => (a.received_at || a.created_at || "") < (b.received_at || b.created_at || "") ? 1 : -1);
     const body = lots.length ? lots.map(l => {
