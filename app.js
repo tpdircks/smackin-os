@@ -83,6 +83,8 @@
       recvlog:"Receiving Log", rlHint:"Log every inbound shipment and attach the paperwork (packing slip, BOL, invoice). Pick the carrier and the PRO/tracking # becomes a clickable link.",
       rlDrop:"Attach paperwork  (PDF, Excel, image, Word)", rlDate:"Date", rlSupplier:"Supplier", rlPO:"PO #", rlCarrier:"Carrier", rlTracking:"Tracking / PRO #", rlContents:"What was received", rlQtyOrd:"Qty ordered", rlQtyRec:"Qty received", rlShortOver:"Short/Over", rlCondition:"Condition", rlReceivedBy:"Received by", rlNotes:"Notes", rlDoc:"Doc", rlSave:"Log receipt", rlArchive:"Receiving log", rlNone:"No receipts logged yet. Add one above.", rlSearchP:"Search supplier, PO, carrier...", rlLogged:"Receipt logged", rlConfirmDel:"Delete this receiving entry?",
       editRow:"Edit", editingRow:"Editing this entry - change what you need, then Save.", saveChanges:"Save changes", saved:"Saved", rlKeepDoc:"current file kept unless you attach a new one", sortHint:"Click to sort", dlPdf:"Download PDF", dlExcel:"Download Excel",
+      finbags:"Finished Bags", fbHint:"Bags that have come off P-Mac and are staged in storage. Inventory counts these; Fulfillment counts the master-case output.", fb4oz:"4oz bags", fb15oz:"1.5oz bags", fbTotal:"All bags",
+      pmacout:"Bag Output", pmoHint:"Log finished bags as they come off P-Mac into storage. Pick what's running + the count (a sensor will automate this later).", pmoRunning:"Now running (flavor + size)", pmoQty:"Bags", pmoAdd:"Log bags out", pmoNone:"No bags logged yet this session.",
       poCreate:"+ Create PO", poNewTitle:"New Purchase Order", poVendorAddr:"Vendor address", poVendorEmail:"Vendor email", poVendorPhone:"Vendor phone", poShipTo:"Ship to", poPreparedBy:"Prepared by", poAddLine:"+ Add line", poItemNo:"Item #", poDesc:"Description", poQtyL:"Qty", poPriceL:"Price", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Shipping", poTaxL:"Tax", poOtherL:"Other", poGrandL:"Total", poSaveBtn:"Save PO", poBackList:"Back to list", poSavedMsg:"PO saved", poNeedVendor:"Enter a vendor first",
       rdHint:"Request samples and ingredients here. Each request generates a PDF and is tracked Pending until it arrives.",
       rdPending:"Pending", rdDone:"Received", rdAdd:"+ New request", rdSave:"Save request", rdCancel:"Cancel",
@@ -282,7 +284,7 @@
   let lang = "en"; const L = k => (T[lang][k] !== undefined ? T[lang][k] : k);
   let active = "home"; let catFilter = "all";
   let purchMode = "list"; let purchSup = null; let receivingPOid = null;
-  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","stockbuild","seasoning","seed","skus","mixing","pmac","count","locations","purchasing","supplierpos","people","labels","log","settings"];
+  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","stockbuild","seasoning","seed","skus","mixing","pmac","count","locations","finbags","pmacout","purchasing","supplierpos","people","labels","log","settings"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -433,11 +435,11 @@
   const NAV_GROUPS = [
     { key:"", items:["home","alerts"] },
     { key:"grpReceiving", items:["receive","recvlog","returns","qa"] },
-    { key:"grpInventory", items:["dash","adjust","count","move","locations","seasoning","seed","skus","labels"] },
+    { key:"grpInventory", items:["dash","adjust","count","move","locations","finbags","seasoning","seed","skus","labels"] },
     { key:"grpProduction", items:["produce","retailprod","stockbuild","orders","orderdocs"] },
     { key:"grpShipping", items:["shiplog"] },
     { key:"grpMixing", items:["mixing"] },
-    { key:"grpPmac", items:["pmac"] },
+    { key:"grpPmac", items:["pmac","pmacout"] },
     { key:"grpPurchasing", items:["purchasing","supplierpos"] },
     { key:"grpRnd", items:["rd"] },
     { key:"grpHr", items:["people"] },
@@ -447,7 +449,7 @@
     returns:"\u{21A9}\u{FE0F}", qa:"\u{1F7E5}", orders:"\u{1F9FE}", purchasing:"\u{1F6D2}", rd:"\u{1F9EA}",
     move:"\u{1F500}", produce:"\u{1F3ED}", seasoning:"\u{1F9C2}", count:"\u{1F522}", locations:"\u{1F4CD}",
     labels:"\u{1F3F7}\u{FE0F}", log:"\u{1F4DC}", settings:"\u{2699}\u{FE0F}", supplierpos:"\u{1F4C4}",
-    mixing:"\u{1F963}", pmac:"\u{1F527}", people:"\u{1F465}", orderdocs:"\u{1F4C1}", seed:"\u{1F33B}", skus:"\u{1F6CD}\u{FE0F}", stockbuild:"\u{1F3D7}\u{FE0F}", retailprod:"\u{1F4E6}", shiplog:"\u{1F69A}", recvlog:"\u{1F4E5}" };
+    mixing:"\u{1F963}", pmac:"\u{1F527}", people:"\u{1F465}", orderdocs:"\u{1F4C1}", seed:"\u{1F33B}", skus:"\u{1F6CD}\u{FE0F}", stockbuild:"\u{1F3D7}\u{FE0F}", retailprod:"\u{1F4E6}", shiplog:"\u{1F69A}", recvlog:"\u{1F4E5}", finbags:"\u{1F6CD}\u{FE0F}", pmacout:"\u{1F9FA}" };
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
   let spoSort = { key: "created", dir: -1 };  // Supplier POs table sort (v25)
   let spoView = "list";   // Supplier POs: "list" | "create" (Excel-style PO entry form)
@@ -496,6 +498,8 @@
   let recvSortKey = "recv_date", recvSortDir = -1;  // Receiving Log sort state
   let recvFile = null;                        // Receiving Log paperwork upload state
   let shipEditId = null, recvEditId = null, orderEditId = null, seasEditId = null, seedEditId = null;  // inline-edit: id of record being edited
+  let pmoSel = "", pmoRecent = [];   // P-Mac bag-output: selected bag item + recent adds this session
+  const BAG_STAGE = "PACKOUT";       // finished bags stage here when they come off P-Mac
   let locSel = null;      // selected slot/zone code in the rack map
   // Physically blocked rack slots (numbering unchanged; not storable) - Troy's real floor
   const BLOCKED_SLOTS = new Set(["A-23-L1","B-15-L4","B-16-L4","B-17-L4","B-21-L4","B-22-L4","C-21-L4","C-22-L4","D-17-L4","D-18-L4","D-23-L4","D-24-L4"]);
@@ -1712,6 +1716,39 @@
       '<h3 class="sub2" style="margin-top:16px">' + L("conRecent") + '</h3>' +
       '<table class="sortable"><thead><tr><th>' + L("conMat") + '</th><th class="right">' + L("qty") + '</th><th>' + L("conLot") + '</th><th>' + L("conBy") + '</th><th>' + L("conWhen") + '</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
   }
+  function viewFinishedBags() {
+    const b4 = DB.items().filter(i => i.category === "bag4");
+    const b15 = DB.items().filter(i => i.category === "bag15");
+    const flavors = Array.from(new Set(b4.concat(b15).map(i => i.flavor))).sort();
+    const on = (arr, fl) => { const it = arr.find(i => i.flavor === fl); return it ? DB.onHand(it.id) : null; };
+    let t4 = 0, t15 = 0;
+    const rows = flavors.map(fl => {
+      const o4 = on(b4, fl), o15 = on(b15, fl);
+      if (o4) t4 += o4; if (o15) t15 += o15;
+      return '<tr><td><b>' + esc(fl) + '</b></td><td class="right">' + (o4 != null ? fmt(o4) : "&mdash;") + '</td><td class="right">' + (o15 != null ? fmt(o15) : "&mdash;") + '</td></tr>';
+    }).join("");
+    return '<div class="card"><h2>' + L("finbags") + '</h2><p class="hint">' + L("fbHint") + '</p>' +
+      '<div class="kpis"><div class="kpi"><div class="n">' + fmt(t4) + '</div><div class="l">' + L("fb4oz") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(t15) + '</div><div class="l">' + L("fb15oz") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(t4 + t15) + '</div><div class="l">' + L("fbTotal") + '</div></div></div>' +
+      '<table class="sortable" style="margin-top:12px"><thead><tr><th>' + L("hFlavor") + '</th><th class="right">' + L("fb4oz") + '</th><th class="right">' + L("fb15oz") + '</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+  function viewPmacOut() {
+    const bags = DB.items().filter(i => i.category === "bag4" || i.category === "bag15");
+    const opts = bags.map(i => '<option value="' + i.id + '"' + (i.id === pmoSel ? " selected" : "") + '>' + esc(i.name) + '</option>').join("");
+    const sel = bags.find(i => i.id === pmoSel);
+    const selBlock = sel ? '<div class="rpsel"><div class="rpname"><b>' + esc(sel.name) + '</b></div><div class="muted sm">' + L("rpCurrent") + ': <b>' + fmt(DB.onHand(sel.id)) + '</b> ' + esc(sel.unit) + '</div></div>' : "";
+    const recent = pmoRecent.length
+      ? '<table><thead><tr><th>' + L("item") + '</th><th class="right">' + L("qty") + '</th><th>' + L("when") + '</th></tr></thead><tbody>' +
+        pmoRecent.slice(0, 12).map(r => '<tr><td>' + esc(r.name) + '</td><td class="right"><b>+' + fmt(r.qty) + '</b></td><td class="muted sm">' + esc(r.t) + '</td></tr>').join("") + '</tbody></table>'
+      : '<p class="muted">' + L("pmoNone") + '</p>';
+    return '<div class="card"><h2>' + L("pmacout") + '</h2><p class="hint">' + L("pmoHint") + '</p>' +
+      '<div class="row"><div><label>' + L("pmoRunning") + '</label><select id="pmo-sel" onchange="UI.pmoPick(this.value)"><option value="">' + L("pmoRunning") + '</option>' + opts + '</select></div>' +
+      '<div><label>' + L("pmoQty") + '</label><input id="pmo-qty" type="number" min="0" placeholder="' + L("enter") + '"></div>' +
+      '<div style="align-self:end">' + opField("Jesus") + '</div></div>' + selBlock +
+      '<button class="primary" onclick="UI.pmoAdd()">' + L("pmoAdd") + '</button>' +
+      '<h2 class="sub2" style="margin-top:18px">' + L("rpRecent") + '</h2>' + recent + '</div>';
+  }
   function viewMixing() { return viewConsume("Mixing", "mixing"); }
   function viewPmac() { return viewConsume("P-Mac", "pmac"); }
   function tenureStr(s) {
@@ -1904,6 +1941,19 @@
       document.querySelectorAll('#sku-body tr').forEach(tr => { const show = !q || (tr.getAttribute('data-h') || "").indexOf(q) >= 0; tr.style.display = show ? "" : "none"; if (show) n++; });
       const c = document.getElementById('sku-count'); if (c) c.textContent = n + ' ' + L("skuCount"); },
     async sbSet(key, v) { await DB.setStockBuildOnHand(key, parseFloat(v) || 0, opVal()); toast(L("sbSaved") + " ✓"); render(); },
+    // ---- P-Mac finished-bags output ----
+    pmoPick(v) { pmoSel = v; render(); },
+    async pmoAdd() {
+      const it = DB.items().find(i => i.id === pmoSel);
+      const q = parseFloat(($("pmo-qty") || {}).value);
+      if (!it) return toast(L("pmoRunning"));
+      if (!(q > 0)) return toast(L("enter"));
+      const r = await DB.receive(it, q, "", opVal(), { location: BAG_STAGE });
+      if (r && r.ok === false) return toast(r.msg || "error");
+      pmoRecent.unshift({ name: it.name, qty: q, t: new Date().toLocaleTimeString() });
+      const qEl = $("pmo-qty"); if (qEl) qEl.value = "";
+      toast("+" + fmt(q) + " " + it.unit + " ✓"); render();
+    },
     _sbReportRows() {
       const oh = DB.stockBuild ? DB.stockBuild() : {};
       const val = k => Number((oh[k] || {}).on_hand) || 0;
@@ -2286,7 +2336,7 @@
   function render() {
     renderNav(); refreshDatalists();
     const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
-      move: viewMove, produce: viewProduce, retailprod: viewRetailProd, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, mixing: viewMixing, pmac: viewPmac,
+      move: viewMove, produce: viewProduce, retailprod: viewRetailProd, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, labels: viewLabels, log: viewLog, settings: viewSettings };
     $("view").innerHTML = (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
