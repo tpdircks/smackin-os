@@ -2476,6 +2476,18 @@
         th.onclick = () => sortTableByCol(tbl, idx);
       });
     });
+    // Add a visible "sortable" affordance to EVERY clickable header (any sort mechanism):
+    // a faint up/down glyph so users know the column can be sorted, plus a hover class.
+    document.querySelectorAll("#view thead th").forEach(th => {
+      if (th.hasAttribute("data-nosort")) return;
+      const clickable = th.onclick || th.getAttribute("onclick");
+      if (!clickable) return;
+      th.classList.add("th-sortable");
+      const active = th.querySelector(".sortar") || th.querySelector(".gsar");
+      const idle = th.querySelector(".sortglyph");
+      if (active) { if (idle) idle.remove(); }
+      else if (!idle) { const g = document.createElement("span"); g.className = "sortglyph"; g.textContent = "↕"; th.appendChild(g); }
+    });
   }
   function render() {
     renderNav(); refreshDatalists();
