@@ -252,6 +252,14 @@ th.sortable:hover{color:var(--orange,#F26B21)}
 .spodroplabel{display:block;border:2px dashed var(--blue);background:#f6faff;border-radius:10px;padding:26px 16px;text-align:center;color:var(--navy);font-weight:700;cursor:pointer;font-size:15px}
 .spodroplabel:hover{background:#eef5fc}
 a.order.sm{padding:2px 7px;font-size:11px}
+/* Supplier PO: clickable PO# link + full-detail view */
+.polink{color:var(--blue);text-decoration:underline;cursor:pointer;font-weight:700}
+.polink:hover{color:var(--orange)}
+.poinfo{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px 18px;margin:10px 0 14px}
+.podf{display:flex;flex-direction:column;border-bottom:1px solid var(--line);padding-bottom:6px}
+.podl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:#8a97a8}
+.podv{font-size:14px;color:var(--navy);word-break:break-word}
+.podoc{margin-top:6px}
 .rolesel{width:100%;padding:8px 10px;margin:2px 0 6px;font-size:13px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--navy);font-weight:700}
 .rolesel option{color:#222}
 .colctl{margin:0 0 10px}
