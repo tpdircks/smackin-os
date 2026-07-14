@@ -12,7 +12,7 @@ window.DB = (function () {
   const seed = window.SMACKIN_SEED;
   let mode = "local";
   let sb = null;                  // supabase client
-  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [] };
+  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [] };
   let subscribers = [];
 
   function emit() { subscribers.forEach(fn => { try { fn(); } catch (e) {} }); }
@@ -52,7 +52,7 @@ window.DB = (function () {
       try { raw = localStorage.getItem(KEY); } catch (e) {}
       if (raw) { cache = JSON.parse(raw); if (!cache.pos) cache.pos = []; if (!cache.log) cache.log = []; if (!cache.seasLots) cache.seasLots = []; if (!cache.orders) cache.orders = []; if (!cache.rdRequests) cache.rdRequests = []; if (!cache.supplierPos) cache.supplierPos = []; if (!cache.orderDocs) cache.orderDocs = []; if (!cache.consumption) cache.consumption = []; if (!cache.seedLots) cache.seedLots = []; if (!cache.stockBuild) cache.stockBuild = {}; if (!cache.shippingLog) cache.shippingLog = []; if (!cache.receivingLog) cache.receivingLog = []; if (!cache.improvements) cache.improvements = []; return; }
       const s = seed.build();
-      cache = { items: s.items, suppliers: s.suppliers, stock: s.stock, pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [] };
+      cache = { items: s.items, suppliers: s.suppliers, stock: s.stock, pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [] };
       this.save();
     },
     save() { try { localStorage.setItem(KEY, JSON.stringify(cache)); } catch (e) {} },
@@ -70,7 +70,7 @@ window.DB = (function () {
   // ---------- CLOUD backend (Supabase) ----------
   const cloud = {
     async loadAll() {
-      const [it, su, st, lg, po, pl, sl, od, rd, sp, odc, con, sdl, sbd, slog, rlog, imp] = await Promise.all([
+      const [it, su, st, lg, po, pl, sl, od, rd, sp, odc, con, sdl, sbd, slog, rlog, imp, pday, ppal] = await Promise.all([
         sb.from("items").select("*"),
         sb.from("suppliers").select("*"),
         sb.from("stock").select("*"),
@@ -87,7 +87,9 @@ window.DB = (function () {
         sb.from("stock_build").select("*").limit(500),
         sb.from("shipping_log").select("*").order("ship_date", { ascending: false }).limit(3000),
         sb.from("receiving_log").select("*").order("recv_date", { ascending: false }).limit(3000),
-        sb.from("improvements").select("*").order("created_at", { ascending: false }).limit(3000)
+        sb.from("improvements").select("*").order("created_at", { ascending: false }).limit(3000),
+        sb.from("production_days").select("*").limit(2000),
+        sb.from("production_pallets").select("*").order("created_at", { ascending: false }).limit(5000)
       ]);
       cache.items = it.data || [];
       cache.suppliers = su.data || [];
@@ -153,6 +155,8 @@ window.DB = (function () {
         impact: r.impact, opened_date: r.opened_date, completed_date: r.completed_date,
         entered_by: r.entered_by, created_at: r.created_at
       }));
+      cache.prodDays = (pday && pday.data ? pday.data : []);
+      cache.prodPallets = (ppal && ppal.data ? ppal.data : []);
       const lines = pl.data || [];
       cache.pos = (po.data || []).map(p => ({
         id: p.id, supplier: p.supplier, status: p.status, created: p.created_at,
@@ -520,6 +524,53 @@ window.DB = (function () {
       if (it) Object.assign(it, clean);
       local.addLog(logEntry); local.save();
     }
+    emit();
+    return { ok: true };
+  }
+
+  // ---------- Daily Production log (Retail pallet log + per-day header) ----------
+  function prodDay(date, channel) { channel = channel || "retail"; return (cache.prodDays || []).find(d => d.prod_date === date && (d.channel || "retail") === channel) || null; }
+  function prodPallets(date) { return (cache.prodPallets || []).filter(p => p.prod_date === date); }
+  async function setProdDay(date, channel, patch, op) {
+    channel = channel || "retail";
+    const row = Object.assign({ prod_date: date, channel: channel }, patch, { updated_by: op || "", updated_at: new Date().toISOString() });
+    ["counter_start", "counter_end", "pallets_used"].forEach(k => { if (row[k] === "" || row[k] == null) delete row[k]; else row[k] = Number(row[k]); });
+    if (mode === "cloud") {
+      const r = await sb.from("production_days").upsert(row, { onConflict: "prod_date,channel" }).select();
+      if (r && r.error) return { ok: false, msg: r.error.message || "save failed" };
+      const cur = prodDay(date, channel);
+      if (cur) Object.assign(cur, row); else cache.prodDays.push(row);
+    } else {
+      const cur = prodDay(date, channel);
+      if (cur) Object.assign(cur, row); else cache.prodDays.push(row);
+      local.save();
+    }
+    emit();
+    return { ok: true };
+  }
+  async function addProdPallet(rec, op) {
+    const row = {
+      prod_date: rec.prod_date, channel: rec.channel || "retail", line: rec.line || "",
+      flavor_code: rec.flavor_code || "", cases: Number(rec.cases) || 0,
+      log_time: rec.log_time || "", notes: rec.notes || "", entered_by: op || "",
+      created_at: new Date().toISOString()
+    };
+    const logEntry = { a: "Pallet logged", d: row.flavor_code + " " + row.cases + " cases (L" + row.line + ")", u: op, t: row.created_at };
+    if (mode === "cloud") {
+      const r = await sb.from("production_pallets").insert(row).select();
+      if (r && r.error) return { ok: false, msg: r.error.message || "save failed" };
+      if (r.data && r.data[0]) row.id = r.data[0].id;
+      cache.prodPallets.unshift(row); await cloud.addLog(logEntry);
+    } else {
+      row.id = "pp_" + Date.now(); cache.prodPallets.unshift(row); local.addLog(logEntry); local.save();
+    }
+    emit();
+    return { ok: true };
+  }
+  async function deleteProdPallet(id, op) {
+    if (mode === "cloud") { await sb.from("production_pallets").delete().eq("id", id); }
+    cache.prodPallets = (cache.prodPallets || []).filter(p => String(p.id) !== String(id));
+    if (mode !== "cloud") local.save();
     emit();
     return { ok: true };
   }
@@ -994,6 +1045,7 @@ window.DB = (function () {
     items, suppliers, stock, log, itemByCode, onHand, atLoc,
     purchaseOrders, supplierName, createPO, setPOStatus, deletePO, receivePO,
     receive, move, adjust, adjustTotal, produce, resetDemo, updateItemFields,
+    prodDay, prodPallets, setProdDay, addProdPallet, deleteProdPallet,
     returnStock, seasLots, addSeasLot, setSeasLotStatus, updateSeasLot, quarantineExpiredSeas,
     seedLots, addSeedLot, setSeedLotStatus, updateSeedLot,
     stockBuild, setStockBuildOnHand,

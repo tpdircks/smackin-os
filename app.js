@@ -25,7 +25,7 @@
       moveHint:"Scan item, pick from and to (slot, WIP, Pack-Out, Shipping...).",
       produceHint:"Record finished 4oz bags off the line. Adds bags, consumes film + seasoning.",
       countHint:"Cycle count: scan item + slot, enter the counted quantity; the system adjusts.",
-      locHint:"What is in each location now.", purchHint:"Reorder alerts plus full purchase orders.",purchBuyList:"Buy List",purchSetup:"Reorder Setup",rsHint:"Set a reorder point and preferred supplier for each item. Items with both set will trigger on the Buy List when stock runs low.",rsNoSup:"— none —",rsNeeds:"Needs setup",rsReady:"Ready",rsReorderPt:"Reorder point",rsNeedShort:"need setup",rsSaved:"Saved",rsSearchP:"Search items...",
+      locHint:"What is in each location now.", purchHint:"Reorder alerts plus full purchase orders.",purchBuyList:"Buy List",purchSetup:"Reorder Setup",rsHint:"Set a reorder point and preferred supplier for each item. Items with both set will trigger on the Buy List when stock runs low.",rsNoSup:"— none —",rsNeeds:"Needs setup",rsReady:"Ready",rsReorderPt:"Reorder point",rsNeedShort:"need setup",rsSaved:"Saved",rsSearchP:"Search items...",prodlog:"Daily Production",bags:"Bags",plLot:"Lot #",plShiftLead:"Shift Lead",plCounter:"Metal Detector Box Counter",plStart:"Start Count",plEnd:"End Count",plBoxes:"Boxes Produced",plCounterHint:"Record the counter BEFORE and AFTER the shift. Do not reset it.",plAddPallet:"Add Pallet",plLine:"Line",plFlavor:"Flavor",plCases:"Cases",plNotes:"Notes / Customer",plAdd:"Add to log",plAdded:"Pallet added",plNeedCases:"Enter case count",plLog:"Pallet Log",plPalletsUsed:"Pallets Used",plNoPallets:"No pallets logged yet today.",plSummary:"Daily Summary by Flavor",plCode:"Code",plCasesLogged:"Cases Logged",plVariance:"Variance (counter - log)",
       locMap:"Rack map", locList:"List", locFloor:"Floor plan", locOccupied:"Occupied", locEmpty:"Empty", locBlocked:"Blocked", locSection:"Section", locDocks:"Dock doors", locZones:"Zones & staging", locClickHint:"Top-down view of the racks. Green = occupied, click any slot to see what is stored there. Bay 01 is at the dock end.", locNothing:"Nothing stored in this slot.", locSlot:"Slot", locBaysUsed:"slots used", locOfficeEnd:"office end", locFarEnd:"far end",
       locFloorNote:"Top-down map of the building - every place product is stored or moves through. Click a rack section or staging zone to see its contents. Section A/B/C/D letters are a best guess - tell me which physical run is which and I will lock them in.", locStorage:"Storage (racking)", locTransfer:"Production & transfer areas", locStaging:"Staging & work zones",
       reorderSug:"Reorder suggestions", purchOrders:"Purchase orders", newPO:"New PO", createDraft:"Create draft PO",
@@ -123,7 +123,7 @@
       moveHint:"Escanee articulo, elija desde y hacia (slot, WIP, Empaque, Embarque...).",
       produceHint:"Registre bolsas 4oz de la linea. Suma bolsas, consume film + sazon.",
       countHint:"Conteo ciclico: escanee articulo + slot, ingrese la cantidad contada.",
-      locHint:"Lo que hay en cada ubicacion ahora.", purchHint:"Alertas de reorden mas ordenes de compra.",purchBuyList:"Lista de compra",purchSetup:"Config. de reorden",rsHint:"Defina un punto de reorden y proveedor preferido para cada articulo. Los articulos con ambos configurados apareceran en la Lista de compra cuando el stock baje.",rsNoSup:"— ninguno —",rsNeeds:"Falta config.",rsReady:"Listo",rsReorderPt:"Punto de reorden",rsNeedShort:"por configurar",rsSaved:"Guardado",rsSearchP:"Buscar articulos...",
+      locHint:"Lo que hay en cada ubicacion ahora.", purchHint:"Alertas de reorden mas ordenes de compra.",purchBuyList:"Lista de compra",purchSetup:"Config. de reorden",rsHint:"Defina un punto de reorden y proveedor preferido para cada articulo. Los articulos con ambos configurados apareceran en la Lista de compra cuando el stock baje.",rsNoSup:"— ninguno —",rsNeeds:"Falta config.",rsReady:"Listo",rsReorderPt:"Punto de reorden",rsNeedShort:"por configurar",rsSaved:"Guardado",rsSearchP:"Buscar articulos...",prodlog:"Produccion Diaria",bags:"Bolsas",plLot:"Lote #",plShiftLead:"Lider de Turno",plCounter:"Contador de Cajas - Detector de Metales",plStart:"Conteo Inicial",plEnd:"Conteo Final",plBoxes:"Cajas Producidas",plCounterHint:"Registrar el contador ANTES y DESPUES del turno. No reiniciar.",plAddPallet:"Agregar Paleta",plLine:"Linea",plFlavor:"Sabor",plCases:"Cajas",plNotes:"Notas / Cliente",plAdd:"Agregar al registro",plAdded:"Paleta agregada",plNeedCases:"Ingrese cantidad de cajas",plLog:"Registro de Paletas",plPalletsUsed:"Paletas Usadas",plNoPallets:"Aun no hay paletas registradas hoy.",plSummary:"Resumen Diario por Sabor",plCode:"Codigo",plCasesLogged:"Cajas Registradas",plVariance:"Variacion (contador - registro)",
       locMap:"Mapa de racks", locList:"Lista", locFloor:"Plano", locOccupied:"Ocupado", locEmpty:"Vacio", locBlocked:"Bloqueado", locSection:"Seccion", locDocks:"Puertas de muelle", locZones:"Zonas y staging", locClickHint:"Vista superior de los racks. Verde = ocupado, haga clic en un slot para ver que hay. La bahia 01 esta junto a los muelles.", locNothing:"Nada almacenado en este slot.", locSlot:"Slot", locBaysUsed:"slots usados", locOfficeEnd:"lado oficina", locFarEnd:"lado lejano",
       locFloorNote:"Plano superior del edificio - cada lugar donde se almacena o mueve producto. Haga clic en una seccion de rack o zona para ver su contenido. Las letras A/B/C/D son un estimado - digame que fila fisica es cual y las fijo.", locStorage:"Almacenamiento (racks)", locTransfer:"Areas de produccion y transferencia", locStaging:"Zonas de staging y trabajo",
       reorderSug:"Sugerencias de reorden", purchOrders:"Ordenes de compra", newPO:"Nueva orden", createDraft:"Crear borrador",
@@ -221,7 +221,7 @@
       moveHint:"Escaneie item, escolha de e para (slot, WIP, Empacotamento, Expedicao...).",
       produceHint:"Registre sacos 4oz da linha. Adiciona sacos, consome filme + tempero.",
       countHint:"Contagem ciclica: escaneie item + slot, digite a quantidade contada.",
-      locHint:"O que ha em cada local agora.", purchHint:"Alertas de reposicao mais ordens de compra.",purchBuyList:"Lista de compras",purchSetup:"Config. de reposicao",rsHint:"Defina um ponto de reposicao e fornecedor preferido para cada item. Itens com ambos configurados aparecerao na Lista de compras quando o estoque baixar.",rsNoSup:"— nenhum —",rsNeeds:"Falta config.",rsReady:"Pronto",rsReorderPt:"Ponto de reposicao",rsNeedShort:"a configurar",rsSaved:"Salvo",rsSearchP:"Buscar itens...",
+      locHint:"O que ha em cada local agora.", purchHint:"Alertas de reposicao mais ordens de compra.",purchBuyList:"Lista de compras",purchSetup:"Config. de reposicao",rsHint:"Defina um ponto de reposicao e fornecedor preferido para cada item. Itens com ambos configurados aparecerao na Lista de compras quando o estoque baixar.",rsNoSup:"— nenhum —",rsNeeds:"Falta config.",rsReady:"Pronto",rsReorderPt:"Ponto de reposicao",rsNeedShort:"a configurar",rsSaved:"Salvo",rsSearchP:"Buscar itens...",prodlog:"Producao Diaria",bags:"Bolsas",plLot:"Lote #",plShiftLead:"Lider de Turno",plCounter:"Contador de Caixas - Detector de Metais",plStart:"Contagem Inicial",plEnd:"Contagem Final",plBoxes:"Caixas Produzidas",plCounterHint:"Registrar o contador ANTES e DEPOIS do turno. Nao reiniciar.",plAddPallet:"Adicionar Palete",plLine:"Linha",plFlavor:"Sabor",plCases:"Caixas",plNotes:"Notas / Cliente",plAdd:"Adicionar ao registro",plAdded:"Palete adicionado",plNeedCases:"Insira a quantidade de caixas",plLog:"Registro de Paletes",plPalletsUsed:"Paletes Usados",plNoPallets:"Nenhum palete registrado hoje ainda.",plSummary:"Resumo Diario por Sabor",plCode:"Codigo",plCasesLogged:"Caixas Registradas",plVariance:"Variacao (contador - registro)",
       locMap:"Mapa de racks", locList:"Lista", locFloor:"Planta", locOccupied:"Ocupado", locEmpty:"Vazio", locBlocked:"Bloqueado", locSection:"Secao", locDocks:"Portas de doca", locZones:"Zonas e staging", locClickHint:"Vista de cima dos racks. Verde = ocupado, clique em um slot para ver o que ha. A baia 01 fica junto as docas.", locNothing:"Nada armazenado neste slot.", locSlot:"Slot", locBaysUsed:"slots usados", locOfficeEnd:"lado escritorio", locFarEnd:"lado distante",
       locFloorNote:"Planta de cima do predio - cada lugar onde produto e armazenado ou movimentado. Clique em uma secao de rack ou zona para ver o conteudo. As letras A/B/C/D sao um palpite - diga qual fila fisica e qual e eu fixo.", locStorage:"Armazenamento (racks)", locTransfer:"Areas de producao e transferencia", locStaging:"Zonas de staging e trabalho",
       reorderSug:"Sugestoes de reposicao", purchOrders:"Ordens de compra", newPO:"Nova ordem", createDraft:"Criar rascunho",
@@ -305,7 +305,23 @@
   let purchMode = "list"; let purchSup = null; let receivingPOid = null;
   let purchView = "buy";  // Purchasing: "buy" (Buy List + POs) | "setup" (reorder-point/supplier config)
   let purchSetupCat = "all";  // Reorder-setup category filter
-  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","stockbuild","seasoning","seed","skus","mixing","pmac","count","locations","finbags","pmacout","purchasing","supplierpos","people","improve","labels","log","settings"];
+  let plDate = null;  // Daily Production log: selected date (defaults to today)
+  // Retail production flavor codes (mirrors Jesus's "Flavors codes" sheet); bpc = bags per case/box
+  const PROD_FLAVORS = [
+    { code: "S01", name: "OG Original", bpc: 72 }, { code: "S02", name: "Cinnamon Churro", bpc: 72 },
+    { code: "S03", name: "Backyard BBQ", bpc: 72 }, { code: "S04", name: "Garlic Parmesan", bpc: 72 },
+    { code: "S05", name: "Dill Pickle", bpc: 72 }, { code: "S06", name: "Cracked Pepper", bpc: 72 },
+    { code: "S07", name: "Cheddar Jalapeno", bpc: 72 }, { code: "S08", name: "Ranch", bpc: 72 },
+    { code: "S09", name: "Maple Brown Sugar", bpc: 72 }, { code: "S10", name: "Lemon Pepper", bpc: 72 },
+    { code: "S11", name: "Sour Cream & Onion", bpc: 72 },
+    { code: "WM-S02", name: "WM Cinnamon Churro (12pk)", bpc: 12 }, { code: "WM-S03", name: "WM Backyard BBQ (12pk)", bpc: 12 },
+    { code: "WM-S04", name: "WM Garlic Parmesan (12pk)", bpc: 12 }, { code: "WM-S07", name: "WM Cheddar Jalapeno (12pk)", bpc: 12 },
+    { code: "DISP", name: "Display (4VAR 48pc)", bpc: 48 }, { code: "BUCK", name: "Bucket (1.5oz)", bpc: 54 },
+    { code: "CAMO", name: "Camo Bucket", bpc: 54 }, { code: "L20", name: "Pizza", bpc: 72 },
+    { code: "L21", name: "Cheeseburger", bpc: 72 }, { code: "L38", name: "Salt & Vinegar", bpc: 72 }, { code: "L34", name: "Honey BBQ", bpc: 72 }
+  ];
+  const PROD_FMAP = {}; PROD_FLAVORS.forEach(f => PROD_FMAP[f.code] = f);
+  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","seasoning","seed","skus","mixing","pmac","count","locations","finbags","pmacout","purchasing","supplierpos","people","improve","labels","log","settings"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -477,7 +493,7 @@
     { key:"", items:["home","alerts"] },
     { key:"grpReceiving", items:["receive","recvlog","returns","qa"] },
     { key:"grpInventory", items:["dash","adjust","count","move","locations","finbags","seasoning","seed","skus","labels"] },
-    { key:"grpProduction", items:["produce","retailprod","ecomprod","stockbuild","orders","orderdocs"] },
+    { key:"grpProduction", items:["produce","retailprod","ecomprod","prodlog","stockbuild","orders","orderdocs"] },
     { key:"grpShipping", items:["shiplog"] },
     { key:"grpMixing", items:["mixing"] },
     { key:"grpPmac", items:["pmac","pmacout"] },
@@ -492,7 +508,7 @@
     home:"home", dash:"layout-dashboard", alerts:"bell", adjust:"sliders-horizontal",
     receive:"package-plus", recvlog:"clipboard-list", putaway:"package-check", returns:"rotate-ccw",
     orders:"receipt", orderdocs:"folder", shiplog:"truck", rd:"flask-conical", qa:"shield-alert",
-    move:"arrow-left-right", produce:"factory", retailprod:"package", ecomprod:"laptop", stockbuild:"layers",
+    move:"arrow-left-right", produce:"factory", retailprod:"package", ecomprod:"laptop", prodlog:"clipboard-list", stockbuild:"layers",
     seasoning:"flame", seed:"sprout", skus:"barcode", finbags:"shopping-bag", pmacout:"package-open",
     mixing:"cooking-pot", pmac:"wrench", count:"clipboard-check", locations:"map-pin",
     purchasing:"shopping-cart", supplierpos:"file-text", people:"users", labels:"tag",
@@ -1515,6 +1531,62 @@
     };
     return summary + SB_CATS.map(catBlock).join("");
   }
+  function viewProdLog() {
+    const today = new Date().toISOString().slice(0, 10);
+    const date = plDate || today;
+    const day = DB.prodDay(date, "retail") || {};
+    const pallets = DB.prodPallets(date).filter(p => (p.channel || "retail") === "retail");
+    const cs = Number(day.counter_start) || 0, ce = Number(day.counter_end) || 0;
+    const boxes = ce > cs ? ce - cs : 0;
+    const av = v => (v == null || v === "") ? "" : v;
+    // pallet log rows (newest first as stored; number ascending by original order)
+    const ordered = pallets.slice().reverse();
+    const palRows = ordered.length ? ordered.map((p, idx) => {
+      const f = PROD_FMAP[p.flavor_code];
+      return '<tr><td>' + (idx + 1) + '</td><td>L' + esc(p.line) + '</td><td><b>' + esc(p.flavor_code) + '</b>' + (f ? ' <span class="muted sm">' + esc(f.name) + '</span>' : '') + '</td>' +
+        '<td class="right"><b>' + fmt(p.cases) + '</b></td><td class="sm muted">' + esc(p.log_time || '') + '</td><td class="sm">' + esc(p.notes || '') + '</td>' +
+        '<td><button class="ghost sm danger" onclick="UI.plDel(\'' + p.id + '\')">&#10005;</button></td></tr>';
+    }).join('') : '<tr><td colspan="7" class="muted">' + L("plNoPallets") + '</td></tr>';
+    // flavor summary (auto)
+    const sum = {}; let totCases = 0, totBags = 0;
+    pallets.forEach(p => { const c = p.flavor_code || '?'; sum[c] = (sum[c] || 0) + (Number(p.cases) || 0); });
+    Object.keys(sum).forEach(c => { totCases += sum[c]; totBags += sum[c] * (PROD_FMAP[c] ? PROD_FMAP[c].bpc : 72); });
+    const sumRows = Object.keys(sum).sort().map(c => {
+      const f = PROD_FMAP[c]; const bags = sum[c] * (f ? f.bpc : 72);
+      return '<tr><td>' + esc(c) + '</td><td>' + (f ? esc(f.name) : '') + '</td><td class="right"><b>' + fmt(sum[c]) + '</b></td><td class="right muted">' + fmt(bags) + '</td></tr>';
+    }).join('') || '<tr><td colspan="4" class="muted">&mdash;</td></tr>';
+    const variance = boxes - totCases;
+    const fopts = PROD_FLAVORS.map(f => '<option value="' + f.code + '">' + f.code + ' — ' + esc(f.name) + '</option>').join('');
+    // header card: date / lot / shift lead / counter
+    const header = '<div class="card"><div class="suprow"><h2 style="flex:1;margin:0">' + L("prodlog") + '</h2>' +
+      '<input type="date" value="' + date + '" onchange="UI.plDate(this.value)" style="width:auto"></div>' +
+      '<div class="row"><div><label>' + L("plLot") + '</label><input value="' + esc(av(day.lot)) + '" onchange="UI.plDay(\'lot\',this.value)"></div>' +
+      '<div><label>' + L("plShiftLead") + '</label><input value="' + esc(day.shift_lead != null && day.shift_lead !== "" ? day.shift_lead : "Jesus Arias") + '" onchange="UI.plDay(\'shift_lead\',this.value)"></div></div>' +
+      '<h3 class="sub2" style="margin-top:14px">\u{1F4E6} ' + L("plCounter") + '</h3>' +
+      '<div class="row"><div><label>' + L("plStart") + '</label><input type="number" value="' + esc(av(day.counter_start)) + '" onchange="UI.plDay(\'counter_start\',this.value)"></div>' +
+      '<div><label>' + L("plEnd") + '</label><input type="number" value="' + esc(av(day.counter_end)) + '" onchange="UI.plDay(\'counter_end\',this.value)"></div>' +
+      '<div><label>' + L("plBoxes") + '</label><input value="' + fmt(boxes) + '" disabled></div></div>' +
+      '<p class="hint" style="margin:8px 0 0">' + L("plCounterHint") + '</p></div>';
+    // add-pallet card
+    const addCard = '<div class="card"><h2 class="sub2">' + L("plAddPallet") + '</h2>' +
+      '<div class="row"><div><label>' + L("plLine") + '</label><select id="pl-line"><option value="1">1</option><option value="2">2</option></select></div>' +
+      '<div style="flex:2"><label>' + L("plFlavor") + '</label><select id="pl-flavor">' + fopts + '</select></div>' +
+      '<div><label>' + L("plCases") + '</label><input id="pl-cases" type="number" min="0" inputmode="numeric"></div>' +
+      '<div><label>' + L("plNotes") + '</label><input id="pl-notes" value="MASTER"></div></div>' +
+      '<button class="primary" onclick="UI.plAdd()">' + L("plAdd") + '</button></div>';
+    // pallet log + summary
+    const logCard = '<div class="card"><div class="suprow"><h2 class="sub2" style="flex:1;margin:0">' + L("plLog") + ' (' + pallets.length + ')</h2>' +
+      '<span class="muted sm">' + L("plPalletsUsed") + ': <input type="number" value="' + esc(av(day.pallets_used)) + '" onchange="UI.plDay(\'pallets_used\',this.value)" style="width:70px;display:inline-block;padding:5px"></span></div>' +
+      '<table><thead><tr><th>#</th><th>' + L("plLine") + '</th><th>' + L("plFlavor") + '</th><th class="right">' + L("plCases") + '</th><th>' + L("when") + '</th><th>' + L("plNotes") + '</th><th></th></tr></thead><tbody>' + palRows + '</tbody></table></div>';
+    const varClass = variance === 0 ? "ok" : "low";
+    const sumCard = '<div class="card"><h2 class="sub2">' + L("plSummary") + '</h2>' +
+      '<table class="sortable"><thead><tr><th>' + L("plCode") + '</th><th>' + L("hFlavor") + '</th><th class="right">' + L("plCases") + '</th><th class="right">' + L("bags") + '</th></tr></thead><tbody>' + sumRows +
+      '<tr><td colspan="2"><b>' + L("total") + '</b></td><td class="right"><b>' + fmt(totCases) + '</b></td><td class="right"><b>' + fmt(totBags) + '</b></td></tr></tbody></table>' +
+      '<div class="kpis" style="margin-top:12px"><div class="kpi"><div class="n">' + fmt(boxes) + '</div><div class="l">' + L("plBoxes") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(totCases) + '</div><div class="l">' + L("plCasesLogged") + '</div></div>' +
+      '<div class="kpi ' + (variance !== 0 ? "alert" : "") + '"><div class="n">' + fmt(variance) + '</div><div class="l">' + L("plVariance") + '</div></div></div></div>';
+    return header + addCard + logCard + sumCard;
+  }
   function isEcomItem(i) { return i.cat === "Others" && i.sub === "E-Com"; }
   function productionEntry(channel) {
     const isEcom = channel === "ecom";
@@ -2451,6 +2523,19 @@
     // ---- Purchase Orders ----
     poNew(sk) { purchSup = sk || null; purchMode = "new"; active = "purchasing"; closeDrawer(); render(); },
     purchView(v) { purchView = v; render(); },
+    plDate(v) { plDate = v; render(); },
+    async plDay(field, val) { const today = new Date().toISOString().slice(0, 10); const r = await DB.setProdDay(plDate || today, "retail", { [field]: val }, opVal()); if (r && r.ok === false) return toast(r.msg || "error"); render(); },
+    async plAdd() {
+      const g = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
+      const cases = g("pl-cases"); if (!cases || Number(cases) <= 0) return toast(L("plNeedCases"));
+      const now = new Date(); const hh = now.getHours(), mm = String(now.getMinutes()).padStart(2, "0");
+      const t = ((hh % 12) || 12) + ":" + mm + " " + (hh < 12 ? "AM" : "PM");
+      const today = new Date().toISOString().slice(0, 10);
+      const rec = { prod_date: plDate || today, channel: "retail", line: g("pl-line") || "1", flavor_code: g("pl-flavor"), cases: cases, log_time: t, notes: g("pl-notes") };
+      const r = await DB.addProdPallet(rec, opVal()); if (r && r.ok === false) return toast(r.msg || "error");
+      toast(L("plAdded")); render();
+    },
+    async plDel(id) { const r = await DB.deleteProdPallet(id, opVal()); if (r && r.ok === false) return toast(r.msg || "error"); render(); },
     purchSetupCat(c) { purchSetupCat = c; render(); },
     rsSearch(val) { const q = (val || "").toLowerCase().trim();
       document.querySelectorAll("#rsBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
@@ -2592,7 +2677,7 @@
   function render() {
     renderNav(); refreshDatalists();
     const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
-      move: viewMove, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
+      move: viewMove, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, labels: viewLabels, log: viewLog, settings: viewSettings };
     $("view").innerHTML = (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
