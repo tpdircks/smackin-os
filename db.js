@@ -12,7 +12,7 @@ window.DB = (function () {
   const seed = window.SMACKIN_SEED;
   let mode = "local";
   let sb = null;                  // supabase client
-  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [] };
+  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [] };
   let subscribers = [];
 
   function emit() { subscribers.forEach(fn => { try { fn(); } catch (e) {} }); }
@@ -29,6 +29,7 @@ window.DB = (function () {
   function stockBuild() { return cache.stockBuild || {}; }
   function shippingLog() { return cache.shippingLog || []; }
   function receivingLog() { return cache.receivingLog || []; }
+  function improvements() { return cache.improvements || []; }
   function orders() { return cache.orders || []; }
   function rdRequests() { return cache.rdRequests || []; }
   function supplierPos() { return cache.supplierPos || []; }
@@ -49,9 +50,9 @@ window.DB = (function () {
     loadOrSeed() {
       let raw = null;
       try { raw = localStorage.getItem(KEY); } catch (e) {}
-      if (raw) { cache = JSON.parse(raw); if (!cache.pos) cache.pos = []; if (!cache.log) cache.log = []; if (!cache.seasLots) cache.seasLots = []; if (!cache.orders) cache.orders = []; if (!cache.rdRequests) cache.rdRequests = []; if (!cache.supplierPos) cache.supplierPos = []; if (!cache.orderDocs) cache.orderDocs = []; if (!cache.consumption) cache.consumption = []; if (!cache.seedLots) cache.seedLots = []; if (!cache.stockBuild) cache.stockBuild = {}; if (!cache.shippingLog) cache.shippingLog = []; if (!cache.receivingLog) cache.receivingLog = []; return; }
+      if (raw) { cache = JSON.parse(raw); if (!cache.pos) cache.pos = []; if (!cache.log) cache.log = []; if (!cache.seasLots) cache.seasLots = []; if (!cache.orders) cache.orders = []; if (!cache.rdRequests) cache.rdRequests = []; if (!cache.supplierPos) cache.supplierPos = []; if (!cache.orderDocs) cache.orderDocs = []; if (!cache.consumption) cache.consumption = []; if (!cache.seedLots) cache.seedLots = []; if (!cache.stockBuild) cache.stockBuild = {}; if (!cache.shippingLog) cache.shippingLog = []; if (!cache.receivingLog) cache.receivingLog = []; if (!cache.improvements) cache.improvements = []; return; }
       const s = seed.build();
-      cache = { items: s.items, suppliers: s.suppliers, stock: s.stock, pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [] };
+      cache = { items: s.items, suppliers: s.suppliers, stock: s.stock, pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [] };
       this.save();
     },
     save() { try { localStorage.setItem(KEY, JSON.stringify(cache)); } catch (e) {} },
@@ -69,7 +70,7 @@ window.DB = (function () {
   // ---------- CLOUD backend (Supabase) ----------
   const cloud = {
     async loadAll() {
-      const [it, su, st, lg, po, pl, sl, od, rd, sp, odc, con, sdl, sbd, slog, rlog] = await Promise.all([
+      const [it, su, st, lg, po, pl, sl, od, rd, sp, odc, con, sdl, sbd, slog, rlog, imp] = await Promise.all([
         sb.from("items").select("*"),
         sb.from("suppliers").select("*"),
         sb.from("stock").select("*"),
@@ -85,7 +86,8 @@ window.DB = (function () {
         sb.from("seed_lots").select("*").order("created_at", { ascending: false }).limit(3000),
         sb.from("stock_build").select("*").limit(500),
         sb.from("shipping_log").select("*").order("ship_date", { ascending: false }).limit(3000),
-        sb.from("receiving_log").select("*").order("recv_date", { ascending: false }).limit(3000)
+        sb.from("receiving_log").select("*").order("recv_date", { ascending: false }).limit(3000),
+        sb.from("improvements").select("*").order("created_at", { ascending: false }).limit(3000)
       ]);
       cache.items = it.data || [];
       cache.suppliers = su.data || [];
@@ -144,6 +146,12 @@ window.DB = (function () {
         qty_ordered: r.qty_ordered, qty_received: r.qty_received, condition: r.condition || "Good",
         received_by: r.received_by, notes: r.notes, file_name: r.file_name, file_url: r.file_url,
         file_path: r.file_path, entered_by: r.entered_by, created_at: r.created_at
+      }));
+      cache.improvements = (imp && imp.data ? imp.data : []).map(r => ({
+        id: r.id, title: r.title, ci_type: r.ci_type, area: r.area, owner: r.owner,
+        priority: r.priority || "Medium", status: r.status || "Idea", problem: r.problem,
+        impact: r.impact, opened_date: r.opened_date, completed_date: r.completed_date,
+        entered_by: r.entered_by, created_at: r.created_at
       }));
       const lines = pl.data || [];
       cache.pos = (po.data || []).map(p => ({
@@ -491,6 +499,53 @@ window.DB = (function () {
     }
     emit();
     return { ok: true };
+  }
+
+  // ---------- Continuous Improvement (Lean / 5S / Kaizen initiatives) ----------
+  const IMP_FIELDS = ["title","ci_type","area","owner","priority","status","problem","impact","opened_date","completed_date"];
+  function cleanImp(rec) { const o = {}; IMP_FIELDS.forEach(k => { if (rec[k] !== undefined) o[k] = rec[k] === "" ? null : rec[k]; }); return o; }
+  async function addImprovement(rec, op) {
+    const row = Object.assign({ status: "Idea", priority: "Medium", opened_date: new Date().toISOString().slice(0, 10) }, cleanImp(rec));
+    row.title = row.title || ""; row.entered_by = op || ""; row.created_at = new Date().toISOString();
+    const logEntry = { a: "Improvement added", d: (row.ci_type ? row.ci_type + ": " : "") + row.title, u: op, t: row.created_at };
+    if (mode === "cloud") {
+      await sb.from("improvements").insert(row);
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      row.id = "IMP-" + Date.now().toString(36); cache.improvements.unshift(row);
+      local.addLog(logEntry); local.save();
+    }
+    emit(); return { ok: true };
+  }
+  async function updateImprovement(id, patch, op) {
+    const p = cleanImp(patch);
+    const cur = (cache.improvements || []).find(x => String(x.id) === String(id));
+    const logEntry = { a: "Improvement updated", d: (cur ? cur.title : String(id)), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      await sb.from("improvements").update(p).eq("id", id);
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      if (cur) Object.assign(cur, p); local.addLog(logEntry); local.save();
+    }
+    emit(); return { ok: true };
+  }
+  async function setImprovementStatus(id, status, op) {
+    const cur = (cache.improvements || []).find(x => String(x.id) === String(id));
+    const patch = { status };
+    if (status === "Done") patch.completed_date = new Date().toISOString().slice(0, 10);
+    const logEntry = { a: "Improvement " + status, d: (cur ? cur.title : String(id)), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      await sb.from("improvements").update(patch).eq("id", id);
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      if (cur) Object.assign(cur, patch); local.addLog(logEntry); local.save();
+    }
+    emit(); return { ok: true };
+  }
+  async function deleteImprovement(id, op) {
+    if (mode === "cloud") { await sb.from("improvements").delete().eq("id", id); await cloud.loadAll(); }
+    else { cache.improvements = (cache.improvements || []).filter(x => String(x.id) !== String(id)); local.save(); }
+    emit(); return { ok: true };
   }
 
   // ---------- Seed lot registry (Type / Lot / Supplier / Received / Weight - recall trace) ----------
@@ -921,6 +976,7 @@ window.DB = (function () {
     stockBuild, setStockBuildOnHand,
     shippingLog, addShipping, setShippingStatus, updateShipping, deleteShipping,
     receivingLog, addReceivingLog, updateReceivingLog, deleteReceivingLog,
+    improvements, addImprovement, updateImprovement, setImprovementStatus, deleteImprovement,
     orders, createOrder, updateOrder, setOrderStatus, deleteOrder, notifyNewOrder,
     rdRequests, createRdRequest, updateRdRequest, setRdStatus, deleteRdRequest, sendRdEmail,
     supplierPos, createSupplierPO, deleteSupplierPO,

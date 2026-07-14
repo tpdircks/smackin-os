@@ -61,7 +61,7 @@
       mixing:"Mixing", pmac:"P-Mac", roleMixing:"Mixing (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mixing", grpPmac:"P-Mac",
       deptSoon:"This area is being set up. Allen's team screens will live here - tell us what you'd like tracked and we'll build it in.",
       conHint:"Scan each material as it moves from the racking into this room. Records real-time usage and removes it from inventory. Lot # required on every scan.", conLot:"Lot # (required)", conBtn:"Log usage", conRecent:"Recent usage", conNone:"Nothing logged yet.", conWhen:"When", conMat:"Material", conBy:"By", conErr:"Scan an item, quantity, and lot #", conNotInList:"not in item list",
-      grpReceiving:"Receiving", grpInventory:"Inventory", grpProduction:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpSystem:"System",
+      grpReceiving:"Receiving", grpInventory:"Inventory", grpProduction:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpImprove:"Improvement", grpSystem:"System",
       people:"People", hrHint:"Team directory and org chart. Non-sensitive info only - no pay or personal data.", hrGate:"This section shows employee information. Enter the manager PIN to view.",
       hrDir:"Directory", hrOrg:"Org chart", hrRole:"Role", hrDept:"Department", hrStart:"Started", hrMgr:"Reports to", hrSearchP:"Search name or role...", hrCount:"people", hrNoMatch:"No matching people.", hrYr:"yr", hrMo:"mo",
       alerts:"Alerts", alertsHint:"What needs attention now: items to reorder and seasoning lots nearing expiration.",
@@ -85,6 +85,11 @@
       editRow:"Edit", editingRow:"Editing this entry - change what you need, then Save.", saveChanges:"Save changes", saved:"Saved", rlKeepDoc:"current file kept unless you attach a new one", sortHint:"Click to sort", dlPdf:"Download PDF", dlExcel:"Download Excel",
       finbags:"Finished Bags", fbHint:"Bags that have come off P-Mac and are staged in storage. Inventory counts these; Fulfillment counts the master-case output.", fb4oz:"4oz bags", fb15oz:"1.5oz bags", fbTotal:"All bags",
       pmacout:"Bag Output", pmoHint:"Log finished bags as they come off P-Mac into storage. Pick what's running + the count (a sensor will automate this later).", pmoRunning:"Now running (flavor + size)", pmoQty:"Bags", pmoAdd:"Log bags out", pmoNone:"No bags logged yet this session.",
+      improve:"Continuous Improvement", ciHint:"Track Lean, 5S and Kaizen initiatives - ideas, projects in progress, and a running record of wins. Move each one Idea -> In Progress -> Done.",
+      ciActive:"Active", ciWins:"Wins", ciIdeas:"Ideas", ciInProgress:"In progress", ciAdd:"Add initiative", ciAdded:"Initiative added",
+      ciTitle:"Initiative", ciTitleP:"e.g. Label + zone the receiving staging area", ciType:"Type", ciArea:"Area", ciOwner:"Owner", ciPriority:"Priority", ciStatus:"Status", ciOpened:"Opened",
+      ciProblem:"Problem / goal", ciProblemP:"What are we fixing or improving?", ciImpact:"Impact / win", ciImpactHint:"the result", ciImpactP:"What changed? time saved, waste cut, safer, etc.",
+      ciCompleted:"Completed", ciReopen:"Reopen", ciNoActive:"No active initiatives. Add one above.", ciNoWins:"No completed wins yet.", ciSearchP:"Search title, type, area, owner...", ciConfirmDel:"Delete this initiative?",
       poCreate:"+ Create PO", poNewTitle:"New Purchase Order", poVendorAddr:"Vendor address", poVendorEmail:"Vendor email", poVendorPhone:"Vendor phone", poShipTo:"Ship to", poPreparedBy:"Prepared by", poAddLine:"+ Add line", poItemNo:"Item #", poDesc:"Description", poQtyL:"Qty", poPriceL:"Price", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Shipping", poTaxL:"Tax", poOtherL:"Other", poGrandL:"Total", poSaveBtn:"Save PO", poBackList:"Back to list", poSavedMsg:"PO saved", poNeedVendor:"Enter a vendor first",
       rdHint:"Request samples and ingredients here. Each request generates a PDF and is tracked Pending until it arrives.",
       rdPending:"Pending", rdDone:"Received", rdAdd:"+ New request", rdSave:"Save request", rdCancel:"Cancel",
@@ -154,7 +159,7 @@
       mixing:"Mezcla", pmac:"P-Mac", roleMixing:"Mezcla (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mezcla", grpPmac:"P-Mac",
       deptSoon:"Esta area se esta configurando. Aqui viviran las pantallas del equipo de Allen - diganos que desea controlar y lo agregamos.",
       conHint:"Escanee cada material al pasar del estante a esta sala. Registra el uso en tiempo real y lo descuenta del inventario. Numero de lote requerido en cada escaneo.", conLot:"Lote # (requerido)", conBtn:"Registrar uso", conRecent:"Uso reciente", conNone:"Nada registrado aun.", conWhen:"Cuando", conMat:"Material", conBy:"Por", conErr:"Escanee articulo, cantidad y lote #", conNotInList:"no esta en la lista",
-      grpReceiving:"Recibo", grpInventory:"Inventario", grpProduction:"Fulfillment", grpShipping:"Envios", grpPurchasing:"Compras", grpRnd:"I+D", grpHr:"RH", grpSystem:"Sistema",
+      grpReceiving:"Recibo", grpInventory:"Inventario", grpProduction:"Fulfillment", grpShipping:"Envios", grpPurchasing:"Compras", grpRnd:"I+D", grpHr:"RH", grpImprove:"Mejora", grpSystem:"Sistema",
       people:"Personal", hrHint:"Directorio del equipo y organigrama. Solo informacion no sensible - sin pago ni datos personales.", hrGate:"Esta seccion muestra informacion de empleados. Ingrese el PIN de gerente para ver.",
       hrDir:"Directorio", hrOrg:"Organigrama", hrRole:"Puesto", hrDept:"Departamento", hrStart:"Ingreso", hrMgr:"Reporta a", hrSearchP:"Buscar nombre o puesto...", hrCount:"personas", hrNoMatch:"Sin coincidencias.", hrYr:"ano", hrMo:"mes",
       alerts:"Alertas", alertsHint:"Lo que necesita atencion ahora: articulos por reordenar y lotes de sazon por vencer.",
@@ -176,6 +181,11 @@
       recvlog:"Registro de Recibo", rlHint:"Registre cada envio entrante y adjunte el papeleo (remito, BOL, factura). Elija el transportista y el # PRO/rastreo se vuelve un enlace.",
       rlDrop:"Adjuntar papeleo  (PDF, Excel, imagen, Word)", rlDate:"Fecha", rlSupplier:"Proveedor", rlPO:"# OC", rlCarrier:"Transportista", rlTracking:"# Rastreo / PRO", rlContents:"Que se recibio", rlQtyOrd:"Cant. pedida", rlQtyRec:"Cant. recibida", rlShortOver:"Faltante/Sobrante", rlCondition:"Condicion", rlReceivedBy:"Recibido por", rlNotes:"Notas", rlDoc:"Doc", rlSave:"Registrar recibo", rlArchive:"Registro de recibo", rlNone:"Aun no hay recibos. Agregue uno arriba.", rlSearchP:"Buscar proveedor, OC, transportista...", rlLogged:"Recibo registrado", rlConfirmDel:"Eliminar este registro de recibo?",
       editRow:"Editar", editingRow:"Editando esta entrada - cambie lo necesario y guarde.", saveChanges:"Guardar cambios", saved:"Guardado", rlKeepDoc:"se conserva el archivo actual salvo que adjunte uno nuevo", sortHint:"Clic para ordenar", dlPdf:"Descargar PDF", dlExcel:"Descargar Excel",
+      improve:"Mejora Continua", ciHint:"Rastree iniciativas Lean, 5S y Kaizen - ideas, proyectos en curso y un registro de logros. Mueva cada una Idea -> En Curso -> Hecho.",
+      ciActive:"Activas", ciWins:"Logros", ciIdeas:"Ideas", ciInProgress:"En curso", ciAdd:"Agregar iniciativa", ciAdded:"Iniciativa agregada",
+      ciTitle:"Iniciativa", ciTitleP:"ej. Etiquetar y zonificar el area de recibo", ciType:"Tipo", ciArea:"Area", ciOwner:"Responsable", ciPriority:"Prioridad", ciStatus:"Estado", ciOpened:"Abierta",
+      ciProblem:"Problema / meta", ciProblemP:"Que estamos arreglando o mejorando?", ciImpact:"Impacto / logro", ciImpactHint:"el resultado", ciImpactP:"Que cambio? tiempo ahorrado, menos desperdicio, mas seguro, etc.",
+      ciCompleted:"Completada", ciReopen:"Reabrir", ciNoActive:"No hay iniciativas activas. Agregue una arriba.", ciNoWins:"Aun no hay logros completados.", ciSearchP:"Buscar titulo, tipo, area, responsable...", ciConfirmDel:"Eliminar esta iniciativa?",
       poCreate:"+ Crear OC", poNewTitle:"Nueva Orden de Compra", poVendorAddr:"Direccion del proveedor", poVendorEmail:"Correo del proveedor", poVendorPhone:"Telefono del proveedor", poShipTo:"Enviar a", poPreparedBy:"Preparado por", poAddLine:"+ Agregar linea", poItemNo:"Articulo #", poDesc:"Descripcion", poQtyL:"Cant", poPriceL:"Precio", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Envio", poTaxL:"Impuesto", poOtherL:"Otro", poGrandL:"Total", poSaveBtn:"Guardar OC", poBackList:"Volver a la lista", poSavedMsg:"OC guardada", poNeedVendor:"Ingrese un proveedor primero",
       rdHint:"Solicite muestras e ingredientes aqui. Cada solicitud genera un PDF y se sigue como Pendiente hasta que llega.",
       rdPending:"Pendiente", rdDone:"Recibido", rdAdd:"+ Nueva solicitud", rdSave:"Guardar solicitud", rdCancel:"Cancelar",
@@ -245,7 +255,7 @@
       mixing:"Mistura", pmac:"P-Mac", roleMixing:"Mistura (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mistura", grpPmac:"P-Mac",
       deptSoon:"Esta area esta sendo configurada. As telas da equipe do Allen ficarao aqui - diga o que deseja acompanhar e vamos incluir.",
       conHint:"Escaneie cada material ao passar da prateleira para esta sala. Registra o uso em tempo real e baixa do estoque. Numero de lote obrigatorio em cada leitura.", conLot:"Lote # (obrigatorio)", conBtn:"Registrar uso", conRecent:"Uso recente", conNone:"Nada registrado ainda.", conWhen:"Quando", conMat:"Material", conBy:"Por", conErr:"Escaneie item, quantidade e lote #", conNotInList:"nao esta na lista",
-      grpReceiving:"Recebimento", grpInventory:"Estoque", grpProduction:"Fulfillment", grpShipping:"Envios", grpPurchasing:"Compras", grpRnd:"P&D", grpHr:"RH", grpSystem:"Sistema",
+      grpReceiving:"Recebimento", grpInventory:"Estoque", grpProduction:"Fulfillment", grpShipping:"Envios", grpPurchasing:"Compras", grpRnd:"P&D", grpHr:"RH", grpImprove:"Melhoria", grpSystem:"Sistema",
       people:"Pessoas", hrHint:"Diretorio da equipe e organograma. Apenas informacoes nao sensiveis - sem salario ou dados pessoais.", hrGate:"Esta secao mostra informacoes de funcionarios. Digite o PIN de gerente para ver.",
       hrDir:"Diretorio", hrOrg:"Organograma", hrRole:"Cargo", hrDept:"Departamento", hrStart:"Inicio", hrMgr:"Reporta a", hrSearchP:"Buscar nome ou cargo...", hrCount:"pessoas", hrNoMatch:"Nenhuma correspondencia.", hrYr:"ano", hrMo:"mes",
       alerts:"Alertas", alertsHint:"O que precisa de atencao agora: itens para repor e lotes de tempero perto do vencimento.",
@@ -267,6 +277,11 @@
       recvlog:"Registro de Recebimento", rlHint:"Registre cada envio recebido e anexe a papelada (romaneio, BOL, fatura). Escolha a transportadora e o no PRO/rastreio vira um link.",
       rlDrop:"Anexar papelada  (PDF, Excel, imagem, Word)", rlDate:"Data", rlSupplier:"Fornecedor", rlPO:"No OC", rlCarrier:"Transportadora", rlTracking:"Rastreio / PRO", rlContents:"O que foi recebido", rlQtyOrd:"Qtd pedida", rlQtyRec:"Qtd recebida", rlShortOver:"Falta/Sobra", rlCondition:"Condicao", rlReceivedBy:"Recebido por", rlNotes:"Notas", rlDoc:"Doc", rlSave:"Registrar recebimento", rlArchive:"Registro de recebimento", rlNone:"Nenhum recebimento ainda. Adicione um acima.", rlSearchP:"Buscar fornecedor, OC, transportadora...", rlLogged:"Recebimento registrado", rlConfirmDel:"Excluir este registro de recebimento?",
       editRow:"Editar", editingRow:"Editando esta entrada - altere o necessario e salve.", saveChanges:"Salvar alteracoes", saved:"Salvo", rlKeepDoc:"o arquivo atual e mantido a menos que anexe um novo", sortHint:"Clique para ordenar", dlPdf:"Baixar PDF", dlExcel:"Baixar Excel",
+      improve:"Melhoria Continua", ciHint:"Acompanhe iniciativas Lean, 5S e Kaizen - ideias, projetos em andamento e um registro de conquistas. Mova cada uma Ideia -> Em Andamento -> Concluido.",
+      ciActive:"Ativas", ciWins:"Conquistas", ciIdeas:"Ideias", ciInProgress:"Em andamento", ciAdd:"Adicionar iniciativa", ciAdded:"Iniciativa adicionada",
+      ciTitle:"Iniciativa", ciTitleP:"ex. Etiquetar e zonear a area de recebimento", ciType:"Tipo", ciArea:"Area", ciOwner:"Responsavel", ciPriority:"Prioridade", ciStatus:"Status", ciOpened:"Aberta",
+      ciProblem:"Problema / meta", ciProblemP:"O que estamos corrigindo ou melhorando?", ciImpact:"Impacto / conquista", ciImpactHint:"o resultado", ciImpactP:"O que mudou? tempo economizado, menos desperdicio, mais seguro, etc.",
+      ciCompleted:"Concluida", ciReopen:"Reabrir", ciNoActive:"Nenhuma iniciativa ativa. Adicione uma acima.", ciNoWins:"Nenhuma conquista concluida ainda.", ciSearchP:"Buscar titulo, tipo, area, responsavel...", ciConfirmDel:"Excluir esta iniciativa?",
       poCreate:"+ Criar OC", poNewTitle:"Nova Ordem de Compra", poVendorAddr:"Endereco do fornecedor", poVendorEmail:"Email do fornecedor", poVendorPhone:"Telefone do fornecedor", poShipTo:"Enviar para", poPreparedBy:"Preparado por", poAddLine:"+ Adicionar linha", poItemNo:"Item #", poDesc:"Descricao", poQtyL:"Qtd", poPriceL:"Preco", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Frete", poTaxL:"Imposto", poOtherL:"Outro", poGrandL:"Total", poSaveBtn:"Salvar OC", poBackList:"Voltar a lista", poSavedMsg:"OC salva", poNeedVendor:"Insira um fornecedor primeiro",
       rdHint:"Solicite amostras e ingredientes aqui. Cada solicitacao gera um PDF e e acompanhada como Pendente ate chegar.",
       rdPending:"Pendente", rdDone:"Recebido", rdAdd:"+ Nova solicitacao", rdSave:"Salvar solicitacao", rdCancel:"Cancelar",
@@ -281,10 +296,10 @@
       rdEmailSubject:"Solicitacao de amostra da Smackin' Snacks", rdConfirmRecv:"Marcar esta solicitacao como recebida?",
       settingsHint:"Modo, layout e controles demo." }
   };
-  let lang = "en"; const L = k => (T[lang][k] !== undefined ? T[lang][k] : k);
+  let lang = "en"; const L = k => (T[lang][k] !== undefined ? T[lang][k] : (T.en[k] !== undefined ? T.en[k] : k));
   let active = "home"; let catFilter = "all";
   let purchMode = "list"; let purchSup = null; let receivingPOid = null;
-  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","stockbuild","seasoning","seed","skus","mixing","pmac","count","locations","finbags","pmacout","purchasing","supplierpos","people","labels","log","settings"];
+  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","stockbuild","seasoning","seed","skus","mixing","pmac","count","locations","finbags","pmacout","purchasing","supplierpos","people","improve","labels","log","settings"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -463,6 +478,7 @@
     { key:"grpPurchasing", items:["purchasing","supplierpos"] },
     { key:"grpRnd", items:["rd"] },
     { key:"grpHr", items:["people"] },
+    { key:"grpImprove", items:["improve"] },
     { key:"grpSystem", items:["log","settings"] }
   ];
   // Lucide icon names (clean SVG line icons) rendered via lucide.createIcons()
@@ -474,7 +490,7 @@
     seasoning:"flame", seed:"sprout", skus:"barcode", finbags:"shopping-bag", pmacout:"package-open",
     mixing:"cooking-pot", pmac:"wrench", count:"clipboard-check", locations:"map-pin",
     purchasing:"shopping-cart", supplierpos:"file-text", people:"users", labels:"tag",
-    log:"history", settings:"settings" };
+    log:"history", settings:"settings", improve:"trending-up" };
   function drawIcons() { try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {} }
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
   let spoSort = { key: "created", dir: -1 };  // Supplier POs table sort (v25)
@@ -526,6 +542,12 @@
   let shipEditId = null, recvEditId = null, orderEditId = null, seasEditId = null, seedEditId = null;  // inline-edit: id of record being edited
   let pmoSel = "", pmoRecent = [];   // P-Mac bag-output: selected bag item + recent adds this session
   let navCollapsed = (function () { try { return new Set(JSON.parse(localStorage.getItem("smk-navcollapsed") || "[]")); } catch (e) { return new Set(); } })();  // collapsed nav groups
+  let ciView = "active", ciAddOpen = false, ciEditId = null;  // Continuous Improvement view/edit state
+  const CI_TYPES = ["5S", "Kaizen", "Safety", "Quality", "Efficiency", "Cost Savings", "Waste Reduction", "Other"];
+  const CI_AREAS = ["Fulfillment", "Receiving", "Shipping", "Inventory", "Mixing", "P-Mac", "Warehouse", "Office", "Company-wide", "Other"];
+  const CI_OWNERS = ["Troy", "Adriana", "Jesus", "Ken", "Javier", "Allen", "Brittney", "Marlin", "Jhonny", "Other"];
+  const CI_PRIORITIES = ["High", "Medium", "Low"];
+  const CI_STATUSES = ["Idea", "In Progress", "On Hold", "Done"];
   const BAG_STAGE = "PACKOUT";       // finished bags stage here when they come off P-Mac
   let locSel = null;      // selected slot/zone code in the rack map
   // Physically blocked rack slots (numbering unchanged; not storable) - Troy's real floor
@@ -1778,6 +1800,68 @@
       '<button class="primary" onclick="UI.pmoAdd()">' + L("pmoAdd") + '</button>' +
       '<h2 class="sub2" style="margin-top:18px">' + L("rpRecent") + '</h2>' + recent + '</div>';
   }
+  function viewImprove() {
+    const all = DB.improvements().slice().sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
+    const active = all.filter(i => i.status !== "Done");
+    const wins = all.filter(i => i.status === "Done");
+    const list = ciView === "wins" ? wins : active;
+    const ideas = all.filter(i => i.status === "Idea").length;
+    const inprog = all.filter(i => i.status === "In Progress").length;
+    const ed = ciEditId ? (all.find(x => String(x.id) === String(ciEditId)) || {}) : {};
+    const editing = !!(ciEditId && ed.id);
+    const av = x => esc(x == null ? "" : x);
+    const sel = (arr, cur, def) => arr.map(t => '<option' + (t === (cur != null && cur !== "" ? cur : def) ? " selected" : "") + '>' + t + '</option>').join("");
+    const toggle = '<div class="ordtabs">' +
+      '<button class="' + (ciView === "active" ? "active" : "") + '" onclick="UI.ciView(\'active\')">' + L("ciActive") + ' (' + active.length + ')</button>' +
+      '<button class="' + (ciView === "wins" ? "active" : "") + '" onclick="UI.ciView(\'wins\')">' + L("ciWins") + ' (' + wins.length + ')</button></div>';
+    const showForm = ciAddOpen || editing;
+    const today = new Date().toISOString().slice(0, 10);
+    const form = showForm ? ('<div class="ordform">' +
+      (editing ? '<p class="hint">&#9998; ' + L("editingRow") + '</p>' : '') +
+      '<div><label>' + L("ciTitle") + '</label><input id="ci-title" autocomplete="off" value="' + av(ed.title) + '" placeholder="' + L("ciTitleP") + '"></div>' +
+      '<div class="row"><div><label>' + L("ciType") + '</label><select id="ci-type">' + sel(CI_TYPES, ed.ci_type, "5S") + '</select></div>' +
+      '<div><label>' + L("ciArea") + '</label><select id="ci-area">' + sel(CI_AREAS, ed.area, "Fulfillment") + '</select></div>' +
+      '<div><label>' + L("ciOwner") + '</label><input id="ci-owner" list="dl-ci-owner" autocomplete="off" value="' + av(ed.owner) + '"></div></div>' +
+      '<div class="row"><div><label>' + L("ciPriority") + '</label><select id="ci-priority">' + sel(CI_PRIORITIES, ed.priority, "Medium") + '</select></div>' +
+      '<div><label>' + L("ciStatus") + '</label><select id="ci-status">' + sel(CI_STATUSES, ed.status, "Idea") + '</select></div>' +
+      '<div><label>' + L("ciOpened") + '</label><input id="ci-opened" type="date" value="' + (editing && ed.opened_date ? (ed.opened_date + "").slice(0, 10) : today) + '"></div></div>' +
+      '<div><label>' + L("ciProblem") + '</label><input id="ci-problem" autocomplete="off" value="' + av(ed.problem) + '" placeholder="' + L("ciProblemP") + '"></div>' +
+      '<div><label>' + L("ciImpact") + ' <span class="muted">(' + L("ciImpactHint") + ')</span></label><input id="ci-impact" autocomplete="off" value="' + av(ed.impact) + '" placeholder="' + L("ciImpactP") + '"></div>' +
+      opField("Troy") +
+      '<button class="primary" onclick="UI.ciSave()">' + (editing ? L("saveChanges") : L("ciAdd")) + '</button> ' +
+      '<button class="ghost" style="margin-top:14px" onclick="UI.' + (editing ? "ciEditCancel" : "ciAddToggle") + '()">' + L("ordCancel") + '</button></div>') : "";
+    const ownerDl = '<datalist id="dl-ci-owner">' + CI_OWNERS.map(n => '<option value="' + n + '"></option>').join("") + '</datalist>';
+    const prC = p => p === "High" ? "out" : p === "Low" ? "" : "low";
+    const stC = s => s === "Done" ? "ok" : s === "In Progress" ? "low" : "";
+    const nextStatus = { "Idea": "In Progress", "In Progress": "Done", "On Hold": "In Progress" };
+    const rows = list.length ? list.map(i => {
+      const txt = ((i.title || "") + " " + (i.ci_type || "") + " " + (i.area || "") + " " + (i.owner || "") + " " + (i.status || "") + " " + (i.impact || "")).toLowerCase().replace(/"/g, "");
+      const nxt = nextStatus[i.status];
+      const adv = nxt ? '<button class="ghost sm" onclick="UI.ciStatus(\'' + i.id + '\',\'' + nxt + '\')">' + esc(nxt) + '</button>'
+        : (i.status === "Done" ? '<button class="ghost sm" onclick="UI.ciStatus(\'' + i.id + '\',\'In Progress\')">' + L("ciReopen") + '</button>' : '');
+      const nameCell = '<td><b>' + esc(i.title || "") + '</b>' + (i.problem ? '<div class="muted sm">' + esc(i.problem) + '</div>' : '') + '</td>';
+      const mid = ciView === "wins"
+        ? '<td class="muted sm">' + ((i.completed_date || "").slice(0, 10) || "&mdash;") + '</td><td>' + (i.impact ? '<span class="sm">' + esc(i.impact) + '</span>' : '&mdash;') + '</td>'
+        : '<td><span class="pill ' + prC(i.priority) + '">' + esc(i.priority || "") + '</span></td><td><span class="pill ' + stC(i.status) + '">' + esc(i.status || "") + '</span></td>';
+      return '<tr data-txt="' + txt + '">' + nameCell +
+        '<td><span class="tag">' + esc(i.ci_type || "") + '</span></td>' +
+        '<td class="sm">' + esc(i.area || "") + '</td>' +
+        '<td class="muted sm">' + esc(i.owner || "") + '</td>' + mid +
+        '<td>' + adv + ' <button class="ghost sm" title="' + L("editRow") + '" onclick="UI.ciEdit(\'' + i.id + '\')">&#9998;</button> <button class="ghost sm danger" onclick="UI.ciDelete(\'' + i.id + '\')">&#10005;</button></td></tr>';
+    }).join("") : '<tr><td colspan="7" class="muted">' + (ciView === "wins" ? L("ciNoWins") : L("ciNoActive")) + '</td></tr>';
+    const head = ciView === "wins"
+      ? '<tr><th>' + L("ciTitle") + '</th><th>' + L("ciType") + '</th><th>' + L("ciArea") + '</th><th>' + L("ciOwner") + '</th><th>' + L("ciCompleted") + '</th><th>' + L("ciImpact") + '</th><th data-nosort></th></tr>'
+      : '<tr><th>' + L("ciTitle") + '</th><th>' + L("ciType") + '</th><th>' + L("ciArea") + '</th><th>' + L("ciOwner") + '</th><th>' + L("ciPriority") + '</th><th>' + L("ciStatus") + '</th><th data-nosort></th></tr>';
+    return ownerDl + '<div class="card"><div class="suprow"><h2 style="margin:0">' + L("improve") + '</h2>' +
+      '<button class="primary sm" onclick="UI.ciAddToggle()">' + L("ciAdd") + '</button></div>' +
+      '<p class="hint">' + L("ciHint") + '</p>' +
+      '<div class="kpis"><div class="kpi"><div class="n">' + ideas + '</div><div class="l">' + L("ciIdeas") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + inprog + '</div><div class="l">' + L("ciInProgress") + '</div></div>' +
+      '<div class="kpi ok"><div class="n">' + wins.length + '</div><div class="l">' + L("ciWins") + '</div></div></div>' +
+      toggle + form +
+      '<input id="ciSearch" autocomplete="off" style="margin-top:10px" oninput="UI.ciSearch(this.value)" placeholder="' + L("ciSearchP") + '">' +
+      '<table class="sortable" style="margin-top:10px"><thead>' + head + '</thead><tbody id="ciBody">' + rows + '</tbody></table></div>';
+  }
   function viewMixing() { return viewConsume("Mixing", "mixing"); }
   function viewPmac() { return viewConsume("P-Mac", "pmac"); }
   function tenureStr(s) {
@@ -2097,6 +2181,26 @@
       toast((wasEdit ? L("saved") : L("rlLogged")) + " ✓"); render();
     },
     async rlDelete(id) { if (!confirm(L("rlConfirmDel"))) return; await DB.deleteReceivingLog(id, opVal()); toast("✓"); render(); },
+    // ---- Continuous Improvement ----
+    ciView(v) { ciView = v; render(); },
+    ciAddToggle() { ciAddOpen = !ciAddOpen; ciEditId = null; render(); },
+    ciEdit(id) { ciEditId = id; ciAddOpen = false; render(); window.scrollTo(0, 0); },
+    ciEditCancel() { ciEditId = null; render(); },
+    ciSearch(val) { const q = (val || "").toLowerCase().trim();
+      document.querySelectorAll("#ciBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
+    async ciSave() {
+      const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
+      const title = v("ci-title"); if (!title) return toast(L("ciTitle"));
+      const by = opVal();
+      const rec = { title: title, ci_type: v("ci-type"), area: v("ci-area"), owner: v("ci-owner"),
+        priority: v("ci-priority"), status: v("ci-status"), opened_date: v("ci-opened"),
+        problem: v("ci-problem"), impact: v("ci-impact") };
+      if (ciEditId) { await DB.updateImprovement(ciEditId, rec, by); ciEditId = null; toast(L("saved") + " ✓"); }
+      else { await DB.addImprovement(rec, by); ciAddOpen = false; toast(L("ciAdded")); }
+      render();
+    },
+    async ciStatus(id, status) { await DB.setImprovementStatus(id, status, opVal()); toast(status + " ✓"); render(); },
+    async ciDelete(id) { if (!confirm(L("ciConfirmDel"))) return; await DB.deleteImprovement(id, opVal()); toast("✓"); render(); },
     // ---- Orders ----
     ordView(v) { orderView = v; render(); },
     ordAddToggle() { orderAddOpen = !orderAddOpen; render(); },
@@ -2373,7 +2477,7 @@
     renderNav(); refreshDatalists();
     const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
       move: viewMove, produce: viewProduce, retailprod: viewRetailProd, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
-      count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, labels: viewLabels, log: viewLog, settings: viewSettings };
+      count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, labels: viewLabels, log: viewLog, settings: viewSettings };
     $("view").innerHTML = (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
     $("modeBadge").className = "modebadge " + (DB.mode === "cloud" ? "ok" : "low");
