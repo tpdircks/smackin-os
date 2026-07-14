@@ -321,6 +321,10 @@
     crackedpepper: CDN + "CrackedPepper_4_Front_59837e87-ef45-4540-8540-f98da28bdea2.png?width=72"
   };
   function flavorImg(fl) { const k = String(fl || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, ""); return FLAVOR_IMG[k] || ""; }
+  // Fuzzy: find a flavor image anywhere inside a longer string (e.g. a SKU title)
+  function flavorImgAny(text) { const t = String(text || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, ""); const keys = Object.keys(FLAVOR_IMG).sort((a, b) => b.length - a.length); for (const k of keys) { if (t.indexOf(k) >= 0) return FLAVOR_IMG[k]; } return ""; }
+  // Flavor-name cell with an optional small bag thumbnail
+  function flavCell(name, img, small) { const cls = small ? "flavimg sm" : "flavimg"; return '<div class="flavcell">' + (img ? '<img class="' + cls + '" src="' + img + '" loading="lazy" alt="">' : '') + '<b>' + esc(name) + '</b></div>'; }
   function trackingUrl(carrier, num) {
     if (!num) return "";
     const n = encodeURIComponent(String(num).trim());
@@ -693,7 +697,7 @@
     const ec = it => { if (!it) return '<td class="right ess-na">&mdash;</td>';
       const st = statusOf(it); return '<td class="right ess-' + st + '"><b>' + fmt(DB.onHand(it.id)) + '</b></td>'; };
     const frows = flav.map(f =>
-      '<tr><td><b>' + f.name + '</b></td>' +
+      '<tr><td>' + flavCell(f.name, flavorImg(f.name), true) + '</td>' +
       ec(bc("B4-" + f.code)) + ec(bc("B15-" + f.code)) + ec(bc("F4-" + f.code)) + ec(bc("SEAS-" + f.code)) + '</tr>').join("");
     const essTable = '<div class="card"><div class="suprow"><h2 class="sub2" style="margin:0;flex:1">' + L("hEssential") + '</h2>' +
       '<a class="order sm" onclick="UI_go(\'dash\')" style="cursor:pointer">' + L("hSeeAll") + '</a></div>' +
@@ -1389,7 +1393,7 @@
     const all = (window.SMACKIN_SKUS || []);
     const rows = all.map(s => {
       const hay = ((s.s || "") + " " + (s.t || "") + " " + (s.c || "")).toLowerCase();
-      return '<tr data-h="' + esc(hay) + '"><td><b>' + esc(s.s) + '</b></td><td>' + esc(s.t) + '</td><td class="right">' + esc(s.b) + '</td><td class="muted sm">' + esc(s.c || "—") + '</td></tr>';
+      return '<tr data-h="' + esc(hay) + '"><td><b>' + esc(s.s) + '</b></td><td>' + flavCell(s.t, flavorImgAny(s.t), true) + '</td><td class="right">' + esc(s.b) + '</td><td class="muted sm">' + esc(s.c || "—") + '</td></tr>';
     }).join("");
     return '<div class="card"><h2>' + L("skus") + '</h2><p class="hint">' + L("skusHint") + '</p>' +
       '<input id="sku-q" style="width:100%;max-width:420px" oninput="UI.skuFilter(this.value)" placeholder="' + L("skuSearchP") + '" autocomplete="off">' +
@@ -1414,7 +1418,7 @@
       const on = val(i.key), goal = i.goal, toBuild = Math.max(goal - on, 0);
       const pct = goal ? Math.round(on / goal * 100) : 0;
       const pallets = i.pallet ? (Math.ceil(toBuild / i.pallet * 10) / 10) : null;
-      return '<tr><td><b>' + esc(i.name) + '</b></td>' +
+      return '<tr><td>' + flavCell(i.name, flavorImg(i.name), true) + '</td>' +
         '<td class="right muted">' + fmt(goal) + '</td>' +
         '<td class="right"><input class="sbin" type="number" min="0" step="1" value="' + on + '" onchange="UI.sbSet(\'' + i.key + '\',this.value)"></td>' +
         '<td class="right"><b>' + fmt(toBuild) + '</b></td>' +
