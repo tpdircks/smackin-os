@@ -46,7 +46,7 @@
       seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdReceived:"Received", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
       skus:"SKUs", skusHint:"Finished-goods / retail SKU catalog - bundles, singles, and cases with bag count and flavor contents. Reference only.", skuCode:"SKU", skuTitle:"Product", skuBags:"Bags", skuComp:"Contents", skuSearchP:"Search SKU, product, or flavor...", skuCount:"SKUs",
       stockbuild:"Stock Build", sbHint:"Live build progress vs goals. Update On Hand as you go - the whole team sees it instantly. Yellow field = enter today's count.", sbGoal:"Goal", sbOnHand:"On hand", sbToBuild:"To build", sbPallets:"Pallets", sbDone:"Done", sbTotalGoal:"Total goal", sbComplete:"Complete", sbSaved:"Saved", sbRetail:"Retail", sbEcom:"E-Commerce", sb12pk:"12-Pack Boxes",
-      retailprod:"Retail Production", rpHint:"When a pallet is made, scan its product barcode (or pick it), enter the quantity, and it is added to stock instantly. Print the barcode sheet with the button below and post it at the line.", rpScanP:"Scan product barcode", rpPickProduct:"Or pick a product...", rpQty:"Quantity made", rpAdd:"Add to stock", rpAdded:"Added to stock", rpCurrent:"Current on hand", rpRecent:"Recent production", rpNone:"Nothing added yet.", rpPrint:"Print product barcodes", rpNotFound:"Barcode not recognized",
+      retailprod:"Retail Production",ecomprod:"E-Commerce",epHint:"E-commerce / DTC product (variety packs). Scan or pick the item, enter the quantity built, and it is added to stock instantly. ShipStation and TikTok orders will draw this down automatically once connected.", rpHint:"When a pallet is made, scan its product barcode (or pick it), enter the quantity, and it is added to stock instantly. Print the barcode sheet with the button below and post it at the line.", rpScanP:"Scan product barcode", rpPickProduct:"Or pick a product...", rpQty:"Quantity made", rpAdd:"Add to stock", rpAdded:"Added to stock", rpCurrent:"Current on hand", rpRecent:"Recent production", rpNone:"Nothing added yet.", rpPrint:"Print product barcodes", rpNotFound:"Barcode not recognized",
       qaHint:"Quarantined product - do NOT touch (wrapped in red film). Usually expired or has incorrect info. Release good ones back to stock or scrap them.",
       qaTitle:"On quarantine hold (red film - do not touch)", convertGood:"Release to good stock", scrapIt:"Scrap", qaEmpty:"Nothing in quarantine.",
       columns:"Columns", colCategory:"Category", colItem:"Item", colOnhand:"On hand", colReorder:"Reorder", colStatus:"Status", resetCols:"Reset",
@@ -144,7 +144,7 @@
       seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdReceived:"Recibido", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
       skus:"SKUs", skusHint:"Catalogo de SKU de producto terminado / retail - paquetes, individuales y cajas con cantidad de bolsas y sabores. Solo referencia.", skuCode:"SKU", skuTitle:"Producto", skuBags:"Bolsas", skuComp:"Contenido", skuSearchP:"Buscar SKU, producto o sabor...", skuCount:"SKUs",
       stockbuild:"Construir Inventario", sbHint:"Progreso de construccion vs metas en vivo. Actualice En Mano segun avanza - todo el equipo lo ve al instante. Campo amarillo = ingrese el conteo de hoy.", sbGoal:"Meta", sbOnHand:"En mano", sbToBuild:"Por hacer", sbPallets:"Paletas", sbDone:"Listo", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Guardado", sbRetail:"Minorista", sbEcom:"Comercio Electronico", sb12pk:"Cajas de 12",
-      retailprod:"Produccion Retail", rpHint:"Cuando se hace una paleta, escanee su codigo de producto (o eligalo), ingrese la cantidad y se agrega al inventario al instante. Imprima la hoja de codigos con el boton de abajo y pongala en la linea.", rpScanP:"Escanee codigo del producto", rpPickProduct:"O elija un producto...", rpQty:"Cantidad hecha", rpAdd:"Agregar al inventario", rpAdded:"Agregado al inventario", rpCurrent:"En mano actual", rpRecent:"Produccion reciente", rpNone:"Nada agregado aun.", rpPrint:"Imprimir codigos de producto", rpNotFound:"Codigo no reconocido",
+      retailprod:"Produccion Retail",ecomprod:"E-Commerce",epHint:"Producto e-commerce / DTC (paquetes variados). Escanee o elija el articulo, ingrese la cantidad producida y se agrega al inventario al instante. Los pedidos de ShipStation y TikTok lo descontaran automaticamente cuando se conecten.", rpHint:"Cuando se hace una paleta, escanee su codigo de producto (o eligalo), ingrese la cantidad y se agrega al inventario al instante. Imprima la hoja de codigos con el boton de abajo y pongala en la linea.", rpScanP:"Escanee codigo del producto", rpPickProduct:"O elija un producto...", rpQty:"Cantidad hecha", rpAdd:"Agregar al inventario", rpAdded:"Agregado al inventario", rpCurrent:"En mano actual", rpRecent:"Produccion reciente", rpNone:"Nada agregado aun.", rpPrint:"Imprimir codigos de producto", rpNotFound:"Codigo no reconocido",
       qaHint:"Producto en cuarentena - NO tocar (envuelto en film rojo). Generalmente vencido o con informacion incorrecta. Libere los buenos a inventario o descartelos.",
       qaTitle:"En cuarentena (film rojo - no tocar)", convertGood:"Liberar a inventario bueno", scrapIt:"Descartar", qaEmpty:"Nada en cuarentena.",
       columns:"Columnas", colCategory:"Categoria", colItem:"Articulo", colOnhand:"Disponible", colReorder:"Reorden", colStatus:"Estado", resetCols:"Reiniciar",
@@ -242,7 +242,7 @@
       seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdReceived:"Recebido", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
       skus:"SKUs", skusHint:"Catalogo de SKU de produto acabado / varejo - pacotes, individuais e caixas com contagem de sacos e sabores. Apenas referencia.", skuCode:"SKU", skuTitle:"Produto", skuBags:"Sacos", skuComp:"Conteudo", skuSearchP:"Buscar SKU, produto ou sabor...", skuCount:"SKUs",
       stockbuild:"Construir Estoque", sbHint:"Progresso de construcao vs metas ao vivo. Atualize Em Estoque conforme avanca - toda a equipe ve na hora. Campo amarelo = insira a contagem de hoje.", sbGoal:"Meta", sbOnHand:"Em estoque", sbToBuild:"A fazer", sbPallets:"Paletes", sbDone:"Pronto", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Salvo", sbRetail:"Varejo", sbEcom:"E-Commerce", sb12pk:"Caixas de 12",
-      retailprod:"Producao Varejo", rpHint:"Quando um palete e feito, escaneie o codigo do produto (ou escolha), insira a quantidade e ela e adicionada ao estoque na hora. Imprima a folha de codigos com o botao abaixo e coloque na linha.", rpScanP:"Escaneie codigo do produto", rpPickProduct:"Ou escolha um produto...", rpQty:"Quantidade feita", rpAdd:"Adicionar ao estoque", rpAdded:"Adicionado ao estoque", rpCurrent:"Em estoque atual", rpRecent:"Producao recente", rpNone:"Nada adicionado ainda.", rpPrint:"Imprimir codigos de produto", rpNotFound:"Codigo nao reconhecido",
+      retailprod:"Producao Varejo",ecomprod:"E-Commerce",epHint:"Produto e-commerce / DTC (pacotes variados). Escaneie ou escolha o item, insira a quantidade produzida e ela e adicionada ao estoque na hora. Os pedidos do ShipStation e TikTok vao baixar isso automaticamente quando conectados.", rpHint:"Quando um palete e feito, escaneie o codigo do produto (ou escolha), insira a quantidade e ela e adicionada ao estoque na hora. Imprima a folha de codigos com o botao abaixo e coloque na linha.", rpScanP:"Escaneie codigo do produto", rpPickProduct:"Ou escolha um produto...", rpQty:"Quantidade feita", rpAdd:"Adicionar ao estoque", rpAdded:"Adicionado ao estoque", rpCurrent:"Em estoque atual", rpRecent:"Producao recente", rpNone:"Nada adicionado ainda.", rpPrint:"Imprimir codigos de produto", rpNotFound:"Codigo nao reconhecido",
       qaHint:"Produto em quarentena - NAO tocar (embrulhado em filme vermelho). Geralmente vencido ou com informacao incorreta. Libere os bons para o estoque ou descarte-os.",
       qaTitle:"Em quarentena (filme vermelho - nao tocar)", convertGood:"Liberar para estoque bom", scrapIt:"Descartar", qaEmpty:"Nada em quarentena.",
       columns:"Colunas", colCategory:"Categoria", colItem:"Item", colOnhand:"Em estoque", colReorder:"Reposicao", colStatus:"Status", resetCols:"Reiniciar",
@@ -303,7 +303,7 @@
   let lang = "en"; const L = k => (T[lang][k] !== undefined ? T[lang][k] : (T.en[k] !== undefined ? T.en[k] : k));
   let active = "home"; let catFilter = "all";
   let purchMode = "list"; let purchSup = null; let receivingPOid = null;
-  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","stockbuild","seasoning","seed","skus","mixing","pmac","count","locations","finbags","pmacout","purchasing","supplierpos","people","improve","labels","log","settings"];
+  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","stockbuild","seasoning","seed","skus","mixing","pmac","count","locations","finbags","pmacout","purchasing","supplierpos","people","improve","labels","log","settings"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -475,7 +475,7 @@
     { key:"", items:["home","alerts"] },
     { key:"grpReceiving", items:["receive","recvlog","returns","qa"] },
     { key:"grpInventory", items:["dash","adjust","count","move","locations","finbags","seasoning","seed","skus","labels"] },
-    { key:"grpProduction", items:["produce","retailprod","stockbuild","orders","orderdocs"] },
+    { key:"grpProduction", items:["produce","retailprod","ecomprod","stockbuild","orders","orderdocs"] },
     { key:"grpShipping", items:["shiplog"] },
     { key:"grpMixing", items:["mixing"] },
     { key:"grpPmac", items:["pmac","pmacout"] },
@@ -490,7 +490,7 @@
     home:"home", dash:"layout-dashboard", alerts:"bell", adjust:"sliders-horizontal",
     receive:"package-plus", recvlog:"clipboard-list", putaway:"package-check", returns:"rotate-ccw",
     orders:"receipt", orderdocs:"folder", shiplog:"truck", rd:"flask-conical", qa:"shield-alert",
-    move:"arrow-left-right", produce:"factory", retailprod:"package", stockbuild:"layers",
+    move:"arrow-left-right", produce:"factory", retailprod:"package", ecomprod:"laptop", stockbuild:"layers",
     seasoning:"flame", seed:"sprout", skus:"barcode", finbags:"shopping-bag", pmacout:"package-open",
     mixing:"cooking-pot", pmac:"wrench", count:"clipboard-check", locations:"map-pin",
     purchasing:"shopping-cart", supplierpos:"file-text", people:"users", labels:"tag",
@@ -1470,11 +1470,14 @@
     };
     return summary + SB_CATS.map(catBlock).join("");
   }
-  function viewRetailProd() {
-    const sel = SB_ITEMS.find(i => i.key === rpSel);
+  function isEcomItem(i) { return i.cat === "Others" && i.sub === "E-Com"; }
+  function productionEntry(channel) {
+    const isEcom = channel === "ecom";
+    const items = SB_ITEMS.filter(i => isEcom ? isEcomItem(i) : !isEcomItem(i));
+    const sel = items.find(i => i.key === rpSel) || null;
     const oh = DB.stockBuild ? DB.stockBuild() : {};
     const curOn = sel ? (Number((oh[sel.key] || {}).on_hand) || 0) : 0;
-    const opts = SB_ITEMS.map(i => '<option value="' + i.key + '"' + (i.key === rpSel ? ' selected' : '') + '>' + esc(i.cat + " - " + i.name) + '</option>').join("");
+    const opts = items.map(i => '<option value="' + i.key + '"' + (i.key === rpSel ? ' selected' : '') + '>' + esc(i.cat + " - " + i.name) + '</option>').join("");
     const selBlock = sel
       ? '<div class="rpsel"><div class="rpname">' + esc(sel.cat) + ' &middot; <b>' + esc(sel.name) + '</b></div><div class="muted sm">' + L("rpCurrent") + ': <b>' + fmt(curOn) + '</b> / ' + fmt(sel.goal) + ' ' + esc(sel.unit) + '</div></div>'
       : '';
@@ -1482,9 +1485,17 @@
       ? '<table><thead><tr><th>' + L("item") + '</th><th class="right">' + L("qty") + '</th><th>' + L("when") + '</th></tr></thead><tbody>' +
         rpRecent.slice(0, 10).map(r => '<tr><td>' + esc(r.name) + '</td><td class="right"><b>+' + fmt(r.qty) + '</b></td><td class="muted sm">' + esc(r.t) + '</td></tr>').join("") + '</tbody></table>'
       : '<p class="muted">' + L("rpNone") + '</p>';
-    return '<div class="card"><div class="suprow"><h2 style="margin:0">' + L("retailprod") + '</h2>' +
+    const titleKey = isEcom ? "ecomprod" : "retailprod";
+    const hintKey = isEcom ? "epHint" : "rpHint";
+    // build-progress mini-summary for this channel
+    let g = 0, o = 0; items.forEach(i => { g += i.goal; o += (Number((oh[i.key] || {}).on_hand) || 0); });
+    const pct = g ? Math.round(o / g * 100) : 0;
+    const prog = '<div class="kpis"><div class="kpi"><div class="n">' + fmt(o) + '</div><div class="l">' + L("sbOnHand") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(Math.max(g - o, 0)) + '</div><div class="l">' + L("sbToBuild") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + pct + '%</div><div class="l">' + L("sbComplete") + '</div></div></div>';
+    return '<div class="card"><div class="suprow"><h2 style="margin:0">' + L(titleKey) + '</h2>' +
       '<button class="ghost sm" onclick="UI.rpPrint()">\u{1F5A8}\u{FE0F} ' + L("rpPrint") + '</button></div>' +
-      '<p class="hint">' + L("rpHint") + '</p>' +
+      '<p class="hint">' + L(hintKey) + '</p>' + prog +
       '<div class="scan"><label>' + L("rpScanP") + '</label><div class="scanrow"><input id="rp-scan" autocomplete="off" autofocus placeholder="' + L("rpScanP") + '" onkeydown="if(event.key===\'Enter\'){event.preventDefault();UI.rpScan();}">' +
       '<button type="button" class="cambtn" onclick="UI.cam(\'rp-scan\')">' + L("camera") + '</button></div></div>' +
       '<div class="row"><div><label>' + L("rpPickProduct") + '</label><select id="rp-pick" onchange="UI.rpPick(this.value)"><option value="">' + L("rpPickProduct") + '</option>' + opts + '</select></div>' +
@@ -1494,6 +1505,8 @@
       '<button class="primary" onclick="UI.rpAdd()">' + L("rpAdd") + '</button>' +
       '<h2 class="sub2" style="margin-top:18px">' + L("rpRecent") + '</h2>' + recent + '</div>';
   }
+  function viewRetailProd() { return productionEntry("retail"); }
+  function viewEcomProd() { return productionEntry("ecom"); }
   function viewQA() {
     const hold = [];
     ["QA-HOLD", "QUARANTINE"].forEach(z => DB.items().forEach(i => { const q = DB.atLoc(i.id, z); if (q > 0) hold.push({ i, z, q }); }));
@@ -2492,7 +2505,7 @@
   function render() {
     renderNav(); refreshDatalists();
     const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
-      move: viewMove, produce: viewProduce, retailprod: viewRetailProd, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
+      move: viewMove, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, labels: viewLabels, log: viewLog, settings: viewSettings };
     $("view").innerHTML = (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
