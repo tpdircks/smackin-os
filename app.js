@@ -305,6 +305,22 @@
   const SHIP_REQUESTERS = ["Matt","Troy","Brittney","Ken","Javier","Adriana","Jesus","Other"];
   const RECV_LOG_CONDITIONS = ["Good","Damaged","Short","Over","Hold"];
   const RECV_LOG_RECEIVERS = ["Adriana","Jesus","Javier","Edgar","Marlin","Jhonny","Ken","Troy","Other"];
+  // Real product bag photos (smackinsunflowerseeds.com CDN) keyed by normalized flavor name
+  const CDN = "https://smackinsunflowerseeds.com/cdn/shop/files/";
+  const FLAVOR_IMG = {
+    ogoriginal: CDN + "OG_4_Front_c5bc8bec-283d-41cf-86c0-424b7a0c7e0a.png?width=72",
+    cinnamonchurro: CDN + "CinnamonChurro_4_Front_6c915739-af26-4377-b9b3-1154291fe004.png?width=72",
+    backyardbbq: CDN + "BackyardBBQ_4_Front_9369d97c-6a51-45aa-bc06-ab665870f497.png?width=72",
+    garlicparmesan: CDN + "GarlicParmesan_4_Front_82d20d78-b47e-4491-9348-c46a82699860.png?width=72",
+    dillpickle: CDN + "DillPickle_4_Front_7b599062-fd89-4279-9c87-f4e74c0eea5d.png?width=72",
+    cheddarjalapeno: CDN + "CheddarJalapeno_4_Front_c78f4ffd-4063-43a3-a8dd-0bcf6b53729c.png?width=72",
+    ranch: CDN + "Ranch_4_Front_80238a8d-81ef-4769-8e0f-ac04663a6534.png?width=72",
+    sourcreamonion: CDN + "SourCream_Onion_4_Front_d1bf59f8-2d3b-4f2a-a69e-a3dea130cd27.png?width=72",
+    maplebrownsugar: CDN + "MapleBrownSugar_4_Front_2112beec-1fb1-45f6-89ff-ef72a70fe05f.png?width=72",
+    lemonpepper: CDN + "LemonPepper_4_Front_2b7bf9f2-5012-4f7f-adc0-ac1e54696466.png?width=72",
+    crackedpepper: CDN + "CrackedPepper_4_Front_59837e87-ef45-4540-8540-f98da28bdea2.png?width=72"
+  };
+  function flavorImg(fl) { const k = String(fl || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, ""); return FLAVOR_IMG[k] || ""; }
   function trackingUrl(carrier, num) {
     if (!num) return "";
     const n = encodeURIComponent(String(num).trim());
@@ -499,6 +515,7 @@
   let recvFile = null;                        // Receiving Log paperwork upload state
   let shipEditId = null, recvEditId = null, orderEditId = null, seasEditId = null, seedEditId = null;  // inline-edit: id of record being edited
   let pmoSel = "", pmoRecent = [];   // P-Mac bag-output: selected bag item + recent adds this session
+  let navCollapsed = (function () { try { return new Set(JSON.parse(localStorage.getItem("smk-navcollapsed") || "[]")); } catch (e) { return new Set(); } })();  // collapsed nav groups
   const BAG_STAGE = "PACKOUT";       // finished bags stage here when they come off P-Mac
   let locSel = null;      // selected slot/zone code in the rack map
   // Physically blocked rack slots (numbering unchanged; not storable) - Troy's real floor
@@ -1725,7 +1742,9 @@
     const rows = flavors.map(fl => {
       const o4 = on(b4, fl), o15 = on(b15, fl);
       if (o4) t4 += o4; if (o15) t15 += o15;
-      return '<tr><td><b>' + esc(fl) + '</b></td><td class="right">' + (o4 != null ? fmt(o4) : "&mdash;") + '</td><td class="right">' + (o15 != null ? fmt(o15) : "&mdash;") + '</td></tr>';
+      const img = flavorImg(fl);
+      const nameCell = '<div class="flavcell">' + (img ? '<img class="flavimg" src="' + img + '" alt="" loading="lazy">' : '<span class="flavimg ph"></span>') + '<b>' + esc(fl) + '</b></div>';
+      return '<tr><td>' + nameCell + '</td><td class="right">' + (o4 != null ? fmt(o4) : "&mdash;") + '</td><td class="right">' + (o15 != null ? fmt(o15) : "&mdash;") + '</td></tr>';
     }).join("");
     return '<div class="card"><h2>' + L("finbags") + '</h2><p class="hint">' + L("fbHint") + '</p>' +
       '<div class="kpis"><div class="kpi"><div class="n">' + fmt(t4) + '</div><div class="l">' + L("fb4oz") + '</div></div>' +
@@ -1999,6 +2018,7 @@
     },
     // ---- role + dashboard columns ----
     setRole(r) { prefs.role = r; savePrefs(); if (visibleTabs().indexOf(active) < 0) active = "home"; render(); },
+    navGroupToggle(key) { if (navCollapsed.has(key)) navCollapsed.delete(key); else navCollapsed.add(key); try { localStorage.setItem("smk-navcollapsed", JSON.stringify([...navCollapsed])); } catch (e) {} renderNav(); },
     colPanel() { colPanel = !colPanel; render(); },
     colToggle(c) { const i = prefs.colHidden.indexOf(c);
       if (i < 0) { if (shownCols().length <= 1) return toast("!"); prefs.colHidden.push(c); } else prefs.colHidden.splice(i, 1);
@@ -2287,18 +2307,23 @@
     const roleSel = '<select class="rolesel" title="' + L("role") + '" onchange="UI.setRole(this.value)">' +
       [["all", "roleAll"], ["receiving", "roleReceiving"], ["production", "roleProduction"], ["mixing", "roleMixing"], ["pmac", "rolePmac"], ["rnd", "roleRnd"]].map(([v, k]) =>
         '<option value="' + v + '"' + (prefs.role === v ? " selected" : "") + '>' + L(k) + '</option>').join("") + '</select>';
+    const navBtn = tb => {
+      let badge = "";
+      if (tb === "orders" && newOrdersCount() > 0) badge = '<span class="navbadge">' + newOrdersCount() + '</span>';
+      else if (tb === "alerts" && alertCount() > 0) badge = '<span class="navbadge alert">' + alertCount() + '</span>';
+      return '<button class="navitem ' + (tb === active ? "active" : "") + '" onclick="UI_go(\'' + tb + '\')">' +
+        '<span class="navico">' + (NAV_ICON[tb] || "") + '</span><span>' + L(tb) + '</span>' + badge + '</button>';
+    };
     let html = roleSel;
     NAV_GROUPS.forEach(g => {
       const items = g.items.filter(t => vis.indexOf(t) >= 0);
       if (!items.length) return;
-      html += '<div class="navgroup">' + (g.key ? '<div class="navlabel">' + L(g.key) + '</div>' : "");
-      html += items.map(tb => {
-        let badge = "";
-        if (tb === "orders" && newOrdersCount() > 0) badge = '<span class="navbadge">' + newOrdersCount() + '</span>';
-        else if (tb === "alerts" && alertCount() > 0) badge = '<span class="navbadge alert">' + alertCount() + '</span>';
-        return '<button class="navitem ' + (tb === active ? "active" : "") + '" onclick="UI_go(\'' + tb + '\')">' +
-          '<span class="navico">' + (NAV_ICON[tb] || "") + '</span><span>' + L(tb) + '</span>' + badge + '</button>';
-      }).join("");
+      if (!g.key) { html += '<div class="navgroup">' + items.map(navBtn).join("") + '</div>'; return; }
+      const hasActive = items.indexOf(active) >= 0;
+      const collapsed = navCollapsed.has(g.key) && !hasActive;
+      html += '<div class="navgroup' + (collapsed ? ' collapsed' : '') + '">' +
+        '<button class="navlabel" onclick="UI.navGroupToggle(\'' + g.key + '\')"><span class="navcaret">' + (collapsed ? "▸" : "▾") + '</span>' + L(g.key) + '</button>';
+      if (!collapsed) html += items.map(navBtn).join("");
       html += '</div>';
     });
     $("nav").innerHTML = html;
