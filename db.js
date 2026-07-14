@@ -501,6 +501,29 @@ window.DB = (function () {
     return { ok: true };
   }
 
+  // ---------- Item field edit (reorder point / preferred supplier, etc.) ----------
+  async function updateItemFields(id, patch, op) {
+    const clean = {};
+    if (patch.reorder !== undefined) clean.reorder = (patch.reorder === "" || patch.reorder == null) ? 0 : Number(patch.reorder);
+    if (patch.supplier !== undefined) clean.supplier = patch.supplier || null;
+    if (patch.unit !== undefined) clean.unit = patch.unit;
+    if (patch.name !== undefined) clean.name = patch.name;
+    if (!Object.keys(clean).length) return { ok: true };
+    const it = cache.items.find(x => x.id === id);
+    const logEntry = { a: "Item updated", d: (it ? it.name : id) + " " + JSON.stringify(clean), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      const r = await sb.from("items").update(clean).eq("id", id);
+      if (r && r.error) return { ok: false, msg: r.error.message || "update failed" };
+      if (it) Object.assign(it, clean);
+      await cloud.addLog(logEntry);
+    } else {
+      if (it) Object.assign(it, clean);
+      local.addLog(logEntry); local.save();
+    }
+    emit();
+    return { ok: true };
+  }
+
   // ---------- Continuous Improvement (Lean / 5S / Kaizen initiatives) ----------
   const IMP_FIELDS = ["title","ci_type","area","owner","priority","status","problem","impact","opened_date","completed_date"];
   function cleanImp(rec) { const o = {}; IMP_FIELDS.forEach(k => { if (rec[k] !== undefined) o[k] = rec[k] === "" ? null : rec[k]; }); return o; }
@@ -970,7 +993,7 @@ window.DB = (function () {
     init, onChange, get mode() { return mode; },
     items, suppliers, stock, log, itemByCode, onHand, atLoc,
     purchaseOrders, supplierName, createPO, setPOStatus, deletePO, receivePO,
-    receive, move, adjust, adjustTotal, produce, resetDemo,
+    receive, move, adjust, adjustTotal, produce, resetDemo, updateItemFields,
     returnStock, seasLots, addSeasLot, setSeasLotStatus, updateSeasLot, quarantineExpiredSeas,
     seedLots, addSeedLot, setSeedLotStatus, updateSeedLot,
     stockBuild, setStockBuildOnHand,

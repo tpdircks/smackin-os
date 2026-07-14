@@ -25,7 +25,7 @@
       moveHint:"Scan item, pick from and to (slot, WIP, Pack-Out, Shipping...).",
       produceHint:"Record finished 4oz bags off the line. Adds bags, consumes film + seasoning.",
       countHint:"Cycle count: scan item + slot, enter the counted quantity; the system adjusts.",
-      locHint:"What is in each location now.", purchHint:"Reorder alerts plus full purchase orders.",
+      locHint:"What is in each location now.", purchHint:"Reorder alerts plus full purchase orders.",purchBuyList:"Buy List",purchSetup:"Reorder Setup",rsHint:"Set a reorder point and preferred supplier for each item. Items with both set will trigger on the Buy List when stock runs low.",rsNoSup:"— none —",rsNeeds:"Needs setup",rsReady:"Ready",rsReorderPt:"Reorder point",rsNeedShort:"need setup",rsSaved:"Saved",rsSearchP:"Search items...",
       locMap:"Rack map", locList:"List", locFloor:"Floor plan", locOccupied:"Occupied", locEmpty:"Empty", locBlocked:"Blocked", locSection:"Section", locDocks:"Dock doors", locZones:"Zones & staging", locClickHint:"Top-down view of the racks. Green = occupied, click any slot to see what is stored there. Bay 01 is at the dock end.", locNothing:"Nothing stored in this slot.", locSlot:"Slot", locBaysUsed:"slots used", locOfficeEnd:"office end", locFarEnd:"far end",
       locFloorNote:"Top-down map of the building - every place product is stored or moves through. Click a rack section or staging zone to see its contents. Section A/B/C/D letters are a best guess - tell me which physical run is which and I will lock them in.", locStorage:"Storage (racking)", locTransfer:"Production & transfer areas", locStaging:"Staging & work zones",
       reorderSug:"Reorder suggestions", purchOrders:"Purchase orders", newPO:"New PO", createDraft:"Create draft PO",
@@ -123,7 +123,7 @@
       moveHint:"Escanee articulo, elija desde y hacia (slot, WIP, Empaque, Embarque...).",
       produceHint:"Registre bolsas 4oz de la linea. Suma bolsas, consume film + sazon.",
       countHint:"Conteo ciclico: escanee articulo + slot, ingrese la cantidad contada.",
-      locHint:"Lo que hay en cada ubicacion ahora.", purchHint:"Alertas de reorden mas ordenes de compra.",
+      locHint:"Lo que hay en cada ubicacion ahora.", purchHint:"Alertas de reorden mas ordenes de compra.",purchBuyList:"Lista de compra",purchSetup:"Config. de reorden",rsHint:"Defina un punto de reorden y proveedor preferido para cada articulo. Los articulos con ambos configurados apareceran en la Lista de compra cuando el stock baje.",rsNoSup:"— ninguno —",rsNeeds:"Falta config.",rsReady:"Listo",rsReorderPt:"Punto de reorden",rsNeedShort:"por configurar",rsSaved:"Guardado",rsSearchP:"Buscar articulos...",
       locMap:"Mapa de racks", locList:"Lista", locFloor:"Plano", locOccupied:"Ocupado", locEmpty:"Vacio", locBlocked:"Bloqueado", locSection:"Seccion", locDocks:"Puertas de muelle", locZones:"Zonas y staging", locClickHint:"Vista superior de los racks. Verde = ocupado, haga clic en un slot para ver que hay. La bahia 01 esta junto a los muelles.", locNothing:"Nada almacenado en este slot.", locSlot:"Slot", locBaysUsed:"slots usados", locOfficeEnd:"lado oficina", locFarEnd:"lado lejano",
       locFloorNote:"Plano superior del edificio - cada lugar donde se almacena o mueve producto. Haga clic en una seccion de rack o zona para ver su contenido. Las letras A/B/C/D son un estimado - digame que fila fisica es cual y las fijo.", locStorage:"Almacenamiento (racks)", locTransfer:"Areas de produccion y transferencia", locStaging:"Zonas de staging y trabajo",
       reorderSug:"Sugerencias de reorden", purchOrders:"Ordenes de compra", newPO:"Nueva orden", createDraft:"Crear borrador",
@@ -221,7 +221,7 @@
       moveHint:"Escaneie item, escolha de e para (slot, WIP, Empacotamento, Expedicao...).",
       produceHint:"Registre sacos 4oz da linha. Adiciona sacos, consome filme + tempero.",
       countHint:"Contagem ciclica: escaneie item + slot, digite a quantidade contada.",
-      locHint:"O que ha em cada local agora.", purchHint:"Alertas de reposicao mais ordens de compra.",
+      locHint:"O que ha em cada local agora.", purchHint:"Alertas de reposicao mais ordens de compra.",purchBuyList:"Lista de compras",purchSetup:"Config. de reposicao",rsHint:"Defina um ponto de reposicao e fornecedor preferido para cada item. Itens com ambos configurados aparecerao na Lista de compras quando o estoque baixar.",rsNoSup:"— nenhum —",rsNeeds:"Falta config.",rsReady:"Pronto",rsReorderPt:"Ponto de reposicao",rsNeedShort:"a configurar",rsSaved:"Salvo",rsSearchP:"Buscar itens...",
       locMap:"Mapa de racks", locList:"Lista", locFloor:"Planta", locOccupied:"Ocupado", locEmpty:"Vazio", locBlocked:"Bloqueado", locSection:"Secao", locDocks:"Portas de doca", locZones:"Zonas e staging", locClickHint:"Vista de cima dos racks. Verde = ocupado, clique em um slot para ver o que ha. A baia 01 fica junto as docas.", locNothing:"Nada armazenado neste slot.", locSlot:"Slot", locBaysUsed:"slots usados", locOfficeEnd:"lado escritorio", locFarEnd:"lado distante",
       locFloorNote:"Planta de cima do predio - cada lugar onde produto e armazenado ou movimentado. Clique em uma secao de rack ou zona para ver o conteudo. As letras A/B/C/D sao um palpite - diga qual fila fisica e qual e eu fixo.", locStorage:"Armazenamento (racks)", locTransfer:"Areas de producao e transferencia", locStaging:"Zonas de staging e trabalho",
       reorderSug:"Sugestoes de reposicao", purchOrders:"Ordens de compra", newPO:"Nova ordem", createDraft:"Criar rascunho",
@@ -303,6 +303,8 @@
   let lang = "en"; const L = k => (T[lang][k] !== undefined ? T[lang][k] : (T.en[k] !== undefined ? T.en[k] : k));
   let active = "home"; let catFilter = "all";
   let purchMode = "list"; let purchSup = null; let receivingPOid = null;
+  let purchView = "buy";  // Purchasing: "buy" (Buy List + POs) | "setup" (reorder-point/supplier config)
+  let purchSetupCat = "all";  // Reorder-setup category filter
   const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","stockbuild","seasoning","seed","skus","mixing","pmac","count","locations","finbags","pmacout","purchasing","supplierpos","people","improve","labels","log","settings"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
@@ -1704,11 +1706,45 @@
   function poStatusPill(s) { return '<span class="pill ' + (PO_PILL[s] || "low") + '">' + L("st_" + s) + '</span>'; }
   function suggestQty(i) { const oh = DB.onHand(i.id); return Math.max(i.reorder - oh, Math.round(i.reorder * 0.5)); }
 
+  function viewReorderSetup(toggle) {
+    const sups = DB.suppliers();
+    const supOpts = cur => '<option value="">' + L("rsNoSup") + '</option>' + sups.map(s => '<option value="' + s.id + '"' + (s.id === cur ? ' selected' : '') + '>' + esc(s.name) + '</option>').join("");
+    let its = DB.items().filter(i => purchSetupCat === "all" || i.category === purchSetupCat);
+    its = its.slice().sort((a, b) => {
+      const an = (!a.reorder || !a.supplier) ? 0 : 1, bn = (!b.reorder || !b.supplier) ? 0 : 1;
+      if (an !== bn) return an - bn;
+      return String(a.name).localeCompare(String(b.name));
+    });
+    const needCount = DB.items().filter(i => !i.reorder || !i.supplier).length;
+    const cbar = CATS.map(c => '<button class="' + (c === purchSetupCat ? "active" : "") + '" onclick="UI.purchSetupCat(\'' + c + '\')">' + (CATLBL[c] || c) + '</button>').join("");
+    const rows = its.map(i => {
+      const oh = DB.onHand(i.id);
+      const need = (!i.reorder || !i.supplier);
+      const txt = ((i.name || "") + " " + (i.code || "")).toLowerCase().replace(/"/g, "");
+      const chip = need ? '<span class="pill low">' + L("rsNeeds") + '</span>' : '<span class="pill ok">' + L("rsReady") + '</span>';
+      return '<tr data-txt="' + txt + '"><td><b>' + esc(i.name) + '</b><div class="muted sm">' + esc(i.code || "") + '</div></td>' +
+        '<td class="right">' + fmt(oh) + ' ' + esc(i.unit || "") + '</td>' +
+        '<td><input type="number" min="0" class="adjq" style="width:88px" value="' + (i.reorder || "") + '" onchange="UI.itemReorder(\'' + i.id + '\',this.value)"></td>' +
+        '<td><select onchange="UI.itemSupplier(\'' + i.id + '\',this.value)">' + supOpts(i.supplier) + '</select></td>' +
+        '<td>' + chip + '</td></tr>';
+    }).join("");
+    return '<div class="card"><div class="suprow"><h2 style="flex:1">' + L("purchasing") + '</h2>' +
+      '<button class="primary sm" onclick="UI.poNew(\'\')">+ ' + L("newPO") + '</button></div>' +
+      toggle + '<p class="hint" style="margin-top:10px">' + L("rsHint") + '</p></div>' +
+      '<div class="card"><h2 class="sub2">' + L("purchSetup") + ' &middot; ' + needCount + ' ' + L("rsNeedShort") + '</h2>' +
+      '<div class="catbar">' + cbar + '</div>' +
+      '<input id="rsSearch" autocomplete="off" oninput="UI.rsSearch(this.value)" placeholder="' + L("rsSearchP") + '" style="margin-bottom:10px">' +
+      '<table><thead><tr><th>' + L("item") + '</th><th class="right">' + L("onhand") + '</th><th>' + L("rsReorderPt") + '</th><th>' + L("alSupplier") + '</th><th>' + L("status") + '</th></tr></thead><tbody id="rsBody">' + rows + '</tbody></table></div>';
+  }
   function viewPurchasing() {
     if (purchMode === "new") return viewPONew();
-    let html = '<div class="card"><div class="suprow"><h2>' + L("purchasing") + '</h2>' +
+    const toggle = '<div class="ordtabs" style="margin:0">' +
+      '<button class="' + (purchView === "buy" ? "active" : "") + '" onclick="UI.purchView(\'buy\')">' + L("purchBuyList") + '</button>' +
+      '<button class="' + (purchView === "setup" ? "active" : "") + '" onclick="UI.purchView(\'setup\')">' + L("purchSetup") + '</button></div>';
+    if (purchView === "setup") return viewReorderSetup(toggle);
+    let html = '<div class="card"><div class="suprow"><h2 style="flex:1">' + L("purchasing") + '</h2>' +
       '<button class="primary sm" onclick="UI.poNew(\'\')">+ ' + L("newPO") + '</button></div>' +
-      '<p class="hint">' + L("purchHint") + '</p></div>';
+      toggle + '<p class="hint" style="margin-top:10px">' + L("purchHint") + '</p></div>';
 
     // --- reorder suggestions, grouped by supplier ---
     const low = DB.items().filter(i => statusOf(i) !== "ok" && i.supplier);
@@ -2414,6 +2450,12 @@
     },
     // ---- Purchase Orders ----
     poNew(sk) { purchSup = sk || null; purchMode = "new"; active = "purchasing"; closeDrawer(); render(); },
+    purchView(v) { purchView = v; render(); },
+    purchSetupCat(c) { purchSetupCat = c; render(); },
+    rsSearch(val) { const q = (val || "").toLowerCase().trim();
+      document.querySelectorAll("#rsBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
+    async itemReorder(id, val) { const r = await DB.updateItemFields(id, { reorder: val }, opVal()); if (r && r.ok === false) return toast(r.msg || "error"); toast(L("rsSaved")); },
+    async itemSupplier(id, val) { const r = await DB.updateItemFields(id, { supplier: val }, opVal()); if (r && r.ok === false) return toast(r.msg || "error"); toast(L("rsSaved")); },
     poBack() { purchMode = "list"; render(); },
     poSupChange() { purchSup = $("po-sup").value; render(); },
     async poSave() {
