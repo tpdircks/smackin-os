@@ -461,11 +461,17 @@
     { key:"grpHr", items:["people"] },
     { key:"grpSystem", items:["log","settings"] }
   ];
-  const NAV_ICON = { home:"\u{1F3E0}", dash:"\u{1F4CA}", alerts:"\u{1F514}", adjust:"\u{270F}\u{FE0F}", receive:"\u{1F4E5}", putaway:"\u{1F4E6}",
-    returns:"\u{21A9}\u{FE0F}", qa:"\u{1F7E5}", orders:"\u{1F9FE}", purchasing:"\u{1F6D2}", rd:"\u{1F9EA}",
-    move:"\u{1F500}", produce:"\u{1F3ED}", seasoning:"\u{1F9C2}", count:"\u{1F522}", locations:"\u{1F4CD}",
-    labels:"\u{1F3F7}\u{FE0F}", log:"\u{1F4DC}", settings:"\u{2699}\u{FE0F}", supplierpos:"\u{1F4C4}",
-    mixing:"\u{1F963}", pmac:"\u{1F527}", people:"\u{1F465}", orderdocs:"\u{1F4C1}", seed:"\u{1F33B}", skus:"\u{1F6CD}\u{FE0F}", stockbuild:"\u{1F3D7}\u{FE0F}", retailprod:"\u{1F4E6}", shiplog:"\u{1F69A}", recvlog:"\u{1F4E5}", finbags:"\u{1F6CD}\u{FE0F}", pmacout:"\u{1F9FA}" };
+  // Lucide icon names (clean SVG line icons) rendered via lucide.createIcons()
+  const NAV_ICON = {
+    home:"home", dash:"layout-dashboard", alerts:"bell", adjust:"sliders-horizontal",
+    receive:"package-plus", recvlog:"clipboard-list", putaway:"package-check", returns:"rotate-ccw",
+    orders:"receipt", orderdocs:"folder", shiplog:"truck", rd:"flask-conical", qa:"shield-alert",
+    move:"arrow-left-right", produce:"factory", retailprod:"package", stockbuild:"layers",
+    seasoning:"flame", seed:"sprout", skus:"barcode", finbags:"shopping-bag", pmacout:"package-open",
+    mixing:"cooking-pot", pmac:"wrench", count:"clipboard-check", locations:"map-pin",
+    purchasing:"shopping-cart", supplierpos:"file-text", people:"users", labels:"tag",
+    log:"history", settings:"settings" };
+  function drawIcons() { try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {} }
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
   let spoSort = { key: "created", dir: -1 };  // Supplier POs table sort (v25)
   let spoView = "list";   // Supplier POs: "list" | "create" (Excel-style PO entry form)
@@ -1713,7 +1719,7 @@
   function viewDept(nameKey) {
     return '<div class="card"><h2>' + L(nameKey) + '</h2>' +
       '<p class="hint">' + L("deptSoon") + '</p>' +
-      '<div class="deptplaceholder"><span class="navico" style="font-size:34px">' + (NAV_ICON[nameKey] || "") + '</span></div></div>';
+      '<div class="deptplaceholder"><i class="navico depticon" data-lucide="' + (NAV_ICON[nameKey] || "circle") + '"></i></div></div>';
   }
   function viewConsume(dept, titleKey) {
     const list = DB.consumption().filter(c => c.department === dept)
@@ -2312,7 +2318,7 @@
       if (tb === "orders" && newOrdersCount() > 0) badge = '<span class="navbadge">' + newOrdersCount() + '</span>';
       else if (tb === "alerts" && alertCount() > 0) badge = '<span class="navbadge alert">' + alertCount() + '</span>';
       return '<button class="navitem ' + (tb === active ? "active" : "") + '" onclick="UI_go(\'' + tb + '\')">' +
-        '<span class="navico">' + (NAV_ICON[tb] || "") + '</span><span>' + L(tb) + '</span>' + badge + '</button>';
+        '<i class="navico" data-lucide="' + (NAV_ICON[tb] || "circle") + '"></i><span>' + L(tb) + '</span>' + badge + '</button>';
     };
     let html = roleSel;
     NAV_GROUPS.forEach(g => {
@@ -2327,6 +2333,7 @@
       html += '</div>';
     });
     $("nav").innerHTML = html;
+    drawIcons();
   }
   window.UI_go = go;
   // Generic client-side sort for any <table class="sortable">: click a header to sort rows by
@@ -2367,6 +2374,7 @@
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
     $("modeBadge").className = "modebadge " + (DB.mode === "cloud" ? "ok" : "low");
     try { wireSortable(); } catch (e) {}
+    drawIcons();
   }
 
   // ---------- boot ----------

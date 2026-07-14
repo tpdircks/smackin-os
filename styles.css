@@ -34,7 +34,11 @@ nav#nav{flex:0 0 216px;width:216px;background:#fff;border-right:1px solid var(--
 nav#nav button.navitem{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:transparent;color:var(--navy);border:0;border-left:3px solid transparent;padding:9px 11px;cursor:pointer;font-size:14px;font-weight:600;border-radius:0 8px 8px 0}
 nav#nav button.navitem:hover{background:var(--light)}
 nav#nav button.navitem.active{background:var(--light);border-left:3px solid var(--orange);font-weight:800}
-.navico{width:19px;flex:0 0 19px;text-align:center;font-size:14px}
+.navico{width:19px;flex:0 0 19px;display:inline-flex;align-items:center;justify-content:center;color:#5f6b7a}
+.navico svg{width:18px;height:18px;stroke-width:2}
+nav#nav button.navitem.active .navico{color:var(--orange)}
+.deptplaceholder .navico.depticon{width:auto}
+.deptplaceholder .navico.depticon svg{width:44px;height:44px;stroke-width:1.6;color:#c2ccd8}
 .navbadge{background:var(--orange);color:#fff;font-size:11px;font-weight:800;min-width:18px;height:18px;line-height:18px;text-align:center;border-radius:9px;padding:0 5px;margin-left:auto}
 .navbadge.alert{background:var(--red)}
 .navbackdrop{display:none}
