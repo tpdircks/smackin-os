@@ -24,7 +24,15 @@
   const RETURN_DISPOSITIONS = ["Restock", "Quarantine", "Scrap"];
 
   // ---- Receiving pick-lists (from Adriana's Receiving Log SETTINGS tab) -----
-  const RECV_SUPPLIERS = ["ULINE", "BELMARK", "ALSCO", "Sunrich", "Other"];
+  const RECV_SUPPLIERS = [
+    // Manufacturers (ingredients / seasonings / seed)
+    "BlueGrass", "Rocky Mountain Spice Company", "Commercial Creamery Company", "Fire House Flavors",
+    "Great American Spice Company", "Savor Seasoning", "Chesapeake Spice", "Spiceology", "Regal Spice",
+    "Distributed by - WALMART", "Elite Spice", "ADM Corn Processing", "My Spice Sage", "In the Raw", "Sunrich",
+    // Other suppliers (packaging / logistics / labels / uniforms)
+    "Deline Box & Display", "Box Essentials LLC", "Weber Logistic", "Ernest - Salt Lake City",
+    "ULINE", "BELMARK", "ALSCO",
+    "Other"];
   const RECV_CATEGORIES = ["SEEDS", "OIL", "STEVIA", "SEASONING", "ROLL FILM 1.5 OZ", "ROLL FILM 4 OZ",
     "MASTER CASE", "TARGET MASTER CASE", "WAL MART BOX", "BOX 12 PCK", "BOX 24 PCK", "SLEEVES TARGET",
     "DISPLAY", "POLYMAILERS", "UNPRINTED BUCKETS", "STANDART BUCKETS", "BACKYARD SP BUCKETS", "BUCKETS BOX",
