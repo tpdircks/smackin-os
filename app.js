@@ -43,7 +43,7 @@
       slProduct:"Product / flavor", slLot:"Lot #", slMfr:"Manufacturer", slExp:"Expiration", slWeight:"Weight (lbs)",slLoc:"Location",
       addLot:"Add lot", seasLotsTitle:"Seasoning lots (earliest expiration first)", quarantineExpired:"Quarantine expired lots",
       noLots:"No seasoning lots yet.", markQuar:"Quarantine", markGood:"Mark good", expiredTag:"EXPIRED", quarTag:"QUARANTINE", goodTag:"GOOD",
-      seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdReceived:"Received", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
+      seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdReceived:"Received",sdIntCode:"Internal code",sdPackaging:"Packaging",sdPickPack:"Select packaging...",sdPallets:"# Pallets",sdPalletsShort:"pallet(s)",sdPackDate:"Packaging date", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
       skus:"SKUs", skusHint:"Finished-goods / retail SKU catalog - bundles, singles, and cases with bag count and flavor contents. Reference only.", skuCode:"SKU", skuTitle:"Product", skuBags:"Bags", skuComp:"Contents", skuSearchP:"Search SKU, product, or flavor...", skuCount:"SKUs",
       stockbuild:"Stock Build", sbHint:"Live build progress vs goals. Update On Hand as you go - the whole team sees it instantly. Yellow field = enter today's count.", sbGoal:"Goal", sbOnHand:"On hand", sbToBuild:"To build", sbPallets:"Pallets", sbDone:"Done", sbTotalGoal:"Total goal", sbComplete:"Complete", sbSaved:"Saved", sbRetail:"Retail", sbEcom:"E-Commerce", sb12pk:"12-Pack Boxes",
       retailprod:"Retail Production",ecomprod:"E-Commerce",epHint:"E-commerce / DTC product (variety packs). Scan or pick the item, enter the quantity built, and it is added to stock instantly. ShipStation and TikTok orders will draw this down automatically once connected.", rpHint:"When a pallet is made, scan its product barcode (or pick it), enter the quantity, and it is added to stock instantly. Print the barcode sheet with the button below and post it at the line.", rpScanP:"Scan product barcode", rpPickProduct:"Or pick a product...", rpQty:"Quantity made", rpAdd:"Add to stock", rpAdded:"Added to stock", rpCurrent:"Current on hand", rpRecent:"Recent production", rpNone:"Nothing added yet.", rpPrint:"Print product barcodes", rpNotFound:"Barcode not recognized",
@@ -141,7 +141,7 @@
       slProduct:"Producto / sabor", slLot:"Lote #", slMfr:"Fabricante", slExp:"Vencimiento", slWeight:"Peso (lbs)",slLoc:"Ubicacion",
       addLot:"Agregar lote", seasLotsTitle:"Lotes de sazon (vencimiento mas proximo primero)", quarantineExpired:"Cuarentena de vencidos",
       noLots:"Sin lotes de sazon aun.", markQuar:"Cuarentena", markGood:"Marcar bueno", expiredTag:"VENCIDO", quarTag:"CUARENTENA", goodTag:"BUENO",
-      seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdReceived:"Recibido", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
+      seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdReceived:"Recibido",sdIntCode:"Codigo interno",sdPackaging:"Empaque",sdPickPack:"Elegir empaque...",sdPallets:"# Paletas",sdPalletsShort:"paleta(s)",sdPackDate:"Fecha de empaque", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
       skus:"SKUs", skusHint:"Catalogo de SKU de producto terminado / retail - paquetes, individuales y cajas con cantidad de bolsas y sabores. Solo referencia.", skuCode:"SKU", skuTitle:"Producto", skuBags:"Bolsas", skuComp:"Contenido", skuSearchP:"Buscar SKU, producto o sabor...", skuCount:"SKUs",
       stockbuild:"Construir Inventario", sbHint:"Progreso de construccion vs metas en vivo. Actualice En Mano segun avanza - todo el equipo lo ve al instante. Campo amarillo = ingrese el conteo de hoy.", sbGoal:"Meta", sbOnHand:"En mano", sbToBuild:"Por hacer", sbPallets:"Paletas", sbDone:"Listo", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Guardado", sbRetail:"Minorista", sbEcom:"Comercio Electronico", sb12pk:"Cajas de 12",
       retailprod:"Produccion Retail",ecomprod:"E-Commerce",epHint:"Producto e-commerce / DTC (paquetes variados). Escanee o elija el articulo, ingrese la cantidad producida y se agrega al inventario al instante. Los pedidos de ShipStation y TikTok lo descontaran automaticamente cuando se conecten.", rpHint:"Cuando se hace una paleta, escanee su codigo de producto (o eligalo), ingrese la cantidad y se agrega al inventario al instante. Imprima la hoja de codigos con el boton de abajo y pongala en la linea.", rpScanP:"Escanee codigo del producto", rpPickProduct:"O elija un producto...", rpQty:"Cantidad hecha", rpAdd:"Agregar al inventario", rpAdded:"Agregado al inventario", rpCurrent:"En mano actual", rpRecent:"Produccion reciente", rpNone:"Nada agregado aun.", rpPrint:"Imprimir codigos de producto", rpNotFound:"Codigo no reconocido",
@@ -239,7 +239,7 @@
       slProduct:"Produto / sabor", slLot:"Lote #", slMfr:"Fabricante", slExp:"Validade", slWeight:"Peso (lbs)",slLoc:"Localizacao",
       addLot:"Adicionar lote", seasLotsTitle:"Lotes de tempero (validade mais proxima primeiro)", quarantineExpired:"Quarentena de vencidos",
       noLots:"Nenhum lote de tempero ainda.", markQuar:"Quarentena", markGood:"Marcar bom", expiredTag:"VENCIDO", quarTag:"QUARENTENA", goodTag:"BOM",
-      seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdReceived:"Recebido", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
+      seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdReceived:"Recebido",sdIntCode:"Codigo interno",sdPackaging:"Embalagem",sdPickPack:"Selecionar embalagem...",sdPallets:"# Paletes",sdPalletsShort:"palete(s)",sdPackDate:"Data de embalagem", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
       skus:"SKUs", skusHint:"Catalogo de SKU de produto acabado / varejo - pacotes, individuais e caixas com contagem de sacos e sabores. Apenas referencia.", skuCode:"SKU", skuTitle:"Produto", skuBags:"Sacos", skuComp:"Conteudo", skuSearchP:"Buscar SKU, produto ou sabor...", skuCount:"SKUs",
       stockbuild:"Construir Estoque", sbHint:"Progresso de construcao vs metas ao vivo. Atualize Em Estoque conforme avanca - toda a equipe ve na hora. Campo amarelo = insira a contagem de hoje.", sbGoal:"Meta", sbOnHand:"Em estoque", sbToBuild:"A fazer", sbPallets:"Paletes", sbDone:"Pronto", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Salvo", sbRetail:"Varejo", sbEcom:"E-Commerce", sb12pk:"Caixas de 12",
       retailprod:"Producao Varejo",ecomprod:"E-Commerce",epHint:"Produto e-commerce / DTC (pacotes variados). Escaneie ou escolha o item, insira a quantidade produzida e ela e adicionada ao estoque na hora. Os pedidos do ShipStation e TikTok vao baixar isso automaticamente quando conectados.", rpHint:"Quando um palete e feito, escaneie o codigo do produto (ou escolha), insira a quantidade e ela e adicionada ao estoque na hora. Imprima a folha de codigos com o botao abaixo e coloque na linha.", rpScanP:"Escaneie codigo do produto", rpPickProduct:"Ou escolha um produto...", rpQty:"Quantidade feita", rpAdd:"Adicionar ao estoque", rpAdded:"Adicionado ao estoque", rpCurrent:"Em estoque atual", rpRecent:"Producao recente", rpNone:"Nada adicionado ainda.", rpPrint:"Imprimir codigos de produto", rpNotFound:"Codigo nao reconhecido",
@@ -321,6 +321,13 @@
     { code: "L21", name: "Cheeseburger", bpc: 72 }, { code: "L38", name: "Salt & Vinegar", bpc: 72 }, { code: "L34", name: "Honey BBQ", bpc: 72 }
   ];
   const PROD_FMAP = {}; PROD_FLAVORS.forEach(f => PROD_FMAP[f.code] = f);
+  // Seed packaging profiles (Adriana): per = total lbs per pallet -> auto weight = pallets x per
+  const SEED_PACKS = [
+    { key: "30x50", label: "30 bags x 50 lb / pallet", per: 1500 },
+    { key: "30x25", label: "30 bags x 25 lb / pallet", per: 750 },
+    { key: "tote", label: "Tote - 1 bag x 1,200 lb", per: 1200 }
+  ];
+  const SEED_PACK_MAP = {}; SEED_PACKS.forEach(p => SEED_PACK_MAP[p.key] = p);
   const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","seasoning","seed","skus","mixing","pmac","count","locations","finbags","pmacout","purchasing","supplierpos","people","improve","labels","log","settings"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
@@ -1459,23 +1466,30 @@
       const act = l.status === "Quarantine"
         ? '<button class="ghost sm" onclick="UI.seedStatus(\'' + l.id + '\',\'Good\')">' + L("markGood") + '</button>'
         : '<button class="ghost sm danger" onclick="UI.seedStatus(\'' + l.id + '\',\'Quarantine\')">' + L("markQuar") + '</button>';
-      return '<tr><td><b>' + esc(l.product || l.seed_code || "") + '</b></td><td>' + esc(l.lot || "—") + '</td><td class="muted sm">' + esc(l.supplier || "—") +
-        '</td><td>' + (rec || "—") + '</td><td class="right">' + fmt(l.weight) + '</td><td>' + stat + '</td><td>' + act + ' <button class="ghost sm" title="' + L("editRow") + '" onclick="UI.seedEdit(\'' + l.id + '\')">&#9998;</button></td></tr>';
-    }).join("") : '<tr><td colspan="7" class="muted">' + L("noSeedLots") + '</td></tr>';
+      const pk = SEED_PACK_MAP[l.packaging];
+      const packDesc = (Number(l.pallets) ? fmt(l.pallets) + " " + L("sdPalletsShort") : "") + (pk ? (Number(l.pallets) ? " · " : "") + esc(pk.label) : "");
+      return '<tr><td><b>' + esc(l.product || l.seed_code || "") + '</b></td><td>' + esc(l.lot || "—") + '</td><td>' + (l.internal_code ? '<span class="tag">' + esc(l.internal_code) + '</span>' : "—") + '</td><td class="muted sm">' + esc(l.supplier || "—") +
+        '</td><td>' + (rec || "—") + '</td><td class="right">' + fmt(l.weight) + '</td><td class="muted sm">' + (packDesc || "—") + '</td><td>' + stat + '</td><td>' + act + ' <button class="ghost sm" title="' + L("editRow") + '" onclick="UI.seedEdit(\'' + l.id + '\')">&#9998;</button></td></tr>';
+    }).join("") : '<tr><td colspan="9" class="muted">' + L("noSeedLots") + '</td></tr>';
     const today = new Date().toISOString().slice(0, 10);
     return '<div class="card"><h2>' + L("seed") + '</h2><p class="hint">' + L("seedHint") + '</p>' +
       (sdediting ? '<p class="hint">&#9998; ' + L("editingRow") + '</p>' : '') +
       '<div class="row"><div><label>' + L("sdType") + '</label><select id="sd-type">' + opts + '</select></div>' +
       '<div><label>' + L("slLot") + '</label><input id="sd-lot" autocomplete="off" placeholder="# 4471" value="' + av2(sedt.lot) + '"></div>' +
+      '<div><label>' + L("sdIntCode") + '</label><input id="sd-icode" autocomplete="off" placeholder="Code #J" value="' + av2(sedt.internal_code) + '"></div>' +
       '<div><label>' + L("supplier") + '</label><select id="sd-sup">' + supOpts + '</select></div></div>' +
+      '<div class="row"><div><label>' + L("sdPackaging") + '</label><select id="sd-pack" onchange="UI.seedCalcWt()"><option value="">' + L("sdPickPack") + '</option>' +
+      SEED_PACKS.map(p => '<option value="' + p.key + '"' + (sdediting && sedt.packaging === p.key ? ' selected' : '') + '>' + esc(p.label) + '</option>').join("") + '</select></div>' +
+      '<div><label>' + L("sdPallets") + '</label><input id="sd-pallets" type="number" min="0" step="1" oninput="UI.seedCalcWt()" placeholder="0" value="' + (sdediting && Number(sedt.pallets) ? Number(sedt.pallets) : "") + '"></div>' +
+      '<div><label>' + L("slWeight") + '</label><input id="sd-wt" type="number" min="0" step="0.1" placeholder="0" value="' + (sdediting && Number(sedt.weight) ? Number(sedt.weight) : "") + '"></div></div>' +
       '<div class="row"><div><label>' + L("sdReceived") + '</label><input id="sd-rec" type="date" value="' + (sdediting && sedt.received_date ? (sedt.received_date + "").slice(0, 10) : today) + '"></div>' +
-      '<div><label>' + L("slWeight") + '</label><input id="sd-wt" type="number" min="0" step="0.1" placeholder="0" value="' + (sdediting && Number(sedt.weight) ? Number(sedt.weight) : "") + '"></div>' +
+      '<div><label>' + L("sdPackDate") + '</label><input id="sd-pdate" type="date" value="' + (sdediting && sedt.packaged_date ? (sedt.packaged_date + "").slice(0, 10) : "") + '"></div>' +
       '<div style="align-self:end">' + opField("Adriana") + '</div></div>' +
       '<button class="primary" onclick="UI.addSeedLot()">' + (sdediting ? L("saveChanges") : L("addLot")) + '</button>' +
       (sdediting ? ' <button class="ghost" style="margin-top:14px" onclick="UI.seedEditCancel()">' + L("ordCancel") + '</button>' : '') +
       '<h2 class="sub2" style="margin-top:18px">' + L("seedLotsTitle") + '</h2>' +
-      '<table class="sortable"><thead><tr><th>' + L("sdType") + '</th><th>' + L("slLot") + '</th><th>' + L("supplier") + '</th><th>' + L("sdReceived") +
-      '</th><th class="right">' + L("slWeight") + '</th><th>' + L("status") + '</th><th data-nosort></th></tr></thead><tbody>' + body + '</tbody></table></div>';
+      '<table class="sortable"><thead><tr><th>' + L("sdType") + '</th><th>' + L("slLot") + '</th><th>' + L("sdIntCode") + '</th><th>' + L("supplier") + '</th><th>' + L("sdReceived") +
+      '</th><th class="right">' + L("slWeight") + '</th><th>' + L("sdPackaging") + '</th><th>' + L("status") + '</th><th data-nosort></th></tr></thead><tbody>' + body + '</tbody></table></div>';
   }
   function viewSkus() {
     const all = (window.SMACKIN_SKUS || []);
@@ -2210,11 +2224,15 @@
     async quarExpired() { const n = await DB.quarantineExpiredSeas(opVal()); toast(n ? n + " -> " + L("quarTag") : L("allgood")); },
     seedEdit(id) { seedEditId = id; render(); window.scrollTo(0, 0); },
     seedEditCancel() { seedEditId = null; render(); },
+    seedCalcWt() { const pk = SEED_PACK_MAP[($("sd-pack") || {}).value]; const pl = parseFloat(($("sd-pallets") || {}).value) || 0;
+      if (pk && pl > 0 && $("sd-wt")) $("sd-wt").value = Math.round(pk.per * pl); },
     async addSeedLot() {
       const tv = (($("sd-type") || {}).value || "").split("|"); const wt = parseFloat(($("sd-wt") || {}).value);
       if (!tv[0]) return toast(L("notfound")); if (!(wt > 0)) return toast(L("enter"));
       const rec = { seed_code: tv[0], product: tv[1] || tv[0], lot: (($("sd-lot") || {}).value || "").trim(),
-        supplier: ($("sd-sup") || {}).value || "", received_date: ($("sd-rec") || {}).value || null, weight: wt };
+        supplier: ($("sd-sup") || {}).value || "", received_date: ($("sd-rec") || {}).value || null, weight: wt,
+        internal_code: (($("sd-icode") || {}).value || "").trim(), packaged_date: ($("sd-pdate") || {}).value || null,
+        pallets: ($("sd-pallets") || {}).value || 0, packaging: ($("sd-pack") || {}).value || "" };
       if (seedEditId) { await DB.updateSeedLot(seedEditId, rec, opVal()); seedEditId = null; toast(L("saved") + " ✓"); render(); return; }
       await DB.addSeedLot(rec, opVal());
       toast(L("addLot") + " ✓"); go("seed");

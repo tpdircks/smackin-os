@@ -132,7 +132,8 @@ window.DB = (function () {
       }));
       cache.seedLots = (sdl && sdl.data ? sdl.data : []).map(r => ({
         id: r.id, seed_code: r.seed_code, product: r.product, lot: r.lot, supplier: r.supplier,
-        received_date: r.received_date, weight: Number(r.weight) || 0, status: r.status || "Good", created_at: r.created_at
+        received_date: r.received_date, weight: Number(r.weight) || 0, status: r.status || "Good", created_at: r.created_at,
+        internal_code: r.internal_code || "", packaged_date: r.packaged_date, pallets: Number(r.pallets) || 0, packaging: r.packaging || ""
       }));
       cache.stockBuild = {};
       (sbd && sbd.data ? sbd.data : []).forEach(r => { cache.stockBuild[r.item_key] = { on_hand: Number(r.on_hand) || 0, updated_by: r.updated_by, updated_at: r.updated_at }; });
@@ -628,6 +629,8 @@ window.DB = (function () {
     const row = {
       seed_code: rec.seed_code || "", product: rec.product || "", lot: rec.lot || "",
       supplier: rec.supplier || "", received_date: rec.received_date || null, weight: Number(rec.weight) || 0,
+      internal_code: rec.internal_code || "", packaged_date: rec.packaged_date || null,
+      pallets: Number(rec.pallets) || 0, packaging: rec.packaging || "",
       status: "Good", created_at: new Date().toISOString()
     };
     const logEntry = { a: "Seed lot", d: (row.product || row.seed_code) + " lot " + row.lot + " " + fmt(row.weight) + " lb (" + (row.supplier || "n/a") + ")", u: op, t: row.created_at };
@@ -658,7 +661,9 @@ window.DB = (function () {
   }
   async function updateSeedLot(id, patch, op) {
     const p = { seed_code: patch.seed_code || "", product: patch.product || "", lot: patch.lot || "",
-      supplier: patch.supplier || "", received_date: patch.received_date || null, weight: Number(patch.weight) || 0 };
+      supplier: patch.supplier || "", received_date: patch.received_date || null, weight: Number(patch.weight) || 0,
+      internal_code: patch.internal_code || "", packaged_date: patch.packaged_date || null,
+      pallets: Number(patch.pallets) || 0, packaging: patch.packaging || "" };
     const logEntry = { a: "Seed edited", d: (p.product || p.seed_code) + " lot " + p.lot, u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
       await sb.from("seed_lots").update(p).eq("id", id);
