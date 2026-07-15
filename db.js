@@ -12,7 +12,7 @@ window.DB = (function () {
   const seed = window.SMACKIN_SEED;
   let mode = "local";
   let sb = null;                  // supabase client
-  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [] };
+  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [] };
   let subscribers = [];
 
   function emit() { subscribers.forEach(fn => { try { fn(); } catch (e) {} }); }
@@ -30,6 +30,7 @@ window.DB = (function () {
   function shippingLog() { return cache.shippingLog || []; }
   function receivingLog() { return cache.receivingLog || []; }
   function improvements() { return cache.improvements || []; }
+  function demandLines() { return cache.demandLines || []; }
   function orders() { return cache.orders || []; }
   function rdRequests() { return cache.rdRequests || []; }
   function supplierPos() { return cache.supplierPos || []; }
@@ -70,7 +71,7 @@ window.DB = (function () {
   // ---------- CLOUD backend (Supabase) ----------
   const cloud = {
     async loadAll() {
-      const [it, su, st, lg, po, pl, sl, od, rd, sp, odc, con, sdl, sbd, slog, rlog, imp, pday, ppal, refd] = await Promise.all([
+      const [it, su, st, lg, po, pl, sl, od, rd, sp, odc, con, sdl, sbd, slog, rlog, imp, pday, ppal, refd, dmd] = await Promise.all([
         sb.from("items").select("*"),
         sb.from("suppliers").select("*"),
         sb.from("stock").select("*"),
@@ -90,7 +91,8 @@ window.DB = (function () {
         sb.from("improvements").select("*").order("created_at", { ascending: false }).limit(3000),
         sb.from("production_days").select("*").limit(2000),
         sb.from("production_pallets").select("*").order("created_at", { ascending: false }).limit(5000),
-        sb.from("reference_docs").select("*").order("created_at", { ascending: false }).limit(2000)
+        sb.from("reference_docs").select("*").order("created_at", { ascending: false }).limit(2000),
+        sb.from("demand_lines").select("*").order("created_at", { ascending: false }).limit(6000)
       ]);
       cache.items = it.data || [];
       cache.suppliers = su.data || [];
@@ -160,6 +162,13 @@ window.DB = (function () {
       cache.prodDays = (pday && pday.data ? pday.data : []);
       cache.prodPallets = (ppal && ppal.data ? ppal.data : []);
       cache.refDocs = (refd && refd.data ? refd.data : []);
+      cache.demandLines = (dmd && dmd.data ? dmd.data : []).map(r => ({
+        id: r.id, batch_id: r.batch_id, batch_label: r.batch_label, source: r.source,
+        partner: r.partner, po: r.po, dc: r.dc, flavor: r.flavor, flavor_code: r.flavor_code,
+        uom: r.uom, qty: Number(r.qty) || 0, cases: Number(r.cases) || 0, bags: Number(r.bags) || 0,
+        unit_price: Number(r.unit_price) || 0, due_date: r.due_date, load: r.load,
+        status: r.status || "Open", notes: r.notes, imported_by: r.imported_by, created_at: r.created_at
+      }));
       const lines = pl.data || [];
       cache.pos = (po.data || []).map(p => ({
         id: p.id, supplier: p.supplier, status: p.status, created: p.created_at,
@@ -1107,8 +1116,59 @@ window.DB = (function () {
     local.loadOrSeed();
   }
 
+  // ---- Demand lines (SPS 850 + ShipIQ import) ----
+  const DMD_COLS = ["batch_id","batch_label","source","partner","po","dc","flavor","flavor_code","uom","qty","cases","bags","unit_price","due_date","load","status","notes","imported_by"];
+  function cleanDmd(r) { const o = {}; DMD_COLS.forEach(k => { if (r[k] !== undefined) o[k] = r[k]; }); return o; }
+  // Import a batch of demand rows. Idempotent per PO: any existing Open lines whose (source,po) is
+  // in this batch are deleted first, so re-dropping an updated export replaces rather than duplicates.
+  async function importDemand(rows, meta, op) {
+    meta = meta || {}; op = op || "";
+    const batch_id = meta.batch_id || ("B-" + Date.now().toString(36));
+    const label = meta.batch_label || new Date().toISOString().slice(0, 10);
+    const now = new Date().toISOString();
+    const clean = rows.map(r => Object.assign(cleanDmd(r), { batch_id, batch_label: label, status: r.status || "Open", imported_by: op }));
+    const poKeys = {}; clean.forEach(r => { poKeys[(r.source || "") + "|" + (r.po || "")] = true; });
+    const logEntry = { a: "Demand imported", d: label + " — " + clean.length + " lines", u: op, t: now };
+    if (mode === "cloud") {
+      // remove prior Open lines for the same source|po (replace semantics)
+      const keys = Object.keys(poKeys);
+      for (const k of keys) { const [src, po] = k.split("|"); await sb.from("demand_lines").delete().eq("source", src).eq("po", po).eq("status", "Open"); }
+      for (const c of chunk(clean, 100)) await sb.from("demand_lines").insert(c);
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      cache.demandLines = (cache.demandLines || []).filter(r => !(r.status === "Open" && poKeys[(r.source || "") + "|" + (r.po || "")]));
+      clean.forEach(c => { c.id = "DMD-" + Math.random().toString(36).slice(2, 9); c.created_at = now; cache.demandLines.unshift(c); });
+      local.addLog(logEntry); local.save();
+    }
+    emit(); return { ok: true, count: clean.length, batch_id };
+  }
+  async function setDemandStatus(id, status, op) {
+    const cur = (cache.demandLines || []).find(x => String(x.id) === String(id));
+    const logEntry = { a: "Demand " + status, d: cur ? (cur.partner + " " + cur.po + " " + cur.flavor) : String(id), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") { await sb.from("demand_lines").update({ status }).eq("id", id); await cloud.addLog(logEntry); await cloud.loadAll(); }
+    else { if (cur) cur.status = status; local.addLog(logEntry); local.save(); }
+    emit(); return { ok: true };
+  }
+  async function shipDemandPO(source, po, op) {
+    const rows = (cache.demandLines || []).filter(r => r.source === source && r.po === po && r.status === "Open");
+    if (mode === "cloud") { await sb.from("demand_lines").update({ status: "Shipped" }).eq("source", source).eq("po", po).eq("status", "Open"); await cloud.addLog({ a: "Demand PO shipped", d: source + " " + po + " (" + rows.length + " lines)", u: op, t: new Date().toISOString() }); await cloud.loadAll(); }
+    else { rows.forEach(r => r.status = "Shipped"); local.addLog({ a: "Demand PO shipped", d: source + " " + po, u: op, t: new Date().toISOString() }); local.save(); }
+    emit(); return { ok: true, count: rows.length };
+  }
+  async function clearDemandBatch(batch_id, op) {
+    if (mode === "cloud") { await sb.from("demand_lines").delete().eq("batch_id", batch_id); await cloud.loadAll(); }
+    else { cache.demandLines = (cache.demandLines || []).filter(r => r.batch_id !== batch_id); local.save(); }
+    emit(); return { ok: true };
+  }
+  async function clearAllDemand(op) {
+    if (mode === "cloud") { await sb.from("demand_lines").delete().neq("id", "00000000-0000-0000-0000-000000000000"); await cloud.loadAll(); }
+    else { cache.demandLines = []; local.save(); }
+    emit(); return { ok: true };
+  }
+
   return {
     init, onChange, get mode() { return mode; },
+    demandLines, importDemand, setDemandStatus, shipDemandPO, clearDemandBatch, clearAllDemand,
     items, suppliers, stock, log, itemByCode, onHand, atLoc,
     purchaseOrders, supplierName, createPO, setPOStatus, deletePO, receivePO,
     receive, move, adjust, adjustTotal, produce, resetDemo, updateItemFields, createItem,

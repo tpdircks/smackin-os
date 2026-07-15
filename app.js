@@ -4,6 +4,7 @@
    ============================================================================ */
 (function () {
   "use strict";
+  // build v69 — Demand section
   const T = {
     en: { dash:"Overview", home:"Dashboard", receive:"Receive", putaway:"Put-Away", move:"Move / Pick", produce:"Produce",
       count:"Count", locations:"Locations", purchasing:"Purchasing", labels:"Labels", log:"Activity", settings:"Settings",
@@ -46,6 +47,13 @@
       seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdReceived:"Received",sdIntCode:"Internal code",sdPackaging:"Packaging",sdPickPack:"Select packaging...",sdPallets:"# Pallets",sdPalletsShort:"pallet(s)",sdPackDate:"Packaging date", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
       skus:"SKUs", skusHint:"Finished-goods / retail SKU catalog - bundles, singles, and cases with bag count and flavor contents. Reference only.", skuCode:"SKU", skuTitle:"Product", skuBags:"Bags", skuComp:"Contents", skuSearchP:"Search SKU, product, or flavor...", skuCount:"SKUs",
       stockbuild:"Stock Build", sbHint:"Live build progress vs goals. Update On Hand as you go - the whole team sees it instantly. Yellow field = enter today's count.", sbGoal:"Goal", sbOnHand:"On hand", sbToBuild:"To build", sbPallets:"Pallets", sbDone:"Done", sbTotalGoal:"Total goal", sbComplete:"Complete", sbSaved:"Saved", sbRetail:"Retail", sbEcom:"E-Commerce", sb12pk:"12-Pack Boxes",
+      grpDemand:"Demand", demand:"Demand Board", demandsched:"Production Schedule", demandimport:"Import Orders",
+      dmHint:"Every open order due to ship, live. Drop your SPS + ShipIQ exports under Import Orders to refresh; mark a PO Shipped once it leaves.",
+      dsHint:"What to produce by flavor: open demand vs finished bags on hand (from Stock Build). Updates as orders ship.",
+      diHint:"Drop the same SPS 850 and ShipIQ CSV exports you pull for the weekly report. The app parses them into the live board. Re-dropping an updated export for a PO replaces its lines.",
+      dmPartner:"Customer", dmPO:"PO #", dmFlavor:"Flavor", dmCases:"Cases", dmBags:"Bags", dmDue:"Due", dmStatusH:"Status", dmDCs:"DCs", dmLoadH:"Load", dmShip:"Ship", dmShipQ:"Mark this whole PO shipped?", dmOpen:"Open", dmShipped:"Shipped", dmAll:"All", dmNone:"No demand loaded yet. Go to Import Orders to drop your SPS + ShipIQ exports.", dmAllPartners:"All customers", dmAllFlavors:"All flavors", dmTot:"Totals", dmPOs:"POs", dmDueUnknown:"no date",
+      dsFlavor:"Flavor", dsDemandCs:"Demand (cs)", dsDemandBags:"Demand (bags)", dsOnHand:"On hand (cs)", dsToProduce:"To produce (cs)", dsPallets:"Pallets", dsFilm:"Film (bags)", dsCovered:"Covered", dsProduce:"Produce", dsBlocked:"Film short", dsNone:"No open demand. Import orders to see the schedule.", dsGrand:"TOTAL",
+      diDrop:"Drop SPS 850 + ShipIQ CSV files", diSelected:"file(s) ready", diParse:"Preview", diCommit:"Load into board", diClear:"Clear all demand", diLabel:"Label (e.g. week of)", diWarn:"Warnings", diRecon:"Reconciliation: SPS cases vs ShipIQ cartons", diNoFiles:"Choose CSV files first", diUnknown:"skipped (not SPS/ShipIQ)", diCommitted:"loaded into the board", diConfirmClear:"Delete ALL demand lines? This cannot be undone.", diParsedFiles:"Parsed files", diLinesW:"lines", diReplace:"Re-importing replaces open lines for these POs.",
       retailprod:"Retail Production",ecomprod:"E-Commerce",epHint:"E-commerce / DTC product (variety packs). Scan or pick the item, enter the quantity built, and it is added to stock instantly. ShipStation and TikTok orders will draw this down automatically once connected.", rpHint:"When a pallet is made, scan its product barcode (or pick it), enter the quantity, and it is added to stock instantly. Print the barcode sheet with the button below and post it at the line.", rpScanP:"Scan product barcode", rpPickProduct:"Or pick a product...", rpQty:"Quantity made", rpAdd:"Add to stock", rpAdded:"Added to stock", rpCurrent:"Current on hand", rpRecent:"Recent production", rpNone:"Nothing added yet.", rpPrint:"Print product barcodes", rpNotFound:"Barcode not recognized",
       qaHint:"Quarantined product - do NOT touch (wrapped in red film). Usually expired or has incorrect info. Release good ones back to stock or scrap them.",
       qaTitle:"On quarantine hold (red film - do not touch)", convertGood:"Release to good stock", scrapIt:"Scrap", qaEmpty:"Nothing in quarantine.",
@@ -144,6 +152,13 @@
       seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdReceived:"Recibido",sdIntCode:"Codigo interno",sdPackaging:"Empaque",sdPickPack:"Elegir empaque...",sdPallets:"# Paletas",sdPalletsShort:"paleta(s)",sdPackDate:"Fecha de empaque", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
       skus:"SKUs", skusHint:"Catalogo de SKU de producto terminado / retail - paquetes, individuales y cajas con cantidad de bolsas y sabores. Solo referencia.", skuCode:"SKU", skuTitle:"Producto", skuBags:"Bolsas", skuComp:"Contenido", skuSearchP:"Buscar SKU, producto o sabor...", skuCount:"SKUs",
       stockbuild:"Construir Inventario", sbHint:"Progreso de construccion vs metas en vivo. Actualice En Mano segun avanza - todo el equipo lo ve al instante. Campo amarillo = ingrese el conteo de hoy.", sbGoal:"Meta", sbOnHand:"En mano", sbToBuild:"Por hacer", sbPallets:"Paletas", sbDone:"Listo", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Guardado", sbRetail:"Minorista", sbEcom:"Comercio Electronico", sb12pk:"Cajas de 12",
+      grpDemand:"Demanda", demand:"Tablero de Demanda", demandsched:"Programa de Produccion", demandimport:"Importar Pedidos",
+      dmHint:"Cada pedido abierto por enviar, en vivo. Suba sus exportaciones SPS + ShipIQ en Importar Pedidos para actualizar; marque una PO como Enviada cuando salga.",
+      dsHint:"Que producir por sabor: demanda abierta vs bolsas terminadas en mano (de Construir Inventario). Se actualiza al enviar pedidos.",
+      diHint:"Suba las mismas exportaciones CSV de SPS 850 y ShipIQ que saca para el reporte semanal. La app las convierte en el tablero en vivo. Volver a subir una exportacion actualizada de una PO reemplaza sus lineas.",
+      dmPartner:"Cliente", dmPO:"PO #", dmFlavor:"Sabor", dmCases:"Cajas", dmBags:"Bolsas", dmDue:"Vence", dmStatusH:"Estado", dmDCs:"CDs", dmLoadH:"Carga", dmShip:"Enviar", dmShipQ:"Marcar toda esta PO como enviada?", dmOpen:"Abierto", dmShipped:"Enviado", dmAll:"Todos", dmNone:"Aun no hay demanda cargada. Vaya a Importar Pedidos para subir sus exportaciones SPS + ShipIQ.", dmAllPartners:"Todos los clientes", dmAllFlavors:"Todos los sabores", dmTot:"Totales", dmPOs:"POs", dmDueUnknown:"sin fecha",
+      dsFlavor:"Sabor", dsDemandCs:"Demanda (cj)", dsDemandBags:"Demanda (bolsas)", dsOnHand:"En mano (cj)", dsToProduce:"Por producir (cj)", dsPallets:"Paletas", dsFilm:"Pelicula (bolsas)", dsCovered:"Cubierto", dsProduce:"Producir", dsBlocked:"Falta pelicula", dsNone:"Sin demanda abierta. Importe pedidos para ver el programa.", dsGrand:"TOTAL",
+      diDrop:"Suba archivos CSV SPS 850 + ShipIQ", diSelected:"archivo(s) listos", diParse:"Vista previa", diCommit:"Cargar al tablero", diClear:"Borrar toda la demanda", diLabel:"Etiqueta (ej. semana de)", diWarn:"Advertencias", diRecon:"Reconciliacion: cajas SPS vs cartones ShipIQ", diNoFiles:"Elija archivos CSV primero", diUnknown:"omitido (no es SPS/ShipIQ)", diCommitted:"cargado al tablero", diConfirmClear:"Borrar TODAS las lineas de demanda? No se puede deshacer.", diParsedFiles:"Archivos procesados", diLinesW:"lineas", diReplace:"Reimportar reemplaza las lineas abiertas de estas POs.",
       retailprod:"Produccion Retail",ecomprod:"E-Commerce",epHint:"Producto e-commerce / DTC (paquetes variados). Escanee o elija el articulo, ingrese la cantidad producida y se agrega al inventario al instante. Los pedidos de ShipStation y TikTok lo descontaran automaticamente cuando se conecten.", rpHint:"Cuando se hace una paleta, escanee su codigo de producto (o eligalo), ingrese la cantidad y se agrega al inventario al instante. Imprima la hoja de codigos con el boton de abajo y pongala en la linea.", rpScanP:"Escanee codigo del producto", rpPickProduct:"O elija un producto...", rpQty:"Cantidad hecha", rpAdd:"Agregar al inventario", rpAdded:"Agregado al inventario", rpCurrent:"En mano actual", rpRecent:"Produccion reciente", rpNone:"Nada agregado aun.", rpPrint:"Imprimir codigos de producto", rpNotFound:"Codigo no reconocido",
       qaHint:"Producto en cuarentena - NO tocar (envuelto en film rojo). Generalmente vencido o con informacion incorrecta. Libere los buenos a inventario o descartelos.",
       qaTitle:"En cuarentena (film rojo - no tocar)", convertGood:"Liberar a inventario bueno", scrapIt:"Descartar", qaEmpty:"Nada en cuarentena.",
@@ -242,6 +257,13 @@
       seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdReceived:"Recebido",sdIntCode:"Codigo interno",sdPackaging:"Embalagem",sdPickPack:"Selecionar embalagem...",sdPallets:"# Paletes",sdPalletsShort:"palete(s)",sdPackDate:"Data de embalagem", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
       skus:"SKUs", skusHint:"Catalogo de SKU de produto acabado / varejo - pacotes, individuais e caixas com contagem de sacos e sabores. Apenas referencia.", skuCode:"SKU", skuTitle:"Produto", skuBags:"Sacos", skuComp:"Conteudo", skuSearchP:"Buscar SKU, produto ou sabor...", skuCount:"SKUs",
       stockbuild:"Construir Estoque", sbHint:"Progresso de construcao vs metas ao vivo. Atualize Em Estoque conforme avanca - toda a equipe ve na hora. Campo amarelo = insira a contagem de hoje.", sbGoal:"Meta", sbOnHand:"Em estoque", sbToBuild:"A fazer", sbPallets:"Paletes", sbDone:"Pronto", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Salvo", sbRetail:"Varejo", sbEcom:"E-Commerce", sb12pk:"Caixas de 12",
+      grpDemand:"Demanda", demand:"Painel de Demanda", demandsched:"Programa de Producao", demandimport:"Importar Pedidos",
+      dmHint:"Cada pedido aberto a enviar, ao vivo. Envie suas exportacoes SPS + ShipIQ em Importar Pedidos para atualizar; marque uma PO como Enviada quando sair.",
+      dsHint:"O que produzir por sabor: demanda aberta vs bolsas prontas em estoque (de Construir Estoque). Atualiza ao enviar pedidos.",
+      diHint:"Envie as mesmas exportacoes CSV de SPS 850 e ShipIQ que voce puxa para o relatorio semanal. O app as converte no painel ao vivo. Reenviar uma exportacao atualizada de uma PO substitui suas linhas.",
+      dmPartner:"Cliente", dmPO:"PO #", dmFlavor:"Sabor", dmCases:"Caixas", dmBags:"Bolsas", dmDue:"Vence", dmStatusH:"Status", dmDCs:"CDs", dmLoadH:"Carga", dmShip:"Enviar", dmShipQ:"Marcar toda esta PO como enviada?", dmOpen:"Aberto", dmShipped:"Enviado", dmAll:"Todos", dmNone:"Nenhuma demanda carregada ainda. Va em Importar Pedidos para enviar suas exportacoes SPS + ShipIQ.", dmAllPartners:"Todos os clientes", dmAllFlavors:"Todos os sabores", dmTot:"Totais", dmPOs:"POs", dmDueUnknown:"sem data",
+      dsFlavor:"Sabor", dsDemandCs:"Demanda (cx)", dsDemandBags:"Demanda (bolsas)", dsOnHand:"Em estoque (cx)", dsToProduce:"A produzir (cx)", dsPallets:"Paletes", dsFilm:"Filme (bolsas)", dsCovered:"Coberto", dsProduce:"Produzir", dsBlocked:"Falta filme", dsNone:"Sem demanda aberta. Importe pedidos para ver o programa.", dsGrand:"TOTAL",
+      diDrop:"Envie arquivos CSV SPS 850 + ShipIQ", diSelected:"arquivo(s) prontos", diParse:"Previa", diCommit:"Carregar no painel", diClear:"Limpar toda a demanda", diLabel:"Rotulo (ex. semana de)", diWarn:"Avisos", diRecon:"Reconciliacao: caixas SPS vs cartoes ShipIQ", diNoFiles:"Escolha arquivos CSV primeiro", diUnknown:"ignorado (nao e SPS/ShipIQ)", diCommitted:"carregado no painel", diConfirmClear:"Excluir TODAS as linhas de demanda? Nao pode ser desfeito.", diParsedFiles:"Arquivos processados", diLinesW:"linhas", diReplace:"Reimportar substitui as linhas abertas destas POs.",
       retailprod:"Producao Varejo",ecomprod:"E-Commerce",epHint:"Produto e-commerce / DTC (pacotes variados). Escaneie ou escolha o item, insira a quantidade produzida e ela e adicionada ao estoque na hora. Os pedidos do ShipStation e TikTok vao baixar isso automaticamente quando conectados.", rpHint:"Quando um palete e feito, escaneie o codigo do produto (ou escolha), insira a quantidade e ela e adicionada ao estoque na hora. Imprima a folha de codigos com o botao abaixo e coloque na linha.", rpScanP:"Escaneie codigo do produto", rpPickProduct:"Ou escolha um produto...", rpQty:"Quantidade feita", rpAdd:"Adicionar ao estoque", rpAdded:"Adicionado ao estoque", rpCurrent:"Em estoque atual", rpRecent:"Producao recente", rpNone:"Nada adicionado ainda.", rpPrint:"Imprimir codigos de produto", rpNotFound:"Codigo nao reconhecido",
       qaHint:"Produto em quarentena - NAO tocar (embrulhado em filme vermelho). Geralmente vencido ou com informacao incorreta. Libere os bons para o estoque ou descarte-os.",
       qaTitle:"Em quarentena (filme vermelho - nao tocar)", convertGood:"Liberar para estoque bom", scrapIt:"Descartar", qaEmpty:"Nada em quarentena.",
@@ -328,7 +350,7 @@
     { key: "tote", label: "Tote - 1 bag x 1,200 lb", per: 1200 }
   ];
   const SEED_PACK_MAP = {}; SEED_PACKS.forEach(p => SEED_PACK_MAP[p.key] = p);
-  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","seasoning","seed","skus","mixing","pmac","count","locations","finbags","pmacout","purchasing","supplierpos","people","improve","compliance","reference","labels","log","settings"];
+  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","demand","demandsched","demandimport","seasoning","seed","skus","mixing","pmac","count","locations","finbags","pmacout","purchasing","supplierpos","people","improve","compliance","reference","labels","log","settings"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -501,6 +523,7 @@
     { key:"grpReceiving", items:["receive","recvlog","returns","qa"] },
     { key:"grpInventory", items:["dash","adjust","count","move","locations","finbags","seasoning","seed","skus","labels"] },
     { key:"grpProduction", items:["produce","retailprod","ecomprod","prodlog","stockbuild","orders","orderdocs"] },
+    { key:"grpDemand", items:["demand","demandsched","demandimport"] },
     { key:"grpShipping", items:["shiplog"] },
     { key:"grpMixing", items:["mixing"] },
     { key:"grpPmac", items:["pmac","pmacout"] },
@@ -521,13 +544,34 @@
     seasoning:"flame", seed:"sprout", skus:"barcode", finbags:"shopping-bag", pmacout:"package-open",
     mixing:"cooking-pot", pmac:"wrench", count:"clipboard-check", locations:"map-pin",
     purchasing:"shopping-cart", supplierpos:"file-text", people:"users", labels:"tag",
-    log:"history", settings:"settings", improve:"trending-up", compliance:"shield-check", reference:"book-open" };
+    log:"history", settings:"settings", improve:"trending-up", compliance:"shield-check", reference:"book-open",
+    demand:"calendar-clock", demandsched:"gauge", demandimport:"file-up" };
   function drawIcons() { try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {} }
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
   let spoSort = { key: "created", dir: -1 };  // Supplier POs table sort (v25)
   let spoView = "list";   // Supplier POs: "list" | "create" (Excel-style PO entry form)
   let spoDetailId = null; // Supplier POs: when set, show full-detail view for that PO (v56)
   let poRows = 4;         // number of line-item rows shown in the Create-PO form
+  // ---- Demand section state ----
+  let dmdPartner = "", dmdFlavor = "", dmdStatus = "Open";  // Demand Board filters
+  let dmdParsed = null;   // Import preview: { rows, warnings, recon, files }
+  let dmdBusy = false;    // import in progress
+  const DMD_FLAVOR_ORDER = ["OG Original","Cinnamon Churro","Backyard BBQ","Garlic Parmesan","Dill Pickle","Cracked Pepper","Cheddar Jalapeno","Ranch","Maple Brown Sugar","Lemon Pepper","Sour Cream & Onion","Cheeseburger","PCA Pizza"];
+  // On-hand finished 4oz cases for a flavor, summed from the Stock Build count (Target + Master Case = 72-bag cases).
+  function demandOnHandCases(flavor) {
+    const oh = DB.stockBuild ? DB.stockBuild() : {};
+    let n = 0;
+    SB_ITEMS.forEach(i => { if ((i.cat === "Target" || i.cat === "Master Case") && i.name === flavor) n += Number((oh[i.key] || {}).on_hand) || 0; });
+    return n;
+  }
+  // Film impressions (bags) on hand for a flavor code, from the F4-<code> item if tracked.
+  function demandFilmBags(code) {
+    if (!code) return null;
+    const it = DB.itemByCode ? DB.itemByCode("F4-" + code) : null;
+    if (!it) return null;
+    const v = DB.onHand ? DB.onHand(it) : 0;
+    return v > 0 ? v : null;
+  }
   const PO_PREPARERS = ["Michelle", "Matt", "Troy"];
   function spoSortList(list) {
     const k = spoSort.key, dir = spoSort.dir;
@@ -2129,6 +2173,115 @@
       '<div class="card"><h2 class="sub2">' + L("cmpSchedule") + '</h2><p class="hint">' + L("cmpScheduleHint") + '</p>' + actCards + '</div>' +
       '<div class="card"><h2 class="sub2">' + L("cmpDocs") + '</h2><p class="hint">' + L("cmpDocsHint") + '</p><table><tbody>' + docRows + '</tbody></table></div>';
   }
+  // ===== DEMAND SECTION (SPS 850 + ShipIQ live board) =====
+  function dmdDot(kind) {
+    const c = kind === "covered" ? "#CFE6BE" : kind === "blocked" ? "#F2B6B6" : "#FFE9A8";
+    const t = kind === "covered" ? L("dsCovered") : kind === "blocked" ? L("dsBlocked") : L("dsProduce");
+    return '<span style="display:inline-block;padding:2px 9px;border-radius:10px;background:' + c + ';color:#222;font-size:12px;font-weight:600">' + t + '</span>';
+  }
+  function viewDemand() {
+    const all = (DB.demandLines ? DB.demandLines() : []);
+    if (!all.length) return '<div class="card"><h2>' + L("demand") + '</h2><p class="muted">' + L("dmNone") + '</p>' +
+      '<button class="primary" onclick="UI_go(\'demandimport\')">' + L("demandimport") + '</button></div>';
+    const partners = [...new Set(all.map(r => r.partner))].sort();
+    const flavors = [...new Set(all.map(r => r.flavor))].sort();
+    let rows = all.filter(r =>
+      (dmdStatus === "All" || (r.status || "Open") === dmdStatus) &&
+      (!dmdPartner || r.partner === dmdPartner) &&
+      (!dmdFlavor || r.flavor === dmdFlavor));
+    // sort by due date then partner then po
+    rows = rows.slice().sort((a, b) => (String(a.due_date || "9999") + a.partner + a.po).localeCompare(String(b.due_date || "9999") + b.partner + b.po));
+    const openRows = all.filter(r => (r.status || "Open") === "Open");
+    const totCases = openRows.reduce((s, r) => s + (Number(r.cases) || 0), 0);
+    const totBags = openRows.reduce((s, r) => s + (Number(r.bags) || 0), 0);
+    const openPOs = new Set(openRows.map(r => r.source + r.po)).size;
+    const psel = '<select onchange="UI.dmdSet(\'partner\',this.value)"><option value="">' + L("dmAllPartners") + '</option>' +
+      partners.map(p => '<option' + (p === dmdPartner ? ' selected' : '') + '>' + esc(p) + '</option>').join("") + '</select>';
+    const fsel = '<select onchange="UI.dmdSet(\'flavor\',this.value)"><option value="">' + L("dmAllFlavors") + '</option>' +
+      flavors.map(f => '<option' + (f === dmdFlavor ? ' selected' : '') + '>' + esc(f) + '</option>').join("") + '</select>';
+    const ssel = '<select onchange="UI.dmdSet(\'status\',this.value)">' +
+      ['Open', 'Shipped', 'All'].map(s => '<option value="' + s + '"' + (s === dmdStatus ? ' selected' : '') + '>' + L(s === "Open" ? "dmOpen" : s === "Shipped" ? "dmShipped" : "dmAll") + '</option>').join("") + '</select>';
+    const head = '<div class="card"><div class="suprow"><h2 style="flex:1;margin:0">' + L("demand") + '</h2>' +
+      '<button class="ghost sm" onclick="UI_go(\'demandimport\')">&#8635; ' + L("demandimport") + '</button></div>' +
+      '<p class="hint">' + L("dmHint") + '</p>' +
+      '<div class="kpis"><div class="kpi"><div class="n">' + fmt(openPOs) + '</div><div class="l">' + L("dmPOs") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(totCases) + '</div><div class="l">' + L("dmCases") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(totBags) + '</div><div class="l">' + L("dmBags") + '</div></div></div>' +
+      '<div class="row" style="margin-top:10px">' + psel + fsel + ssel + '</div></div>';
+    const body = rows.length ? rows.map(r => {
+      const open = (r.status || "Open") === "Open";
+      const shipBtn = open ? '<button class="ghost sm" onclick="UI.dmShip(\'' + r.source + '\',\'' + esc(r.po) + '\')">' + L("dmShip") + '</button>'
+        : '<span class="muted sm">' + L("dmShipped") + '</span>';
+      const dc = (r.dc || (r.notes || "")) ? esc(r.dc || "") : "";
+      return '<tr><td>' + esc(r.partner) + '</td><td><b>' + esc(r.po) + '</b>' + (r.load ? ' <span class="muted sm">L' + esc(r.load) + '</span>' : '') + '</td>' +
+        '<td>' + esc(r.flavor) + '</td><td class="right"><b>' + fmt(r.cases) + '</b></td><td class="right muted">' + fmt(r.bags) + '</td>' +
+        '<td class="sm">' + (r.due_date ? esc(r.due_date) : '<span class="muted">' + L("dmDueUnknown") + '</span>') + '</td>' +
+        '<td>' + shipBtn + '</td></tr>';
+    }).join("") : '<tr><td colspan="7" class="muted">&mdash;</td></tr>';
+    const table = '<div class="card"><div class="tblwrap"><table class="sortable"><thead><tr>' +
+      '<th>' + L("dmPartner") + '</th><th>' + L("dmPO") + '</th><th>' + L("dmFlavor") + '</th>' +
+      '<th class="right">' + L("dmCases") + '</th><th class="right">' + L("dmBags") + '</th><th>' + L("dmDue") + '</th><th data-nosort>' + L("dmStatusH") + '</th></tr></thead><tbody>' + body + '</tbody></table></div></div>';
+    return head + table;
+  }
+  function viewDemandSched() {
+    const open = (DB.demandLines ? DB.demandLines() : []).filter(r => (r.status || "Open") === "Open");
+    if (!open.length) return '<div class="card"><h2>' + L("demandsched") + '</h2><p class="muted">' + L("dsNone") + '</p>' +
+      '<button class="primary" onclick="UI_go(\'demandimport\')">' + L("demandimport") + '</button></div>';
+    const byF = {};
+    open.forEach(r => { const f = r.flavor; if (!byF[f]) byF[f] = { flavor: f, code: r.flavor_code, cases: 0, bags: 0 }; byF[f].cases += Number(r.cases) || 0; byF[f].bags += Number(r.bags) || 0; });
+    let list = Object.values(byF).map(x => {
+      const onHand = demandOnHandCases(x.flavor);
+      const toProduce = Math.max(0, x.cases - onHand);
+      const film = demandFilmBags(x.code);
+      const kind = toProduce <= 0 ? "covered" : (film != null && film < toProduce * 72) ? "blocked" : "produce";
+      const pallets = toProduce > 0 ? Math.ceil(toProduce / 30 * 10) / 10 : 0;
+      return Object.assign(x, { onHand, toProduce, film, kind, pallets });
+    });
+    // order by DMD_FLAVOR_ORDER for known flavors, then by toProduce desc
+    list.sort((a, b) => (b.toProduce - a.toProduce) || (DMD_FLAVOR_ORDER.indexOf(a.flavor) - DMD_FLAVOR_ORDER.indexOf(b.flavor)));
+    const gDem = list.reduce((s, x) => s + x.cases, 0), gOn = list.reduce((s, x) => s + x.onHand, 0), gProd = list.reduce((s, x) => s + x.toProduce, 0);
+    const rowsHtml = list.map(x => '<tr><td>' + esc(x.flavor) + (x.code ? ' <span class="muted sm">' + esc(x.code) + '</span>' : '') + '</td>' +
+      '<td class="right">' + fmt(x.cases) + '</td><td class="right muted">' + fmt(x.bags) + '</td>' +
+      '<td class="right">' + fmt(x.onHand) + '</td><td class="right"><b>' + fmt(x.toProduce) + '</b></td>' +
+      '<td class="right muted sm">' + (x.toProduce > 0 ? x.pallets : "—") + '</td>' +
+      '<td class="right muted sm">' + (x.film != null ? fmt(x.film) : "—") + '</td>' +
+      '<td>' + dmdDot(x.kind) + '</td></tr>').join("");
+    const head = '<div class="card"><h2>' + L("demandsched") + '</h2><p class="hint">' + L("dsHint") + '</p>' +
+      '<div class="kpis"><div class="kpi"><div class="n">' + fmt(gDem) + '</div><div class="l">' + L("dsDemandCs") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(gOn) + '</div><div class="l">' + L("dsOnHand") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(gProd) + '</div><div class="l">' + L("dsToProduce") + '</div></div></div></div>';
+    const table = '<div class="card"><div class="tblwrap"><table class="sortable"><thead><tr>' +
+      '<th>' + L("dsFlavor") + '</th><th class="right">' + L("dsDemandCs") + '</th><th class="right">' + L("dsDemandBags") + '</th>' +
+      '<th class="right">' + L("dsOnHand") + '</th><th class="right">' + L("dsToProduce") + '</th><th class="right">' + L("dsPallets") + '</th>' +
+      '<th class="right">' + L("dsFilm") + '</th><th data-nosort>' + L("dmStatusH") + '</th></tr></thead><tbody>' + rowsHtml +
+      '<tr style="background:#E8E8E8"><td><b>' + L("dsGrand") + '</b></td><td class="right"><b>' + fmt(gDem) + '</b></td><td></td>' +
+      '<td class="right"><b>' + fmt(gOn) + '</b></td><td class="right"><b>' + fmt(gProd) + '</b></td><td></td><td></td><td></td></tr>' +
+      '</tbody></table></div></div>';
+    return head + table;
+  }
+  function viewDemandImport() {
+    const cur = (DB.demandLines ? DB.demandLines() : []);
+    const openCt = cur.filter(r => (r.status || "Open") === "Open").length;
+    const drop = '<div class="card"><h2>' + L("demandimport") + '</h2><p class="hint">' + L("diHint") + '</p>' +
+      '<div class="row"><div style="flex:2"><label>' + L("diDrop") + '</label>' +
+      '<input id="dmd-files" type="file" accept=".csv,text/csv" multiple onchange="UI.diFiles(this)"></div>' +
+      '<div><label>' + L("diLabel") + '</label><input id="dmd-label" placeholder="' + new Date().toISOString().slice(0, 10) + '"></div></div>' +
+      '<p class="hint" style="margin:6px 0 0">' + L("diReplace") + '</p>' +
+      '<div style="margin-top:10px"><button class="ghost sm danger" onclick="UI.diClearAll()">' + L("diClear") + ' (' + cur.length + ')</button></div></div>';
+    if (!dmdParsed) return drop;
+    const p = dmdParsed;
+    const fileList = '<p class="sm"><b>' + L("diParsedFiles") + ':</b> ' + p.files.map(f => esc(f.name) + ' (' + f.type + (f.type === "unknown" ? " — " + L("diUnknown") : ", " + f.count + " " + L("diLinesW")) + ')').join(" · ") + '</p>';
+    const warn = p.warnings.length ? '<div class="card" style="background:#FFF6E5"><b>' + L("diWarn") + ':</b><ul>' + p.warnings.map(w => '<li class="sm">' + esc(w) + '</li>').join("") + '</ul></div>' : '';
+    const recon = (p.recon && p.recon.length) ? '<div class="card" style="background:#EAF2FB"><b>' + L("diRecon") + ':</b><ul>' + p.recon.map(w => '<li class="sm">' + esc(w) + '</li>').join("") + '</ul></div>' : '';
+    const byF = {}; p.rows.forEach(r => { byF[r.flavor] = (byF[r.flavor] || 0) + (Number(r.cases) || 0); });
+    const previewRows = p.rows.slice(0, 60).map(r => '<tr><td>' + esc(r.partner) + '</td><td>' + esc(r.po) + '</td><td>' + esc(r.flavor) + '</td><td class="right">' + fmt(r.cases) + '</td><td class="right muted">' + fmt(r.bags) + '</td><td class="sm">' + esc(r.due_date || "") + '</td></tr>').join("");
+    const totCs = p.rows.reduce((s, r) => s + (Number(r.cases) || 0), 0);
+    const preview = '<div class="card"><div class="suprow"><h2 class="sub2" style="flex:1;margin:0">' + L("diParse") + ' — ' + p.rows.length + ' ' + L("diLinesW") + ' / ' + fmt(totCs) + ' ' + L("dmCases") + '</h2>' +
+      '<button class="primary" onclick="UI.diCommit()"' + (dmdBusy ? ' disabled' : '') + '>' + (dmdBusy ? '…' : L("diCommit")) + '</button></div>' +
+      '<div class="tblwrap"><table><thead><tr><th>' + L("dmPartner") + '</th><th>' + L("dmPO") + '</th><th>' + L("dmFlavor") + '</th><th class="right">' + L("dmCases") + '</th><th class="right">' + L("dmBags") + '</th><th>' + L("dmDue") + '</th></tr></thead><tbody>' + previewRows +
+      (p.rows.length > 60 ? '<tr><td colspan="6" class="muted sm">+' + (p.rows.length - 60) + ' …</td></tr>' : '') + '</tbody></table></div></div>';
+    return drop + fileList + warn + recon + preview;
+  }
   function viewImprove() {
     const all = DB.improvements().slice().sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
     const active = all.filter(i => i.status !== "Done");
@@ -2270,6 +2423,44 @@
   // ---------- actions ----------
   const UI = {
     cat(c) { catFilter = c; render(); },
+    // ---- Demand section ----
+    dmdSet(k, v) { if (k === "partner") dmdPartner = v; else if (k === "flavor") dmdFlavor = v; else if (k === "status") dmdStatus = v; render(); },
+    async dmShip(source, po) {
+      if (!confirm(L("dmShipQ") + "\n\n" + source + " " + po)) return;
+      const r = await DB.shipDemandPO(source, po, opVal());
+      toast(po + " → " + L("dmShipped") + (r && r.count ? " (" + r.count + ")" : "")); render();
+    },
+    diFiles(input) {
+      const files = Array.from(input.files || []);
+      if (!files.length) return;
+      if (!window.DEMAND) { toast("parser not loaded"); return; }
+      const readOne = f => new Promise(res => { const fr = new FileReader(); fr.onload = () => res({ name: f.name, text: String(fr.result || "") }); fr.onerror = () => res({ name: f.name, text: "" }); fr.readAsText(f); });
+      Promise.all(files.map(readOne)).then(loaded => {
+        const D = window.DEMAND; let sps = [], shipiq = { byPO: {} }; const fileInfo = []; const warnings = [];
+        loaded.forEach(fo => {
+          const type = D.detectType(fo.text);
+          if (type === "shipiq") { const r = D.parseShipIQ(fo.text); Object.assign(shipiq.byPO, r.byPO); fileInfo.push({ name: fo.name, type: "ShipIQ", count: Object.keys(r.byPO).length }); (r.warnings || []).forEach(w => warnings.push(fo.name + ": " + w)); }
+          else if (type === "sps") { const r = D.parseSPS(fo.text); sps = sps.concat(r.lines); fileInfo.push({ name: fo.name, type: "SPS", count: r.lines.length }); (r.warnings || []).forEach(w => warnings.push(fo.name + ": " + w)); }
+          else { fileInfo.push({ name: fo.name, type: "unknown", count: 0 }); }
+        });
+        const agg = D.aggregate(sps, shipiq);
+        dmdParsed = { rows: agg, warnings, recon: agg._recon || [], files: fileInfo };
+        render();
+      });
+    },
+    async diCommit() {
+      if (!dmdParsed || !dmdParsed.rows.length || dmdBusy) return;
+      dmdBusy = true; render();
+      const label = (($("dmd-label") || {}).value || "").trim() || new Date().toISOString().slice(0, 10);
+      const rows = dmdParsed.rows.map(r => ({ source: r.source, partner: r.partner, po: r.po, dc: (r.dcs || []).join(","), flavor: r.flavor, flavor_code: r.flavor_code, uom: r.uom, qty: r.qty, cases: r.cases, bags: r.bags, unit_price: r.unit_price, due_date: r.due_date, load: r.load || "" }));
+      const res = await DB.importDemand(rows, { batch_label: label }, opVal());
+      dmdBusy = false; dmdParsed = null;
+      toast((res && res.count ? res.count : rows.length) + " " + L("diCommitted")); go("demand");
+    },
+    async diClearAll() {
+      if (!confirm(L("diConfirmClear"))) return;
+      await DB.clearAllDemand(opVal()); dmdParsed = null; toast("✓"); render();
+    },
     locView(v) { locView = v; locSel = null; locAct = ""; render(); },
     locPick(code) { locSel = code || null; locAct = ""; render(); },
     locActStart(mode) { locAct = mode; render(); },
@@ -2911,7 +3102,8 @@
     renderNav(); refreshDatalists();
     const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
       move: viewMove, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
-      count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, compliance: viewCompliance, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings };
+      count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, compliance: viewCompliance, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
+      demand: viewDemand, demandsched: viewDemandSched, demandimport: viewDemandImport };
     $("view").innerHTML = (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
     $("modeBadge").className = "modebadge " + (DB.mode === "cloud" ? "ok" : "low");
