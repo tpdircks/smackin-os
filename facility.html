@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smackin' — Gêmeo Digital 3D (v1 estrutural)</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:100%;height:100%;overflow:hidden;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#0f1420;}
+  #app{position:fixed;inset:0;} canvas{display:block;}
+  #topbar{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding:12px 18px;background:linear-gradient(180deg,rgba(15,20,32,.92),rgba(15,20,32,0));color:#e8eefc;pointer-events:none;}
+  #topbar h1{font-size:16.5px;font-weight:650;}
+  #topbar .hint{font-size:12px;opacity:.7;}
+  #legend{position:fixed;top:56px;left:18px;z-index:10;background:rgba(20,26,40,.85);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 14px;color:#e8eefc;min-width:230px;max-height:80vh;overflow:auto;}
+  #legend h2{font-size:10.5px;text-transform:uppercase;letter-spacing:1px;opacity:.55;margin:10px 0 6px;}
+  #legend h2:first-child{margin-top:0;}
+  .leg-item{display:flex;align-items:center;gap:9px;padding:5px 6px;border-radius:7px;cursor:pointer;font-size:13px;transition:background .15s;}
+  .leg-item:hover{background:rgba(255,255,255,.07);} .leg-item.off{opacity:.35;}
+  .swatch{width:14px;height:14px;border-radius:4px;flex:none;box-shadow:0 0 0 1px rgba(0,0,0,.25) inset;}
+  .leg-item small{opacity:.55;margin-left:auto;font-size:11px;}
+  .note{font-size:11.5px;opacity:.72;line-height:1.5;margin-top:6px;}
+  .note .b{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:middle;margin-right:5px;}
+  #info{position:fixed;bottom:18px;left:18px;z-index:10;background:rgba(20,26,40,.94);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;color:#e8eefc;max-width:320px;transform:translateY(180%);opacity:0;transition:all .28s cubic-bezier(.2,.8,.2,1);}
+  #info.show{transform:translateY(0);opacity:1;}
+  #info h3{font-size:16px;margin-bottom:6px;font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.5px;}
+  #info p{font-size:13px;line-height:1.55;opacity:.85;}
+  #info .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;margin-top:8px;}
+  #info .close{position:absolute;top:8px;right:11px;cursor:pointer;opacity:.5;font-size:18px;line-height:1;}
+  #info .close:hover{opacity:1;}
+  #controls{position:fixed;bottom:18px;right:18px;z-index:10;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+  .btn{background:rgba(20,26,40,.85);border:1px solid rgba(255,255,255,.12);color:#e8eefc;padding:9px 13px;border-radius:9px;cursor:pointer;font-size:13px;}
+  .btn:hover{background:rgba(40,50,72,.9);}
+  #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:#9fb2d8;z-index:20;background:#0f1420;}
+  #errbox{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:30;background:#0f1420;color:#ff9aa6;text-align:center;padding:30px;font-size:14px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="loading">Carregando gêmeo digital 3D…</div>
+<div id="errbox">Não consegui carregar a biblioteca 3D (sem internet ou rede bloqueada).<br>Conecte à internet e recarregue a página.</div>
+
+<div id="topbar">
+  <h1>Smackin' · Gêmeo Digital 3D — v1 estrutural</h1>
+  <span class="hint">5 seções · ~536 posições · níveis L1–L4 · arraste = girar · scroll = zoom · clique numa posição para ver o código</span>
+</div>
+
+<div id="legend">
+  <h2>Seções (racking)</h2><div id="leg-sec"></div>
+  <h2>Zonas</h2><div id="leg-zone"></div>
+  <div class="note">
+    <span class="b" style="background:#c7cede"></span>posição de pallet (sem dado de estoque)<br>
+    <span class="b" style="background:#e24b4a"></span>posição bloqueada (AC / painel / praga)
+  </div>
+</div>
+
+<div id="info">
+  <span class="close" id="info-close">×</span>
+  <h3 id="info-title"></h3>
+  <p id="info-desc"></p>
+  <span class="badge" id="info-badge"></span>
+</div>
+
+<div id="controls">
+  <button class="btn" id="btn-top">Vista de cima</button>
+  <button class="btn" id="btn-iso">Isométrica</button>
+  <button class="btn" id="btn-labels">Rótulos: ON</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
+        onerror="document.getElementById('loading').style.display='none';document.getElementById('errbox').style.display='flex';"></script>
+<script>
+window.addEventListener('load',function(){ if(typeof THREE==='undefined'){document.getElementById('loading').style.display='none';document.getElementById('errbox').style.display='flex';}});
+(function(){
+  if(typeof THREE==='undefined') return;
+
+  // ===== Escala: 1 unidade = 1 ft. Prédio ~360 x 330 ft =====
+  const W=360, D=330, WALL_H=30;
+
+  // ----- dados reais extraídos dos arquivos -----
+  const SECTIONS = [
+    { id:'A', color:0x378add, bays:28, x:-165, blocked:['A-23-L1'] },
+    // B e C encostadas (par back-to-back), um espaço perto da A
+    { id:'B', color:0xef9f27, bays:28, x:-140, blocked:['B-15-L4','B-16-L4','B-17-L4','B-21-L4','B-22-L4'] },
+    { id:'C', color:0x1d9e75, bays:28, x:-133, blocked:['C-21-L4','C-22-L4'] },
+    // D — um espaço (corredor) ao lado da C
+    { id:'D', color:0x7f77dd, bays:28, x:-108, blocked:['D-17-L4','D-18-L4','D-23-L4','D-24-L4'] },
+    // F (antiga E) — paredes da Mistura e Ensacamento; (2) abertura de porta na frente da Mistura (bays 1-2 removidas)
+    { id:'F', color:0x639922, bays:22, blocked:['F-06-L1'],
+      runs:[ {bayFrom:3, bayTo:9,  x:112, zStart:12,  pitch:7, wall:'Sala de Mistura'},
+             {bayFrom:10,bayTo:22, x:112, zStart:-44, pitch:7, wall:'Ensacamento (P-Mac)'} ] },
+    // G (antiga F) — na MESMA linha vertical da J (x58); vão entre G e J alinhado com a porta da Mistura
+    { id:'G', color:0xd85a30, bays:12, blocked:[],
+      runs:[ {bayFrom:1,bayTo:12, x:58, zStart:14, pitch:8, orient:'z'} ] },
+    // H (antiga G) — fila horizontal curta perto da parede do fundo
+    { id:'H', color:0xba7517, bays:4, blocked:[],
+      runs:[ {bayFrom:1,bayTo:4, z:-120, xStart:-4, pitch:8, orient:'x'} ] },
+    // I (4) — bay suspensa sobre as docas (elevada 9 ft, 2 níveis) — CRIADA HOJE
+    { id:'I', color:0xf0997b, bays:8, blocked:[], isNew:true,
+      runs:[ {bayFrom:1,bayTo:8, z:150, xStart:-95, pitch:22, orient:'x', yBase:9, levels:2} ] },
+    // J (1) — bay em L: braço vertical (encurtado p/ abrir o vão na linha da porta) + pé horizontal — CRIADA HOJE
+    { id:'J', color:0x9d7be8, bays:15, blocked:[], isNew:true,
+      runs:[ {bayFrom:1, bayTo:10, x:58, zStart:104, pitch:8, orient:'z'},
+             {bayFrom:11,bayTo:15, z:110, xStart:24, pitch:8, orient:'x'} ] },
+  ];
+  // fila de bays na parede do fundo (horizontal) — seção/qtd provisórias
+  const BACKWALL = { id:'E', color:0xd9c48a, bays:26, z:-150, xStart:-150, pitch:9, use:'Sementes recebidas (matéria-prima)', gapBays:[17,20] };
+  const BLOCK_REASON = code => {
+    if(code==='A-23-L1') return 'Armadilhas de controle de pragas';
+    if(code==='F-06-L1') return 'Painel elétrico';
+    return 'Unidade de ar-condicionado';
+  };
+  // zonas da planta v5 (x0,z0,x1,z1)
+  const ZONES = [
+    // coluna direita: 1 Ensacamento (estendido até parede do fundo), Mistura, Higienização, Escritório
+    { name:'Ensacamento (P-Mac)', color:0x1d9e75, x0:116,z0:-158,x1:176,z1:-42 },
+    { name:'Sala de Mistura', color:0x1d9e75, x0:116,z0:-32,x1:176,z1:28 },
+    { name:'Porta · Sala de Mistura', color:0xf4c0d1, x0:104,z0:14,x1:118,z1:30 },
+    { name:'Sala de Higienização', color:0x5dcaa5, x0:116,z0:38,x1:176,z1:88 },
+    { name:'Escritório (frente · 1736)', color:0x0c447c, x0:110,z0:98,x1:176,z1:158 },
+    // 2 — nova Sala de Manutenção no canto traseiro esquerdo
+    { name:'Sala de Manutenção', color:0x888780, x0:-178,z0:-160,x1:-150,z1:-128 },
+    // 1 — E-Commerce (bloco grande à esquerda do centro)
+    { name:'E-Commerce', color:0x185fa5, x0:-90,z0:-120,x1:-18,z1:-18 },
+    // 6 — Área de produção
+    { name:'Produce (área de produção)', color:0x97c459, x0:-14,z0:-82,x1:16,z1:-42 },
+    // 5 — Linha de produção (esteira, faixa estreita vertical)
+    { name:'Produce (linha de produção)', color:0x639922, x0:18,z0:-116,x1:30,z1:44 },
+    // 4 — Fulfillment Staff (movido um espaço em direção ao Bay D)
+    { name:'Fulfillment Staff', color:0x85b7eb, x0:-52,z0:50,x1:18,z1:92 },
+    // 5 — Sala de Controle de Estoque ampliada
+    { name:'Sala de Controle de Estoque', color:0xef9f27, x0:-178,z0:96,x1:-100,z1:152 },
+  ];
+
+  // geometria racking
+  const BAY_PITCH=8, DECK_W=7, DECK_D=7, LEVEL_H=6, POST_H=27, Z_START=92;
+
+  let scene,camera,renderer,raycaster,mouse;
+  const cam={target:new THREE.Vector3(0,-10,0),radius:470,theta:0.95,phi:0.7};
+  function applyCam(){
+    cam.phi=Math.max(0.1,Math.min(Math.PI/2-0.03,cam.phi));
+    cam.radius=Math.max(80,Math.min(820,cam.radius));
+    camera.position.set(
+      cam.target.x+cam.radius*Math.sin(cam.phi)*Math.cos(cam.theta),
+      cam.target.y+cam.radius*Math.cos(cam.phi),
+      cam.target.z+cam.radius*Math.sin(cam.phi)*Math.sin(cam.theta));
+    camera.lookAt(cam.target);
+  }
+
+  const pickables=[], labelSprites=[], groupsById={};
+  let labelsOn=true;
+
+  // materiais/geometrias compartilhados
+  let GEO_DECK, GEO_POST, MAT_DECK, MAT_BLOCK, MAT_POSTS={}, MAT_BEAM;
+
+  function init(){
+    scene=new THREE.Scene();
+    scene.background=new THREE.Color(0x0f1420);
+    scene.fog=new THREE.Fog(0x0f1420,560,1200);
+    camera=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,0.1,4000);
+    applyCam();
+    renderer=new THREE.WebGLRenderer({antialias:true});
+    renderer.setSize(innerWidth,innerHeight); renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+    renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+    document.getElementById('app').appendChild(renderer.domElement);
+    setupControls(renderer.domElement);
+
+    scene.add(new THREE.AmbientLight(0xffffff,0.62));
+    scene.add(new THREE.HemisphereLight(0xbcd0ff,0x30343f,0.5));
+    const sun=new THREE.DirectionalLight(0xffffff,0.85);
+    sun.position.set(180,320,150); sun.castShadow=true; sun.shadow.mapSize.set(2048,2048);
+    const s=340; sun.shadow.camera.left=-s;sun.shadow.camera.right=s;sun.shadow.camera.top=s;sun.shadow.camera.bottom=-s;sun.shadow.camera.far=900;
+    scene.add(sun);
+
+    raycaster=new THREE.Raycaster(); mouse=new THREE.Vector2();
+
+    GEO_DECK=new THREE.BoxGeometry(DECK_W,0.4,DECK_D);
+    GEO_POST=new THREE.BoxGeometry(0.6,POST_H,0.6);
+    MAT_DECK=new THREE.MeshStandardMaterial({color:0xc7cede,roughness:.8});
+    MAT_BLOCK=new THREE.MeshStandardMaterial({color:0xe24b4a,roughness:.6,transparent:true,opacity:.85});
+    MAT_BEAM=new THREE.MeshStandardMaterial({color:0xd85a30,roughness:.5,metalness:.2});
+
+    buildFloor(); buildWalls(); buildDocks();
+    ZONES.forEach(buildZone);
+    SECTIONS.forEach(buildSection);
+    buildBackWall();
+    buildLegend();
+
+    addEventListener('resize',onResize);
+    renderer.domElement.addEventListener('click',onClick);
+    document.getElementById('loading').style.display='none';
+    animate();
+  }
+
+  function buildFloor(){
+    const f=new THREE.Mesh(new THREE.PlaneGeometry(W,D),new THREE.MeshStandardMaterial({color:0x272e3e,roughness:.95}));
+    f.rotation.x=-Math.PI/2; f.receiveShadow=true; scene.add(f);
+    const g=new THREE.GridHelper(W,24,0x3d465c,0x2f374a); g.position.y=0.05; scene.add(g);
+  }
+  function buildWalls(){
+    const m=new THREE.MeshStandardMaterial({color:0x39415a,roughness:.9,transparent:true,opacity:.16,side:THREE.DoubleSide});
+    [[-D/2],[D/2]].forEach(([z])=>{const w=new THREE.Mesh(new THREE.BoxGeometry(W,WALL_H,1),m);w.position.set(0,WALL_H/2,z);scene.add(w);});
+    [-W/2,W/2].forEach(x=>{const w=new THREE.Mesh(new THREE.BoxGeometry(1,WALL_H,D),m);w.position.set(x,WALL_H/2,0);scene.add(w);});
+    // parede do fundo destacada
+    const back=new THREE.Mesh(new THREE.BoxGeometry(W,WALL_H,1),new THREE.MeshStandardMaterial({color:0x4a5578,roughness:.9,transparent:true,opacity:.3,side:THREE.DoubleSide}));
+    back.position.set(0,WALL_H/2,-D/2+0.5); scene.add(back);
+    const bl=makeLabel('parede do fundo · pallet racking',0xffffff,true); bl.position.set(-40,20,-D/2+6); scene.add(bl); labelSprites.push(bl);
+  }
+  function buildDocks(){
+    // docas na parede leste (frente/baixo). Porta 19 junto ao escritório (x+) -> 11 na ponta (x-)
+    const g=new THREE.Group();
+    const strip=new THREE.Mesh(new THREE.PlaneGeometry(280,14),new THREE.MeshStandardMaterial({color:0xfac775,roughness:.8,transparent:true,opacity:.5}));
+    strip.rotation.x=-Math.PI/2; strip.position.set(-35,0.08,D/2-9); g.add(strip);
+    for(let i=0;i<9;i++){
+      const door=19-i; const x=95 - i*32;
+      box(g,new THREE.MeshStandardMaterial({color:0x854f0b,roughness:.7}),12,7,3,x,3.5,D/2-3);
+      const l=makeLabel('D'+door,0x412402); l.position.set(x,10,D/2-3); l.scale.multiplyScalar(.5); g.add(l); labelSprites.push(l);
+    }
+    const dl=makeLabel('Docas · parede leste (19 → 11)',0x412402,false); dl.position.set(-35,15,D/2-9); g.add(dl); labelSprites.push(dl);
+    scene.add(g);
+  }
+
+  function box(g,mat,w,h,d,x,y,z){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;g.add(m);return m;}
+
+  function buildZone(z){
+    const g=new THREE.Group();
+    const cx=(z.x0+z.x1)/2, cz=(z.z0+z.z1)/2, w=z.x1-z.x0, d=z.z1-z.z0;
+    const fl=new THREE.Mesh(new THREE.PlaneGeometry(w,d),new THREE.MeshStandardMaterial({color:z.color,roughness:.85,transparent:true,opacity:.32}));
+    fl.rotation.x=-Math.PI/2; fl.position.set(cx,0.1,cz); g.add(fl);
+    const edge=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(w,d)),new THREE.LineBasicMaterial({color:z.color}));
+    edge.rotation.x=-Math.PI/2; edge.position.set(cx,0.12,cz); g.add(edge);
+    // volume leve para salas grandes
+    if(w>40&&d>40){ const b=box(g,new THREE.MeshStandardMaterial({color:z.color,roughness:.7,transparent:true,opacity:.22}),w-6,10,d-6,cx,5,cz); }
+    const l=makeLabel(z.name,z.color); l.position.set(cx,14,cz); g.add(l); labelSprites.push(l);
+    scene.add(g); groupsById['zone:'+z.name]=g; z._group=g;
+  }
+
+  function buildSection(sec){
+    const g=new THREE.Group();
+    const beamHalf=DECK_W/2+0.3;
+    const blocked=new Set(sec.blocked);
+    const postMat=new THREE.MeshStandardMaterial({color:sec.color,roughness:.5,metalness:.35});
+    const runs = sec.runs || [{bayFrom:1,bayTo:sec.bays,x:sec.x,zStart:Z_START,pitch:BAY_PITCH}];
+    runs.forEach((run)=>{
+      const orient = run.orient || 'z';               // 'z' = fila vertical, 'x' = fila horizontal
+      const dir = orient==='z' ? -1 : 1;
+      const start = orient==='z' ? run.zStart : run.xStart;
+      const fixed = orient==='z' ? run.x : run.z;
+      const yBase = run.yBase || 0;                    // >0 = bay suspensa (elevada)
+      const levels = run.levels || 4;
+      const postH = yBase + levels*LEVEL_H + 2;
+      const postGeo = new THREE.BoxGeometry(0.6,postH,0.6);
+      const nb=run.bayTo-run.bayFrom+1;
+      const endAlong = start + dir*(nb-1)*run.pitch;
+      // posiciona no espaço conforme orientação
+      const P = (along,perp,y)=> orient==='z' ? [fixed+perp,y,along] : [along,y,fixed+perp];
+      // postes nas divisas
+      for(let i=0;i<=nb;i++){
+        const along = start + dir*(i*run.pitch) - dir*run.pitch/2;
+        [-beamHalf,beamHalf].forEach(off=>{const p=new THREE.Mesh(postGeo,postMat);const q=P(along,off,postH/2);p.position.set(q[0],q[1],q[2]);p.castShadow=true;g.add(p);});
+      }
+      // longarinas por nível
+      const runLen=Math.abs(start-endAlong)+run.pitch;
+      const beamGeo = orient==='z' ? new THREE.BoxGeometry(0.5,0.5,runLen) : new THREE.BoxGeometry(runLen,0.5,0.5);
+      const midAlong=(start+endAlong)/2;
+      for(let lv=1;lv<=levels;lv++){const y=yBase+lv*LEVEL_H;[-beamHalf,beamHalf].forEach(off=>{const bm=new THREE.Mesh(beamGeo,MAT_BEAM);const q=P(midAlong,off,y);bm.position.set(q[0],q[1],q[2]);g.add(bm);});}
+      // posições
+      for(let b=run.bayFrom;b<=run.bayTo;b++){
+        const along = start + dir*(b-run.bayFrom)*run.pitch;
+        for(let lv=1;lv<=levels;lv++){
+          const code=sec.id+'-'+String(b).padStart(2,'0')+'-L'+lv;
+          const isB=blocked.has(code);
+          const y=yBase+(lv-1)*LEVEL_H+1.4;
+          const m=new THREE.Mesh(isB?new THREE.BoxGeometry(DECK_W,4.6,DECK_D):GEO_DECK, isB?MAT_BLOCK:MAT_DECK);
+          const q=P(along,0,isB?y+1.6:y); m.position.set(q[0],q[1],q[2]); m.castShadow=true; m.receiveShadow=true;
+          m.userData={code,section:sec.id,bay:b,level:lv,blocked:isB, isNew:!!sec.isNew, use: run.wall?('Encostada na parede: '+run.wall):(yBase?'Bay suspensa (sobre as docas)':null)};
+          g.add(m); pickables.push(m);
+        }
+        const bl=makeLabel(sec.id+'-'+String(b).padStart(2,'0'),sec.color); const qb=P(along,0,postH+2.5); bl.position.set(qb[0],qb[1],qb[2]); bl.scale.multiplyScalar(.34); g.add(bl); labelSprites.push(bl);
+        if(sec.isNew){ const fl=makeFlag(); const qf=P(along,0,postH+6.5); fl.position.set(qf[0],qf[1],qf[2]); g.add(fl); }
+      }
+      // rótulo da seção
+      const txt = run.wall ? ('Seção '+sec.id+' · '+run.wall) : (yBase?('Seção '+sec.id+' · suspensa'):('Seção '+sec.id));
+      const sl=makeLabel(txt,sec.color,false); const qs=P(start + dir*4,0,postH+5); sl.position.set(qs[0],qs[1],qs[2]); sl.scale.multiplyScalar(run.wall?0.8:1.0); g.add(sl); labelSprites.push(sl);
+    });
+    scene.add(g); groupsById['sec:'+sec.id]=g;
+  }
+
+  function buildBackWall(){
+    const bw=BACKWALL, g=new THREE.Group();
+    const beamHalf=DECK_D/2+0.3;
+    const xEnd=bw.xStart+(bw.bays-1)*bw.pitch;
+    const postMat=new THREE.MeshStandardMaterial({color:0x8a7a4a,roughness:.5,metalness:.35});
+    for(let b=0;b<=bw.bays;b++){
+      if(bw.gapBays && b>bw.gapBays[0] && b<bw.gapBays[1]) continue; // vão da saída de emergência
+      const x=bw.xStart-bw.pitch/2+b*bw.pitch;
+      [-beamHalf,beamHalf].forEach(dz=>{const p=new THREE.Mesh(GEO_POST,postMat);p.position.set(x,POST_H/2,bw.z+dz);p.castShadow=true;g.add(p);});
+    }
+    // longarinas — quebradas no vão da saída de emergência
+    let segs;
+    if(bw.gapBays){
+      const gx1=bw.xStart+(bw.gapBays[0]-1)*bw.pitch - bw.pitch/2;
+      const gx2=bw.xStart+(bw.gapBays[1]-1)*bw.pitch + bw.pitch/2;
+      segs=[[bw.xStart-bw.pitch/2,gx1],[gx2,xEnd+bw.pitch/2]];
+    } else { segs=[[bw.xStart-bw.pitch/2,xEnd+bw.pitch/2]]; }
+    for(let lv=1;lv<=4;lv++){const y=lv*LEVEL_H; segs.forEach(seg=>{const len=seg[1]-seg[0],cx=(seg[0]+seg[1])/2;[-beamHalf,beamHalf].forEach(dz=>{const bm=new THREE.Mesh(new THREE.BoxGeometry(len,0.5,0.5),MAT_BEAM);bm.position.set(cx,y,bw.z+dz);g.add(bm);});});}
+    const seedMat=new THREE.MeshStandardMaterial({color:0xd9c48a,roughness:.9});
+    for(let b=1;b<=bw.bays;b++){
+      if(bw.gapBays && b>=bw.gapBays[0] && b<=bw.gapBays[1]) continue; // vão da saída de emergência
+      const x=bw.xStart+(b-1)*bw.pitch;
+      for(let lv=1;lv<=4;lv++){
+        const code=bw.id+'-'+String(b).padStart(2,'0')+'-L'+lv;
+        const y=(lv-1)*LEVEL_H+1.4;
+        const m=new THREE.Mesh(GEO_DECK,seedMat); m.position.set(x,y,bw.z); m.castShadow=true; m.receiveShadow=true;
+        m.userData={code,section:bw.id,bay:b,level:lv,blocked:false,use:bw.use};
+        g.add(m); pickables.push(m);
+      }
+    }
+    const sl=makeLabel('Seção E · sementes recebidas (parede do fundo)',bw.color,false); sl.position.set((bw.xStart+xEnd)/2,POST_H+5,bw.z-2); g.add(sl); labelSprites.push(sl);
+    scene.add(g); groupsById['bw']=g; bw._group=g;
+  }
+
+  // ----- bandeira "criado hoje" -----
+  function makeFlag(){
+    const c=document.createElement('canvas'),x=c.getContext('2d'); c.width=64;c.height=64;
+    x.strokeStyle='#e8eefc'; x.lineWidth=4; x.beginPath(); x.moveTo(16,62); x.lineTo(16,6); x.stroke();
+    x.fillStyle='#ff3b3b'; x.beginPath(); x.moveTo(18,8); x.lineTo(56,18); x.lineTo(18,30); x.closePath(); x.fill();
+    const t=new THREE.CanvasTexture(c); t.minFilter=THREE.LinearFilter;
+    const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false,transparent:true}));
+    sp.scale.set(6,6,1); return sp;
+  }
+
+  // ----- rótulos -----
+  function makeLabel(text,color,big){
+    const c=document.createElement('canvas'),x=c.getContext('2d'); const fs=46;
+    x.font='600 '+fs+'px system-ui,sans-serif'; const pad=24; c.width=x.measureText(text).width+pad*2; c.height=fs+pad;
+    const col='#'+color.toString(16).padStart(6,'0');
+    x.fillStyle= big?'rgba(15,20,32,.55)':'rgba(15,20,32,.85)'; rr(x,0,0,c.width,c.height,14); x.fill();
+    x.strokeStyle=col; x.lineWidth=3; rr(x,1.5,1.5,c.width-3,c.height-3,13); x.stroke();
+    x.font='600 '+fs+'px system-ui,sans-serif'; x.fillStyle='#fff'; x.textBaseline='middle'; x.textAlign='center'; x.fillText(text,c.width/2,c.height/2);
+    const t=new THREE.CanvasTexture(c); t.minFilter=THREE.LinearFilter;
+    const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false,transparent:true}));
+    const sc=0.11; sp.scale.set(c.width*sc,c.height*sc,1); return sp;
+  }
+  function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+
+  // ----- legenda -----
+  function buildLegend(){
+    const sc=document.getElementById('leg-sec'), zo=document.getElementById('leg-zone');
+    SECTIONS.forEach(s=>{
+      const it=document.createElement('div'); it.className='leg-item';
+      it.innerHTML='<span class="swatch" style="background:#'+s.color.toString(16).padStart(6,'0')+'"></span>Seção '+s.id+'<small>'+s.bays+' bays · '+(s.bays*4)+' pos</small>';
+      it.addEventListener('click',()=>{const g=groupsById['sec:'+s.id];g.visible=!g.visible;it.classList.toggle('off',!g.visible);});
+      sc.appendChild(it);
+    });
+    const bw=document.createElement('div'); bw.className='leg-item';
+    bw.innerHTML='<span class="swatch" style="background:#'+BACKWALL.color.toString(16).padStart(6,'0')+'"></span>Seção E (fundo)<small>'+BACKWALL.bays+' bays · sementes</small>';
+    bw.addEventListener('click',()=>{BACKWALL._group.visible=!BACKWALL._group.visible;bw.classList.toggle('off',!BACKWALL._group.visible);});
+    sc.appendChild(bw);
+    ZONES.forEach(z=>{
+      const it=document.createElement('div'); it.className='leg-item';
+      it.innerHTML='<span class="swatch" style="background:#'+z.color.toString(16).padStart(6,'0')+'"></span>'+z.name;
+      it.addEventListener('click',()=>{z._group.visible=!z._group.visible;it.classList.toggle('off',!z._group.visible);});
+      zo.appendChild(it);
+    });
+  }
+
+  // ----- interação -----
+  function onClick(e){
+    if(moved>6) return;
+    mouse.x=(e.clientX/innerWidth)*2-1; mouse.y=-(e.clientY/innerHeight)*2+1;
+    raycaster.setFromCamera(mouse,camera);
+    const h=raycaster.intersectObjects(pickables,false);
+    if(h.length){const u=h[0].object.userData;
+      document.getElementById('info-title').textContent=u.code;
+      document.getElementById('info-desc').textContent='Seção '+u.section+' · Bay '+String(u.bay).padStart(2,'0')+' · Nível L'+u.level;
+      const bd=document.getElementById('info-badge');
+      if(u.blocked){bd.textContent='Bloqueada — '+BLOCK_REASON(u.code);bd.style.background='rgba(226,75,74,.25)';bd.style.color='#ff9aa6';}
+      else if(u.isNew){bd.textContent='⚑ Criado hoje'+(u.use?' · '+u.use:'');bd.style.background='rgba(255,59,59,.22)';bd.style.color='#ff9aa6';}
+      else if(u.use){bd.textContent=u.use;bd.style.background='rgba(217,196,138,.2)';bd.style.color='#e6d3a0';}
+      else{bd.textContent='Posição de pallet · aguardando dado de estoque';bd.style.background='rgba(199,206,222,.18)';bd.style.color='#c7cede';}
+      document.getElementById('info').classList.add('show');
+    }
+  }
+  document.getElementById('info-close').addEventListener('click',()=>document.getElementById('info').classList.remove('show'));
+
+  // ----- controles de câmera -----
+  let dragging=false,lastX=0,lastY=0,moved=0;
+  function setupControls(el){
+    el.addEventListener('mousedown',e=>{dragging=true;moved=0;lastX=e.clientX;lastY=e.clientY;});
+    addEventListener('mouseup',()=>dragging=false);
+    addEventListener('mousemove',e=>{if(!dragging)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;moved+=Math.abs(dx)+Math.abs(dy);lastX=e.clientX;lastY=e.clientY;cam.theta+=dx*0.006;cam.phi-=dy*0.006;applyCam();});
+    el.addEventListener('wheel',e=>{e.preventDefault();cam.radius*=(1+Math.sign(e.deltaY)*0.09);applyCam();},{passive:false});
+    let tX=0,tY=0,pinch=0;
+    el.addEventListener('touchstart',e=>{if(e.touches.length===1){tX=e.touches[0].clientX;tY=e.touches[0].clientY;moved=0;}else if(e.touches.length===2){pinch=d2(e);}},{passive:true});
+    el.addEventListener('touchmove',e=>{if(e.touches.length===1){const dx=e.touches[0].clientX-tX,dy=e.touches[0].clientY-tY;moved+=Math.abs(dx)+Math.abs(dy);tX=e.touches[0].clientX;tY=e.touches[0].clientY;cam.theta+=dx*0.006;cam.phi-=dy*0.006;applyCam();}else if(e.touches.length===2){const d=d2(e);if(pinch)cam.radius*=pinch/d;pinch=d;applyCam();}},{passive:true});
+    function d2(e){const a=e.touches[0],b=e.touches[1];return Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);}
+  }
+  function setIso(){cam.theta=0.95;cam.phi=0.7;cam.radius=470;applyCam();}
+  function setTop(){cam.theta=Math.PI/2;cam.phi=0.12;cam.radius=470;applyCam();}
+  document.getElementById('btn-iso').addEventListener('click',setIso);
+  document.getElementById('btn-top').addEventListener('click',setTop);
+  document.getElementById('btn-labels').addEventListener('click',()=>{labelsOn=!labelsOn;labelSprites.forEach(s=>s.visible=labelsOn);document.getElementById('btn-labels').textContent='Rótulos: '+(labelsOn?'ON':'OFF');});
+
+  function onResize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);}
+  function animate(){requestAnimationFrame(animate);renderer.render(scene,camera);}
+  init();
+})();
+</script>
+</body>
+</html>
