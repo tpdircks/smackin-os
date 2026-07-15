@@ -13,7 +13,7 @@
     baysPerSection: 28,               // 28 bays/section (112 positions x 4 sections). Per Adriana's map.
     levels: ["L1", "L2", "L3", "L4"], // L1 floor .. L4 top
     docks: [11, 12, 13, 14, 15, 16, 17, 18, 19], // 19 = office end, 11 = far end
-    zones: ["RECEIVING", "RETURNS", "QUARANTINE", "WIP", "PACKOUT", "CAGE", "PROD-WEIGH", "PROD-PACK", "SHIPPING",
+    zones: ["RECEIVING", "STAGING", "RETURNS", "QUARANTINE", "WIP", "PACKOUT", "CAGE", "PROD-WEIGH", "PROD-PACK", "SHIPPING",
             "ST-01", "ST-02", "ST-03", "ST-04", "ST-05", "ST-06", "ST-07", "ST-08"]
   };
 
