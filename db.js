@@ -12,7 +12,7 @@ window.DB = (function () {
   const seed = window.SMACKIN_SEED;
   let mode = "local";
   let sb = null;                  // supabase client
-  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [] };
+  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [] };
   let subscribers = [];
 
   function emit() { subscribers.forEach(fn => { try { fn(); } catch (e) {} }); }
@@ -52,7 +52,7 @@ window.DB = (function () {
       try { raw = localStorage.getItem(KEY); } catch (e) {}
       if (raw) { cache = JSON.parse(raw); if (!cache.pos) cache.pos = []; if (!cache.log) cache.log = []; if (!cache.seasLots) cache.seasLots = []; if (!cache.orders) cache.orders = []; if (!cache.rdRequests) cache.rdRequests = []; if (!cache.supplierPos) cache.supplierPos = []; if (!cache.orderDocs) cache.orderDocs = []; if (!cache.consumption) cache.consumption = []; if (!cache.seedLots) cache.seedLots = []; if (!cache.stockBuild) cache.stockBuild = {}; if (!cache.shippingLog) cache.shippingLog = []; if (!cache.receivingLog) cache.receivingLog = []; if (!cache.improvements) cache.improvements = []; return; }
       const s = seed.build();
-      cache = { items: s.items, suppliers: s.suppliers, stock: s.stock, pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [] };
+      cache = { items: s.items, suppliers: s.suppliers, stock: s.stock, pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [] };
       this.save();
     },
     save() { try { localStorage.setItem(KEY, JSON.stringify(cache)); } catch (e) {} },
@@ -70,7 +70,7 @@ window.DB = (function () {
   // ---------- CLOUD backend (Supabase) ----------
   const cloud = {
     async loadAll() {
-      const [it, su, st, lg, po, pl, sl, od, rd, sp, odc, con, sdl, sbd, slog, rlog, imp, pday, ppal] = await Promise.all([
+      const [it, su, st, lg, po, pl, sl, od, rd, sp, odc, con, sdl, sbd, slog, rlog, imp, pday, ppal, refd] = await Promise.all([
         sb.from("items").select("*"),
         sb.from("suppliers").select("*"),
         sb.from("stock").select("*"),
@@ -89,7 +89,8 @@ window.DB = (function () {
         sb.from("receiving_log").select("*").order("recv_date", { ascending: false }).limit(3000),
         sb.from("improvements").select("*").order("created_at", { ascending: false }).limit(3000),
         sb.from("production_days").select("*").limit(2000),
-        sb.from("production_pallets").select("*").order("created_at", { ascending: false }).limit(5000)
+        sb.from("production_pallets").select("*").order("created_at", { ascending: false }).limit(5000),
+        sb.from("reference_docs").select("*").order("created_at", { ascending: false }).limit(2000)
       ]);
       cache.items = it.data || [];
       cache.suppliers = su.data || [];
@@ -158,6 +159,7 @@ window.DB = (function () {
       }));
       cache.prodDays = (pday && pday.data ? pday.data : []);
       cache.prodPallets = (ppal && ppal.data ? ppal.data : []);
+      cache.refDocs = (refd && refd.data ? refd.data : []);
       const lines = pl.data || [];
       cache.pos = (po.data || []).map(p => ({
         id: p.id, supplier: p.supplier, status: p.status, created: p.created_at,
@@ -934,6 +936,46 @@ window.DB = (function () {
   }
   function orderDocs() { return cache.orderDocs || []; }
 
+  // ---------- Reference / SOP library (uploaded docs in Supabase Storage) ----------
+  function referenceDocs() { return cache.refDocs || []; }
+  async function createRefDoc(rec, file, op) {
+    let file_name = file ? file.name : "", file_path = "", file_url = "";
+    if (mode === "cloud" && file) {
+      try {
+        const path = "ref_" + Date.now() + "_" + Math.floor(Math.random() * 1000) + "_" + (file.name || "doc").replace(/[^\w.\-]+/g, "_");
+        const up = await sb.storage.from(ODOC_BUCKET).upload(path, file, { upsert: false, contentType: file.type || undefined });
+        if (up.error) return { ok: false, msg: up.error.message || "upload failed" };
+        file_path = path;
+        const pub = sb.storage.from(ODOC_BUCKET).getPublicUrl(path);
+        file_url = (pub && pub.data && pub.data.publicUrl) || "";
+      } catch (e) { return { ok: false, msg: String(e) }; }
+    }
+    const row = { title: rec.title || file_name || "Document", category: rec.category || "Other",
+      notes: rec.notes || "", file_name: file_name, file_path: file_path, file_url: file_url, uploaded_by: op || "" };
+    const logEntry = { a: "Reference doc", d: (row.category || "") + ": " + row.title, u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      const r = await sb.from("reference_docs").insert(row).select();
+      if (r && r.error) return { ok: false, msg: r.error.message || "save failed" };
+      if (r.data && r.data[0]) row.id = r.data[0].id;
+      cache.refDocs.unshift(row); await cloud.addLog(logEntry);
+    } else {
+      row.id = "REF-" + Date.now().toString(36); row.created_at = new Date().toISOString();
+      if (file && !file_url) row.file_url = URL.createObjectURL(file);
+      cache.refDocs.unshift(row); local.addLog(logEntry); local.save();
+    }
+    emit(); return { ok: true, doc: row };
+  }
+  async function deleteRefDoc(id, op) {
+    const cur = (cache.refDocs || []).find(s => String(s.id) === String(id));
+    if (mode === "cloud") {
+      if (cur && cur.file_path) { try { await sb.storage.from(ODOC_BUCKET).remove([cur.file_path]); } catch (e) {} }
+      await sb.from("reference_docs").delete().eq("id", id);
+    }
+    cache.refDocs = (cache.refDocs || []).filter(s => String(s.id) !== String(id));
+    if (mode !== "cloud") local.save();
+    emit();
+  }
+
   // ---------- Consumption (Mixing / P-Mac scan-out to production) ----------
   function consumption() { return cache.consumption || []; }
   async function consume(itemCode, qty, lot, dept, op) {
@@ -1081,6 +1123,7 @@ window.DB = (function () {
     rdRequests, createRdRequest, updateRdRequest, setRdStatus, deleteRdRequest, sendRdEmail,
     supplierPos, createSupplierPO, deleteSupplierPO,
     orderDocs, createOrderDoc, deleteOrderDoc,
+    referenceDocs, createRefDoc, deleteRefDoc,
     consumption, consume,
     config: (seed ? seed.CONFIG : null), allLocations: (seed ? seed.allLocations : () => []),
     SNAPSHOT: (seed ? seed.SNAPSHOT : ""),

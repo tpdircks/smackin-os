@@ -61,7 +61,7 @@
       mixing:"Mixing", pmac:"P-Mac", roleMixing:"Mixing (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mixing", grpPmac:"P-Mac",
       deptSoon:"This area is being set up. Allen's team screens will live here - tell us what you'd like tracked and we'll build it in.",
       conHint:"Scan each material as it moves from the racking into this room. Records real-time usage and removes it from inventory. Lot # required on every scan.", conLot:"Lot # (required)", conBtn:"Log usage", conRecent:"Recent usage", conNone:"Nothing logged yet.", conWhen:"When", conMat:"Material", conBy:"By", conErr:"Scan an item, quantity, and lot #", conNotInList:"not in item list",
-      grpReceiving:"Receiving", grpInventory:"Inventory", grpProduction:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpImprove:"Improvement", grpQuality:"Quality", compliance:"Compliance / SQF", cmpHint:"SQF food-safety program - certifications, the recurring activity schedule, and the controlled documents in the Operations shared drive.", cmpCerts:"Certifications & Audits", cmpCert:"Certification / Audit", cmpFreq:"Frequency", cmpWhen:"When / Notes", cmpBody:"Body", cmpDueThis:"Due this month", cmpAllMonthly:"Only the standard monthly reviews this month.", cmpSchedule:"SQF Activity Schedule", cmpScheduleHint:"Recurring SQF activities by frequency (from the 2026 SQF Calendar). Monthly items are also documented daily/weekly.", cmpDocs:"Document Register", cmpDocsHint:"Key SQF controlled documents - open in the Operations shared drive.", grpSystem:"System",
+      grpReceiving:"Receiving", grpInventory:"Inventory", grpProduction:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpImprove:"Improvement", grpQuality:"Quality", compliance:"Compliance / SQF", cmpHint:"SQF food-safety program - certifications, the recurring activity schedule, and the controlled documents in the Operations shared drive.", cmpCerts:"Certifications & Audits", cmpCert:"Certification / Audit", cmpFreq:"Frequency", cmpWhen:"When / Notes", cmpBody:"Body", cmpDueThis:"Due this month", cmpAllMonthly:"Only the standard monthly reviews this month.", cmpSchedule:"SQF Activity Schedule", cmpScheduleHint:"Recurring SQF activities by frequency (from the 2026 SQF Calendar). Monthly items are also documented daily/weekly.", cmpDocs:"Document Register", cmpDocsHint:"Key SQF controlled documents - open in the Operations shared drive.", grpDocs:"Reference", reference:"Reference / SOPs", refHint:"SOPs, cheat sheets, and policies from the Smackin Docs library - one click for the floor. Upload a file and pick a category.", refDrop:"Upload document(s)", refSelected:"file(s) ready", refCategory:"Category", refNotes:"Notes (optional)", refSaveBtn:"Add to library", refNone:"No reference documents yet.", refLibrary:"Document Library", refNoFile:"Choose a file first", refSaved:"added", refConfirmDel:"Remove this document?", grpSystem:"System",
       people:"People", hrHint:"Team directory and org chart. Non-sensitive info only - no pay or personal data.", hrGate:"This section shows employee information. Enter the manager PIN to view.",
       hrDir:"Directory", hrOrg:"Org chart", hrRole:"Role", hrDept:"Department", hrStart:"Started", hrMgr:"Reports to", hrSearchP:"Search name or role...", hrCount:"people", hrNoMatch:"No matching people.", hrYr:"yr", hrMo:"mo",
       alerts:"Alerts", alertsHint:"What needs attention now: items to reorder and seasoning lots nearing expiration.",
@@ -159,7 +159,7 @@
       mixing:"Mezcla", pmac:"P-Mac", roleMixing:"Mezcla (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mezcla", grpPmac:"P-Mac",
       deptSoon:"Esta area se esta configurando. Aqui viviran las pantallas del equipo de Allen - diganos que desea controlar y lo agregamos.",
       conHint:"Escanee cada material al pasar del estante a esta sala. Registra el uso en tiempo real y lo descuenta del inventario. Numero de lote requerido en cada escaneo.", conLot:"Lote # (requerido)", conBtn:"Registrar uso", conRecent:"Uso reciente", conNone:"Nada registrado aun.", conWhen:"Cuando", conMat:"Material", conBy:"Por", conErr:"Escanee articulo, cantidad y lote #", conNotInList:"no esta en la lista",
-      grpReceiving:"Recibo", grpInventory:"Inventario", grpProduction:"Fulfillment", grpShipping:"Envios", grpPurchasing:"Compras", grpRnd:"I+D", grpHr:"RH", grpImprove:"Mejora", grpQuality:"Calidad", compliance:"Cumplimiento / SQF", cmpHint:"Programa de inocuidad SQF - certificaciones, el calendario de actividades recurrentes y los documentos controlados en la unidad compartida de Operaciones.", cmpCerts:"Certificaciones y Auditorias", cmpCert:"Certificacion / Auditoria", cmpFreq:"Frecuencia", cmpWhen:"Cuando / Notas", cmpBody:"Organismo", cmpDueThis:"Vence este mes", cmpAllMonthly:"Solo las revisiones mensuales estandar este mes.", cmpSchedule:"Calendario de Actividades SQF", cmpScheduleHint:"Actividades SQF recurrentes por frecuencia (del Calendario SQF 2026). Los items mensuales tambien se documentan diario/semanal.", cmpDocs:"Registro de Documentos", cmpDocsHint:"Documentos controlados SQF clave - abrir en la unidad compartida de Operaciones.", grpSystem:"Sistema",
+      grpReceiving:"Recibo", grpInventory:"Inventario", grpProduction:"Fulfillment", grpShipping:"Envios", grpPurchasing:"Compras", grpRnd:"I+D", grpHr:"RH", grpImprove:"Mejora", grpQuality:"Calidad", compliance:"Cumplimiento / SQF", cmpHint:"Programa de inocuidad SQF - certificaciones, el calendario de actividades recurrentes y los documentos controlados en la unidad compartida de Operaciones.", cmpCerts:"Certificaciones y Auditorias", cmpCert:"Certificacion / Auditoria", cmpFreq:"Frecuencia", cmpWhen:"Cuando / Notas", cmpBody:"Organismo", cmpDueThis:"Vence este mes", cmpAllMonthly:"Solo las revisiones mensuales estandar este mes.", cmpSchedule:"Calendario de Actividades SQF", cmpScheduleHint:"Actividades SQF recurrentes por frecuencia (del Calendario SQF 2026). Los items mensuales tambien se documentan diario/semanal.", cmpDocs:"Registro de Documentos", cmpDocsHint:"Documentos controlados SQF clave - abrir en la unidad compartida de Operaciones.", grpDocs:"Referencia", reference:"Referencia / SOPs", refHint:"SOPs, hojas de referencia y politicas de la biblioteca Smackin Docs - un clic para el piso. Suba un archivo y elija una categoria.", refDrop:"Subir documento(s)", refSelected:"archivo(s) listos", refCategory:"Categoria", refNotes:"Notas (opcional)", refSaveBtn:"Agregar a la biblioteca", refNone:"Aun no hay documentos de referencia.", refLibrary:"Biblioteca de Documentos", refNoFile:"Elija un archivo primero", refSaved:"agregado(s)", refConfirmDel:"Quitar este documento?", grpSystem:"Sistema",
       people:"Personal", hrHint:"Directorio del equipo y organigrama. Solo informacion no sensible - sin pago ni datos personales.", hrGate:"Esta seccion muestra informacion de empleados. Ingrese el PIN de gerente para ver.",
       hrDir:"Directorio", hrOrg:"Organigrama", hrRole:"Puesto", hrDept:"Departamento", hrStart:"Ingreso", hrMgr:"Reporta a", hrSearchP:"Buscar nombre o puesto...", hrCount:"personas", hrNoMatch:"Sin coincidencias.", hrYr:"ano", hrMo:"mes",
       alerts:"Alertas", alertsHint:"Lo que necesita atencion ahora: articulos por reordenar y lotes de sazon por vencer.",
@@ -257,7 +257,7 @@
       mixing:"Mistura", pmac:"P-Mac", roleMixing:"Mistura (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mistura", grpPmac:"P-Mac",
       deptSoon:"Esta area esta sendo configurada. As telas da equipe do Allen ficarao aqui - diga o que deseja acompanhar e vamos incluir.",
       conHint:"Escaneie cada material ao passar da prateleira para esta sala. Registra o uso em tempo real e baixa do estoque. Numero de lote obrigatorio em cada leitura.", conLot:"Lote # (obrigatorio)", conBtn:"Registrar uso", conRecent:"Uso recente", conNone:"Nada registrado ainda.", conWhen:"Quando", conMat:"Material", conBy:"Por", conErr:"Escaneie item, quantidade e lote #", conNotInList:"nao esta na lista",
-      grpReceiving:"Recebimento", grpInventory:"Estoque", grpProduction:"Fulfillment", grpShipping:"Envios", grpPurchasing:"Compras", grpRnd:"P&D", grpHr:"RH", grpImprove:"Melhoria", grpQuality:"Qualidade", compliance:"Conformidade / SQF", cmpHint:"Programa de seguranca de alimentos SQF - certificacoes, o calendario de atividades recorrentes e os documentos controlados no drive compartilhado de Operacoes.", cmpCerts:"Certificacoes e Auditorias", cmpCert:"Certificacao / Auditoria", cmpFreq:"Frequencia", cmpWhen:"Quando / Notas", cmpBody:"Orgao", cmpDueThis:"Vence este mes", cmpAllMonthly:"Apenas as revisoes mensais padrao este mes.", cmpSchedule:"Calendario de Atividades SQF", cmpScheduleHint:"Atividades SQF recorrentes por frequencia (do Calendario SQF 2026). Itens mensais tambem documentados diario/semanal.", cmpDocs:"Registro de Documentos", cmpDocsHint:"Documentos controlados SQF principais - abrir no drive compartilhado de Operacoes.", grpSystem:"Sistema",
+      grpReceiving:"Recebimento", grpInventory:"Estoque", grpProduction:"Fulfillment", grpShipping:"Envios", grpPurchasing:"Compras", grpRnd:"P&D", grpHr:"RH", grpImprove:"Melhoria", grpQuality:"Qualidade", compliance:"Conformidade / SQF", cmpHint:"Programa de seguranca de alimentos SQF - certificacoes, o calendario de atividades recorrentes e os documentos controlados no drive compartilhado de Operacoes.", cmpCerts:"Certificacoes e Auditorias", cmpCert:"Certificacao / Auditoria", cmpFreq:"Frequencia", cmpWhen:"Quando / Notas", cmpBody:"Orgao", cmpDueThis:"Vence este mes", cmpAllMonthly:"Apenas as revisoes mensais padrao este mes.", cmpSchedule:"Calendario de Atividades SQF", cmpScheduleHint:"Atividades SQF recorrentes por frequencia (do Calendario SQF 2026). Itens mensais tambem documentados diario/semanal.", cmpDocs:"Registro de Documentos", cmpDocsHint:"Documentos controlados SQF principais - abrir no drive compartilhado de Operacoes.", grpDocs:"Referencia", reference:"Referencia / SOPs", refHint:"SOPs, folhas de referencia e politicas da biblioteca Smackin Docs - um clique para o chao de fabrica. Envie um arquivo e escolha uma categoria.", refDrop:"Enviar documento(s)", refSelected:"arquivo(s) prontos", refCategory:"Categoria", refNotes:"Notas (opcional)", refSaveBtn:"Adicionar a biblioteca", refNone:"Ainda nao ha documentos de referencia.", refLibrary:"Biblioteca de Documentos", refNoFile:"Escolha um arquivo primeiro", refSaved:"adicionado(s)", refConfirmDel:"Remover este documento?", grpSystem:"Sistema",
       people:"Pessoas", hrHint:"Diretorio da equipe e organograma. Apenas informacoes nao sensiveis - sem salario ou dados pessoais.", hrGate:"Esta secao mostra informacoes de funcionarios. Digite o PIN de gerente para ver.",
       hrDir:"Diretorio", hrOrg:"Organograma", hrRole:"Cargo", hrDept:"Departamento", hrStart:"Inicio", hrMgr:"Reporta a", hrSearchP:"Buscar nome ou cargo...", hrCount:"pessoas", hrNoMatch:"Nenhuma correspondencia.", hrYr:"ano", hrMo:"mes",
       alerts:"Alertas", alertsHint:"O que precisa de atencao agora: itens para repor e lotes de tempero perto do vencimento.",
@@ -328,7 +328,7 @@
     { key: "tote", label: "Tote - 1 bag x 1,200 lb", per: 1200 }
   ];
   const SEED_PACK_MAP = {}; SEED_PACKS.forEach(p => SEED_PACK_MAP[p.key] = p);
-  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","seasoning","seed","skus","mixing","pmac","count","locations","finbags","pmacout","purchasing","supplierpos","people","improve","compliance","labels","log","settings"];
+  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","seasoning","seed","skus","mixing","pmac","count","locations","finbags","pmacout","purchasing","supplierpos","people","improve","compliance","reference","labels","log","settings"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -509,6 +509,7 @@
     { key:"grpHr", items:["people"] },
     { key:"grpImprove", items:["improve"] },
     { key:"grpQuality", items:["compliance"] },
+    { key:"grpDocs", items:["reference"] },
     { key:"grpSystem", items:["log","settings"] }
   ];
   // Lucide icon names (clean SVG line icons) rendered via lucide.createIcons()
@@ -520,7 +521,7 @@
     seasoning:"flame", seed:"sprout", skus:"barcode", finbags:"shopping-bag", pmacout:"package-open",
     mixing:"cooking-pot", pmac:"wrench", count:"clipboard-check", locations:"map-pin",
     purchasing:"shopping-cart", supplierpos:"file-text", people:"users", labels:"tag",
-    log:"history", settings:"settings", improve:"trending-up", compliance:"shield-check" };
+    log:"history", settings:"settings", improve:"trending-up", compliance:"shield-check", reference:"book-open" };
   function drawIcons() { try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {} }
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
   let spoSort = { key: "created", dir: -1 };  // Supplier POs table sort (v25)
@@ -2029,6 +2030,38 @@
       '<button class="primary" onclick="UI.pmoAdd()">' + L("pmoAdd") + '</button>' +
       '<h2 class="sub2" style="margin-top:18px">' + L("rpRecent") + '</h2>' + recent + '</div>';
   }
+  // ---- Reference / SOP library ----
+  const REF_CATS = ["SOP", "Customer Guide", "HR & Team", "Food Safety", "Production", "Inventory", "Other"];
+  let refFiles = null;      // pending uploads (FileList)
+  function viewReference() {
+    const docs = DB.referenceDocs ? DB.referenceDocs() : [];
+    const form = '<div class="ordform">' +
+      '<div class="spodrop"><input type="file" id="ref-input" multiple style="display:none" onchange="UI.refPick(this)">' +
+      '<label for="ref-input" class="spodroplabel">&#128193; ' + L("refDrop") + '</label></div>' +
+      (refFiles && refFiles.length ? '<p class="hint">&#128206; ' + refFiles.length + ' ' + L("refSelected") + '</p>' : '') +
+      '<div class="row"><div><label>' + L("refCategory") + '</label><select id="ref-cat">' + REF_CATS.map(c => "<option>" + c + "</option>").join("") + '</select></div>' +
+      '<div><label>' + L("spoUploadedBy") + '</label><input id="op" value="Troy"></div></div>' +
+      '<div><label>' + L("refNotes") + '</label><input id="ref-notes" autocomplete="off"></div>' +
+      '<button class="primary" onclick="UI.refSave()">' + L("refSaveBtn") + '</button>' +
+      (refFiles && refFiles.length ? ' <button class="ghost" style="margin-top:14px" onclick="UI.refClear()">' + L("spoCancel") + '</button>' : '') + '</div>';
+    let body;
+    if (!docs.length) { body = '<p class="muted">' + L("refNone") + '</p>'; }
+    else {
+      const byCat = {}; docs.forEach(d => { const c = d.category || "Other"; (byCat[c] = byCat[c] || []).push(d); });
+      const order = REF_CATS.filter(c => byCat[c]).concat(Object.keys(byCat).filter(c => REF_CATS.indexOf(c) < 0));
+      body = order.map(c => {
+        const chips = byCat[c].map(d => {
+          const link = d.file_url ? '<a href="' + d.file_url + '" target="_blank" rel="noopener">' + esc(d.title || d.file_name) + '</a>' : esc(d.title || d.file_name);
+          return '<span class="odchip">' + link + (d.notes ? '<span class="odfn">' + esc(d.notes) + '</span>' : '') + '<button class="odx" title="x" onclick="UI.refDelete(\'' + d.id + '\')">&#10005;</button></span>';
+        }).join("");
+        return '<div class="odcust" data-txt="' + esc((c + " " + byCat[c].map(d => d.title + " " + (d.notes || "")).join(" ")).toLowerCase()) + '"><div class="odcusthead">' + esc(c) + ' <span class="muted">(' + byCat[c].length + ')</span></div><div class="odchips">' + chips + '</div></div>';
+      }).join("");
+    }
+    return '<div class="card"><h2>' + L("reference") + '</h2><p class="hint">' + L("refHint") + '</p>' + form + '</div>' +
+      '<div class="card"><h2 class="sub2">' + L("refLibrary") + ' (' + docs.length + ')</h2>' +
+      '<input id="refSearch" autocomplete="off" oninput="UI.refSearch(this.value)" placeholder="' + L("rsSearchP") + '" style="margin-bottom:10px">' +
+      '<div id="refBody">' + body + '</div></div>';
+  }
   // ---- Compliance / SQF (from the SQF Calendar in the Operations shared drive) ----
   const SQF_CERTS = [
     { name: "SQF Certification", freq: "Annually", when: "Recertification audit yearly", body: "SQF (SQFI)" },
@@ -2631,6 +2664,22 @@
     spoSortBy(k) { if (spoSort.key === k) spoSort.dir *= -1; else spoSort = { key: k, dir: (k === "total" || k === "item_count" || k === "po_date") ? -1 : 1 }; render(); },
     spoOpen(id) { spoDetailId = id; render(); window.scrollTo(0, 0); },
     spoCloseDetail() { spoDetailId = null; render(); },
+    refPick(input) { refFiles = input.files && input.files.length ? input.files : null; render(); },
+    refClear() { refFiles = null; render(); },
+    async refSave() {
+      if (!refFiles || !refFiles.length) return toast(L("refNoFile"));
+      const cat = ($("ref-cat") || {}).value || "Other"; const notes = (($("ref-notes") || {}).value || "").trim();
+      const by = ($("op") || {}).value || "Troy";
+      let ok = 0, err = "";
+      for (const f of refFiles) {
+        const r = await DB.createRefDoc({ title: f.name.replace(/\.[^.]+$/, ""), category: cat, notes: notes }, f, by);
+        if (r && r.ok) ok++; else err = (r && r.msg) || "error";
+      }
+      refFiles = null; toast(ok + " " + L("refSaved") + (err ? " - " + err : "")); render();
+    },
+    async refDelete(id) { if (!confirm(L("refConfirmDel"))) return; await DB.deleteRefDoc(id, opVal()); toast(L("spoDelete") + " ✓"); },
+    refSearch(val) { const q = (val || "").toLowerCase().trim();
+      document.querySelectorAll("#refBody .odcust").forEach(el => { const t = el.getAttribute("data-txt") || ""; el.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
     // ---- Create PO (Excel-style entry form) ----
     poCreateOpen() { spoView = "create"; poRows = 4; render(); },
     poBack() { spoView = "list"; render(); },
@@ -2861,7 +2910,7 @@
     renderNav(); refreshDatalists();
     const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
       move: viewMove, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
-      count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, compliance: viewCompliance, labels: viewLabels, log: viewLog, settings: viewSettings };
+      count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, compliance: viewCompliance, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings };
     $("view").innerHTML = (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
     $("modeBadge").className = "modebadge " + (DB.mode === "cloud" ? "ok" : "low");
