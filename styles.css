@@ -168,6 +168,8 @@ td.ess-na{color:#aab2bd}
 .ztile .zc{font-size:12px;font-weight:800;color:var(--navy)}
 .ztile .zq{font-size:11px;color:#1d5631;margin-top:2px}
 .card.locsel{border-left:4px solid var(--orange)}
+.locact{margin-top:12px;border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:#fafbfc}
+.locact h3.sub2{margin-top:0}
 /* floor plan (top-down building map) */
 .fpwrap{width:100%;overflow-x:auto}
 .floorplan{width:100%;min-width:640px;height:auto;display:block}

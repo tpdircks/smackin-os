@@ -26,7 +26,7 @@
       produceHint:"Record finished 4oz bags off the line. Adds bags, consumes film + seasoning.",
       countHint:"Cycle count: scan item + slot, enter the counted quantity; the system adjusts.",
       locHint:"What is in each location now.", purchHint:"Reorder alerts plus full purchase orders.",purchBuyList:"Buy List",purchSetup:"Reorder Setup",rsHint:"Set a reorder point and preferred supplier for each item. Items with both set will trigger on the Buy List when stock runs low.",rsNoSup:"— none —",rsNeeds:"Needs setup",rsReady:"Ready",rsReorderPt:"Reorder point",rsNeedShort:"need setup",rsSaved:"Saved",rsSearchP:"Search items...",prodlog:"Daily Production",bags:"Bags",plLot:"Lot #",plShiftLead:"Shift Lead",plCounter:"Metal Detector Box Counter",plStart:"Start Count",plEnd:"End Count",plBoxes:"Boxes Produced",plCounterHint:"Record the counter BEFORE and AFTER the shift. Do not reset it.",plAddPallet:"Add Pallet",plLine:"Line",plFlavor:"Flavor",plCases:"Cases",plNotes:"Notes / Customer",plAdd:"Add to log",plAdded:"Pallet added",plNeedCases:"Enter case count",plLog:"Pallet Log",plPalletsUsed:"Pallets Used",plNoPallets:"No pallets logged yet today.",plSummary:"Daily Summary by Flavor",plCode:"Code",plCasesLogged:"Cases Logged",plVariance:"Variance (counter - log)",
-      locMap:"Rack map", locList:"List", locFloor:"Floor plan", locOccupied:"Occupied", locEmpty:"Empty", locBlocked:"Blocked", locSection:"Section", locDocks:"Dock doors", locZones:"Zones & staging", locClickHint:"Top-down view of the racks. Green = occupied, click any slot to see what is stored there. Bay 01 is at the dock end.", locNothing:"Nothing stored in this slot.", locSlot:"Slot", locBaysUsed:"slots used", locOfficeEnd:"office end", locFarEnd:"far end",
+      locMap:"Rack map", locList:"List", locFloor:"Floor plan", locOccupied:"Occupied", locEmpty:"Empty", locBlocked:"Blocked", locSection:"Section", locDocks:"Dock doors", locZones:"Zones & staging", locClickHint:"Top-down view of the racks. Green = occupied, click any slot to see what is stored there. Bay 01 is at the dock end.", locNothing:"Nothing stored in this slot.",lmMove:"Move",lmSet:"Fix count",lmAddItem:"Add item",lmAssign:"Place item here",lmEmpty:"Empty slot",lmMoveTitle:"Move item to another location",lmSetTitle:"Correct the count",lmAssignTitle:"Place an item in this location",lmDest:"Move to (location)",lmMoveBtn:"Move",lmAssignBtn:"Place here",lmEmptyConfirm:"Remove ALL items from",lmEmptied:"emptied", locSlot:"Slot", locBaysUsed:"slots used", locOfficeEnd:"office end", locFarEnd:"far end",
       locFloorNote:"Top-down map of the building - every place product is stored or moves through. Click a rack section or staging zone to see its contents. Section A/B/C/D letters are a best guess - tell me which physical run is which and I will lock them in.", locStorage:"Storage (racking)", locTransfer:"Production & transfer areas", locStaging:"Staging & work zones",
       reorderSug:"Reorder suggestions", purchOrders:"Purchase orders", newPO:"New PO", createDraft:"Create draft PO",
       chooseSupplier:"Supplier", poExpected:"Expected", poCost:"Unit cost", addLines:"Set quantities to order (0 = skip).",
@@ -124,7 +124,7 @@
       produceHint:"Registre bolsas 4oz de la linea. Suma bolsas, consume film + sazon.",
       countHint:"Conteo ciclico: escanee articulo + slot, ingrese la cantidad contada.",
       locHint:"Lo que hay en cada ubicacion ahora.", purchHint:"Alertas de reorden mas ordenes de compra.",purchBuyList:"Lista de compra",purchSetup:"Config. de reorden",rsHint:"Defina un punto de reorden y proveedor preferido para cada articulo. Los articulos con ambos configurados apareceran en la Lista de compra cuando el stock baje.",rsNoSup:"— ninguno —",rsNeeds:"Falta config.",rsReady:"Listo",rsReorderPt:"Punto de reorden",rsNeedShort:"por configurar",rsSaved:"Guardado",rsSearchP:"Buscar articulos...",prodlog:"Produccion Diaria",bags:"Bolsas",plLot:"Lote #",plShiftLead:"Lider de Turno",plCounter:"Contador de Cajas - Detector de Metales",plStart:"Conteo Inicial",plEnd:"Conteo Final",plBoxes:"Cajas Producidas",plCounterHint:"Registrar el contador ANTES y DESPUES del turno. No reiniciar.",plAddPallet:"Agregar Paleta",plLine:"Linea",plFlavor:"Sabor",plCases:"Cajas",plNotes:"Notas / Cliente",plAdd:"Agregar al registro",plAdded:"Paleta agregada",plNeedCases:"Ingrese cantidad de cajas",plLog:"Registro de Paletas",plPalletsUsed:"Paletas Usadas",plNoPallets:"Aun no hay paletas registradas hoy.",plSummary:"Resumen Diario por Sabor",plCode:"Codigo",plCasesLogged:"Cajas Registradas",plVariance:"Variacion (contador - registro)",
-      locMap:"Mapa de racks", locList:"Lista", locFloor:"Plano", locOccupied:"Ocupado", locEmpty:"Vacio", locBlocked:"Bloqueado", locSection:"Seccion", locDocks:"Puertas de muelle", locZones:"Zonas y staging", locClickHint:"Vista superior de los racks. Verde = ocupado, haga clic en un slot para ver que hay. La bahia 01 esta junto a los muelles.", locNothing:"Nada almacenado en este slot.", locSlot:"Slot", locBaysUsed:"slots usados", locOfficeEnd:"lado oficina", locFarEnd:"lado lejano",
+      locMap:"Mapa de racks", locList:"Lista", locFloor:"Plano", locOccupied:"Ocupado", locEmpty:"Vacio", locBlocked:"Bloqueado", locSection:"Seccion", locDocks:"Puertas de muelle", locZones:"Zonas y staging", locClickHint:"Vista superior de los racks. Verde = ocupado, haga clic en un slot para ver que hay. La bahia 01 esta junto a los muelles.", locNothing:"Nada almacenado en este slot.",lmMove:"Mover",lmSet:"Corregir conteo",lmAddItem:"Agregar articulo",lmAssign:"Colocar articulo aqui",lmEmpty:"Vaciar espacio",lmMoveTitle:"Mover articulo a otra ubicacion",lmSetTitle:"Corregir el conteo",lmAssignTitle:"Colocar un articulo en esta ubicacion",lmDest:"Mover a (ubicacion)",lmMoveBtn:"Mover",lmAssignBtn:"Colocar aqui",lmEmptyConfirm:"Quitar TODOS los articulos de",lmEmptied:"vaciado", locSlot:"Slot", locBaysUsed:"slots usados", locOfficeEnd:"lado oficina", locFarEnd:"lado lejano",
       locFloorNote:"Plano superior del edificio - cada lugar donde se almacena o mueve producto. Haga clic en una seccion de rack o zona para ver su contenido. Las letras A/B/C/D son un estimado - digame que fila fisica es cual y las fijo.", locStorage:"Almacenamiento (racks)", locTransfer:"Areas de produccion y transferencia", locStaging:"Zonas de staging y trabajo",
       reorderSug:"Sugerencias de reorden", purchOrders:"Ordenes de compra", newPO:"Nueva orden", createDraft:"Crear borrador",
       chooseSupplier:"Proveedor", poExpected:"Esperado", poCost:"Costo unit.", addLines:"Indique cantidades a pedir (0 = omitir).",
@@ -222,7 +222,7 @@
       produceHint:"Registre sacos 4oz da linha. Adiciona sacos, consome filme + tempero.",
       countHint:"Contagem ciclica: escaneie item + slot, digite a quantidade contada.",
       locHint:"O que ha em cada local agora.", purchHint:"Alertas de reposicao mais ordens de compra.",purchBuyList:"Lista de compras",purchSetup:"Config. de reposicao",rsHint:"Defina um ponto de reposicao e fornecedor preferido para cada item. Itens com ambos configurados aparecerao na Lista de compras quando o estoque baixar.",rsNoSup:"— nenhum —",rsNeeds:"Falta config.",rsReady:"Pronto",rsReorderPt:"Ponto de reposicao",rsNeedShort:"a configurar",rsSaved:"Salvo",rsSearchP:"Buscar itens...",prodlog:"Producao Diaria",bags:"Bolsas",plLot:"Lote #",plShiftLead:"Lider de Turno",plCounter:"Contador de Caixas - Detector de Metais",plStart:"Contagem Inicial",plEnd:"Contagem Final",plBoxes:"Caixas Produzidas",plCounterHint:"Registrar o contador ANTES e DEPOIS do turno. Nao reiniciar.",plAddPallet:"Adicionar Palete",plLine:"Linha",plFlavor:"Sabor",plCases:"Caixas",plNotes:"Notas / Cliente",plAdd:"Adicionar ao registro",plAdded:"Palete adicionado",plNeedCases:"Insira a quantidade de caixas",plLog:"Registro de Paletes",plPalletsUsed:"Paletes Usados",plNoPallets:"Nenhum palete registrado hoje ainda.",plSummary:"Resumo Diario por Sabor",plCode:"Codigo",plCasesLogged:"Caixas Registradas",plVariance:"Variacao (contador - registro)",
-      locMap:"Mapa de racks", locList:"Lista", locFloor:"Planta", locOccupied:"Ocupado", locEmpty:"Vazio", locBlocked:"Bloqueado", locSection:"Secao", locDocks:"Portas de doca", locZones:"Zonas e staging", locClickHint:"Vista de cima dos racks. Verde = ocupado, clique em um slot para ver o que ha. A baia 01 fica junto as docas.", locNothing:"Nada armazenado neste slot.", locSlot:"Slot", locBaysUsed:"slots usados", locOfficeEnd:"lado escritorio", locFarEnd:"lado distante",
+      locMap:"Mapa de racks", locList:"Lista", locFloor:"Planta", locOccupied:"Ocupado", locEmpty:"Vazio", locBlocked:"Bloqueado", locSection:"Secao", locDocks:"Portas de doca", locZones:"Zonas e staging", locClickHint:"Vista de cima dos racks. Verde = ocupado, clique em um slot para ver o que ha. A baia 01 fica junto as docas.", locNothing:"Nada armazenado neste slot.",lmMove:"Mover",lmSet:"Corrigir contagem",lmAddItem:"Adicionar item",lmAssign:"Colocar item aqui",lmEmpty:"Esvaziar espaco",lmMoveTitle:"Mover item para outra localizacao",lmSetTitle:"Corrigir a contagem",lmAssignTitle:"Colocar um item nesta localizacao",lmDest:"Mover para (localizacao)",lmMoveBtn:"Mover",lmAssignBtn:"Colocar aqui",lmEmptyConfirm:"Remover TODOS os itens de",lmEmptied:"esvaziado", locSlot:"Slot", locBaysUsed:"slots usados", locOfficeEnd:"lado escritorio", locFarEnd:"lado distante",
       locFloorNote:"Planta de cima do predio - cada lugar onde produto e armazenado ou movimentado. Clique em uma secao de rack ou zona para ver o conteudo. As letras A/B/C/D sao um palpite - diga qual fila fisica e qual e eu fixo.", locStorage:"Armazenamento (racks)", locTransfer:"Areas de producao e transferencia", locStaging:"Zonas de staging e trabalho",
       reorderSug:"Sugestoes de reposicao", purchOrders:"Ordens de compra", newPO:"Nova ordem", createDraft:"Criar rascunho",
       chooseSupplier:"Fornecedor", poExpected:"Esperado", poCost:"Custo unit.", addLines:"Defina as quantidades a pedir (0 = pular).",
@@ -580,6 +580,7 @@
   const CI_STATUSES = ["Idea", "In Progress", "On Hold", "Done"];
   const BAG_STAGE = "PACKOUT";       // finished bags stage here when they come off P-Mac
   let locSel = null;      // selected slot/zone code in the rack map
+  let locAct = "";        // editable rack map: "" | "move" | "setqty" | "assign"
   // Physically blocked rack slots (numbering unchanged; not storable) - Troy's real floor
   const BLOCKED_SLOTS = new Set(["A-23-L1","B-15-L4","B-16-L4","B-17-L4","B-21-L4","B-22-L4","C-21-L4","C-22-L4","D-17-L4","D-18-L4","D-23-L4","D-24-L4"]);
   let odocFile = null; // order-doc upload state
@@ -1659,18 +1660,50 @@
       const q = Number(r.qty) || 0; if (q <= 0) return;
       const it = DB.itemByCode(r.item_id) || { name: r.item_id, code: r.item_id, unit: "" };
       const e = map[r.location] || (map[r.location] = { qty: 0, items: [] });
-      e.qty += q; e.items.push({ name: it.name, code: it.code, qty: q, unit: it.unit });
+      e.qty += q; e.items.push({ id: it.id || r.item_id, name: it.name, code: it.code, qty: q, unit: it.unit, lot: r.lot || null });
     });
     return map;
   }
   function locContentsCard(code, occ) {
     const e = occ[code];
-    const rows = (e && e.items.length)
-      ? e.items.map(x => '<tr><td>' + esc(x.name) + '</td><td class="right"><b>' + fmt(x.qty) + '</b> ' + esc(x.unit) + '</td><td class="muted sm">' + esc(x.code) + '</td></tr>').join("")
+    const items = (e && e.items) || [];
+    const rows = items.length
+      ? items.map(x => '<tr><td>' + esc(x.name) + '</td><td class="right"><b>' + fmt(x.qty) + '</b> ' + esc(x.unit) + '</td><td class="muted sm">' + esc(x.code) + '</td></tr>').join("")
       : '<tr><td colspan="3" class="muted">' + L("locNothing") + '</td></tr>';
+    const itemOpts = arr => arr.map(x => '<option value="' + esc(x.id) + '">' + esc(x.name) + ' (' + fmt(x.qty) + ' ' + esc(x.unit) + ')</option>').join("");
+    const allOpts = DB.items().slice().sort((a, b) => String(a.name).localeCompare(String(b.name))).map(i => '<option value="' + esc(i.id) + '">' + esc(i.name) + ' [' + esc(i.code) + ']</option>').join("");
+    let panel;
+    if (locAct === "move") {
+      panel = '<div class="locact"><h3 class="sub2">' + L("lmMoveTitle") + '</h3>' +
+        '<div class="row"><div><label>' + L("item") + '</label><select id="lm-item">' + itemOpts(items) + '</select></div>' +
+        '<div><label>' + L("lmDest") + '</label><input id="lm-dest" list="dl-locs" autocomplete="off" placeholder="A1-03-L2"></div>' +
+        '<div><label>' + L("qty") + '</label><input id="lm-qty" type="number" min="0" placeholder="' + L("enter") + '"></div></div>' +
+        '<button class="primary" onclick="UI.locMoveGo(\'' + esc(code) + '\')">' + L("lmMoveBtn") + '</button> ' +
+        '<button class="ghost" style="margin-top:14px" onclick="UI.locActCancel()">' + L("ordCancel") + '</button></div>';
+    } else if (locAct === "setqty") {
+      panel = '<div class="locact"><h3 class="sub2">' + L("lmSetTitle") + '</h3>' +
+        '<div class="row"><div><label>' + L("item") + '</label><select id="lq-item">' + itemOpts(items) + '</select></div>' +
+        '<div><label>' + L("newqty") + '</label><input id="lq-qty" type="number" min="0" placeholder="' + L("newqty") + '"></div></div>' +
+        '<button class="primary" onclick="UI.locSetGo(\'' + esc(code) + '\')">' + L("saveChanges") + '</button> ' +
+        '<button class="ghost" style="margin-top:14px" onclick="UI.locActCancel()">' + L("ordCancel") + '</button></div>';
+    } else if (locAct === "assign") {
+      panel = '<div class="locact"><h3 class="sub2">' + L("lmAssignTitle") + '</h3>' +
+        '<div class="row"><div><label>' + L("item") + '</label><select id="la-item">' + allOpts + '</select></div>' +
+        '<div><label>' + L("qty") + '</label><input id="la-qty" type="number" min="0" placeholder="' + L("enter") + '"></div></div>' +
+        '<button class="primary" onclick="UI.locAssignGo(\'' + esc(code) + '\')">' + L("lmAssignBtn") + '</button> ' +
+        '<button class="ghost" style="margin-top:14px" onclick="UI.locActCancel()">' + L("ordCancel") + '</button></div>';
+    } else {
+      const buttons = !items.length
+        ? '<button class="ghost sm" onclick="UI.locActStart(\'assign\')">&#10133; ' + L("lmAssign") + '</button>'
+        : '<button class="ghost sm" onclick="UI.locActStart(\'move\')">&#8594; ' + L("lmMove") + '</button>' +
+          '<button class="ghost sm" onclick="UI.locActStart(\'setqty\')">&#9998; ' + L("lmSet") + '</button>' +
+          '<button class="ghost sm" onclick="UI.locActStart(\'assign\')">&#10133; ' + L("lmAddItem") + '</button>' +
+          '<button class="ghost sm danger" onclick="UI.locEmpty(\'' + esc(code) + '\')">&#10005; ' + L("lmEmpty") + '</button>';
+      panel = '<div class="poactions" style="margin-top:10px">' + buttons + '</div>';
+    }
     return '<div class="card locsel"><div class="suprow"><h2 class="loc" style="margin:0">' + L("locSlot") + ' ' + esc(code) + '</h2>' +
       '<button class="ghost sm" onclick="UI.locPick(\'\')">&#10005;</button></div>' +
-      '<table><tbody>' + rows + '</tbody></table></div>';
+      '<table><tbody>' + rows + '</tbody></table>' + panel + '</div>';
   }
   function rackSectionHtml(sec, bays, occ) {
     const levels = ["L4", "L3", "L2", "L1"]; // top to floor
@@ -2124,8 +2157,40 @@
   // ---------- actions ----------
   const UI = {
     cat(c) { catFilter = c; render(); },
-    locView(v) { locView = v; locSel = null; render(); },
-    locPick(code) { locSel = code || null; render(); },
+    locView(v) { locView = v; locSel = null; locAct = ""; render(); },
+    locPick(code) { locSel = code || null; locAct = ""; render(); },
+    locActStart(mode) { locAct = mode; render(); },
+    locActCancel() { locAct = ""; render(); },
+    async locMoveGo(code) {
+      const id = ($("lm-item") || {}).value; const dest = (($("lm-dest") || {}).value || "").trim().toUpperCase();
+      const q = parseFloat(($("lm-qty") || {}).value);
+      const it = DB.items().find(i => String(i.id) === String(id));
+      if (!it) return toast(L("notfound")); if (!dest) return toast(L("lmDest")); if (!(q > 0)) return toast(L("enter"));
+      if (typeof BLOCKED_SLOTS !== "undefined" && BLOCKED_SLOTS.has && BLOCKED_SLOTS.has(dest)) return toast(dest + " " + L("locBlocked"));
+      const r = await DB.move(it, code, dest, q, opVal()); if (r && r.ok === false) return toast(r.msg || "error");
+      locAct = ""; toast(it.name + ": " + code + " → " + dest); render();
+    },
+    async locSetGo(code) {
+      const id = ($("lq-item") || {}).value; const q = parseFloat(($("lq-qty") || {}).value);
+      const it = DB.items().find(i => String(i.id) === String(id));
+      if (!it) return toast(L("notfound")); if (!(q >= 0)) return toast(L("enter"));
+      await DB.adjust(it, code, q, opVal());
+      locAct = ""; toast(L("saved") + " ✓"); render();
+    },
+    async locAssignGo(code) {
+      const id = ($("la-item") || {}).value; const q = parseFloat(($("la-qty") || {}).value);
+      const it = DB.items().find(i => String(i.id) === String(id));
+      if (!it) return toast(L("notfound")); if (!(q > 0)) return toast(L("enter"));
+      const cur = DB.atLoc ? DB.atLoc(it.id, code) : 0;
+      await DB.adjust(it, code, (Number(cur) || 0) + q, opVal());
+      locAct = ""; toast(it.name + " → " + code); render();
+    },
+    async locEmpty(code) {
+      const occ = locOccupancy(); const e = occ[code]; if (!e || !e.items.length) return;
+      if (!confirm(L("lmEmptyConfirm") + " " + code + "?")) return;
+      for (const x of e.items) { const it = DB.items().find(i => String(i.id) === String(x.id)); if (it) await DB.adjust(it, code, 0, opVal()); }
+      toast(code + ": " + L("lmEmptied")); render();
+    },
     lookup(inId, outId) { const o = $(outId); if (!o) return; const v = $(inId).value.trim();
       if (!v) { o.innerHTML = ""; return; } const it = DB.itemByCode(v);
       if (it) { o.className = "found"; o.innerHTML = "&#10003; " + L("found") + ": <b>" + it.name + "</b> &middot; " + L("onhand") + " " + fmt(DB.onHand(it.id)) + " " + it.unit; }
