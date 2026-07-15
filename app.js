@@ -61,7 +61,7 @@
       mixing:"Mixing", pmac:"P-Mac", roleMixing:"Mixing (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mixing", grpPmac:"P-Mac",
       deptSoon:"This area is being set up. Allen's team screens will live here - tell us what you'd like tracked and we'll build it in.",
       conHint:"Scan each material as it moves from the racking into this room. Records real-time usage and removes it from inventory. Lot # required on every scan.", conLot:"Lot # (required)", conBtn:"Log usage", conRecent:"Recent usage", conNone:"Nothing logged yet.", conWhen:"When", conMat:"Material", conBy:"By", conErr:"Scan an item, quantity, and lot #", conNotInList:"not in item list",
-      grpReceiving:"Receiving", grpInventory:"Inventory", grpProduction:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpImprove:"Improvement", grpSystem:"System",
+      grpReceiving:"Receiving", grpInventory:"Inventory", grpProduction:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpImprove:"Improvement", grpQuality:"Quality", compliance:"Compliance / SQF", cmpHint:"SQF food-safety program - certifications, the recurring activity schedule, and the controlled documents in the Operations shared drive.", cmpCerts:"Certifications & Audits", cmpCert:"Certification / Audit", cmpFreq:"Frequency", cmpWhen:"When / Notes", cmpBody:"Body", cmpDueThis:"Due this month", cmpAllMonthly:"Only the standard monthly reviews this month.", cmpSchedule:"SQF Activity Schedule", cmpScheduleHint:"Recurring SQF activities by frequency (from the 2026 SQF Calendar). Monthly items are also documented daily/weekly.", cmpDocs:"Document Register", cmpDocsHint:"Key SQF controlled documents - open in the Operations shared drive.", grpSystem:"System",
       people:"People", hrHint:"Team directory and org chart. Non-sensitive info only - no pay or personal data.", hrGate:"This section shows employee information. Enter the manager PIN to view.",
       hrDir:"Directory", hrOrg:"Org chart", hrRole:"Role", hrDept:"Department", hrStart:"Started", hrMgr:"Reports to", hrSearchP:"Search name or role...", hrCount:"people", hrNoMatch:"No matching people.", hrYr:"yr", hrMo:"mo",
       alerts:"Alerts", alertsHint:"What needs attention now: items to reorder and seasoning lots nearing expiration.",
@@ -159,7 +159,7 @@
       mixing:"Mezcla", pmac:"P-Mac", roleMixing:"Mezcla (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mezcla", grpPmac:"P-Mac",
       deptSoon:"Esta area se esta configurando. Aqui viviran las pantallas del equipo de Allen - diganos que desea controlar y lo agregamos.",
       conHint:"Escanee cada material al pasar del estante a esta sala. Registra el uso en tiempo real y lo descuenta del inventario. Numero de lote requerido en cada escaneo.", conLot:"Lote # (requerido)", conBtn:"Registrar uso", conRecent:"Uso reciente", conNone:"Nada registrado aun.", conWhen:"Cuando", conMat:"Material", conBy:"Por", conErr:"Escanee articulo, cantidad y lote #", conNotInList:"no esta en la lista",
-      grpReceiving:"Recibo", grpInventory:"Inventario", grpProduction:"Fulfillment", grpShipping:"Envios", grpPurchasing:"Compras", grpRnd:"I+D", grpHr:"RH", grpImprove:"Mejora", grpSystem:"Sistema",
+      grpReceiving:"Recibo", grpInventory:"Inventario", grpProduction:"Fulfillment", grpShipping:"Envios", grpPurchasing:"Compras", grpRnd:"I+D", grpHr:"RH", grpImprove:"Mejora", grpQuality:"Calidad", compliance:"Cumplimiento / SQF", cmpHint:"Programa de inocuidad SQF - certificaciones, el calendario de actividades recurrentes y los documentos controlados en la unidad compartida de Operaciones.", cmpCerts:"Certificaciones y Auditorias", cmpCert:"Certificacion / Auditoria", cmpFreq:"Frecuencia", cmpWhen:"Cuando / Notas", cmpBody:"Organismo", cmpDueThis:"Vence este mes", cmpAllMonthly:"Solo las revisiones mensuales estandar este mes.", cmpSchedule:"Calendario de Actividades SQF", cmpScheduleHint:"Actividades SQF recurrentes por frecuencia (del Calendario SQF 2026). Los items mensuales tambien se documentan diario/semanal.", cmpDocs:"Registro de Documentos", cmpDocsHint:"Documentos controlados SQF clave - abrir en la unidad compartida de Operaciones.", grpSystem:"Sistema",
       people:"Personal", hrHint:"Directorio del equipo y organigrama. Solo informacion no sensible - sin pago ni datos personales.", hrGate:"Esta seccion muestra informacion de empleados. Ingrese el PIN de gerente para ver.",
       hrDir:"Directorio", hrOrg:"Organigrama", hrRole:"Puesto", hrDept:"Departamento", hrStart:"Ingreso", hrMgr:"Reporta a", hrSearchP:"Buscar nombre o puesto...", hrCount:"personas", hrNoMatch:"Sin coincidencias.", hrYr:"ano", hrMo:"mes",
       alerts:"Alertas", alertsHint:"Lo que necesita atencion ahora: articulos por reordenar y lotes de sazon por vencer.",
@@ -257,7 +257,7 @@
       mixing:"Mistura", pmac:"P-Mac", roleMixing:"Mistura (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mistura", grpPmac:"P-Mac",
       deptSoon:"Esta area esta sendo configurada. As telas da equipe do Allen ficarao aqui - diga o que deseja acompanhar e vamos incluir.",
       conHint:"Escaneie cada material ao passar da prateleira para esta sala. Registra o uso em tempo real e baixa do estoque. Numero de lote obrigatorio em cada leitura.", conLot:"Lote # (obrigatorio)", conBtn:"Registrar uso", conRecent:"Uso recente", conNone:"Nada registrado ainda.", conWhen:"Quando", conMat:"Material", conBy:"Por", conErr:"Escaneie item, quantidade e lote #", conNotInList:"nao esta na lista",
-      grpReceiving:"Recebimento", grpInventory:"Estoque", grpProduction:"Fulfillment", grpShipping:"Envios", grpPurchasing:"Compras", grpRnd:"P&D", grpHr:"RH", grpImprove:"Melhoria", grpSystem:"Sistema",
+      grpReceiving:"Recebimento", grpInventory:"Estoque", grpProduction:"Fulfillment", grpShipping:"Envios", grpPurchasing:"Compras", grpRnd:"P&D", grpHr:"RH", grpImprove:"Melhoria", grpQuality:"Qualidade", compliance:"Conformidade / SQF", cmpHint:"Programa de seguranca de alimentos SQF - certificacoes, o calendario de atividades recorrentes e os documentos controlados no drive compartilhado de Operacoes.", cmpCerts:"Certificacoes e Auditorias", cmpCert:"Certificacao / Auditoria", cmpFreq:"Frequencia", cmpWhen:"Quando / Notas", cmpBody:"Orgao", cmpDueThis:"Vence este mes", cmpAllMonthly:"Apenas as revisoes mensais padrao este mes.", cmpSchedule:"Calendario de Atividades SQF", cmpScheduleHint:"Atividades SQF recorrentes por frequencia (do Calendario SQF 2026). Itens mensais tambem documentados diario/semanal.", cmpDocs:"Registro de Documentos", cmpDocsHint:"Documentos controlados SQF principais - abrir no drive compartilhado de Operacoes.", grpSystem:"Sistema",
       people:"Pessoas", hrHint:"Diretorio da equipe e organograma. Apenas informacoes nao sensiveis - sem salario ou dados pessoais.", hrGate:"Esta secao mostra informacoes de funcionarios. Digite o PIN de gerente para ver.",
       hrDir:"Diretorio", hrOrg:"Organograma", hrRole:"Cargo", hrDept:"Departamento", hrStart:"Inicio", hrMgr:"Reporta a", hrSearchP:"Buscar nome ou cargo...", hrCount:"pessoas", hrNoMatch:"Nenhuma correspondencia.", hrYr:"ano", hrMo:"mes",
       alerts:"Alertas", alertsHint:"O que precisa de atencao agora: itens para repor e lotes de tempero perto do vencimento.",
@@ -328,7 +328,7 @@
     { key: "tote", label: "Tote - 1 bag x 1,200 lb", per: 1200 }
   ];
   const SEED_PACK_MAP = {}; SEED_PACKS.forEach(p => SEED_PACK_MAP[p.key] = p);
-  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","seasoning","seed","skus","mixing","pmac","count","locations","finbags","pmacout","purchasing","supplierpos","people","improve","labels","log","settings"];
+  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","seasoning","seed","skus","mixing","pmac","count","locations","finbags","pmacout","purchasing","supplierpos","people","improve","compliance","labels","log","settings"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -508,6 +508,7 @@
     { key:"grpRnd", items:["rd"] },
     { key:"grpHr", items:["people"] },
     { key:"grpImprove", items:["improve"] },
+    { key:"grpQuality", items:["compliance"] },
     { key:"grpSystem", items:["log","settings"] }
   ];
   // Lucide icon names (clean SVG line icons) rendered via lucide.createIcons()
@@ -519,7 +520,7 @@
     seasoning:"flame", seed:"sprout", skus:"barcode", finbags:"shopping-bag", pmacout:"package-open",
     mixing:"cooking-pot", pmac:"wrench", count:"clipboard-check", locations:"map-pin",
     purchasing:"shopping-cart", supplierpos:"file-text", people:"users", labels:"tag",
-    log:"history", settings:"settings", improve:"trending-up" };
+    log:"history", settings:"settings", improve:"trending-up", compliance:"shield-check" };
   function drawIcons() { try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {} }
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
   let spoSort = { key: "created", dir: -1 };  // Supplier POs table sort (v25)
@@ -2028,6 +2029,73 @@
       '<button class="primary" onclick="UI.pmoAdd()">' + L("pmoAdd") + '</button>' +
       '<h2 class="sub2" style="margin-top:18px">' + L("rpRecent") + '</h2>' + recent + '</div>';
   }
+  // ---- Compliance / SQF (from the SQF Calendar in the Operations shared drive) ----
+  const SQF_CERTS = [
+    { name: "SQF Certification", freq: "Annually", when: "Recertification audit yearly", body: "SQF (SQFI)" },
+    { name: "FDA Registration", freq: "Every even year", when: "Due 2026 (renew every even year)", body: "FDA" },
+    { name: "UDAF Inspection", freq: "Annually", when: "State inspection", body: "Utah Dept. of Ag & Food" },
+    { name: "HACCP Plan Review", freq: "Annually", when: "April - review & sign", body: "Internal / SQF" },
+    { name: "Kosher", freq: "Annually", when: "Certification renewal", body: "Kosher agency" }
+  ];
+  // months: array of month numbers (1-12) the activity is DUE; empty => ongoing all year
+  const SQF_ACTIVITIES = [
+    { g: "Monthly", items: [
+      "Consumer & Consumer Complaints (review)", "Trend Complaints", "CAPA Reports & Log",
+      "Cleaning - Production Floor (daily/weekly, monthly review)", "Cleaning - Warehouse",
+      "Cleaning Checklist - Bathrooms/Breakrooms/Garbage", "Daily Walk on Floor", "Trace Gains",
+      "ATP Log", "Production Records", "COA's (all raw materials)", "Incident Reports",
+      "Monthly Self-Inspection", "Scale Checks (standard weight verification)",
+      "SQF Monthly Management Review (meeting)", "GMP for Employees", "Audit 5 records for legibility & accuracy" ] },
+    { g: "Quarterly", items: [
+      "Glass & Brittle / Hard Plastics Audit (Mar/Jun/Sep/Dec)",
+      "Environmental Testing - 2 Salmonella + 2 Listeria (Feb/May/Aug/Nov)" ] },
+    { g: "Bi-Annually", items: [ "Food Safety Culture Survey (Feb & Jun)" ] },
+    { g: "Annually", items: [
+      "SDS Sheets (Feb)", "Product Specifications (Feb)", "Training (Feb)", "Approved Supplier List (Feb)",
+      "Mock Recall (Feb)", "GMP for Contract Service Providers (Feb)", "Water Sampling (Mar)", "Air Testing (Mar)",
+      "Validation of Labels (Mar)", "Food Defense Risk Assessment (Mar)", "Food Fraud Vulnerability (Mar)",
+      "Test of Crisis Plan (Mar)", "Policy Statement - signed (Apr)", "Food Defense Assessment (Apr)",
+      "Review HACCP Plan - signed (Apr)", "Backflow Checks (Apr)", "External Scales Calibrated (Apr)",
+      "Move Pallets in Warehouse - pest check (Apr)", "SDS Review (Apr)", "Metal Detector / X-Ray Calibrated (Apr)",
+      "Master Sanitation Management Review (Apr)", "Quality Dept. Weights (Utah Scale / State of Utah)" ] }
+  ];
+  const SQF_DOCS = [
+    { t: "SQF Code 9.0", u: "" },
+    { t: "SQF Certification Roadmap", u: "https://drive.google.com/file/d/1DRUASpo5Ma-P3vR-djvqX22iMwyiNbuk/view" },
+    { t: "SQF Calendar 2026", u: "https://drive.google.com/file/d/1D-xrQeNZAtTU6HQc-4te_YsBf_ZJClTH/view" },
+    { t: "Food Safety Compliance Index", u: "https://drive.google.com/file/d/1fCtT5Chfpfvc3CBaQK3dPS36H8H00VvH/view" },
+    { t: "QF-2.24.1 Validation & Verification Schedule", u: "https://drive.google.com/file/d/1_zHrqI3V8QqztO7RAClMvwdZTLBU4kF_/view" },
+    { t: "QP-2.18.0 Verification & Validation Procedure", u: "https://drive.google.com/file/d/1WKLMKbswZqVVRVgbk8xN5pUjroU-x11l/view" },
+    { t: "Allergen Validation Log", u: "https://drive.google.com/file/d/1NrZ0_T-8Fv3z2QXVXZApxpJd5Kbxa68H/view" }
+  ];
+  function viewCompliance() {
+    const monthName = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const now = new Date(); const mo = now.getMonth() + 1;
+    // Certs & audits
+    const certRows = SQF_CERTS.map(c => '<tr><td><b>' + esc(c.name) + '</b></td><td>' + esc(c.freq) + '</td><td class="muted sm">' + esc(c.when) + '</td><td class="muted sm">' + esc(c.body) + '</td></tr>').join("");
+    // Activity schedule
+    const actCards = SQF_ACTIVITIES.map(gr => {
+      const rows = gr.items.map(i => '<tr><td>' + esc(i) + '</td></tr>').join("");
+      return '<h3 class="sub2" style="margin-top:12px">' + esc(gr.g) + ' <span class="muted sm">(' + gr.items.length + ')</span></h3><table><tbody>' + rows + '</tbody></table>';
+    }).join("");
+    // This-month highlight: which annual/quarterly items land this month
+    const dueNow = [];
+    SQF_ACTIVITIES.forEach(gr => gr.items.forEach(i => {
+      const m = i.match(/\(([^)]*)\)/g); if (!m) return;
+      const txt = m.join(" ");
+      if (new RegExp("\\b" + monthName[mo - 1] + "\\b", "i").test(txt)) dueNow.push(i);
+    }));
+    const dueCard = '<div class="card"><h2 class="sub2">' + L("cmpDueThis") + ' - ' + monthName[mo - 1] + '</h2>' +
+      (dueNow.length ? '<ul style="margin:4px 0 0 18px">' + dueNow.map(i => '<li>' + esc(i) + '</li>').join("") + '</ul>'
+        : '<p class="muted">' + L("cmpAllMonthly") + '</p>') + '</div>';
+    const docRows = SQF_DOCS.map(d => '<tr><td>' + (d.u ? '<a class="polink" href="' + d.u + '" target="_blank" rel="noopener">' + esc(d.t) + '</a>' : '<b>' + esc(d.t) + '</b> <span class="muted sm">(in Drive)</span>') + '</td></tr>').join("");
+    return '<div class="card"><h2>' + L("compliance") + '</h2><p class="hint">' + L("cmpHint") + '</p></div>' +
+      '<div class="card"><h2 class="sub2">' + L("cmpCerts") + '</h2>' +
+      '<table class="sortable"><thead><tr><th>' + L("cmpCert") + '</th><th>' + L("cmpFreq") + '</th><th>' + L("cmpWhen") + '</th><th>' + L("cmpBody") + '</th></tr></thead><tbody>' + certRows + '</tbody></table></div>' +
+      dueCard +
+      '<div class="card"><h2 class="sub2">' + L("cmpSchedule") + '</h2><p class="hint">' + L("cmpScheduleHint") + '</p>' + actCards + '</div>' +
+      '<div class="card"><h2 class="sub2">' + L("cmpDocs") + '</h2><p class="hint">' + L("cmpDocsHint") + '</p><table><tbody>' + docRows + '</tbody></table></div>';
+  }
   function viewImprove() {
     const all = DB.improvements().slice().sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
     const active = all.filter(i => i.status !== "Done");
@@ -2793,7 +2861,7 @@
     renderNav(); refreshDatalists();
     const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
       move: viewMove, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
-      count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, labels: viewLabels, log: viewLog, settings: viewSettings };
+      count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, compliance: viewCompliance, labels: viewLabels, log: viewLog, settings: viewSettings };
     $("view").innerHTML = (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
     $("modeBadge").className = "modebadge " + (DB.mode === "cloud" ? "ok" : "low");
