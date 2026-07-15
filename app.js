@@ -849,7 +849,7 @@
     return '<div class="card"><h2>' + L("adjust") + '</h2><p class="hint">' + L("adjustHint") + '</p>' +
       opField("Adriana") +
       '<label style="margin-top:12px">' + L("searchItems") + '</label><input id="adjSearch" autocomplete="off" oninput="UI.adjSearch(this.value)" placeholder="' + L("searchItems") + '">' +
-      '<table style="margin-top:10px"><thead><tr><th>' + L("colCategory") + '</th><th>' + L("item") + '</th><th class="right">' + L("onhand") + '</th><th>' + L("newCount") + '</th></tr></thead><tbody id="adjBody">' + rows + '</tbody></table>' +
+      '<table class="sortable" style="margin-top:10px"><thead><tr><th>' + L("colCategory") + '</th><th>' + L("item") + '</th><th class="right">' + L("onhand") + '</th><th data-nosort>' + L("newCount") + '</th></tr></thead><tbody id="adjBody">' + rows + '</tbody></table>' +
       '<button class="primary" onclick="UI.saveAdjust()">' + L("saveCounts") + '</button></div>';
   }
   function orderIsComplete(o) { return (o.status || "Open") === "Complete"; }
