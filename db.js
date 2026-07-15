@@ -1133,7 +1133,7 @@ window.DB = (function () {
       // remove prior Open lines for the same source|po (replace semantics)
       const keys = Object.keys(poKeys);
       for (const k of keys) { const [src, po] = k.split("|"); await sb.from("demand_lines").delete().eq("source", src).eq("po", po).eq("status", "Open"); }
-      for (const c of chunk(clean, 100)) await sb.from("demand_lines").insert(c);
+      for (let i = 0; i < clean.length; i += 100) await sb.from("demand_lines").insert(clean.slice(i, i + 100));
       await cloud.addLog(logEntry); await cloud.loadAll();
     } else {
       cache.demandLines = (cache.demandLines || []).filter(r => !(r.status === "Open" && poKeys[(r.source || "") + "|" + (r.po || "")]));
