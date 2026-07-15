@@ -529,6 +529,26 @@ window.DB = (function () {
     return { ok: true };
   }
 
+  // ---------- Create a new item on the fly (e.g. during Receiving) ----------
+  async function createItem(rec, op) {
+    const code = (rec.code || "").trim(); const name = (rec.name || "").trim();
+    if (!code || !name) return { ok: false, msg: "Code and name required" };
+    const existing = cache.items.find(i => String(i.id) === code || String(i.code) === code);
+    if (existing) return { ok: true, item: existing, existed: true };
+    const row = { id: code, code: code, name: name, flavor: rec.flavor || name,
+      category: rec.category || "other", unit: rec.unit || "ea",
+      reorder: Number(rec.reorder) || 0, supplier: rec.supplier || null };
+    if (mode === "cloud") {
+      const r = await sb.from("items").insert(row).select();
+      if (r && r.error) return { ok: false, msg: r.error.message || "create failed" };
+    }
+    cache.items.push(row);
+    const logEntry = { a: "Item created", d: name + " [" + code + "]", u: op, t: new Date().toISOString() };
+    if (mode === "cloud") await cloud.addLog(logEntry); else { local.addLog(logEntry); local.save(); }
+    emit();
+    return { ok: true, item: row };
+  }
+
   // ---------- Daily Production log (Retail pallet log + per-day header) ----------
   function prodDay(date, channel) { channel = channel || "retail"; return (cache.prodDays || []).find(d => d.prod_date === date && (d.channel || "retail") === channel) || null; }
   function prodPallets(date) { return (cache.prodPallets || []).filter(p => p.prod_date === date); }
@@ -1049,7 +1069,7 @@ window.DB = (function () {
     init, onChange, get mode() { return mode; },
     items, suppliers, stock, log, itemByCode, onHand, atLoc,
     purchaseOrders, supplierName, createPO, setPOStatus, deletePO, receivePO,
-    receive, move, adjust, adjustTotal, produce, resetDemo, updateItemFields,
+    receive, move, adjust, adjustTotal, produce, resetDemo, updateItemFields, createItem,
     prodDay, prodPallets, setProdDay, addProdPallet, deleteProdPallet,
     returnStock, seasLots, addSeasLot, setSeasLotStatus, updateSeasLot, quarantineExpiredSeas,
     seedLots, addSeedLot, setSeedLotStatus, updateSeedLot,

@@ -18,7 +18,7 @@
       printLoc:"Print all location labels", printItem:"Print item labels", newLpn:"New pallet label (LPN)", print:"Print",
       labelsHint:"Print barcodes on your thermal label printer. Location labels are permanent; a pallet LPN is one barcode per incoming pallet.",
       dashHint:"Live on hand across every location. Filter by category.",
-      receiveHint:"Scan an item, enter qty + details, then pick where it goes (scan the slot or tap Section-Bay-Level) - it lands there in one step. Leave the location blank to hold at Receiving.",
+      receiveHint:"Scan an item, enter qty + details, then pick where it goes (scan the slot or tap Section-Bay-Level) - it lands there in one step. Leave the location blank to hold at Receiving.",rniNewBtn:"New item (not in list)",rniCancelBtn:"Use existing item",rniTitle:"Create a new item",rniCode:"Item code / SKU",rniName:"Item name",rniNamePh:"e.g. Kraft box 12x9",rniUnit:"Unit",rniHint:"This adds a brand-new item to the master, then receives it below.",rniNeed:"Enter a code and name for the new item",
       rSupplier:"Supplier", rInvoice:"Invoice / PO #", rCategory:"Category", rPallets:"Pallets", rCondition:"Condition", rStatus:"Status",
       putHint:"Scan the item, then scan the slot barcode OR tap Section - Bay - Level. Moves from Receiving in real time.",
       puDest:"Destination", puSection:"Section", puBay:"Bay", puLevel:"Level", puZones:"Floor / zones", puScanLoc:"A-05-L3 / scan slot barcode",
@@ -116,7 +116,7 @@
       printLoc:"Imprimir etiquetas de ubicacion", printItem:"Imprimir etiquetas de articulo", newLpn:"Nueva etiqueta de pallet (LPN)", print:"Imprimir",
       labelsHint:"Imprima codigos en su impresora termica. Las de ubicacion son permanentes; el LPN es un codigo por pallet entrante.",
       dashHint:"Disponible en vivo en todas las ubicaciones. Filtre por categoria.",
-      receiveHint:"Escanee un articulo, ingrese cant. + detalles, luego elija a donde va (escanee el slot o toque Seccion-Bahia-Nivel) - llega ahi en un paso. Deje la ubicacion en blanco para dejarlo en Recibo.",
+      receiveHint:"Escanee un articulo, ingrese cant. + detalles, luego elija a donde va (escanee el slot o toque Seccion-Bahia-Nivel) - llega ahi en un paso. Deje la ubicacion en blanco para dejarlo en Recibo.",rniNewBtn:"Articulo nuevo (no en la lista)",rniCancelBtn:"Usar articulo existente",rniTitle:"Crear un articulo nuevo",rniCode:"Codigo / SKU",rniName:"Nombre del articulo",rniNamePh:"ej. Caja Kraft 12x9",rniUnit:"Unidad",rniHint:"Esto agrega un articulo nuevo al maestro y luego lo recibe abajo.",rniNeed:"Ingrese codigo y nombre del articulo nuevo",
       rSupplier:"Proveedor", rInvoice:"Factura / OC #", rCategory:"Categoria", rPallets:"Pallets", rCondition:"Condicion", rStatus:"Estado",
       putHint:"Escanee el articulo, luego escanee el codigo del slot O toque Seccion - Bahia - Nivel. Sale de Recibo en tiempo real.",
       puDest:"Destino", puSection:"Seccion", puBay:"Bahia", puLevel:"Nivel", puZones:"Piso / zonas", puScanLoc:"A-05-L3 / escanee slot",
@@ -214,7 +214,7 @@
       printLoc:"Imprimir etiquetas de local", printItem:"Imprimir etiquetas de item", newLpn:"Nova etiqueta de palete (LPN)", print:"Imprimir",
       labelsHint:"Imprima codigos na sua impressora termica. As de local sao permanentes; o LPN e um codigo por palete recebido.",
       dashHint:"Estoque ao vivo em todos os locais. Filtre por categoria.",
-      receiveHint:"Escaneie um item, digite qtd. + detalhes, depois escolha para onde vai (escaneie o slot ou toque Secao-Baia-Nivel) - chega la em um passo. Deixe o local em branco para segurar no Recebimento.",
+      receiveHint:"Escaneie um item, digite qtd. + detalhes, depois escolha para onde vai (escaneie o slot ou toque Secao-Baia-Nivel) - chega la em um passo. Deixe o local em branco para segurar no Recebimento.",rniNewBtn:"Item novo (nao esta na lista)",rniCancelBtn:"Usar item existente",rniTitle:"Criar um item novo",rniCode:"Codigo / SKU",rniName:"Nome do item",rniNamePh:"ex. Caixa Kraft 12x9",rniUnit:"Unidade",rniHint:"Isto adiciona um item novo ao mestre e depois o recebe abaixo.",rniNeed:"Insira codigo e nome do item novo",
       rSupplier:"Fornecedor", rInvoice:"Fatura / OC #", rCategory:"Categoria", rPallets:"Paletes", rCondition:"Condicao", rStatus:"Status",
       putHint:"Escaneie o item, depois escaneie o codigo do slot OU toque Secao - Baia - Nivel. Sai de Recebimento em tempo real.",
       puDest:"Destino", puSection:"Secao", puBay:"Baia", puLevel:"Nivel", puZones:"Piso / zonas", puScanLoc:"A-05-L3 / escaneie slot",
@@ -581,6 +581,7 @@
   const BAG_STAGE = "PACKOUT";       // finished bags stage here when they come off P-Mac
   let locSel = null;      // selected slot/zone code in the rack map
   let locAct = "";        // editable rack map: "" | "move" | "setqty" | "assign"
+  let recvNewItem = false; // Receive: create a brand-new item on the fly
   // Physically blocked rack slots (numbering unchanged; not storable) - Troy's real floor
   const BLOCKED_SLOTS = new Set(["A-23-L1","B-15-L4","B-16-L4","B-17-L4","B-21-L4","B-22-L4","C-21-L4","C-22-L4","D-17-L4","D-18-L4","D-23-L4","D-24-L4"]);
   let odocFile = null; // order-doc upload state
@@ -1360,8 +1361,19 @@
       table + '</div>';
   }
   function viewReceive() {
+    const newPanel = recvNewItem
+      ? '<div class="locact"><h3 class="sub2">' + L("rniTitle") + '</h3>' +
+        '<div class="row"><div><label>' + L("rniCode") + '</label><input id="r-newcode" autocomplete="off" placeholder="BOX-1234"></div>' +
+        '<div style="flex:2"><label>' + L("rniName") + '</label><input id="r-newname" autocomplete="off" placeholder="' + L("rniNamePh") + '"></div></div>' +
+        '<div class="row"><div><label>' + L("rCategory") + '</label><select id="r-newcat">' + selOpts(DB.recvCategories) + '</select></div>' +
+        '<div><label>' + L("rniUnit") + '</label><input id="r-newunit" list="dl-units" autocomplete="off" placeholder="ea / case / lbs"></div></div>' +
+        '<p class="hint" style="margin:6px 0 0">' + L("rniHint") + '</p></div>' +
+        '<datalist id="dl-units"><option value="ea"><option value="case"><option value="box"><option value="bag"><option value="lbs"><option value="pallet"><option value="roll"></datalist>'
+      : "";
+    const newToggle = '<div style="margin:8px 0 2px"><button class="ghost sm" onclick="UI.recvToggleNew()">' +
+      (recvNewItem ? '✕ ' + L("rniCancelBtn") : '➕ ' + L("rniNewBtn")) + '</button></div>';
     return '<div class="card"><h2>' + L("receive") + '</h2><p class="hint">' + L("receiveHint") + '</p>' +
-      itemScan("r-code", "r-qty") +
+      (recvNewItem ? "" : itemScan("r-code", "r-qty")) + newToggle + newPanel +
       '<div class="row"><div><label>' + L("qty") + '</label><input id="r-qty" type="number" min="0" placeholder="' + L("enter") + '"></div>' +
       '<div><label>' + L("rPallets") + ' <span class="muted">(opt.)</span></label><input id="r-pal" type="number" min="0" step="0.1" placeholder="0"></div>' +
       '<div><label>' + L("lot") + ' <span class="muted">(opt.)</span></label><input id="r-lot" autocomplete="off" placeholder="LOT-0701"></div></div>' +
@@ -2195,9 +2207,20 @@
       if (!v) { o.innerHTML = ""; return; } const it = DB.itemByCode(v);
       if (it) { o.className = "found"; o.innerHTML = "&#10003; " + L("found") + ": <b>" + it.name + "</b> &middot; " + L("onhand") + " " + fmt(DB.onHand(it.id)) + " " + it.unit; }
       else { o.className = "found notfound"; o.innerHTML = "&#10007; " + L("notfound"); } },
+    recvToggleNew() { recvNewItem = !recvNewItem; render(); },
     async receive() {
       const v = id => { const e = $(id); return e ? (e.value || "") : ""; };
-      const it = DB.itemByCode(v("r-code")); const q = parseFloat(v("r-qty")); const lot = v("r-lot").trim();
+      let it;
+      if (recvNewItem) {
+        const code = v("r-newcode").trim(), name = v("r-newname").trim();
+        if (!code || !name) return toast(L("rniNeed"));
+        const cr = await DB.createItem({ code: code, name: name, category: v("r-newcat"), unit: v("r-newunit").trim() || "ea" }, $("op").value);
+        if (cr.ok === false) return toast(cr.msg || "error");
+        it = cr.item;
+      } else {
+        it = DB.itemByCode(v("r-code"));
+      }
+      const q = parseFloat(v("r-qty")); const lot = v("r-lot").trim();
       if (!it) return toast(L("notfound")); if (!(q > 0)) return toast(L("enter"));
       const loc = v("r-loc").trim().toUpperCase();
       if (loc && !validLoc(loc)) return toast(L("badloc"));
@@ -2205,7 +2228,7 @@
       const meta = { supplier: v("r-sup"), invoice: v("r-inv").trim(), category: v("r-cat"),
         pallets: v("r-pal"), condition: v("r-cond") || "Good", status: v("r-stat") || "Received", location: loc || "" };
       const r = await DB.receive(it, q, lot, $("op").value, meta);
-      puSec = ""; puBay = ""; puLevel = "";
+      puSec = ""; puBay = ""; puLevel = ""; recvNewItem = false;
       toast("+" + fmt(q) + " " + it.name + (r && r.location ? " → " + r.location : "")); go("receive"); },
     // ---- Put-Away location picker (tap Section/Bay/Level, or scan/type the slot) ----
     _puField() { return $("r-loc") || $("p-loc"); },
