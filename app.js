@@ -61,7 +61,7 @@
       backupTitle:"Backup", backupHint:"Download a full snapshot of all app data (every table) as one JSON file. Save it to OneDrive for a safe offline copy. Tip: set your browser's download folder to your OneDrive so every backup lands there automatically.", backupBtn:"Download full backup", backupDone:"Backup downloaded",
       facility:"Facility Map", facHint:"Interactive 3D digital twin of the SLC plant — exact layout, rooms, systems, and every pallet rack. Drag to rotate, scroll to zoom, click a bay for details. Red-flagged bays are PROPOSED future racking (not yet installed). Built by Salvador.", facOpen:"Open full screen",
       printRecvBook:"Receiving book (Letter, fill-in)", recvBookDone:"Receiving labels ready",
-      averyBtn:"Print Avery 5160 item labels", averyDone:"Avery 5160 labels ready",
+      averyBtn:"Print Avery 5160 item labels", averyDone:"Avery 5160 labels ready", ident4x6Btn:"4x6 identifier labels", ident4x6Done:"4x6 labels ready",
       averyHint:"Both buttons include EVERY item in the system automatically — add a product and it appears here, so labels never go stale. The Avery button prints onto the 5160 sticker sheets Adriana has (just set Margins: None, Scale: 100%); the Receiving book is a Letter-size fill-in form for the dock.",
       retailprod:"Retail Production",ecomprod:"E-Commerce",epHint:"E-commerce / DTC product (variety packs). Scan or pick the item, enter the quantity built, and it is added to stock instantly. ShipStation and TikTok orders will draw this down automatically once connected.", rpHint:"When a pallet is made, scan its product barcode (or pick it), enter the quantity, and it is added to stock instantly. Print the barcode sheet with the button below and post it at the line.", rpScanP:"Scan product barcode", rpPickProduct:"Or pick a product...", rpQty:"Quantity made", rpAdd:"Add to stock", rpAdded:"Added to stock", rpCurrent:"Current on hand", rpRecent:"Recent production", rpNone:"Nothing added yet.", rpPrint:"Print product barcodes", rpNotFound:"Barcode not recognized",
       qaHint:"Quarantined product - do NOT touch (wrapped in red film). Usually expired or has incorrect info. Release good ones back to stock or scrap them.",
@@ -174,7 +174,7 @@
       returnsLogTitle:"Registro de Devoluciones", rWho:"Cliente / Marketplace", rRef:"Rastreo / Envio", rKitTag:"KIT", rDup:"DUP", rDupWarn:"Esta devolucion parece ya procesada:", rDupOverride:"Registrarla de nuevo?", rDupSkip:"Duplicado omitido", rNeedKitSku:"Ingrese el SKU del kit", rFlavorsRestocked:"sabores reingresados", rUnknownKit:"SKU de kit no reconocido", rDelConfirm:"Eliminar este registro de devolucion?",
       backupTitle:"Respaldo", backupHint:"Descargue una copia completa de todos los datos de la app (cada tabla) en un archivo JSON. Guardelo en OneDrive como copia segura. Consejo: configure la carpeta de descargas de su navegador en su OneDrive para que cada respaldo llegue alli automaticamente.", backupBtn:"Descargar respaldo completo", backupDone:"Respaldo descargado",
       facility:"Mapa de Planta", facHint:"Gemelo digital 3D interactivo de la planta SLC — diseno exacto, salas, sistemas y cada rack de pallets. Arrastre para girar, desplace para zoom, clic en una bahia para detalles. Las bahias en rojo son racking PROPUESTO a futuro (aun no instalado). Creado por Salvador.", facOpen:"Abrir pantalla completa",
-      printRecvBook:"Libro de recibo (Carta, llenar)", recvBookDone:"Etiquetas listas", averyBtn:"Imprimir etiquetas Avery 5160", averyDone:"Etiquetas Avery 5160 listas",
+      printRecvBook:"Libro de recibo (Carta, llenar)", recvBookDone:"Etiquetas listas", averyBtn:"Imprimir etiquetas Avery 5160", averyDone:"Etiquetas Avery 5160 listas", ident4x6Btn:"Etiquetas identificadoras 4x6", ident4x6Done:"Etiquetas 4x6 listas",
       averyHint:"Ambos botones incluyen TODOS los articulos del sistema automaticamente — agregue un producto y aparece aqui, asi las etiquetas nunca quedan desactualizadas. El boton Avery imprime en las hojas de stickers 5160 de Adriana (configure Margenes: Ninguno, Escala: 100%); el Libro de recibo es un formulario tamano Carta para llenar en el muelle.",
       retailprod:"Produccion Retail",ecomprod:"E-Commerce",epHint:"Producto e-commerce / DTC (paquetes variados). Escanee o elija el articulo, ingrese la cantidad producida y se agrega al inventario al instante. Los pedidos de ShipStation y TikTok lo descontaran automaticamente cuando se conecten.", rpHint:"Cuando se hace una paleta, escanee su codigo de producto (o eligalo), ingrese la cantidad y se agrega al inventario al instante. Imprima la hoja de codigos con el boton de abajo y pongala en la linea.", rpScanP:"Escanee codigo del producto", rpPickProduct:"O elija un producto...", rpQty:"Cantidad hecha", rpAdd:"Agregar al inventario", rpAdded:"Agregado al inventario", rpCurrent:"En mano actual", rpRecent:"Produccion reciente", rpNone:"Nada agregado aun.", rpPrint:"Imprimir codigos de producto", rpNotFound:"Codigo no reconocido",
       qaHint:"Producto en cuarentena - NO tocar (envuelto en film rojo). Generalmente vencido o con informacion incorrecta. Libere los buenos a inventario o descartelos.",
@@ -287,7 +287,7 @@
       returnsLogTitle:"Registro de Devolucoes", rWho:"Cliente / Marketplace", rRef:"Rastreio / Envio", rKitTag:"KIT", rDup:"DUP", rDupWarn:"Esta devolucao parece ja processada:", rDupOverride:"Registrar novamente?", rDupSkip:"Duplicado ignorado", rNeedKitSku:"Insira o SKU do kit", rFlavorsRestocked:"sabores reabastecidos", rUnknownKit:"SKU de kit nao reconhecido", rDelConfirm:"Excluir este registro de devolucao?",
       backupTitle:"Backup", backupHint:"Baixe uma copia completa de todos os dados do app (cada tabela) em um arquivo JSON. Salve no OneDrive como copia segura. Dica: configure a pasta de downloads do seu navegador para o seu OneDrive para que cada backup va para la automaticamente.", backupBtn:"Baixar backup completo", backupDone:"Backup baixado",
       facility:"Mapa da Planta", facHint:"Gemeo digital 3D interativo da planta SLC — layout exato, salas, sistemas e cada rack de paletes. Arraste para girar, role para zoom, clique numa baia para detalhes. Baias em vermelho sao racking PROPOSTO futuro (ainda nao instalado). Feito pelo Salvador.", facOpen:"Abrir tela cheia",
-      printRecvBook:"Livro de recebimento (Carta, preencher)", recvBookDone:"Etiquetas prontas", averyBtn:"Imprimir etiquetas Avery 5160", averyDone:"Etiquetas Avery 5160 prontas",
+      printRecvBook:"Livro de recebimento (Carta, preencher)", recvBookDone:"Etiquetas prontas", averyBtn:"Imprimir etiquetas Avery 5160", averyDone:"Etiquetas Avery 5160 prontas", ident4x6Btn:"Etiquetas identificadoras 4x6", ident4x6Done:"Etiquetas 4x6 prontas",
       averyHint:"Ambos os botoes incluem TODOS os itens do sistema automaticamente — adicione um produto e ele aparece aqui, entao as etiquetas nunca ficam desatualizadas. O botao Avery imprime nas folhas de adesivos 5160 da Adriana (configure Margens: Nenhuma, Escala: 100%); o Livro de recebimento e um formulario tamanho Carta para preencher na doca.",
       retailprod:"Producao Varejo",ecomprod:"E-Commerce",epHint:"Produto e-commerce / DTC (pacotes variados). Escaneie ou escolha o item, insira a quantidade produzida e ela e adicionada ao estoque na hora. Os pedidos do ShipStation e TikTok vao baixar isso automaticamente quando conectados.", rpHint:"Quando um palete e feito, escaneie o codigo do produto (ou escolha), insira a quantidade e ela e adicionada ao estoque na hora. Imprima a folha de codigos com o botao abaixo e coloque na linha.", rpScanP:"Escaneie codigo do produto", rpPickProduct:"Ou escolha um produto...", rpQty:"Quantidade feita", rpAdd:"Adicionar ao estoque", rpAdded:"Adicionado ao estoque", rpCurrent:"Em estoque atual", rpRecent:"Producao recente", rpNone:"Nada adicionado ainda.", rpPrint:"Imprimir codigos de produto", rpNotFound:"Codigo nao reconhecido",
       qaHint:"Produto em quarentena - NAO tocar (embrulhado em filme vermelho). Geralmente vencido ou com informacao incorreta. Libere os bons para o estoque ou descarte-os.",
@@ -2073,6 +2073,7 @@
       '<button class="ghost" onclick="UI.labels(\'item\')">' + L("printItem") + '</button>' +
       '<button class="ghost" onclick="UI.labels(\'lpn\')">' + L("newLpn") + '</button>' +
       '<button class="primary" onclick="UI.printAvery5160()">&#127991; ' + L("averyBtn") + '</button>' +
+      '<button class="ghost" onclick="UI.printIdent4x6()">&#128230; ' + L("ident4x6Btn") + '</button>' +
       '<button class="ghost" onclick="UI.printRecvBook()">' + L("printRecvBook") + '</button>' +
       '<p class="hint" style="margin-top:8px">' + L("averyHint") + '</p>' +
       '<div id="labelArea"></div></div>';
@@ -2634,6 +2635,43 @@
       await DB.setStockBuildOnHand(it.key, cur + q, opVal());
       rpRecent.unshift({ name: it.cat + " - " + it.name, qty: q, t: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) });
       rpSel = ""; toast(L("rpAdded") + " +" + fmt(q)); render(); },
+    // 4x6 thermal identifier label (one per PAGE, sized for the Munbyn 4x6) for EVERY item.
+    // Big name + big barcode + code = the pallet "product identifier". Always current.
+    printIdent4x6() {
+      const w = window.open("", "_blank"); if (!w) return toast("Popup blocked - allow popups");
+      const SEC = { seed:"Seeds / Raw", seasoning:"Seasoning", film4:"Film 4oz", film15:"Film 1.5oz", mastercase:"Master Case", packaging:"Packaging", bucket:"Buckets", display:"Displays", supply:"Supplies", bag4:"Finished Bags 4oz", bag15:"Finished Bags 1.5oz" };
+      const items = DB.items().slice().sort((a, b) => (a.category + a.name).localeCompare(b.category + b.name));
+      const pages = items.map(i => {
+        const code = i.code || i.id;
+        return '<div class="lbl"><div class="hd">SMACKIN\' SNACKS</div>' +
+          '<div class="nm">' + esc(i.name) + '</div>' +
+          '<div class="sec">' + esc(SEC[i.category] || i.category || "") + '</div>' +
+          '<svg class="bc" data-code="' + esc(code) + '"></svg>' +
+          '<div class="cd">' + esc(code) + '</div></div>';
+      }).join("");
+      w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>4x6 Item Identifier Labels</title>' +
+        '<scr' + 'ipt src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></scr' + 'ipt>' +
+        '<style>' +
+        '@page{size:4in 6in;margin:0}' +
+        'html,body{margin:0;padding:0;font-family:Arial}' +
+        '.bar{background:#1F3864;color:#fff;padding:10px 14px;font-size:13px}.bar b{font-size:15px}.bar ol{margin:6px 0 0 18px;padding:0;line-height:1.5}.btn{display:inline-block;margin-top:8px;background:#fff;color:#1F3864;border:0;border-radius:6px;padding:7px 14px;font-weight:bold;cursor:pointer}' +
+        '.lbl{width:4in;height:6in;box-sizing:border-box;padding:0.28in 0.25in;page-break-after:always;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center}' +
+        '.hd{font-size:15px;font-weight:bold;letter-spacing:1px;color:#1F3864}' +
+        '.nm{font-size:30px;font-weight:bold;line-height:1.05;margin:10px 0 4px}' +
+        '.sec{font-size:15px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}' +
+        '.bc{width:3.4in;height:1.3in;margin:6px 0}' +
+        '.cd{font-size:26px;font-weight:bold;letter-spacing:2px;color:#111}' +
+        '@media print{.bar{display:none}}' +
+        '</style></head><body>' +
+        '<div class="bar"><b>4x6 Item Identifier Labels (' + items.length + ')</b>' +
+        '<ol><li>Load the 4x6 label roll (Munbyn).</li><li>Click Print (or Ctrl+P), pick the Munbyn printer.</li><li>Set paper size 4x6, Margins: None, Scale: 100%.</li><li>Print all, or just the page range you need (each item = one label).</li></ol>' +
+        '<button class="btn" onclick="window.print()">&#128424; Print now</button></div>' +
+        pages +
+        '<scr' + 'ipt>window.onload=function(){document.querySelectorAll(".bc").forEach(function(s){try{JsBarcode(s,s.getAttribute("data-code"),{format:"CODE128",displayValue:false,height:90,margin:0});}catch(e){}});};</scr' + 'ipt>' +
+        '</body></html>');
+      w.document.close();
+      toast(L("ident4x6Done") + " (" + items.length + ")");
+    },
     // Avery 5160 sticker sheet (30/sheet, 3 x 10, label 2.625in x 1in) for EVERY current item.
     // Exact grid so it prints perfectly onto the physical Avery 5160 sheets. Always current.
     printAvery5160() {
