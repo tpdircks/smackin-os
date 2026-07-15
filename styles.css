@@ -154,9 +154,9 @@ td.ess-na{color:#aab2bd}
 .rackgrid th.rk-lvl,.rackgrid td.rk-lvl{font-size:10px;color:#8a97a8;font-weight:700;text-align:right;padding-right:4px;white-space:nowrap}
 .rackgrid td.rk-cell{padding:0}
 .slot{display:block;width:22px;height:20px;border-radius:3px;border:1px solid var(--line);background:#fff}
-.slot.occ{background:var(--green);border-color:var(--green);cursor:pointer}
-.slot.occ:hover{filter:brightness(1.12)}
-.slot.empty{background:#eef1f5;cursor:pointer}
+.slot.occ{background:#E24A4A;border-color:#c73c3c;cursor:pointer}
+.slot.occ:hover{filter:brightness(1.1)}
+.slot.empty{background:#BFE3B6;border-color:#8fce8f;cursor:pointer}
 .slot.empty:hover{border-color:var(--blue)}
 .slot.blocked{background:repeating-linear-gradient(45deg,#d7dde6,#d7dde6 3px,#eef1f5 3px,#eef1f5 6px);cursor:not-allowed}
 .slot.sel{outline:3px solid var(--orange);outline-offset:1px}
