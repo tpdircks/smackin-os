@@ -40,7 +40,7 @@
       rChannel:"Channel", rReason:"Reason", rDisposition:"Disposition", rRMA:"Order / RMA #",
       submitReturn:"Log return", recentReturns:"Recent returns", noReturns:"No returns logged yet.",
       seasHint:"Track seasoning by lot with expiration (FEFO). Flag expired lots to quarantine.",
-      slProduct:"Product / flavor", slLot:"Lot #", slMfr:"Manufacturer", slExp:"Expiration", slWeight:"Weight (lbs)",
+      slProduct:"Product / flavor", slLot:"Lot #", slMfr:"Manufacturer", slExp:"Expiration", slWeight:"Weight (lbs)",slLoc:"Location",
       addLot:"Add lot", seasLotsTitle:"Seasoning lots (earliest expiration first)", quarantineExpired:"Quarantine expired lots",
       noLots:"No seasoning lots yet.", markQuar:"Quarantine", markGood:"Mark good", expiredTag:"EXPIRED", quarTag:"QUARANTINE", goodTag:"GOOD",
       seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdReceived:"Received", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
@@ -138,7 +138,7 @@
       rChannel:"Canal", rReason:"Motivo", rDisposition:"Disposicion", rRMA:"Orden / RMA #",
       submitReturn:"Registrar devolucion", recentReturns:"Devoluciones recientes", noReturns:"Sin devoluciones aun.",
       seasHint:"Controle la sazon por lote con vencimiento (FEFO). Marque lotes vencidos a cuarentena.",
-      slProduct:"Producto / sabor", slLot:"Lote #", slMfr:"Fabricante", slExp:"Vencimiento", slWeight:"Peso (lbs)",
+      slProduct:"Producto / sabor", slLot:"Lote #", slMfr:"Fabricante", slExp:"Vencimiento", slWeight:"Peso (lbs)",slLoc:"Ubicacion",
       addLot:"Agregar lote", seasLotsTitle:"Lotes de sazon (vencimiento mas proximo primero)", quarantineExpired:"Cuarentena de vencidos",
       noLots:"Sin lotes de sazon aun.", markQuar:"Cuarentena", markGood:"Marcar bueno", expiredTag:"VENCIDO", quarTag:"CUARENTENA", goodTag:"BUENO",
       seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdReceived:"Recibido", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
@@ -236,7 +236,7 @@
       rChannel:"Canal", rReason:"Motivo", rDisposition:"Destino", rRMA:"Pedido / RMA #",
       submitReturn:"Registrar devolucao", recentReturns:"Devolucoes recentes", noReturns:"Nenhuma devolucao registrada ainda.",
       seasHint:"Controle o tempero por lote com validade (FEFO). Marque lotes vencidos para quarentena.",
-      slProduct:"Produto / sabor", slLot:"Lote #", slMfr:"Fabricante", slExp:"Validade", slWeight:"Peso (lbs)",
+      slProduct:"Produto / sabor", slLot:"Lote #", slMfr:"Fabricante", slExp:"Validade", slWeight:"Peso (lbs)",slLoc:"Localizacao",
       addLot:"Adicionar lote", seasLotsTitle:"Lotes de tempero (validade mais proxima primeiro)", quarantineExpired:"Quarentena de vencidos",
       noLots:"Nenhum lote de tempero ainda.", markQuar:"Quarentena", markGood:"Marcar bom", expiredTag:"VENCIDO", quarTag:"QUARENTENA", goodTag:"BOM",
       seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdReceived:"Recebido", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
@@ -1427,7 +1427,7 @@
         ? '<button class="ghost sm" onclick="UI.seasStatus(\'' + l.id + '\',\'Good\')">' + L("markGood") + '</button>'
         : '<button class="ghost sm danger" onclick="UI.seasStatus(\'' + l.id + '\',\'Quarantine\')">' + L("markQuar") + '</button>';
       return '<tr><td><b>' + (l.product || l.flavor_code) + '</b></td><td>' + (l.lot || "&mdash;") + '</td><td class="muted sm">' + (l.manufacturer || "&mdash;") +
-        '</td><td' + (isExp ? ' class="expd"' : "") + '>' + (exp || "&mdash;") + '</td><td class="right">' + fmt(l.weight) + '</td><td>' + stat + '</td><td>' + act + ' <button class="ghost sm" title="' + L("editRow") + '" onclick="UI.seasEdit(\'' + l.id + '\')">&#9998;</button></td></tr>';
+        '</td><td' + (isExp ? ' class="expd"' : "") + '>' + (exp || "&mdash;") + '</td><td class="right">' + fmt(l.weight) + '</td><td>' + (l.location ? '<span class="tag">' + esc(l.location) + '</span>' : "&mdash;") + '</td><td>' + stat + '</td><td>' + act + ' <button class="ghost sm" title="' + L("editRow") + '" onclick="UI.seasEdit(\'' + l.id + '\')">&#9998;</button></td></tr>';
     }).join("") : '<tr><td colspan="7" class="muted">' + L("noLots") + '</td></tr>';
     return '<div class="card"><h2>' + L("seasoning") + '</h2><p class="hint">' + L("seasHint") + '</p>' +
       (sediting ? '<p class="hint">&#9998; ' + L("editingRow") + '</p>' : '') +
@@ -1436,12 +1436,13 @@
       '<div><label>' + L("slMfr") + '</label><input id="sl-mfr" autocomplete="off" placeholder="Commercial Creations" value="' + av(sed.manufacturer) + '"></div></div>' +
       '<div class="row"><div><label>' + L("slExp") + '</label><input id="sl-exp" type="date" value="' + (sediting && sed.exp ? (sed.exp + "").slice(0, 10) : "") + '"></div>' +
       '<div><label>' + L("slWeight") + '</label><input id="sl-wt" type="number" min="0" step="0.1" placeholder="0" value="' + (sediting && Number(sed.weight) ? Number(sed.weight) : "") + '"></div>' +
+      '<div><label>' + L("slLoc") + '</label><input id="sl-loc" list="dl-locs" autocomplete="off" placeholder="A-05-L3" value="' + av(sed.location) + '"></div>' +
       '<div style="align-self:end">' + opField() + '</div></div>' +
       '<button class="primary" onclick="UI.addSeasLot()">' + (sediting ? L("saveChanges") : L("addLot")) + '</button> ' +
       (sediting ? '<button class="ghost" style="margin-top:14px" onclick="UI.seasEditCancel()">' + L("ordCancel") + '</button>' : '<button class="ghost" style="margin-top:14px" onclick="UI.quarExpired()">' + L("quarantineExpired") + '</button>') +
       '<h2 class="sub2" style="margin-top:18px">' + L("seasLotsTitle") + '</h2>' +
       '<table class="sortable"><thead><tr><th>' + L("slProduct") + '</th><th>' + L("slLot") + '</th><th>' + L("slMfr") + '</th><th>' + L("slExp") +
-      '</th><th class="right">' + L("slWeight") + '</th><th>' + L("status") + '</th><th data-nosort></th></tr></thead><tbody>' + body + '</tbody></table></div>';
+      '</th><th class="right">' + L("slWeight") + '</th><th>' + L("slLoc") + '</th><th>' + L("status") + '</th><th data-nosort></th></tr></thead><tbody>' + body + '</tbody></table></div>';
   }
   function viewSeed() {
     const seeds = DB.items().filter(i => /^SEED-/.test(i.id));
@@ -2199,7 +2200,8 @@
       const pv = ($("sl-prod").value || "").split("|"); const wt = parseFloat($("sl-wt").value);
       if (!pv[0]) return toast(L("notfound")); if (!(wt > 0)) return toast(L("enter"));
       const rec = { flavor_code: pv[0], product: pv[1] || pv[0], lot: ($("sl-lot").value || "").trim(),
-        manufacturer: ($("sl-mfr").value || "").trim(), exp: $("sl-exp").value || null, weight: wt };
+        manufacturer: ($("sl-mfr").value || "").trim(), exp: $("sl-exp").value || null, weight: wt,
+        location: (($("sl-loc") || {}).value || "").trim() };
       if (seasEditId) { await DB.updateSeasLot(seasEditId, rec, $("op").value); seasEditId = null; toast(L("saved") + " ✓"); render(); return; }
       await DB.addSeasLot(rec, $("op").value);
       toast(L("addLot") + " ✓"); go("seasoning");

@@ -98,7 +98,7 @@ window.DB = (function () {
       cache.seasLots = (sl && sl.data ? sl.data : []).map(r => ({
         id: r.id, flavor_code: r.flavor_code, product: r.product, lot: r.lot,
         manufacturer: r.manufacturer, exp: r.exp, weight: Number(r.weight) || 0,
-        status: r.status || "Good", received_at: r.received_at
+        location: r.location || "", status: r.status || "Good", received_at: r.received_at
       }));
       cache.orders = (od && od.data ? od.data : []).map(r => ({
         id: r.id, customer: r.customer, customer_po: r.customer_po, appointment: r.appointment,
@@ -306,7 +306,7 @@ window.DB = (function () {
     const row = {
       flavor_code: rec.flavor_code || "", product: rec.product || "", lot: rec.lot || "",
       manufacturer: rec.manufacturer || "", exp: rec.exp || null, weight: Number(rec.weight) || 0,
-      status: "Good", received_at: new Date().toISOString()
+      location: rec.location || "", status: "Good", received_at: new Date().toISOString()
     };
     const logEntry = { a: "Seasoning lot", d: (row.product || row.flavor_code) + " lot " + row.lot + " " + fmt(row.weight) + " lb (exp " + (row.exp || "n/a") + ")", u: op, t: row.received_at };
     if (mode === "cloud") {
@@ -336,7 +336,7 @@ window.DB = (function () {
   }
   async function updateSeasLot(id, patch, op) {
     const p = { flavor_code: patch.flavor_code || "", product: patch.product || "", lot: patch.lot || "",
-      manufacturer: patch.manufacturer || "", exp: patch.exp || null, weight: Number(patch.weight) || 0 };
+      manufacturer: patch.manufacturer || "", exp: patch.exp || null, weight: Number(patch.weight) || 0, location: patch.location || "" };
     const logEntry = { a: "Seasoning edited", d: (p.product || p.flavor_code) + " lot " + p.lot, u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
       await sb.from("seasoning_lots").update(p).eq("id", id);

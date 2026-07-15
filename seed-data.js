@@ -20,7 +20,7 @@
   // ---- Returns pick-lists -------------------------------------------------
   const RETURN_CHANNELS = ["Customer", "Amazon"];
   const RETURN_REASONS = ["Damaged in transit", "Wrong item shipped", "Customer changed mind",
-    "Defective product", "Expired", "Overstock / recall", "Other"];
+    "Defective product", "Expired", "Overstock / recall", "Address not found", "Moved", "Other"];
   const RETURN_DISPOSITIONS = ["Restock", "Quarantine", "Scrap"];
 
   // ---- Receiving pick-lists (from Adriana's Receiving Log SETTINGS tab) -----
