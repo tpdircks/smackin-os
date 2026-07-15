@@ -12,7 +12,7 @@ window.DB = (function () {
   const seed = window.SMACKIN_SEED;
   let mode = "local";
   let sb = null;                  // supabase client
-  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [] };
+  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [], returnsLog: [] };
   let subscribers = [];
 
   function emit() { subscribers.forEach(fn => { try { fn(); } catch (e) {} }); }
@@ -31,6 +31,7 @@ window.DB = (function () {
   function receivingLog() { return cache.receivingLog || []; }
   function improvements() { return cache.improvements || []; }
   function demandLines() { return cache.demandLines || []; }
+  function returnsLog() { return cache.returnsLog || []; }
   function orders() { return cache.orders || []; }
   function rdRequests() { return cache.rdRequests || []; }
   function supplierPos() { return cache.supplierPos || []; }
@@ -71,7 +72,7 @@ window.DB = (function () {
   // ---------- CLOUD backend (Supabase) ----------
   const cloud = {
     async loadAll() {
-      const [it, su, st, lg, po, pl, sl, od, rd, sp, odc, con, sdl, sbd, slog, rlog, imp, pday, ppal, refd, dmd] = await Promise.all([
+      const [it, su, st, lg, po, pl, sl, od, rd, sp, odc, con, sdl, sbd, slog, rlog, imp, pday, ppal, refd, dmd, rtl] = await Promise.all([
         sb.from("items").select("*"),
         sb.from("suppliers").select("*"),
         sb.from("stock").select("*"),
@@ -92,7 +93,8 @@ window.DB = (function () {
         sb.from("production_days").select("*").limit(2000),
         sb.from("production_pallets").select("*").order("created_at", { ascending: false }).limit(5000),
         sb.from("reference_docs").select("*").order("created_at", { ascending: false }).limit(2000),
-        sb.from("demand_lines").select("*").order("created_at", { ascending: false }).limit(6000)
+        sb.from("demand_lines").select("*").order("created_at", { ascending: false }).limit(6000),
+        sb.from("returns_log").select("*").order("created_at", { ascending: false }).limit(5000)
       ]);
       cache.items = it.data || [];
       cache.suppliers = su.data || [];
@@ -162,6 +164,14 @@ window.DB = (function () {
       cache.prodDays = (pday && pday.data ? pday.data : []);
       cache.prodPallets = (ppal && ppal.data ? ppal.data : []);
       cache.refDocs = (refd && refd.data ? refd.data : []);
+      cache.returnsLog = (rtl && rtl.data ? rtl.data : []).map(r => ({
+        id: r.id, channel: r.channel, marketplace: r.marketplace, return_date: r.return_date,
+        customer: r.customer, shipment_id: r.shipment_id, ship_address: r.ship_address,
+        product: r.product, item_code: r.item_code, flavor: r.flavor, upc: r.upc, add_upc: r.add_upc,
+        tracking: r.tracking, qty: Number(r.qty) || 0, is_kit: !!r.is_kit, kit_sku: r.kit_sku,
+        reason: r.reason, condition: r.condition, disposition: r.disposition, restocked: !!r.restocked,
+        dup_key: r.dup_key, order_ref: r.order_ref, received_by: r.received_by, notes: r.notes, created_at: r.created_at
+      }));
       cache.demandLines = (dmd && dmd.data ? dmd.data : []).map(r => ({
         id: r.id, batch_id: r.batch_id, batch_label: r.batch_label, source: r.source,
         partner: r.partner, po: r.po, dc: r.dc, flavor: r.flavor, flavor_code: r.flavor_code,
@@ -1166,9 +1176,39 @@ window.DB = (function () {
     emit(); return { ok: true };
   }
 
+  // ---- Returns log (major-customer + e-commerce, with duplicate prevention) ----
+  const RTL_COLS = ["channel","marketplace","return_date","customer","shipment_id","ship_address","product","item_code","flavor","upc","add_upc","tracking","qty","is_kit","kit_sku","reason","condition","disposition","restocked","dup_key","order_ref","received_by","notes"];
+  function cleanRtl(r) { const o = {}; RTL_COLS.forEach(k => { if (r[k] !== undefined) o[k] = r[k]; }); return o; }
+  function returnDupKey(rec) {
+    const k = (rec.tracking || rec.shipment_id || ((rec.customer || "") + "|" + (rec.product || rec.item_code || "") + "|" + (rec.return_date || ""))).toString().trim().toLowerCase();
+    return k;
+  }
+  function findReturnDup(dupKey) {
+    if (!dupKey) return null;
+    return (cache.returnsLog || []).find(r => (r.dup_key || "").toLowerCase() === dupKey) || null;
+  }
+  // addReturn: writes a return record. If its dup_key already exists and !force, returns {ok:false,dup,existing}.
+  async function addReturn(rec, op, force) {
+    const row = cleanRtl(rec);
+    row.dup_key = returnDupKey(rec);
+    if (!force) { const ex = findReturnDup(row.dup_key); if (ex) return { ok: false, dup: true, existing: ex }; }
+    row.received_by = op || ""; row.qty = Number(row.qty) || 0; row.is_kit = !!row.is_kit; row.restocked = !!row.restocked;
+    const now = new Date().toISOString();
+    const logEntry = { a: "Return logged", d: (row.channel === "ecom" ? "E-Com " : "") + (row.product || row.item_code || "") + " x" + row.qty + (row.tracking ? " [" + row.tracking + "]" : ""), u: op, t: now };
+    if (mode === "cloud") { await sb.from("returns_log").insert(row); await cloud.addLog(logEntry); await cloud.loadAll(); }
+    else { row.id = "RTN-" + Date.now().toString(36); row.created_at = now; cache.returnsLog.unshift(row); local.addLog(logEntry); local.save(); }
+    emit(); return { ok: true };
+  }
+  async function deleteReturn(id, op) {
+    if (mode === "cloud") { await sb.from("returns_log").delete().eq("id", id); await cloud.loadAll(); }
+    else { cache.returnsLog = (cache.returnsLog || []).filter(r => String(r.id) !== String(id)); local.save(); }
+    emit(); return { ok: true };
+  }
+
   return {
     init, onChange, get mode() { return mode; },
     demandLines, importDemand, setDemandStatus, shipDemandPO, clearDemandBatch, clearAllDemand,
+    returnsLog, addReturn, deleteReturn, returnDupKey, findReturnDup,
     items, suppliers, stock, log, itemByCode, onHand, atLoc,
     purchaseOrders, supplierName, createPO, setPOStatus, deletePO, receivePO,
     receive, move, adjust, adjustTotal, produce, resetDemo, updateItemFields, createItem,

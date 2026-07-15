@@ -54,6 +54,10 @@
       dmPartner:"Customer", dmPO:"PO #", dmFlavor:"Flavor", dmCases:"Cases", dmBags:"Bags", dmDue:"Due", dmStatusH:"Status", dmDCs:"DCs", dmLoadH:"Load", dmShip:"Ship", dmShipQ:"Mark this whole PO shipped?", dmOpen:"Open", dmShipped:"Shipped", dmAll:"All", dmNone:"No demand loaded yet. Go to Import Orders to drop your SPS + ShipIQ exports.", dmAllPartners:"All customers", dmAllFlavors:"All flavors", dmTot:"Totals", dmPOs:"POs", dmDueUnknown:"no date",
       dsFlavor:"Flavor", dsDemandCs:"Demand (cs)", dsDemandBags:"Demand (bags)", dsOnHand:"On hand (cs)", dsToProduce:"To produce (cs)", dsPallets:"Pallets", dsFilm:"Film (bags)", dsCovered:"Covered", dsProduce:"Produce", dsBlocked:"Film short", dsNone:"No open demand. Import orders to see the schedule.", dsGrand:"TOTAL",
       diDrop:"Drop SPS 850 + ShipIQ CSV files", diSelected:"file(s) ready", diParse:"Preview", diCommit:"Load into board", diClear:"Clear all demand", diLabel:"Label (e.g. week of)", diWarn:"Warnings", diRecon:"Reconciliation: SPS cases vs ShipIQ cartons", diNoFiles:"Choose CSV files first", diUnknown:"skipped (not SPS/ShipIQ)", diCommitted:"loaded into the board", diConfirmClear:"Delete ALL demand lines? This cannot be undone.", diParsedFiles:"Parsed files", diLinesW:"lines", diReplace:"Re-importing replaces open lines for these POs.",
+      returnsHint2:"Log every return in one place. Pick the channel, scan the item, and the app blocks duplicate returns (same tracking / shipment ID). Kits can be broken down into their flavors automatically.",
+      rMajor:"Major Customer", rEcom:"E-Commerce / Amazon", rCustomer:"Customer name", rAddUpc:"Additional UPC", rMarketplace:"Marketplace", rShipment:"Shipment ID", rShipAddr:"Shipping address", rProdCode:"Product code", rUpc:"UPC", rTracking:"Tracking #", rReturnDate:"Return date",
+      rIsKit:"This is a variety pack / kit", rExplode:"Break down into flavors", rKitHint:"Enter the kit SKU (e.g. SS-CLSC-4OZ-12PK). On restock it adds each component flavor back to finished-bag inventory.",
+      returnsLogTitle:"Returns Log", rWho:"Customer / Marketplace", rRef:"Tracking / Shipment", rKitTag:"KIT", rDup:"DUP", rDupWarn:"This return looks already processed:", rDupOverride:"Log it again anyway?", rDupSkip:"Skipped duplicate", rNeedKitSku:"Enter the kit SKU", rFlavorsRestocked:"flavors restocked", rUnknownKit:"Kit SKU not recognized", rDelConfirm:"Delete this return record?",
       retailprod:"Retail Production",ecomprod:"E-Commerce",epHint:"E-commerce / DTC product (variety packs). Scan or pick the item, enter the quantity built, and it is added to stock instantly. ShipStation and TikTok orders will draw this down automatically once connected.", rpHint:"When a pallet is made, scan its product barcode (or pick it), enter the quantity, and it is added to stock instantly. Print the barcode sheet with the button below and post it at the line.", rpScanP:"Scan product barcode", rpPickProduct:"Or pick a product...", rpQty:"Quantity made", rpAdd:"Add to stock", rpAdded:"Added to stock", rpCurrent:"Current on hand", rpRecent:"Recent production", rpNone:"Nothing added yet.", rpPrint:"Print product barcodes", rpNotFound:"Barcode not recognized",
       qaHint:"Quarantined product - do NOT touch (wrapped in red film). Usually expired or has incorrect info. Release good ones back to stock or scrap them.",
       qaTitle:"On quarantine hold (red film - do not touch)", convertGood:"Release to good stock", scrapIt:"Scrap", qaEmpty:"Nothing in quarantine.",
@@ -159,6 +163,10 @@
       dmPartner:"Cliente", dmPO:"PO #", dmFlavor:"Sabor", dmCases:"Cajas", dmBags:"Bolsas", dmDue:"Vence", dmStatusH:"Estado", dmDCs:"CDs", dmLoadH:"Carga", dmShip:"Enviar", dmShipQ:"Marcar toda esta PO como enviada?", dmOpen:"Abierto", dmShipped:"Enviado", dmAll:"Todos", dmNone:"Aun no hay demanda cargada. Vaya a Importar Pedidos para subir sus exportaciones SPS + ShipIQ.", dmAllPartners:"Todos los clientes", dmAllFlavors:"Todos los sabores", dmTot:"Totales", dmPOs:"POs", dmDueUnknown:"sin fecha",
       dsFlavor:"Sabor", dsDemandCs:"Demanda (cj)", dsDemandBags:"Demanda (bolsas)", dsOnHand:"En mano (cj)", dsToProduce:"Por producir (cj)", dsPallets:"Paletas", dsFilm:"Pelicula (bolsas)", dsCovered:"Cubierto", dsProduce:"Producir", dsBlocked:"Falta pelicula", dsNone:"Sin demanda abierta. Importe pedidos para ver el programa.", dsGrand:"TOTAL",
       diDrop:"Suba archivos CSV SPS 850 + ShipIQ", diSelected:"archivo(s) listos", diParse:"Vista previa", diCommit:"Cargar al tablero", diClear:"Borrar toda la demanda", diLabel:"Etiqueta (ej. semana de)", diWarn:"Advertencias", diRecon:"Reconciliacion: cajas SPS vs cartones ShipIQ", diNoFiles:"Elija archivos CSV primero", diUnknown:"omitido (no es SPS/ShipIQ)", diCommitted:"cargado al tablero", diConfirmClear:"Borrar TODAS las lineas de demanda? No se puede deshacer.", diParsedFiles:"Archivos procesados", diLinesW:"lineas", diReplace:"Reimportar reemplaza las lineas abiertas de estas POs.",
+      returnsHint2:"Registre cada devolucion en un solo lugar. Elija el canal, escanee el articulo y la app bloquea devoluciones duplicadas (mismo tracking / Shipment ID). Los kits se pueden desglosar en sus sabores automaticamente.",
+      rMajor:"Cliente Mayor", rEcom:"E-Commerce / Amazon", rCustomer:"Nombre del cliente", rAddUpc:"UPC adicional", rMarketplace:"Marketplace", rShipment:"Shipment ID", rShipAddr:"Direccion de envio", rProdCode:"Codigo de producto", rUpc:"UPC", rTracking:"# de rastreo", rReturnDate:"Fecha de devolucion",
+      rIsKit:"Es un paquete variado / kit", rExplode:"Desglosar en sabores", rKitHint:"Ingrese el SKU del kit (ej. SS-CLSC-4OZ-12PK). Al reingresar suma cada sabor componente al inventario de bolsas terminadas.",
+      returnsLogTitle:"Registro de Devoluciones", rWho:"Cliente / Marketplace", rRef:"Rastreo / Envio", rKitTag:"KIT", rDup:"DUP", rDupWarn:"Esta devolucion parece ya procesada:", rDupOverride:"Registrarla de nuevo?", rDupSkip:"Duplicado omitido", rNeedKitSku:"Ingrese el SKU del kit", rFlavorsRestocked:"sabores reingresados", rUnknownKit:"SKU de kit no reconocido", rDelConfirm:"Eliminar este registro de devolucion?",
       retailprod:"Produccion Retail",ecomprod:"E-Commerce",epHint:"Producto e-commerce / DTC (paquetes variados). Escanee o elija el articulo, ingrese la cantidad producida y se agrega al inventario al instante. Los pedidos de ShipStation y TikTok lo descontaran automaticamente cuando se conecten.", rpHint:"Cuando se hace una paleta, escanee su codigo de producto (o eligalo), ingrese la cantidad y se agrega al inventario al instante. Imprima la hoja de codigos con el boton de abajo y pongala en la linea.", rpScanP:"Escanee codigo del producto", rpPickProduct:"O elija un producto...", rpQty:"Cantidad hecha", rpAdd:"Agregar al inventario", rpAdded:"Agregado al inventario", rpCurrent:"En mano actual", rpRecent:"Produccion reciente", rpNone:"Nada agregado aun.", rpPrint:"Imprimir codigos de producto", rpNotFound:"Codigo no reconocido",
       qaHint:"Producto en cuarentena - NO tocar (envuelto en film rojo). Generalmente vencido o con informacion incorrecta. Libere los buenos a inventario o descartelos.",
       qaTitle:"En cuarentena (film rojo - no tocar)", convertGood:"Liberar a inventario bueno", scrapIt:"Descartar", qaEmpty:"Nada en cuarentena.",
@@ -264,6 +272,10 @@
       dmPartner:"Cliente", dmPO:"PO #", dmFlavor:"Sabor", dmCases:"Caixas", dmBags:"Bolsas", dmDue:"Vence", dmStatusH:"Status", dmDCs:"CDs", dmLoadH:"Carga", dmShip:"Enviar", dmShipQ:"Marcar toda esta PO como enviada?", dmOpen:"Aberto", dmShipped:"Enviado", dmAll:"Todos", dmNone:"Nenhuma demanda carregada ainda. Va em Importar Pedidos para enviar suas exportacoes SPS + ShipIQ.", dmAllPartners:"Todos os clientes", dmAllFlavors:"Todos os sabores", dmTot:"Totais", dmPOs:"POs", dmDueUnknown:"sem data",
       dsFlavor:"Sabor", dsDemandCs:"Demanda (cx)", dsDemandBags:"Demanda (bolsas)", dsOnHand:"Em estoque (cx)", dsToProduce:"A produzir (cx)", dsPallets:"Paletes", dsFilm:"Filme (bolsas)", dsCovered:"Coberto", dsProduce:"Produzir", dsBlocked:"Falta filme", dsNone:"Sem demanda aberta. Importe pedidos para ver o programa.", dsGrand:"TOTAL",
       diDrop:"Envie arquivos CSV SPS 850 + ShipIQ", diSelected:"arquivo(s) prontos", diParse:"Previa", diCommit:"Carregar no painel", diClear:"Limpar toda a demanda", diLabel:"Rotulo (ex. semana de)", diWarn:"Avisos", diRecon:"Reconciliacao: caixas SPS vs cartoes ShipIQ", diNoFiles:"Escolha arquivos CSV primeiro", diUnknown:"ignorado (nao e SPS/ShipIQ)", diCommitted:"carregado no painel", diConfirmClear:"Excluir TODAS as linhas de demanda? Nao pode ser desfeito.", diParsedFiles:"Arquivos processados", diLinesW:"linhas", diReplace:"Reimportar substitui as linhas abertas destas POs.",
+      returnsHint2:"Registre cada devolucao em um so lugar. Escolha o canal, escaneie o item, e o app bloqueia devolucoes duplicadas (mesmo tracking / Shipment ID). Kits podem ser desmembrados em seus sabores automaticamente.",
+      rMajor:"Cliente Grande", rEcom:"E-Commerce / Amazon", rCustomer:"Nome do cliente", rAddUpc:"UPC adicional", rMarketplace:"Marketplace", rShipment:"Shipment ID", rShipAddr:"Endereco de envio", rProdCode:"Codigo do produto", rUpc:"UPC", rTracking:"# de rastreio", rReturnDate:"Data da devolucao",
+      rIsKit:"E um pacote variado / kit", rExplode:"Desmembrar em sabores", rKitHint:"Insira o SKU do kit (ex. SS-CLSC-4OZ-12PK). Ao reabastecer, soma cada sabor componente ao estoque de bolsas prontas.",
+      returnsLogTitle:"Registro de Devolucoes", rWho:"Cliente / Marketplace", rRef:"Rastreio / Envio", rKitTag:"KIT", rDup:"DUP", rDupWarn:"Esta devolucao parece ja processada:", rDupOverride:"Registrar novamente?", rDupSkip:"Duplicado ignorado", rNeedKitSku:"Insira o SKU do kit", rFlavorsRestocked:"sabores reabastecidos", rUnknownKit:"SKU de kit nao reconhecido", rDelConfirm:"Excluir este registro de devolucao?",
       retailprod:"Producao Varejo",ecomprod:"E-Commerce",epHint:"Produto e-commerce / DTC (pacotes variados). Escaneie ou escolha o item, insira a quantidade produzida e ela e adicionada ao estoque na hora. Os pedidos do ShipStation e TikTok vao baixar isso automaticamente quando conectados.", rpHint:"Quando um palete e feito, escaneie o codigo do produto (ou escolha), insira a quantidade e ela e adicionada ao estoque na hora. Imprima a folha de codigos com o botao abaixo e coloque na linha.", rpScanP:"Escaneie codigo do produto", rpPickProduct:"Ou escolha um produto...", rpQty:"Quantidade feita", rpAdd:"Adicionar ao estoque", rpAdded:"Adicionado ao estoque", rpCurrent:"Em estoque atual", rpRecent:"Producao recente", rpNone:"Nada adicionado ainda.", rpPrint:"Imprimir codigos de produto", rpNotFound:"Codigo nao reconhecido",
       qaHint:"Produto em quarentena - NAO tocar (embrulhado em filme vermelho). Geralmente vencido ou com informacao incorreta. Libere os bons para o estoque ou descarte-os.",
       qaTitle:"Em quarentena (filme vermelho - nao tocar)", convertGood:"Liberar para estoque bom", scrapIt:"Descartar", qaEmpty:"Nada em quarentena.",
@@ -553,6 +565,7 @@
   let spoDetailId = null; // Supplier POs: when set, show full-detail view for that PO (v56)
   let poRows = 4;         // number of line-item rows shown in the Create-PO form
   // ---- Demand section state ----
+  let retMode = "major";   // Returns entry mode: "major" (customer) | "ecom" (Amazon/marketplace)
   let dmdPartner = "", dmdFlavor = "", dmdStatus = "Open";  // Demand Board filters
   let dmdParsed = null;   // Import preview: { rows, warnings, recon, files }
   let dmdBusy = false;    // import in progress
@@ -1461,20 +1474,52 @@
       opField("Adriana") + '<button class="primary" onclick="UI.count()">' + L("submitCount") + '</button></div>';
   }
   function viewReturns() {
-    const recent = DB.log().filter(e => e.a === "Return").slice(0, 25);
-    const list = recent.length
-      ? '<table><thead><tr><th>' + L("when") + '</th><th>' + L("detail") + '</th><th>' + L("operator") + '</th></tr></thead><tbody>' +
-        recent.map(e => '<tr><td class="muted sm">' + (e.t ? new Date(e.t).toLocaleString() : "") + '</td><td>' + e.d + '</td><td>' + e.u + '</td></tr>').join("") + '</tbody></table>'
-      : '<p class="muted">' + L("noReturns") + '</p>';
-    return '<div class="card"><h2>' + L("returns") + '</h2><p class="hint">' + L("returnsHint") + '</p>' +
+    const isEcom = retMode === "ecom";
+    const tab = (m, lbl) => '<button class="' + (retMode === m ? "primary" : "ghost") + ' sm" onclick="UI.retMode(\'' + m + '\')">' + lbl + '</button>';
+    const today = new Date().toISOString().slice(0, 10);
+    // channel-specific fields
+    const majorFields =
+      '<div class="row"><div><label>' + L("rCustomer") + '</label><input id="ret-cust" autocomplete="off" placeholder="Target, KeHE..."></div>' +
+      '<div><label>' + L("rAddUpc") + ' <span class="muted">(opt.)</span></label><input id="ret-addupc" autocomplete="off"></div></div>';
+    const ecomFields =
+      '<div class="row"><div><label>' + L("rMarketplace") + '</label><select id="ret-mkt">' + selOpts(["Amazon", "TikTok Shop", "USPS", "Other"]) + '</select></div>' +
+      '<div><label>' + L("rShipment") + '</label><input id="ret-ship" autocomplete="off" placeholder="Shipment ID"></div></div>' +
+      '<div class="row"><div><label>' + L("rShipAddr") + ' <span class="muted">(opt.)</span></label><input id="ret-addr" autocomplete="off"></div>' +
+      '<div><label>' + L("rProdCode") + ' <span class="muted">(opt.)</span></label><input id="ret-prod" autocomplete="off"></div>' +
+      '<div><label>' + L("rUpc") + ' <span class="muted">(opt.)</span></label><input id="ret-upc" autocomplete="off"></div></div>';
+    const form = '<div class="card"><h2>' + L("returns") + '</h2><p class="hint">' + L("returnsHint2") + '</p>' +
+      '<div class="row" style="gap:8px;margin-bottom:8px">' + tab("major", L("rMajor")) + tab("ecom", L("rEcom")) + '</div>' +
+      (isEcom ? ecomFields : majorFields) +
       itemScan("ret-code", "ret-qty") +
       '<div class="row"><div><label>' + L("qty") + '</label><input id="ret-qty" type="number" min="0" placeholder="' + L("enter") + '"></div>' +
-      '<div><label>' + L("rChannel") + '</label><select id="ret-chan">' + selOpts(DB.returnChannels) + '</select></div>' +
-      '<div><label>' + L("rRMA") + ' <span class="muted">(opt.)</span></label><input id="ret-rma" autocomplete="off" placeholder="RMA / order #"></div></div>' +
+      '<div><label>' + L("rTracking") + ' <span class="muted">(opt.)</span></label><input id="ret-track" autocomplete="off" placeholder="1Z... / tracking #"></div>' +
+      '<div><label>' + L("rReturnDate") + '</label><input id="ret-date" type="date" value="' + today + '"></div></div>' +
       '<div class="row"><div><label>' + L("rReason") + '</label><select id="ret-reason">' + selOpts(DB.returnReasons) + '</select></div>' +
       '<div><label>' + L("rDisposition") + '</label><select id="ret-disp">' + selOpts(DB.returnDispositions) + '</select></div></div>' +
-      opField() + '<button class="primary" onclick="UI.doReturn()">' + L("submitReturn") + '</button>' +
-      '<h2 class="sub2" style="margin-top:18px">' + L("recentReturns") + '</h2>' + list + '</div>';
+      '<div class="row"><div><label><input type="checkbox" id="ret-kit" onchange="UI.retKitToggle()"> ' + L("rIsKit") + '</label>' +
+      '<input id="ret-kitsku" autocomplete="off" placeholder="SS-CLSC-4OZ-12PK" style="display:none;margin-top:6px"></div>' +
+      '<div><label style="visibility:hidden">.</label><label id="ret-explode-wrap" style="display:none"><input type="checkbox" id="ret-explode" checked> ' + L("rExplode") + '</label></div></div>' +
+      '<p class="hint" id="ret-kithint" style="display:none">' + L("rKitHint") + '</p>' +
+      opField() + '<button class="primary" onclick="UI.doReturn()">' + L("submitReturn") + '</button></div>';
+    // returns log
+    const log = DB.returnsLog ? DB.returnsLog() : [];
+    const dupKeys = {}; log.forEach(r => { const k = (r.dup_key || ""); if (k) dupKeys[k] = (dupKeys[k] || 0) + 1; });
+    const rows = log.slice(0, 100).map(r => {
+      const dup = r.dup_key && dupKeys[r.dup_key] > 1;
+      const who = r.channel === "ecom" ? (r.marketplace || L("rEcom")) : (r.customer || L("rMajor"));
+      const ref = r.tracking || r.shipment_id || "";
+      return '<tr' + (dup ? ' style="background:#FDECEA"' : '') + '><td class="sm">' + esc(r.return_date || (r.created_at ? r.created_at.slice(0, 10) : "")) + '</td>' +
+        '<td>' + esc(who) + (r.channel === "ecom" ? ' <span class="muted sm">e-com</span>' : '') + '</td>' +
+        '<td>' + esc(r.product || r.item_code || "") + (r.is_kit ? ' <span class="tag">' + L("rKitTag") + '</span>' : '') + '</td>' +
+        '<td class="right"><b>' + fmt(r.qty) + '</b></td>' +
+        '<td class="sm muted">' + esc(ref) + (dup ? ' <span class="pill out">' + L("rDup") + '</span>' : '') + '</td>' +
+        '<td class="sm">' + esc(r.disposition || "") + (r.restocked ? ' ✓' : '') + '</td>' +
+        '<td><button class="ghost sm danger" onclick="UI.delReturn(\'' + r.id + '\')">&#10005;</button></td></tr>';
+    }).join("") || '<tr><td colspan="7" class="muted">' + L("noReturns") + '</td></tr>';
+    const logCard = '<div class="card"><h2 class="sub2">' + L("returnsLogTitle") + ' (' + log.length + ')</h2>' +
+      '<div class="tblwrap"><table class="sortable"><thead><tr><th>' + L("rReturnDate") + '</th><th>' + L("rWho") + '</th><th>' + L("item") + '</th>' +
+      '<th class="right">' + L("qty") + '</th><th>' + L("rRef") + '</th><th>' + L("rDisposition") + '</th><th data-nosort></th></tr></thead><tbody>' + rows + '</tbody></table></div></div>';
+    return form + logCard;
   }
   function viewSeasoning() {
     const seas = DB.items().filter(i => i.category === "seasoning" && /^SEAS-/.test(i.id));
@@ -2587,13 +2632,54 @@
       await DB.adjust(it, loc, q, $("op").value); toast(L("count") + " ok"); go("count"); },
     async reset() { if (confirm("Reset demo data?")) { await DB.resetDemo(); toast("reset"); go("dash"); } },
     // ---- Returns ----
+    retMode(m) { retMode = m; render(); },
+    retKitToggle() {
+      const on = $("ret-kit") && $("ret-kit").checked;
+      [["ret-kitsku", ""], ["ret-explode-wrap", ""], ["ret-kithint", ""]].forEach(([id]) => { const e = $(id); if (e) e.style.display = on ? "" : "none"; });
+    },
+    async delReturn(id) { if (!confirm(L("rDelConfirm"))) return; await DB.deleteReturn(id, opVal()); toast("✓"); render(); },
     async doReturn() {
-      const it = DB.itemByCode($("ret-code").value); const q = parseFloat($("ret-qty").value);
-      if (!it) return toast(L("notfound")); if (!(q > 0)) return toast(L("enter"));
-      const meta = { channel: $("ret-chan").value, reason: $("ret-reason").value,
-        disposition: $("ret-disp").value, rma: ($("ret-rma").value || "").trim() };
-      const r = await DB.returnStock(it, q, $("op").value, meta);
-      toast(L("submitReturn") + " ✓" + (r.location ? " -> " + r.location : "")); go("returns");
+      const it = DB.itemByCode(($("ret-code") || {}).value); const q = parseFloat(($("ret-qty") || {}).value);
+      const isKit = $("ret-kit") && $("ret-kit").checked;
+      const kitsku = isKit ? (($("ret-kitsku") || {}).value || "").trim() : "";
+      if (!isKit && !it) return toast(L("notfound"));
+      if (isKit && !kitsku) return toast(L("rNeedKitSku"));
+      if (!(q > 0)) return toast(L("enter"));
+      const disp = ($("ret-disp") || {}).value; const restock = (disp === "Restock");
+      const rec = {
+        channel: retMode, return_date: ($("ret-date") || {}).value || new Date().toISOString().slice(0, 10),
+        item_code: it ? it.code : "", product: it ? it.name : kitsku, qty: q,
+        tracking: (($("ret-track") || {}).value || "").trim(), reason: ($("ret-reason") || {}).value,
+        disposition: disp, is_kit: isKit, kit_sku: kitsku, restocked: restock
+      };
+      if (retMode === "ecom") {
+        rec.marketplace = ($("ret-mkt") || {}).value; rec.shipment_id = (($("ret-ship") || {}).value || "").trim();
+        rec.ship_address = (($("ret-addr") || {}).value || "").trim(); rec.upc = (($("ret-upc") || {}).value || "").trim();
+        const pc = (($("ret-prod") || {}).value || "").trim(); if (!rec.product || rec.product === kitsku) rec.product = rec.product || pc; if (!rec.item_code) rec.item_code = pc;
+      } else {
+        rec.customer = (($("ret-cust") || {}).value || "").trim(); rec.add_upc = (($("ret-addupc") || {}).value || "").trim();
+      }
+      // duplicate prevention
+      let res = await DB.addReturn(rec, opVal());
+      if (res && res.dup) {
+        const ex = res.existing || {};
+        if (!confirm(L("rDupWarn") + "\n\n" + (ex.return_date || "") + " · " + (ex.received_by || "") + " · " + (ex.product || ex.item_code || "") + "\n\n" + L("rDupOverride"))) return toast(L("rDupSkip"));
+        res = await DB.addReturn(rec, opVal(), true);
+      }
+      if (!res || !res.ok) return toast("error");
+      // restock inventory
+      let msg = "";
+      if (restock) {
+        if (isKit && $("ret-explode") && $("ret-explode").checked && window.KITS) {
+          const comps = KITS.explode(kitsku); const meta = KITS.meta(kitsku) || {};
+          const prefix = (String(meta.size || "").indexOf("1.5") >= 0) ? "B15-" : "B4-";
+          if (comps) { for (const c of comps) { const bi = DB.itemByCode(prefix + c.code); if (bi) await DB.returnStock(bi, c.qty * q, opVal(), { reason: "Kit return", disposition: "Restock" }); } msg = " · " + comps.length + " " + L("rFlavorsRestocked"); }
+          else return toast(L("rUnknownKit"));
+        } else if (it) {
+          await DB.returnStock(it, q, opVal(), { reason: rec.reason, disposition: "Restock" });
+        }
+      }
+      toast(L("submitReturn") + " ✓" + msg); render();
     },
     // ---- Seasoning lots ----
     seasEdit(id) { seasEditId = id; render(); window.scrollTo(0, 0); },
