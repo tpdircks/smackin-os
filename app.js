@@ -2210,24 +2210,31 @@
     recvToggleNew() { recvNewItem = !recvNewItem; render(); },
     async receive() {
       const v = id => { const e = $(id); return e ? (e.value || "") : ""; };
+      // Capture ALL form values FIRST — DB.createItem() re-renders the form (emit) and would wipe these.
+      const q = parseFloat(v("r-qty")); const lot = v("r-lot").trim();
+      const loc = v("r-loc").trim().toUpperCase();
+      const meta = { supplier: v("r-sup"), invoice: v("r-inv").trim(), category: v("r-cat"),
+        pallets: v("r-pal"), condition: v("r-cond") || "Good", status: v("r-stat") || "Received", location: loc || "" };
+      const op = $("op") ? $("op").value : opVal();
+      const newCode = recvNewItem ? v("r-newcode").trim() : "";
+      const newName = recvNewItem ? v("r-newname").trim() : "";
+      const newCat = recvNewItem ? v("r-newcat") : "";
+      const newUnit = recvNewItem ? (v("r-newunit").trim() || "ea") : "";
+      const scanCode = v("r-code");
+      if (!(q > 0)) return toast(L("enter"));
+      if (loc && !validLoc(loc)) return toast(L("badloc"));
+      if (loc && BLOCKED_SLOTS.has(loc)) return toast("⛔ " + L("locBlocked"));
       let it;
       if (recvNewItem) {
-        const code = v("r-newcode").trim(), name = v("r-newname").trim();
-        if (!code || !name) return toast(L("rniNeed"));
-        const cr = await DB.createItem({ code: code, name: name, category: v("r-newcat"), unit: v("r-newunit").trim() || "ea" }, $("op").value);
+        if (!newCode || !newName) return toast(L("rniNeed"));
+        const cr = await DB.createItem({ code: newCode, name: newName, category: newCat, unit: newUnit }, op);
         if (cr.ok === false) return toast(cr.msg || "error");
         it = cr.item;
       } else {
-        it = DB.itemByCode(v("r-code"));
+        it = DB.itemByCode(scanCode);
       }
-      const q = parseFloat(v("r-qty")); const lot = v("r-lot").trim();
-      if (!it) return toast(L("notfound")); if (!(q > 0)) return toast(L("enter"));
-      const loc = v("r-loc").trim().toUpperCase();
-      if (loc && !validLoc(loc)) return toast(L("badloc"));
-      if (loc && BLOCKED_SLOTS.has(loc)) return toast("⛔ " + L("locBlocked"));
-      const meta = { supplier: v("r-sup"), invoice: v("r-inv").trim(), category: v("r-cat"),
-        pallets: v("r-pal"), condition: v("r-cond") || "Good", status: v("r-stat") || "Received", location: loc || "" };
-      const r = await DB.receive(it, q, lot, $("op").value, meta);
+      if (!it) return toast(L("notfound"));
+      const r = await DB.receive(it, q, lot, op, meta);
       puSec = ""; puBay = ""; puLevel = ""; recvNewItem = false;
       toast("+" + fmt(q) + " " + it.name + (r && r.location ? " → " + r.location : "")); go("receive"); },
     // ---- Put-Away location picker (tap Section/Bay/Level, or scan/type the slot) ----
