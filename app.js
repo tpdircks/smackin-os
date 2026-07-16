@@ -62,6 +62,7 @@
       facility:"Facility Map", facHint:"Interactive 3D digital twin of the SLC plant — exact layout, rooms, systems, and every pallet rack. Drag to rotate, scroll to zoom, click a bay for details. Red-flagged bays are PROPOSED future racking (not yet installed). Built by Salvador.", facOpen:"Open full screen",
       printRecvBook:"Receiving book (Letter, fill-in)", recvBookDone:"Receiving labels ready",
       averyBtn:"Print Avery 5160 item labels", averyDone:"Avery 5160 labels ready", ident4x6Btn:"4x6 identifier labels", ident4x6Done:"4x6 labels ready",
+      bnTitle:"What to Build Now", bnNone:"No open orders loaded yet. Import SPS + ShipIQ under Demand to see the build need.", bnHintProd:"Bags to produce by flavor — from open customer orders minus finished stock on hand. Updates live as orders come in and as stock is built. Green = covered, amber = build, red = film short.", bnHintFul:"Production need by flavor, in bags and cases (open demand minus on-hand).", bnDemandBags:"Demand (bags)", bnOnHandBags:"On hand (bags)", bnToProduceBags:"To produce (BAGS)", bnToProduceCs:"To produce (cs)", bnFlavors:"flavors to build",
       averyHint:"Both buttons include EVERY item in the system automatically — add a product and it appears here, so labels never go stale. The Avery button prints onto the 5160 sticker sheets Adriana has (just set Margins: None, Scale: 100%); the Receiving book is a Letter-size fill-in form for the dock.",
       retailprod:"Retail Production",ecomprod:"E-Commerce",epHint:"E-commerce / DTC product (variety packs). Scan or pick the item, enter the quantity built, and it is added to stock instantly. ShipStation and TikTok orders will draw this down automatically once connected.", rpHint:"When a pallet is made, scan its product barcode (or pick it), enter the quantity, and it is added to stock instantly. Print the barcode sheet with the button below and post it at the line.", rpScanP:"Scan product barcode", rpPickProduct:"Or pick a product...", rpQty:"Quantity made", rpAdd:"Add to stock", rpAdded:"Added to stock", rpCurrent:"Current on hand", rpRecent:"Recent production", rpNone:"Nothing added yet.", rpPrint:"Print product barcodes", rpNotFound:"Barcode not recognized",
       qaHint:"Quarantined product - do NOT touch (wrapped in red film). Usually expired or has incorrect info. Release good ones back to stock or scrap them.",
@@ -175,6 +176,7 @@
       backupTitle:"Respaldo", backupHint:"Descargue una copia completa de todos los datos de la app (cada tabla) en un archivo JSON. Guardelo en OneDrive como copia segura. Consejo: configure la carpeta de descargas de su navegador en su OneDrive para que cada respaldo llegue alli automaticamente.", backupBtn:"Descargar respaldo completo", backupDone:"Respaldo descargado",
       facility:"Mapa de Planta", facHint:"Gemelo digital 3D interactivo de la planta SLC — diseno exacto, salas, sistemas y cada rack de pallets. Arrastre para girar, desplace para zoom, clic en una bahia para detalles. Las bahias en rojo son racking PROPUESTO a futuro (aun no instalado). Creado por Salvador.", facOpen:"Abrir pantalla completa",
       printRecvBook:"Libro de recibo (Carta, llenar)", recvBookDone:"Etiquetas listas", averyBtn:"Imprimir etiquetas Avery 5160", averyDone:"Etiquetas Avery 5160 listas", ident4x6Btn:"Etiquetas identificadoras 4x6", ident4x6Done:"Etiquetas 4x6 listas",
+      bnTitle:"Que Producir Ahora", bnNone:"Aun no hay pedidos abiertos. Importe SPS + ShipIQ en Demanda para ver la necesidad de produccion.", bnHintProd:"Bolsas a producir por sabor — de pedidos abiertos menos inventario terminado en mano. Se actualiza en vivo. Verde = cubierto, ambar = producir, rojo = falta pelicula.", bnHintFul:"Necesidad de produccion por sabor, en bolsas y cajas (demanda abierta menos en mano).", bnDemandBags:"Demanda (bolsas)", bnOnHandBags:"En mano (bolsas)", bnToProduceBags:"Por producir (BOLSAS)", bnToProduceCs:"Por producir (cj)", bnFlavors:"sabores por producir",
       averyHint:"Ambos botones incluyen TODOS los articulos del sistema automaticamente — agregue un producto y aparece aqui, asi las etiquetas nunca quedan desactualizadas. El boton Avery imprime en las hojas de stickers 5160 de Adriana (configure Margenes: Ninguno, Escala: 100%); el Libro de recibo es un formulario tamano Carta para llenar en el muelle.",
       retailprod:"Produccion Retail",ecomprod:"E-Commerce",epHint:"Producto e-commerce / DTC (paquetes variados). Escanee o elija el articulo, ingrese la cantidad producida y se agrega al inventario al instante. Los pedidos de ShipStation y TikTok lo descontaran automaticamente cuando se conecten.", rpHint:"Cuando se hace una paleta, escanee su codigo de producto (o eligalo), ingrese la cantidad y se agrega al inventario al instante. Imprima la hoja de codigos con el boton de abajo y pongala en la linea.", rpScanP:"Escanee codigo del producto", rpPickProduct:"O elija un producto...", rpQty:"Cantidad hecha", rpAdd:"Agregar al inventario", rpAdded:"Agregado al inventario", rpCurrent:"En mano actual", rpRecent:"Produccion reciente", rpNone:"Nada agregado aun.", rpPrint:"Imprimir codigos de producto", rpNotFound:"Codigo no reconocido",
       qaHint:"Producto en cuarentena - NO tocar (envuelto en film rojo). Generalmente vencido o con informacion incorrecta. Libere los buenos a inventario o descartelos.",
@@ -288,6 +290,7 @@
       backupTitle:"Backup", backupHint:"Baixe uma copia completa de todos os dados do app (cada tabela) em um arquivo JSON. Salve no OneDrive como copia segura. Dica: configure a pasta de downloads do seu navegador para o seu OneDrive para que cada backup va para la automaticamente.", backupBtn:"Baixar backup completo", backupDone:"Backup baixado",
       facility:"Mapa da Planta", facHint:"Gemeo digital 3D interativo da planta SLC — layout exato, salas, sistemas e cada rack de paletes. Arraste para girar, role para zoom, clique numa baia para detalhes. Baias em vermelho sao racking PROPOSTO futuro (ainda nao instalado). Feito pelo Salvador.", facOpen:"Abrir tela cheia",
       printRecvBook:"Livro de recebimento (Carta, preencher)", recvBookDone:"Etiquetas prontas", averyBtn:"Imprimir etiquetas Avery 5160", averyDone:"Etiquetas Avery 5160 prontas", ident4x6Btn:"Etiquetas identificadoras 4x6", ident4x6Done:"Etiquetas 4x6 prontas",
+      bnTitle:"O Que Produzir Agora", bnNone:"Nenhum pedido aberto ainda. Importe SPS + ShipIQ em Demanda para ver a necessidade de producao.", bnHintProd:"Bolsas a produzir por sabor — de pedidos abertos menos estoque pronto em maos. Atualiza ao vivo. Verde = coberto, ambar = produzir, vermelho = falta filme.", bnHintFul:"Necessidade de producao por sabor, em bolsas e caixas (demanda aberta menos em estoque).", bnDemandBags:"Demanda (bolsas)", bnOnHandBags:"Em estoque (bolsas)", bnToProduceBags:"A produzir (BOLSAS)", bnToProduceCs:"A produzir (cx)", bnFlavors:"sabores a produzir",
       averyHint:"Ambos os botoes incluem TODOS os itens do sistema automaticamente — adicione um produto e ele aparece aqui, entao as etiquetas nunca ficam desatualizadas. O botao Avery imprime nas folhas de adesivos 5160 da Adriana (configure Margens: Nenhuma, Escala: 100%); o Livro de recebimento e um formulario tamanho Carta para preencher na doca.",
       retailprod:"Producao Varejo",ecomprod:"E-Commerce",epHint:"Produto e-commerce / DTC (pacotes variados). Escaneie ou escolha o item, insira a quantidade produzida e ela e adicionada ao estoque na hora. Os pedidos do ShipStation e TikTok vao baixar isso automaticamente quando conectados.", rpHint:"Quando um palete e feito, escaneie o codigo do produto (ou escolha), insira a quantidade e ela e adicionada ao estoque na hora. Imprima a folha de codigos com o botao abaixo e coloque na linha.", rpScanP:"Escaneie codigo do produto", rpPickProduct:"Ou escolha um produto...", rpQty:"Quantidade feita", rpAdd:"Adicionar ao estoque", rpAdded:"Adicionado ao estoque", rpCurrent:"Em estoque atual", rpRecent:"Producao recente", rpNone:"Nada adicionado ainda.", rpPrint:"Imprimir codigos de produto", rpNotFound:"Codigo nao reconhecido",
       qaHint:"Produto em quarentena - NAO tocar (embrulhado em filme vermelho). Geralmente vencido ou com informacao incorreta. Libere os bons para o estoque ou descarte-os.",
@@ -2285,6 +2288,44 @@
       '<th class="right">' + L("dmCases") + '</th><th class="right">' + L("dmBags") + '</th><th>' + L("dmDue") + '</th><th data-nosort>' + L("dmStatusH") + '</th></tr></thead><tbody>' + body + '</tbody></table></div></div>';
     return head + table;
   }
+  // Shared production-need engine: per-flavor bags/cases to build from open demand minus on-hand.
+  // Used by the Fulfillment Production Schedule AND the Mixing / P-Mac "What to Build" panels.
+  function computeBuildNeed() {
+    const open = (DB.demandLines ? DB.demandLines() : []).filter(r => (r.status || "Open") === "Open");
+    const byF = {};
+    open.forEach(r => { const f = r.flavor; if (!byF[f]) byF[f] = { flavor: f, code: r.flavor_code, cases: 0, bags: 0 }; byF[f].cases += Number(r.cases) || 0; byF[f].bags += Number(r.bags) || 0; });
+    let list = Object.keys(byF).map(k => {
+      const x = byF[k]; const onHand = demandOnHandCases(x.flavor);
+      const toProduce = Math.max(0, x.cases - onHand); const film = demandFilmBags(x.code);
+      const kind = toProduce <= 0 ? "covered" : (film != null && film < toProduce * 72) ? "blocked" : "produce";
+      const pallets = toProduce > 0 ? Math.ceil(toProduce / 30 * 10) / 10 : 0;
+      return Object.assign(x, { onHand, onHandBags: onHand * 72, toProduce, toProduceBags: toProduce * 72, film, kind, pallets });
+    });
+    list.sort((a, b) => (b.toProduce - a.toProduce) || (DMD_FLAVOR_ORDER.indexOf(a.flavor) - DMD_FLAVOR_ORDER.indexOf(b.flavor)));
+    const T = { demandCases: 0, demandBags: 0, onHandCases: 0, toProduceCases: 0, toProduceBags: 0 };
+    list.forEach(x => { T.demandCases += x.cases; T.demandBags += x.bags; T.onHandCases += x.onHand; T.toProduceCases += x.toProduce; T.toProduceBags += x.toProduceBags; });
+    return { list: list, T: T, hasData: open.length > 0, needCount: list.filter(x => x.toProduce > 0).length };
+  }
+  // Build-need card. audience "prod" = Mixing/P-Mac (bags-forward); "ful" = Fulfillment (bags + cases).
+  function buildNeedCard(audience) {
+    const n = computeBuildNeed();
+    const prod = audience !== "ful";
+    if (!n.hasData) return '<div class="card"><h2>&#127981; ' + L("bnTitle") + '</h2><p class="muted">' + L("bnNone") + '</p>' +
+      '<button class="ghost sm" onclick="UI_go(\'demandimport\')">' + L("demandimport") + '</button></div>';
+    const need = n.list.filter(x => x.toProduce > 0);
+    const show = need.length ? need : n.list;
+    const rows = show.map(x => '<tr><td>' + esc(x.flavor) + (x.code ? ' <span class="muted sm">' + esc(x.code) + '</span>' : '') + '</td>' +
+      '<td class="right muted">' + fmt(x.bags) + '</td><td class="right muted">' + fmt(x.onHandBags) + '</td>' +
+      '<td class="right"><b>' + fmt(x.toProduceBags) + '</b></td>' + (prod ? '' : '<td class="right muted">' + fmt(x.toProduce) + '</td>') +
+      '<td>' + dmdDot(x.kind) + '</td></tr>').join("");
+    const th = '<tr><th>' + L("dsFlavor") + '</th><th class="right">' + L("bnDemandBags") + '</th><th class="right">' + L("bnOnHandBags") + '</th><th class="right">' + L("bnToProduceBags") + '</th>' + (prod ? '' : '<th class="right">' + L("bnToProduceCs") + '</th>') + '<th data-nosort>' + L("dmStatusH") + '</th></tr>';
+    const kpi = '<div class="kpis"><div class="kpi"><div class="n">' + fmt(n.T.toProduceBags) + '</div><div class="l">' + L("bnToProduceBags") + '</div></div>' +
+      (prod ? '' : '<div class="kpi"><div class="n">' + fmt(n.T.toProduceCases) + '</div><div class="l">' + L("bnToProduceCs") + '</div></div>') +
+      '<div class="kpi"><div class="n">' + n.needCount + '</div><div class="l">' + L("bnFlavors") + '</div></div></div>';
+    return '<div class="card"><div class="suprow"><h2 style="flex:1;margin:0">&#127981; ' + L("bnTitle") + '</h2><a class="ghost sm" onclick="UI_go(\'demand\')">' + L("demand") + ' &#8250;</a></div>' +
+      '<p class="hint">' + L(prod ? "bnHintProd" : "bnHintFul") + '</p>' + kpi +
+      '<div class="tblwrap"><table class="sortable"><thead>' + th + '</thead><tbody>' + rows + '</tbody></table></div></div>';
+  }
   function viewDemandSched() {
     const open = (DB.demandLines ? DB.demandLines() : []).filter(r => (r.status || "Open") === "Open");
     if (!open.length) return '<div class="card"><h2>' + L("demandsched") + '</h2><p class="muted">' + L("dsNone") + '</p>' +
@@ -2305,6 +2346,7 @@
     const rowsHtml = list.map(x => '<tr><td>' + esc(x.flavor) + (x.code ? ' <span class="muted sm">' + esc(x.code) + '</span>' : '') + '</td>' +
       '<td class="right">' + fmt(x.cases) + '</td><td class="right muted">' + fmt(x.bags) + '</td>' +
       '<td class="right">' + fmt(x.onHand) + '</td><td class="right"><b>' + fmt(x.toProduce) + '</b></td>' +
+      '<td class="right"><b>' + fmt(x.toProduce * 72) + '</b></td>' +
       '<td class="right muted sm">' + (x.toProduce > 0 ? x.pallets : "—") + '</td>' +
       '<td class="right muted sm">' + (x.film != null ? fmt(x.film) : "—") + '</td>' +
       '<td>' + dmdDot(x.kind) + '</td></tr>').join("");
@@ -2314,10 +2356,10 @@
       '<div class="kpi"><div class="n">' + fmt(gProd) + '</div><div class="l">' + L("dsToProduce") + '</div></div></div></div>';
     const table = '<div class="card"><div class="tblwrap"><table class="sortable"><thead><tr>' +
       '<th>' + L("dsFlavor") + '</th><th class="right">' + L("dsDemandCs") + '</th><th class="right">' + L("dsDemandBags") + '</th>' +
-      '<th class="right">' + L("dsOnHand") + '</th><th class="right">' + L("dsToProduce") + '</th><th class="right">' + L("dsPallets") + '</th>' +
+      '<th class="right">' + L("dsOnHand") + '</th><th class="right">' + L("dsToProduce") + '</th><th class="right">' + L("bnToProduceBags") + '</th><th class="right">' + L("dsPallets") + '</th>' +
       '<th class="right">' + L("dsFilm") + '</th><th data-nosort>' + L("dmStatusH") + '</th></tr></thead><tbody>' + rowsHtml +
       '<tr style="background:#E8E8E8"><td><b>' + L("dsGrand") + '</b></td><td class="right"><b>' + fmt(gDem) + '</b></td><td></td>' +
-      '<td class="right"><b>' + fmt(gOn) + '</b></td><td class="right"><b>' + fmt(gProd) + '</b></td><td></td><td></td><td></td></tr>' +
+      '<td class="right"><b>' + fmt(gOn) + '</b></td><td class="right"><b>' + fmt(gProd) + '</b></td><td class="right"><b>' + fmt(gProd * 72) + '</b></td><td></td><td></td><td></td></tr>' +
       '</tbody></table></div></div>';
     return head + table;
   }
@@ -2412,8 +2454,8 @@
       '<input id="ciSearch" autocomplete="off" style="margin-top:10px" oninput="UI.ciSearch(this.value)" placeholder="' + L("ciSearchP") + '">' +
       '<table class="sortable" style="margin-top:10px"><thead>' + head + '</thead><tbody id="ciBody">' + rows + '</tbody></table></div>';
   }
-  function viewMixing() { return viewConsume("Mixing", "mixing"); }
-  function viewPmac() { return viewConsume("P-Mac", "pmac"); }
+  function viewMixing() { return buildNeedCard("prod") + viewConsume("Mixing", "mixing"); }
+  function viewPmac() { return buildNeedCard("prod") + viewConsume("P-Mac", "pmac"); }
   function tenureStr(s) {
     if (!s) return "";
     const d = new Date(s + "T00:00:00"); if (isNaN(d.getTime())) return "";
