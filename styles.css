@@ -278,6 +278,27 @@ td.expd{color:var(--red);font-weight:700}
 .labelgrid{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
 .lbl{border:1px solid var(--line);border-radius:8px;padding:8px;text-align:center;background:#fff}
 .lblcap{font-size:12px;color:#333;margin-top:2px;max-width:200px;word-break:break-word}
+/* ---- Now Running floor board ---- */
+.floorgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-top:10px}
+.floortile{border:1px solid var(--line);border-left:6px solid var(--blue);border-radius:10px;padding:12px;background:#fff}
+.floortile.idle{opacity:.62;background:#FAFAFA;border-left-color:#bbb}
+.floortilehead{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.floormachine{font-size:16px;color:var(--navy)}
+.floorx{background:transparent;border:0;color:var(--red);font-size:14px;cursor:pointer;padding:2px 6px;line-height:1}
+.floorflavor{font-size:19px;font-weight:800;color:var(--navy);border-radius:8px;padding:8px 10px;margin-bottom:8px;min-height:1.2em}
+.floorsize{font-size:12px;font-weight:700;opacity:.7;margin-left:4px}
+.floorpillrow{margin-bottom:6px}
+.pill.flpill-run{background:var(--greenbg);color:#1d5631}
+.pill.flpill-chg{background:var(--amberbg);color:#7a4d05}
+.pill.flpill-idle{background:#E7E7E7;color:#555}
+.floormeta{margin-bottom:2px}
+.floorsensor{margin-bottom:8px;font-style:italic}
+.floorcontrols select{width:100%;margin-bottom:6px}
+.floorstatusbtns{display:flex;gap:6px}
+.floorstatusbtn{flex:1;border:1px solid var(--line);background:#fff;border-radius:8px;padding:9px 4px;font-size:12px;font-weight:700;cursor:pointer;color:var(--navy)}
+.floorstatusbtn.running.on{background:var(--green);color:#fff;border-color:var(--green)}
+.floorstatusbtn.changeover.on{background:var(--amber);color:#fff;border-color:var(--amber)}
+.floorstatusbtn.idle.on{background:#777;color:#fff;border-color:#777}
 @media(max-width:820px){
   .navtoggle{display:inline-block}
   nav#nav{position:fixed;top:0;left:0;bottom:0;height:100vh;max-height:none;width:252px;z-index:80;transform:translateX(-100%);transition:transform .22s ease;box-shadow:2px 0 14px rgba(0,0,0,.25)}

@@ -128,6 +128,13 @@
       rdSendOk:"Request emailed", rdSendNo:"Sending is not set up yet - download the PDF and email it.", rdSendFail:"Could not send - download the PDF and email it.",
       rdSending:"Sending...", rdPdfTitle:"SAMPLE / R&D REQUEST", rdReqNo:"Request #", rdDate:"Date", rdTo:"To", rdFrom:"Requested by",
       rdEmailSubject:"Sample request from Smackin' Snacks", rdConfirmRecv:"Mark this request as received?",
+      floor:"Now Running", floorHint:"Live board — what's mixing and what each P-Mac machine is running right now. Tap to update; a bag-count sensor will feed in later.",
+      flAddMachine:"+ Add machine", flMachineNamePrompt:"Machine name (e.g. Mixer 1, PM-3)",
+      flNoMachines:"No machines added yet. Tap Add machine to create one.",
+      flFlavor:"Flavor", flSize:"Size", flNone:"— none —",
+      flRunning:"Running", flChangeover:"Changeover", flIdle:"Idle",
+      flUpdated:"updated", flJustNow:"just now", flAgo:"ago",
+      flSensor:"bags (sensor)", flDeleteConfirm:"Remove this machine?",
       settingsHint:"Mode, layout, and demo controls." },
     es: { dash:"Resumen", home:"Panel", receive:"Recibir", putaway:"Almacenar", move:"Mover / Sacar", produce:"Producir",
       count:"Conteo", locations:"Ubicaciones", purchasing:"Compras", labels:"Etiquetas", log:"Actividad", settings:"Ajustes",
@@ -250,6 +257,13 @@
       rdSendOk:"Solicitud enviada por correo", rdSendNo:"El envio aun no esta configurado - descargue el PDF y enviela.", rdSendFail:"No se pudo enviar - descargue el PDF y enviela.",
       rdSending:"Enviando...", rdPdfTitle:"SOLICITUD DE MUESTRA / I+D", rdReqNo:"Solicitud #", rdDate:"Fecha", rdTo:"Para", rdFrom:"Solicitado por",
       rdEmailSubject:"Solicitud de muestra de Smackin' Snacks", rdConfirmRecv:"Marcar esta solicitud como recibida?",
+      floor:"En Marcha", floorHint:"Tablero en vivo — que se esta mezclando y que corre cada maquina P-Mac ahora mismo. Toque para actualizar; un sensor de conteo de bolsas se conectara despues.",
+      flAddMachine:"+ Anadir maquina", flMachineNamePrompt:"Nombre de maquina (ej. Mezcladora 1, PM-3)",
+      flNoMachines:"Aun no hay maquinas. Toque Anadir maquina para crear una.",
+      flFlavor:"Sabor", flSize:"Tamano", flNone:"— ninguno —",
+      flRunning:"Corriendo", flChangeover:"Cambio", flIdle:"Inactiva",
+      flUpdated:"actualizado", flJustNow:"ahora mismo", flAgo:"hace",
+      flSensor:"bolsas (sensor)", flDeleteConfirm:"Quitar esta maquina?",
       settingsHint:"Modo, distribucion y controles demo." },
     pt: { dash:"Visao geral", home:"Painel", receive:"Receber", putaway:"Armazenar", move:"Mover / Separar", produce:"Produzir",
       count:"Contagem", locations:"Locais", purchasing:"Compras", labels:"Etiquetas", log:"Atividade", settings:"Configuracoes",
@@ -372,6 +386,13 @@
       rdSendOk:"Solicitacao enviada por e-mail", rdSendNo:"O envio ainda nao esta configurado - baixe o PDF e envie.", rdSendFail:"Nao foi possivel enviar - baixe o PDF e envie.",
       rdSending:"Enviando...", rdPdfTitle:"SOLICITACAO DE AMOSTRA / P&D", rdReqNo:"Solicitacao #", rdDate:"Data", rdTo:"Para", rdFrom:"Solicitado por",
       rdEmailSubject:"Solicitacao de amostra da Smackin' Snacks", rdConfirmRecv:"Marcar esta solicitacao como recebida?",
+      floor:"Em Andamento", floorHint:"Painel ao vivo — o que esta misturando e o que cada maquina P-Mac esta rodando agora. Toque para atualizar; um sensor de contagem de sacos sera conectado depois.",
+      flAddMachine:"+ Adicionar maquina", flMachineNamePrompt:"Nome da maquina (ex. Misturador 1, PM-3)",
+      flNoMachines:"Nenhuma maquina ainda. Toque em Adicionar maquina para criar uma.",
+      flFlavor:"Sabor", flSize:"Tamanho", flNone:"— nenhum —",
+      flRunning:"Rodando", flChangeover:"Troca", flIdle:"Parada",
+      flUpdated:"atualizado", flJustNow:"agora mesmo", flAgo:"atras",
+      flSensor:"sacos (sensor)", flDeleteConfirm:"Remover esta maquina?",
       settingsHint:"Modo, layout e controles demo." }
   };
   let lang = "en"; const L = k => (T[lang][k] !== undefined ? T[lang][k] : (T.en[k] !== undefined ? T.en[k] : k));
@@ -402,15 +423,15 @@
     { key: "tote", label: "Tote - 1 bag x 1,200 lb", per: 1200 }
   ];
   const SEED_PACK_MAP = {}; SEED_PACKS.forEach(p => SEED_PACK_MAP[p.key] = p);
-  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","demand","demandboard","demandsched","demandimport","seasoning","seed","skus","mixing","pmac","count","locations","facility","finbags","pmacout","purchasing","supplierpos","people","improve","compliance","reference","labels","log","settings"];
+  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","demand","demandboard","demandsched","demandimport","seasoning","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","supplierpos","people","improve","compliance","reference","labels","log","settings"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
     all: TABS.slice(),
     receiving: ["home","alerts","dash","adjust","receive","putaway","returns","qa","count","locations","labels"],
     production: ["home","alerts","dash","adjust","produce","seasoning","move","orders","orderdocs","count","locations"],
-    mixing: ["home","alerts","mixing","seasoning","produce","count"],
-    pmac: ["home","alerts","pmac","labels"],
+    mixing: ["home","alerts","mixing","floor","seasoning","produce","count"],
+    pmac: ["home","alerts","pmac","floor","labels"],
     rnd: ["home","rd"]
   };
   const RD_TYPES = ["Seasoning sample","Ingredient sample","Packaging sample","Equipment / other"];
@@ -577,8 +598,8 @@
     { key:"grpProduction", items:["produce","retailprod","ecomprod","prodlog","stockbuild","orders","orderdocs"] },
     { key:"grpDemand", items:["demand","demandboard","demandsched","demandimport"] },
     { key:"grpShipping", items:["shiplog"] },
-    { key:"grpMixing", items:["mixing"] },
-    { key:"grpPmac", items:["pmac","pmacout"] },
+    { key:"grpMixing", items:["mixing","floor"] },
+    { key:"grpPmac", items:["pmac","pmacout","floor"] },
     { key:"grpPurchasing", items:["purchasing","supplierpos"] },
     { key:"grpRnd", items:["rd"] },
     { key:"grpHr", items:["people"] },
@@ -597,7 +618,7 @@
     mixing:"cooking-pot", pmac:"wrench", count:"clipboard-check", locations:"map-pin",
     purchasing:"shopping-cart", supplierpos:"file-text", people:"users", labels:"tag",
     log:"history", settings:"settings", improve:"trending-up", compliance:"shield-check", reference:"book-open",
-    demand:"calendar-clock", demandboard:"list-checks", demandsched:"gauge", demandimport:"file-up", facility:"warehouse" };
+    demand:"calendar-clock", demandboard:"list-checks", demandsched:"gauge", demandimport:"file-up", facility:"warehouse", floor:"activity" };
   function drawIcons() { try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {} }
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
   let spoSort = { key: "created", dir: -1 };  // Supplier POs table sort (v25)
@@ -746,6 +767,13 @@
     return '<label>' + L("operator") + '</label><select id="op">' +
       ["Jesus","Adriana","Marlin","Edgar","Troy"].map(n => '<option' + (n === def ? ' selected' : '') + '>' + n + "</option>").join("") + "</select>";
   }
+  // Same as opField but with a caller-chosen id — needed when more than one operator
+  // field appears on the same page (e.g. the Now Running board has one per section).
+  function opFieldFor(id, def) {
+    return '<label>' + L("operator") + '</label><select id="' + id + '">' +
+      ["Jesus","Adriana","Marlin","Edgar","Troy"].map(n => '<option' + (n === def ? ' selected' : '') + '>' + n + "</option>").join("") + "</select>";
+  }
+  function opValFor(id) { const e = $(id); return e ? e.value : "Troy"; }
   // Reusable tap-or-scan location picker (Section/Bay/Level chips + scan field + zone chips).
   // Writes the composed code into the field with id=fid. Shared by Receive + Put-Away.
   function locPickerBlock(fid) {
@@ -2572,6 +2600,59 @@
   }
   function viewMixing() { return deptDemandBoard("mixing", false) + viewConsume("Mixing", "mixing"); }
   function viewPmac() { return deptDemandBoard("pmac", false) + viewConsume("P-Mac", "pmac"); }
+  // ===== Now Running — live floor board (Mixing + P-Mac machines, operator-named, additive) =====
+  const FLOOR_TILE_COLORS = ["#F4E1D2","#E8C9C9","#F0DDE0","#DCEBD7","#E3E0F2","#FBEFC5","#F6DDE7","#D9EEF2","#EAE3D0","#D7E8F0","#EDE0EA","#E0E7D9","#F3E5D0"];
+  function floorColor(flavor) {
+    const i = DMD_FLAVOR_ORDER.indexOf(flavor);
+    return i >= 0 ? FLOOR_TILE_COLORS[i % FLOOR_TILE_COLORS.length] : "#ECECEC";
+  }
+  function floorAgo(iso) {
+    if (!iso) return "";
+    const ms = Date.now() - new Date(iso).getTime();
+    if (!isFinite(ms) || ms < 0) return L("flJustNow");
+    const mins = Math.floor(ms / 60000);
+    if (mins < 1) return L("flJustNow");
+    if (mins < 60) return mins + "m " + L("flAgo");
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + "h " + L("flAgo");
+    const days = Math.floor(hrs / 24);
+    return days + "d " + L("flAgo");
+  }
+  function floorTile(m) {
+    const status = m.status || "idle";
+    const flavor = m.flavor || "";
+    const idle = status === "idle";
+    const col = flavor ? floorColor(flavor) : "#F0F0F0";
+    const pillClass = status === "running" ? "flpill-run" : status === "changeover" ? "flpill-chg" : "flpill-idle";
+    const flavOpts = '<option value="">' + L("flNone") + '</option>' + DMD_FLAVOR_ORDER.map(f => '<option' + (f === flavor ? ' selected' : '') + '>' + esc(f) + '</option>').join("");
+    const sizeOpts = ["4oz","1.5oz"].map(s => '<option' + (s === (m.size || "") ? ' selected' : '') + '>' + s + '</option>').join("");
+    const statusBtn = (key, label) => '<button class="floorstatusbtn ' + key + (status === key ? ' on' : '') + '" onclick="UI.flSetStatus(\'' + m.id + '\',\'' + key + '\')">' + esc(label) + '</button>';
+    return '<div class="floortile' + (idle ? ' idle' : '') + '">' +
+      '<div class="floortilehead"><b class="floormachine">' + esc(m.machine) + '</b>' +
+      '<button class="floorx" title="x" onclick="UI.flDelete(\'' + m.id + '\')">&#10005;</button></div>' +
+      '<div class="floorflavor" style="background:' + col + '">' + (flavor ? esc(flavor) : L("flNone")) + (m.size ? ' <span class="floorsize">' + esc(m.size) + '</span>' : '') + '</div>' +
+      '<div class="floorpillrow"><span class="pill big ' + pillClass + '">' + L(status === "running" ? "flRunning" : status === "changeover" ? "flChangeover" : "flIdle") + '</span></div>' +
+      '<div class="muted sm floormeta">' + L("flUpdated") + ' ' + floorAgo(m.updated_at) + (m.updated_by ? ' &middot; ' + esc(m.updated_by) : '') + '</div>' +
+      '<div class="muted sm floorsensor">&mdash; ' + L("flSensor") + '</div>' +
+      '<div class="floorcontrols">' +
+      '<select onchange="UI.flSetFlavor(\'' + m.id + '\',this.value)">' + flavOpts + '</select>' +
+      '<select onchange="UI.flSetSize(\'' + m.id + '\',this.value)"><option value="">' + L("flSize") + '</option>' + sizeOpts + '</select>' +
+      '<div class="floorstatusbtns">' + statusBtn("running", L("flRunning")) + statusBtn("changeover", L("flChangeover")) + statusBtn("idle", L("flIdle")) + '</div>' +
+      '</div></div>';
+  }
+  function floorSection(area, title, opDefault) {
+    const list = (DB.lineStatus ? DB.lineStatus() : []).filter(r => r.area === area).slice().sort((a, b) => (Number(a.sort) || 0) - (Number(b.sort) || 0));
+    const tiles = list.length ? '<div class="floorgrid">' + list.map(floorTile).join("") + '</div>'
+      : '<p class="muted">' + L("flNoMachines") + '</p>';
+    return '<div class="card"><div class="suprow"><h2 class="sub2" style="flex:1;margin:0">' + esc(title) + '</h2>' + opFieldFor("fl-op-" + area, opDefault) + '</div>' +
+      tiles +
+      '<button class="ghost sm" style="margin-top:10px" onclick="UI.flAdd(\'' + area + '\')">' + L("flAddMachine") + '</button></div>';
+  }
+  function viewFloor() {
+    return '<div class="card"><h2>' + L("floor") + '</h2><p class="hint">' + L("floorHint") + '</p></div>' +
+      floorSection("mixing", L("mixing"), "Leo") +
+      floorSection("pmac", L("pmac"), "Jesus");
+  }
   function tenureStr(s) {
     if (!s) return "";
     const d = new Date(s + "T00:00:00"); if (isNaN(d.getTime())) return "";
@@ -2666,6 +2747,36 @@
       toast("✓"); render();
     },
     async prodDel(id) { await DB.deleteProdOutput(id, opVal()); toast("✓"); render(); },
+    // ---- Now Running floor board ----
+    async flAdd(area) {
+      const name = prompt(L("flMachineNamePrompt"));
+      if (!name || !name.trim()) return;
+      const op = opValFor("fl-op-" + area);
+      const r = await DB.addMachine({ area, machine: name.trim() }, op);
+      if (r && r.ok === false) return toast(r.msg || "error");
+      toast("✓"); render();
+    },
+    async flSetFlavor(id, val) {
+      const m = (DB.lineStatus ? DB.lineStatus() : []).find(r => String(r.id) === String(id));
+      const op = opValFor("fl-op-" + (m ? m.area : "mixing"));
+      await DB.setLineStatus(id, { flavor: val }, op); toast("✓"); render();
+    },
+    async flSetSize(id, val) {
+      const m = (DB.lineStatus ? DB.lineStatus() : []).find(r => String(r.id) === String(id));
+      const op = opValFor("fl-op-" + (m ? m.area : "mixing"));
+      await DB.setLineStatus(id, { size: val }, op); toast("✓"); render();
+    },
+    async flSetStatus(id, val) {
+      const m = (DB.lineStatus ? DB.lineStatus() : []).find(r => String(r.id) === String(id));
+      const op = opValFor("fl-op-" + (m ? m.area : "mixing"));
+      await DB.setLineStatus(id, { status: val }, op); toast("✓"); render();
+    },
+    async flDelete(id) {
+      if (!confirm(L("flDeleteConfirm"))) return;
+      const m = (DB.lineStatus ? DB.lineStatus() : []).find(r => String(r.id) === String(id));
+      const op = opValFor("fl-op-" + (m ? m.area : "mixing"));
+      await DB.deleteMachine(id, op); toast("✓"); render();
+    },
     async dmShip(source, po) {
       if (!confirm(L("dmShipQ") + "\n\n" + source + " " + po)) return;
       const r = await DB.shipDemandPO(source, po, opVal());
@@ -3520,7 +3631,7 @@
     const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
       move: viewMove, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, compliance: viewCompliance, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
-      demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, facility: viewFacility };
+      demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, facility: viewFacility, floor: viewFloor };
     $("view").innerHTML = (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
     $("modeBadge").className = "modebadge " + (DB.mode === "cloud" ? "ok" : "low");

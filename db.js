@@ -12,7 +12,7 @@ window.DB = (function () {
   const seed = window.SMACKIN_SEED;
   let mode = "local";
   let sb = null;                  // supabase client
-  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [], returnsLog: [], prodOut: [] };
+  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [], returnsLog: [], prodOut: [], lineStatus: [] };
   let subscribers = [];
 
   function emit() { subscribers.forEach(fn => { try { fn(); } catch (e) {} }); }
@@ -32,6 +32,7 @@ window.DB = (function () {
   function improvements() { return cache.improvements || []; }
   function demandLines() { return cache.demandLines || []; }
   function productionOutput() { return cache.prodOut || []; }
+  function lineStatus() { return cache.lineStatus || []; }
   function returnsLog() { return cache.returnsLog || []; }
   function orders() { return cache.orders || []; }
   function rdRequests() { return cache.rdRequests || []; }
@@ -195,6 +196,15 @@ window.DB = (function () {
           entered_by: r.entered_by || "", created_at: r.created_at
         }));
       } catch (e) { cache.prodOut = cache.prodOut || []; }
+      // line_status (Now Running floor board) loaded separately + resiliently so a missing table never breaks the app shell
+      try {
+        const lsr = await sb.from("line_status").select("*").order("sort", { ascending: true });
+        cache.lineStatus = (lsr && lsr.data ? lsr.data : []).map(r => ({
+          id: r.id, area: r.area || "", machine: r.machine || "", flavor: r.flavor || "",
+          size: r.size || "", status: r.status || "idle", sort: Number(r.sort) || 0,
+          updated_by: r.updated_by || "", updated_at: r.updated_at
+        }));
+      } catch (e) { cache.lineStatus = cache.lineStatus || []; }
     },
     // One-time bootstrap: load the item master + opening stock into an empty cloud DB.
     async seedAll() {
@@ -1210,6 +1220,47 @@ window.DB = (function () {
     emit(); return { ok: true };
   }
 
+  // ---- Line status ("Now Running" floor board — Mixing / P-Mac machines, operator-named + additive) ----
+  function lineLocalId() { return "LS-" + Date.now().toString(36) + "-" + Math.floor(Math.random() * 1000); }
+  async function addMachine(rec, op) {
+    const list = cache.lineStatus || [];
+    const maxSort = list.filter(r => r.area === rec.area).reduce((m, r) => Math.max(m, Number(r.sort) || 0), 0);
+    const row = { area: rec.area || "", machine: rec.machine || "", flavor: "", size: "", status: "idle", sort: maxSort + 1, updated_by: op || "" };
+    const logEntry = { a: "Machine added", d: row.area + " - " + row.machine, u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      const r = await sb.from("line_status").insert(row).select();
+      if (r && r.error) return { ok: false, msg: r.error.message || "save failed (is the line_status table created?)" };
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      row.id = lineLocalId(); row.updated_at = new Date().toISOString();
+      (cache.lineStatus = cache.lineStatus || []).push(row); local.addLog(logEntry); local.save();
+    }
+    emit(); return { ok: true };
+  }
+  // patch: { flavor?, size?, status? }
+  async function setLineStatus(id, patch, op) {
+    const existing = (cache.lineStatus || []).find(r => String(r.id) === String(id));
+    const row = { updated_by: op || "", updated_at: new Date().toISOString() };
+    if (patch.flavor !== undefined) row.flavor = patch.flavor;
+    if (patch.size !== undefined) row.size = patch.size;
+    if (patch.status !== undefined) row.status = patch.status;
+    const logEntry = { a: "Line status", d: (existing ? existing.machine : String(id)) + ": " + (row.flavor !== undefined ? row.flavor : (existing ? existing.flavor : "") || "") + " " + (row.status || (existing ? existing.status : "")), u: op, t: row.updated_at };
+    if (mode === "cloud") {
+      const r = await sb.from("line_status").update(row).eq("id", id).select();
+      if (r && r.error) return { ok: false, msg: r.error.message || "save failed" };
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      if (existing) Object.assign(existing, row);
+      local.addLog(logEntry); local.save();
+    }
+    emit(); return { ok: true };
+  }
+  async function deleteMachine(id, op) {
+    if (mode === "cloud") { await sb.from("line_status").delete().eq("id", id); await cloud.loadAll(); }
+    else { cache.lineStatus = (cache.lineStatus || []).filter(r => String(r.id) !== String(id)); local.save(); }
+    emit(); return { ok: true };
+  }
+
   // ---- Returns log (major-customer + e-commerce, with duplicate prevention) ----
   const RTL_COLS = ["channel","marketplace","return_date","customer","shipment_id","ship_address","product","item_code","flavor","upc","add_upc","tracking","qty","is_kit","kit_sku","reason","condition","disposition","restocked","dup_key","order_ref","received_by","notes"];
   function cleanRtl(r) { const o = {}; RTL_COLS.forEach(k => { if (r[k] !== undefined) o[k] = r[k]; }); return o; }
@@ -1243,6 +1294,7 @@ window.DB = (function () {
     init, onChange, get mode() { return mode; },
     demandLines, importDemand, setDemandStatus, shipDemandPO, clearDemandBatch, clearAllDemand,
     productionOutput, addProdOutput, deleteProdOutput,
+    lineStatus, addMachine, setLineStatus, deleteMachine,
     returnsLog, addReturn, deleteReturn, returnDupKey, findReturnDup,
     items, suppliers, stock, log, itemByCode, onHand, atLoc,
     purchaseOrders, supplierName, createPO, setPOStatus, deletePO, receivePO,
