@@ -47,7 +47,14 @@
       seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdReceived:"Received",sdIntCode:"Internal code",sdPackaging:"Packaging",sdPickPack:"Select packaging...",sdPallets:"# Pallets",sdPalletsShort:"pallet(s)",sdPackDate:"Packaging date", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
       skus:"SKUs", skusHint:"Finished-goods / retail SKU catalog - bundles, singles, and cases with bag count and flavor contents. Reference only.", skuCode:"SKU", skuTitle:"Product", skuBags:"Bags", skuComp:"Contents", skuSearchP:"Search SKU, product, or flavor...", skuCount:"SKUs",
       stockbuild:"Stock Build", sbHint:"Live build progress vs goals. Update On Hand as you go - the whole team sees it instantly. Yellow field = enter today's count.", sbGoal:"Goal", sbOnHand:"On hand", sbToBuild:"To build", sbPallets:"Pallets", sbDone:"Done", sbTotalGoal:"Total goal", sbComplete:"Complete", sbSaved:"Saved", sbRetail:"Retail", sbEcom:"E-Commerce", sb12pk:"12-Pack Boxes",
-      grpDemand:"Demand", demand:"Demand Board", demandsched:"Production Schedule", demandimport:"Import Orders",
+      grpDemand:"Demand", demand:"By Department", demandboard:"Order Board", demandsched:"Production Schedule", demandimport:"Import Orders",
+      dqMix:"Mixing", dqPmac:"P-Mac", dqFul:"Fulfillment", dqToday:"Today", dqTarget:"Today's target", dqTargetShort:"Today",
+      dqDueToday:"Orders due today", dqStock:"Stock replenishment", dqShift:"Shift", dqS1:"Shift 1", dqS2:"Shift 2", dqShiftSplit:"split across 2 shifts",
+      dqRemaining:"left", dqPct:"to target", dqBags:"Bags", dqCases:"Cases", dqAll:"All flavors", dqFlavor:"Flavor (optional)",
+      dqLog:"Log output", dqLogHint:"Each shift logs what it produced -- this is the shift scoreboard.", dqLogBtn:"Log output", dqEnterQty:"Enter a quantity",
+      dqWeekAhead:"Week ahead", dqWeekAheadHint:"Demand due each day", dqResults:"This week's output", dqResultsHint:"Actual logged output, Mon-Sun",
+      dqTotal:"Total", dqLogged:"Logged today", dqNothing:"Nothing logged yet today.",
+      dqHintProd:"Today's build target in bags, split across both shifts. Log output as you go.", dqHintFul:"Today's fulfillment target in cases. Log assembled cases as you go.",
       dmHint:"Every open order due to ship, live. Drop your SPS + ShipIQ exports under Import Orders to refresh; mark a PO Shipped once it leaves.",
       dsHint:"What to produce by flavor: open demand vs finished bags on hand (from Stock Build). Updates as orders ship.",
       diHint:"Drop the same SPS 850 and ShipIQ CSV exports you pull for the weekly report. The app parses them into the live board. Re-dropping an updated export for a PO replaces its lines.",
@@ -162,7 +169,14 @@
       seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdReceived:"Recibido",sdIntCode:"Codigo interno",sdPackaging:"Empaque",sdPickPack:"Elegir empaque...",sdPallets:"# Paletas",sdPalletsShort:"paleta(s)",sdPackDate:"Fecha de empaque", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
       skus:"SKUs", skusHint:"Catalogo de SKU de producto terminado / retail - paquetes, individuales y cajas con cantidad de bolsas y sabores. Solo referencia.", skuCode:"SKU", skuTitle:"Producto", skuBags:"Bolsas", skuComp:"Contenido", skuSearchP:"Buscar SKU, producto o sabor...", skuCount:"SKUs",
       stockbuild:"Construir Inventario", sbHint:"Progreso de construccion vs metas en vivo. Actualice En Mano segun avanza - todo el equipo lo ve al instante. Campo amarillo = ingrese el conteo de hoy.", sbGoal:"Meta", sbOnHand:"En mano", sbToBuild:"Por hacer", sbPallets:"Paletas", sbDone:"Listo", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Guardado", sbRetail:"Minorista", sbEcom:"Comercio Electronico", sb12pk:"Cajas de 12",
-      grpDemand:"Demanda", demand:"Tablero de Demanda", demandsched:"Programa de Produccion", demandimport:"Importar Pedidos",
+      grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Tablero de Pedidos", demandsched:"Programa de Produccion", demandimport:"Importar Pedidos",
+      dqMix:"Mezcla", dqPmac:"P-Mac", dqFul:"Cumplimiento", dqToday:"Hoy", dqTarget:"Meta de hoy", dqTargetShort:"Hoy",
+      dqDueToday:"Pedidos para hoy", dqStock:"Reposicion de stock", dqShift:"Turno", dqS1:"Turno 1", dqS2:"Turno 2", dqShiftSplit:"dividido en 2 turnos",
+      dqRemaining:"falta", dqPct:"de la meta", dqBags:"Bolsas", dqCases:"Cajas", dqAll:"Todos los sabores", dqFlavor:"Sabor (opcional)",
+      dqLog:"Registrar produccion", dqLogHint:"Cada turno registra lo que produjo.", dqLogBtn:"Registrar", dqEnterQty:"Ingrese una cantidad",
+      dqWeekAhead:"Proxima semana", dqWeekAheadHint:"Demanda por dia", dqResults:"Produccion de la semana", dqResultsHint:"Produccion real, Lun-Dom",
+      dqTotal:"Total", dqLogged:"Registrado hoy", dqNothing:"Nada registrado hoy aun.",
+      dqHintProd:"Meta de hoy en bolsas, dividida en los dos turnos. Registre a medida que avanza.", dqHintFul:"Meta de hoy en cajas. Registre las cajas armadas.",
       dmHint:"Cada pedido abierto por enviar, en vivo. Suba sus exportaciones SPS + ShipIQ en Importar Pedidos para actualizar; marque una PO como Enviada cuando salga.",
       dsHint:"Que producir por sabor: demanda abierta vs bolsas terminadas en mano (de Construir Inventario). Se actualiza al enviar pedidos.",
       diHint:"Suba las mismas exportaciones CSV de SPS 850 y ShipIQ que saca para el reporte semanal. La app las convierte en el tablero en vivo. Volver a subir una exportacion actualizada de una PO reemplaza sus lineas.",
@@ -276,7 +290,14 @@
       seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdReceived:"Recebido",sdIntCode:"Codigo interno",sdPackaging:"Embalagem",sdPickPack:"Selecionar embalagem...",sdPallets:"# Paletes",sdPalletsShort:"palete(s)",sdPackDate:"Data de embalagem", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
       skus:"SKUs", skusHint:"Catalogo de SKU de produto acabado / varejo - pacotes, individuais e caixas com contagem de sacos e sabores. Apenas referencia.", skuCode:"SKU", skuTitle:"Produto", skuBags:"Sacos", skuComp:"Conteudo", skuSearchP:"Buscar SKU, produto ou sabor...", skuCount:"SKUs",
       stockbuild:"Construir Estoque", sbHint:"Progresso de construcao vs metas ao vivo. Atualize Em Estoque conforme avanca - toda a equipe ve na hora. Campo amarelo = insira a contagem de hoje.", sbGoal:"Meta", sbOnHand:"Em estoque", sbToBuild:"A fazer", sbPallets:"Paletes", sbDone:"Pronto", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Salvo", sbRetail:"Varejo", sbEcom:"E-Commerce", sb12pk:"Caixas de 12",
-      grpDemand:"Demanda", demand:"Painel de Demanda", demandsched:"Programa de Producao", demandimport:"Importar Pedidos",
+      grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Painel de Pedidos", demandsched:"Programa de Producao", demandimport:"Importar Pedidos",
+      dqMix:"Mistura", dqPmac:"P-Mac", dqFul:"Expedicao", dqToday:"Hoje", dqTarget:"Meta de hoje", dqTargetShort:"Hoje",
+      dqDueToday:"Pedidos para hoje", dqStock:"Reposicao de estoque", dqShift:"Turno", dqS1:"Turno 1", dqS2:"Turno 2", dqShiftSplit:"dividido em 2 turnos",
+      dqRemaining:"falta", dqPct:"da meta", dqBags:"Sacos", dqCases:"Caixas", dqAll:"Todos os sabores", dqFlavor:"Sabor (opcional)",
+      dqLog:"Registrar producao", dqLogHint:"Cada turno registra o que produziu.", dqLogBtn:"Registrar", dqEnterQty:"Insira uma quantidade",
+      dqWeekAhead:"Proxima semana", dqWeekAheadHint:"Demanda por dia", dqResults:"Producao da semana", dqResultsHint:"Producao real, Seg-Dom",
+      dqTotal:"Total", dqLogged:"Registrado hoje", dqNothing:"Nada registrado hoje ainda.",
+      dqHintProd:"Meta de hoje em sacos, dividida nos dois turnos. Registre conforme avanca.", dqHintFul:"Meta de hoje em caixas. Registre as caixas montadas.",
       dmHint:"Cada pedido aberto a enviar, ao vivo. Envie suas exportacoes SPS + ShipIQ em Importar Pedidos para atualizar; marque uma PO como Enviada quando sair.",
       dsHint:"O que produzir por sabor: demanda aberta vs bolsas prontas em estoque (de Construir Estoque). Atualiza ao enviar pedidos.",
       diHint:"Envie as mesmas exportacoes CSV de SPS 850 e ShipIQ que voce puxa para o relatorio semanal. O app as converte no painel ao vivo. Reenviar uma exportacao atualizada de uma PO substitui suas linhas.",
@@ -378,7 +399,7 @@
     { key: "tote", label: "Tote - 1 bag x 1,200 lb", per: 1200 }
   ];
   const SEED_PACK_MAP = {}; SEED_PACKS.forEach(p => SEED_PACK_MAP[p.key] = p);
-  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","demand","demandsched","demandimport","seasoning","seed","skus","mixing","pmac","count","locations","facility","finbags","pmacout","purchasing","supplierpos","people","improve","compliance","reference","labels","log","settings"];
+  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","demand","demandboard","demandsched","demandimport","seasoning","seed","skus","mixing","pmac","count","locations","facility","finbags","pmacout","purchasing","supplierpos","people","improve","compliance","reference","labels","log","settings"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -551,7 +572,7 @@
     { key:"grpReceiving", items:["receive","recvlog","returns","qa"] },
     { key:"grpInventory", items:["dash","adjust","count","move","locations","facility","finbags","seasoning","seed","skus","labels"] },
     { key:"grpProduction", items:["produce","retailprod","ecomprod","prodlog","stockbuild","orders","orderdocs"] },
-    { key:"grpDemand", items:["demand","demandsched","demandimport"] },
+    { key:"grpDemand", items:["demand","demandboard","demandsched","demandimport"] },
     { key:"grpShipping", items:["shiplog"] },
     { key:"grpMixing", items:["mixing"] },
     { key:"grpPmac", items:["pmac","pmacout"] },
@@ -573,7 +594,7 @@
     mixing:"cooking-pot", pmac:"wrench", count:"clipboard-check", locations:"map-pin",
     purchasing:"shopping-cart", supplierpos:"file-text", people:"users", labels:"tag",
     log:"history", settings:"settings", improve:"trending-up", compliance:"shield-check", reference:"book-open",
-    demand:"calendar-clock", demandsched:"gauge", demandimport:"file-up", facility:"warehouse" };
+    demand:"calendar-clock", demandboard:"list-checks", demandsched:"gauge", demandimport:"file-up", facility:"warehouse" };
   function drawIcons() { try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {} }
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
   let spoSort = { key: "created", dir: -1 };  // Supplier POs table sort (v25)
@@ -585,6 +606,7 @@
   let dmdPartner = "", dmdFlavor = "", dmdStatus = "Open";  // Demand Board filters
   let dmdParsed = null;   // Import preview: { rows, warnings, recon, files }
   let dmdBusy = false;    // import in progress
+  let dmdDept = "mixing"; // Demand section: which department dashboard (mixing | pmac | ful)
   const DMD_FLAVOR_ORDER = ["OG Original","Cinnamon Churro","Backyard BBQ","Garlic Parmesan","Dill Pickle","Cracked Pepper","Cheddar Jalapeno","Ranch","Maple Brown Sugar","Lemon Pepper","Sour Cream & Onion","Cheeseburger","PCA Pizza"];
   // On-hand finished 4oz cases for a flavor, summed from the Stock Build count (Target + Master Case = 72-bag cases).
   function demandOnHandCases(flavor) {
@@ -2244,9 +2266,9 @@
     const t = kind === "covered" ? L("dsCovered") : kind === "blocked" ? L("dsBlocked") : L("dsProduce");
     return '<span style="display:inline-block;padding:2px 9px;border-radius:10px;background:' + c + ';color:#222;font-size:12px;font-weight:600">' + t + '</span>';
   }
-  function viewDemand() {
+  function viewDemandBoard() {
     const all = (DB.demandLines ? DB.demandLines() : []);
-    if (!all.length) return '<div class="card"><h2>' + L("demand") + '</h2><p class="muted">' + L("dmNone") + '</p>' +
+    if (!all.length) return '<div class="card"><h2>' + L("demandboard") + '</h2><p class="muted">' + L("dmNone") + '</p>' +
       '<button class="primary" onclick="UI_go(\'demandimport\')">' + L("demandimport") + '</button></div>';
     const partners = [...new Set(all.map(r => r.partner))].sort();
     const flavors = [...new Set(all.map(r => r.flavor))].sort();
@@ -2336,6 +2358,88 @@
       '<p class="hint">' + L(prod ? "bnHintProd" : "bnHintFul") + '</p>' + kpi +
       '<div class="tblwrap"><table class="sortable"><thead>' + th + '</thead><tbody>' + rows + '</tbody></table></div></div>';
   }
+  // ===== Department-specific demand dashboards (Mixing / P-Mac / Fulfillment) =====
+  const DQ_DOW = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  function dqToday() { return new Date().toISOString().slice(0, 10); }
+  function dqWeekDates() { const now = new Date(); const off = (now.getDay() + 6) % 7; const mon = new Date(now); mon.setDate(now.getDate() - off); const a = []; for (let i = 0; i < 7; i++) { const d = new Date(mon); d.setDate(mon.getDate() + i); a.push(d.toISOString().slice(0, 10)); } return a; }
+  function dqAheadDates() { const now = new Date(); const a = []; for (let i = 0; i < 7; i++) { const d = new Date(now); d.setDate(now.getDate() + i); a.push(d.toISOString().slice(0, 10)); } return a; }
+  function dqProdSum(date, dept, shift) {
+    return (DB.productionOutput ? DB.productionOutput() : []).filter(r => r.prod_date === date && r.dept === dept && (shift == null || Number(r.shift) === Number(shift)))
+      .reduce((a, r) => { a.bags += Number(r.bags) || 0; a.cases += Number(r.cases) || 0; return a; }, { bags: 0, cases: 0 });
+  }
+  function dqTabs(active) {
+    const t = (k, lbl) => '<button class="' + (active === k ? "active" : "") + '" onclick="UI.dmdDept(\'' + k + '\')">' + lbl + '</button>';
+    return '<div class="ordtabs" style="margin-bottom:12px">' + t("mixing", L("dqMix")) + t("pmac", L("dqPmac")) + t("ful", L("dqFul")) + '</div>';
+  }
+  function dqDowLocal(d) { const dt = new Date(d + "T00:00:00"); return DQ_DOW[(dt.getDay() + 6) % 7]; }
+  function deptDemandBoard(dept, withTabs) {
+    const isFul = dept === "ful";
+    const today = dqToday();
+    const unit = isFul ? L("dqCases") : L("dqBags");
+    const P = v => isFul ? v.cases : v.bags;
+    const open = (DB.demandLines ? DB.demandLines() : []).filter(r => (r.status || "Open") === "Open");
+    let dueBags = 0, dueCases = 0;
+    open.forEach(r => { if (r.due_date && r.due_date <= today) { dueBags += Number(r.bags) || 0; dueCases += Number(r.cases) || 0; } });
+    const bn = computeBuildNeed();
+    const stockBags = bn.list.filter(x => x.driver === "stock").reduce((s, x) => s + x.toProduceBags, 0);
+    const stockCases = bn.list.filter(x => x.driver === "stock").reduce((s, x) => s + x.toProduce, 0);
+    let tgtBags, tgtCases, driver;
+    if (dueBags > 0 || dueCases > 0) { tgtBags = dueBags; tgtCases = dueCases; driver = "orders"; }
+    else { tgtBags = stockBags; tgtCases = stockCases; driver = "stock"; }
+    const tgt = isFul ? tgtCases : tgtBags;
+    const shifts = isFul ? 1 : 2;
+    const bar = pct => '<div style="height:8px;background:#ECECEC;border-radius:6px;overflow:hidden;margin-top:5px"><div style="height:100%;width:' + Math.min(100, pct) + '%;background:' + (pct >= 100 ? "#2E7D32" : "#1F3864") + '"></div></div>';
+    let shiftCards = "";
+    for (let sh = 1; sh <= shifts; sh++) {
+      const st = shifts === 1 ? tgt : (sh === 1 ? Math.ceil(tgt / 2) : tgt - Math.ceil(tgt / 2));
+      const act = P(dqProdSum(today, dept, sh));
+      const pct = st > 0 ? Math.round(act / st * 100) : (act > 0 ? 100 : 0);
+      const rem = Math.max(0, st - act);
+      shiftCards += '<div class="kpi" style="text-align:left;min-width:155px"><div class="l" style="font-weight:700">' + (shifts === 1 ? L("dqTargetShort") : (sh === 1 ? L("dqS1") : L("dqS2"))) + '</div>' +
+        '<div class="n" style="font-size:22px">' + fmt(act) + ' <span class="muted" style="font-size:13px">/ ' + fmt(st) + '</span></div>' +
+        '<div class="muted sm">' + pct + '% ' + L("dqPct") + ' &middot; ' + fmt(rem) + ' ' + L("dqRemaining") + '</div>' + bar(pct) + '</div>';
+    }
+    const driverTag = '<span class="tag">' + (driver === "orders" ? L("dqDueToday") : L("dqStock")) + '</span>';
+    const todayCard = '<div class="card"><div class="suprow"><h2 style="flex:1;margin:0">' + L("dqToday") + ' &mdash; ' + today + '</h2>' + driverTag + '</div>' +
+      '<p class="hint">' + L(isFul ? "dqHintFul" : "dqHintProd") + '</p>' +
+      '<div class="kpis"><div class="kpi ok" style="text-align:left;min-width:160px"><div class="l" style="font-weight:700">' + L("dqTarget") + '</div><div class="n">' + fmt(tgt) + '</div><div class="muted sm">' + unit + (shifts > 1 ? ' &middot; ' + L("dqShiftSplit") : '') + '</div></div>' + shiftCards + '</div></div>';
+    const flavOpts = '<option value="">' + L("dqAll") + '</option>' + DMD_FLAVOR_ORDER.map(f => '<option>' + esc(f) + '</option>').join("");
+    const shiftSel = shifts > 1 ? '<div><label>' + L("dqShift") + '</label><select id="pl-shift"><option value="1">' + L("dqS1") + '</option><option value="2">' + L("dqS2") + '</option></select></div>' : '';
+    const qtyField = isFul ? '<div><label>' + L("dqCases") + '</label><input id="pl-cases" type="number" min="0" placeholder="0"></div>' : '<div><label>' + L("dqBags") + '</label><input id="pl-bags" type="number" min="0" placeholder="0"></div>';
+    const logCard = '<div class="card"><h2 class="sub2">' + L("dqLog") + '</h2><p class="hint">' + L("dqLogHint") + '</p>' +
+      '<div class="row">' + shiftSel + '<div><label>' + L("dqFlavor") + '</label><select id="pl-flavor">' + flavOpts + '</select></div>' + qtyField + '<div style="align-self:end">' + opField(isFul ? "Jesus" : "Leo") + '</div></div>' +
+      '<button class="primary" onclick="UI.prodLog(\'' + dept + '\')">' + L("dqLogBtn") + '</button></div>';
+    const ahead = dqAheadDates();
+    let wkCells = "";
+    ahead.forEach((d, i) => {
+      let b = 0, c = 0;
+      open.forEach(r => { if (!r.due_date) return; if (i === 0) { if (r.due_date <= d) { b += Number(r.bags) || 0; c += Number(r.cases) || 0; } } else if (r.due_date === d) { b += Number(r.bags) || 0; c += Number(r.cases) || 0; } });
+      const v = isFul ? c : b; const dt = new Date(d + "T00:00:00");
+      wkCells += '<div class="kpi' + (i === 0 ? " ok" : "") + '" style="min-width:80px"><div class="l">' + dqDowLocal(d) + ' ' + (dt.getMonth() + 1) + '/' + dt.getDate() + (i === 0 ? ' &bull;' : '') + '</div><div class="n" style="font-size:20px">' + fmt(v) + '</div></div>';
+    });
+    const aheadCard = '<div class="card"><h2 class="sub2">' + L("dqWeekAhead") + '</h2><p class="hint">' + L("dqWeekAheadHint") + ' (' + unit + ')</p><div class="kpis">' + wkCells + '</div></div>';
+    const wk = dqWeekDates();
+    const hdr = '<tr><th>' + L("dqShift") + '</th>' + wk.map(d => { const dt = new Date(d + "T00:00:00"); return '<th class="right">' + dqDowLocal(d) + '<br><span class="muted sm">' + (dt.getMonth() + 1) + '/' + dt.getDate() + '</span></th>'; }).join("") + '<th class="right">' + L("dqTotal") + '</th></tr>';
+    let bodyRows = ""; const colTot = wk.map(() => 0); let grand = 0;
+    const shiftList = isFul ? [null] : [1, 2];
+    shiftList.forEach(sh => {
+      let rowTot = 0; let cells = "";
+      wk.forEach((d, ci) => { const v = P(dqProdSum(d, dept, sh)); rowTot += v; colTot[ci] += v; cells += '<td class="right">' + (v ? fmt(v) : '<span class="muted">&mdash;</span>') + '</td>'; });
+      grand += rowTot;
+      bodyRows += '<tr><td><b>' + (isFul ? L("dqTargetShort") : (sh === 1 ? L("dqS1") : L("dqS2"))) + '</b></td>' + cells + '<td class="right"><b>' + fmt(rowTot) + '</b></td></tr>';
+    });
+    const totRow = '<tr style="background:#F0F0F0"><td><b>' + L("dqTotal") + '</b></td>' + colTot.map(v => '<td class="right"><b>' + (v ? fmt(v) : "&mdash;") + '</b></td>').join("") + '<td class="right"><b>' + fmt(grand) + '</b></td></tr>';
+    const resultsCard = '<div class="card"><h2 class="sub2">' + L("dqResults") + '</h2><p class="hint">' + L("dqResultsHint") + ' (' + unit + ')</p><div class="tblwrap"><table><thead>' + hdr + '</thead><tbody>' + bodyRows + totRow + '</tbody></table></div>' + dqTodayLog(dept, isFul) + '</div>';
+    return (withTabs ? dqTabs(dept) : '') + todayCard + logCard + aheadCard + resultsCard + buildNeedCard(isFul ? "ful" : "prod");
+  }
+  function dqTodayLog(dept, isFul) {
+    const today = dqToday();
+    const rows = (DB.productionOutput ? DB.productionOutput() : []).filter(r => r.prod_date === today && r.dept === dept);
+    if (!rows.length) return '<p class="muted sm" style="margin-top:8px">' + L("dqNothing") + '</p>';
+    const body = rows.map(r => '<tr><td>' + (isFul ? "" : ("S" + r.shift + " ")) + esc(r.flavor || L("dqAll")) + '</td><td class="right"><b>' + fmt(isFul ? r.cases : r.bags) + '</b> ' + (isFul ? L("dqCases") : L("dqBags")) + '</td><td class="muted sm">' + esc(r.entered_by || "") + '</td><td><button class="ghost sm danger" onclick="UI.prodDel(\'' + r.id + '\')">&#10005;</button></td></tr>').join("");
+    return '<h3 class="sub2" style="margin-top:14px;font-size:14px">' + L("dqLogged") + '</h3><table><tbody>' + body + '</tbody></table>';
+  }
+  function viewDemand() { return deptDemandBoard(dmdDept, true); }
   function viewDemandSched() {
     const open = (DB.demandLines ? DB.demandLines() : []).filter(r => (r.status || "Open") === "Open");
     if (!open.length) return '<div class="card"><h2>' + L("demandsched") + '</h2><p class="muted">' + L("dsNone") + '</p>' +
@@ -2464,8 +2568,8 @@
       '<input id="ciSearch" autocomplete="off" style="margin-top:10px" oninput="UI.ciSearch(this.value)" placeholder="' + L("ciSearchP") + '">' +
       '<table class="sortable" style="margin-top:10px"><thead>' + head + '</thead><tbody id="ciBody">' + rows + '</tbody></table></div>';
   }
-  function viewMixing() { return buildNeedCard("prod") + viewConsume("Mixing", "mixing"); }
-  function viewPmac() { return buildNeedCard("prod") + viewConsume("P-Mac", "pmac"); }
+  function viewMixing() { return deptDemandBoard("mixing", false) + viewConsume("Mixing", "mixing"); }
+  function viewPmac() { return deptDemandBoard("pmac", false) + viewConsume("P-Mac", "pmac"); }
   function tenureStr(s) {
     if (!s) return "";
     const d = new Date(s + "T00:00:00"); if (isNaN(d.getTime())) return "";
@@ -2547,6 +2651,19 @@
     cat(c) { catFilter = c; render(); },
     // ---- Demand section ----
     dmdSet(k, v) { if (k === "partner") dmdPartner = v; else if (k === "flavor") dmdFlavor = v; else if (k === "status") dmdStatus = v; render(); },
+    dmdDept(d) { dmdDept = d; render(); },
+    async prodLog(dept) {
+      const isFul = dept === "ful";
+      const shiftEl = $("pl-shift"); const shift = shiftEl ? Number(shiftEl.value) : 1;
+      const flavor = ($("pl-flavor") ? $("pl-flavor").value : "") || "";
+      const bags = isFul ? 0 : Number(($("pl-bags") ? $("pl-bags").value : 0) || 0);
+      const cases = isFul ? Number(($("pl-cases") ? $("pl-cases").value : 0) || 0) : 0;
+      if (!bags && !cases) return toast(L("dqEnterQty"));
+      const r = await DB.addProdOutput({ prod_date: new Date().toISOString().slice(0, 10), dept, shift, flavor, bags, cases }, opVal());
+      if (r && r.ok === false) return toast(r.msg || "error");
+      toast("✓"); render();
+    },
+    async prodDel(id) { await DB.deleteProdOutput(id, opVal()); toast("✓"); render(); },
     async dmShip(source, po) {
       if (!confirm(L("dmShipQ") + "\n\n" + source + " " + po)) return;
       const r = await DB.shipDemandPO(source, po, opVal());
@@ -3401,7 +3518,7 @@
     const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
       move: viewMove, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, compliance: viewCompliance, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
-      demand: viewDemand, demandsched: viewDemandSched, demandimport: viewDemandImport, facility: viewFacility };
+      demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, facility: viewFacility };
     $("view").innerHTML = (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
     $("modeBadge").className = "modebadge " + (DB.mode === "cloud" ? "ok" : "low");

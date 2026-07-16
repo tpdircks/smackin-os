@@ -12,7 +12,7 @@ window.DB = (function () {
   const seed = window.SMACKIN_SEED;
   let mode = "local";
   let sb = null;                  // supabase client
-  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [], returnsLog: [] };
+  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [], returnsLog: [], prodOut: [] };
   let subscribers = [];
 
   function emit() { subscribers.forEach(fn => { try { fn(); } catch (e) {} }); }
@@ -31,6 +31,7 @@ window.DB = (function () {
   function receivingLog() { return cache.receivingLog || []; }
   function improvements() { return cache.improvements || []; }
   function demandLines() { return cache.demandLines || []; }
+  function productionOutput() { return cache.prodOut || []; }
   function returnsLog() { return cache.returnsLog || []; }
   function orders() { return cache.orders || []; }
   function rdRequests() { return cache.rdRequests || []; }
@@ -185,6 +186,15 @@ window.DB = (function () {
         ordered: p.ordered, expected: p.expected, operator: p.operator,
         lines: lines.filter(x => x.po_id === p.id).map(x => ({ item_id: x.item_id, qty: Number(x.qty), cost: Number(x.cost), received: Number(x.received) }))
       }));
+      // production_output loaded separately + resiliently so a missing table never breaks the app shell
+      try {
+        const pr = await sb.from("production_output").select("*").order("created_at", { ascending: false }).limit(6000);
+        cache.prodOut = (pr && pr.data ? pr.data : []).map(r => ({
+          id: r.id, prod_date: r.prod_date, dept: r.dept, shift: Number(r.shift) || 1,
+          flavor: r.flavor || "", bags: Number(r.bags) || 0, cases: Number(r.cases) || 0,
+          entered_by: r.entered_by || "", created_at: r.created_at
+        }));
+      } catch (e) { cache.prodOut = cache.prodOut || []; }
     },
     // One-time bootstrap: load the item master + opening stock into an empty cloud DB.
     async seedAll() {
@@ -1176,6 +1186,30 @@ window.DB = (function () {
     emit(); return { ok: true };
   }
 
+  // ---- Production output (per-department, per-shift actual output logging) ----
+  async function addProdOutput(rec, op) {
+    const row = {
+      prod_date: rec.prod_date || new Date().toISOString().slice(0, 10),
+      dept: rec.dept || "", shift: Number(rec.shift) || 1, flavor: rec.flavor || "",
+      bags: Number(rec.bags) || 0, cases: Number(rec.cases) || 0, entered_by: op || ""
+    };
+    const logEntry = { a: "Production logged (" + row.dept + " S" + row.shift + ")", d: (row.flavor ? row.flavor + " " : "") + (row.bags ? row.bags + " bags " : "") + (row.cases ? row.cases + " cases" : ""), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      const r = await sb.from("production_output").insert(row).select();
+      if (r && r.error) return { ok: false, msg: r.error.message || "save failed (is the production_output table created?)" };
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      row.id = "PRO-" + Date.now().toString(36); row.created_at = new Date().toISOString();
+      (cache.prodOut = cache.prodOut || []).unshift(row); local.addLog(logEntry); local.save();
+    }
+    emit(); return { ok: true };
+  }
+  async function deleteProdOutput(id, op) {
+    if (mode === "cloud") { await sb.from("production_output").delete().eq("id", id); await cloud.loadAll(); }
+    else { cache.prodOut = (cache.prodOut || []).filter(r => String(r.id) !== String(id)); local.save(); }
+    emit(); return { ok: true };
+  }
+
   // ---- Returns log (major-customer + e-commerce, with duplicate prevention) ----
   const RTL_COLS = ["channel","marketplace","return_date","customer","shipment_id","ship_address","product","item_code","flavor","upc","add_upc","tracking","qty","is_kit","kit_sku","reason","condition","disposition","restocked","dup_key","order_ref","received_by","notes"];
   function cleanRtl(r) { const o = {}; RTL_COLS.forEach(k => { if (r[k] !== undefined) o[k] = r[k]; }); return o; }
@@ -1208,6 +1242,7 @@ window.DB = (function () {
   return {
     init, onChange, get mode() { return mode; },
     demandLines, importDemand, setDemandStatus, shipDemandPO, clearDemandBatch, clearAllDemand,
+    productionOutput, addProdOutput, deleteProdOutput,
     returnsLog, addReturn, deleteReturn, returnDupKey, findReturnDup,
     items, suppliers, stock, log, itemByCode, onHand, atLoc,
     purchaseOrders, supplierName, createPO, setPOStatus, deletePO, receivePO,
