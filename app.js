@@ -54,7 +54,8 @@
       dqLog:"Log output", dqLogHint:"Each shift logs what it produced -- this is the shift scoreboard.", dqLogBtn:"Log output", dqEnterQty:"Enter a quantity",
       dqWeekAhead:"Week ahead", dqWeekAheadHint:"Demand due each day", dqResults:"This week's output", dqResultsHint:"Actual logged output, Mon-Sun",
       dqTotal:"Total", dqLogged:"Logged today", dqNothing:"Nothing logged yet today.",
-      dqHintProd:"Today's build target in bags, split across both shifts. Log output as you go.", dqHintFul:"Today's fulfillment target in cases. Log assembled cases as you go.",
+      dqBuildNow:"Orders - build ASAP", dqScheduled:"Scheduled orders (Target / McLane / Bass Pro)", dqScheduledHint:"Held to their routed / scheduled ship dates - not counted in today's build target.", dqShipDate:"Ship date", dqTBD:"awaiting routing",
+      dqHintProd:"Today's build target in bags = ASAP orders + stock replenishment, split across both shifts. Log output as you go.", dqHintFul:"Today's fulfillment target in cases = ASAP orders + stock replenishment. Log assembled cases as you go.",
       dmHint:"Every open order due to ship, live. Drop your SPS + ShipIQ exports under Import Orders to refresh; mark a PO Shipped once it leaves.",
       dsHint:"What to produce by flavor: open demand vs finished bags on hand (from Stock Build). Updates as orders ship.",
       diHint:"Drop the same SPS 850 and ShipIQ CSV exports you pull for the weekly report. The app parses them into the live board. Re-dropping an updated export for a PO replaces its lines.",
@@ -176,7 +177,8 @@
       dqLog:"Registrar produccion", dqLogHint:"Cada turno registra lo que produjo.", dqLogBtn:"Registrar", dqEnterQty:"Ingrese una cantidad",
       dqWeekAhead:"Proxima semana", dqWeekAheadHint:"Demanda por dia", dqResults:"Produccion de la semana", dqResultsHint:"Produccion real, Lun-Dom",
       dqTotal:"Total", dqLogged:"Registrado hoy", dqNothing:"Nada registrado hoy aun.",
-      dqHintProd:"Meta de hoy en bolsas, dividida en los dos turnos. Registre a medida que avanza.", dqHintFul:"Meta de hoy en cajas. Registre las cajas armadas.",
+      dqBuildNow:"Pedidos - armar ya", dqScheduled:"Pedidos programados (Target / McLane / Bass Pro)", dqScheduledHint:"Se envian en sus fechas programadas - no cuentan para la meta de hoy.", dqShipDate:"Fecha de envio", dqTBD:"esperando ruta",
+      dqHintProd:"Meta de hoy en bolsas = pedidos para armar ya + reposicion de stock, dividida en los dos turnos. Registre a medida que avanza.", dqHintFul:"Meta de hoy en cajas = pedidos para armar ya + reposicion de stock. Registre las cajas armadas.",
       dmHint:"Cada pedido abierto por enviar, en vivo. Suba sus exportaciones SPS + ShipIQ en Importar Pedidos para actualizar; marque una PO como Enviada cuando salga.",
       dsHint:"Que producir por sabor: demanda abierta vs bolsas terminadas en mano (de Construir Inventario). Se actualiza al enviar pedidos.",
       diHint:"Suba las mismas exportaciones CSV de SPS 850 y ShipIQ que saca para el reporte semanal. La app las convierte en el tablero en vivo. Volver a subir una exportacion actualizada de una PO reemplaza sus lineas.",
@@ -297,7 +299,8 @@
       dqLog:"Registrar producao", dqLogHint:"Cada turno registra o que produziu.", dqLogBtn:"Registrar", dqEnterQty:"Insira uma quantidade",
       dqWeekAhead:"Proxima semana", dqWeekAheadHint:"Demanda por dia", dqResults:"Producao da semana", dqResultsHint:"Producao real, Seg-Dom",
       dqTotal:"Total", dqLogged:"Registrado hoje", dqNothing:"Nada registrado hoje ainda.",
-      dqHintProd:"Meta de hoje em sacos, dividida nos dois turnos. Registre conforme avanca.", dqHintFul:"Meta de hoje em caixas. Registre as caixas montadas.",
+      dqBuildNow:"Pedidos - montar ja", dqScheduled:"Pedidos programados (Target / McLane / Bass Pro)", dqScheduledHint:"Enviados nas datas programadas - nao contam para a meta de hoje.", dqShipDate:"Data de envio", dqTBD:"aguardando rota",
+      dqHintProd:"Meta de hoje em sacos = pedidos para montar ja + reposicao de estoque, dividida nos dois turnos. Registre conforme avanca.", dqHintFul:"Meta de hoje em caixas = pedidos para montar ja + reposicao de estoque. Registre as caixas montadas.",
       dmHint:"Cada pedido aberto a enviar, ao vivo. Envie suas exportacoes SPS + ShipIQ em Importar Pedidos para atualizar; marque uma PO como Enviada quando sair.",
       dsHint:"O que produzir por sabor: demanda aberta vs bolsas prontas em estoque (de Construir Estoque). Atualiza ao enviar pedidos.",
       diHint:"Envie as mesmas exportacoes CSV de SPS 850 e ShipIQ que voce puxa para o relatorio semanal. O app as converte no painel ao vivo. Reenviar uma exportacao atualizada de uma PO substitui suas linhas.",
@@ -2312,10 +2315,13 @@
   }
   // Shared production-need engine: per-flavor bags/cases to build from open demand minus on-hand.
   // Used by the Fulfillment Production Schedule AND the Mixing / P-Mac "What to Build" panels.
-  function computeBuildNeed() {
+  // Target, McLane, Bass Pro/Sportsman's ship on their own routed/scheduled dates; everyone else builds ASAP on receipt.
+  function isSchedPartner(p) { return /target|mclane|bass\s*pro|sportsman/i.test(p || ""); }
+  function computeBuildNeed(scope) {
     // Two drivers: (1) open customer orders, (2) minimum stock levels (Stock Build goals).
-    // To-produce = whichever needs MORE. So when there's no order demand, stock targets drive it.
-    const open = (DB.demandLines ? DB.demandLines() : []).filter(r => (r.status || "Open") === "Open");
+    // scope "buildnow" = ASAP customers only (exclude scheduled Target/McLane/Bass Pro).
+    let open = (DB.demandLines ? DB.demandLines() : []).filter(r => (r.status || "Open") === "Open");
+    if (scope === "buildnow") open = open.filter(r => !isSchedPartner(r.partner));
     const dem = {};
     open.forEach(r => { const f = r.flavor; if (!dem[f]) dem[f] = { code: r.flavor_code, cases: 0, bags: 0 }; dem[f].cases += Number(r.cases) || 0; dem[f].bags += Number(r.bags) || 0; });
     const goal = {};
@@ -2341,8 +2347,8 @@
     return { list: list, T: T, hasData: list.length > 0, needCount: list.filter(x => x.toProduce > 0).length };
   }
   // Build-need card. audience "prod" = Mixing/P-Mac (bags-forward); "ful" = Fulfillment (bags + cases).
-  function buildNeedCard(audience) {
-    const n = computeBuildNeed();
+  function buildNeedCard(audience, scope) {
+    const n = computeBuildNeed(scope);
     const prod = audience !== "ful";
     if (n.needCount === 0) return '<div class="card"><h2>&#127981; ' + L("bnTitle") + '</h2><p style="color:#2E7D32;font-weight:600;margin:4px 0">&#10003; ' + L("bnAllCovered") + '</p></div>';
     const show = n.list.filter(x => x.toProduce > 0);
@@ -2377,15 +2383,12 @@
     const today = dqToday();
     const unit = isFul ? L("dqCases") : L("dqBags");
     const P = v => isFul ? v.cases : v.bags;
-    const open = (DB.demandLines ? DB.demandLines() : []).filter(r => (r.status || "Open") === "Open");
-    let dueBags = 0, dueCases = 0;
-    open.forEach(r => { if (r.due_date && r.due_date <= today) { dueBags += Number(r.bags) || 0; dueCases += Number(r.cases) || 0; } });
-    const bn = computeBuildNeed();
-    const stockBags = bn.list.filter(x => x.driver === "stock").reduce((s, x) => s + x.toProduceBags, 0);
-    const stockCases = bn.list.filter(x => x.driver === "stock").reduce((s, x) => s + x.toProduce, 0);
-    let tgtBags, tgtCases, driver;
-    if (dueBags > 0 || dueCases > 0) { tgtBags = dueBags; tgtCases = dueCases; driver = "orders"; }
-    else { tgtBags = stockBags; tgtCases = stockCases; driver = "stock"; }
+    const openAll = (DB.demandLines ? DB.demandLines() : []).filter(r => (r.status || "Open") === "Open");
+    // Today's target = ASAP customers (build-on-receipt) + stock replenishment, net on-hand. Scheduled customers are held out.
+    const bn = computeBuildNeed("buildnow");
+    const buildNowBags = openAll.filter(r => !isSchedPartner(r.partner)).reduce((s, r) => s + (Number(r.bags) || 0), 0);
+    const tgtBags = bn.T.toProduceBags, tgtCases = bn.T.toProduceCases;
+    const driver = buildNowBags > 0 ? "orders" : "stock";
     const tgt = isFul ? tgtCases : tgtBags;
     const shifts = isFul ? 1 : 2;
     const bar = pct => '<div style="height:8px;background:#ECECEC;border-radius:6px;overflow:hidden;margin-top:5px"><div style="height:100%;width:' + Math.min(100, pct) + '%;background:' + (pct >= 100 ? "#2E7D32" : "#1F3864") + '"></div></div>';
@@ -2399,7 +2402,7 @@
         '<div class="n" style="font-size:22px">' + fmt(act) + ' <span class="muted" style="font-size:13px">/ ' + fmt(st) + '</span></div>' +
         '<div class="muted sm">' + pct + '% ' + L("dqPct") + ' &middot; ' + fmt(rem) + ' ' + L("dqRemaining") + '</div>' + bar(pct) + '</div>';
     }
-    const driverTag = '<span class="tag">' + (driver === "orders" ? L("dqDueToday") : L("dqStock")) + '</span>';
+    const driverTag = '<span class="tag">' + (driver === "orders" ? L("dqBuildNow") : L("dqStock")) + '</span>';
     const todayCard = '<div class="card"><div class="suprow"><h2 style="flex:1;margin:0">' + L("dqToday") + ' &mdash; ' + today + '</h2>' + driverTag + '</div>' +
       '<p class="hint">' + L(isFul ? "dqHintFul" : "dqHintProd") + '</p>' +
       '<div class="kpis"><div class="kpi ok" style="text-align:left;min-width:160px"><div class="l" style="font-weight:700">' + L("dqTarget") + '</div><div class="n">' + fmt(tgt) + '</div><div class="muted sm">' + unit + (shifts > 1 ? ' &middot; ' + L("dqShiftSplit") : '') + '</div></div>' + shiftCards + '</div></div>';
@@ -2409,15 +2412,14 @@
     const logCard = '<div class="card"><h2 class="sub2">' + L("dqLog") + '</h2><p class="hint">' + L("dqLogHint") + '</p>' +
       '<div class="row">' + shiftSel + '<div><label>' + L("dqFlavor") + '</label><select id="pl-flavor">' + flavOpts + '</select></div>' + qtyField + '<div style="align-self:end">' + opField(isFul ? "Jesus" : "Leo") + '</div></div>' +
       '<button class="primary" onclick="UI.prodLog(\'' + dept + '\')">' + L("dqLogBtn") + '</button></div>';
-    const ahead = dqAheadDates();
-    let wkCells = "";
-    ahead.forEach((d, i) => {
-      let b = 0, c = 0;
-      open.forEach(r => { if (!r.due_date) return; if (i === 0) { if (r.due_date <= d) { b += Number(r.bags) || 0; c += Number(r.cases) || 0; } } else if (r.due_date === d) { b += Number(r.bags) || 0; c += Number(r.cases) || 0; } });
-      const v = isFul ? c : b; const dt = new Date(d + "T00:00:00");
-      wkCells += '<div class="kpi' + (i === 0 ? " ok" : "") + '" style="min-width:80px"><div class="l">' + dqDowLocal(d) + ' ' + (dt.getMonth() + 1) + '/' + dt.getDate() + (i === 0 ? ' &bull;' : '') + '</div><div class="n" style="font-size:20px">' + fmt(v) + '</div></div>';
-    });
-    const aheadCard = '<div class="card"><h2 class="sub2">' + L("dqWeekAhead") + '</h2><p class="hint">' + L("dqWeekAheadHint") + ' (' + unit + ')</p><div class="kpis">' + wkCells + '</div></div>';
+    // Scheduled orders: Target / McLane / Bass Pro — held to their routed/scheduled ship dates, not part of today's build.
+    const sched = openAll.filter(r => isSchedPartner(r.partner));
+    const schByCust = {};
+    sched.forEach(r => { const k = r.partner || "?"; if (!schByCust[k]) schByCust[k] = { bags: 0, cases: 0, due: null }; schByCust[k].bags += Number(r.bags) || 0; schByCust[k].cases += Number(r.cases) || 0; if (r.due_date && (!schByCust[k].due || r.due_date < schByCust[k].due)) schByCust[k].due = r.due_date; });
+    const schTotBags = sched.reduce((s, r) => s + (Number(r.bags) || 0), 0), schTotCases = sched.reduce((s, r) => s + (Number(r.cases) || 0), 0);
+    const schRows = Object.keys(schByCust).sort().map(k => { const v = schByCust[k]; return '<tr><td>' + esc(k) + '</td><td class="right"><b>' + fmt(isFul ? v.cases : v.bags) + '</b></td><td class="sm">' + (v.due ? esc(v.due) : '<span class="muted">' + L("dqTBD") + '</span>') + '</td></tr>'; }).join("");
+    const scheduledCard = schRows ? '<div class="card"><h2 class="sub2">' + L("dqScheduled") + '</h2><p class="hint">' + L("dqScheduledHint") + '</p><div class="tblwrap"><table><thead><tr><th>' + L("dmPartner") + '</th><th class="right">' + unit + '</th><th>' + L("dqShipDate") + '</th></tr></thead><tbody>' + schRows +
+      '<tr style="background:#F0F0F0"><td><b>' + L("dqTotal") + '</b></td><td class="right"><b>' + fmt(isFul ? schTotCases : schTotBags) + '</b></td><td></td></tr></tbody></table></div></div>' : '';
     const wk = dqWeekDates();
     const hdr = '<tr><th>' + L("dqShift") + '</th>' + wk.map(d => { const dt = new Date(d + "T00:00:00"); return '<th class="right">' + dqDowLocal(d) + '<br><span class="muted sm">' + (dt.getMonth() + 1) + '/' + dt.getDate() + '</span></th>'; }).join("") + '<th class="right">' + L("dqTotal") + '</th></tr>';
     let bodyRows = ""; const colTot = wk.map(() => 0); let grand = 0;
@@ -2430,7 +2432,7 @@
     });
     const totRow = '<tr style="background:#F0F0F0"><td><b>' + L("dqTotal") + '</b></td>' + colTot.map(v => '<td class="right"><b>' + (v ? fmt(v) : "&mdash;") + '</b></td>').join("") + '<td class="right"><b>' + fmt(grand) + '</b></td></tr>';
     const resultsCard = '<div class="card"><h2 class="sub2">' + L("dqResults") + '</h2><p class="hint">' + L("dqResultsHint") + ' (' + unit + ')</p><div class="tblwrap"><table><thead>' + hdr + '</thead><tbody>' + bodyRows + totRow + '</tbody></table></div>' + dqTodayLog(dept, isFul) + '</div>';
-    return (withTabs ? dqTabs(dept) : '') + todayCard + logCard + aheadCard + resultsCard + buildNeedCard(isFul ? "ful" : "prod");
+    return (withTabs ? dqTabs(dept) : '') + todayCard + logCard + scheduledCard + resultsCard + buildNeedCard(isFul ? "ful" : "prod", "buildnow");
   }
   function dqTodayLog(dept, isFul) {
     const today = dqToday();
