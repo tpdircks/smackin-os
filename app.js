@@ -75,6 +75,7 @@
       bnTitle:"What to Build Now", bnNone:"No open orders loaded yet. Import SPS + ShipIQ under Demand to see the build need.", bnHintProd:"Bags to produce by flavor — driven by open customer orders OR your minimum stock levels, whichever needs more. So when there are no orders, your stock targets keep the line busy. Green = covered, amber = build, red = film short. The tag shows the driver: order or stock.", bnHintFul:"Production need by flavor, in bags and cases — the greater of open demand or minimum stock level, minus on-hand.", bnDemandBags:"Demand (bags)", bnOnHandBags:"On hand (bags)", bnToProduceBags:"To produce (BAGS)", bnToProduceCs:"To produce (cs)", bnFlavors:"flavors to build", bnDriverOrder:"order", bnDriverStock:"stock", bnAllCovered:"All flavors at target — nothing to build right now.",
       averyHint:"Both buttons include EVERY item in the system automatically — add a product and it appears here, so labels never go stale. The Avery button prints onto the 5160 sticker sheets Adriana has (just set Margins: None, Scale: 100%); the Receiving book is a Letter-size fill-in form for the dock.",
       retailprod:"Retail Production",ecomprod:"E-Commerce",epHint:"E-commerce / DTC product (variety packs). Scan or pick the item, enter the quantity built, and it is added to stock instantly. ShipStation and TikTok orders will draw this down automatically once connected.", rpHint:"When a pallet is made, scan its product barcode (or pick it), enter the quantity, and it is added to stock instantly. Print the barcode sheet with the button below and post it at the line.", rpScanP:"Scan product barcode", rpPickProduct:"Or pick a product...", rpQty:"Quantity made", rpAdd:"Add to stock", rpAdded:"Added to stock", rpCurrent:"Current on hand", rpRecent:"Recent production", rpNone:"Nothing added yet.", rpPrint:"Print product barcodes", rpNotFound:"Barcode not recognized",
+      qcTitle:"Quick Case Log", qcHint:"As you finish a master case, pick the flavor and tap +1 Case. Counts go straight into today's Daily Production log.", qcFlavor:"Flavor", qcQty:"Qty", qcCase:"Case", qcScan:"Scan Case", qcToday:"Today", qcAdded:"Logged", qcPickFirst:"Pick a flavor first", qcNotFound:"Flavor not recognized",
       qaHint:"Quarantined product - do NOT touch (wrapped in red film). Usually expired or has incorrect info. Release good ones back to stock or scrap them.",
       qaTitle:"On quarantine hold (red film - do not touch)", convertGood:"Release to good stock", scrapIt:"Scrap", qaEmpty:"Nothing in quarantine.",
       columns:"Columns", colCategory:"Category", colItem:"Item", colOnhand:"On hand", colReorder:"Reorder", colStatus:"Status", resetCols:"Reset",
@@ -210,6 +211,7 @@
       bnTitle:"Que Producir Ahora", bnNone:"Aun no hay pedidos abiertos. Importe SPS + ShipIQ en Demanda para ver la necesidad de produccion.", bnHintProd:"Bolsas a producir por sabor — segun pedidos abiertos O sus niveles minimos de inventario, lo que necesite mas. Asi, cuando no hay pedidos, sus metas de stock mantienen la linea ocupada. Verde = cubierto, ambar = producir, rojo = falta pelicula. La etiqueta muestra el origen: pedido o stock.", bnHintFul:"Necesidad de produccion por sabor, en bolsas y cajas — el mayor entre demanda abierta o nivel minimo de stock, menos en mano.", bnDemandBags:"Demanda (bolsas)", bnOnHandBags:"En mano (bolsas)", bnToProduceBags:"Por producir (BOLSAS)", bnToProduceCs:"Por producir (cj)", bnFlavors:"sabores por producir", bnDriverOrder:"pedido", bnDriverStock:"stock", bnAllCovered:"Todos los sabores en meta — nada que producir ahora.",
       averyHint:"Ambos botones incluyen TODOS los articulos del sistema automaticamente — agregue un producto y aparece aqui, asi las etiquetas nunca quedan desactualizadas. El boton Avery imprime en las hojas de stickers 5160 de Adriana (configure Margenes: Ninguno, Escala: 100%); el Libro de recibo es un formulario tamano Carta para llenar en el muelle.",
       retailprod:"Produccion Retail",ecomprod:"E-Commerce",epHint:"Producto e-commerce / DTC (paquetes variados). Escanee o elija el articulo, ingrese la cantidad producida y se agrega al inventario al instante. Los pedidos de ShipStation y TikTok lo descontaran automaticamente cuando se conecten.", rpHint:"Cuando se hace una paleta, escanee su codigo de producto (o eligalo), ingrese la cantidad y se agrega al inventario al instante. Imprima la hoja de codigos con el boton de abajo y pongala en la linea.", rpScanP:"Escanee codigo del producto", rpPickProduct:"O elija un producto...", rpQty:"Cantidad hecha", rpAdd:"Agregar al inventario", rpAdded:"Agregado al inventario", rpCurrent:"En mano actual", rpRecent:"Produccion reciente", rpNone:"Nada agregado aun.", rpPrint:"Imprimir codigos de producto", rpNotFound:"Codigo no reconocido",
+      qcTitle:"Registro Rapido de Cajas", qcHint:"Al terminar una caja maestra, elija el sabor y toque +1 Caja. El conteo se agrega directo al registro de Produccion Diaria de hoy.", qcFlavor:"Sabor", qcQty:"Cant.", qcCase:"Caja", qcScan:"Escanear Caja", qcToday:"Hoy", qcAdded:"Registrado", qcPickFirst:"Elija un sabor primero", qcNotFound:"Sabor no reconocido",
       qaHint:"Producto en cuarentena - NO tocar (envuelto en film rojo). Generalmente vencido o con informacion incorrecta. Libere los buenos a inventario o descartelos.",
       qaTitle:"En cuarentena (film rojo - no tocar)", convertGood:"Liberar a inventario bueno", scrapIt:"Descartar", qaEmpty:"Nada en cuarentena.",
       columns:"Columnas", colCategory:"Categoria", colItem:"Articulo", colOnhand:"Disponible", colReorder:"Reorden", colStatus:"Estado", resetCols:"Reiniciar",
@@ -345,6 +347,7 @@
       bnTitle:"O Que Produzir Agora", bnNone:"Nenhum pedido aberto ainda. Importe SPS + ShipIQ em Demanda para ver a necessidade de producao.", bnHintProd:"Bolsas a produzir por sabor — conforme pedidos abertos OU seus niveis minimos de estoque, o que precisar mais. Assim, quando nao ha pedidos, suas metas de estoque mantem a linha ocupada. Verde = coberto, ambar = produzir, vermelho = falta filme. A etiqueta mostra a origem: pedido ou estoque.", bnHintFul:"Necessidade de producao por sabor, em bolsas e caixas — o maior entre demanda aberta ou nivel minimo de estoque, menos em estoque.", bnDemandBags:"Demanda (bolsas)", bnOnHandBags:"Em estoque (bolsas)", bnToProduceBags:"A produzir (BOLSAS)", bnToProduceCs:"A produzir (cx)", bnFlavors:"sabores a produzir", bnDriverOrder:"pedido", bnDriverStock:"estoque", bnAllCovered:"Todos os sabores na meta — nada a produzir agora.",
       averyHint:"Ambos os botoes incluem TODOS os itens do sistema automaticamente — adicione um produto e ele aparece aqui, entao as etiquetas nunca ficam desatualizadas. O botao Avery imprime nas folhas de adesivos 5160 da Adriana (configure Margens: Nenhuma, Escala: 100%); o Livro de recebimento e um formulario tamanho Carta para preencher na doca.",
       retailprod:"Producao Varejo",ecomprod:"E-Commerce",epHint:"Produto e-commerce / DTC (pacotes variados). Escaneie ou escolha o item, insira a quantidade produzida e ela e adicionada ao estoque na hora. Os pedidos do ShipStation e TikTok vao baixar isso automaticamente quando conectados.", rpHint:"Quando um palete e feito, escaneie o codigo do produto (ou escolha), insira a quantidade e ela e adicionada ao estoque na hora. Imprima a folha de codigos com o botao abaixo e coloque na linha.", rpScanP:"Escaneie codigo do produto", rpPickProduct:"Ou escolha um produto...", rpQty:"Quantidade feita", rpAdd:"Adicionar ao estoque", rpAdded:"Adicionado ao estoque", rpCurrent:"Em estoque atual", rpRecent:"Producao recente", rpNone:"Nada adicionado ainda.", rpPrint:"Imprimir codigos de produto", rpNotFound:"Codigo nao reconhecido",
+      qcTitle:"Registro Rapido de Caixas", qcHint:"Ao terminar uma caixa mestre, escolha o sabor e toque +1 Caixa. A contagem vai direto para o registro de Producao Diaria de hoje.", qcFlavor:"Sabor", qcQty:"Qtd.", qcCase:"Caixa", qcScan:"Escanear Caixa", qcToday:"Hoje", qcAdded:"Registrado", qcPickFirst:"Escolha um sabor primeiro", qcNotFound:"Sabor nao reconhecido",
       qaHint:"Produto em quarentena - NAO tocar (embrulhado em filme vermelho). Geralmente vencido ou com informacao incorreta. Libere os bons para o estoque ou descarte-os.",
       qaTitle:"Em quarentena (filme vermelho - nao tocar)", convertGood:"Liberar para estoque bom", scrapIt:"Descartar", qaEmpty:"Nada em quarentena.",
       columns:"Colunas", colCategory:"Categoria", colItem:"Item", colOnhand:"Em estoque", colReorder:"Reposicao", colStatus:"Status", resetCols:"Reiniciar",
@@ -705,6 +708,7 @@
   let puSec = "", puBay = "", puLevel = "";  // Put-Away location picker state (Section/Bay/Level)
   let rpSel = "";                             // Retail Production: selected product key
   let rpRecent = [];                          // Retail Production: recent adds this session
+  let qcFlavor = "";                          // Retail Production: Quick Case Log selected flavor code (writes to the SAME prodPallets store as Production Log)
   let shipSortKey = "ship_date", shipSortDir = -1;  // Shipping Log sort state
   let shipSearch = "";                        // Shipping Log filter text
   let recvSortKey = "recv_date", recvSortDir = -1;  // Receiving Log sort state
@@ -1867,7 +1871,34 @@
     const prog = '<div class="kpis"><div class="kpi"><div class="n">' + fmt(o) + '</div><div class="l">' + L("sbOnHand") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(Math.max(g - o, 0)) + '</div><div class="l">' + L("sbToBuild") + '</div></div>' +
       '<div class="kpi"><div class="n">' + pct + '%</div><div class="l">' + L("sbComplete") + '</div></div></div>';
-    return '<div class="card"><div class="suprow"><h2 style="margin:0">' + L(titleKey) + '</h2>' +
+    // ---- Quick Case Log (retail only): fast +1 / +N case entry as operators finish master cases. ----
+    // Writes to the SAME Daily Production store (production_pallets / DB.addProdPallet) used by the
+    // Production Log (prodlog) screen, so counts here show up in that day's pallet log + flavor summary.
+    let quickCard = "";
+    if (!isEcom) {
+      const todayD = new Date().toISOString().slice(0, 10);
+      const qcPallets = (DB.prodPallets ? DB.prodPallets(todayD) : []).filter(p => (p.channel || "retail") === "retail");
+      const qcTotal = qcPallets.reduce((s, p) => s + (Number(p.cases) || 0), 0);
+      const qcSelF = PROD_FMAP[qcFlavor] || null;
+      const qcFlavorTotal = qcSelF ? qcPallets.filter(p => p.flavor_code === qcFlavor).reduce((s, p) => s + (Number(p.cases) || 0), 0) : 0;
+      const qcOpts = PROD_FLAVORS.map(f => '<option value="' + f.code + '"' + (f.code === qcFlavor ? ' selected' : '') + '>' + esc(f.name) + '</option>').join("");
+      const qcRecent = qcPallets.slice(0, 8).map(p => { const f = PROD_FMAP[p.flavor_code]; return '<span class="tag">' + esc(f ? f.name : p.flavor_code) + ' +' + fmt(p.cases) + '</span>'; }).join(" ");
+      quickCard = '<div class="card"><div class="suprow"><h2 style="flex:1;margin:0">\u{1F4E6} ' + L("qcTitle") + '</h2>' +
+        '<span class="muted sm">' + L("qcToday") + ': <b>' + fmt(qcTotal) + '</b></span></div>' +
+        '<p class="hint">' + L("qcHint") + '</p>' +
+        '<div class="row"><div style="flex:2"><label>' + L("qcFlavor") + '</label><select id="qc-flavor" onchange="UI.qcPick(this.value)"><option value="">' + L("qcFlavor") + '&hellip;</option>' + qcOpts + '</select></div>' +
+        '<div><label>' + L("qcQty") + '</label><input id="qc-qty" type="number" min="1" step="1" value="1" inputmode="numeric"></div></div>' +
+        (qcSelF ? '<p class="muted sm" style="margin:2px 0 8px"><b>' + esc(qcSelF.name) + '</b> ' + L("qcToday").toLowerCase() + ': <b>' + fmt(qcFlavorTotal) + '</b></p>' : '') +
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">' +
+        '<button class="primary" style="flex:1;min-width:150px;font-size:22px;padding:20px 10px;margin-top:0" onclick="UI.qcAdd(1)">+1 ' + L("qcCase") + '</button>' +
+        '<button class="ghost" style="flex:1;min-width:120px;font-size:18px;padding:19px 10px" onclick="UI.qcAdd()">+N ' + L("qcCase") + '</button>' +
+        '<button type="button" class="ghost" style="flex:1;min-width:120px;font-size:18px;padding:19px 10px" onclick="UI.qcScan()">\u{1F4F7} ' + L("qcScan") + '</button>' +
+        '</div>' +
+        '<input id="qc-scan-in" type="hidden" oninput="UI.qcScanResolve(this.value)">' +
+        (qcRecent ? '<div style="margin-top:12px">' + qcRecent + '</div>' : '') +
+        '</div>';
+    }
+    return quickCard + '<div class="card"><div class="suprow"><h2 style="margin:0">' + L(titleKey) + '</h2>' +
       '<button class="ghost sm" onclick="UI.rpPrint()">\u{1F5A8}\u{FE0F} ' + L("rpPrint") + '</button></div>' +
       '<p class="hint">' + L(hintKey) + '</p>' + prog +
       '<div class="scan"><label>' + L("rpScanP") + '</label><div class="scanrow"><input id="rp-scan" autocomplete="off" autofocus placeholder="' + L("rpScanP") + '" onkeydown="if(event.key===\'Enter\'){event.preventDefault();UI.rpScan();}">' +
@@ -3037,6 +3068,31 @@
       await DB.setStockBuildOnHand(it.key, cur + q, opVal());
       rpRecent.unshift({ name: it.cat + " - " + it.name, qty: q, t: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) });
       rpSel = ""; toast(L("rpAdded") + " +" + fmt(q)); render(); },
+    // ---- Retail Production: Quick Case Log — +1/+N finished master case, logged straight to today's Daily Production (prodPallets) ----
+    qcPick(v) { qcFlavor = v || ""; render(); },
+    async qcAdd(fixedQty) {
+      const code = (($("qc-flavor") || {}).value || qcFlavor || "");
+      const f = PROD_FMAP[code];
+      if (!f) return toast(L("qcPickFirst"));
+      const q = fixedQty != null ? fixedQty : (parseFloat(($("qc-qty") || {}).value) || 0);
+      if (!(q > 0)) return toast(L("enter"));
+      const today = new Date().toISOString().slice(0, 10);
+      const t = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const r = await DB.addProdPallet({ prod_date: today, channel: "retail", line: "", flavor_code: code, cases: q, log_time: t, notes: "Quick log" }, opVal());
+      if (r && r.ok === false) return toast(r.msg || "error");
+      qcFlavor = code;
+      toast(L("qcAdded") + ": " + f.name + " +" + fmt(q));
+      render();
+    },
+    async qcScan() { await UI.cam("qc-scan-in"); },
+    qcScanResolve(v) {
+      v = (v || "").trim(); if (!v) return;
+      const vl = v.toLowerCase();
+      const hit = PROD_FLAVORS.find(f => f.code.toLowerCase() === vl) ||
+        PROD_FLAVORS.find(f => vl.indexOf(f.code.toLowerCase()) !== -1) ||
+        PROD_FLAVORS.find(f => vl.indexOf(f.name.toLowerCase()) !== -1);
+      if (hit) { qcFlavor = hit.code; toast(hit.name); render(); } else { toast(L("qcNotFound")); }
+    },
     // 4x6 thermal identifier label (one per PAGE, sized for the Munbyn 4x6) for EVERY item.
     // Big name + big barcode + code = the pallet "product identifier". Always current.
     printIdent4x6() {
