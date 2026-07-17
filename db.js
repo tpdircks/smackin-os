@@ -12,7 +12,7 @@ window.DB = (function () {
   const seed = window.SMACKIN_SEED;
   let mode = "local";
   let sb = null;                  // supabase client
-  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [], returnsLog: [], prodOut: [], lineStatus: [], forecast: [] };
+  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [], returnsLog: [], prodOut: [], lineStatus: [], forecast: [], ecomDemand: [] };
   let subscribers = [];
 
   function emit() { subscribers.forEach(fn => { try { fn(); } catch (e) {} }); }
@@ -34,6 +34,7 @@ window.DB = (function () {
   function productionOutput() { return cache.prodOut || []; }
   function lineStatus() { return cache.lineStatus || []; }
   function forecast() { return cache.forecast || []; }
+  function ecomDemand() { return cache.ecomDemand || []; }
   function returnsLog() { return cache.returnsLog || []; }
   function orders() { return cache.orders || []; }
   function rdRequests() { return cache.rdRequests || []; }
@@ -214,6 +215,16 @@ window.DB = (function () {
           source_month: r.source_month || ""
         }));
       } catch (e) { cache.forecast = cache.forecast || []; }
+      // ecom_demand (ShipStation e-com bags-needed-per-flavor snapshot) loaded separately + resiliently
+      // so a missing table never breaks the app shell (same pattern as demand_forecast above).
+      try {
+        const ecd = await sb.from("ecom_demand").select("*");
+        cache.ecomDemand = (ecd && ecd.data ? ecd.data : []).map(r => ({
+          id: r.id, flavor: r.flavor || "", size: r.size || "", bags: Number(r.bags) || 0,
+          period_days: Number(r.period_days) || 0, avg_day: Number(r.avg_day) || 0,
+          source_label: r.source_label || "", updated_at: r.updated_at
+        }));
+      } catch (e) { cache.ecomDemand = cache.ecomDemand || []; }
     },
     // One-time bootstrap: load the item master + opening stock into an empty cloud DB.
     async seedAll() {
@@ -1320,12 +1331,46 @@ window.DB = (function () {
     emit(); return { ok: true };
   }
 
+  // ---- E-Com Demand (ShipStation "Product Sales" snapshot -> bags-needed-per-flavor, window.ECOM) ----
+  // meta: { period_days, source_label }. Replaces the whole snapshot (clear + insert) so re-loading an
+  // updated export always reflects the latest period rather than piling up old rows.
+  async function addEcomDemand(rows, meta, op) {
+    meta = meta || {}; op = op || "";
+    const now = new Date().toISOString();
+    const periodDays = Number(meta.period_days) || 0;
+    const sourceLabel = meta.source_label || "";
+    const clean = rows.map(r => ({
+      flavor: r.flavor || "", size: r.size || "", bags: Number(r.bags) || 0,
+      period_days: periodDays, avg_day: Number(r.avg_day) || 0,
+      source_label: sourceLabel, updated_at: now
+    }));
+    const logEntry = { a: "E-Com demand loaded", d: (sourceLabel || "") + " — " + clean.length + " lines (" + periodDays + "d)", u: op, t: now };
+    if (mode === "cloud") {
+      await sb.from("ecom_demand").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      for (let i = 0; i < clean.length; i += 100) {
+        const r = await sb.from("ecom_demand").insert(clean.slice(i, i + 100));
+        if (r && r.error) return { ok: false, msg: r.error.message || "save failed (is the ecom_demand table created?)" };
+      }
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      cache.ecomDemand = clean.map(c => Object.assign({ id: "ECD-" + Math.random().toString(36).slice(2, 9) }, c));
+      local.addLog(logEntry); local.save();
+    }
+    emit(); return { ok: true, count: clean.length };
+  }
+  async function clearEcomDemand(op) {
+    if (mode === "cloud") { await sb.from("ecom_demand").delete().neq("id", "00000000-0000-0000-0000-000000000000"); await cloud.loadAll(); }
+    else { cache.ecomDemand = []; local.save(); }
+    emit(); return { ok: true };
+  }
+
   return {
     init, onChange, get mode() { return mode; },
     demandLines, importDemand, setDemandStatus, shipDemandPO, clearDemandBatch, clearAllDemand,
     productionOutput, addProdOutput, deleteProdOutput,
     lineStatus, addMachine, setLineStatus, deleteMachine,
     forecast,
+    ecomDemand, addEcomDemand, clearEcomDemand,
     returnsLog, addReturn, deleteReturn, returnDupKey, findReturnDup,
     items, suppliers, stock, log, itemByCode, onHand, atLoc,
     purchaseOrders, supplierName, createPO, setPOStatus, deletePO, receivePO,

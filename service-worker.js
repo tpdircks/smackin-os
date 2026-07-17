@@ -1,10 +1,10 @@
 /* Minimal offline cache for the app shell so scanners load fast and keep
    working through brief wifi drops. Data still requires connectivity in
    cloud mode; local mode works fully offline. */
-const CACHE = "smackin-inv-v91";
+const CACHE = "smackin-inv-v92";
 const ASSETS = [
   "./", "./index.html", "./styles.css",
-  "./config.js", "./seed-data.js", "./skus.js", "./demand.js", "./kits.js", "./db.js", "./app.js",
+  "./config.js", "./seed-data.js", "./skus.js", "./demand.js", "./kits.js", "./ecom.js", "./db.js", "./app.js",
   "./facility.html", "./manifest.webmanifest"
 ];
 self.addEventListener("install", e => {

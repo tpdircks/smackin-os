@@ -47,7 +47,7 @@
       seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdReceived:"Received",sdIntCode:"Internal code",sdPackaging:"Packaging",sdPickPack:"Select packaging...",sdPallets:"# Pallets",sdPalletsShort:"pallet(s)",sdPackDate:"Packaging date", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
       skus:"SKUs", skusHint:"Finished-goods / retail SKU catalog - bundles, singles, and cases with bag count and flavor contents. Reference only.", skuCode:"SKU", skuTitle:"Product", skuBags:"Bags", skuComp:"Contents", skuSearchP:"Search SKU, product, or flavor...", skuCount:"SKUs",
       stockbuild:"Stock Build", sbHint:"Live build progress vs goals. Update On Hand as you go - the whole team sees it instantly. Yellow field = enter today's count.", sbGoal:"Goal", sbOnHand:"On hand", sbToBuild:"To build", sbPallets:"Pallets", sbDone:"Done", sbTotalGoal:"Total goal", sbComplete:"Complete", sbSaved:"Saved", sbRetail:"Retail", sbEcom:"E-Commerce", sb12pk:"12-Pack Boxes",
-      board:"Board Mode / TV", boardPick:"Pick a department", boardPickHint:"Open this on the TV and pick a department, or bookmark the URL (example: ?board=pmac).", boardExit:"Exit", grpDemand:"Demand", demand:"By Department", demandboard:"Order Board", demandsched:"Production Schedule", demandimport:"Import Orders", forecast:"Forecast vs Target",
+      board:"Board Mode / TV", boardPick:"Pick a department", boardPickHint:"Open this on the TV and pick a department, or bookmark the URL (example: ?board=pmac).", boardExit:"Exit", grpDemand:"Demand", demand:"By Department", demandboard:"Order Board", demandsched:"Production Schedule", demandimport:"Import Orders", ecomdemand:"E-Com Demand", forecast:"Forecast vs Target",
       fcHint:"Compare only - the app's targets are not changed by this.", fcSnapshot:"Snapshot", fcFlavor:"Flavor", fcApp4:"App Target (4oz)", fcWip4:"WIP Forecast (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"App Target (1.5oz)", fcWip15:"WIP Forecast (1.5oz)", fcDelta15:"Δ (1.5oz)",
       fcNoAppTarget15:"No per-flavor 1.5oz target in the app (bucket / variety-pack only)", fcNone:"No forecast snapshot yet. Ask Claude to refresh it from the WIP FORECAST sheet.", fcBags:"bags",
       dqMix:"Mixing", dqPmac:"P-Mac", dqFul:"Fulfillment", dqToday:"Today", dqTarget:"Today's target", dqTargetShort:"Today",
@@ -64,6 +64,7 @@
       dmPartner:"Customer", dmPO:"PO #", dmFlavor:"Flavor", dmCases:"Cases", dmBags:"Bags", dmDue:"Due", dmStatusH:"Status", dmDCs:"DCs", dmLoadH:"Load", dmShip:"Ship", dmShipQ:"Mark this whole PO shipped?", dmOpen:"Open", dmShipped:"Shipped", dmAll:"All", dmNone:"No demand loaded yet. Go to Import Orders to drop your SPS + ShipIQ exports.", dmAllPartners:"All customers", dmAllFlavors:"All flavors", dmTot:"Totals", dmPOs:"POs", dmDueUnknown:"no date",
       dsFlavor:"Flavor", dsDemandCs:"Demand (cs)", dsDemandBags:"Demand (bags)", dsOnHand:"On hand (cs)", dsToProduce:"To produce (cs)", dsPallets:"Pallets", dsFilm:"Film (bags)", dsCovered:"Covered", dsProduce:"Produce", dsBlocked:"Film short", dsNone:"No open demand. Import orders to see the schedule.", dsGrand:"TOTAL",
       diDrop:"Drop SPS 850 + ShipIQ CSV files", diSelected:"file(s) ready", diParse:"Preview", diCommit:"Load into board", diClear:"Clear all demand", diLabel:"Label (e.g. week of)", diWarn:"Warnings", diRecon:"Reconciliation: SPS cases vs ShipIQ cartons", diNoFiles:"Choose CSV files first", diUnknown:"skipped (not SPS/ShipIQ)", diCommitted:"loaded into the board", diConfirmClear:"Delete ALL demand lines? This cannot be undone.", diParsedFiles:"Parsed files", diLinesW:"lines", diReplace:"Re-importing replaces open lines for these POs.",
+      ecdHint:"Drop a ShipStation \u201cProduct Sales\u201d CSV export (SKU, Description, QtySold) to see e-commerce bags-needed per flavor. Packs / variety bundles explode into component bags automatically.", ecdDrop:"Drop ShipStation Product Sales CSV", ecdPeriod:"Period (days)", ecdCommit:"Load", ecdClear:"Clear snapshot", ecdConfirmClear:"Delete the current e-com demand snapshot? This cannot be undone.", ecdPreview:"Preview", ecdFlavor:"Flavor", ecd4oz:"4oz bags", ecd15oz:"1.5oz bags", ecdTotal:"Total bags", ecdAvgDay:"Avg / day", ecdUnmapped:"Unmapped SKUs", ecdUnmappedHint:"These SKUs weren\u2019t confidently mapped to a flavor \u2014 review and tell Claude how to map them.", ecdSku:"SKU", ecdDesc:"Description", ecdQty:"Qty sold", ecdNone:"No e-com demand loaded yet. Drop a ShipStation Product Sales CSV above.", ecdLoaded:"loaded into the e-com snapshot", ecdSnapshot:"Current e-com snapshot", ecdSourceLabel:"Source label (e.g. period covered)", ecdNotCsv:"Not a recognized ShipStation Product Sales CSV (need SKU / Description / QtySold columns)", ecdRows:"rows", ecdBagsFrom:"bags mapped", ecdUnmappedUnits:"units unmapped",
       returnsHint2:"Log every return in one place. Pick the channel, scan the item, and the app blocks duplicate returns (same tracking / shipment ID). Kits can be broken down into their flavors automatically.",
       rMajor:"Major Customer", rEcom:"E-Commerce / Amazon", rCustomer:"Customer name", rAddUpc:"Additional UPC", rMarketplace:"Marketplace", rShipment:"Shipment ID", rShipAddr:"Shipping address", rProdCode:"Product code", rUpc:"UPC", rTracking:"Tracking #", rReturnDate:"Return date",
       rIsKit:"This is a variety pack / kit", rExplode:"Break down into flavors", rKitHint:"Enter the kit SKU (e.g. SS-CLSC-4OZ-12PK). On restock it adds each component flavor back to finished-bag inventory.",
@@ -184,7 +185,7 @@
       seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdReceived:"Recibido",sdIntCode:"Codigo interno",sdPackaging:"Empaque",sdPickPack:"Elegir empaque...",sdPallets:"# Paletas",sdPalletsShort:"paleta(s)",sdPackDate:"Fecha de empaque", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
       skus:"SKUs", skusHint:"Catalogo de SKU de producto terminado / retail - paquetes, individuales y cajas con cantidad de bolsas y sabores. Solo referencia.", skuCode:"SKU", skuTitle:"Producto", skuBags:"Bolsas", skuComp:"Contenido", skuSearchP:"Buscar SKU, producto o sabor...", skuCount:"SKUs",
       stockbuild:"Construir Inventario", sbHint:"Progreso de construccion vs metas en vivo. Actualice En Mano segun avanza - todo el equipo lo ve al instante. Campo amarillo = ingrese el conteo de hoy.", sbGoal:"Meta", sbOnHand:"En mano", sbToBuild:"Por hacer", sbPallets:"Paletas", sbDone:"Listo", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Guardado", sbRetail:"Minorista", sbEcom:"Comercio Electronico", sb12pk:"Cajas de 12",
-      board:"Modo Pizarra / TV", boardPick:"Elija un departamento", boardPickHint:"Abra esto en la TV y elija un departamento, o guarde el URL (ejemplo: ?board=pmac).", boardExit:"Salir", grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Tablero de Pedidos", demandsched:"Programa de Produccion", demandimport:"Importar Pedidos", forecast:"Pronostico vs Objetivo",
+      board:"Modo Pizarra / TV", boardPick:"Elija un departamento", boardPickHint:"Abra esto en la TV y elija un departamento, o guarde el URL (ejemplo: ?board=pmac).", boardExit:"Salir", grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Tablero de Pedidos", demandsched:"Programa de Produccion", demandimport:"Importar Pedidos", ecomdemand:"Demanda E-Com", forecast:"Pronostico vs Objetivo",
       fcHint:"Solo comparacion - esto no cambia los objetivos de la aplicacion.", fcSnapshot:"Instantanea", fcFlavor:"Sabor", fcApp4:"Objetivo App (4oz)", fcWip4:"Pronostico WIP (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"Objetivo App (1.5oz)", fcWip15:"Pronostico WIP (1.5oz)", fcDelta15:"Δ (1.5oz)",
       fcNoAppTarget15:"Sin objetivo por sabor de 1.5oz en la app (solo cubeta / variety pack)", fcNone:"Aun no hay instantanea de pronostico. Pida a Claude que la actualice desde la hoja WIP FORECAST.", fcBags:"bolsas",
       dqMix:"Mezcla", dqPmac:"P-Mac", dqFul:"Cumplimiento", dqToday:"Hoy", dqTarget:"Meta de hoy", dqTargetShort:"Hoy",
@@ -201,6 +202,7 @@
       dmPartner:"Cliente", dmPO:"PO #", dmFlavor:"Sabor", dmCases:"Cajas", dmBags:"Bolsas", dmDue:"Vence", dmStatusH:"Estado", dmDCs:"CDs", dmLoadH:"Carga", dmShip:"Enviar", dmShipQ:"Marcar toda esta PO como enviada?", dmOpen:"Abierto", dmShipped:"Enviado", dmAll:"Todos", dmNone:"Aun no hay demanda cargada. Vaya a Importar Pedidos para subir sus exportaciones SPS + ShipIQ.", dmAllPartners:"Todos los clientes", dmAllFlavors:"Todos los sabores", dmTot:"Totales", dmPOs:"POs", dmDueUnknown:"sin fecha",
       dsFlavor:"Sabor", dsDemandCs:"Demanda (cj)", dsDemandBags:"Demanda (bolsas)", dsOnHand:"En mano (cj)", dsToProduce:"Por producir (cj)", dsPallets:"Paletas", dsFilm:"Pelicula (bolsas)", dsCovered:"Cubierto", dsProduce:"Producir", dsBlocked:"Falta pelicula", dsNone:"Sin demanda abierta. Importe pedidos para ver el programa.", dsGrand:"TOTAL",
       diDrop:"Suba archivos CSV SPS 850 + ShipIQ", diSelected:"archivo(s) listos", diParse:"Vista previa", diCommit:"Cargar al tablero", diClear:"Borrar toda la demanda", diLabel:"Etiqueta (ej. semana de)", diWarn:"Advertencias", diRecon:"Reconciliacion: cajas SPS vs cartones ShipIQ", diNoFiles:"Elija archivos CSV primero", diUnknown:"omitido (no es SPS/ShipIQ)", diCommitted:"cargado al tablero", diConfirmClear:"Borrar TODAS las lineas de demanda? No se puede deshacer.", diParsedFiles:"Archivos procesados", diLinesW:"lineas", diReplace:"Reimportar reemplaza las lineas abiertas de estas POs.",
+      ecdHint:"Suba una exportacion CSV \u201cProduct Sales\u201d de ShipStation (SKU, Description, QtySold) para ver las bolsas necesarias por sabor en e-commerce. Los paquetes / surtidos se descomponen en bolsas automaticamente.", ecdDrop:"Suba el CSV Product Sales de ShipStation", ecdPeriod:"Periodo (dias)", ecdCommit:"Cargar", ecdClear:"Borrar snapshot", ecdConfirmClear:"Borrar el snapshot actual de demanda e-com? No se puede deshacer.", ecdPreview:"Vista previa", ecdFlavor:"Sabor", ecd4oz:"Bolsas 4oz", ecd15oz:"Bolsas 1.5oz", ecdTotal:"Total bolsas", ecdAvgDay:"Prom / dia", ecdUnmapped:"SKUs sin mapear", ecdUnmappedHint:"Estos SKUs no se pudieron mapear con confianza a un sabor \u2014 revise y digale a Claude como mapearlos.", ecdSku:"SKU", ecdDesc:"Descripcion", ecdQty:"Cantidad vendida", ecdNone:"Aun no hay demanda e-com cargada. Suba un CSV Product Sales de ShipStation arriba.", ecdLoaded:"cargado al snapshot e-com", ecdSnapshot:"Snapshot e-com actual", ecdSourceLabel:"Etiqueta de origen (ej. periodo cubierto)", ecdNotCsv:"No es un CSV Product Sales de ShipStation reconocido (se necesitan columnas SKU / Description / QtySold)", ecdRows:"filas", ecdBagsFrom:"bolsas mapeadas", ecdUnmappedUnits:"unidades sin mapear",
       returnsHint2:"Registre cada devolucion en un solo lugar. Elija el canal, escanee el articulo y la app bloquea devoluciones duplicadas (mismo tracking / Shipment ID). Los kits se pueden desglosar en sus sabores automaticamente.",
       rMajor:"Cliente Mayor", rEcom:"E-Commerce / Amazon", rCustomer:"Nombre del cliente", rAddUpc:"UPC adicional", rMarketplace:"Marketplace", rShipment:"Shipment ID", rShipAddr:"Direccion de envio", rProdCode:"Codigo de producto", rUpc:"UPC", rTracking:"# de rastreo", rReturnDate:"Fecha de devolucion",
       rIsKit:"Es un paquete variado / kit", rExplode:"Desglosar en sabores", rKitHint:"Ingrese el SKU del kit (ej. SS-CLSC-4OZ-12PK). Al reingresar suma cada sabor componente al inventario de bolsas terminadas.",
@@ -320,7 +322,7 @@
       seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdReceived:"Recebido",sdIntCode:"Codigo interno",sdPackaging:"Embalagem",sdPickPack:"Selecionar embalagem...",sdPallets:"# Paletes",sdPalletsShort:"palete(s)",sdPackDate:"Data de embalagem", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
       skus:"SKUs", skusHint:"Catalogo de SKU de produto acabado / varejo - pacotes, individuais e caixas com contagem de sacos e sabores. Apenas referencia.", skuCode:"SKU", skuTitle:"Produto", skuBags:"Sacos", skuComp:"Conteudo", skuSearchP:"Buscar SKU, produto ou sabor...", skuCount:"SKUs",
       stockbuild:"Construir Estoque", sbHint:"Progresso de construcao vs metas ao vivo. Atualize Em Estoque conforme avanca - toda a equipe ve na hora. Campo amarelo = insira a contagem de hoje.", sbGoal:"Meta", sbOnHand:"Em estoque", sbToBuild:"A fazer", sbPallets:"Paletes", sbDone:"Pronto", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Salvo", sbRetail:"Varejo", sbEcom:"E-Commerce", sb12pk:"Caixas de 12",
-      board:"Modo Painel / TV", boardPick:"Escolha um departamento", boardPickHint:"Abra isto na TV e escolha um departamento, ou salve o URL (exemplo: ?board=pmac).", boardExit:"Sair", grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Painel de Pedidos", demandsched:"Programa de Producao", demandimport:"Importar Pedidos", forecast:"Previsao vs Meta",
+      board:"Modo Painel / TV", boardPick:"Escolha um departamento", boardPickHint:"Abra isto na TV e escolha um departamento, ou salve o URL (exemplo: ?board=pmac).", boardExit:"Sair", grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Painel de Pedidos", demandsched:"Programa de Producao", demandimport:"Importar Pedidos", ecomdemand:"Demanda E-Com", forecast:"Previsao vs Meta",
       fcHint:"Somente comparacao - isso nao altera as metas do aplicativo.", fcSnapshot:"Instantaneo", fcFlavor:"Sabor", fcApp4:"Meta App (4oz)", fcWip4:"Previsao WIP (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"Meta App (1.5oz)", fcWip15:"Previsao WIP (1.5oz)", fcDelta15:"Δ (1.5oz)",
       fcNoAppTarget15:"Sem meta por sabor de 1.5oz no app (somente balde / variety pack)", fcNone:"Ainda sem instantaneo de previsao. Peca ao Claude para atualizar a partir da planilha WIP FORECAST.", fcBags:"sacos",
       dqMix:"Mistura", dqPmac:"P-Mac", dqFul:"Expedicao", dqToday:"Hoje", dqTarget:"Meta de hoje", dqTargetShort:"Hoje",
@@ -337,6 +339,7 @@
       dmPartner:"Cliente", dmPO:"PO #", dmFlavor:"Sabor", dmCases:"Caixas", dmBags:"Bolsas", dmDue:"Vence", dmStatusH:"Status", dmDCs:"CDs", dmLoadH:"Carga", dmShip:"Enviar", dmShipQ:"Marcar toda esta PO como enviada?", dmOpen:"Aberto", dmShipped:"Enviado", dmAll:"Todos", dmNone:"Nenhuma demanda carregada ainda. Va em Importar Pedidos para enviar suas exportacoes SPS + ShipIQ.", dmAllPartners:"Todos os clientes", dmAllFlavors:"Todos os sabores", dmTot:"Totais", dmPOs:"POs", dmDueUnknown:"sem data",
       dsFlavor:"Sabor", dsDemandCs:"Demanda (cx)", dsDemandBags:"Demanda (bolsas)", dsOnHand:"Em estoque (cx)", dsToProduce:"A produzir (cx)", dsPallets:"Paletes", dsFilm:"Filme (bolsas)", dsCovered:"Coberto", dsProduce:"Produzir", dsBlocked:"Falta filme", dsNone:"Sem demanda aberta. Importe pedidos para ver o programa.", dsGrand:"TOTAL",
       diDrop:"Envie arquivos CSV SPS 850 + ShipIQ", diSelected:"arquivo(s) prontos", diParse:"Previa", diCommit:"Carregar no painel", diClear:"Limpar toda a demanda", diLabel:"Rotulo (ex. semana de)", diWarn:"Avisos", diRecon:"Reconciliacao: caixas SPS vs cartoes ShipIQ", diNoFiles:"Escolha arquivos CSV primeiro", diUnknown:"ignorado (nao e SPS/ShipIQ)", diCommitted:"carregado no painel", diConfirmClear:"Excluir TODAS as linhas de demanda? Nao pode ser desfeito.", diParsedFiles:"Arquivos processados", diLinesW:"linhas", diReplace:"Reimportar substitui as linhas abertas destas POs.",
+      ecdHint:"Envie uma exportacao CSV \u201cProduct Sales\u201d do ShipStation (SKU, Description, QtySold) para ver as bolsas necessarias por sabor no e-commerce. Pacotes / variedades sao decompostos em bolsas automaticamente.", ecdDrop:"Envie o CSV Product Sales do ShipStation", ecdPeriod:"Periodo (dias)", ecdCommit:"Carregar", ecdClear:"Limpar snapshot", ecdConfirmClear:"Excluir o snapshot atual de demanda e-com? Nao pode ser desfeito.", ecdPreview:"Previa", ecdFlavor:"Sabor", ecd4oz:"Bolsas 4oz", ecd15oz:"Bolsas 1.5oz", ecdTotal:"Total de bolsas", ecdAvgDay:"Media / dia", ecdUnmapped:"SKUs nao mapeados", ecdUnmappedHint:"Estes SKUs nao puderam ser mapeados com confianca a um sabor \u2014 revise e diga ao Claude como mapea-los.", ecdSku:"SKU", ecdDesc:"Descricao", ecdQty:"Qtd vendida", ecdNone:"Nenhuma demanda e-com carregada ainda. Envie um CSV Product Sales do ShipStation acima.", ecdLoaded:"carregado no snapshot e-com", ecdSnapshot:"Snapshot e-com atual", ecdSourceLabel:"Rotulo de origem (ex. periodo coberto)", ecdNotCsv:"Nao e um CSV Product Sales do ShipStation reconhecido (precisa das colunas SKU / Description / QtySold)", ecdRows:"linhas", ecdBagsFrom:"bolsas mapeadas", ecdUnmappedUnits:"unidades nao mapeadas",
       returnsHint2:"Registre cada devolucao em um so lugar. Escolha o canal, escaneie o item, e o app bloqueia devolucoes duplicadas (mesmo tracking / Shipment ID). Kits podem ser desmembrados em seus sabores automaticamente.",
       rMajor:"Cliente Grande", rEcom:"E-Commerce / Amazon", rCustomer:"Nome do cliente", rAddUpc:"UPC adicional", rMarketplace:"Marketplace", rShipment:"Shipment ID", rShipAddr:"Endereco de envio", rProdCode:"Codigo do produto", rUpc:"UPC", rTracking:"# de rastreio", rReturnDate:"Data da devolucao",
       rIsKit:"E um pacote variado / kit", rExplode:"Desmembrar em sabores", rKitHint:"Insira o SKU do kit (ex. SS-CLSC-4OZ-12PK). Ao reabastecer, soma cada sabor componente ao estoque de bolsas prontas.",
@@ -444,7 +447,7 @@
     { key: "tote", label: "Tote - 1 bag x 1,200 lb", per: 1200 }
   ];
   const SEED_PACK_MAP = {}; SEED_PACKS.forEach(p => SEED_PACK_MAP[p.key] = p);
-  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","demand","demandboard","demandsched","demandimport","forecast","seasoning","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","supplierpos","people","improve","compliance","reference","labels","log","settings","board"];
+  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","supplierpos","people","improve","compliance","reference","labels","log","settings","board"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -617,7 +620,7 @@
     { key:"grpReceiving", items:["receive","recvlog","returns","qa"] },
     { key:"grpInventory", items:["dash","adjust","count","move","locations","facility","finbags","seasoning","seed","skus","labels"] },
     { key:"grpProduction", items:["produce","retailprod","ecomprod","prodlog","stockbuild","orders","orderdocs"] },
-    { key:"grpDemand", items:["demand","demandboard","demandsched","demandimport","forecast"] },
+    { key:"grpDemand", items:["demand","demandboard","demandsched","demandimport","ecomdemand","forecast"] },
     { key:"grpShipping", items:["shiplog"] },
     { key:"grpMixing", items:["mixing","floor"] },
     { key:"grpPmac", items:["pmac","pmacout","floor"] },
@@ -639,7 +642,7 @@
     mixing:"cooking-pot", pmac:"wrench", count:"clipboard-check", locations:"map-pin",
     purchasing:"shopping-cart", supplierpos:"file-text", people:"users", labels:"tag",
     board:"tv", log:"history", settings:"settings", improve:"trending-up", compliance:"shield-check", reference:"book-open",
-    demand:"calendar-clock", demandboard:"list-checks", demandsched:"gauge", demandimport:"file-up", forecast:"scale", facility:"warehouse", floor:"activity" };
+    demand:"calendar-clock", demandboard:"list-checks", demandsched:"gauge", demandimport:"file-up", ecomdemand:"globe", forecast:"scale", facility:"warehouse", floor:"activity" };
   function drawIcons() { try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {} }
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
   let spoSort = { key: "created", dir: -1 };  // Supplier POs table sort (v25)
@@ -653,6 +656,9 @@
   let dmdParsed = null;   // Import preview: { rows, warnings, recon, files }
   let dmdBusy = false;    // import in progress
   let dmdDept = "mixing"; // Demand section: which department dashboard (mixing | pmac | ful)
+  // ---- E-Com Demand state (ShipStation Product Sales -> bags-needed-per-flavor) ----
+  let ecParsed = null;   // preview: { totals, unmapped, periodDays, files }
+  let ecBusy = false;    // load-into-snapshot in progress
   const DMD_FLAVOR_ORDER = ["OG Original","Cinnamon Churro","Backyard BBQ","Garlic Parmesan","Dill Pickle","Cracked Pepper","Cheddar Jalapeno","Ranch","Maple Brown Sugar","Lemon Pepper","Sour Cream & Onion","Cheeseburger","PCA Pizza","Variety Pack"];
   // On-hand finished 4oz cases for a flavor, summed from the Stock Build count (Target + Master Case = 72-bag cases).
   function demandOnHandCases(flavor) {
@@ -2634,6 +2640,47 @@
       (p.rows.length > 60 ? '<tr><td colspan="6" class="muted sm">+' + (p.rows.length - 60) + ' …</td></tr>' : '') + '</tbody></table></div></div>';
     return drop + fileList + warn + recon + preview;
   }
+  // ===== E-Com Demand (ShipStation "Product Sales" CSV -> bags-needed-per-flavor, window.ECOM) =====
+  function viewEcomDemand() {
+    const snap = (DB.ecomDemand ? DB.ecomDemand() : []);
+    const drop = '<div class="card"><h2>' + L("ecomdemand") + '</h2><p class="hint">' + L("ecdHint") + '</p>' +
+      '<div class="row"><div style="flex:2"><label>' + L("ecdDrop") + '</label>' +
+      '<input id="ec-file" type="file" accept=".csv,text/csv" onchange="UI.ecFiles(this)"></div>' +
+      '<div><label>' + L("ecdPeriod") + '</label><input id="ec-days" type="number" min="1" value="' + (ecParsed && ecParsed.periodDays ? ecParsed.periodDays : 14) + '" onchange="UI.ecRecalc()"></div>' +
+      '<div><label>' + L("ecdSourceLabel") + '</label><input id="ec-label" placeholder="' + new Date().toISOString().slice(0, 10) + '"></div></div>' +
+      '<div style="margin-top:10px"><button class="ghost sm danger" onclick="UI.ecClearAll()">' + L("ecdClear") + ' (' + snap.length + ')</button></div></div>';
+    if (!ecParsed) return drop + ecSnapshotCard(snap);
+    if (ecParsed.error) return drop + '<div class="card" style="background:#FFF6E5">' + esc(ecParsed.error) + '</div>' + ecSnapshotCard(snap);
+    const days = ecParsed.periodDays || 14;
+    const flavorRows = Object.keys(ecParsed.totals)
+      .map(f => { const t = ecParsed.totals[f]; const tot = (t["4oz"] || 0) + (t["1.5oz"] || 0); return { flavor: f, o4: t["4oz"] || 0, o15: t["1.5oz"] || 0, tot, avg: tot / days }; })
+      .sort((a, b) => b.tot - a.tot);
+    const grand4 = flavorRows.reduce((s, r) => s + r.o4, 0), grand15 = flavorRows.reduce((s, r) => s + r.o15, 0), grandTot = grand4 + grand15;
+    const previewRows = flavorRows.map(r => '<tr><td>' + esc(r.flavor) + '</td><td class="right">' + fmt(r.o4) + '</td><td class="right">' + fmt(r.o15) + '</td><td class="right"><b>' + fmt(r.tot) + '</b></td><td class="right muted">' + fmt(Math.round(r.avg * 10) / 10) + '</td></tr>').join("");
+    const preview = '<div class="card"><div class="suprow"><h2 class="sub2" style="flex:1;margin:0">' + L("ecdPreview") + ' — ' + fmt(grandTot) + ' ' + L("ecdBagsFrom") + '</h2>' +
+      '<button class="primary" onclick="UI.ecCommit()"' + (ecBusy ? ' disabled' : '') + '>' + (ecBusy ? '…' : L("ecdCommit")) + '</button></div>' +
+      '<div class="tblwrap"><table class="sortable"><thead><tr><th>' + L("ecdFlavor") + '</th><th class="right">' + L("ecd4oz") + '</th><th class="right">' + L("ecd15oz") + '</th><th class="right">' + L("ecdTotal") + '</th><th class="right">' + L("ecdAvgDay") + '</th></tr></thead><tbody>' + previewRows +
+      '<tr><td><b>' + L("dmTot") + '</b></td><td class="right"><b>' + fmt(grand4) + '</b></td><td class="right"><b>' + fmt(grand15) + '</b></td><td class="right"><b>' + fmt(grandTot) + '</b></td><td class="right muted">' + fmt(Math.round((grandTot / days) * 10) / 10) + '</td></tr>' +
+      '</tbody></table></div></div>';
+    const unm = ecParsed.unmapped || [];
+    const unmappedCard = unm.length ? '<div class="card" style="background:#FFF6E5"><b>' + L("ecdUnmapped") + ' (' + unm.length + ', ' + fmt(unm.reduce((s, u) => s + (Number(u.qty) || 0), 0)) + ' ' + L("ecdUnmappedUnits") + ')</b><p class="hint" style="margin:4px 0 8px">' + L("ecdUnmappedHint") + '</p>' +
+      '<div class="tblwrap"><table><thead><tr><th>' + L("ecdSku") + '</th><th>' + L("ecdDesc") + '</th><th class="right">' + L("ecdQty") + '</th></tr></thead><tbody>' +
+      unm.map(u => '<tr><td class="sm">' + esc(u.sku) + '</td><td class="sm">' + esc(u.desc || "") + '</td><td class="right">' + fmt(u.qty) + '</td></tr>').join("") +
+      '</tbody></table></div></div>' : '';
+    return drop + preview + unmappedCard + ecSnapshotCard(snap);
+  }
+  // Persisted E-Com Demand snapshot (what's actually saved in Supabase, survives reload)
+  function ecSnapshotCard(snap) {
+    if (!snap || !snap.length) return '<div class="card"><p class="hint">' + L("ecdNone") + '</p></div>';
+    const byF = {};
+    snap.forEach(r => { if (!byF[r.flavor]) byF[r.flavor] = { o4: 0, o15: 0, avg: 0, period: r.period_days || 0, label: r.source_label || "" }; const e = byF[r.flavor]; if (r.size === "4oz") e.o4 += Number(r.bags) || 0; else if (r.size === "1.5oz") e.o15 += Number(r.bags) || 0; e.avg += Number(r.avg_day) || 0; if (r.source_label) e.label = r.source_label; if (r.period_days) e.period = r.period_days; });
+    const rows = Object.keys(byF).map(f => Object.assign({ flavor: f }, byF[f], { tot: byF[f].o4 + byF[f].o15 })).sort((a, b) => b.tot - a.tot);
+    const label = rows.length ? rows[0].label : "";
+    const period = rows.length ? rows[0].period : "";
+    const body = rows.map(r => '<tr><td>' + esc(r.flavor) + '</td><td class="right">' + fmt(r.o4) + '</td><td class="right">' + fmt(r.o15) + '</td><td class="right"><b>' + fmt(r.tot) + '</b></td><td class="right muted">' + fmt(Math.round(r.avg * 10) / 10) + '</td></tr>').join("");
+    return '<div class="card"><h2 class="sub2">' + L("ecdSnapshot") + (label ? ' — ' + esc(label) : '') + (period ? ' (' + period + 'd)' : '') + '</h2>' +
+      '<div class="tblwrap"><table class="sortable"><thead><tr><th>' + L("ecdFlavor") + '</th><th class="right">' + L("ecd4oz") + '</th><th class="right">' + L("ecd15oz") + '</th><th class="right">' + L("ecdTotal") + '</th><th class="right">' + L("ecdAvgDay") + '</th></tr></thead><tbody>' + body + '</tbody></table></div></div>';
+  }
   // ===== Forecast vs Target (compare-only: app's current stock/production targets vs the WIP FORECAST snapshot from Supabase) =====
   function viewForecastVsTarget() {
     const fc = (DB.forecast ? DB.forecast() : []);
@@ -3109,6 +3156,50 @@
     async diClearAll() {
       if (!confirm(L("diConfirmClear"))) return;
       await DB.clearAllDemand(opVal()); dmdParsed = null; toast("✓"); render();
+    },
+    ecFiles(input) {
+      const f = input.files && input.files[0];
+      if (!f) return;
+      if (!window.ECOM) { toast("e-com parser not loaded"); return; }
+      const fr = new FileReader();
+      fr.onload = () => {
+        const text = String(fr.result || "");
+        if (window.ECOM.detectType(text) !== "shipstation") { ecParsed = { error: L("ecdNotCsv"), totals: {}, unmapped: [] }; render(); return; }
+        const days = Number(($("ec-days") || {}).value) || 14;
+        const r = window.ECOM.parseShipStation(text);
+        ecParsed = { totals: r.totals, unmapped: r.unmapped, periodDays: days, fileName: f.name };
+        render();
+      };
+      fr.onerror = () => { ecParsed = { error: L("ecdNotCsv"), totals: {}, unmapped: [] }; render(); };
+      fr.readAsText(f);
+    },
+    ecRecalc() {
+      if (!ecParsed || ecParsed.error) return;
+      ecParsed.periodDays = Number(($("ec-days") || {}).value) || 14;
+      render();
+    },
+    async ecCommit() {
+      if (!ecParsed || ecParsed.error || ecBusy) return;
+      const days = ecParsed.periodDays || 14;
+      const label = (($("ec-label") || {}).value || "").trim() || (ecParsed.fileName || new Date().toISOString().slice(0, 10));
+      const rows = [];
+      Object.keys(ecParsed.totals).forEach(flavor => {
+        const t = ecParsed.totals[flavor];
+        ["4oz", "1.5oz"].forEach(size => {
+          const bags = t[size] || 0;
+          if (bags > 0) rows.push({ flavor, size, bags, avg_day: Math.round((bags / days) * 100) / 100 });
+        });
+      });
+      if (!rows.length) return;
+      ecBusy = true; render();
+      const res = await DB.addEcomDemand(rows, { period_days: days, source_label: label }, opVal());
+      ecBusy = false; ecParsed = null;
+      if (res && res.ok === false) { toast(res.msg || "error"); render(); return; }
+      toast((res && res.count ? res.count : rows.length) + " " + L("ecdLoaded")); render();
+    },
+    async ecClearAll() {
+      if (!confirm(L("ecdConfirmClear"))) return;
+      await DB.clearEcomDemand(opVal()); ecParsed = null; toast("✓"); render();
     },
     locView(v) { locView = v; locSel = null; locAct = ""; render(); },
     locPick(code) { locSel = code || null; locAct = ""; render(); },
@@ -3980,7 +4071,7 @@
     const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
       move: viewMove, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, compliance: viewCompliance, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
-      demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor, board: viewBoard };
+      demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, ecomdemand: viewEcomDemand, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor, board: viewBoard };
     $("view").innerHTML = (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
     $("modeBadge").className = "modebadge " + (DB.mode === "cloud" ? "ok" : "low");
