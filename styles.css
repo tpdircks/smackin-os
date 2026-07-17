@@ -312,3 +312,78 @@ td.expd{color:var(--red);font-weight:700}
   .card{box-shadow:none;border:0;padding:0}
   .lbl{page-break-inside:avoid}
 }
+
+
+/* ===== Board Mode (TV department boards) — additive, big/bilingual/high-contrast ===== */
+body.boardmode{background:#04223B;overflow:hidden}
+body.boardmode header,body.boardmode nav#nav,body.boardmode #navBackdrop{display:none!important}
+body.boardmode .layout{display:block;max-width:none;margin:0}
+body.boardmode main{max-width:none;padding:0;min-width:0}
+.boardwrap{min-height:100vh;background:linear-gradient(180deg,#04223B,#0A3258);color:#fff;padding:1.6vh 2vw 2vh;box-sizing:border-box;font-family:Barlow,system-ui,Segoe UI,Arial,sans-serif}
+.boardheader{display:flex;align-items:center;justify-content:space-between;border-bottom:.3vh solid rgba(255,255,255,.25);padding-bottom:1.2vh;margin-bottom:1.6vh}
+.boarddept{font-weight:800;letter-spacing:.1vw;line-height:1.05}
+.boarddept .bt-en{display:block;font-size:4.2vw}
+.boarddept .bt-es{display:block;font-size:2.1vw;opacity:.7;font-weight:700}
+.boardhdrright{display:flex;align-items:center;gap:2vw}
+.boardclock{font-size:2.6vw;font-weight:800;font-variant-numeric:tabular-nums}
+.boardago{font-size:1.05vw;opacity:.65}
+.boardexit{background:rgba(255,255,255,.12);border:.15vh solid rgba(255,255,255,.4);color:#fff;font-size:1.2vw;padding:.8vh 1.2vw;border-radius:.8vh;cursor:pointer}
+.boardexit:hover{background:rgba(255,255,255,.22)}
+.boardzones{display:flex;gap:1.6vw;align-items:stretch}
+.board-make{flex:1 1 auto;min-width:0;background:rgba(255,255,255,.06);border-radius:1.2vh;padding:1.4vh 1.6vw}
+.board-side{flex:0 0 27vw;background:rgba(255,255,255,.06);border-radius:1.2vh;padding:1.4vh 1.6vw}
+.boardzonelabel{font-size:1.5vw;font-weight:800;letter-spacing:.15vw;text-transform:uppercase;color:#F2C61E;margin-bottom:1vh}
+.boardzonelabel.sm{font-size:1.15vw}
+.board-allcovered{font-size:2.4vw;font-weight:800;color:#7BE38F;text-align:center;padding:4vh 0}
+.boardrow{display:grid;grid-template-columns:3vw 1fr 11vw 9vw;align-items:center;gap:1vw;padding:1.1vh 0;border-bottom:.12vh solid rgba(255,255,255,.14)}
+.boardrow:last-child{border-bottom:0}
+.boardrank{font-size:1.8vw;font-weight:800;color:rgba(255,255,255,.4);text-align:center}
+.boardflavor{display:flex;align-items:center;gap:.8vw;min-width:0}
+.boardchip{display:inline-block;width:1.4vw;height:1.4vw;border-radius:50%;flex:0 0 auto}
+.boardflavname{font-size:2.1vw;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.boardqty{font-size:3vw;font-weight:800;text-align:right;line-height:1}
+.boardqtyunit .bt-en{display:block;font-size:.85vw;opacity:.7;font-weight:700;letter-spacing:.1vw}
+.boardqtyunit .bt-es{display:block;font-size:.75vw;opacity:.55;font-weight:700}
+.boardtag{text-align:right}
+.boardtag .bt-en{display:block;font-size:1vw;font-weight:800;opacity:.85}
+.boardtag .bt-es{display:block;font-size:.85vw;opacity:.6}
+.boardwarn{display:block;margin-top:.4vh;background:#B52024;color:#fff;font-size:.85vw;font-weight:800;padding:.2vh .6vw;border-radius:.6vh}
+.boardbarwrap{grid-column:1/-1;height:.9vh;background:rgba(255,255,255,.14);border-radius:1vh;overflow:hidden;margin-top:.3vh}
+.boardbarwrap.sm{height:.7vh}
+.boardbarwrap.lg{height:1.6vh;margin:1.4vh 0}
+.boardbar{height:100%;background:#00A341;transition:width .4s}
+.boardmachinegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(15vw,1fr));gap:1vw}
+.machinetile{background:rgba(255,255,255,.07);border-radius:1vh;padding:1.2vh 1vw;border-left:.5vw solid #888}
+.machinetile.running{border-left-color:#00A341}
+.machinetile.changeover{border-left-color:#F2C61E}
+.machinetile.idle{opacity:.55;border-left-color:#888}
+.machinename{font-size:1.3vw;font-weight:800;opacity:.85}
+.machineflavor{font-size:1.9vw;font-weight:800;margin:.4vh 0}
+.machinestatus{font-size:1.1vw;font-weight:800;letter-spacing:.08vw;text-transform:uppercase}
+.machineqty{font-size:1.3vw;font-weight:700;margin-top:.6vh}
+.boardnextup{margin-top:1.4vh;font-size:1.3vw;background:rgba(255,255,255,.08);border-radius:.8vh;padding:1vh 1vw}
+.board-nomachines{font-size:1.6vw;opacity:.7;text-align:center;padding:3vh 0}
+.boardtoday{display:flex;flex-direction:column;height:100%}
+.boardherolabel{font-size:1.2vw;font-weight:800;letter-spacing:.1vw;text-transform:uppercase;opacity:.7}
+.boardhero{font-size:6.5vw;font-weight:800;line-height:1}
+.boardherounit{font-size:1.3vw;font-weight:700;opacity:.75;text-transform:uppercase}
+.boardtodaystats{display:flex;justify-content:space-between;font-size:1.15vw;font-weight:700;opacity:.9}
+.boardshiftrow{display:flex;gap:1vw;margin-top:2vh}
+.boardshift{flex:1;background:rgba(255,255,255,.08);border-radius:.8vh;padding:1vh 1vw;text-align:center}
+.boardshiftlabel{font-size:1vw;opacity:.7;font-weight:800;text-transform:uppercase}
+.boardshiftval{font-size:2.4vw;font-weight:800}
+.boardstockstrip{display:flex;gap:.8vw;overflow-x:auto;padding-top:.4vh}
+.boardstocktile{flex:1 0 8vw;background:rgba(255,255,255,.07);border:.25vh solid #00A341;border-radius:1vh;padding:1vh .8vw;text-align:center}
+.boardstockdot{width:1vw;height:1vw;border-radius:50%;margin:0 auto .6vh}
+.boardstockname{font-size:1vw;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.boardstockqty{font-size:1.8vw;font-weight:800}
+.board-stockzone{margin-top:1.6vh}
+.bt-en{display:block}
+.bt-es{display:block;opacity:.7}
+.boardpicker{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;gap:2vh;background:#04223B}
+.boardpicktitle{font-size:2.4vw;font-weight:800}
+.boardpickrow{display:flex;gap:2vw}
+.boardpickbtn{font-size:2vw;font-weight:800;padding:2.2vh 3vw;border-radius:1.2vh;background:#006DB6;color:#fff;border:0;cursor:pointer}
+.boardpickbtn:hover{background:#0080D6}
+.boardpickhint{font-size:1.1vw;opacity:.65;max-width:50vw}
+@media (max-width:900px){.boardzones{flex-direction:column}.board-side{flex:none}}
