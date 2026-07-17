@@ -670,7 +670,8 @@
     ["Megan Matthai","Marketing","Marketing","Max DeWolf"],
     ["Peter Albertson","Marketing","Marketing","Max DeWolf"],
     ["Rajil Wasif","Marketing","Marketing","Max DeWolf"],
-    ["Brian Lepro","Independent Contractor","Contractor",""]
+    ["Brian Lepro","Independent Contractor","Contractor",""],
+    ["Lorelei Davis","Fulfillment Associate","Fulfillment","Troy Dircks"]
   ].map(a => ({ n:a[0], r:a[1], d:a[2], m:a[3] }));
   // Daily Fulfillment tracker: anyone who can work e-com labels on a given day -- the whole Fulfillment /
   // Shipping roster, plus the Operations people who report to Troy on the fulfillment side.
