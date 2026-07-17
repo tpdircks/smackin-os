@@ -82,6 +82,7 @@
       facility:"Facility Map", facHint:"Interactive 3D digital twin of the SLC plant — exact layout, rooms, systems, and every pallet rack. Drag to rotate, scroll to zoom, click a bay for details. Red-flagged bays are PROPOSED future racking (not yet installed). Rack colors update live: red = occupied, green = available (Sections A-D). Built by Salvador.", facOpen:"Open full screen",
       printRecvBook:"Receiving book (Letter, fill-in)", recvBookDone:"Receiving labels ready",
       averyBtn:"Print Avery 5160 item labels", averyDone:"Avery 5160 labels ready", ident4x6Btn:"4x6 identifier labels", ident4x6Done:"4x6 labels ready",
+      batchLabelBtn:"Batch label (4x6)", batchLabelDone:"Batch label ready", batchLabelHint:"Fill in Recipe, Date, and Chef, then print on the 4x6 roll.", batchRecipe:"Recipe / Flavor", batchDate:"Date", batchChef:"Chef / Made By", batchPrint:"Print Batch Label",
       bnTitle:"What to Build Now", bnNone:"No open orders loaded yet. Import SPS + ShipIQ under Demand to see the build need.", bnHintProd:"Bags to produce by flavor — driven by open customer orders OR your minimum stock levels, whichever needs more. So when there are no orders, your stock targets keep the line busy. Green = covered, amber = build, red = film short. The tag shows the driver: order or stock.", bnHintFul:"Production need by flavor, in bags and cases — the greater of open demand or minimum stock level, minus on-hand.", bnDemandBags:"Demand (bags)", bnOnHandBags:"On hand (bags)", bnToProduceBags:"To produce (BAGS)", bnToProduceCs:"To produce (cs)", bnFlavors:"flavors to build", bnDriverOrder:"order", bnDriverStock:"stock", bnAllCovered:"All flavors at target — nothing to build right now.",
       averyHint:"Both buttons include EVERY item in the system automatically — add a product and it appears here, so labels never go stale. The Avery button prints onto the 5160 sticker sheets Adriana has (just set Margins: None, Scale: 100%); the Receiving book is a Letter-size fill-in form for the dock.",
       retailprod:"Retail Production",ecomprod:"E-Commerce",epHint:"E-commerce / DTC product (variety packs). Scan or pick the item, enter the quantity built, and it is added to stock instantly. ShipStation and TikTok orders will draw this down automatically once connected.", rpHint:"When a pallet is made, scan its product barcode (or pick it), enter the quantity, and it is added to stock instantly. Print the barcode sheet with the button below and post it at the line.", rpScanP:"Scan product barcode", rpPickProduct:"Or pick a product...", rpQty:"Quantity made", rpAdd:"Add to stock", rpAdded:"Added to stock", rpCurrent:"Current on hand", rpRecent:"Recent production", rpNone:"Nothing added yet.", rpPrint:"Print product barcodes", rpNotFound:"Barcode not recognized",
@@ -235,6 +236,7 @@
       backupTitle:"Respaldo", backupHint:"Descargue una copia completa de todos los datos de la app (cada tabla) en un archivo JSON. Guardelo en OneDrive como copia segura. Consejo: configure la carpeta de descargas de su navegador en su OneDrive para que cada respaldo llegue alli automaticamente.", backupBtn:"Descargar respaldo completo", backupDone:"Respaldo descargado",
       facility:"Mapa de Planta", facHint:"Gemelo digital 3D interactivo de la planta SLC — diseno exacto, salas, sistemas y cada rack de pallets. Arrastre para girar, desplace para zoom, clic en una bahia para detalles. Las bahias en rojo son racking PROPUESTO a futuro (aun no instalado). Los colores de los racks se actualizan en vivo: rojo = ocupado, verde = disponible (Secciones A-D). Creado por Salvador.", facOpen:"Abrir pantalla completa",
       printRecvBook:"Libro de recibo (Carta, llenar)", recvBookDone:"Etiquetas listas", averyBtn:"Imprimir etiquetas Avery 5160", averyDone:"Etiquetas Avery 5160 listas", ident4x6Btn:"Etiquetas identificadoras 4x6", ident4x6Done:"Etiquetas 4x6 listas",
+      batchLabelBtn:"Etiqueta de lote (4x6)", batchLabelDone:"Etiqueta de lote lista", batchLabelHint:"Llene Receta, Fecha y Chef, luego imprima en el rollo 4x6.", batchRecipe:"Receta / Sabor", batchDate:"Fecha", batchChef:"Chef / Hecho Por", batchPrint:"Imprimir Etiqueta de Lote",
       bnTitle:"Que Producir Ahora", bnNone:"Aun no hay pedidos abiertos. Importe SPS + ShipIQ en Demanda para ver la necesidad de produccion.", bnHintProd:"Bolsas a producir por sabor — segun pedidos abiertos O sus niveles minimos de inventario, lo que necesite mas. Asi, cuando no hay pedidos, sus metas de stock mantienen la linea ocupada. Verde = cubierto, ambar = producir, rojo = falta pelicula. La etiqueta muestra el origen: pedido o stock.", bnHintFul:"Necesidad de produccion por sabor, en bolsas y cajas — el mayor entre demanda abierta o nivel minimo de stock, menos en mano.", bnDemandBags:"Demanda (bolsas)", bnOnHandBags:"En mano (bolsas)", bnToProduceBags:"Por producir (BOLSAS)", bnToProduceCs:"Por producir (cj)", bnFlavors:"sabores por producir", bnDriverOrder:"pedido", bnDriverStock:"stock", bnAllCovered:"Todos los sabores en meta — nada que producir ahora.",
       averyHint:"Ambos botones incluyen TODOS los articulos del sistema automaticamente — agregue un producto y aparece aqui, asi las etiquetas nunca quedan desactualizadas. El boton Avery imprime en las hojas de stickers 5160 de Adriana (configure Margenes: Ninguno, Escala: 100%); el Libro de recibo es un formulario tamano Carta para llenar en el muelle.",
       retailprod:"Produccion Retail",ecomprod:"E-Commerce",epHint:"Producto e-commerce / DTC (paquetes variados). Escanee o elija el articulo, ingrese la cantidad producida y se agrega al inventario al instante. Los pedidos de ShipStation y TikTok lo descontaran automaticamente cuando se conecten.", rpHint:"Cuando se hace una paleta, escanee su codigo de producto (o eligalo), ingrese la cantidad y se agrega al inventario al instante. Imprima la hoja de codigos con el boton de abajo y pongala en la linea.", rpScanP:"Escanee codigo del producto", rpPickProduct:"O elija un producto...", rpQty:"Cantidad hecha", rpAdd:"Agregar al inventario", rpAdded:"Agregado al inventario", rpCurrent:"En mano actual", rpRecent:"Produccion reciente", rpNone:"Nada agregado aun.", rpPrint:"Imprimir codigos de producto", rpNotFound:"Codigo no reconocido",
@@ -388,6 +390,7 @@
       backupTitle:"Backup", backupHint:"Baixe uma copia completa de todos os dados do app (cada tabela) em um arquivo JSON. Salve no OneDrive como copia segura. Dica: configure a pasta de downloads do seu navegador para o seu OneDrive para que cada backup va para la automaticamente.", backupBtn:"Baixar backup completo", backupDone:"Backup baixado",
       facility:"Mapa da Planta", facHint:"Gemeo digital 3D interativo da planta SLC — layout exato, salas, sistemas e cada rack de paletes. Arraste para girar, role para zoom, clique numa baia para detalhes. Baias em vermelho sao racking PROPOSTO futuro (ainda nao instalado). As cores dos racks atualizam ao vivo: vermelho = ocupado, verde = disponivel (Secoes A-D). Feito pelo Salvador.", facOpen:"Abrir tela cheia",
       printRecvBook:"Livro de recebimento (Carta, preencher)", recvBookDone:"Etiquetas prontas", averyBtn:"Imprimir etiquetas Avery 5160", averyDone:"Etiquetas Avery 5160 prontas", ident4x6Btn:"Etiquetas identificadoras 4x6", ident4x6Done:"Etiquetas 4x6 prontas",
+      batchLabelBtn:"Etiqueta de lote (4x6)", batchLabelDone:"Etiqueta de lote pronta", batchLabelHint:"Preencha Receita, Data e Chef, depois imprima no rolo 4x6.", batchRecipe:"Receita / Sabor", batchDate:"Data", batchChef:"Chef / Feito Por", batchPrint:"Imprimir Etiqueta de Lote",
       bnTitle:"O Que Produzir Agora", bnNone:"Nenhum pedido aberto ainda. Importe SPS + ShipIQ em Demanda para ver a necessidade de producao.", bnHintProd:"Bolsas a produzir por sabor — conforme pedidos abertos OU seus niveis minimos de estoque, o que precisar mais. Assim, quando nao ha pedidos, suas metas de estoque mantem a linha ocupada. Verde = coberto, ambar = produzir, vermelho = falta filme. A etiqueta mostra a origem: pedido ou estoque.", bnHintFul:"Necessidade de producao por sabor, em bolsas e caixas — o maior entre demanda aberta ou nivel minimo de estoque, menos em estoque.", bnDemandBags:"Demanda (bolsas)", bnOnHandBags:"Em estoque (bolsas)", bnToProduceBags:"A produzir (BOLSAS)", bnToProduceCs:"A produzir (cx)", bnFlavors:"sabores a produzir", bnDriverOrder:"pedido", bnDriverStock:"estoque", bnAllCovered:"Todos os sabores na meta — nada a produzir agora.",
       averyHint:"Ambos os botoes incluem TODOS os itens do sistema automaticamente — adicione um produto e ele aparece aqui, entao as etiquetas nunca ficam desatualizadas. O botao Avery imprime nas folhas de adesivos 5160 da Adriana (configure Margens: Nenhuma, Escala: 100%); o Livro de recebimento e um formulario tamanho Carta para preencher na doca.",
       retailprod:"Producao Varejo",ecomprod:"E-Commerce",epHint:"Produto e-commerce / DTC (pacotes variados). Escaneie ou escolha o item, insira a quantidade produzida e ela e adicionada ao estoque na hora. Os pedidos do ShipStation e TikTok vao baixar isso automaticamente quando conectados.", rpHint:"Quando um palete e feito, escaneie o codigo do produto (ou escolha), insira a quantidade e ela e adicionada ao estoque na hora. Imprima a folha de codigos com o botao abaixo e coloque na linha.", rpScanP:"Escaneie codigo do produto", rpPickProduct:"Ou escolha um produto...", rpQty:"Quantidade feita", rpAdd:"Adicionar ao estoque", rpAdded:"Adicionado ao estoque", rpCurrent:"Em estoque atual", rpRecent:"Producao recente", rpNone:"Nada adicionado ainda.", rpPrint:"Imprimir codigos de produto", rpNotFound:"Codigo nao reconhecido",
@@ -539,7 +542,26 @@
     sourcreamonion: CDN + "SourCream_Onion_4_Front_d1bf59f8-2d3b-4f2a-a69e-a3dea130cd27.png?width=72",
     maplebrownsugar: CDN + "MapleBrownSugar_4_Front_2112beec-1fb1-45f6-89ff-ef72a70fe05f.png?width=72",
     lemonpepper: CDN + "LemonPepper_4_Front_2b7bf9f2-5012-4f7f-adc0-ac1e54696466.png?width=72",
-    crackedpepper: CDN + "CrackedPepper_4_Front_59837e87-ef45-4540-8540-f98da28bdea2.png?width=72"
+    crackedpepper: CDN + "CrackedPepper_4_Front_59837e87-ef45-4540-8540-f98da28bdea2.png?width=72",
+    // LTO / co-brand flavors (batch-label + finished-bags feature)
+    cheeseburger: CDN + "09.09.25_PDP_LTO_Cheeseburger_6Bags.png?width=72",
+    honeybbq: CDN + "04.01.26_PDP_LTO_ARod_6Bags.png?width=72",
+    arodhoneybbq: CDN + "04.01.26_PDP_LTO_ARod_6Bags.png?width=72",
+    honeybbqarod: CDN + "04.01.26_PDP_LTO_ARod_6Bags.png?width=72",
+    pizza: CDN + "02.16.26_SMACKINxPCA_4-6Bags.png?width=72",
+    deepdishpizza: CDN + "02.16.26_SMACKINxPCA_4-6Bags.png?width=72",
+    pcapizza: CDN + "02.16.26_SMACKINxPCA_4-6Bags.png?width=72",
+    saltvinegar: CDN + "PDPs_GoodGood6Bag.png?width=72",
+    goodgoodsaltvinegar: CDN + "PDPs_GoodGood6Bag.png?width=72",
+    guacamole: CDN + "PDPs_6Bag_Guac.png?width=72",
+    salsa: CDN + "PDPs_6Bag_Salsa.png?width=72",
+    taco: CDN + "PDPs_6Bag_Taco.png?width=72",
+    sweetthaichili: CDN + "PDPs_6bagSTC.png?width=72",
+    loadedpotato: CDN + "PDPs_6bagLP.png?width=72",
+    blueberrypie: CDN + "04.30.26_PDP_LTO_BlueberryPie-6Bags.png?width=72",
+    spicyqueso: CDN + "PDPs_SpicyQueso_6Bag.png?width=72",
+    chilicheesedog: CDN + "04.30.26_PDP_LTO_ChiliCheeseDog-6Bags.png?width=72",
+    baconmaccheese: CDN + "04.30.26_PDP_LTO_BaconMac_Cheese-6Bags.png?width=72"
   };
   function flavorImg(fl) { const k = String(fl || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, ""); return FLAVOR_IMG[k] || ""; }
   // Fuzzy: find a flavor image anywhere inside a longer string (e.g. a SKU title)
@@ -2397,6 +2419,7 @@
       '<button class="ghost" onclick="UI.labels(\'lpn\')">' + L("newLpn") + '</button>' +
       '<button class="primary" onclick="UI.printAvery5160()">&#127991; ' + L("averyBtn") + '</button>' +
       '<button class="ghost" onclick="UI.printIdent4x6()">&#128230; ' + L("ident4x6Btn") + '</button>' +
+      '<button class="ghost" onclick="UI.labels(\'batch\')">&#128221; ' + L("batchLabelBtn") + '</button>' +
       '<button class="ghost" onclick="UI.printRecvBook()">' + L("printRecvBook") + '</button>' +
       '<p class="hint" style="margin-top:8px">' + L("averyHint") + '</p>' +
       '<div id="labelArea"></div></div>';
@@ -3595,6 +3618,42 @@
       w.document.close();
       toast(L("ident4x6Done") + " (" + items.length + ")");
     },
+    // Digital 4x6 Batch Label (RD Batch Label 4x6.xlsx layout): RECIPE / DATE / CHEF,
+    // filled in from the form above and printed 1-up at true 4x6 for the Munbyn roll.
+    printBatchLabel() {
+      const recipe = ($("batch-recipe") ? $("batch-recipe").value : "").trim();
+      const date = $("batch-date") ? $("batch-date").value : "";
+      const chef = ($("batch-chef") ? $("batch-chef").value : "").trim();
+      if (!recipe) return toast(L("batchRecipe") + "?");
+      const w = window.open("", "_blank"); if (!w) return toast("Popup blocked - allow popups");
+      w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Batch Label 4x6</title>' +
+        '<style>' +
+        '@page{size:4in 6in;margin:0}' +
+        'html,body{margin:0;padding:0;font-family:Arial}' +
+        '.bar{background:#1F3864;color:#fff;padding:10px 14px;font-size:13px}.bar b{font-size:15px}' +
+        '.btn{display:inline-block;margin-top:8px;background:#fff;color:#1F3864;border:0;border-radius:6px;padding:7px 14px;font-weight:bold;cursor:pointer}' +
+        '.lbl{width:4in;height:6in;box-sizing:border-box;padding:0.12in;page-break-after:always;display:grid;grid-template-columns:18% 10% 72%;grid-template-rows:29.7% 20.3% 29.7% 20.3%;border:2px solid #000}' +
+        '.cell{border:1px solid #000;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;padding:4px;box-sizing:border-box;word-break:break-word}' +
+        '.cap{background:#e8e8e8;font-weight:bold;font-size:15px;letter-spacing:1px}' +
+        '.val{font-size:24px;font-weight:bold}' +
+        '.recipecap{background:#e8e8e8;font-weight:bold;font-size:15px;letter-spacing:2px}' +
+        '.recipeval{font-size:38px;font-weight:bold;line-height:1.1}' +
+        '@media print{.bar{display:none}}' +
+        '</style></head><body>' +
+        '<div class="bar"><b>Batch Label (4x6)</b> &mdash; Load the 4x6 roll (Munbyn), click Print, set paper 4x6, Margins None, Scale 100%.<br>' +
+        '<button class="btn" onclick="window.print()">&#128424; Print now</button></div>' +
+        '<div class="lbl">' +
+        '<div class="cell val" style="grid-column:1;grid-row:1">' + esc(date) + '</div>' +
+        '<div class="cell cap" style="grid-column:1;grid-row:2">DATE</div>' +
+        '<div class="cell val" style="grid-column:1;grid-row:3">' + esc(chef) + '</div>' +
+        '<div class="cell cap" style="grid-column:1;grid-row:4">CHEF</div>' +
+        '<div class="cell recipecap" style="grid-column:2;grid-row:1/5">RECIPE</div>' +
+        '<div class="cell recipeval" style="grid-column:3;grid-row:1/5">' + esc(recipe) + '</div>' +
+        '</div>' +
+        '</body></html>');
+      w.document.close();
+      toast(L("batchLabelDone"));
+    },
     // Avery 5160 sticker sheet (30/sheet, 3 x 10, label 2.625in x 1in) for EVERY current item.
     // Exact grid so it prints perfectly onto the physical Avery 5160 sheets. Always current.
     printAvery5160() {
@@ -4235,6 +4294,16 @@
       if (kind === "loc") list = DB.allLocations().map(c => ({ code: c, name: c }));
       else if (kind === "item") list = DB.items().map(i => ({ code: i.code, name: i.name }));
       else if (kind === "lpn") { const lpn = "LPN-" + Date.now().toString().slice(-8); list = [{ code: lpn, name: "Pallet " + lpn }]; }
+      else if (kind === "batch") {
+        const today = new Date().toISOString().slice(0, 10);
+        area.innerHTML = '<div class="card" style="margin-top:10px"><h3 class="sub2">' + L("batchLabelBtn") + '</h3>' +
+          '<p class="hint">' + L("batchLabelHint") + '</p>' +
+          '<div class="row"><div><label>' + L("batchRecipe") + '</label><input id="batch-recipe" autocomplete="off" placeholder="' + L("batchRecipe") + '"></div>' +
+          '<div><label>' + L("batchDate") + '</label><input id="batch-date" type="date" value="' + today + '"></div></div>' +
+          '<div class="row"><div><label>' + L("batchChef") + '</label><input id="batch-chef" autocomplete="off" placeholder="' + L("batchChef") + '"></div></div>' +
+          '<button class="primary" onclick="UI.printBatchLabel()">&#128424; ' + L("batchPrint") + '</button></div>';
+        return;
+      }
       area.innerHTML = '<div class="labelgrid" id="labelgrid">' +
         list.map((x, n) => '<div class="lbl"><svg id="bc' + n + '"></svg><div class="lblcap">' + x.name + '</div></div>').join("") +
         '</div><button class="primary" onclick="window.print()">' + L("print") + '</button>';
