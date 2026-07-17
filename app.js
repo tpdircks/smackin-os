@@ -27,6 +27,15 @@
       produceHint:"Record finished 4oz bags off the line. Adds bags, consumes film + seasoning.",
       countHint:"Cycle count: scan item + slot, enter the counted quantity; the system adjusts.",
       locHint:"What is in each location now.", purchHint:"Reorder alerts plus full purchase orders.",purchBuyList:"Buy List",purchSetup:"Reorder Setup",rsHint:"Set a reorder point and preferred supplier for each item. Items with both set will trigger on the Buy List when stock runs low.",rsNoSup:"— none —",rsNeeds:"Needs setup",rsReady:"Ready",rsReorderPt:"Reorder point",rsNeedShort:"need setup",rsSaved:"Saved",rsSearchP:"Search items...",prodlog:"Daily Production",bags:"Bags",plLot:"Lot #",plShiftLead:"Shift Lead",plCounter:"Metal Detector Box Counter",plStart:"Start Count",plEnd:"End Count",plBoxes:"Boxes Produced",plCounterHint:"Record the counter BEFORE and AFTER the shift. Do not reset it.",plAddPallet:"Add Pallet",plLine:"Line",plFlavor:"Flavor",plCases:"Cases",plNotes:"Notes / Customer",plAdd:"Add to log",plAdded:"Pallet added",plNeedCases:"Enter case count",plLog:"Pallet Log",plPalletsUsed:"Pallets Used",plNoPallets:"No pallets logged yet today.",plSummary:"Daily Summary by Flavor",plCode:"Code",plCasesLogged:"Cases Logged",plVariance:"Variance (counter - log)",
+      fulfilldaily:"Daily Fulfillment", fdHint:"Log today's E-Commerce labels and Amazon (FBA) build output, plus notes on any custom/unique orders. Saved per day - also acts as a backup and double-check while automation is built out.",
+      fdDate:"Date", fdEcomTitle:"E-Commerce - Labels per Person", fdEcomHint:"One row per person who worked e-com labels today. The day's total is the sum of everyone's labels.",
+      fdEmployee:"Employee", fdPickEmployee:"Pick a person...", fdLabelsDone:"# Labels Done", fdAddPerson:"+ Add person", fdEcomLabelsTotal:"E-Com Labels Total",
+      fdAmzTitle:"Amazon (FBA)", fdAmzHint:"Pick a SKU (or add a custom one) and the units made. Bags = units x bags/unit - counted separately from e-com labels.",
+      fdSku:"SKU", fdPickSku:"Pick a SKU...", fdCustomSku:"+ Custom SKU...", fdCustomSkuPh:"Enter SKU", fdUnitsMade:"Units Made", fdBagsPerUnit:"Bags / Unit", fdBags:"Bags",
+      fdAddSku:"+ Add SKU", fdAmzUnitsTotal:"Amazon Units Total", fdAmzBagsTotal:"Amazon Bags Total",
+      fdNotesTitle:"Notes", fdNotesHint:"Custom / unique builds or anything special about today's orders.", fdNotesPh:"Notes...",
+      fdSave:"Save Day", fdSaved:"Daily Fulfillment saved", fdSummary:"Today's Summary", fdHistory:"Recent Days", fdNoHistory:"No days logged yet.",
+      fdRemove:"Remove", fdDeleteConfirm:"Delete this day's entry?", fdHistDate:"Date", fdHistEcom:"E-Com Labels", fdHistAmzBags:"Amazon Bags", fdHistNotes:"Notes", fdHistBy:"Entered by",
       locMap:"Rack map", locList:"List", locFloor:"Floor plan", locOccupied:"Occupied", locEmpty:"Empty", locBlocked:"Blocked", locSection:"Section", locDocks:"Dock doors", locZones:"Zones & staging", locClickHint:"Top-down view of the racks. Green = occupied, click any slot to see what is stored there. Bay 01 is at the dock end.", locNothing:"Nothing stored in this slot.",lmMove:"Move",lmSet:"Fix count",lmAddItem:"Add item",lmAssign:"Place item here",lmEmpty:"Clear to Staging",lmClearConfirm:"Move all items to STAGING from",lmMoveTitle:"Move item to another location",lmSetTitle:"Correct the count",lmAssignTitle:"Place an item in this location",lmDest:"Move to (location)",lmMoveBtn:"Move",lmAssignBtn:"Place here",lmEmptyConfirm:"Remove ALL items from",lmEmptied:"emptied", locSlot:"Slot", locBaysUsed:"slots used", locOfficeEnd:"office end", locFarEnd:"far end", locView3d:"View in 3D",
       locFloorNote:"Top-down map of the building - every place product is stored or moves through. Click a rack section or staging zone to see its contents. Section A/B/C/D letters are a best guess - tell me which physical run is which and I will lock them in.", locStorage:"Storage (racking)", locTransfer:"Production & transfer areas", locStaging:"Staging & work zones",
       reorderSug:"Reorder suggestions", purchOrders:"Purchase orders", newPO:"New PO", createDraft:"Create draft PO",
@@ -172,6 +181,15 @@
       produceHint:"Registre bolsas 4oz de la linea. Suma bolsas, consume film + sazon.",
       countHint:"Conteo ciclico: escanee articulo + slot, ingrese la cantidad contada.",
       locHint:"Lo que hay en cada ubicacion ahora.", purchHint:"Alertas de reorden mas ordenes de compra.",purchBuyList:"Lista de compra",purchSetup:"Config. de reorden",rsHint:"Defina un punto de reorden y proveedor preferido para cada articulo. Los articulos con ambos configurados apareceran en la Lista de compra cuando el stock baje.",rsNoSup:"— ninguno —",rsNeeds:"Falta config.",rsReady:"Listo",rsReorderPt:"Punto de reorden",rsNeedShort:"por configurar",rsSaved:"Guardado",rsSearchP:"Buscar articulos...",prodlog:"Produccion Diaria",bags:"Bolsas",plLot:"Lote #",plShiftLead:"Lider de Turno",plCounter:"Contador de Cajas - Detector de Metales",plStart:"Conteo Inicial",plEnd:"Conteo Final",plBoxes:"Cajas Producidas",plCounterHint:"Registrar el contador ANTES y DESPUES del turno. No reiniciar.",plAddPallet:"Agregar Paleta",plLine:"Linea",plFlavor:"Sabor",plCases:"Cajas",plNotes:"Notas / Cliente",plAdd:"Agregar al registro",plAdded:"Paleta agregada",plNeedCases:"Ingrese cantidad de cajas",plLog:"Registro de Paletas",plPalletsUsed:"Paletas Usadas",plNoPallets:"Aun no hay paletas registradas hoy.",plSummary:"Resumen Diario por Sabor",plCode:"Codigo",plCasesLogged:"Cajas Registradas",plVariance:"Variacion (contador - registro)",
+      fulfilldaily:"Cumplimiento Diario", fdHint:"Registre las etiquetas de E-Commerce de hoy y la produccion de Amazon (FBA), mas notas de pedidos especiales. Se guarda por dia - tambien sirve de respaldo y doble verificacion mientras se automatiza.",
+      fdDate:"Fecha", fdEcomTitle:"E-Commerce - Etiquetas por Persona", fdEcomHint:"Una fila por cada persona que trabajo etiquetas de e-com hoy. El total del dia es la suma de todos.",
+      fdEmployee:"Empleado", fdPickEmployee:"Elija una persona...", fdLabelsDone:"# Etiquetas Hechas", fdAddPerson:"+ Agregar persona", fdEcomLabelsTotal:"Total Etiquetas E-Com",
+      fdAmzTitle:"Amazon (FBA)", fdAmzHint:"Elija un SKU (o agregue uno personalizado) y las unidades hechas. Bolsas = unidades x bolsas/unidad - se cuenta aparte de las etiquetas e-com.",
+      fdSku:"SKU", fdPickSku:"Elija un SKU...", fdCustomSku:"+ SKU personalizado...", fdCustomSkuPh:"Ingrese SKU", fdUnitsMade:"Unidades Hechas", fdBagsPerUnit:"Bolsas / Unidad", fdBags:"Bolsas",
+      fdAddSku:"+ Agregar SKU", fdAmzUnitsTotal:"Total Unidades Amazon", fdAmzBagsTotal:"Total Bolsas Amazon",
+      fdNotesTitle:"Notas", fdNotesHint:"Construcciones personalizadas o algo especial sobre los pedidos de hoy.", fdNotesPh:"Notas...",
+      fdSave:"Guardar Dia", fdSaved:"Cumplimiento Diario guardado", fdSummary:"Resumen de Hoy", fdHistory:"Dias Recientes", fdNoHistory:"Aun no hay dias registrados.",
+      fdRemove:"Quitar", fdDeleteConfirm:"Eliminar el registro de este dia?", fdHistDate:"Fecha", fdHistEcom:"Etiquetas E-Com", fdHistAmzBags:"Bolsas Amazon", fdHistNotes:"Notas", fdHistBy:"Ingresado por",
       locMap:"Mapa de racks", locList:"Lista", locFloor:"Plano", locOccupied:"Ocupado", locEmpty:"Vacio", locBlocked:"Bloqueado", locSection:"Seccion", locDocks:"Puertas de muelle", locZones:"Zonas y staging", locClickHint:"Vista superior de los racks. Verde = ocupado, haga clic en un slot para ver que hay. La bahia 01 esta junto a los muelles.", locNothing:"Nada almacenado en este slot.",lmMove:"Mover",lmSet:"Corregir conteo",lmAddItem:"Agregar articulo",lmAssign:"Colocar articulo aqui",lmEmpty:"Enviar a Staging",lmClearConfirm:"Mover todos los articulos a STAGING desde",lmMoveTitle:"Mover articulo a otra ubicacion",lmSetTitle:"Corregir el conteo",lmAssignTitle:"Colocar un articulo en esta ubicacion",lmDest:"Mover a (ubicacion)",lmMoveBtn:"Mover",lmAssignBtn:"Colocar aqui",lmEmptyConfirm:"Quitar TODOS los articulos de",lmEmptied:"vaciado", locSlot:"Slot", locBaysUsed:"slots usados", locOfficeEnd:"lado oficina", locFarEnd:"lado lejano", locView3d:"Ver en 3D",
       locFloorNote:"Plano superior del edificio - cada lugar donde se almacena o mueve producto. Haga clic en una seccion de rack o zona para ver su contenido. Las letras A/B/C/D son un estimado - digame que fila fisica es cual y las fijo.", locStorage:"Almacenamiento (racks)", locTransfer:"Areas de produccion y transferencia", locStaging:"Zonas de staging y trabajo",
       reorderSug:"Sugerencias de reorden", purchOrders:"Ordenes de compra", newPO:"Nueva orden", createDraft:"Crear borrador",
@@ -316,6 +334,15 @@
       produceHint:"Registre sacos 4oz da linha. Adiciona sacos, consome filme + tempero.",
       countHint:"Contagem ciclica: escaneie item + slot, digite a quantidade contada.",
       locHint:"O que ha em cada local agora.", purchHint:"Alertas de reposicao mais ordens de compra.",purchBuyList:"Lista de compras",purchSetup:"Config. de reposicao",rsHint:"Defina um ponto de reposicao e fornecedor preferido para cada item. Itens com ambos configurados aparecerao na Lista de compras quando o estoque baixar.",rsNoSup:"— nenhum —",rsNeeds:"Falta config.",rsReady:"Pronto",rsReorderPt:"Ponto de reposicao",rsNeedShort:"a configurar",rsSaved:"Salvo",rsSearchP:"Buscar itens...",prodlog:"Producao Diaria",bags:"Bolsas",plLot:"Lote #",plShiftLead:"Lider de Turno",plCounter:"Contador de Caixas - Detector de Metais",plStart:"Contagem Inicial",plEnd:"Contagem Final",plBoxes:"Caixas Produzidas",plCounterHint:"Registrar o contador ANTES e DEPOIS do turno. Nao reiniciar.",plAddPallet:"Adicionar Palete",plLine:"Linha",plFlavor:"Sabor",plCases:"Caixas",plNotes:"Notas / Cliente",plAdd:"Adicionar ao registro",plAdded:"Palete adicionado",plNeedCases:"Insira a quantidade de caixas",plLog:"Registro de Paletes",plPalletsUsed:"Paletes Usados",plNoPallets:"Nenhum palete registrado hoje ainda.",plSummary:"Resumo Diario por Sabor",plCode:"Codigo",plCasesLogged:"Caixas Registradas",plVariance:"Variacao (contador - registro)",
+      fulfilldaily:"Cumprimento Diario", fdHint:"Registre as etiquetas de E-Commerce de hoje e a producao da Amazon (FBA), mais notas de pedidos especiais. Salvo por dia - tambem serve de backup e dupla verificacao enquanto a automacao e construida.",
+      fdDate:"Data", fdEcomTitle:"E-Commerce - Etiquetas por Pessoa", fdEcomHint:"Uma linha por pessoa que trabalhou etiquetas de e-com hoje. O total do dia e a soma de todos.",
+      fdEmployee:"Funcionario", fdPickEmployee:"Escolha uma pessoa...", fdLabelsDone:"# Etiquetas Feitas", fdAddPerson:"+ Adicionar pessoa", fdEcomLabelsTotal:"Total Etiquetas E-Com",
+      fdAmzTitle:"Amazon (FBA)", fdAmzHint:"Escolha um SKU (ou adicione um personalizado) e as unidades feitas. Sacos = unidades x sacos/unidade - contado separado das etiquetas e-com.",
+      fdSku:"SKU", fdPickSku:"Escolha um SKU...", fdCustomSku:"+ SKU personalizado...", fdCustomSkuPh:"Digite o SKU", fdUnitsMade:"Unidades Feitas", fdBagsPerUnit:"Sacos / Unidade", fdBags:"Sacos",
+      fdAddSku:"+ Adicionar SKU", fdAmzUnitsTotal:"Total Unidades Amazon", fdAmzBagsTotal:"Total Sacos Amazon",
+      fdNotesTitle:"Notas", fdNotesHint:"Construcoes personalizadas ou algo especial sobre os pedidos de hoje.", fdNotesPh:"Notas...",
+      fdSave:"Salvar Dia", fdSaved:"Cumprimento Diario salvo", fdSummary:"Resumo de Hoje", fdHistory:"Dias Recentes", fdNoHistory:"Nenhum dia registrado ainda.",
+      fdRemove:"Remover", fdDeleteConfirm:"Excluir o registro deste dia?", fdHistDate:"Data", fdHistEcom:"Etiquetas E-Com", fdHistAmzBags:"Sacos Amazon", fdHistNotes:"Notas", fdHistBy:"Inserido por",
       locMap:"Mapa de racks", locList:"Lista", locFloor:"Planta", locOccupied:"Ocupado", locEmpty:"Vazio", locBlocked:"Bloqueado", locSection:"Secao", locDocks:"Portas de doca", locZones:"Zonas e staging", locClickHint:"Vista de cima dos racks. Verde = ocupado, clique em um slot para ver o que ha. A baia 01 fica junto as docas.", locNothing:"Nada armazenado neste slot.",lmMove:"Mover",lmSet:"Corrigir contagem",lmAddItem:"Adicionar item",lmAssign:"Colocar item aqui",lmEmpty:"Enviar para Staging",lmClearConfirm:"Mover todos os itens para STAGING de",lmMoveTitle:"Mover item para outra localizacao",lmSetTitle:"Corrigir a contagem",lmAssignTitle:"Colocar um item nesta localizacao",lmDest:"Mover para (localizacao)",lmMoveBtn:"Mover",lmAssignBtn:"Colocar aqui",lmEmptyConfirm:"Remover TODOS os itens de",lmEmptied:"esvaziado", locSlot:"Slot", locBaysUsed:"slots usados", locOfficeEnd:"lado escritorio", locFarEnd:"lado distante", locView3d:"Ver em 3D",
       locFloorNote:"Planta de cima do predio - cada lugar onde produto e armazenado ou movimentado. Clique em uma secao de rack ou zona para ver o conteudo. As letras A/B/C/D sao um palpite - diga qual fila fisica e qual e eu fixo.", locStorage:"Armazenamento (racks)", locTransfer:"Areas de producao e transferencia", locStaging:"Zonas de staging e trabalho",
       reorderSug:"Sugestoes de reposicao", purchOrders:"Ordens de compra", newPO:"Nova ordem", createDraft:"Criar rascunho",
@@ -461,6 +488,16 @@
     { code: "L21", name: "Cheeseburger", bpc: 72 }, { code: "L38", name: "Salt & Vinegar", bpc: 72 }, { code: "L34", name: "Honey BBQ", bpc: 72 }
   ];
   const PROD_FMAP = {}; PROD_FLAVORS.forEach(f => PROD_FMAP[f.code] = f);
+  // Daily Fulfillment tracker: Amazon (FBA) SKU -> bags-per-unit map. Editable here as new packs are added;
+  // any SKU not in this map (custom / free-text entry) defaults to a user-entered bags-per-unit, or 1.
+  const AMZ_SKU_BAGS = { "SS-SP-10-FBA": 10, "SS-SP-11-FBA": 11, "SS-VP-7-FBA": 6 };
+  const AMZ_SKU_LABELS = {
+    "SS-SP-10-FBA": "10-Flavor Variety 1.5oz (10 bags/unit)",
+    "SS-SP-11-FBA": "11-Pack Variety 1.5oz (11 bags/unit)",
+    "SS-VP-7-FBA": "6-Flavor Variety 1.5oz (6 bags/unit)"
+  };
+  let fdDate = null;   // Daily Fulfillment: selected date (defaults to today)
+  let fdDraft = null;  // Daily Fulfillment: in-progress draft { date, ecom:[{employee,labels}], amazon:[{sku,units,bagsPerUnit}], notes }
   // Seed packaging profiles (Adriana): per = total lbs per pallet -> auto weight = pallets x per
   const SEED_PACKS = [
     { key: "30x50", label: "30 bags x 50 lb / pallet", per: 1500 },
@@ -468,7 +505,7 @@
     { key: "tote", label: "Tote - 1 bag x 1,200 lb", per: 1200 }
   ];
   const SEED_PACK_MAP = {}; SEED_PACKS.forEach(p => SEED_PACK_MAP[p.key] = p);
-  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","supplierpos","people","improve","maintenance","compliance","reference","labels","log","settings","board"];
+  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","fulfilldaily","stockbuild","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","supplierpos","people","improve","maintenance","compliance","reference","labels","log","settings","board"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -635,12 +672,18 @@
     ["Rajil Wasif","Marketing","Marketing","Max DeWolf"],
     ["Brian Lepro","Independent Contractor","Contractor",""]
   ].map(a => ({ n:a[0], r:a[1], d:a[2], m:a[3] }));
+  // Daily Fulfillment tracker: anyone who can work e-com labels on a given day -- the whole Fulfillment /
+  // Shipping roster, plus the Operations people who report to Troy on the fulfillment side.
+  function fdEmployeeList() {
+    return PEOPLE.filter(p => p.d === "Fulfillment" || p.d === "Shipping" || (p.d === "Operations" && p.m === "Troy Dircks"))
+      .map(p => p.n).sort();
+  }
   // ---- left sidebar: tabs grouped by department (NetSuite-style) ----
   const NAV_GROUPS = [
     { key:"", items:["home","alerts"] },
     { key:"grpReceiving", items:["receive","recvlog","returns","qa"] },
     { key:"grpInventory", items:["dash","adjust","count","move","locations","facility","finbags","seasoning","seed","skus","labels"] },
-    { key:"grpProduction", items:["produce","retailprod","ecomprod","prodlog","stockbuild","orders","orderdocs"] },
+    { key:"grpProduction", items:["produce","retailprod","ecomprod","prodlog","fulfilldaily","stockbuild","orders","orderdocs"] },
     { key:"grpDemand", items:["demand","demandboard","demandsched","demandimport","ecomdemand","forecast"] },
     { key:"grpShipping", items:["shiplog"] },
     { key:"grpMixing", items:["mixing","floor"] },
@@ -659,7 +702,7 @@
     home:"home", dash:"layout-dashboard", alerts:"bell", adjust:"sliders-horizontal",
     receive:"package-plus", recvlog:"clipboard-list", putaway:"package-check", returns:"rotate-ccw",
     orders:"receipt", orderdocs:"folder", shiplog:"truck", rd:"flask-conical", qa:"shield-alert",
-    move:"arrow-left-right", produce:"factory", retailprod:"package", ecomprod:"laptop", prodlog:"clipboard-list", stockbuild:"layers",
+    move:"arrow-left-right", produce:"factory", retailprod:"package", ecomprod:"laptop", prodlog:"clipboard-list", fulfilldaily:"clipboard-list", stockbuild:"layers",
     seasoning:"flame", seed:"sprout", skus:"barcode", finbags:"shopping-bag", pmacout:"package-open",
     mixing:"cooking-pot", pmac:"wrench", count:"clipboard-check", locations:"map-pin",
     purchasing:"shopping-cart", supplierpos:"file-text", people:"users", labels:"tag",
@@ -1881,6 +1924,91 @@
       '<div class="kpi"><div class="n">' + fmt(totCases) + '</div><div class="l">' + L("plCasesLogged") + '</div></div>' +
       '<div class="kpi ' + (variance !== 0 ? "alert" : "") + '"><div class="n">' + fmt(variance) + '</div><div class="l">' + L("plVariance") + '</div></div></div></div>';
     return header + addCard + logCard + sumCard;
+  }
+  // ---- Daily Fulfillment tracker (Jesus logs E-Com labels/person + Amazon FBA units->bags + notes) ----
+  // Manual backup / double-check while automation is built out. One record per day, upsert on fdate.
+  function fdEnsureDraft() {
+    const today = new Date().toISOString().slice(0, 10);
+    const date = fdDate || today;
+    if (fdDraft && fdDraft.date === date) return fdDraft;
+    const existing = (DB.fulfillmentDaily ? DB.fulfillmentDaily() : []).find(r => r.fdate === date);
+    if (existing) {
+      fdDraft = {
+        date: date, id: existing.id,
+        ecom: (existing.ecom_labels && existing.ecom_labels.length) ? existing.ecom_labels.map(r => ({ employee: r.employee || "", labels: r.labels != null ? r.labels : "" })) : [{ employee: "", labels: "" }],
+        amazon: (existing.amazon && existing.amazon.length) ? existing.amazon.map(r => ({
+          sku: r.sku || "", units: r.units != null ? r.units : "",
+          bagsPerUnit: (Number(r.units) ? Math.round((Number(r.bags) / Number(r.units)) * 100) / 100 : (AMZ_SKU_BAGS[r.sku] != null ? AMZ_SKU_BAGS[r.sku] : 1)),
+          custom: AMZ_SKU_BAGS[r.sku] === undefined
+        })) : [{ sku: "", units: "", bagsPerUnit: "", custom: false }],
+        notes: existing.notes || ""
+      };
+    } else {
+      fdDraft = { date: date, id: null, ecom: [{ employee: "", labels: "" }], amazon: [{ sku: "", units: "", bagsPerUnit: "", custom: false }], notes: "" };
+    }
+    return fdDraft;
+  }
+  function viewFulfillDaily() {
+    const today = new Date().toISOString().slice(0, 10);
+    const date = fdDate || today;
+    const d = fdEnsureDraft();
+    const emps = fdEmployeeList();
+    let ecomTotal = 0;
+    const ecomRows = d.ecom.map((r, i) => {
+      ecomTotal += Number(r.labels) || 0;
+      return '<tr><td><select onchange="UI.fdEcomSet(' + i + ',\'employee\',this.value)">' +
+        '<option value="">' + L("fdPickEmployee") + '</option>' +
+        emps.map(n => '<option value="' + esc(n) + '"' + (n === r.employee ? ' selected' : '') + '>' + esc(n) + '</option>').join("") +
+        '</select></td>' +
+        '<td><input type="number" min="0" step="1" inputmode="numeric" value="' + esc(r.labels) + '" onchange="UI.fdEcomSet(' + i + ',\'labels\',this.value)" style="width:110px"></td>' +
+        '<td><button class="ghost sm danger" onclick="UI.fdEcomRemove(' + i + ')">&#10005;</button></td></tr>';
+    }).join("");
+    const knownSkuOpts = Object.keys(AMZ_SKU_BAGS).map(k => '<option value="' + k + '">' + k + ' - ' + esc(AMZ_SKU_LABELS[k] || '') + '</option>').join("");
+    let amzTotalUnits = 0, amzTotalBags = 0;
+    const amzRows = d.amazon.map((r, i) => {
+      const isKnown = !r.custom && AMZ_SKU_BAGS[r.sku] !== undefined;
+      const bpu = (r.bagsPerUnit !== "" && r.bagsPerUnit != null) ? Number(r.bagsPerUnit) : (isKnown ? AMZ_SKU_BAGS[r.sku] : 1);
+      const units = Number(r.units) || 0;
+      const bags = units * bpu;
+      amzTotalUnits += units; amzTotalBags += bags;
+      const selVal = r.custom ? "__custom__" : (r.sku || "");
+      return '<tr><td><select onchange="UI.fdAmzSku(' + i + ',this.value)">' +
+        '<option value="">' + L("fdPickSku") + '</option>' + knownSkuOpts +
+        '<option value="__custom__"' + (selVal === "__custom__" ? ' selected' : '') + '>' + L("fdCustomSku") + '</option>' +
+        '</select>' +
+        (r.custom ? '<input value="' + esc(r.sku) + '" placeholder="' + L("fdCustomSkuPh") + '" onchange="UI.fdAmzSet(' + i + ',\'sku\',this.value)" style="margin-top:4px;width:160px;display:block">' : '') +
+        '</td>' +
+        '<td><input type="number" min="0" step="1" inputmode="numeric" value="' + esc(r.units) + '" onchange="UI.fdAmzSet(' + i + ',\'units\',this.value)" style="width:100px"></td>' +
+        '<td><input type="number" min="0" step="0.1" value="' + (r.bagsPerUnit !== "" && r.bagsPerUnit != null ? esc(r.bagsPerUnit) : bpu) + '" onchange="UI.fdAmzSet(' + i + ',\'bagsPerUnit\',this.value)" style="width:90px" title="' + L("fdBagsPerUnit") + '"></td>' +
+        '<td class="right"><b>' + fmt(bags) + '</b></td>' +
+        '<td><button class="ghost sm danger" onclick="UI.fdAmzRemove(' + i + ')">&#10005;</button></td></tr>';
+    }).join("");
+    const header = '<div class="card"><div class="suprow"><h2 style="flex:1;margin:0">' + L("fulfilldaily") + '</h2>' +
+      '<input type="date" value="' + date + '" onchange="UI.fdSetDate(this.value)" style="width:auto"></div>' +
+      '<p class="hint">' + L("fdHint") + '</p></div>';
+    const ecomCard = '<div class="card"><div class="suprow"><h2 class="sub2" style="flex:1;margin:0">' + L("fdEcomTitle") + '</h2>' +
+      '<span class="muted sm">' + L("fdEcomLabelsTotal") + ': <b>' + fmt(ecomTotal) + '</b></span></div>' +
+      '<p class="hint">' + L("fdEcomHint") + '</p>' +
+      '<table><thead><tr><th>' + L("fdEmployee") + '</th><th>' + L("fdLabelsDone") + '</th><th></th></tr></thead><tbody>' + ecomRows + '</tbody></table>' +
+      '<button class="ghost" style="margin-top:8px" onclick="UI.fdEcomAddRow()">' + L("fdAddPerson") + '</button></div>';
+    const amzCard = '<div class="card"><div class="suprow"><h2 class="sub2" style="flex:1;margin:0">' + L("fdAmzTitle") + '</h2>' +
+      '<span class="muted sm">' + fmt(amzTotalUnits) + ' &middot; <b>' + fmt(amzTotalBags) + '</b> ' + L("fdBags").toLowerCase() + '</span></div>' +
+      '<p class="hint">' + L("fdAmzHint") + '</p>' +
+      '<table><thead><tr><th>' + L("fdSku") + '</th><th>' + L("fdUnitsMade") + '</th><th>' + L("fdBagsPerUnit") + '</th><th class="right">' + L("fdBags") + '</th><th></th></tr></thead><tbody>' + amzRows + '</tbody></table>' +
+      '<button class="ghost" style="margin-top:8px" onclick="UI.fdAmzAddRow()">' + L("fdAddSku") + '</button></div>';
+    const notesCard = '<div class="card"><h2 class="sub2">' + L("fdNotesTitle") + '</h2><p class="hint">' + L("fdNotesHint") + '</p>' +
+      '<textarea id="fd-notes" rows="3" placeholder="' + L("fdNotesPh") + '" onchange="UI.fdNotesSet(this.value)">' + esc(d.notes) + '</textarea></div>';
+    const summaryCard = '<div class="card"><h2 class="sub2">' + L("fdSummary") + '</h2>' +
+      '<div class="kpis"><div class="kpi"><div class="n">' + fmt(ecomTotal) + '</div><div class="l">' + L("fdEcomLabelsTotal") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(amzTotalUnits) + '</div><div class="l">' + L("fdAmzUnitsTotal") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(amzTotalBags) + '</div><div class="l">' + L("fdAmzBagsTotal") + '</div></div></div>' +
+      '<button class="primary" style="margin-top:12px" onclick="UI.fdSave()">' + L("fdSave") + '</button></div>';
+    const hist = (DB.fulfillmentDaily ? DB.fulfillmentDaily() : []).slice().sort((a, b) => String(b.fdate).localeCompare(String(a.fdate))).slice(0, 10);
+    const histRows = hist.length ? hist.map(r => '<tr><td>' + esc(r.fdate) + '</td><td class="right">' + fmt(r.ecom_total) + '</td><td class="right">' + fmt(r.amazon_bags) + '</td><td class="sm">' + esc(r.notes || '') + '</td><td class="sm muted">' + esc(r.entered_by || '') + '</td>' +
+      '<td><button class="ghost sm danger" onclick="UI.fdDeleteDay(\'' + r.id + '\')">&#10005;</button></td></tr>').join('') : '<tr><td colspan="6" class="muted">' + L("fdNoHistory") + '</td></tr>';
+    const histCard = '<div class="card"><h2 class="sub2">' + L("fdHistory") + '</h2>' +
+      '<table class="sortable"><thead><tr><th>' + L("fdHistDate") + '</th><th class="right">' + L("fdHistEcom") + '</th><th class="right">' + L("fdHistAmzBags") + '</th><th>' + L("fdHistNotes") + '</th><th>' + L("fdHistBy") + '</th><th></th></tr></thead><tbody>' + histRows + '</tbody></table></div>';
+    return header + ecomCard + amzCard + notesCard + summaryCard + histCard;
   }
   function isEcomItem(i) { return i.cat === "Others" && i.sub === "E-Com"; }
   function productionEntry(channel) {
@@ -4045,6 +4173,34 @@
       toast(L("plAdded")); render();
     },
     async plDel(id) { const r = await DB.deleteProdPallet(id, opVal()); if (r && r.ok === false) return toast(r.msg || "error"); render(); },
+    // ---- Daily Fulfillment tracker ----
+    fdSetDate(v) { fdDate = v; fdDraft = null; render(); },
+    fdEcomAddRow() { const d = fdEnsureDraft(); d.ecom.push({ employee: "", labels: "" }); render(); },
+    fdEcomSet(idx, field, val) { const d = fdEnsureDraft(); if (d.ecom[idx]) d.ecom[idx][field] = val; render(); },
+    fdEcomRemove(idx) { const d = fdEnsureDraft(); d.ecom.splice(idx, 1); if (!d.ecom.length) d.ecom.push({ employee: "", labels: "" }); render(); },
+    fdAmzAddRow() { const d = fdEnsureDraft(); d.amazon.push({ sku: "", units: "", bagsPerUnit: "", custom: false }); render(); },
+    fdAmzSku(idx, val) {
+      const d = fdEnsureDraft(); const r = d.amazon[idx]; if (!r) return;
+      if (val === "__custom__") { r.custom = true; r.sku = ""; if (!r.bagsPerUnit) r.bagsPerUnit = 1; }
+      else { r.custom = false; r.sku = val; r.bagsPerUnit = AMZ_SKU_BAGS[val] !== undefined ? AMZ_SKU_BAGS[val] : 1; }
+      render();
+    },
+    fdAmzSet(idx, field, val) { const d = fdEnsureDraft(); if (d.amazon[idx]) d.amazon[idx][field] = val; render(); },
+    fdAmzRemove(idx) { const d = fdEnsureDraft(); d.amazon.splice(idx, 1); if (!d.amazon.length) d.amazon.push({ sku: "", units: "", bagsPerUnit: "", custom: false }); render(); },
+    fdNotesSet(val) { const d = fdEnsureDraft(); d.notes = val; },
+    async fdSave() {
+      const d = fdEnsureDraft();
+      const ecom = d.ecom.filter(r => r.employee || Number(r.labels) > 0).map(r => ({ employee: r.employee || "", labels: Number(r.labels) || 0 }));
+      const amazon = d.amazon.filter(r => r.sku || Number(r.units) > 0).map(r => {
+        const bpu = (r.bagsPerUnit !== "" && r.bagsPerUnit != null) ? (Number(r.bagsPerUnit) || 0) : (AMZ_SKU_BAGS[r.sku] != null ? AMZ_SKU_BAGS[r.sku] : 1);
+        const units = Number(r.units) || 0;
+        return { sku: r.sku || "", units: units, bags: units * bpu };
+      });
+      const res = await DB.saveFulfillmentDaily({ fdate: d.date, ecom_labels: ecom, amazon: amazon, notes: d.notes }, opVal());
+      if (res && res.ok === false) return toast(res.msg || "error");
+      fdDraft = null; toast(L("fdSaved")); render();
+    },
+    async fdDeleteDay(id) { if (!confirm(L("fdDeleteConfirm"))) return; await DB.deleteFulfillmentDaily(id, opVal()); fdDraft = null; toast(L("spoDelete") + " ✓"); render(); },
     purchSetupCat(c) { purchSetupCat = c; render(); },
     rsSearch(val) { const q = (val || "").toLowerCase().trim();
       document.querySelectorAll("#rsBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
@@ -4188,7 +4344,7 @@
   function render() {
     renderNav(); refreshDatalists();
     const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
-      move: viewMove, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
+      move: viewMove, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, fulfilldaily: viewFulfillDaily, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, maintenance: viewMaintenance, compliance: viewCompliance, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
       demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, ecomdemand: viewEcomDemand, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor, board: viewBoard };
     $("view").innerHTML = (map[active] || viewHome)();
@@ -4209,7 +4365,7 @@
     if ($("navToggle")) $("navToggle").onclick = () => { const n = $("nav"), b = $("navBackdrop"); const open = !n.classList.contains("open"); n.classList.toggle("open", open); if (b) b.classList.toggle("show", open); };
     if ($("navBackdrop")) $("navBackdrop").onclick = closeDrawer;
     await DB.init();
-    if (!ordersSeen) markOrdersSeen();  // first run: existing orders are not "new"
+    if (!ordersSeen) markOrdersSeen(); // first run: existing orders are not "new"
     DB.onChange(render);
     render();
     if ("serviceWorker" in navigator) { try { navigator.serviceWorker.register("service-worker.js"); } catch (e) {} }

@@ -12,7 +12,7 @@ window.DB = (function () {
   const seed = window.SMACKIN_SEED;
   let mode = "local";
   let sb = null;                  // supabase client
-  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [], returnsLog: [], prodOut: [], lineStatus: [], forecast: [], ecomDemand: [], maintenance: [] };
+  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [], returnsLog: [], prodOut: [], lineStatus: [], forecast: [], ecomDemand: [], maintenance: [], fulfillmentDaily: [] };
   let subscribers = [];
 
   function emit() { subscribers.forEach(fn => { try { fn(); } catch (e) {} }); }
@@ -31,6 +31,7 @@ window.DB = (function () {
   function receivingLog() { return cache.receivingLog || []; }
   function improvements() { return cache.improvements || []; }
   function maintenance() { return cache.maintenance || []; }
+  function fulfillmentDaily() { return cache.fulfillmentDaily || []; }
   function demandLines() { return cache.demandLines || []; }
   function productionOutput() { return cache.prodOut || []; }
   function lineStatus() { return cache.lineStatus || []; }
@@ -238,6 +239,18 @@ window.DB = (function () {
           created_at: r.created_at
         }));
       } catch (e) { cache.maintenance = cache.maintenance || []; }
+      // fulfillment_daily (Daily Fulfillment tracker: e-com labels/person + Amazon FBA units->bags + notes)
+      // loaded separately + resiliently so a missing table never breaks the app shell.
+      try {
+        const fd = await sb.from("fulfillment_daily").select("*").order("fdate", { ascending: false }).limit(400);
+        cache.fulfillmentDaily = (fd && fd.data ? fd.data : []).map(r => ({
+          id: r.id, fdate: r.fdate,
+          ecom_labels: typeof r.ecom_labels === "string" ? JSON.parse(r.ecom_labels || "[]") : (r.ecom_labels || []),
+          amazon: typeof r.amazon === "string" ? JSON.parse(r.amazon || "[]") : (r.amazon || []),
+          ecom_total: Number(r.ecom_total) || 0, amazon_units: Number(r.amazon_units) || 0, amazon_bags: Number(r.amazon_bags) || 0,
+          notes: r.notes || "", entered_by: r.entered_by || "", created_at: r.created_at
+        }));
+      } catch (e) { cache.fulfillmentDaily = cache.fulfillmentDaily || []; }
     },
     // One-time bootstrap: load the item master + opening stock into an empty cloud DB.
     async seedAll() {
@@ -1425,6 +1438,48 @@ window.DB = (function () {
     emit(); return { ok: true };
   }
 
+  // ---- Daily Fulfillment tracker (manual backup/double-check while automation is built out) ----
+  // One row per day (upsert on fdate): E-Com labels per employee + Amazon FBA units->bags per SKU + notes.
+  async function saveFulfillmentDaily(rec, op) {
+    const ecomRows = (rec.ecom_labels || []).filter(r => r && (r.employee || Number(r.labels) > 0))
+      .map(r => ({ employee: r.employee || "", labels: Number(r.labels) || 0 }));
+    const amzRows = (rec.amazon || []).filter(r => r && (r.sku || Number(r.units) > 0))
+      .map(r => ({ sku: r.sku || "", units: Number(r.units) || 0, bags: Number(r.bags) || 0 }));
+    const ecomTotal = ecomRows.reduce((s, r) => s + (Number(r.labels) || 0), 0);
+    const amzUnits = amzRows.reduce((s, r) => s + (Number(r.units) || 0), 0);
+    const amzBags = amzRows.reduce((s, r) => s + (Number(r.bags) || 0), 0);
+    const row = {
+      fdate: rec.fdate, ecom_labels: JSON.stringify(ecomRows), amazon: JSON.stringify(amzRows),
+      ecom_total: ecomTotal, amazon_units: amzUnits, amazon_bags: amzBags,
+      notes: rec.notes || "", entered_by: op || ""
+    };
+    const logEntry = { a: "Daily Fulfillment saved", d: row.fdate + " - " + L_ecomLabel(ecomTotal) + ", " + amzUnits + " Amazon units (" + amzBags + " bags)", u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      const r = await sb.from("fulfillment_daily").upsert(row, { onConflict: "fdate" }).select();
+      if (r && r.error) {
+        // Fallback for a table without a unique constraint on fdate yet: delete any existing row for
+        // this date, then insert fresh, so re-saving a day still updates it instead of erroring out.
+        await sb.from("fulfillment_daily").delete().eq("fdate", row.fdate);
+        const r2 = await sb.from("fulfillment_daily").insert(row).select();
+        if (r2 && r2.error) return { ok: false, msg: r2.error.message || "save failed (is the fulfillment_daily table created?)" };
+      }
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      cache.fulfillmentDaily = cache.fulfillmentDaily || [];
+      const existing = cache.fulfillmentDaily.find(x => x.fdate === row.fdate);
+      if (existing) Object.assign(existing, row);
+      else { row.id = "FD-" + Date.now().toString(36); row.created_at = new Date().toISOString(); cache.fulfillmentDaily.unshift(row); }
+      local.addLog(logEntry); local.save();
+    }
+    emit(); return { ok: true, ecom_total: ecomTotal, amazon_units: amzUnits, amazon_bags: amzBags };
+  }
+  function L_ecomLabel(n) { return n + " e-com labels"; }
+  async function deleteFulfillmentDaily(id, op) {
+    if (mode === "cloud") { await sb.from("fulfillment_daily").delete().eq("id", id); await cloud.loadAll(); }
+    else { cache.fulfillmentDaily = (cache.fulfillmentDaily || []).filter(x => String(x.id) !== String(id)); local.save(); }
+    emit(); return { ok: true };
+  }
+
   return {
     init, onChange, get mode() { return mode; },
     demandLines, importDemand, setDemandStatus, shipDemandPO, clearDemandBatch, clearAllDemand,
@@ -1444,6 +1499,7 @@ window.DB = (function () {
     receivingLog, addReceivingLog, updateReceivingLog, deleteReceivingLog,
     improvements, addImprovement, updateImprovement, setImprovementStatus, deleteImprovement,
     maintenance, addMaintenance, updateMaintenance, setMaintenanceStatus, deleteMaintenance,
+    fulfillmentDaily, saveFulfillmentDaily, deleteFulfillmentDaily,
     orders, createOrder, updateOrder, setOrderStatus, deleteOrder, notifyNewOrder,
     rdRequests, createRdRequest, updateRdRequest, setRdStatus, deleteRdRequest, sendRdEmail,
     supplierPos, createSupplierPO, deleteSupplierPO, emailPO,
