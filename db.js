@@ -12,7 +12,7 @@ window.DB = (function () {
   const seed = window.SMACKIN_SEED;
   let mode = "local";
   let sb = null;                  // supabase client
-  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [], returnsLog: [], prodOut: [], lineStatus: [] };
+  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [], returnsLog: [], prodOut: [], lineStatus: [], forecast: [] };
   let subscribers = [];
 
   function emit() { subscribers.forEach(fn => { try { fn(); } catch (e) {} }); }
@@ -33,6 +33,7 @@ window.DB = (function () {
   function demandLines() { return cache.demandLines || []; }
   function productionOutput() { return cache.prodOut || []; }
   function lineStatus() { return cache.lineStatus || []; }
+  function forecast() { return cache.forecast || []; }
   function returnsLog() { return cache.returnsLog || []; }
   function orders() { return cache.orders || []; }
   function rdRequests() { return cache.rdRequests || []; }
@@ -205,6 +206,14 @@ window.DB = (function () {
           updated_by: r.updated_by || "", updated_at: r.updated_at
         }));
       } catch (e) { cache.lineStatus = cache.lineStatus || []; }
+      // demand_forecast (WIP FORECAST snapshot, compare-only) loaded separately + resiliently so a missing table never breaks the app shell
+      try {
+        const fc = await sb.from("demand_forecast").select("*");
+        cache.forecast = (fc && fc.data ? fc.data : []).map(r => ({
+          flavor: r.flavor || "", size: r.size || "", forecast_bags: Number(r.forecast_bags) || 0,
+          source_month: r.source_month || ""
+        }));
+      } catch (e) { cache.forecast = cache.forecast || []; }
     },
     // One-time bootstrap: load the item master + opening stock into an empty cloud DB.
     async seedAll() {
@@ -1316,6 +1325,7 @@ window.DB = (function () {
     demandLines, importDemand, setDemandStatus, shipDemandPO, clearDemandBatch, clearAllDemand,
     productionOutput, addProdOutput, deleteProdOutput,
     lineStatus, addMachine, setLineStatus, deleteMachine,
+    forecast,
     returnsLog, addReturn, deleteReturn, returnDupKey, findReturnDup,
     items, suppliers, stock, log, itemByCode, onHand, atLoc,
     purchaseOrders, supplierName, createPO, setPOStatus, deletePO, receivePO,

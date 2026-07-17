@@ -47,7 +47,9 @@
       seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdReceived:"Received",sdIntCode:"Internal code",sdPackaging:"Packaging",sdPickPack:"Select packaging...",sdPallets:"# Pallets",sdPalletsShort:"pallet(s)",sdPackDate:"Packaging date", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
       skus:"SKUs", skusHint:"Finished-goods / retail SKU catalog - bundles, singles, and cases with bag count and flavor contents. Reference only.", skuCode:"SKU", skuTitle:"Product", skuBags:"Bags", skuComp:"Contents", skuSearchP:"Search SKU, product, or flavor...", skuCount:"SKUs",
       stockbuild:"Stock Build", sbHint:"Live build progress vs goals. Update On Hand as you go - the whole team sees it instantly. Yellow field = enter today's count.", sbGoal:"Goal", sbOnHand:"On hand", sbToBuild:"To build", sbPallets:"Pallets", sbDone:"Done", sbTotalGoal:"Total goal", sbComplete:"Complete", sbSaved:"Saved", sbRetail:"Retail", sbEcom:"E-Commerce", sb12pk:"12-Pack Boxes",
-      grpDemand:"Demand", demand:"By Department", demandboard:"Order Board", demandsched:"Production Schedule", demandimport:"Import Orders",
+      grpDemand:"Demand", demand:"By Department", demandboard:"Order Board", demandsched:"Production Schedule", demandimport:"Import Orders", forecast:"Forecast vs Target",
+      fcHint:"Compare only - the app's targets are not changed by this.", fcSnapshot:"Snapshot", fcFlavor:"Flavor", fcApp4:"App Target (4oz)", fcWip4:"WIP Forecast (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"App Target (1.5oz)", fcWip15:"WIP Forecast (1.5oz)", fcDelta15:"Δ (1.5oz)",
+      fcNoAppTarget15:"No per-flavor 1.5oz target in the app (bucket / variety-pack only)", fcNone:"No forecast snapshot yet. Ask Claude to refresh it from the WIP FORECAST sheet.", fcBags:"bags",
       dqMix:"Mixing", dqPmac:"P-Mac", dqFul:"Fulfillment", dqToday:"Today", dqTarget:"Today's target", dqTargetShort:"Today",
       dqDueToday:"Orders due today", dqStock:"Stock replenishment", dqShift:"Shift", dqS1:"Shift 1", dqS2:"Shift 2", dqShiftSplit:"split across 2 shifts",
       dqRemaining:"left", dqPct:"to target", dqBags:"Bags", dqCases:"Cases", dqAll:"All flavors", dqFlavor:"Flavor (optional)",
@@ -181,7 +183,9 @@
       seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdReceived:"Recibido",sdIntCode:"Codigo interno",sdPackaging:"Empaque",sdPickPack:"Elegir empaque...",sdPallets:"# Paletas",sdPalletsShort:"paleta(s)",sdPackDate:"Fecha de empaque", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
       skus:"SKUs", skusHint:"Catalogo de SKU de producto terminado / retail - paquetes, individuales y cajas con cantidad de bolsas y sabores. Solo referencia.", skuCode:"SKU", skuTitle:"Producto", skuBags:"Bolsas", skuComp:"Contenido", skuSearchP:"Buscar SKU, producto o sabor...", skuCount:"SKUs",
       stockbuild:"Construir Inventario", sbHint:"Progreso de construccion vs metas en vivo. Actualice En Mano segun avanza - todo el equipo lo ve al instante. Campo amarillo = ingrese el conteo de hoy.", sbGoal:"Meta", sbOnHand:"En mano", sbToBuild:"Por hacer", sbPallets:"Paletas", sbDone:"Listo", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Guardado", sbRetail:"Minorista", sbEcom:"Comercio Electronico", sb12pk:"Cajas de 12",
-      grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Tablero de Pedidos", demandsched:"Programa de Produccion", demandimport:"Importar Pedidos",
+      grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Tablero de Pedidos", demandsched:"Programa de Produccion", demandimport:"Importar Pedidos", forecast:"Pronostico vs Objetivo",
+      fcHint:"Solo comparacion - esto no cambia los objetivos de la aplicacion.", fcSnapshot:"Instantanea", fcFlavor:"Sabor", fcApp4:"Objetivo App (4oz)", fcWip4:"Pronostico WIP (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"Objetivo App (1.5oz)", fcWip15:"Pronostico WIP (1.5oz)", fcDelta15:"Δ (1.5oz)",
+      fcNoAppTarget15:"Sin objetivo por sabor de 1.5oz en la app (solo cubeta / variety pack)", fcNone:"Aun no hay instantanea de pronostico. Pida a Claude que la actualice desde la hoja WIP FORECAST.", fcBags:"bolsas",
       dqMix:"Mezcla", dqPmac:"P-Mac", dqFul:"Cumplimiento", dqToday:"Hoy", dqTarget:"Meta de hoy", dqTargetShort:"Hoy",
       dqDueToday:"Pedidos para hoy", dqStock:"Reposicion de stock", dqShift:"Turno", dqS1:"Turno 1", dqS2:"Turno 2", dqShiftSplit:"dividido en 2 turnos",
       dqRemaining:"falta", dqPct:"de la meta", dqBags:"Bolsas", dqCases:"Cajas", dqAll:"Todos los sabores", dqFlavor:"Sabor (opcional)",
@@ -314,7 +318,9 @@
       seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdReceived:"Recebido",sdIntCode:"Codigo interno",sdPackaging:"Embalagem",sdPickPack:"Selecionar embalagem...",sdPallets:"# Paletes",sdPalletsShort:"palete(s)",sdPackDate:"Data de embalagem", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
       skus:"SKUs", skusHint:"Catalogo de SKU de produto acabado / varejo - pacotes, individuais e caixas com contagem de sacos e sabores. Apenas referencia.", skuCode:"SKU", skuTitle:"Produto", skuBags:"Sacos", skuComp:"Conteudo", skuSearchP:"Buscar SKU, produto ou sabor...", skuCount:"SKUs",
       stockbuild:"Construir Estoque", sbHint:"Progresso de construcao vs metas ao vivo. Atualize Em Estoque conforme avanca - toda a equipe ve na hora. Campo amarelo = insira a contagem de hoje.", sbGoal:"Meta", sbOnHand:"Em estoque", sbToBuild:"A fazer", sbPallets:"Paletes", sbDone:"Pronto", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Salvo", sbRetail:"Varejo", sbEcom:"E-Commerce", sb12pk:"Caixas de 12",
-      grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Painel de Pedidos", demandsched:"Programa de Producao", demandimport:"Importar Pedidos",
+      grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Painel de Pedidos", demandsched:"Programa de Producao", demandimport:"Importar Pedidos", forecast:"Previsao vs Meta",
+      fcHint:"Somente comparacao - isso nao altera as metas do aplicativo.", fcSnapshot:"Instantaneo", fcFlavor:"Sabor", fcApp4:"Meta App (4oz)", fcWip4:"Previsao WIP (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"Meta App (1.5oz)", fcWip15:"Previsao WIP (1.5oz)", fcDelta15:"Δ (1.5oz)",
+      fcNoAppTarget15:"Sem meta por sabor de 1.5oz no app (somente balde / variety pack)", fcNone:"Ainda sem instantaneo de previsao. Peca ao Claude para atualizar a partir da planilha WIP FORECAST.", fcBags:"sacos",
       dqMix:"Mistura", dqPmac:"P-Mac", dqFul:"Expedicao", dqToday:"Hoje", dqTarget:"Meta de hoje", dqTargetShort:"Hoje",
       dqDueToday:"Pedidos para hoje", dqStock:"Reposicao de estoque", dqShift:"Turno", dqS1:"Turno 1", dqS2:"Turno 2", dqShiftSplit:"dividido em 2 turnos",
       dqRemaining:"falta", dqPct:"da meta", dqBags:"Sacos", dqCases:"Caixas", dqAll:"Todos os sabores", dqFlavor:"Sabor (opcional)",
@@ -435,7 +441,7 @@
     { key: "tote", label: "Tote - 1 bag x 1,200 lb", per: 1200 }
   ];
   const SEED_PACK_MAP = {}; SEED_PACKS.forEach(p => SEED_PACK_MAP[p.key] = p);
-  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","demand","demandboard","demandsched","demandimport","seasoning","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","supplierpos","people","improve","compliance","reference","labels","log","settings"];
+  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","demand","demandboard","demandsched","demandimport","forecast","seasoning","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","supplierpos","people","improve","compliance","reference","labels","log","settings"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -608,7 +614,7 @@
     { key:"grpReceiving", items:["receive","recvlog","returns","qa"] },
     { key:"grpInventory", items:["dash","adjust","count","move","locations","facility","finbags","seasoning","seed","skus","labels"] },
     { key:"grpProduction", items:["produce","retailprod","ecomprod","prodlog","stockbuild","orders","orderdocs"] },
-    { key:"grpDemand", items:["demand","demandboard","demandsched","demandimport"] },
+    { key:"grpDemand", items:["demand","demandboard","demandsched","demandimport","forecast"] },
     { key:"grpShipping", items:["shiplog"] },
     { key:"grpMixing", items:["mixing","floor"] },
     { key:"grpPmac", items:["pmac","pmacout","floor"] },
@@ -630,7 +636,7 @@
     mixing:"cooking-pot", pmac:"wrench", count:"clipboard-check", locations:"map-pin",
     purchasing:"shopping-cart", supplierpos:"file-text", people:"users", labels:"tag",
     log:"history", settings:"settings", improve:"trending-up", compliance:"shield-check", reference:"book-open",
-    demand:"calendar-clock", demandboard:"list-checks", demandsched:"gauge", demandimport:"file-up", facility:"warehouse", floor:"activity" };
+    demand:"calendar-clock", demandboard:"list-checks", demandsched:"gauge", demandimport:"file-up", forecast:"scale", facility:"warehouse", floor:"activity" };
   function drawIcons() { try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {} }
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
   let spoSort = { key: "created", dir: -1 };  // Supplier POs table sort (v25)
@@ -2593,6 +2599,53 @@
       (p.rows.length > 60 ? '<tr><td colspan="6" class="muted sm">+' + (p.rows.length - 60) + ' …</td></tr>' : '') + '</tbody></table></div></div>';
     return drop + fileList + warn + recon + preview;
   }
+  // ===== Forecast vs Target (compare-only: app's current stock/production targets vs the WIP FORECAST snapshot from Supabase) =====
+  function viewForecastVsTarget() {
+    const fc = (DB.forecast ? DB.forecast() : []);
+    const fcWithMonth = fc.find(r => r.source_month);
+    const sourceMonth = fcWithMonth ? fcWithMonth.source_month : "";
+    // App target (4oz), in bags: sum of Target + Master Case goals (cases) per flavor x 72 bags/case.
+    const appGoalCases = {};
+    SB_ITEMS.forEach(i => { if (i.cat === "Target" || i.cat === "Master Case") appGoalCases[i.name] = (appGoalCases[i.name] || 0) + i.goal; });
+    const appTarget4 = {};
+    Object.keys(appGoalCases).forEach(f => { appTarget4[f] = appGoalCases[f] * 72; });
+    // WIP forecast by flavor + size (bags), summed in case of dup rows.
+    const wip4 = {}, wip15 = {};
+    fc.forEach(r => {
+      const f = r.flavor; if (!f) return;
+      if (r.size === "4oz") wip4[f] = (wip4[f] || 0) + (Number(r.forecast_bags) || 0);
+      else if (r.size === "1.5oz") wip15[f] = (wip15[f] || 0) + (Number(r.forecast_bags) || 0);
+    });
+    const flavors = Array.from(new Set([].concat(Object.keys(appTarget4), Object.keys(wip4), Object.keys(wip15))));
+    flavors.sort((a, b) => {
+      const ia = DMD_FLAVOR_ORDER.indexOf(a), ib = DMD_FLAVOR_ORDER.indexOf(b);
+      if (ia !== -1 && ib !== -1) return ia - ib;
+      if (ia !== -1) return -1; if (ib !== -1) return 1;
+      return a.localeCompare(b);
+    });
+    const dash = '<span class="muted">&mdash;</span>';
+    const numCell = v => '<td class="right">' + (v == null ? dash : fmt(v)) + '</td>';
+    const deltaCell = (app, wip) => {
+      if (app == null || wip == null) return '<td class="right">' + dash + '</td>';
+      const diff = wip - app;
+      const pct = app !== 0 ? Math.abs(diff) / app : (wip !== 0 ? 1 : 0);
+      const bg = pct <= 0.10 ? "#CFE6BE" : pct <= 0.25 ? "#FFE9A8" : "#F2B6B6";
+      const sign = diff > 0 ? "+" : "";
+      return '<td class="right"><span style="display:inline-block;padding:2px 9px;border-radius:10px;background:' + bg + ';color:#222;font-size:12px;font-weight:600">' + sign + fmt(diff) + '</span></td>';
+    };
+    const rows = flavors.length ? flavors.map(f => {
+      const a4 = appTarget4[f] != null ? appTarget4[f] : null;
+      const w4 = wip4[f] != null ? wip4[f] : null;
+      const w15 = wip15[f] != null ? wip15[f] : null;
+      return '<tr><td>' + esc(f) + '</td>' + numCell(a4) + numCell(w4) + deltaCell(a4, w4) +
+        '<td class="right muted" title="' + L("fcNoAppTarget15") + '">' + dash + '</td>' + numCell(w15) + deltaCell(null, w15) + '</tr>';
+    }).join("") : '<tr><td colspan="7" class="muted">' + L("fcNone") + '</td></tr>';
+    const table = '<div class="card"><div class="tblwrap"><table class="sortable"><thead><tr>' +
+      '<th>' + L("fcFlavor") + '</th><th class="right">' + L("fcApp4") + '</th><th class="right">' + L("fcWip4") + '</th><th class="right" data-nosort>' + L("fcDelta4") + '</th>' +
+      '<th class="right">' + L("fcApp15") + '</th><th class="right">' + L("fcWip15") + '</th><th class="right" data-nosort>' + L("fcDelta15") + '</th></tr></thead><tbody>' + rows + '</tbody></table></div></div>';
+    const head = '<div class="card"><h2>&#9878; ' + L("forecast") + '</h2><p class="hint">' + L("fcHint") + (sourceMonth ? ' ' + L("fcSnapshot") + ': ' + esc(sourceMonth) + '.' : '') + '</p></div>';
+    return head + table;
+  }
   function viewFacility() {
     return '<div class="card"><div class="suprow"><h2 style="flex:1;margin:0">' + L("facility") + '</h2>' +
       '<a class="ghost sm" href="facility.html?v=1" target="_blank" rel="noopener">' + L("facOpen") + ' &#8599;</a></div>' +
@@ -3719,7 +3772,7 @@
     const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
       move: viewMove, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, compliance: viewCompliance, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
-      demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, facility: viewFacility, floor: viewFloor };
+      demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor };
     $("view").innerHTML = (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
     $("modeBadge").className = "modebadge " + (DB.mode === "cloud" ? "ok" : "low");
