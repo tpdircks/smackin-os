@@ -644,7 +644,7 @@
   let dmdParsed = null;   // Import preview: { rows, warnings, recon, files }
   let dmdBusy = false;    // import in progress
   let dmdDept = "mixing"; // Demand section: which department dashboard (mixing | pmac | ful)
-  const DMD_FLAVOR_ORDER = ["OG Original","Cinnamon Churro","Backyard BBQ","Garlic Parmesan","Dill Pickle","Cracked Pepper","Cheddar Jalapeno","Ranch","Maple Brown Sugar","Lemon Pepper","Sour Cream & Onion","Cheeseburger","PCA Pizza"];
+  const DMD_FLAVOR_ORDER = ["OG Original","Cinnamon Churro","Backyard BBQ","Garlic Parmesan","Dill Pickle","Cracked Pepper","Cheddar Jalapeno","Ranch","Maple Brown Sugar","Lemon Pepper","Sour Cream & Onion","Cheeseburger","PCA Pizza","Variety Pack"];
   // On-hand finished 4oz cases for a flavor, summed from the Stock Build count (Target + Master Case = 72-bag cases).
   function demandOnHandCases(flavor) {
     const oh = DB.stockBuild ? DB.stockBuild() : {};

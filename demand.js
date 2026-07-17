@@ -3,26 +3,36 @@
 (function (root) {
   "use strict";
 
-  const FLAVOR_CODES = { "OG Original":"S01","Cinnamon Churro":"S02","Backyard BBQ":"S03","Garlic Parmesan":"S04","Dill Pickle":"S05","Cracked Pepper":"S06","Cheddar Jalapeno":"S07","Ranch":"S08","Maple Brown Sugar":"S09","Lemon Pepper":"S10","Sour Cream & Onion":"S11","Cheeseburger":"L25","PCA Pizza":"L20" };
+  const FLAVOR_CODES = { "OG Original":"S01","Cinnamon Churro":"S02","Backyard BBQ":"S03","Garlic Parmesan":"S04","Dill Pickle":"S05","Cracked Pepper":"S06","Cheddar Jalapeno":"S07","Ranch":"S08","Maple Brown Sugar":"S09","Lemon Pepper":"S10","Sour Cream & Onion":"S11","Cheeseburger":"L25","PCA Pizza":"L20","Variety Pack":"VP48" };
   // Target "Vendor Style" code -> flavor
   const STYLE_MAP = { "101":"Cinnamon Churro","102":"Garlic Parmesan","103":"Backyard BBQ","104":"Dill Pickle","105":"Cracked Pepper","106":"OG Original","107":"Cheddar Jalapeno","108":"Ranch","109":"Maple Brown Sugar","110":"Lemon Pepper","111":"Sour Cream & Onion","135":"Cheeseburger" };
-  // description keyword -> flavor (fallback + non-Target)
+  // description keyword -> flavor (fallback + non-Target). Descriptions come from SPS 850 exports and are often
+  // abbreviated (e.g. "CRCK PEP", "DLL PCKL", "GRLC PRM") — patterns include both the full word and the common
+  // abbreviation so similar shorthand keeps resolving without a code change.
   const DESC_RULES = [
     [/cinnamon|churro/i, "Cinnamon Churro"],
-    [/garlic|parm/i, "Garlic Parmesan"],
-    [/backyard|bbq|barbe/i, "Backyard BBQ"],
-    [/dill|pickle/i, "Dill Pickle"],
-    [/cracked|black pepper|crack pep/i, "Cracked Pepper"],
-    [/cheddar|jalap/i, "Cheddar Jalapeno"],
+    [/garlic|parm|\bgrlc\b|prmsn/i, "Garlic Parmesan"],
+    [/backyard|bbq|barbe|\bbyrd\b/i, "Backyard BBQ"],
+    [/dill|pickle|\bdll\b|\bpckl\b/i, "Dill Pickle"],
+    [/crack|\bcrck\b|black pepper/i, "Cracked Pepper"],
+    [/cheddar|jalap|\bchd\b/i, "Cheddar Jalapeno"],
     [/ranch/i, "Ranch"],
     [/maple|brown sugar/i, "Maple Brown Sugar"],
     [/lemon/i, "Lemon Pepper"],
     [/sour cream|onion|s&o|sco/i, "Sour Cream & Onion"],
     [/cheeseburger/i, "Cheeseburger"],
     [/pizza|deep dish|pca/i, "PCA Pizza"],
+    [/4\s*-?\s*var|variety/i, "Variety Pack"],
     [/original|\bog\b/i, "OG Original"]
   ];
   const BAGS_PER_CASE = 72;
+  // "SEEDS SUNFLWR 4VAR 48PC" (UPC 850047865830, SKU SS-VP-48 "Retail Display 48CT (4oz)") is a fixed 4-flavor
+  // assortment: 4 cases of 12 large resealable 4oz bags = 48 bags/unit. Composition confirmed 2026-07-16 from
+  // Smackin's own Faire wholesale listing (https://www.faire.com/product/p_fwwzu3b7ht), which lists the "Variety"
+  // flavor option for this SKU as: Cinnamon Churro, Garlic Parmesan, Cheddar Jalapeño, Backyard BBQ (12 bags each).
+  const VARIETY_4PACK_COMPONENTS = ["Cinnamon Churro", "Garlic Parmesan", "Cheddar Jalapeno", "Backyard BBQ"];
+  const BAGS_PER_VARIETY_FLAVOR = 12;
+  function isVarietyFourPack(desc) { return /4\s*-?\s*var/i.test(String(desc || "")); }
 
   function parseCSV(text) {
     const rows = []; let row = [], field = "", i = 0, q = false;
@@ -48,10 +58,14 @@
     return function (name) { const k = String(name).trim().toLowerCase(); return idx[k] != null ? idx[k] : -1; };
   }
 
+  // Normalize a description for matching: collapse punctuation/dashes/extra whitespace so abbreviations like
+  // "CRCK-PEP" / "CRCK.PEP" / "CRCK  PEP" all match the same as "CRCK PEP" (keeps "&" intact for the S&O rule).
+  function normDesc(s) { return String(s || "").replace(/[._\-]+/g, " ").replace(/\s+/g, " ").trim(); }
+
   function flavorFromStyleOrDesc(style, desc) {
     style = String(style || "").trim();
     if (STYLE_MAP[style]) return STYLE_MAP[style];
-    const d = String(desc || "");
+    const d = normDesc(desc);
     for (const rule of DESC_RULES) { if (rule[0].test(d)) return rule[1]; }
     return null;
   }
@@ -100,14 +114,36 @@
       const desc = cDesc >= 0 ? String(row[cDesc] || "").trim() : "";
       const style = cStyle >= 0 ? String(row[cStyle] || "").trim() : "";
       const price = cPrice >= 0 ? Number(String(row[cPrice] || "0").replace(/[^0-9.\-]/g, "")) || 0 : 0;
+      const order = orderNum(po);
+      const dc = po.indexOf("-") >= 0 ? po.split("-").pop() : "";
+      // "4VAR 48PC" retail-display SKU: track it as one "Variety Pack" line (cases = # of 48-ct units ordered,
+      // bags 0 so it doesn't double-count against the 72-bags/case flavor math), then explode the known
+      // composition into component-flavor lines (bags only, cases expressed as bag-equivalent so build/production
+      // need — computeBuildNeed() in app.js — picks up the real bag demand for those flavors).
+      if (isVarietyFourPack(desc)) {
+        const packs = qty; // each ordered unit = one 48-bag (4-flavor x 12) display/case
+        lines.push({
+          source: "SPS", partner: m.partner || "Unknown", po: order, dc,
+          flavor: "Variety Pack", flavor_code: FLAVOR_CODES["Variety Pack"] || "",
+          uom, qty, cases: packs, bags: 0, unit_price: price, due_date: m.due || "", desc
+        });
+        VARIETY_4PACK_COMPONENTS.forEach(function (compFlavor) {
+          const compBags = packs * BAGS_PER_VARIETY_FLAVOR;
+          lines.push({
+            source: "SPS", partner: m.partner || "Unknown", po: order, dc,
+            flavor: compFlavor, flavor_code: FLAVOR_CODES[compFlavor] || "",
+            uom: "Bags", qty: 0, cases: compBags / BAGS_PER_CASE, bags: compBags,
+            unit_price: 0, due_date: m.due || "", desc: "Variety Pack component (" + desc + ")"
+          });
+        });
+        continue;
+      }
       const flavor = flavorFromStyleOrDesc(style, desc);
       const bucket = isBucketOrVariety(desc);
       const eaches = /each|ea\b/i.test(uom);
       let cases, bags;
       if (eaches) { bags = bucket ? 0 : qty; cases = Math.round(qty / BAGS_PER_CASE); }
       else { cases = qty; bags = bucket ? 0 : qty * BAGS_PER_CASE; }
-      const order = orderNum(po);
-      const dc = po.indexOf("-") >= 0 ? po.split("-").pop() : "";
       if (!flavor) { unmatched[desc || style || "?"] = (unmatched[desc || style || "?"] || 0) + 1; }
       lines.push({
         source: "SPS", partner: m.partner || "Unknown", po: order, dc,
@@ -191,5 +227,5 @@
     return "unknown";
   }
 
-  root.DEMAND = { parseCSV, parseSPS, parseShipIQ, aggregate, orderNum, cleanPartner, detectType, FLAVOR_CODES, STYLE_MAP, BAGS_PER_CASE };
+  root.DEMAND = { parseCSV, parseSPS, parseShipIQ, aggregate, orderNum, cleanPartner, detectType, FLAVOR_CODES, STYLE_MAP, BAGS_PER_CASE, VARIETY_4PACK_COMPONENTS, isVarietyFourPack };
 })(window);
