@@ -41,14 +41,16 @@
 
 <div id="topbar">
   <h1>Smackin' · Gêmeo Digital 3D — v1 estrutural</h1>
-  <span class="hint">5 seções · ~536 posições · níveis L1–L4 · arraste = girar · scroll = zoom · clique numa posição para ver o código</span>
+  <span class="hint">5 seções · ~536 posições · níveis L1–L4 · arraste = girar · scroll = zoom · clique numa posição para ver o código · cores ao vivo (Seções A–D)</span>
 </div>
 
 <div id="legend">
   <h2>Seções (racking)</h2><div id="leg-sec"></div>
   <h2>Zonas</h2><div id="leg-zone"></div>
-  <div class="note">
-    <span class="b" style="background:#c7cede"></span>posição de pallet (sem dado de estoque)<br>
+  <div class="note" id="leg-live">
+    <span class="b" style="background:#E24A4A"></span>ocupada — used (ao vivo · live, Seções A–D)<br>
+    <span class="b" style="background:#BFE3B6"></span>disponível — available (ao vivo · live, Seções A–D)<br>
+    <span class="b" style="background:#c7cede"></span>posição de pallet (sem dado de estoque / seção não rastreada)<br>
     <span class="b" style="background:#e24b4a"></span>posição bloqueada (AC / painel / praga)
   </div>
 </div>
@@ -150,7 +152,17 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
   let labelsOn=true;
 
   // materiais/geometrias compartilhados
-  let GEO_DECK, GEO_POST, MAT_DECK, MAT_BLOCK, MAT_POSTS={}, MAT_BEAM;
+  let GEO_DECK, GEO_POST, MAT_DECK, MAT_BLOCK, MAT_USED, MAT_AVAIL, MAT_POSTS={}, MAT_BEAM;
+
+  // ----- ocupação ao vivo (Supabase) -----
+  // Só as Seções A–D têm rastreamento de estoque no app hoje (ver seed-data.js CONFIG.sections);
+  // as demais seções do gêmeo 3D são estruturais/propostas e continuam neutras até serem cadastradas
+  // (Salvador: para rastrear uma seção nova, dê a cada mesh de posição userData.code = "A-05-L3", igual
+  // ao formato Section-Bay-Level que o app já usa — este arquivo já faz isso para A–D).
+  const SUPA_URL='https://otwjxqhhwljwfyqbfuxz.supabase.co';
+  const SUPA_KEY='sb_publishable_KlPxfCQUmxbIAVc2p_M5Lw_ligy0COY';
+  const TRACKED_RE=/^[A-D]-\d{2}-L[1-4]$/;
+  let usedSet=null, stockByLoc={}, deepLinkDone=false;
 
   function init(){
     scene=new THREE.Scene();
@@ -178,6 +190,8 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
     MAT_DECK=new THREE.MeshStandardMaterial({color:0xc7cede,roughness:.8});
     MAT_BLOCK=new THREE.MeshStandardMaterial({color:0xe24b4a,roughness:.6,transparent:true,opacity:.85});
     MAT_BEAM=new THREE.MeshStandardMaterial({color:0xd85a30,roughness:.5,metalness:.2});
+    MAT_USED=new THREE.MeshStandardMaterial({color:0xE24A4A,roughness:.75});
+    MAT_AVAIL=new THREE.MeshStandardMaterial({color:0xBFE3B6,roughness:.75});
 
     buildFloor(); buildWalls(); buildDocks();
     ZONES.forEach(buildZone);
@@ -189,6 +203,8 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
     renderer.domElement.addEventListener('click',onClick);
     document.getElementById('loading').style.display='none';
     animate();
+    loadOccupancy();
+    setInterval(loadOccupancy, 90000); // atualiza a cada 90s
   }
 
   function buildFloor(){
@@ -364,22 +380,72 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
     });
   }
 
+  // ----- ocupação ao vivo -----
+  function loadOccupancy(){
+    fetch(SUPA_URL+'/rest/v1/stock?select=item_id,location,qty&qty=gt.0', {
+      headers:{ apikey:SUPA_KEY, Authorization:'Bearer '+SUPA_KEY }
+    }).then(r=> r.ok ? r.json() : []).then(rows=>{
+      const set=new Set(), byLoc={};
+      (rows||[]).forEach(r=>{
+        const loc=String(r.location||'').trim().toUpperCase();
+        if(!loc) return;
+        set.add(loc);
+        (byLoc[loc]=byLoc[loc]||[]).push({item:r.item_id,qty:Number(r.qty)||0});
+      });
+      usedSet=set; stockByLoc=byLoc;
+      applyOccupancyColors();
+      if(!deepLinkDone){ deepLinkDone=true; applyDeepLink(); }
+    }).catch(()=>{ /* offline ou bloqueado — cores ao vivo indisponíveis, mantém neutro */ });
+  }
+  function applyOccupancyColors(){
+    if(!usedSet) return;
+    pickables.forEach(m=>{
+      const u=m.userData;
+      if(u.blocked) return;                 // bloqueada permanece com sua própria cor
+      if(!TRACKED_RE.test(u.code)) return;   // só Seções A–D têm dado de estoque no app hoje
+      m.material = usedSet.has(u.code) ? MAT_USED : MAT_AVAIL;
+    });
+  }
+  function applyDeepLink(){
+    try{
+      const p=new URLSearchParams(location.search);
+      const loc=(p.get('loc')||'').trim().toUpperCase();
+      if(!loc) return;
+      const mesh=pickables.find(m=>m.userData.code===loc);
+      if(!mesh) return;
+      cam.target.copy(mesh.position); cam.radius=95; cam.phi=0.62; applyCam();
+      showInfoFor(mesh.userData);
+    }catch(e){}
+  }
+
   // ----- interação -----
+  function showInfoFor(u){
+    document.getElementById('info-title').textContent=u.code;
+    document.getElementById('info-desc').textContent='Seção '+u.section+' · Bay '+String(u.bay).padStart(2,'0')+' · Nível L'+u.level;
+    const bd=document.getElementById('info-badge');
+    if(u.blocked){bd.textContent='Bloqueada — '+BLOCK_REASON(u.code);bd.style.background='rgba(226,75,74,.25)';bd.style.color='#ff9aa6';}
+    else if(usedSet && TRACKED_RE.test(u.code)){
+      const items=stockByLoc[u.code];
+      if(items && items.length){
+        const qty=items.reduce((s,x)=>s+x.qty,0);
+        bd.textContent='Ocupada / Occupied · '+items.length+' SKU(s) · '+qty+' un.';
+        bd.style.background='rgba(226,74,74,.25)';bd.style.color='#ffb3b0';
+      } else {
+        bd.textContent='Disponível / Available (ao vivo · live)';
+        bd.style.background='rgba(191,227,182,.28)';bd.style.color='#2f5a2f';
+      }
+    }
+    else if(u.isNew){bd.textContent='⚑ Criado hoje'+(u.use?' · '+u.use:'');bd.style.background='rgba(255,59,59,.22)';bd.style.color='#ff9aa6';}
+    else if(u.use){bd.textContent=u.use;bd.style.background='rgba(217,196,138,.2)';bd.style.color='#e6d3a0';}
+    else{bd.textContent='Posição de pallet · aguardando dado de estoque';bd.style.background='rgba(199,206,222,.18)';bd.style.color='#c7cede';}
+    document.getElementById('info').classList.add('show');
+  }
   function onClick(e){
     if(moved>6) return;
     mouse.x=(e.clientX/innerWidth)*2-1; mouse.y=-(e.clientY/innerHeight)*2+1;
     raycaster.setFromCamera(mouse,camera);
     const h=raycaster.intersectObjects(pickables,false);
-    if(h.length){const u=h[0].object.userData;
-      document.getElementById('info-title').textContent=u.code;
-      document.getElementById('info-desc').textContent='Seção '+u.section+' · Bay '+String(u.bay).padStart(2,'0')+' · Nível L'+u.level;
-      const bd=document.getElementById('info-badge');
-      if(u.blocked){bd.textContent='Bloqueada — '+BLOCK_REASON(u.code);bd.style.background='rgba(226,75,74,.25)';bd.style.color='#ff9aa6';}
-      else if(u.isNew){bd.textContent='⚑ Criado hoje'+(u.use?' · '+u.use:'');bd.style.background='rgba(255,59,59,.22)';bd.style.color='#ff9aa6';}
-      else if(u.use){bd.textContent=u.use;bd.style.background='rgba(217,196,138,.2)';bd.style.color='#e6d3a0';}
-      else{bd.textContent='Posição de pallet · aguardando dado de estoque';bd.style.background='rgba(199,206,222,.18)';bd.style.color='#c7cede';}
-      document.getElementById('info').classList.add('show');
-    }
+    if(h.length){ showInfoFor(h[0].object.userData); }
   }
   document.getElementById('info-close').addEventListener('click',()=>document.getElementById('info').classList.remove('show'));
 
