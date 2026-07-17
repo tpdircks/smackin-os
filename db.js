@@ -12,7 +12,7 @@ window.DB = (function () {
   const seed = window.SMACKIN_SEED;
   let mode = "local";
   let sb = null;                  // supabase client
-  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [], returnsLog: [], prodOut: [], lineStatus: [], forecast: [], ecomDemand: [] };
+  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [], returnsLog: [], prodOut: [], lineStatus: [], forecast: [], ecomDemand: [], maintenance: [] };
   let subscribers = [];
 
   function emit() { subscribers.forEach(fn => { try { fn(); } catch (e) {} }); }
@@ -30,6 +30,7 @@ window.DB = (function () {
   function shippingLog() { return cache.shippingLog || []; }
   function receivingLog() { return cache.receivingLog || []; }
   function improvements() { return cache.improvements || []; }
+  function maintenance() { return cache.maintenance || []; }
   function demandLines() { return cache.demandLines || []; }
   function productionOutput() { return cache.prodOut || []; }
   function lineStatus() { return cache.lineStatus || []; }
@@ -56,9 +57,9 @@ window.DB = (function () {
     loadOrSeed() {
       let raw = null;
       try { raw = localStorage.getItem(KEY); } catch (e) {}
-      if (raw) { cache = JSON.parse(raw); if (!cache.pos) cache.pos = []; if (!cache.log) cache.log = []; if (!cache.seasLots) cache.seasLots = []; if (!cache.orders) cache.orders = []; if (!cache.rdRequests) cache.rdRequests = []; if (!cache.supplierPos) cache.supplierPos = []; if (!cache.orderDocs) cache.orderDocs = []; if (!cache.consumption) cache.consumption = []; if (!cache.seedLots) cache.seedLots = []; if (!cache.stockBuild) cache.stockBuild = {}; if (!cache.shippingLog) cache.shippingLog = []; if (!cache.receivingLog) cache.receivingLog = []; if (!cache.improvements) cache.improvements = []; return; }
+      if (raw) { cache = JSON.parse(raw); if (!cache.pos) cache.pos = []; if (!cache.log) cache.log = []; if (!cache.seasLots) cache.seasLots = []; if (!cache.orders) cache.orders = []; if (!cache.rdRequests) cache.rdRequests = []; if (!cache.supplierPos) cache.supplierPos = []; if (!cache.orderDocs) cache.orderDocs = []; if (!cache.consumption) cache.consumption = []; if (!cache.seedLots) cache.seedLots = []; if (!cache.stockBuild) cache.stockBuild = {}; if (!cache.shippingLog) cache.shippingLog = []; if (!cache.receivingLog) cache.receivingLog = []; if (!cache.improvements) cache.improvements = []; if (!cache.maintenance) cache.maintenance = []; return; }
       const s = seed.build();
-      cache = { items: s.items, suppliers: s.suppliers, stock: s.stock, pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [] };
+      cache = { items: s.items, suppliers: s.suppliers, stock: s.stock, pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], maintenance: [] };
       this.save();
     },
     save() { try { localStorage.setItem(KEY, JSON.stringify(cache)); } catch (e) {} },
@@ -225,6 +226,18 @@ window.DB = (function () {
           source_label: r.source_label || "", updated_at: r.updated_at
         }));
       } catch (e) { cache.ecomDemand = cache.ecomDemand || []; }
+      // maintenance_items (Maintenance request + project tracker) loaded separately + resiliently
+      // so a missing table never breaks the app shell (same pattern as demand_forecast above).
+      try {
+        const mnt = await sb.from("maintenance_items").select("*").order("created_at", { ascending: false }).limit(3000);
+        cache.maintenance = (mnt && mnt.data ? mnt.data : []).map(r => ({
+          id: r.id, title: r.title, mtype: r.mtype, area: r.area, priority: r.priority || "Medium",
+          status: r.status || "Requested", assignee: r.assignee, waiting_on: r.waiting_on,
+          problem: r.problem, notes: r.notes, opened_date: r.opened_date, target_date: r.target_date,
+          completed_date: r.completed_date, requested_by: r.requested_by, entered_by: r.entered_by,
+          created_at: r.created_at
+        }));
+      } catch (e) { cache.maintenance = cache.maintenance || []; }
     },
     // One-time bootstrap: load the item master + opening stock into an empty cloud DB.
     async seedAll() {
@@ -701,6 +714,54 @@ window.DB = (function () {
   async function deleteImprovement(id, op) {
     if (mode === "cloud") { await sb.from("improvements").delete().eq("id", id); await cloud.loadAll(); }
     else { cache.improvements = (cache.improvements || []).filter(x => String(x.id) !== String(id)); local.save(); }
+    emit(); return { ok: true };
+  }
+
+  // ---------- Maintenance (requests / repairs / PM / projects tracker) ----------
+  const MNT_FIELDS = ["title","mtype","area","priority","status","assignee","waiting_on","problem","notes","opened_date","target_date","completed_date","requested_by"];
+  function cleanMnt(rec) { const o = {}; MNT_FIELDS.forEach(k => { if (rec[k] !== undefined) o[k] = rec[k] === "" ? null : rec[k]; }); return o; }
+  async function addMaintenance(rec, op) {
+    const row = Object.assign({ status: "Requested", priority: "Medium", opened_date: new Date().toISOString().slice(0, 10) }, cleanMnt(rec));
+    row.title = row.title || ""; row.entered_by = op || ""; row.created_at = new Date().toISOString();
+    const logEntry = { a: "Maintenance item added", d: (row.mtype ? row.mtype + ": " : "") + row.title, u: op, t: row.created_at };
+    if (mode === "cloud") {
+      await sb.from("maintenance_items").insert(row).select();
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      cache.maintenance = cache.maintenance || [];
+      row.id = "MNT-" + Date.now().toString(36); cache.maintenance.unshift(row);
+      local.addLog(logEntry); local.save();
+    }
+    emit(); return { ok: true };
+  }
+  async function updateMaintenance(id, patch, op) {
+    const p = cleanMnt(patch);
+    const cur = (cache.maintenance || []).find(x => String(x.id) === String(id));
+    const logEntry = { a: "Maintenance item updated", d: (cur ? cur.title : String(id)), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      await sb.from("maintenance_items").update(p).eq("id", id);
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      if (cur) Object.assign(cur, p); local.addLog(logEntry); local.save();
+    }
+    emit(); return { ok: true };
+  }
+  async function setMaintenanceStatus(id, status, op) {
+    const cur = (cache.maintenance || []).find(x => String(x.id) === String(id));
+    const patch = { status };
+    if (status === "Done") patch.completed_date = new Date().toISOString().slice(0, 10);
+    const logEntry = { a: "Maintenance " + status, d: (cur ? cur.title : String(id)), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      await sb.from("maintenance_items").update(patch).eq("id", id);
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      if (cur) Object.assign(cur, patch); local.addLog(logEntry); local.save();
+    }
+    emit(); return { ok: true };
+  }
+  async function deleteMaintenance(id, op) {
+    if (mode === "cloud") { await sb.from("maintenance_items").delete().eq("id", id); await cloud.loadAll(); }
+    else { cache.maintenance = (cache.maintenance || []).filter(x => String(x.id) !== String(id)); local.save(); }
     emit(); return { ok: true };
   }
 
@@ -1382,6 +1443,7 @@ window.DB = (function () {
     shippingLog, addShipping, setShippingStatus, updateShipping, deleteShipping,
     receivingLog, addReceivingLog, updateReceivingLog, deleteReceivingLog,
     improvements, addImprovement, updateImprovement, setImprovementStatus, deleteImprovement,
+    maintenance, addMaintenance, updateMaintenance, setMaintenanceStatus, deleteMaintenance,
     orders, createOrder, updateOrder, setOrderStatus, deleteOrder, notifyNewOrder,
     rdRequests, createRdRequest, updateRdRequest, setRdStatus, deleteRdRequest, sendRdEmail,
     supplierPos, createSupplierPO, deleteSupplierPO, emailPO,

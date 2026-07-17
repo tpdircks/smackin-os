@@ -120,6 +120,13 @@
       ciTitle:"Initiative", ciTitleP:"e.g. Label + zone the receiving staging area", ciType:"Type", ciArea:"Area", ciOwner:"Owner", ciPriority:"Priority", ciStatus:"Status", ciOpened:"Opened",
       ciProblem:"Problem / goal", ciProblemP:"What are we fixing or improving?", ciImpact:"Impact / win", ciImpactHint:"the result", ciImpactP:"What changed? time saved, waste cut, safer, etc.",
       ciCompleted:"Completed", ciReopen:"Reopen", ciNoActive:"No active initiatives. Add one above.", ciNoWins:"No completed wins yet.", ciSearchP:"Search title, type, area, owner...", ciConfirmDel:"Delete this initiative?",
+      grpMaintenance:"Maintenance", maintenance:"Maintenance", mtHint:"Track maintenance requests, repairs, and projects - what's active, what's blocking a pending item, and a completed history. Move each one Requested -> In Progress -> Waiting -> Done.",
+      mtActive:"Active", mtDone:"Done", mtAdd:"Add request", mtAdded:"Request added",
+      mtTitle:"What needs doing", mtTitleP:"e.g. P-Mac auger belt slipping", mtType:"Type", mtArea:"Area / Machine", mtAssignee:"Assignee", mtPriority:"Urgency", mtStatus:"Status", mtOpened:"Opened", mtTarget:"Target date", mtCompleted:"Completed",
+      mtProblem:"Problem / description", mtProblemP:"What's wrong or what's needed?", mtNotes:"Notes", mtNotesP:"Additional notes",
+      mtWaitingOn:"Waiting on", mtWaitingOnP:"e.g. part on order, vendor quote, approval", mtRequestedBy:"Requested by", mtRequestedByP:"Who's asking",
+      mtReopen:"Reopen", mtNoActive:"Nothing active. Add a request above.", mtNoDone:"No completed items yet.", mtSearchP:"Search title, area, assignee...", mtConfirmDel:"Delete this item?",
+      mtKpiRequested:"Requested", mtKpiInProgress:"In progress", mtKpiWaiting:"Waiting (blocked)", mtKpiDone:"Done",
       poCreate:"+ Create PO", poNewTitle:"New Purchase Order", poVendorAddr:"Vendor address", poVendorEmail:"Vendor email", poVendorPhone:"Vendor phone", poShipTo:"Ship to", poPreparedBy:"Prepared by", poAddLine:"+ Add line", poItemNo:"Item #", poDesc:"Description", poQtyL:"Qty", poPriceL:"Price", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Shipping", poTaxL:"Tax", poOtherL:"Other", poGrandL:"Total", poSaveBtn:"Save PO", poBackList:"Back to list", poSavedMsg:"PO saved", poNeedVendor:"Enter a vendor first",
       poEmail:"Email PO", poEmailTo:"To", poEmailSubjectL:"Subject", poEmailSubjectTpl:"Purchase Order", poEmailBody:"Message", poEmailSend:"Send email", poEmailCopy:"Copy PO summary",
       poEmailHint:"If email sending isn't set up yet, Send will open this in your email app instead - the PO file link is included in the message so you can attach/share it.",
@@ -257,6 +264,13 @@
       ciTitle:"Iniciativa", ciTitleP:"ej. Etiquetar y zonificar el area de recibo", ciType:"Tipo", ciArea:"Area", ciOwner:"Responsable", ciPriority:"Prioridad", ciStatus:"Estado", ciOpened:"Abierta",
       ciProblem:"Problema / meta", ciProblemP:"Que estamos arreglando o mejorando?", ciImpact:"Impacto / logro", ciImpactHint:"el resultado", ciImpactP:"Que cambio? tiempo ahorrado, menos desperdicio, mas seguro, etc.",
       ciCompleted:"Completada", ciReopen:"Reabrir", ciNoActive:"No hay iniciativas activas. Agregue una arriba.", ciNoWins:"Aun no hay logros completados.", ciSearchP:"Buscar titulo, tipo, area, responsable...", ciConfirmDel:"Eliminar esta iniciativa?",
+      grpMaintenance:"Mantenimiento", maintenance:"Mantenimiento", mtHint:"Rastree solicitudes de mantenimiento, reparaciones y proyectos - que esta activo, que bloquea un pendiente y un historial de completados. Mueva cada uno Solicitado -> En Curso -> Esperando -> Hecho.",
+      mtActive:"Activos", mtDone:"Hechos", mtAdd:"Agregar solicitud", mtAdded:"Solicitud agregada",
+      mtTitle:"Que se necesita hacer", mtTitleP:"ej. Correa del auger de P-Mac resbalando", mtType:"Tipo", mtArea:"Area / Maquina", mtAssignee:"Asignado a", mtPriority:"Urgencia", mtStatus:"Estado", mtOpened:"Abierta", mtTarget:"Fecha objetivo", mtCompleted:"Completada",
+      mtProblem:"Problema / descripcion", mtProblemP:"Que esta mal o que se necesita?", mtNotes:"Notas", mtNotesP:"Notas adicionales",
+      mtWaitingOn:"Esperando por", mtWaitingOnP:"ej. pieza pedida, cotizacion del proveedor, aprobacion", mtRequestedBy:"Solicitado por", mtRequestedByP:"Quien lo solicita",
+      mtReopen:"Reabrir", mtNoActive:"Nada activo. Agregue una solicitud arriba.", mtNoDone:"Aun no hay elementos completados.", mtSearchP:"Buscar titulo, area, asignado...", mtConfirmDel:"Eliminar este elemento?",
+      mtKpiRequested:"Solicitados", mtKpiInProgress:"En curso", mtKpiWaiting:"Esperando (bloqueado)", mtKpiDone:"Hechos",
       poCreate:"+ Crear OC", poNewTitle:"Nueva Orden de Compra", poVendorAddr:"Direccion del proveedor", poVendorEmail:"Correo del proveedor", poVendorPhone:"Telefono del proveedor", poShipTo:"Enviar a", poPreparedBy:"Preparado por", poAddLine:"+ Agregar linea", poItemNo:"Articulo #", poDesc:"Descripcion", poQtyL:"Cant", poPriceL:"Precio", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Envio", poTaxL:"Impuesto", poOtherL:"Otro", poGrandL:"Total", poSaveBtn:"Guardar OC", poBackList:"Volver a la lista", poSavedMsg:"OC guardada", poNeedVendor:"Ingrese un proveedor primero",
       poEmail:"Enviar OC por correo", poEmailTo:"Para", poEmailSubjectL:"Asunto", poEmailSubjectTpl:"Orden de Compra", poEmailBody:"Mensaje", poEmailSend:"Enviar correo", poEmailCopy:"Copiar resumen de OC",
       poEmailHint:"Si el envio de correo aun no esta configurado, Enviar abrira esto en su aplicacion de correo - el enlace del archivo de la OC va incluido en el mensaje para que lo pueda adjuntar/compartir.",
@@ -394,6 +408,13 @@
       ciTitle:"Iniciativa", ciTitleP:"ex. Etiquetar e zonear a area de recebimento", ciType:"Tipo", ciArea:"Area", ciOwner:"Responsavel", ciPriority:"Prioridade", ciStatus:"Status", ciOpened:"Aberta",
       ciProblem:"Problema / meta", ciProblemP:"O que estamos corrigindo ou melhorando?", ciImpact:"Impacto / conquista", ciImpactHint:"o resultado", ciImpactP:"O que mudou? tempo economizado, menos desperdicio, mais seguro, etc.",
       ciCompleted:"Concluida", ciReopen:"Reabrir", ciNoActive:"Nenhuma iniciativa ativa. Adicione uma acima.", ciNoWins:"Nenhuma conquista concluida ainda.", ciSearchP:"Buscar titulo, tipo, area, responsavel...", ciConfirmDel:"Excluir esta iniciativa?",
+      grpMaintenance:"Manutencao", maintenance:"Manutencao", mtHint:"Acompanhe solicitacoes de manutencao, reparos e projetos - o que esta ativo, o que esta bloqueando um pendente e um historico de concluidos. Mova cada um Solicitado -> Em Andamento -> Aguardando -> Concluido.",
+      mtActive:"Ativos", mtDone:"Concluidos", mtAdd:"Adicionar solicitacao", mtAdded:"Solicitacao adicionada",
+      mtTitle:"O que precisa ser feito", mtTitleP:"ex. Correia do rosca do P-Mac escorregando", mtType:"Tipo", mtArea:"Area / Maquina", mtAssignee:"Responsavel", mtPriority:"Urgencia", mtStatus:"Status", mtOpened:"Aberta", mtTarget:"Data alvo", mtCompleted:"Concluida",
+      mtProblem:"Problema / descricao", mtProblemP:"O que esta errado ou o que e necessario?", mtNotes:"Observacoes", mtNotesP:"Observacoes adicionais",
+      mtWaitingOn:"Aguardando", mtWaitingOnP:"ex. peca em pedido, orcamento do fornecedor, aprovacao", mtRequestedBy:"Solicitado por", mtRequestedByP:"Quem esta solicitando",
+      mtReopen:"Reabrir", mtNoActive:"Nada ativo. Adicione uma solicitacao acima.", mtNoDone:"Nenhum item concluido ainda.", mtSearchP:"Buscar titulo, area, responsavel...", mtConfirmDel:"Excluir este item?",
+      mtKpiRequested:"Solicitados", mtKpiInProgress:"Em andamento", mtKpiWaiting:"Aguardando (bloqueado)", mtKpiDone:"Concluidos",
       poCreate:"+ Criar OC", poNewTitle:"Nova Ordem de Compra", poVendorAddr:"Endereco do fornecedor", poVendorEmail:"Email do fornecedor", poVendorPhone:"Telefone do fornecedor", poShipTo:"Enviar para", poPreparedBy:"Preparado por", poAddLine:"+ Adicionar linha", poItemNo:"Item #", poDesc:"Descricao", poQtyL:"Qtd", poPriceL:"Preco", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Frete", poTaxL:"Imposto", poOtherL:"Outro", poGrandL:"Total", poSaveBtn:"Salvar OC", poBackList:"Voltar a lista", poSavedMsg:"OC salva", poNeedVendor:"Insira um fornecedor primeiro",
       poEmail:"Enviar OC por email", poEmailTo:"Para", poEmailSubjectL:"Assunto", poEmailSubjectTpl:"Ordem de Compra", poEmailBody:"Mensagem", poEmailSend:"Enviar email", poEmailCopy:"Copiar resumo da OC",
       poEmailHint:"Se o envio de email ainda nao estiver configurado, Enviar vai abrir isto no seu aplicativo de email - o link do arquivo da OC esta incluido na mensagem para voce anexar/compartilhar.",
@@ -447,7 +468,7 @@
     { key: "tote", label: "Tote - 1 bag x 1,200 lb", per: 1200 }
   ];
   const SEED_PACK_MAP = {}; SEED_PACKS.forEach(p => SEED_PACK_MAP[p.key] = p);
-  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","supplierpos","people","improve","compliance","reference","labels","log","settings","board"];
+  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","supplierpos","people","improve","maintenance","compliance","reference","labels","log","settings","board"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -628,6 +649,7 @@
     { key:"grpRnd", items:["rd"] },
     { key:"grpHr", items:["people"] },
     { key:"grpImprove", items:["improve"] },
+    { key:"grpMaintenance", items:["maintenance"] },
     { key:"grpQuality", items:["compliance"] },
     { key:"grpDocs", items:["reference"] },
     { key:"grpSystem", items:["board","log","settings"] }
@@ -641,7 +663,7 @@
     seasoning:"flame", seed:"sprout", skus:"barcode", finbags:"shopping-bag", pmacout:"package-open",
     mixing:"cooking-pot", pmac:"wrench", count:"clipboard-check", locations:"map-pin",
     purchasing:"shopping-cart", supplierpos:"file-text", people:"users", labels:"tag",
-    board:"tv", log:"history", settings:"settings", improve:"trending-up", compliance:"shield-check", reference:"book-open",
+    board:"tv", log:"history", settings:"settings", improve:"trending-up", maintenance:"hard-hat", compliance:"shield-check", reference:"book-open",
     demand:"calendar-clock", demandboard:"list-checks", demandsched:"gauge", demandimport:"file-up", ecomdemand:"globe", forecast:"scale", facility:"warehouse", floor:"activity" };
   function drawIcons() { try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {} }
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
@@ -728,6 +750,12 @@
   const CI_OWNERS = ["Troy", "Adriana", "Jesus", "Ken", "Javier", "Allen", "Brittney", "Marlin", "Jhonny", "Other"];
   const CI_PRIORITIES = ["High", "Medium", "Low"];
   const CI_STATUSES = ["Idea", "In Progress", "On Hold", "Done"];
+  let mtView = "active", mtAddOpen = false, mtEditId = null;  // Maintenance view/edit state
+  const MNT_TYPES = ["Request", "Project", "Repair", "Preventive"];
+  const MNT_AREAS = ["P-Mac", "Mixing", "Facility", "Forklift", "Receiving", "Shipping", "Warehouse", "Office", "Other"];
+  const MNT_PRIORITIES = ["Urgent", "High", "Medium", "Low"];
+  const MNT_STATUSES = ["Requested", "In Progress", "Waiting", "Done"];
+  const MNT_ASSIGNEES = ["Daniel Henshaw", "Brandon Androes", "Brandon Coronado", "Todd Herre", "Outside Vendor", "Other"];
   const BAG_STAGE = "PACKOUT";       // finished bags stage here when they come off P-Mac
   let locSel = null;      // selected slot/zone code in the rack map
   let locAct = "";        // editable rack map: "" | "move" | "setqty" | "assign"
@@ -2796,6 +2824,77 @@
       '<input id="ciSearch" autocomplete="off" style="margin-top:10px" oninput="UI.ciSearch(this.value)" placeholder="' + L("ciSearchP") + '">' +
       '<table class="sortable" style="margin-top:10px"><thead>' + head + '</thead><tbody id="ciBody">' + rows + '</tbody></table></div>';
   }
+  function viewMaintenance() {
+    const all = DB.maintenance().slice().sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
+    const active = all.filter(i => i.status !== "Done");
+    const done = all.filter(i => i.status === "Done");
+    const prRank = { "Urgent": 0, "High": 1, "Medium": 2, "Low": 3 };
+    const activeSorted = active.slice().sort((a, b) => (prRank[a.priority] != null ? prRank[a.priority] : 2) - (prRank[b.priority] != null ? prRank[b.priority] : 2) || String(b.created_at || "").localeCompare(String(a.created_at || "")));
+    const doneSorted = done.slice().sort((a, b) => String(b.completed_date || "").localeCompare(String(a.completed_date || "")));
+    const list = mtView === "done" ? doneSorted : activeSorted;
+    const reqCount = all.filter(i => i.status === "Requested").length;
+    const ipCount = all.filter(i => i.status === "In Progress").length;
+    const waitCount = all.filter(i => i.status === "Waiting").length;
+    const ed = mtEditId ? (all.find(x => String(x.id) === String(mtEditId)) || {}) : {};
+    const editing = !!(mtEditId && ed.id);
+    const av = x => esc(x == null ? "" : x);
+    const sel = (arr, cur, def) => arr.map(t => '<option' + (t === (cur != null && cur !== "" ? cur : def) ? " selected" : "") + '>' + t + '</option>').join("");
+    const toggle = '<div class="ordtabs">' +
+      '<button class="' + (mtView === "active" ? "active" : "") + '" onclick="UI.mtView(\'active\')">' + L("mtActive") + ' (' + active.length + ')</button>' +
+      '<button class="' + (mtView === "done" ? "active" : "") + '" onclick="UI.mtView(\'done\')">' + L("mtDone") + ' (' + done.length + ')</button></div>';
+    const showForm = mtAddOpen || editing;
+    const today = new Date().toISOString().slice(0, 10);
+    const form = showForm ? ('<div class="ordform">' +
+      (editing ? '<p class="hint">&#9998; ' + L("editingRow") + '</p>' : '') +
+      '<div><label>' + L("mtTitle") + '</label><input id="mt-title" autocomplete="off" value="' + av(ed.title) + '" placeholder="' + L("mtTitleP") + '"></div>' +
+      '<div class="row"><div><label>' + L("mtType") + '</label><select id="mt-type">' + sel(MNT_TYPES, ed.mtype, "Request") + '</select></div>' +
+      '<div><label>' + L("mtArea") + '</label><select id="mt-area">' + sel(MNT_AREAS, ed.area, "Facility") + '</select></div>' +
+      '<div><label>' + L("mtAssignee") + '</label><input id="mt-assignee" list="dl-mt-assignee" autocomplete="off" value="' + av(ed.assignee) + '"></div></div>' +
+      '<div class="row"><div><label>' + L("mtPriority") + '</label><select id="mt-priority">' + sel(MNT_PRIORITIES, ed.priority, "Medium") + '</select></div>' +
+      '<div><label>' + L("mtStatus") + '</label><select id="mt-status">' + sel(MNT_STATUSES, ed.status, "Requested") + '</select></div>' +
+      '<div><label>' + L("mtOpened") + '</label><input id="mt-opened" type="date" value="' + (editing && ed.opened_date ? (ed.opened_date + "").slice(0, 10) : today) + '"></div></div>' +
+      '<div class="row"><div><label>' + L("mtTarget") + '</label><input id="mt-target" type="date" value="' + (editing && ed.target_date ? (ed.target_date + "").slice(0, 10) : "") + '"></div>' +
+      '<div><label>' + L("mtRequestedBy") + '</label><input id="mt-reqby" autocomplete="off" value="' + av(ed.requested_by) + '" placeholder="' + L("mtRequestedByP") + '"></div></div>' +
+      '<div><label>' + L("mtProblem") + '</label><input id="mt-problem" autocomplete="off" value="' + av(ed.problem) + '" placeholder="' + L("mtProblemP") + '"></div>' +
+      '<div><label>' + L("mtWaitingOn") + '</label><input id="mt-waitingon" autocomplete="off" value="' + av(ed.waiting_on) + '" placeholder="' + L("mtWaitingOnP") + '"></div>' +
+      '<div><label>' + L("mtNotes") + '</label><input id="mt-notes" autocomplete="off" value="' + av(ed.notes) + '" placeholder="' + L("mtNotesP") + '"></div>' +
+      opField("Troy") +
+      '<button class="primary" onclick="UI.mtSave()">' + (editing ? L("saveChanges") : L("mtAdd")) + '</button> ' +
+      '<button class="ghost" style="margin-top:14px" onclick="UI.' + (editing ? "mtEditCancel" : "mtAddToggle") + '()">' + L("ordCancel") + '</button></div>') : "";
+    const assigneeDl = '<datalist id="dl-mt-assignee">' + MNT_ASSIGNEES.map(n => '<option value="' + n + '"></option>').join("") + '</datalist>';
+    const mtP = p => p === "Urgent" ? "out" : p === "High" ? "low" : "";
+    const mtSt = s => s === "Done" ? "ok" : s === "Waiting" ? "out" : s === "In Progress" ? "low" : "";
+    const nextStatus = { "Requested": "In Progress", "In Progress": "Waiting", "Waiting": "Done" };
+    const rows = list.length ? list.map(i => {
+      const txt = ((i.title || "") + " " + (i.mtype || "") + " " + (i.area || "") + " " + (i.assignee || "") + " " + (i.status || "") + " " + (i.priority || "") + " " + (i.waiting_on || "") + " " + (i.requested_by || "")).toLowerCase().replace(/"/g, "");
+      const nxt = nextStatus[i.status];
+      const adv = nxt ? '<button class="ghost sm" onclick="UI.mtStatus(\'' + i.id + '\',\'' + nxt + '\')">' + esc(nxt) + '</button>'
+        : (i.status === "Done" ? '<button class="ghost sm" onclick="UI.mtStatus(\'' + i.id + '\',\'In Progress\')">' + L("mtReopen") + '</button>' : '');
+      const nameCell = '<td><b>' + esc(i.title || "") + '</b>' + (i.problem ? '<div class="muted sm">' + esc(i.problem) + '</div>' : '') + '</td>';
+      const mid = mtView === "done"
+        ? '<td class="muted sm">' + ((i.completed_date || "").slice(0, 10) || "&mdash;") + '</td>'
+        : '<td><span class="pill ' + mtP(i.priority) + '">' + esc(i.priority || "") + '</span></td><td><span class="pill ' + mtSt(i.status) + '">' + esc(i.status || "") + '</span>' +
+          (i.status === "Waiting" && i.waiting_on ? '<div class="sm" style="color:var(--red);font-weight:700;margin-top:2px">&#9203; ' + esc(i.waiting_on) + '</div>' : '') + '</td>';
+      return '<tr data-txt="' + txt + '">' + nameCell +
+        '<td><span class="tag">' + esc(i.mtype || "") + '</span></td>' +
+        '<td class="sm">' + esc(i.area || "") + '</td>' +
+        '<td class="muted sm">' + esc(i.assignee || "") + '</td>' + mid +
+        '<td>' + adv + ' <button class="ghost sm" title="' + L("editRow") + '" onclick="UI.mtEdit(\'' + i.id + '\')">&#9998;</button> <button class="ghost sm danger" onclick="UI.mtDelete(\'' + i.id + '\')">&#10005;</button></td></tr>';
+    }).join("") : '<tr><td colspan="' + (mtView === "done" ? 6 : 7) + '" class="muted">' + (mtView === "done" ? L("mtNoDone") : L("mtNoActive")) + '</td></tr>';
+    const head = mtView === "done"
+      ? '<tr><th>' + L("mtTitle") + '</th><th>' + L("mtType") + '</th><th>' + L("mtArea") + '</th><th>' + L("mtAssignee") + '</th><th>' + L("mtCompleted") + '</th><th data-nosort></th></tr>'
+      : '<tr><th>' + L("mtTitle") + '</th><th>' + L("mtType") + '</th><th>' + L("mtArea") + '</th><th>' + L("mtAssignee") + '</th><th>' + L("mtPriority") + '</th><th>' + L("mtStatus") + '</th><th data-nosort></th></tr>';
+    return assigneeDl + '<div class="card"><div class="suprow"><h2 style="margin:0">' + L("maintenance") + '</h2>' +
+      '<button class="primary sm" onclick="UI.mtAddToggle()">' + L("mtAdd") + '</button></div>' +
+      '<p class="hint">' + L("mtHint") + '</p>' +
+      '<div class="kpis"><div class="kpi"><div class="n">' + reqCount + '</div><div class="l">' + L("mtKpiRequested") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + ipCount + '</div><div class="l">' + L("mtKpiInProgress") + '</div></div>' +
+      '<div class="kpi alert"><div class="n">' + waitCount + '</div><div class="l">' + L("mtKpiWaiting") + '</div></div>' +
+      '<div class="kpi ok"><div class="n">' + done.length + '</div><div class="l">' + L("mtKpiDone") + '</div></div></div>' +
+      toggle + form +
+      '<input id="mtSearch" autocomplete="off" style="margin-top:10px" oninput="UI.mtSearch(this.value)" placeholder="' + L("mtSearchP") + '">' +
+      '<table class="sortable" style="margin-top:10px"><thead>' + head + '</thead><tbody id="mtBody">' + rows + '</tbody></table></div>';
+  }
   function viewMixing() { return deptDemandBoard("mixing", false) + viewConsume("Mixing", "mixing"); }
   function viewPmac() { return deptDemandBoard("pmac", false) + viewConsume("P-Mac", "pmac"); }
   // ===== Now Running — live floor board (Mixing + P-Mac machines, operator-named, additive) =====
@@ -3718,6 +3817,26 @@
     },
     async ciStatus(id, status) { await DB.setImprovementStatus(id, status, opVal()); toast(status + " ✓"); render(); },
     async ciDelete(id) { if (!confirm(L("ciConfirmDel"))) return; await DB.deleteImprovement(id, opVal()); toast("✓"); render(); },
+    // ---- Maintenance ----
+    mtView(v) { mtView = v; render(); },
+    mtAddToggle() { mtAddOpen = !mtAddOpen; mtEditId = null; render(); },
+    mtEdit(id) { mtEditId = id; mtAddOpen = false; render(); window.scrollTo(0, 0); },
+    mtEditCancel() { mtEditId = null; render(); },
+    mtSearch(val) { const q = (val || "").toLowerCase().trim();
+      document.querySelectorAll("#mtBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
+    async mtSave() {
+      const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
+      const title = v("mt-title"); if (!title) return toast(L("mtTitle"));
+      const by = opVal();
+      const rec = { title: title, mtype: v("mt-type"), area: v("mt-area"), assignee: v("mt-assignee"),
+        priority: v("mt-priority"), status: v("mt-status"), opened_date: v("mt-opened"), target_date: v("mt-target"),
+        problem: v("mt-problem"), waiting_on: v("mt-waitingon"), notes: v("mt-notes"), requested_by: v("mt-reqby") };
+      if (mtEditId) { await DB.updateMaintenance(mtEditId, rec, by); mtEditId = null; toast(L("saved") + " ✓"); }
+      else { await DB.addMaintenance(rec, by); mtAddOpen = false; toast(L("mtAdded")); }
+      render();
+    },
+    async mtStatus(id, status) { await DB.setMaintenanceStatus(id, status, opVal()); toast(status + " ✓"); render(); },
+    async mtDelete(id) { if (!confirm(L("mtConfirmDel"))) return; await DB.deleteMaintenance(id, opVal()); toast("✓"); render(); },
     // ---- Orders ----
     ordView(v) { orderView = v; render(); },
     ordAddToggle() { orderAddOpen = !orderAddOpen; render(); },
@@ -4070,7 +4189,7 @@
     renderNav(); refreshDatalists();
     const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
       move: viewMove, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
-      count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, compliance: viewCompliance, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
+      count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, maintenance: viewMaintenance, compliance: viewCompliance, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
       demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, ecomdemand: viewEcomDemand, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor, board: viewBoard };
     $("view").innerHTML = (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
