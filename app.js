@@ -47,7 +47,7 @@
       seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdReceived:"Received",sdIntCode:"Internal code",sdPackaging:"Packaging",sdPickPack:"Select packaging...",sdPallets:"# Pallets",sdPalletsShort:"pallet(s)",sdPackDate:"Packaging date", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
       skus:"SKUs", skusHint:"Finished-goods / retail SKU catalog - bundles, singles, and cases with bag count and flavor contents. Reference only.", skuCode:"SKU", skuTitle:"Product", skuBags:"Bags", skuComp:"Contents", skuSearchP:"Search SKU, product, or flavor...", skuCount:"SKUs",
       stockbuild:"Stock Build", sbHint:"Live build progress vs goals. Update On Hand as you go - the whole team sees it instantly. Yellow field = enter today's count.", sbGoal:"Goal", sbOnHand:"On hand", sbToBuild:"To build", sbPallets:"Pallets", sbDone:"Done", sbTotalGoal:"Total goal", sbComplete:"Complete", sbSaved:"Saved", sbRetail:"Retail", sbEcom:"E-Commerce", sb12pk:"12-Pack Boxes",
-      grpDemand:"Demand", demand:"By Department", demandboard:"Order Board", demandsched:"Production Schedule", demandimport:"Import Orders", forecast:"Forecast vs Target",
+      board:"Board Mode / TV", boardPick:"Pick a department", boardPickHint:"Open this on the TV and pick a department, or bookmark the URL (example: ?board=pmac).", boardExit:"Exit", grpDemand:"Demand", demand:"By Department", demandboard:"Order Board", demandsched:"Production Schedule", demandimport:"Import Orders", forecast:"Forecast vs Target",
       fcHint:"Compare only - the app's targets are not changed by this.", fcSnapshot:"Snapshot", fcFlavor:"Flavor", fcApp4:"App Target (4oz)", fcWip4:"WIP Forecast (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"App Target (1.5oz)", fcWip15:"WIP Forecast (1.5oz)", fcDelta15:"Δ (1.5oz)",
       fcNoAppTarget15:"No per-flavor 1.5oz target in the app (bucket / variety-pack only)", fcNone:"No forecast snapshot yet. Ask Claude to refresh it from the WIP FORECAST sheet.", fcBags:"bags",
       dqMix:"Mixing", dqPmac:"P-Mac", dqFul:"Fulfillment", dqToday:"Today", dqTarget:"Today's target", dqTargetShort:"Today",
@@ -184,7 +184,7 @@
       seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdReceived:"Recibido",sdIntCode:"Codigo interno",sdPackaging:"Empaque",sdPickPack:"Elegir empaque...",sdPallets:"# Paletas",sdPalletsShort:"paleta(s)",sdPackDate:"Fecha de empaque", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
       skus:"SKUs", skusHint:"Catalogo de SKU de producto terminado / retail - paquetes, individuales y cajas con cantidad de bolsas y sabores. Solo referencia.", skuCode:"SKU", skuTitle:"Producto", skuBags:"Bolsas", skuComp:"Contenido", skuSearchP:"Buscar SKU, producto o sabor...", skuCount:"SKUs",
       stockbuild:"Construir Inventario", sbHint:"Progreso de construccion vs metas en vivo. Actualice En Mano segun avanza - todo el equipo lo ve al instante. Campo amarillo = ingrese el conteo de hoy.", sbGoal:"Meta", sbOnHand:"En mano", sbToBuild:"Por hacer", sbPallets:"Paletas", sbDone:"Listo", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Guardado", sbRetail:"Minorista", sbEcom:"Comercio Electronico", sb12pk:"Cajas de 12",
-      grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Tablero de Pedidos", demandsched:"Programa de Produccion", demandimport:"Importar Pedidos", forecast:"Pronostico vs Objetivo",
+      board:"Modo Pizarra / TV", boardPick:"Elija un departamento", boardPickHint:"Abra esto en la TV y elija un departamento, o guarde el URL (ejemplo: ?board=pmac).", boardExit:"Salir", grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Tablero de Pedidos", demandsched:"Programa de Produccion", demandimport:"Importar Pedidos", forecast:"Pronostico vs Objetivo",
       fcHint:"Solo comparacion - esto no cambia los objetivos de la aplicacion.", fcSnapshot:"Instantanea", fcFlavor:"Sabor", fcApp4:"Objetivo App (4oz)", fcWip4:"Pronostico WIP (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"Objetivo App (1.5oz)", fcWip15:"Pronostico WIP (1.5oz)", fcDelta15:"Δ (1.5oz)",
       fcNoAppTarget15:"Sin objetivo por sabor de 1.5oz en la app (solo cubeta / variety pack)", fcNone:"Aun no hay instantanea de pronostico. Pida a Claude que la actualice desde la hoja WIP FORECAST.", fcBags:"bolsas",
       dqMix:"Mezcla", dqPmac:"P-Mac", dqFul:"Cumplimiento", dqToday:"Hoy", dqTarget:"Meta de hoy", dqTargetShort:"Hoy",
@@ -320,7 +320,7 @@
       seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdReceived:"Recebido",sdIntCode:"Codigo interno",sdPackaging:"Embalagem",sdPickPack:"Selecionar embalagem...",sdPallets:"# Paletes",sdPalletsShort:"palete(s)",sdPackDate:"Data de embalagem", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
       skus:"SKUs", skusHint:"Catalogo de SKU de produto acabado / varejo - pacotes, individuais e caixas com contagem de sacos e sabores. Apenas referencia.", skuCode:"SKU", skuTitle:"Produto", skuBags:"Sacos", skuComp:"Conteudo", skuSearchP:"Buscar SKU, produto ou sabor...", skuCount:"SKUs",
       stockbuild:"Construir Estoque", sbHint:"Progresso de construcao vs metas ao vivo. Atualize Em Estoque conforme avanca - toda a equipe ve na hora. Campo amarelo = insira a contagem de hoje.", sbGoal:"Meta", sbOnHand:"Em estoque", sbToBuild:"A fazer", sbPallets:"Paletes", sbDone:"Pronto", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Salvo", sbRetail:"Varejo", sbEcom:"E-Commerce", sb12pk:"Caixas de 12",
-      grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Painel de Pedidos", demandsched:"Programa de Producao", demandimport:"Importar Pedidos", forecast:"Previsao vs Meta",
+      board:"Modo Painel / TV", boardPick:"Escolha um departamento", boardPickHint:"Abra isto na TV e escolha um departamento, ou salve o URL (exemplo: ?board=pmac).", boardExit:"Sair", grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Painel de Pedidos", demandsched:"Programa de Producao", demandimport:"Importar Pedidos", forecast:"Previsao vs Meta",
       fcHint:"Somente comparacao - isso nao altera as metas do aplicativo.", fcSnapshot:"Instantaneo", fcFlavor:"Sabor", fcApp4:"Meta App (4oz)", fcWip4:"Previsao WIP (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"Meta App (1.5oz)", fcWip15:"Previsao WIP (1.5oz)", fcDelta15:"Δ (1.5oz)",
       fcNoAppTarget15:"Sem meta por sabor de 1.5oz no app (somente balde / variety pack)", fcNone:"Ainda sem instantaneo de previsao. Peca ao Claude para atualizar a partir da planilha WIP FORECAST.", fcBags:"sacos",
       dqMix:"Mistura", dqPmac:"P-Mac", dqFul:"Expedicao", dqToday:"Hoje", dqTarget:"Meta de hoje", dqTargetShort:"Hoje",
@@ -444,7 +444,7 @@
     { key: "tote", label: "Tote - 1 bag x 1,200 lb", per: 1200 }
   ];
   const SEED_PACK_MAP = {}; SEED_PACKS.forEach(p => SEED_PACK_MAP[p.key] = p);
-  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","demand","demandboard","demandsched","demandimport","forecast","seasoning","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","supplierpos","people","improve","compliance","reference","labels","log","settings"];
+  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","demand","demandboard","demandsched","demandimport","forecast","seasoning","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","supplierpos","people","improve","compliance","reference","labels","log","settings","board"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -627,7 +627,7 @@
     { key:"grpImprove", items:["improve"] },
     { key:"grpQuality", items:["compliance"] },
     { key:"grpDocs", items:["reference"] },
-    { key:"grpSystem", items:["log","settings"] }
+    { key:"grpSystem", items:["board","log","settings"] }
   ];
   // Lucide icon names (clean SVG line icons) rendered via lucide.createIcons()
   const NAV_ICON = {
@@ -638,7 +638,7 @@
     seasoning:"flame", seed:"sprout", skus:"barcode", finbags:"shopping-bag", pmacout:"package-open",
     mixing:"cooking-pot", pmac:"wrench", count:"clipboard-check", locations:"map-pin",
     purchasing:"shopping-cart", supplierpos:"file-text", people:"users", labels:"tag",
-    log:"history", settings:"settings", improve:"trending-up", compliance:"shield-check", reference:"book-open",
+    board:"tv", log:"history", settings:"settings", improve:"trending-up", compliance:"shield-check", reference:"book-open",
     demand:"calendar-clock", demandboard:"list-checks", demandsched:"gauge", demandimport:"file-up", forecast:"scale", facility:"warehouse", floor:"activity" };
   function drawIcons() { try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {} }
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
@@ -1975,7 +1975,7 @@
     }
     const is3dRack = /^[A-D]-\d{2}-L[1-4]$/.test(code);
     const view3dLink = is3dRack
-      ? '<a class="ghost sm" href="facility.html?v=3&loc=' + encodeURIComponent(code) + '" target="_blank" rel="noopener">&#127760; ' + L("locView3d") + '</a> '
+      ? '<a class="ghost sm" href="facility.html?v=2&loc=' + encodeURIComponent(code) + '" target="_blank" rel="noopener">&#127760; ' + L("locView3d") + '</a> '
       : "";
     return '<div class="card locsel"><div class="suprow"><h2 class="loc" style="margin:0">' + L("locSlot") + ' ' + esc(code) + '</h2>' +
       '<div>' + view3dLink + '<button class="ghost sm" onclick="UI.locPick(\'\')">&#10005;</button></div></div>' +
@@ -2683,9 +2683,9 @@
   }
   function viewFacility() {
     return '<div class="card"><div class="suprow"><h2 style="flex:1;margin:0">' + L("facility") + '</h2>' +
-      '<a class="ghost sm" href="facility.html?v=3" target="_blank" rel="noopener">' + L("facOpen") + ' &#8599;</a></div>' +
+      '<a class="ghost sm" href="facility.html?v=2" target="_blank" rel="noopener">' + L("facOpen") + ' &#8599;</a></div>' +
       '<p class="hint">' + L("facHint") + '</p>' +
-      '<iframe src="facility.html?v=3" title="Smackin plant 3D twin" loading="lazy" style="width:100%;height:78vh;border:1px solid rgba(0,0,0,.12);border-radius:12px;background:#0b0f1a"></iframe></div>';
+      '<iframe src="facility.html?v=2" title="Smackin plant 3D twin" loading="lazy" style="width:100%;height:78vh;border:1px solid rgba(0,0,0,.12);border-radius:12px;background:#0b0f1a"></iframe></div>';
   }
   function viewImprove() {
     const all = DB.improvements().slice().sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
@@ -2881,6 +2881,152 @@
   }
 
   // ---------- actions ----------
+  
+  // ===== Board Mode (TV department boards) — additive, bilingual EN/ES, auto-refresh =====
+  let boardDept = "";
+  let boardDataTimer = null, boardClockTimer = null, boardLastRefresh = 0;
+  const BOARD_DEPTS = ["mixing", "pmac", "ful"];
+  const BOARD_TXT = {
+    mixing: { en: "MIXING", es: "MEZCLA" }, pmac: { en: "P-MAC", es: "EMPAQUE" }, ful: { en: "FULFILLMENT", es: "CUMPLIMIENTO" },
+    makeNow: { en: "MAKE NOW", es: "HACER AHORA" }, today: { en: "TODAY", es: "HOY" },
+    target: { en: "TARGET", es: "META" }, done: { en: "DONE", es: "HECHO" }, toGo: { en: "TO GO", es: "FALTA" },
+    shift1: { en: "SHIFT 1", es: "TURNO 1" }, shift2: { en: "SHIFT 2", es: "TURNO 2" },
+    stock: { en: "STOCK ON HAND", es: "INVENTARIO" }, orders: { en: "ORDER", es: "PEDIDO" }, stockDriver: { en: "STOCK", es: "REPOSICION" },
+    updated: { en: "Updated", es: "Actualizado" }, agoWord: { en: "ago", es: "hace" },
+    running: { en: "RUNNING", es: "CORRIENDO" }, idle: { en: "IDLE", es: "INACTIVA" }, changeover: { en: "CHANGEOVER", es: "CAMBIO" },
+    nextUp: { en: "NEXT UP", es: "SIGUIENTE" }, noFilm: { en: "LOW FILM", es: "POCA PELICULA" },
+    bags: { en: "BAGS", es: "BOLSAS" }, cases: { en: "CASES", es: "CAJAS" },
+    allCovered: { en: "ALL COVERED", es: "TODO CUBIERTO" }, exit: { en: "Exit", es: "Salir" },
+    pickTitle: { en: "Board Mode - pick a department", es: "Modo Pizarra - elija un departamento" },
+    pickHint: { en: "Open this on the TV and pick a department, or bookmark the URL (example: ?board=pmac).", es: "Abra esto en la TV y elija un departamento, o guarde el URL (ejemplo: ?board=pmac)." }
+  };
+  function bt(key) { const t = BOARD_TXT[key] || { en: key, es: key }; return '<span class="bt-en">' + esc(t.en) + '</span><span class="bt-es">' + esc(t.es) + '</span>'; }
+  function boardStartTimers() {
+    if (!boardDataTimer) boardDataTimer = setInterval(() => { if (active === "board") { boardLastRefresh = Date.now(); render(); } else boardStopTimers(); }, 30000);
+    if (!boardClockTimer) boardClockTimer = setInterval(boardTickClock, 1000);
+  }
+  function boardStopTimers() {
+    if (boardDataTimer) { clearInterval(boardDataTimer); boardDataTimer = null; }
+    if (boardClockTimer) { clearInterval(boardClockTimer); boardClockTimer = null; }
+  }
+  function boardTickClock() {
+    const c = $("boardClock"); if (c) c.textContent = new Date().toLocaleTimeString();
+    const a = $("boardAgo"); if (a) { const s = Math.max(0, Math.round((Date.now() - boardLastRefresh) / 1000)); a.innerHTML = bt("updated") + " " + s + "s " + bt("agoWord"); }
+  }
+  function boardChip(kind) { const c = kind === "covered" ? "#00A341" : kind === "blocked" ? "#B52024" : "#F2C61E"; return '<span class="boardchip" style="background:' + c + '"></span>'; }
+  function boardData(dept) {
+    const isFul = dept === "ful";
+    const today = dqToday();
+    const P = v => isFul ? v.cases : v.bags;
+    const bn = computeBuildNeed("buildnow");
+    const tgt = isFul ? bn.T.toProduceCases : bn.T.toProduceBags;
+    const shifts = isFul ? 1 : 2;
+    const doneToday = P(dqProdSum(today, dept, null));
+    const s1 = shifts > 1 ? P(dqProdSum(today, dept, 1)) : null;
+    const s2 = shifts > 1 ? P(dqProdSum(today, dept, 2)) : null;
+    const pct = tgt > 0 ? Math.round(doneToday / tgt * 100) : (doneToday > 0 ? 100 : 0);
+    const out = DB.productionOutput ? DB.productionOutput() : [];
+    const rows = bn.list.filter(x => x.toProduce > 0).slice(0, 5).map(x => {
+      const produced = out.filter(r => r.prod_date === today && r.dept === dept && r.flavor === x.flavor).reduce((a, r) => a + (isFul ? (Number(r.cases) || 0) : (Number(r.bags) || 0)), 0);
+      const qty = isFul ? x.toProduce : x.toProduceBags;
+      const rpct = qty > 0 ? Math.min(100, Math.round(produced / qty * 100)) : 0;
+      return { flavor: x.flavor, code: x.code, qty: qty, driver: x.driver, kind: x.kind, pct: rpct };
+    });
+    const goalMap = {};
+    SB_ITEMS.forEach(i => { if (i.cat === "Target" || i.cat === "Master Case") goalMap[i.name] = (goalMap[i.name] || 0) + i.goal; });
+    const stock = DMD_FLAVOR_ORDER.filter(f => goalMap[f] != null).map(f => {
+      const onHand = demandOnHandCases(f);
+      const goal = goalMap[f] || 0;
+      const st = onHand <= 0 ? "red" : onHand < goal ? "amber" : "green";
+      return { flavor: f, onHand: onHand, goal: goal, st: st };
+    });
+    let machines = null;
+    if (dept === "pmac" || dept === "mixing") {
+      machines = (DB.lineStatus ? DB.lineStatus() : []).filter(r => r.area === dept).slice().sort((a, b) => (Number(a.sort) || 0) - (Number(b.sort) || 0)).map(m => {
+        const match = bn.list.find(x => x.flavor === m.flavor);
+        const target = match ? match.toProduceBags : 0;
+        const produced = out.filter(r => r.prod_date === today && r.dept === dept && r.flavor === m.flavor).reduce((a, r) => a + (Number(r.bags) || 0), 0);
+        const pctM = target > 0 ? Math.min(100, Math.round(produced / target * 100)) : 0;
+        return Object.assign({}, m, { target: target, produced: produced, pct: pctM });
+      });
+    }
+    const runningFlavors = new Set((machines || []).filter(m => m.status === "running").map(m => m.flavor));
+    const nextUp = bn.list.filter(x => x.toProduce > 0 && !runningFlavors.has(x.flavor))[0] || null;
+    return { dept: dept, today: today, unit: isFul ? "cases" : "bags", tgt: tgt, doneToday: doneToday, pct: pct, shifts: shifts, s1: s1, s2: s2, rows: rows, stock: stock, machines: machines, nextUp: nextUp };
+  }
+  function boardMakeNowRows(dept, rows) {
+    if (!rows.length) return '<div class="board-allcovered">&#10003; ' + bt("allCovered") + '</div>';
+    const unitKey = dept === "ful" ? "cases" : "bags";
+    return rows.map((x, i) => {
+      const driverTxt = x.driver === "order" ? bt("orders") : bt("stockDriver");
+      return '<div class="boardrow"><div class="boardrank">' + (i + 1) + '</div>' +
+        '<div class="boardflavor">' + boardChip(x.kind) + '<span class="boardflavname">' + esc(x.flavor) + '</span></div>' +
+        '<div class="boardqty">' + fmt(x.qty) + '<span class="boardqtyunit">' + bt(unitKey) + '</span></div>' +
+        '<div class="boardtag">' + driverTxt + (x.kind === "blocked" ? '<span class="boardwarn">' + bt("noFilm") + '</span>' : '') + '</div>' +
+        '<div class="boardbarwrap"><div class="boardbar" style="width:' + x.pct + '%"></div></div></div>';
+    }).join("");
+  }
+  function boardMachineTiles(machines, nextUp) {
+    if (!machines || !machines.length) return '<p class="board-nomachines">' + bt("idle") + '</p>';
+    const tiles = '<div class="boardmachinegrid">' + machines.map(m => {
+      const st = m.status || "idle";
+      const stLbl = st === "running" ? bt("running") : st === "changeover" ? bt("changeover") : bt("idle");
+      const body = st === "running" ? ('<div class="machineqty">' + fmt(m.produced) + ' / ' + fmt(m.target) + ' ' + bt("bags") + '</div>' +
+        '<div class="boardbarwrap sm"><div class="boardbar" style="width:' + Math.min(100, m.pct) + '%"></div></div>') : '';
+      return '<div class="machinetile ' + st + '"><div class="machinename">' + esc(m.machine) + '</div>' +
+        '<div class="machineflavor">' + (m.flavor ? esc(m.flavor) : '&mdash;') + '</div>' +
+        '<div class="machinestatus">' + stLbl + '</div>' + body + '</div>';
+    }).join("") + '</div>';
+    const next = nextUp ? '<div class="boardnextup">' + bt("nextUp") + ': <b>' + esc(nextUp.flavor) + '</b> &middot; ' + fmt(nextUp.toProduceBags) + ' ' + bt("bags") + '</div>' : '';
+    return tiles + next;
+  }
+  function boardTodayZone(data) {
+    const shiftHtml = data.shifts > 1 ?
+      '<div class="boardshiftrow"><div class="boardshift"><div class="boardshiftlabel">' + bt("shift1") + '</div><div class="boardshiftval">' + fmt(data.s1) + '</div></div>' +
+      '<div class="boardshift"><div class="boardshiftlabel">' + bt("shift2") + '</div><div class="boardshiftval">' + fmt(data.s2) + '</div></div></div>' : '';
+    return '<div class="boardtoday"><div class="boardherolabel">' + bt("target") + '</div>' +
+      '<div class="boardhero">' + fmt(data.tgt) + '</div><div class="boardherounit">' + bt(data.unit) + '</div>' +
+      '<div class="boardbarwrap lg"><div class="boardbar" style="width:' + Math.min(100, data.pct) + '%"></div></div>' +
+      '<div class="boardtodaystats"><span>' + fmt(data.doneToday) + ' ' + bt("done") + '</span><span>' + data.pct + '%</span><span>' + fmt(Math.max(0, data.tgt - data.doneToday)) + ' ' + bt("toGo") + '</span></div>' +
+      shiftHtml + '</div>';
+  }
+  function boardStockStrip(stock) {
+    return '<div class="boardstockstrip">' + stock.map(s => {
+      const col = s.st === "red" ? "#B52024" : s.st === "amber" ? "#F2C61E" : "#00A341";
+      return '<div class="boardstocktile" style="border-color:' + col + '"><div class="boardstockdot" style="background:' + col + '"></div>' +
+        '<div class="boardstockname">' + esc(s.flavor) + '</div><div class="boardstockqty">' + fmt(s.onHand) + '</div></div>';
+    }).join("") + '</div>';
+  }
+  function boardHeader(dept) {
+    const t = BOARD_TXT[dept] || { en: dept, es: dept };
+    return '<div class="boardheader"><div class="boarddept"><span class="bt-en">' + esc(t.en) + '</span><span class="bt-es">' + esc(t.es) + '</span></div>' +
+      '<div class="boardhdrright"><div class="boardclock" id="boardClock">' + new Date().toLocaleTimeString() + '</div>' +
+      '<div class="boardago" id="boardAgo">' + bt("updated") + ' 0s ' + bt("agoWord") + '</div>' +
+      '<button class="boardexit" onclick="UI.boardExit()">&times; ' + bt("exit") + '</button></div></div>';
+  }
+  function boardPicker() {
+    const row = BOARD_DEPTS.map(d => '<button class="boardpickbtn" onclick="UI.boardOpen(&#39;' + d + '&#39;)">' + bt(d) + '</button>').join("");
+    return '<div class="boardpicker"><div class="boardpicktitle">' + bt("pickTitle") + '</div>' +
+      '<div class="boardpickrow">' + row + '</div>' +
+      '<p class="boardpickhint">' + bt("pickHint") + '</p></div>';
+  }
+  function boardHtml(dept) {
+    const data = boardData(dept);
+    const makeZone = dept === "pmac" ? boardMachineTiles(data.machines, data.nextUp) : boardMakeNowRows(dept, data.rows);
+    return '<div class="boardwrap board-' + dept + '">' + boardHeader(dept) +
+      '<div class="boardzones"><div class="board-make"><div class="boardzonelabel">' + bt("makeNow") + '</div>' + makeZone + '</div>' +
+      '<div class="board-side"><div class="boardzonelabel">' + bt("today") + '</div>' + boardTodayZone(data) + '</div></div>' +
+      '<div class="board-stockzone"><div class="boardzonelabel sm">' + bt("stock") + '</div>' + boardStockStrip(data.stock) + '</div></div>';
+  }
+  function viewBoard() {
+    const q = (function () { try { return new URLSearchParams(location.search).get("board") || ""; } catch (e) { return ""; } })();
+    const dept = boardDept || q;
+    if (!dept || BOARD_DEPTS.indexOf(dept) < 0) return boardPicker();
+    boardDept = dept;
+    return boardHtml(dept);
+  }
+
+
   const UI = {
     cat(c) { catFilter = c; render(); },
     // ---- Demand section ----
@@ -3490,4 +3636,372 @@
     ordEditCancel() { orderEditId = null; render(); },
     async ordAdd() {
       const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
-      const cust = v("o-cust"); if (!cust) return toast(L("o
+      const cust = v("o-cust"); if (!cust) return toast(L("oCustomer"));
+      let by = v("o-by-other") || v("o-by") || "Allie"; if (by === "__other") by = "Other";
+      const rec = { customer: cust, customer_po: v("o-po"), order_id: v("o-oid"), invoice_date: v("o-inv"),
+        ship_date: v("o-ship"), tracking: v("o-trk"), carrier: v("o-carr"), appointment: v("o-appt"),
+        stripe_link: v("o-stripe"), notes: v("o-notes"), entered_by: by };
+      if (orderEditId) { await DB.updateOrder(orderEditId, rec, by); orderEditId = null; toast(L("saved") + " ✓"); render(); return; }
+      rec.status = "Open";
+      await DB.createOrder(rec, by);
+      try { DB.notifyNewOrder(rec); } catch (e) {}  // emails Troy once the backend is configured; no-ops otherwise
+      orderAddOpen = false; orderView = "open"; toast(L("ordAdded")); render();
+    },
+    async ordComplete(id) { await DB.setOrderStatus(id, "Complete", opVal()); toast(L("markComplete") + " ✓"); },
+    async ordReopen(id) { await DB.setOrderStatus(id, "Open", opVal()); toast(L("reopen") + " ✓"); },
+    // ---- People / HR ----
+    async hrUnlock() { await ensureUnlocked(); },
+    peopleView(v) { peopleView = v; render(); },
+    peopleSearch(val) { const q = (val || "").toLowerCase().trim();
+      document.querySelectorAll("#view .pcell").forEach(c => { const t = c.getAttribute("data-txt") || ""; c.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; });
+      document.querySelectorAll("#view .pdept").forEach(d => { const any = Array.from(d.querySelectorAll(".pcell")).some(c => c.style.display !== "none"); d.style.display = any ? "" : "none"; }); },
+    // ---- R&D / sample requests ----
+    rdView(v) { rdView = v; render(); },
+    rdAddToggle() { rdAddOpen = !rdAddOpen; render(); },
+    rdSearch(val) { const q = (val || "").toLowerCase().trim();
+      document.querySelectorAll("#rdBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
+    async rdAdd() {
+      const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
+      const co = v("rd-co"), items = v("rd-items");
+      if (!co) return toast(L("rdCompany")); if (!items) return toast(L("rdItems"));
+      const by = $("rd-op") ? $("rd-op").value : "";
+      await DB.createRdRequest({ req_type: v("rd-type"), company: co, contact_name: v("rd-cn"), contact_email: v("rd-em"),
+        items: items, quantity: v("rd-qty"), needed_by: v("rd-need"), purpose: v("rd-purp"),
+        follow_up: v("rd-follow"), notes: v("rd-notes"), requested_by: by, status: "Pending" }, by || "Troy");
+      rdAddOpen = false; rdView = "pending"; toast(L("rdAdded")); render();
+    },
+    async rdReceived(id) { if (!confirm(L("rdConfirmRecv"))) return; await DB.setRdStatus(id, "Received", rdOp()); toast(L("rdMarkRecv") + " ✓"); },
+    async rdReopen(id) { await DB.setRdStatus(id, "Pending", rdOp()); toast(L("rdReopenB") + " ✓"); },
+    rdPdf(id) { const r = DB.rdRequests().find(x => String(x.id) === String(id)); if (!r) return;
+      const doc = rdDoc(r); if (!doc) return toast("PDF lib not loaded"); doc.save((r.req_no || "request") + ".pdf"); },
+    async rdSend(id) {
+      const r = DB.rdRequests().find(x => String(x.id) === String(id)); if (!r) return;
+      if (!r.contact_email) return toast(L("rdEmail"));
+      const doc = rdDoc(r); if (!doc) return toast("PDF lib not loaded");
+      const b64 = doc.output("datauristring").split(",")[1];
+      toast(L("rdSending"));
+      const res = await DB.sendRdEmail(id, { to: r.contact_email, subject: L("rdEmailSubject") + " - " + (r.req_no || ""),
+        html: rdEmailHtml(r), pdfBase64: b64, pdfName: (r.req_no || "request") + ".pdf" }, rdOp());
+      if (res.ok) { toast(L("rdSendOk")); render(); }
+      else if (res.msg === "not-configured") { toast(L("rdSendNo")); }
+      else { toast(L("rdSendFail")); }
+    },
+    // ---- Supplier POs (upload) ----
+    async spoFile(input) { const f = input.files && input.files[0]; if (!f) return; spoFile = f; toast(L("spoParsed"));
+      spoParsed = (await spoParseFile(f)) || { vendor: "", po_num: "", po_date: "", total: "", item_count: 0, lines: "[]", recognized: false }; render(); },
+    spoClear() { spoFile = null; spoParsed = null; render(); },
+    async spoSave() {
+      if (!spoFile) return toast(L("spoNoFile"));
+      const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
+      const by = $("op") ? $("op").value : "";
+      const rec = { vendor: v("spo-vendor"), po_num: v("spo-po"), po_date: v("spo-date"), total: v("spo-total"),
+        item_count: (spoParsed && spoParsed.item_count) || 0, lines: (spoParsed && spoParsed.lines) || "[]", notes: v("spo-notes") };
+      const res = await DB.createSupplierPO(rec, spoFile, by);
+      if (!res.ok) return toast(res.msg || "error");
+      spoFile = null; spoParsed = null; toast(L("spoSaved")); render();
+    },
+    async spoDelete(id) { if (!confirm(L("spoConfirmDel"))) return; await DB.deleteSupplierPO(id, opVal()); toast(L("spoDelete") + " ✓"); },
+    spoSearch(val) { const q = (val || "").toLowerCase().trim();
+      document.querySelectorAll("#spoBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
+    spoSortBy(k) { if (spoSort.key === k) spoSort.dir *= -1; else spoSort = { key: k, dir: (k === "total" || k === "item_count" || k === "po_date") ? -1 : 1 }; render(); },
+    spoOpen(id) { spoDetailId = id; render(); window.scrollTo(0, 0); },
+    spoCloseDetail() { spoDetailId = null; poEmailOpen = false; render(); },
+    // ---- Email PO (Supplier PO -> vendor) ----
+    poEmailFromList(id) { spoDetailId = id; poEmailOpen = true; render(); window.scrollTo(0, 0); },
+    poEmailToggle() { poEmailOpen = !poEmailOpen; render(); },
+    poEmailCancel() { poEmailOpen = false; render(); },
+    poEmailCopy() {
+      const s = DB.supplierPos().find(x => String(x.id) === String(spoDetailId)); if (!s) return;
+      const text = ($("po-em-body") ? $("po-em-body").value : "") || poSummaryText(s);
+      const done = () => toast(L("poEmailCopied"));
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, done); else done();
+    },
+    async poEmailSend() {
+      const s = DB.supplierPos().find(x => String(x.id) === String(spoDetailId)); if (!s) return;
+      const to = ($("po-em-to") ? $("po-em-to").value : "").trim();
+      const subject = ($("po-em-subj") ? $("po-em-subj").value : "").trim();
+      const body = ($("po-em-body") ? $("po-em-body").value : "");
+      if (!to) return toast(L("poEmailNeedTo"));
+      toast(L("poEmailSending"));
+      const html = '<div style="font-family:Arial,sans-serif;color:#222;white-space:pre-wrap">' + esc(body).replace(/\n/g, "<br>") + '</div>';
+      const res = await DB.emailPO(s, { to: to, subject: subject, html: html }, opVal());
+      if (res.ok) { toast(L("poEmailOk")); poEmailOpen = false; render(); return; }
+      // Graceful fallback: open a prefilled mailto so the send is still one click away.
+      const mailto = "mailto:" + encodeURIComponent(to) + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+      window.location.href = mailto;
+      toast(res.msg === "not-configured" ? L("poEmailNo") : L("poEmailFail"));
+    },
+    refPick(input) { refFiles = input.files && input.files.length ? input.files : null; render(); },
+    refClear() { refFiles = null; render(); },
+    async refSave() {
+      if (!refFiles || !refFiles.length) return toast(L("refNoFile"));
+      const cat = ($("ref-cat") || {}).value || "Other"; const notes = (($("ref-notes") || {}).value || "").trim();
+      const by = ($("op") || {}).value || "Troy";
+      let ok = 0, err = "";
+      for (const f of refFiles) {
+        const r = await DB.createRefDoc({ title: f.name.replace(/\.[^.]+$/, ""), category: cat, notes: notes }, f, by);
+        if (r && r.ok) ok++; else err = (r && r.msg) || "error";
+      }
+      refFiles = null; toast(ok + " " + L("refSaved") + (err ? " - " + err : "")); render();
+    },
+    async refDelete(id) { if (!confirm(L("refConfirmDel"))) return; await DB.deleteRefDoc(id, opVal()); toast(L("spoDelete") + " ✓"); },
+    refSearch(val) { const q = (val || "").toLowerCase().trim();
+      document.querySelectorAll("#refBody .odcust").forEach(el => { const t = el.getAttribute("data-txt") || ""; el.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
+    // ---- Create PO (Excel-style entry form) ----
+    poCreateOpen() { spoView = "create"; poRows = 4; render(); },
+    poCreateBack() { spoView = "list"; render(); },
+    poAddLine() { const tb = $("po-lines"); if (!tb) return; const i = tb.querySelectorAll("tr").length; const tr = document.createElement("tr"); tr.innerHTML = poRowInner(i); tb.appendChild(tr); },
+    poRecalc() {
+      let sub = 0;
+      document.querySelectorAll("#po-lines tr").forEach(tr => {
+        const q = parseFloat((tr.querySelector("[id^=pl-qty-]") || {}).value) || 0;
+        const p = parseFloat((tr.querySelector("[id^=pl-price-]") || {}).value) || 0;
+        const lt = q * p; sub += lt;
+        const ts = tr.querySelector("[id^=pl-tot-]"); if (ts) ts.textContent = money(lt);
+      });
+      const g = id => { const e = $(id); return e ? parseFloat(e.value) || 0 : 0; };
+      const grand = sub + g("po-shipping") + g("po-tax") + g("po-other");
+      if ($("po-subtotal")) $("po-subtotal").textContent = money(sub);
+      if ($("po-grand")) $("po-grand").textContent = money(grand);
+    },
+    poVendorFill() {
+      const e = $("po-vendor"); const v = e ? (e.value || "").trim() : ""; if (!v) return;
+      const recs = DB.supplierPos().filter(s => (s.vendor || "").toLowerCase() === v.toLowerCase()).sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
+      const src = recs.find(s => s.vendor_addr || s.vendor_email || s.vendor_phone || s.ship_to) || recs[0];
+      if (!src) return;
+      const set = (id, val) => { const el = $(id); if (el && !el.value && val) el.value = val; };
+      set("po-vaddr", src.vendor_addr); set("po-vemail", src.vendor_email); set("po-vphone", src.vendor_phone); set("po-shipto", src.ship_to);
+    },
+    async poCreate() {
+      const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
+      const vendor = v("po-vendor"); if (!vendor) return toast(L("poNeedVendor"));
+      const lines = []; let sub = 0;
+      document.querySelectorAll("#po-lines tr").forEach(tr => {
+        const g = sel => { const el = tr.querySelector(sel); return el ? (el.value || "").trim() : ""; };
+        const item = g("[id^=pl-item-]"), desc = g("[id^=pl-desc-]"), qty = g("[id^=pl-qty-]"), price = g("[id^=pl-price-]");
+        if (!item && !desc && !qty && !price) return;
+        const lt = (parseFloat(qty) || 0) * (parseFloat(price) || 0); sub += lt;
+        lines.push({ item: item, desc: desc, qty: qty, price: price, total: String(Math.round(lt * 100) / 100) });
+      });
+      const gg = id => parseFloat(v(id)) || 0;
+      const grand = sub + gg("po-shipping") + gg("po-tax") + gg("po-other");
+      const rec = { vendor: vendor, po_num: v("po-num"), po_date: v("po-date"),
+        vendor_addr: v("po-vaddr"), vendor_email: v("po-vemail"), vendor_phone: v("po-vphone"), ship_to: v("po-shipto"),
+        lines: JSON.stringify(lines), item_count: lines.length,
+        subtotal: String(Math.round(sub * 100) / 100), shipping: v("po-shipping"), tax: v("po-tax"), other: v("po-other"),
+        total: String(Math.round(grand * 100) / 100), prepared_by: v("po-by"), notes: v("po-notes") };
+      const res = await DB.createSupplierPO(rec, null, rec.prepared_by);
+      if (res && res.ok === false) return toast(res.msg || "error");
+      spoView = "list"; toast(L("poSavedMsg")); render();
+    },
+    // ---- Order Docs (fulfilled-order paperwork) ----
+    odocFile(input) { const f = input.files && input.files[0]; if (!f) return; odocFile = f; render(); },
+    odocClear() { odocFile = null; render(); },
+    async odocSave() {
+      if (!odocFile) return toast(L("odocNoFile"));
+      const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
+      const by = $("op") ? $("op").value : "";
+      const rec = { customer: v("odoc-cust"), po_num: v("odoc-po"), doc_type: v("odoc-type"), notes: v("odoc-notes") };
+      const res = await DB.createOrderDoc(rec, odocFile, by);
+      if (!res.ok) return toast(res.msg || "error");
+      odocFile = null; toast(L("odocSaved")); render();
+    },
+    async odocDelete(id) { if (!confirm(L("odocConfirmDel"))) return; await DB.deleteOrderDoc(id, opVal()); toast(L("spoDelete") + " ✓"); },
+    odocSearch(val) { const q = (val || "").toLowerCase().trim();
+      document.querySelectorAll("#odocBody .odcust").forEach(c => { const t = c.getAttribute("data-txt") || ""; c.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
+    // ---- Mixing / P-Mac consumption (scan material out to production) ----
+    async consume(dept) {
+      const code = ($("con-code") ? $("con-code").value : "").trim();
+      const qty = parseFloat($("con-qty") ? $("con-qty").value : "") || 0;
+      const lot = ($("con-lot") ? $("con-lot").value : "").trim();
+      if (!code || !qty || !lot) return toast(L("conErr"));
+      const res = await DB.consume(code, qty, lot, dept, opVal());
+      toast(L("conBtn") + " ✓" + (res && res.itemFound === false ? " (" + code + " " + L("conNotInList") + ")" : ""));
+      render();
+    },
+    // ---- Purchase Orders ----
+    poNew(sk) { purchSup = sk || null; purchMode = "new"; active = "purchasing"; closeDrawer(); render(); },
+    purchView(v) { purchView = v; render(); },
+    plDate(v) { plDate = v; render(); },
+    async plDay(field, val) { const today = new Date().toISOString().slice(0, 10); const r = await DB.setProdDay(plDate || today, "retail", { [field]: val }, opVal()); if (r && r.ok === false) return toast(r.msg || "error"); render(); },
+    async plAdd() {
+      const g = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
+      const cases = g("pl-cases"); if (!cases || Number(cases) <= 0) return toast(L("plNeedCases"));
+      const now = new Date(); const hh = now.getHours(), mm = String(now.getMinutes()).padStart(2, "0");
+      const t = ((hh % 12) || 12) + ":" + mm + " " + (hh < 12 ? "AM" : "PM");
+      const today = new Date().toISOString().slice(0, 10);
+      const rec = { prod_date: plDate || today, channel: "retail", line: g("pl-line") || "1", flavor_code: g("pl-flavor"), cases: cases, log_time: t, notes: g("pl-notes") };
+      const r = await DB.addProdPallet(rec, opVal()); if (r && r.ok === false) return toast(r.msg || "error");
+      toast(L("plAdded")); render();
+    },
+    async plDel(id) { const r = await DB.deleteProdPallet(id, opVal()); if (r && r.ok === false) return toast(r.msg || "error"); render(); },
+    purchSetupCat(c) { purchSetupCat = c; render(); },
+    rsSearch(val) { const q = (val || "").toLowerCase().trim();
+      document.querySelectorAll("#rsBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
+    async itemReorder(id, val) { const r = await DB.updateItemFields(id, { reorder: val }, opVal()); if (r && r.ok === false) return toast(r.msg || "error"); toast(L("rsSaved")); },
+    async itemSupplier(id, val) { const r = await DB.updateItemFields(id, { supplier: val }, opVal()); if (r && r.ok === false) return toast(r.msg || "error"); toast(L("rsSaved")); },
+    poBack() { purchMode = "list"; render(); },
+    poSupChange() { purchSup = $("po-sup").value; render(); },
+    async poSave() {
+      const sk = $("po-sup").value, exp = $("po-exp").value || null, lines = [];
+      DB.items().filter(i => i.supplier === sk).forEach(i => {
+        const qe = $("poq-" + i.id), ce = $("poc-" + i.id);
+        const q = qe ? parseFloat(qe.value) : 0, c = ce ? parseFloat(ce.value) || 0 : 0;
+        if (q > 0) lines.push({ item_id: i.id, qty: q, cost: c });
+      });
+      if (!lines.length) return toast(L("enter"));
+      await DB.createPO(sk, lines, exp, opVal()); toast(L("poCreated")); purchMode = "list"; render();
+    },
+    async poOrder(id) { await DB.setPOStatus(id, "ordered", opVal()); toast(id); },
+    async poCancel(id) { if (confirm(L("cancelPO") + " " + id + "?")) await DB.setPOStatus(id, "cancelled", opVal()); },
+    async poDelete(id) { if (confirm(L("deletePO") + " " + id + "?")) await DB.deletePO(id, opVal()); },
+    poReceiveOpen(id) { receivingPOid = id; render(); },
+    poReceiveCancel() { receivingPOid = null; render(); },
+    async poReceiveConfirm(id) {
+      const po = DB.purchaseOrders().find(p => p.id === id); if (!po) return;
+      const r = {}; po.lines.forEach((l, idx) => { const e = $("rcv-" + id + "-" + idx); if (e) r[idx] = parseFloat(e.value) || 0; });
+      const res = await DB.receivePO(id, r, opVal()); if (!res.ok) return toast(res.msg);
+      receivingPOid = null; toast(L("received") + " &#10003;"); render();
+    },
+    labels(kind) {
+      const area = $("labelArea"); let list = [];
+      if (kind === "loc") list = DB.allLocations().map(c => ({ code: c, name: c }));
+      else if (kind === "item") list = DB.items().map(i => ({ code: i.code, name: i.name }));
+      else if (kind === "lpn") { const lpn = "LPN-" + Date.now().toString().slice(-8); list = [{ code: lpn, name: "Pallet " + lpn }]; }
+      area.innerHTML = '<div class="labelgrid" id="labelgrid">' +
+        list.map((x, n) => '<div class="lbl"><svg id="bc' + n + '"></svg><div class="lblcap">' + x.name + '</div></div>').join("") +
+        '</div><button class="primary" onclick="window.print()">' + L("print") + '</button>';
+      list.forEach((x, n) => { try { JsBarcode("#bc" + n, x.code, { format: "CODE128", width: 2, height: 48, fontSize: 13, margin: 6 }); } catch (e) {} });
+    },
+    async cam(targetId) {
+      if (!window.Html5Qrcode) { toast("Camera lib not loaded"); return; }
+      let modal = $("camModal");
+      if (!modal) { modal = document.createElement("div"); modal.id = "camModal"; modal.className = "cammodal";
+        modal.innerHTML = '<div class="cambox"><div id="reader"></div><button class="ghost" id="camClose">Close</button></div>';
+        document.body.appendChild(modal); }
+      modal.style.display = "flex";
+      const reader = new Html5Qrcode("reader");
+      const stop = () => { reader.stop().then(() => { modal.style.display = "none"; }).catch(() => { modal.style.display = "none"; }); };
+      $("camClose").onclick = stop;
+      reader.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
+        const f = $(targetId); if (f) { f.value = text; f.dispatchEvent(new Event("input")); }
+        stop(); toast(text);
+      }).catch(() => toast("Camera unavailable"));
+    },
+    setLang,
+    boardOpen(d) { boardDept = d; try { const u = new URL(location.href); u.searchParams.set("board", d); history.replaceState(null, "", u.pathname + u.search); } catch (e) {} render(); },
+    boardExit() { boardDept = ""; boardStopTimers(); try { const u = new URL(location.href); u.searchParams.delete("board"); history.replaceState(null, "", u.pathname + (u.search || "")); } catch (e) {} go("home"); }
+  };
+  window.UI = UI;
+  UI.lock = lockEdits;
+  // Gate every write action behind the PIN. Viewing stays open.
+  ["saveAdjust","ordAdd","ordComplete","ordReopen","receive","put","move","produce","count","doReturn","addSeasLot","seasStatus","quarExpired","qaConvert","qaScrap","poSave","poOrder","poCancel","poDelete","poReceiveConfirm","reset"].forEach(fn => {
+    const orig = UI[fn];
+    if (typeof orig !== "function") return;
+    UI[fn] = async function () { if (!(await ensureUnlocked())) return; return orig.apply(UI, arguments); };
+  });
+
+  function refreshDatalists() {
+    $("dl-items").innerHTML = DB.items().map(i => '<option value="' + i.code + '">' + i.name + "</option>").join("");
+    $("dl-locs").innerHTML = DB.allLocations().map(l => '<option value="' + l + '"></option>').join("");
+  }
+  function closeDrawer() { const n = $("nav"), b = $("navBackdrop"); if (n) n.classList.remove("open"); if (b) b.classList.remove("show"); }
+  function renderNav() {
+    const vis = visibleTabs();
+    const roleSel = '<select class="rolesel" title="' + L("role") + '" onchange="UI.setRole(this.value)">' +
+      [["all", "roleAll"], ["receiving", "roleReceiving"], ["production", "roleProduction"], ["mixing", "roleMixing"], ["pmac", "rolePmac"], ["rnd", "roleRnd"]].map(([v, k]) =>
+        '<option value="' + v + '"' + (prefs.role === v ? " selected" : "") + '>' + L(k) + '</option>').join("") + '</select>';
+    const navBtn = tb => {
+      let badge = "";
+      if (tb === "orders" && newOrdersCount() > 0) badge = '<span class="navbadge">' + newOrdersCount() + '</span>';
+      else if (tb === "alerts" && alertCount() > 0) badge = '<span class="navbadge alert">' + alertCount() + '</span>';
+      return '<button class="navitem ' + (tb === active ? "active" : "") + '" onclick="UI_go(\'' + tb + '\')">' +
+        '<i class="navico" data-lucide="' + (NAV_ICON[tb] || "circle") + '"></i><span>' + L(tb) + '</span>' + badge + '</button>';
+    };
+    let html = roleSel;
+    NAV_GROUPS.forEach(g => {
+      const items = g.items.filter(t => vis.indexOf(t) >= 0);
+      if (!items.length) return;
+      if (!g.key) { html += '<div class="navgroup">' + items.map(navBtn).join("") + '</div>'; return; }
+      const hasActive = items.indexOf(active) >= 0;
+      const collapsed = navCollapsed.has(g.key) && !hasActive;
+      html += '<div class="navgroup' + (collapsed ? ' collapsed' : '') + '">' +
+        '<button class="navlabel" onclick="UI.navGroupToggle(\'' + g.key + '\')"><span class="navcaret">' + (collapsed ? "▸" : "▾") + '</span>' + L(g.key) + '</button>';
+      if (!collapsed) html += items.map(navBtn).join("");
+      html += '</div>';
+    });
+    $("nav").innerHTML = html;
+    drawIcons();
+  }
+  window.UI_go = go;
+  // Generic client-side sort for any <table class="sortable">: click a header to sort rows by
+  // that column (numeric-aware). Mark a header with data-nosort to skip it (e.g. action columns).
+  function sortTableByCol(tbl, idx) {
+    const tb = tbl.tBodies[0]; if (!tb) return;
+    const rows = Array.from(tb.rows).filter(r => r.cells.length > idx && !r.hasAttribute("data-nosort"));
+    if (rows.length < 2) return;
+    const dir = (tbl.__sortCol === idx) ? -(tbl.__sortDir || 1) : 1;
+    tbl.__sortCol = idx; tbl.__sortDir = dir;
+    const val = r => {
+      const c = r.cells[idx]; if (!c) return "";
+      const t = (c.innerText || "").trim();
+      const n = parseFloat(t.replace(/[$,%]/g, ""));
+      return (t !== "" && !isNaN(n) && /^[-+$]?[\d,]+(\.\d+)?%?$/.test(t)) ? n : t.toLowerCase();
+    };
+    rows.sort((a, b) => { const x = val(a), y = val(b); return (x < y ? -1 : x > y ? 1 : 0) * dir; });
+    rows.forEach(r => tb.appendChild(r));
+    const hs = tbl.tHead ? tbl.tHead.rows[0].cells : [];
+    Array.from(hs).forEach((th, i) => { const old = th.querySelector(".gsar"); if (old) old.remove(); if (i === idx) { const s = document.createElement("span"); s.className = "gsar"; s.textContent = dir > 0 ? " ▲" : " ▼"; th.appendChild(s); } });
+  }
+  function wireSortable() {
+    document.querySelectorAll("#view table.sortable").forEach(tbl => {
+      if (!tbl.tHead) return;
+      Array.from(tbl.tHead.rows[0].cells).forEach((th, idx) => {
+        if (th.hasAttribute("data-nosort")) return;
+        th.style.cursor = "pointer"; th.title = th.title || L("sortHint");
+        th.onclick = () => sortTableByCol(tbl, idx);
+      });
+    });
+    // Add a visible "sortable" affordance to EVERY clickable header (any sort mechanism):
+    // a faint up/down glyph so users know the column can be sorted, plus a hover class.
+    document.querySelectorAll("#view thead th").forEach(th => {
+      if (th.hasAttribute("data-nosort")) return;
+      const clickable = th.onclick || th.getAttribute("onclick");
+      if (!clickable) return;
+      th.classList.add("th-sortable");
+      const active = th.querySelector(".sortar") || th.querySelector(".gsar");
+      const idle = th.querySelector(".sortglyph");
+      if (active) { if (idle) idle.remove(); }
+      else if (!idle) { const g = document.createElement("span"); g.className = "sortglyph"; g.textContent = "↕"; th.appendChild(g); }
+    });
+  }
+  function render() {
+    renderNav(); refreshDatalists();
+    const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
+      move: viewMove, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
+      count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, compliance: viewCompliance, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
+      demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor, board: viewBoard };
+    $("view").innerHTML = (map[active] || viewHome)();
+    $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
+    $("modeBadge").className = "modebadge " + (DB.mode === "cloud" ? "ok" : "low");
+    try { wireSortable(); } catch (e) {}
+    drawIcons();
+    document.body.classList.toggle("boardmode", active === "board");
+    if (active === "board") { boardLastRefresh = Date.now(); boardStartTimers(); } else { boardStopTimers(); }
+  }
+
+  // ---------- boot ----------
+  window.addEventListener("DOMContentLoaded", async () => {
+    try { const bp = new URLSearchParams(location.search).get("board"); if (bp) { active = "board"; boardDept = bp; } } catch (e) {}
+    $("lang-en").onclick = () => setLang("en");
+    $("lang-es").onclick = () => setLang("es");
+    if ($("lang-pt")) $("lang-pt").onclick = () => setLang("pt");
+    if ($("navToggle")) $("navToggle").onclick = () => { const n = $("nav"), b = $("navBackdrop"); const open = !n.classList.contains("open"); n.classList.toggle("open", open); if (b) b.classList.toggle("show", open); };
+    if ($("navBackdrop")) $("navBackdrop").onclick = closeDrawer;
+    await DB.init();
+    if (!ordersSeen) markOrdersSeen();  // first run: existing orders are not "new"
+    DB.onChange(render);
+    render();
+    if ("serviceWorker" in navigator) { try { navigator.serviceWorker.register("service-worker.js"); } catch (e) {} }
+  });
+})();
