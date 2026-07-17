@@ -47,7 +47,7 @@
       seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdReceived:"Received",sdIntCode:"Internal code",sdPackaging:"Packaging",sdPickPack:"Select packaging...",sdPallets:"# Pallets",sdPalletsShort:"pallet(s)",sdPackDate:"Packaging date", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
       skus:"SKUs", skusHint:"Finished-goods / retail SKU catalog - bundles, singles, and cases with bag count and flavor contents. Reference only.", skuCode:"SKU", skuTitle:"Product", skuBags:"Bags", skuComp:"Contents", skuSearchP:"Search SKU, product, or flavor...", skuCount:"SKUs",
       stockbuild:"Stock Build", sbHint:"Live build progress vs goals. Update On Hand as you go - the whole team sees it instantly. Yellow field = enter today's count.", sbGoal:"Goal", sbOnHand:"On hand", sbToBuild:"To build", sbPallets:"Pallets", sbDone:"Done", sbTotalGoal:"Total goal", sbComplete:"Complete", sbSaved:"Saved", sbRetail:"Retail", sbEcom:"E-Commerce", sb12pk:"12-Pack Boxes",
-      grpDemand:"Demand", demand:"By Department", demandboard:"Order Board", demandsched:"Production Schedule", demandimport:"Import Orders", forecast:"Forecast vs Target",
+      board:"Board Mode / TV", boardPick:"Pick a department", boardPickHint:"Open this on the TV and pick a department, or bookmark the URL (example: ?board=pmac).", boardExit:"Exit", grpDemand:"Demand", demand:"By Department", demandboard:"Order Board", demandsched:"Production Schedule", demandimport:"Import Orders", forecast:"Forecast vs Target",
       fcHint:"Compare only - the app's targets are not changed by this.", fcSnapshot:"Snapshot", fcFlavor:"Flavor", fcApp4:"App Target (4oz)", fcWip4:"WIP Forecast (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"App Target (1.5oz)", fcWip15:"WIP Forecast (1.5oz)", fcDelta15:"Δ (1.5oz)",
       fcNoAppTarget15:"No per-flavor 1.5oz target in the app (bucket / variety-pack only)", fcNone:"No forecast snapshot yet. Ask Claude to refresh it from the WIP FORECAST sheet.", fcBags:"bags",
       dqMix:"Mixing", dqPmac:"P-Mac", dqFul:"Fulfillment", dqToday:"Today", dqTarget:"Today's target", dqTargetShort:"Today",
@@ -184,7 +184,7 @@
       seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdReceived:"Recibido",sdIntCode:"Codigo interno",sdPackaging:"Empaque",sdPickPack:"Elegir empaque...",sdPallets:"# Paletas",sdPalletsShort:"paleta(s)",sdPackDate:"Fecha de empaque", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
       skus:"SKUs", skusHint:"Catalogo de SKU de producto terminado / retail - paquetes, individuales y cajas con cantidad de bolsas y sabores. Solo referencia.", skuCode:"SKU", skuTitle:"Producto", skuBags:"Bolsas", skuComp:"Contenido", skuSearchP:"Buscar SKU, producto o sabor...", skuCount:"SKUs",
       stockbuild:"Construir Inventario", sbHint:"Progreso de construccion vs metas en vivo. Actualice En Mano segun avanza - todo el equipo lo ve al instante. Campo amarillo = ingrese el conteo de hoy.", sbGoal:"Meta", sbOnHand:"En mano", sbToBuild:"Por hacer", sbPallets:"Paletas", sbDone:"Listo", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Guardado", sbRetail:"Minorista", sbEcom:"Comercio Electronico", sb12pk:"Cajas de 12",
-      grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Tablero de Pedidos", demandsched:"Programa de Produccion", demandimport:"Importar Pedidos", forecast:"Pronostico vs Objetivo",
+      board:"Modo Pizarra / TV", boardPick:"Elija un departamento", boardPickHint:"Abra esto en la TV y elija un departamento, o guarde el URL (ejemplo: ?board=pmac).", boardExit:"Salir", grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Tablero de Pedidos", demandsched:"Programa de Produccion", demandimport:"Importar Pedidos", forecast:"Pronostico vs Objetivo",
       fcHint:"Solo comparacion - esto no cambia los objetivos de la aplicacion.", fcSnapshot:"Instantanea", fcFlavor:"Sabor", fcApp4:"Objetivo App (4oz)", fcWip4:"Pronostico WIP (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"Objetivo App (1.5oz)", fcWip15:"Pronostico WIP (1.5oz)", fcDelta15:"Δ (1.5oz)",
       fcNoAppTarget15:"Sin objetivo por sabor de 1.5oz en la app (solo cubeta / variety pack)", fcNone:"Aun no hay instantanea de pronostico. Pida a Claude que la actualice desde la hoja WIP FORECAST.", fcBags:"bolsas",
       dqMix:"Mezcla", dqPmac:"P-Mac", dqFul:"Cumplimiento", dqToday:"Hoy", dqTarget:"Meta de hoy", dqTargetShort:"Hoy",
@@ -320,7 +320,7 @@
       seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdReceived:"Recebido",sdIntCode:"Codigo interno",sdPackaging:"Embalagem",sdPickPack:"Selecionar embalagem...",sdPallets:"# Paletes",sdPalletsShort:"palete(s)",sdPackDate:"Data de embalagem", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
       skus:"SKUs", skusHint:"Catalogo de SKU de produto acabado / varejo - pacotes, individuais e caixas com contagem de sacos e sabores. Apenas referencia.", skuCode:"SKU", skuTitle:"Produto", skuBags:"Sacos", skuComp:"Conteudo", skuSearchP:"Buscar SKU, produto ou sabor...", skuCount:"SKUs",
       stockbuild:"Construir Estoque", sbHint:"Progresso de construcao vs metas ao vivo. Atualize Em Estoque conforme avanca - toda a equipe ve na hora. Campo amarelo = insira a contagem de hoje.", sbGoal:"Meta", sbOnHand:"Em estoque", sbToBuild:"A fazer", sbPallets:"Paletes", sbDone:"Pronto", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Salvo", sbRetail:"Varejo", sbEcom:"E-Commerce", sb12pk:"Caixas de 12",
-      grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Painel de Pedidos", demandsched:"Programa de Producao", demandimport:"Importar Pedidos", forecast:"Previsao vs Meta",
+      board:"Modo Painel / TV", boardPick:"Escolha um departamento", boardPickHint:"Abra isto na TV e escolha um departamento, ou salve o URL (exemplo: ?board=pmac).", boardExit:"Sair", grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Painel de Pedidos", demandsched:"Programa de Producao", demandimport:"Importar Pedidos", forecast:"Previsao vs Meta",
       fcHint:"Somente comparacao - isso nao altera as metas do aplicativo.", fcSnapshot:"Instantaneo", fcFlavor:"Sabor", fcApp4:"Meta App (4oz)", fcWip4:"Previsao WIP (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"Meta App (1.5oz)", fcWip15:"Previsao WIP (1.5oz)", fcDelta15:"Δ (1.5oz)",
       fcNoAppTarget15:"Sem meta por sabor de 1.5oz no app (somente balde / variety pack)", fcNone:"Ainda sem instantaneo de previsao. Peca ao Claude para atualizar a partir da planilha WIP FORECAST.", fcBags:"sacos",
       dqMix:"Mistura", dqPmac:"P-Mac", dqFul:"Expedicao", dqToday:"Hoje", dqTarget:"Meta de hoje", dqTargetShort:"Hoje",
@@ -444,7 +444,7 @@
     { key: "tote", label: "Tote - 1 bag x 1,200 lb", per: 1200 }
   ];
   const SEED_PACK_MAP = {}; SEED_PACKS.forEach(p => SEED_PACK_MAP[p.key] = p);
-  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","demand","demandboard","demandsched","demandimport","forecast","seasoning","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","supplierpos","people","improve","compliance","reference","labels","log","settings"];
+  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","demand","demandboard","demandsched","demandimport","forecast","seasoning","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","supplierpos","people","improve","compliance","reference","labels","log","settings","board"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -627,7 +627,7 @@
     { key:"grpImprove", items:["improve"] },
     { key:"grpQuality", items:["compliance"] },
     { key:"grpDocs", items:["reference"] },
-    { key:"grpSystem", items:["log","settings"] }
+    { key:"grpSystem", items:["board","log","settings"] }
   ];
   // Lucide icon names (clean SVG line icons) rendered via lucide.createIcons()
   const NAV_ICON = {
@@ -638,7 +638,7 @@
     seasoning:"flame", seed:"sprout", skus:"barcode", finbags:"shopping-bag", pmacout:"package-open",
     mixing:"cooking-pot", pmac:"wrench", count:"clipboard-check", locations:"map-pin",
     purchasing:"shopping-cart", supplierpos:"file-text", people:"users", labels:"tag",
-    log:"history", settings:"settings", improve:"trending-up", compliance:"shield-check", reference:"book-open",
+    board:"tv", log:"history", settings:"settings", improve:"trending-up", compliance:"shield-check", reference:"book-open",
     demand:"calendar-clock", demandboard:"list-checks", demandsched:"gauge", demandimport:"file-up", forecast:"scale", facility:"warehouse", floor:"activity" };
   function drawIcons() { try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {} }
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
@@ -2881,6 +2881,152 @@
   }
 
   // ---------- actions ----------
+  
+  // ===== Board Mode (TV department boards) — additive, bilingual EN/ES, auto-refresh =====
+  let boardDept = "";
+  let boardDataTimer = null, boardClockTimer = null, boardLastRefresh = 0;
+  const BOARD_DEPTS = ["mixing", "pmac", "ful"];
+  const BOARD_TXT = {
+    mixing: { en: "MIXING", es: "MEZCLA" }, pmac: { en: "P-MAC", es: "EMPAQUE" }, ful: { en: "FULFILLMENT", es: "CUMPLIMIENTO" },
+    makeNow: { en: "MAKE NOW", es: "HACER AHORA" }, today: { en: "TODAY", es: "HOY" },
+    target: { en: "TARGET", es: "META" }, done: { en: "DONE", es: "HECHO" }, toGo: { en: "TO GO", es: "FALTA" },
+    shift1: { en: "SHIFT 1", es: "TURNO 1" }, shift2: { en: "SHIFT 2", es: "TURNO 2" },
+    stock: { en: "STOCK ON HAND", es: "INVENTARIO" }, orders: { en: "ORDER", es: "PEDIDO" }, stockDriver: { en: "STOCK", es: "REPOSICION" },
+    updated: { en: "Updated", es: "Actualizado" }, agoWord: { en: "ago", es: "hace" },
+    running: { en: "RUNNING", es: "CORRIENDO" }, idle: { en: "IDLE", es: "INACTIVA" }, changeover: { en: "CHANGEOVER", es: "CAMBIO" },
+    nextUp: { en: "NEXT UP", es: "SIGUIENTE" }, noFilm: { en: "LOW FILM", es: "POCA PELICULA" },
+    bags: { en: "BAGS", es: "BOLSAS" }, cases: { en: "CASES", es: "CAJAS" },
+    allCovered: { en: "ALL COVERED", es: "TODO CUBIERTO" }, exit: { en: "Exit", es: "Salir" },
+    pickTitle: { en: "Board Mode - pick a department", es: "Modo Pizarra - elija un departamento" },
+    pickHint: { en: "Open this on the TV and pick a department, or bookmark the URL (example: ?board=pmac).", es: "Abra esto en la TV y elija un departamento, o guarde el URL (ejemplo: ?board=pmac)." }
+  };
+  function bt(key) { const t = BOARD_TXT[key] || { en: key, es: key }; return '<span class="bt-en">' + esc(t.en) + '</span><span class="bt-es">' + esc(t.es) + '</span>'; }
+  function boardStartTimers() {
+    if (!boardDataTimer) boardDataTimer = setInterval(() => { if (active === "board") { boardLastRefresh = Date.now(); render(); } else boardStopTimers(); }, 30000);
+    if (!boardClockTimer) boardClockTimer = setInterval(boardTickClock, 1000);
+  }
+  function boardStopTimers() {
+    if (boardDataTimer) { clearInterval(boardDataTimer); boardDataTimer = null; }
+    if (boardClockTimer) { clearInterval(boardClockTimer); boardClockTimer = null; }
+  }
+  function boardTickClock() {
+    const c = $("boardClock"); if (c) c.textContent = new Date().toLocaleTimeString();
+    const a = $("boardAgo"); if (a) { const s = Math.max(0, Math.round((Date.now() - boardLastRefresh) / 1000)); a.innerHTML = bt("updated") + " " + s + "s " + bt("agoWord"); }
+  }
+  function boardChip(kind) { const c = kind === "covered" ? "#00A341" : kind === "blocked" ? "#B52024" : "#F2C61E"; return '<span class="boardchip" style="background:' + c + '"></span>'; }
+  function boardData(dept) {
+    const isFul = dept === "ful";
+    const today = dqToday();
+    const P = v => isFul ? v.cases : v.bags;
+    const bn = computeBuildNeed("buildnow");
+    const tgt = isFul ? bn.T.toProduceCases : bn.T.toProduceBags;
+    const shifts = isFul ? 1 : 2;
+    const doneToday = P(dqProdSum(today, dept, null));
+    const s1 = shifts > 1 ? P(dqProdSum(today, dept, 1)) : null;
+    const s2 = shifts > 1 ? P(dqProdSum(today, dept, 2)) : null;
+    const pct = tgt > 0 ? Math.round(doneToday / tgt * 100) : (doneToday > 0 ? 100 : 0);
+    const out = DB.productionOutput ? DB.productionOutput() : [];
+    const rows = bn.list.filter(x => x.toProduce > 0).slice(0, 5).map(x => {
+      const produced = out.filter(r => r.prod_date === today && r.dept === dept && r.flavor === x.flavor).reduce((a, r) => a + (isFul ? (Number(r.cases) || 0) : (Number(r.bags) || 0)), 0);
+      const qty = isFul ? x.toProduce : x.toProduceBags;
+      const rpct = qty > 0 ? Math.min(100, Math.round(produced / qty * 100)) : 0;
+      return { flavor: x.flavor, code: x.code, qty: qty, driver: x.driver, kind: x.kind, pct: rpct };
+    });
+    const goalMap = {};
+    SB_ITEMS.forEach(i => { if (i.cat === "Target" || i.cat === "Master Case") goalMap[i.name] = (goalMap[i.name] || 0) + i.goal; });
+    const stock = DMD_FLAVOR_ORDER.filter(f => goalMap[f] != null).map(f => {
+      const onHand = demandOnHandCases(f);
+      const goal = goalMap[f] || 0;
+      const st = onHand <= 0 ? "red" : onHand < goal ? "amber" : "green";
+      return { flavor: f, onHand: onHand, goal: goal, st: st };
+    });
+    let machines = null;
+    if (dept === "pmac" || dept === "mixing") {
+      machines = (DB.lineStatus ? DB.lineStatus() : []).filter(r => r.area === dept).slice().sort((a, b) => (Number(a.sort) || 0) - (Number(b.sort) || 0)).map(m => {
+        const match = bn.list.find(x => x.flavor === m.flavor);
+        const target = match ? match.toProduceBags : 0;
+        const produced = out.filter(r => r.prod_date === today && r.dept === dept && r.flavor === m.flavor).reduce((a, r) => a + (Number(r.bags) || 0), 0);
+        const pctM = target > 0 ? Math.min(100, Math.round(produced / target * 100)) : 0;
+        return Object.assign({}, m, { target: target, produced: produced, pct: pctM });
+      });
+    }
+    const runningFlavors = new Set((machines || []).filter(m => m.status === "running").map(m => m.flavor));
+    const nextUp = bn.list.filter(x => x.toProduce > 0 && !runningFlavors.has(x.flavor))[0] || null;
+    return { dept: dept, today: today, unit: isFul ? "cases" : "bags", tgt: tgt, doneToday: doneToday, pct: pct, shifts: shifts, s1: s1, s2: s2, rows: rows, stock: stock, machines: machines, nextUp: nextUp };
+  }
+  function boardMakeNowRows(dept, rows) {
+    if (!rows.length) return '<div class="board-allcovered">&#10003; ' + bt("allCovered") + '</div>';
+    const unitKey = dept === "ful" ? "cases" : "bags";
+    return rows.map((x, i) => {
+      const driverTxt = x.driver === "order" ? bt("orders") : bt("stockDriver");
+      return '<div class="boardrow"><div class="boardrank">' + (i + 1) + '</div>' +
+        '<div class="boardflavor">' + boardChip(x.kind) + '<span class="boardflavname">' + esc(x.flavor) + '</span></div>' +
+        '<div class="boardqty">' + fmt(x.qty) + '<span class="boardqtyunit">' + bt(unitKey) + '</span></div>' +
+        '<div class="boardtag">' + driverTxt + (x.kind === "blocked" ? '<span class="boardwarn">' + bt("noFilm") + '</span>' : '') + '</div>' +
+        '<div class="boardbarwrap"><div class="boardbar" style="width:' + x.pct + '%"></div></div></div>';
+    }).join("");
+  }
+  function boardMachineTiles(machines, nextUp) {
+    if (!machines || !machines.length) return '<p class="board-nomachines">' + bt("idle") + '</p>';
+    const tiles = '<div class="boardmachinegrid">' + machines.map(m => {
+      const st = m.status || "idle";
+      const stLbl = st === "running" ? bt("running") : st === "changeover" ? bt("changeover") : bt("idle");
+      const body = st === "running" ? ('<div class="machineqty">' + fmt(m.produced) + ' / ' + fmt(m.target) + ' ' + bt("bags") + '</div>' +
+        '<div class="boardbarwrap sm"><div class="boardbar" style="width:' + Math.min(100, m.pct) + '%"></div></div>') : '';
+      return '<div class="machinetile ' + st + '"><div class="machinename">' + esc(m.machine) + '</div>' +
+        '<div class="machineflavor">' + (m.flavor ? esc(m.flavor) : '&mdash;') + '</div>' +
+        '<div class="machinestatus">' + stLbl + '</div>' + body + '</div>';
+    }).join("") + '</div>';
+    const next = nextUp ? '<div class="boardnextup">' + bt("nextUp") + ': <b>' + esc(nextUp.flavor) + '</b> &middot; ' + fmt(nextUp.toProduceBags) + ' ' + bt("bags") + '</div>' : '';
+    return tiles + next;
+  }
+  function boardTodayZone(data) {
+    const shiftHtml = data.shifts > 1 ?
+      '<div class="boardshiftrow"><div class="boardshift"><div class="boardshiftlabel">' + bt("shift1") + '</div><div class="boardshiftval">' + fmt(data.s1) + '</div></div>' +
+      '<div class="boardshift"><div class="boardshiftlabel">' + bt("shift2") + '</div><div class="boardshiftval">' + fmt(data.s2) + '</div></div></div>' : '';
+    return '<div class="boardtoday"><div class="boardherolabel">' + bt("target") + '</div>' +
+      '<div class="boardhero">' + fmt(data.tgt) + '</div><div class="boardherounit">' + bt(data.unit) + '</div>' +
+      '<div class="boardbarwrap lg"><div class="boardbar" style="width:' + Math.min(100, data.pct) + '%"></div></div>' +
+      '<div class="boardtodaystats"><span>' + fmt(data.doneToday) + ' ' + bt("done") + '</span><span>' + data.pct + '%</span><span>' + fmt(Math.max(0, data.tgt - data.doneToday)) + ' ' + bt("toGo") + '</span></div>' +
+      shiftHtml + '</div>';
+  }
+  function boardStockStrip(stock) {
+    return '<div class="boardstockstrip">' + stock.map(s => {
+      const col = s.st === "red" ? "#B52024" : s.st === "amber" ? "#F2C61E" : "#00A341";
+      return '<div class="boardstocktile" style="border-color:' + col + '"><div class="boardstockdot" style="background:' + col + '"></div>' +
+        '<div class="boardstockname">' + esc(s.flavor) + '</div><div class="boardstockqty">' + fmt(s.onHand) + '</div></div>';
+    }).join("") + '</div>';
+  }
+  function boardHeader(dept) {
+    const t = BOARD_TXT[dept] || { en: dept, es: dept };
+    return '<div class="boardheader"><div class="boarddept"><span class="bt-en">' + esc(t.en) + '</span><span class="bt-es">' + esc(t.es) + '</span></div>' +
+      '<div class="boardhdrright"><div class="boardclock" id="boardClock">' + new Date().toLocaleTimeString() + '</div>' +
+      '<div class="boardago" id="boardAgo">' + bt("updated") + ' 0s ' + bt("agoWord") + '</div>' +
+      '<button class="boardexit" onclick="UI.boardExit()">&times; ' + bt("exit") + '</button></div></div>';
+  }
+  function boardPicker() {
+    const row = BOARD_DEPTS.map(d => '<button class="boardpickbtn" onclick="UI.boardOpen(&#39;' + d + '&#39;)">' + bt(d) + '</button>').join("");
+    return '<div class="boardpicker"><div class="boardpicktitle">' + bt("pickTitle") + '</div>' +
+      '<div class="boardpickrow">' + row + '</div>' +
+      '<p class="boardpickhint">' + bt("pickHint") + '</p></div>';
+  }
+  function boardHtml(dept) {
+    const data = boardData(dept);
+    const makeZone = dept === "pmac" ? boardMachineTiles(data.machines, data.nextUp) : boardMakeNowRows(dept, data.rows);
+    return '<div class="boardwrap board-' + dept + '">' + boardHeader(dept) +
+      '<div class="boardzones"><div class="board-make"><div class="boardzonelabel">' + bt("makeNow") + '</div>' + makeZone + '</div>' +
+      '<div class="board-side"><div class="boardzonelabel">' + bt("today") + '</div>' + boardTodayZone(data) + '</div></div>' +
+      '<div class="board-stockzone"><div class="boardzonelabel sm">' + bt("stock") + '</div>' + boardStockStrip(data.stock) + '</div></div>';
+  }
+  function viewBoard() {
+    const q = (function () { try { return new URLSearchParams(location.search).get("board") || ""; } catch (e) { return ""; } })();
+    const dept = boardDept || q;
+    if (!dept || BOARD_DEPTS.indexOf(dept) < 0) return boardPicker();
+    boardDept = dept;
+    return boardHtml(dept);
+  }
+
+
   const UI = {
     cat(c) { catFilter = c; render(); },
     // ---- Demand section ----
@@ -3742,7 +3888,9 @@
         stop(); toast(text);
       }).catch(() => toast("Camera unavailable"));
     },
-    setLang
+    setLang,
+    boardOpen(d) { boardDept = d; try { const u = new URL(location.href); u.searchParams.set("board", d); history.replaceState(null, "", u.pathname + u.search); } catch (e) {} render(); },
+    boardExit() { boardDept = ""; boardStopTimers(); try { const u = new URL(location.href); u.searchParams.delete("board"); history.replaceState(null, "", u.pathname + (u.search || "")); } catch (e) {} go("home"); }
   };
   window.UI = UI;
   UI.lock = lockEdits;
@@ -3832,16 +3980,19 @@
     const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
       move: viewMove, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, compliance: viewCompliance, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
-      demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor };
+      demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor, board: viewBoard };
     $("view").innerHTML = (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
     $("modeBadge").className = "modebadge " + (DB.mode === "cloud" ? "ok" : "low");
     try { wireSortable(); } catch (e) {}
     drawIcons();
+    document.body.classList.toggle("boardmode", active === "board");
+    if (active === "board") { boardLastRefresh = Date.now(); boardStartTimers(); } else { boardStopTimers(); }
   }
 
   // ---------- boot ----------
   window.addEventListener("DOMContentLoaded", async () => {
+    try { const bp = new URLSearchParams(location.search).get("board"); if (bp) { active = "board"; boardDept = bp; } } catch (e) {}
     $("lang-en").onclick = () => setLang("en");
     $("lang-es").onclick = () => setLang("es");
     if ($("lang-pt")) $("lang-pt").onclick = () => setLang("pt");
