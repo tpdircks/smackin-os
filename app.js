@@ -886,7 +886,7 @@
       : '<div class="card"><p class="ok pill big">&#127807; ' + L("hAllClear") + '</p></div>';
     // ---- Essential items: per-flavor stock health (finished bags, film, seasoning) ----
     const bc = code => DB.itemByCode(code);
-    const flav = items.filter(i => i.category === "bag4" && /^B4-S\d/.test(i.code))
+    const flav = items.filter(i => i.category === "bag4" && /^B4-(S|L)\d/.test(i.code))
       .map(i => ({ code: i.code.replace("B4-", ""), name: i.flavor }))
       .sort((a, b) => (a.code < b.code ? -1 : a.code > b.code ? 1 : 0));
     const ec = it => { if (!it) return '<td class="right ess-na">&mdash;</td>';

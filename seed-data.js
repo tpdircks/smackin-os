@@ -82,6 +82,35 @@
   const BAG15  = { S01:19500,S02:13750,S03:8750,S04:7000,S05:4500,S06:13250,S07:16500,S08:21250,S09:6500,S10:6500,S11:6750 };
   const SEAS   = { S01:0,S02:1100,S03:4400,S04:4450,S05:3100,S06:2400,S07:5350,S08:1250,S09:1765,S10:3600,S11:1075 };
 
+  // ---- LTO / co-brand flavors — 4oz finished bags only (no film/seasoning SKUs tracked yet).
+  // On-hand from the 2026-07-16 inventory sheet. Codes: the WIP "SMACKIN' WIP" Google Sheet's
+  // RECIPE-INGREDIENTS LIST tab carries some of these as "LE <name>" recipe rows (noted below);
+  // the rest have no code/UPC on file anywhere checked (WIP tabs, skus.js) — L## are new internal
+  // codes assigned here for tracking only, not a real SKU/UPC. Reorder left at 0 (no stock GOAL)
+  // so these never inflate production targets or trip low/out-of-stock alerts.
+  const LE = [
+    ["L01", "Cheeseburger"],                    // WIP RECIPE list: "LE Cheese Burger"
+    ["L02", "Deep Dish Pizza"],                  // WIP RECIPE list: "LE Pizza"
+    ["L03", "Good Good Salt & Vinegar"],         // co-brand; no WIP code found
+    ["L04", "Honey BBQ (A-Rod)"],                // co-brand; no WIP code found
+    ["L05", "Salsa"],                            // WIP RECIPE list: "LE SALSA"
+    ["L06", "Taco"],                             // WIP RECIPE list: "LE TACO"
+    ["L07", "Guacamole"],                        // WIP RECIPE list: "LE GUACAMOLE"
+    ["L08", "Chili Cheese Dog"],                 // no WIP code found
+    ["L09", "Blueberry Pie"],                    // no WIP code found
+    ["L10", "Birthday Cake"],                    // no WIP code found; 0 on hand
+    ["L11", "Mexican Street Corn"],              // no WIP code found; 0 on hand
+    ["L12", "Nashville Hot"],                    // no WIP code found; 0 on hand
+    ["L13", "Bacon Mac & Cheese"],               // no WIP code found; 0 on hand
+    ["L14", "Korean BBQ (King of Juco)"],        // no WIP code found; 0 on hand
+    ["L15", "S'mores"],                          // no WIP code found; 0 on hand
+    ["L16", "Teriyaki (Ana Bruni)"],             // WIP RECIPE list: "LE Ana Bruni Teriyaki"; 0 on hand
+    ["L17", "Sweet Thai Chili"],                 // no WIP code found; 0 on hand
+    ["L18", "Loaded Potato"]                     // WIP RECIPE list: "LE Loaded Baked Paotato"; 0 on hand
+  ];
+  const BAG4LE = { L01:5800, L02:1600, L03:6200, L04:6700, L05:2600, L06:3200, L07:5500, L08:1300, L09:5000,
+    L10:0, L11:0, L12:0, L13:0, L14:0, L15:0, L16:0, L17:0, L18:0 };
+
   // ---- Build item master + opening stock ----------------------------------
   function build() {
     const items = [];
@@ -111,6 +140,15 @@
       put("FILM4-"+c, "C-"+bay+"-L"+((i % 3) + 1), FILM4[c]);
       put("FILM15-"+c, "C-"+bay+"-L4", FILM15[c]);
       put("SEAS-"+c, "PROD-WEIGH", SEAS[c]);
+    });
+
+    // LTO / co-brand flavors — finished 4oz bags only, no Target/Master Case stock goal (reorder:0)
+    LE.forEach(([c, name]) => {
+      items.push({ id:"BAG4-"+c, code:"B4-"+c, name:"Bags 4oz - "+name, flavor:name, category:"bag4", unit:"bags", reorder:0, supplier:null });
+    });
+    LE.forEach(([c], i) => {
+      const sec = ["C", "D"][i % 2], bay = String(20 + Math.floor(i / 2)).padStart(2, "0");
+      put("BAG4-"+c, sec+"-"+bay+"-L1", BAG4LE[c]);
     });
 
     const bk = [
