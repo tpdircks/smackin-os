@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smackin' — Gêmeo Digital 3D (v1 estrutural)</title>
+<title>Smackin' — Digital Twin 3D (v1 structural)</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{width:100%;height:100%;overflow:hidden;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#0f1420;}
@@ -36,22 +36,22 @@
 </head>
 <body>
 <div id="app"></div>
-<div id="loading">Carregando gêmeo digital 3D…</div>
-<div id="errbox">Não consegui carregar a biblioteca 3D (sem internet ou rede bloqueada).<br>Conecte à internet e recarregue a página.</div>
+<div id="loading">Loading 3D digital twin…</div>
+<div id="errbox">Could not load the 3D library (no internet or network blocked).<br>Connect to the internet and reload the page.</div>
 
 <div id="topbar">
-  <h1>Smackin' · Gêmeo Digital 3D — v1 estrutural</h1>
-  <span class="hint">5 seções · ~536 posições · níveis L1–L4 · arraste = girar · scroll = zoom · clique numa posição para ver o código · cores ao vivo (Seções A–D)</span>
+  <h1>Smackin' · Digital Twin 3D — v1 structural</h1>
+  <span class="hint">5 sections · ~536 positions · levels L1–L4 · drag = rotate · scroll = zoom · click a position to see the code · live colors (Sections A–D)</span>
 </div>
 
 <div id="legend">
-  <h2>Seções (racking)</h2><div id="leg-sec"></div>
-  <h2>Zonas</h2><div id="leg-zone"></div>
+  <h2>Sections (racking)</h2><div id="leg-sec"></div>
+  <h2>Zones</h2><div id="leg-zone"></div>
   <div class="note" id="leg-live">
-    <span class="b" style="background:#E24A4A"></span>ocupada — used (ao vivo · live, Seções A–D)<br>
-    <span class="b" style="background:#BFE3B6"></span>disponível — available (ao vivo · live, Seções A–D)<br>
-    <span class="b" style="background:#c7cede"></span>posição de pallet (sem dado de estoque / seção não rastreada)<br>
-    <span class="b" style="background:#e24b4a"></span>posição bloqueada (AC / painel / praga)
+    <span class="b" style="background:#E24A4A"></span>occupied — used (live, Sections A–D)<br>
+    <span class="b" style="background:#BFE3B6"></span>available (live, Sections A–D)<br>
+    <span class="b" style="background:#c7cede"></span>pallet position (no stock data / section not tracked)<br>
+    <span class="b" style="background:#e24b4a"></span>blocked position (AC / panel / pest)
   </div>
 </div>
 
@@ -63,9 +63,9 @@
 </div>
 
 <div id="controls">
-  <button class="btn" id="btn-top">Vista de cima</button>
-  <button class="btn" id="btn-iso">Isométrica</button>
-  <button class="btn" id="btn-labels">Rótulos: ON</button>
+  <button class="btn" id="btn-top">Top view</button>
+  <button class="btn" id="btn-iso">Isometric</button>
+  <button class="btn" id="btn-labels">Labels: ON</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
@@ -88,8 +88,8 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
     { id:'D', color:0x7f77dd, bays:28, x:-108, blocked:['D-17-L4','D-18-L4','D-23-L4','D-24-L4'] },
     // F (antiga E) — paredes da Mistura e Ensacamento; (2) abertura de porta na frente da Mistura (bays 1-2 removidas)
     { id:'F', color:0x639922, bays:22, blocked:['F-06-L1'],
-      runs:[ {bayFrom:3, bayTo:9,  x:112, zStart:12,  pitch:7, wall:'Sala de Mistura'},
-             {bayFrom:10,bayTo:22, x:112, zStart:-44, pitch:7, wall:'Ensacamento (P-Mac)'} ] },
+      runs:[ {bayFrom:3, bayTo:9,  x:112, zStart:12,  pitch:7, wall:'Mixing Room'},
+             {bayFrom:10,bayTo:22, x:112, zStart:-44, pitch:7, wall:'Bagging (P-Mac)'} ] },
     // G (antiga F) — na MESMA linha vertical da J (x58); vão entre G e J alinhado com a porta da Mistura
     { id:'G', color:0xd85a30, bays:12, blocked:[],
       runs:[ {bayFrom:1,bayTo:12, x:58, zStart:14, pitch:8, orient:'z'} ] },
@@ -105,32 +105,32 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
              {bayFrom:11,bayTo:15, z:110, xStart:24, pitch:8, orient:'x'} ] },
   ];
   // fila de bays na parede do fundo (horizontal) — seção/qtd provisórias
-  const BACKWALL = { id:'E', color:0xd9c48a, bays:26, z:-150, xStart:-150, pitch:9, use:'Sementes recebidas (matéria-prima)', gapBays:[17,20] };
+  const BACKWALL = { id:'E', color:0xd9c48a, bays:26, z:-150, xStart:-150, pitch:9, use:'Seeds received (raw material)', gapBays:[17,20] };
   const BLOCK_REASON = code => {
-    if(code==='A-23-L1') return 'Armadilhas de controle de pragas';
-    if(code==='F-06-L1') return 'Painel elétrico';
-    return 'Unidade de ar-condicionado';
+    if(code==='A-23-L1') return 'Pest control traps';
+    if(code==='F-06-L1') return 'Electrical panel';
+    return 'Air conditioning unit';
   };
   // zonas da planta v5 (x0,z0,x1,z1)
   const ZONES = [
     // coluna direita: 1 Ensacamento (estendido até parede do fundo), Mistura, Higienização, Escritório
-    { name:'Ensacamento (P-Mac)', color:0x1d9e75, x0:116,z0:-158,x1:176,z1:-42 },
-    { name:'Sala de Mistura', color:0x1d9e75, x0:116,z0:-32,x1:176,z1:28 },
-    { name:'Porta · Sala de Mistura', color:0xf4c0d1, x0:104,z0:14,x1:118,z1:30 },
-    { name:'Sala de Higienização', color:0x5dcaa5, x0:116,z0:38,x1:176,z1:88 },
-    { name:'Escritório (frente · 1736)', color:0x0c447c, x0:110,z0:98,x1:176,z1:158 },
+    { name:'Bagging (P-Mac)', color:0x1d9e75, x0:116,z0:-158,x1:176,z1:-42 },
+    { name:'Mixing Room', color:0x1d9e75, x0:116,z0:-32,x1:176,z1:28 },
+    { name:'Door · Mixing Room', color:0xf4c0d1, x0:104,z0:14,x1:118,z1:30 },
+    { name:'Sanitation Room', color:0x5dcaa5, x0:116,z0:38,x1:176,z1:88 },
+    { name:'Office (front · 1736)', color:0x0c447c, x0:110,z0:98,x1:176,z1:158 },
     // 2 — nova Sala de Manutenção no canto traseiro esquerdo
-    { name:'Sala de Manutenção', color:0x888780, x0:-178,z0:-160,x1:-150,z1:-128 },
+    { name:'Maintenance Room', color:0x888780, x0:-178,z0:-160,x1:-150,z1:-128 },
     // 1 — E-Commerce (bloco grande à esquerda do centro)
     { name:'E-Commerce', color:0x185fa5, x0:-90,z0:-120,x1:-18,z1:-18 },
     // 6 — Área de produção
-    { name:'Produce (área de produção)', color:0x97c459, x0:-14,z0:-82,x1:16,z1:-42 },
+    { name:'Produce (production area)', color:0x97c459, x0:-14,z0:-82,x1:16,z1:-42 },
     // 5 — Linha de produção (esteira, faixa estreita vertical)
-    { name:'Produce (linha de produção)', color:0x639922, x0:18,z0:-116,x1:30,z1:44 },
+    { name:'Produce (production line)', color:0x639922, x0:18,z0:-116,x1:30,z1:44 },
     // 4 — Fulfillment Staff (movido um espaço em direção ao Bay D)
     { name:'Fulfillment Staff', color:0x85b7eb, x0:-52,z0:50,x1:18,z1:92 },
     // 5 — Sala de Controle de Estoque ampliada
-    { name:'Sala de Controle de Estoque', color:0xef9f27, x0:-178,z0:96,x1:-100,z1:152 },
+    { name:'Inventory Control Room', color:0xef9f27, x0:-178,z0:96,x1:-100,z1:152 },
   ];
 
   // geometria racking
@@ -219,7 +219,7 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
     // parede do fundo destacada
     const back=new THREE.Mesh(new THREE.BoxGeometry(W,WALL_H,1),new THREE.MeshStandardMaterial({color:0x4a5578,roughness:.9,transparent:true,opacity:.3,side:THREE.DoubleSide}));
     back.position.set(0,WALL_H/2,-D/2+0.5); scene.add(back);
-    const bl=makeLabel('parede do fundo · pallet racking',0xffffff,true); bl.position.set(-40,20,-D/2+6); scene.add(bl); labelSprites.push(bl);
+    const bl=makeLabel('back wall · pallet racking',0xffffff,true); bl.position.set(-40,20,-D/2+6); scene.add(bl); labelSprites.push(bl);
   }
   function buildDocks(){
     // docas na parede leste (frente/baixo). Porta 19 junto ao escritório (x+) -> 11 na ponta (x-)
@@ -231,7 +231,7 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
       box(g,new THREE.MeshStandardMaterial({color:0x854f0b,roughness:.7}),12,7,3,x,3.5,D/2-3);
       const l=makeLabel('D'+door,0x412402); l.position.set(x,10,D/2-3); l.scale.multiplyScalar(.5); g.add(l); labelSprites.push(l);
     }
-    const dl=makeLabel('Docas · parede leste (19 → 11)',0x412402,false); dl.position.set(-35,15,D/2-9); g.add(dl); labelSprites.push(dl);
+    const dl=makeLabel('Docks · east wall (19 → 11)',0x412402,false); dl.position.set(-35,15,D/2-9); g.add(dl); labelSprites.push(dl);
     scene.add(g);
   }
 
@@ -288,14 +288,14 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
           const y=yBase+(lv-1)*LEVEL_H+1.4;
           const m=new THREE.Mesh(isB?new THREE.BoxGeometry(DECK_W,4.6,DECK_D):GEO_DECK, isB?MAT_BLOCK:MAT_DECK);
           const q=P(along,0,isB?y+1.6:y); m.position.set(q[0],q[1],q[2]); m.castShadow=true; m.receiveShadow=true;
-          m.userData={code,section:sec.id,bay:b,level:lv,blocked:isB, isNew:!!sec.isNew, use: run.wall?('Encostada na parede: '+run.wall):(yBase?'Bay suspensa (sobre as docas)':null)};
+          m.userData={code,section:sec.id,bay:b,level:lv,blocked:isB, isNew:!!sec.isNew, use: run.wall?('Against the wall: '+run.wall):(yBase?'Suspended bay (over the docks)':null)};
           g.add(m); pickables.push(m);
         }
         const bl=makeLabel(sec.id+'-'+String(b).padStart(2,'0'),sec.color); const qb=P(along,0,postH+2.5); bl.position.set(qb[0],qb[1],qb[2]); bl.scale.multiplyScalar(.34); g.add(bl); labelSprites.push(bl);
         if(sec.isNew){ const fl=makeFlag(); const qf=P(along,0,postH+6.5); fl.position.set(qf[0],qf[1],qf[2]); g.add(fl); }
       }
       // rótulo da seção
-      const txt = run.wall ? ('Seção '+sec.id+' · '+run.wall) : (yBase?('Seção '+sec.id+' · suspensa'):('Seção '+sec.id));
+      const txt = run.wall ? ('Section '+sec.id+' · '+run.wall) : (yBase?('Section '+sec.id+' · suspended'):('Section '+sec.id));
       const sl=makeLabel(txt,sec.color,false); const qs=P(start + dir*4,0,postH+5); sl.position.set(qs[0],qs[1],qs[2]); sl.scale.multiplyScalar(run.wall?0.8:1.0); g.add(sl); labelSprites.push(sl);
     });
     scene.add(g); groupsById['sec:'+sec.id]=g;
@@ -331,7 +331,7 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
         g.add(m); pickables.push(m);
       }
     }
-    const sl=makeLabel('Seção E · sementes recebidas (parede do fundo)',bw.color,false); sl.position.set((bw.xStart+xEnd)/2,POST_H+5,bw.z-2); g.add(sl); labelSprites.push(sl);
+    const sl=makeLabel('Section E · seeds received (back wall)',bw.color,false); sl.position.set((bw.xStart+xEnd)/2,POST_H+5,bw.z-2); g.add(sl); labelSprites.push(sl);
     scene.add(g); groupsById['bw']=g; bw._group=g;
   }
 
@@ -364,12 +364,12 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
     const sc=document.getElementById('leg-sec'), zo=document.getElementById('leg-zone');
     SECTIONS.forEach(s=>{
       const it=document.createElement('div'); it.className='leg-item';
-      it.innerHTML='<span class="swatch" style="background:#'+s.color.toString(16).padStart(6,'0')+'"></span>Seção '+s.id+'<small>'+s.bays+' bays · '+(s.bays*4)+' pos</small>';
+      it.innerHTML='<span class="swatch" style="background:#'+s.color.toString(16).padStart(6,'0')+'"></span>Section '+s.id+'<small>'+s.bays+' bays · '+(s.bays*4)+' pos</small>';
       it.addEventListener('click',()=>{const g=groupsById['sec:'+s.id];g.visible=!g.visible;it.classList.toggle('off',!g.visible);});
       sc.appendChild(it);
     });
     const bw=document.createElement('div'); bw.className='leg-item';
-    bw.innerHTML='<span class="swatch" style="background:#'+BACKWALL.color.toString(16).padStart(6,'0')+'"></span>Seção E (fundo)<small>'+BACKWALL.bays+' bays · sementes</small>';
+    bw.innerHTML='<span class="swatch" style="background:#'+BACKWALL.color.toString(16).padStart(6,'0')+'"></span>Section E (back)<small>'+BACKWALL.bays+' bays · seeds</small>';
     bw.addEventListener('click',()=>{BACKWALL._group.visible=!BACKWALL._group.visible;bw.classList.toggle('off',!BACKWALL._group.visible);});
     sc.appendChild(bw);
     ZONES.forEach(z=>{
@@ -421,23 +421,23 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
   // ----- interação -----
   function showInfoFor(u){
     document.getElementById('info-title').textContent=u.code;
-    document.getElementById('info-desc').textContent='Seção '+u.section+' · Bay '+String(u.bay).padStart(2,'0')+' · Nível L'+u.level;
+    document.getElementById('info-desc').textContent='Section '+u.section+' · Bay '+String(u.bay).padStart(2,'0')+' · Level L'+u.level;
     const bd=document.getElementById('info-badge');
-    if(u.blocked){bd.textContent='Bloqueada — '+BLOCK_REASON(u.code);bd.style.background='rgba(226,75,74,.25)';bd.style.color='#ff9aa6';}
+    if(u.blocked){bd.textContent='Blocked — '+BLOCK_REASON(u.code);bd.style.background='rgba(226,75,74,.25)';bd.style.color='#ff9aa6';}
     else if(usedSet && TRACKED_RE.test(u.code)){
       const items=stockByLoc[u.code];
       if(items && items.length){
         const qty=items.reduce((s,x)=>s+x.qty,0);
-        bd.textContent='Ocupada / Occupied · '+items.length+' SKU(s) · '+qty+' un.';
+        bd.textContent='Occupied · '+items.length+' SKU(s) · '+qty+' un.';
         bd.style.background='rgba(226,74,74,.25)';bd.style.color='#ffb3b0';
       } else {
-        bd.textContent='Disponível / Available (ao vivo · live)';
+        bd.textContent='Available (live)';
         bd.style.background='rgba(191,227,182,.28)';bd.style.color='#2f5a2f';
       }
     }
-    else if(u.isNew){bd.textContent='⚑ Criado hoje'+(u.use?' · '+u.use:'');bd.style.background='rgba(255,59,59,.22)';bd.style.color='#ff9aa6';}
+    else if(u.isNew){bd.textContent='⚑ Created today'+(u.use?' · '+u.use:'');bd.style.background='rgba(255,59,59,.22)';bd.style.color='#ff9aa6';}
     else if(u.use){bd.textContent=u.use;bd.style.background='rgba(217,196,138,.2)';bd.style.color='#e6d3a0';}
-    else{bd.textContent='Posição de pallet · aguardando dado de estoque';bd.style.background='rgba(199,206,222,.18)';bd.style.color='#c7cede';}
+    else{bd.textContent='Pallet position · awaiting stock data';bd.style.background='rgba(199,206,222,.18)';bd.style.color='#c7cede';}
     document.getElementById('info').classList.add('show');
   }
   function onClick(e){
@@ -465,7 +465,7 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
   function setTop(){cam.theta=Math.PI/2;cam.phi=0.12;cam.radius=470;applyCam();}
   document.getElementById('btn-iso').addEventListener('click',setIso);
   document.getElementById('btn-top').addEventListener('click',setTop);
-  document.getElementById('btn-labels').addEventListener('click',()=>{labelsOn=!labelsOn;labelSprites.forEach(s=>s.visible=labelsOn);document.getElementById('btn-labels').textContent='Rótulos: '+(labelsOn?'ON':'OFF');});
+  document.getElementById('btn-labels').addEventListener('click',()=>{labelsOn=!labelsOn;labelSprites.forEach(s=>s.visible=labelsOn);document.getElementById('btn-labels').textContent='Labels: '+(labelsOn?'ON':'OFF');});
 
   function onResize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);}
   function animate(){requestAnimationFrame(animate);renderer.render(scene,camera);}
