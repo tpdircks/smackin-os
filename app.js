@@ -1309,7 +1309,7 @@
     for (let i = 0; i < poRows; i++) rows += '<tr>' + poRowInner(i) + '</tr>';
     const today = new Date().toISOString().slice(0, 10);
     return dl + '<div class="card"><div class="spohead"><h2>' + L("poNewTitle") + '</h2>' +
-      '<button class="ghost sm" onclick="UI.poBack()">' + L("poBackList") + '</button></div>' +
+      '<button class="ghost sm" onclick="UI.poCreateBack()">' + L("poBackList") + '</button></div>' +
       '<div class="row"><div><label>' + L("spoVendor") + '</label><input id="po-vendor" list="dl-po-vendor" autocomplete="off" onchange="UI.poVendorFill()" onblur="UI.poVendorFill()"></div>' +
       '<div><label>' + L("spoPO") + '</label><input id="po-num" autocomplete="off"></div>' +
       '<div><label>' + L("spoDate") + '</label><input id="po-date" value="' + today + '"></div></div>' +
@@ -3402,7 +3402,7 @@
       document.querySelectorAll("#refBody .odcust").forEach(el => { const t = el.getAttribute("data-txt") || ""; el.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
     // ---- Create PO (Excel-style entry form) ----
     poCreateOpen() { spoView = "create"; poRows = 4; render(); },
-    poBack() { spoView = "list"; render(); },
+    poCreateBack() { spoView = "list"; render(); },
     poAddLine() { const tb = $("po-lines"); if (!tb) return; const i = tb.querySelectorAll("tr").length; const tr = document.createElement("tr"); tr.innerHTML = poRowInner(i); tb.appendChild(tr); },
     poRecalc() {
       let sub = 0;
