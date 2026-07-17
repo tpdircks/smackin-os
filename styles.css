@@ -50,8 +50,9 @@ h2{margin:0 0 4px;color:var(--navy);font-size:18px}
 h2.loc{font-size:15px}h2.sup{font-size:16px;margin:0}
 .hint{color:#667;font-size:13px;margin:0 0 14px}
 label{display:block;font-size:13px;font-weight:600;color:#445;margin:10px 0 4px}
-input,select{width:100%;padding:11px;border:1px solid #c3ccd8;border-radius:8px;font-size:16px}
-input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(46,117,182,.15)}
+input,select,textarea{width:100%;padding:11px;border:1px solid #c3ccd8;border-radius:8px;font-size:16px}
+textarea{font-family:inherit;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(46,117,182,.15)}
 .row{display:flex;gap:12px;flex-wrap:wrap}.row>div{flex:1;min-width:150px}
 .scan{border:2px dashed var(--blue);background:#f6faff;border-radius:10px;padding:12px;margin-bottom:6px}
 .scan label{margin-top:0;color:var(--navy)}

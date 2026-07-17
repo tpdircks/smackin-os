@@ -934,6 +934,27 @@ window.DB = (function () {
     }
     emit();
   }
+  // Email a Supplier PO to the vendor via the same Supabase Edge Function relay used for R&D
+  // requests (which holds the Resend key). payload: { to, cc, subject, html }. Returns {ok, msg}.
+  // Degrades gracefully: if the relay isn't configured/reachable, the UI falls back to mailto.
+  async function emailPO(po, payload, op) {
+    if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) return { ok: false, msg: "not-configured" };
+    const url = cfg.SUPABASE_URL.replace(/\/+$/, "") + "/functions/v1/send-rd-request";
+    let resp;
+    try {
+      resp = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + cfg.SUPABASE_ANON_KEY, "apikey": cfg.SUPABASE_ANON_KEY },
+        body: JSON.stringify(payload)
+      });
+    } catch (e) { return { ok: false, msg: "network" }; }
+    if (resp.status === 404) return { ok: false, msg: "not-configured" };
+    let body = {}; try { body = await resp.json(); } catch (e) {}
+    if (!resp.ok || body.error) return { ok: false, msg: (body && (body.error || body.message)) || ("http " + resp.status) };
+    const logEntry = { a: "Supplier PO emailed", d: ((po && po.vendor) || "") + " " + ((po && po.po_num) || "") + " -> " + (payload.to || ""), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") { await cloud.addLog(logEntry); } else { local.addLog(logEntry); local.save(); }
+    return { ok: true, id: body.id || null };
+  }
 
   // ---------- Order Docs (fulfilled-order paperwork, SPS-style archive) ----------
   const ODOC_BUCKET = "order-docs";
@@ -1308,7 +1329,7 @@ window.DB = (function () {
     improvements, addImprovement, updateImprovement, setImprovementStatus, deleteImprovement,
     orders, createOrder, updateOrder, setOrderStatus, deleteOrder, notifyNewOrder,
     rdRequests, createRdRequest, updateRdRequest, setRdStatus, deleteRdRequest, sendRdEmail,
-    supplierPos, createSupplierPO, deleteSupplierPO,
+    supplierPos, createSupplierPO, deleteSupplierPO, emailPO,
     orderDocs, createOrderDoc, deleteOrderDoc,
     referenceDocs, createRefDoc, deleteRefDoc,
     consumption, consume,

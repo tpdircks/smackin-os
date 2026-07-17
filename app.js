@@ -117,6 +117,10 @@
       ciProblem:"Problem / goal", ciProblemP:"What are we fixing or improving?", ciImpact:"Impact / win", ciImpactHint:"the result", ciImpactP:"What changed? time saved, waste cut, safer, etc.",
       ciCompleted:"Completed", ciReopen:"Reopen", ciNoActive:"No active initiatives. Add one above.", ciNoWins:"No completed wins yet.", ciSearchP:"Search title, type, area, owner...", ciConfirmDel:"Delete this initiative?",
       poCreate:"+ Create PO", poNewTitle:"New Purchase Order", poVendorAddr:"Vendor address", poVendorEmail:"Vendor email", poVendorPhone:"Vendor phone", poShipTo:"Ship to", poPreparedBy:"Prepared by", poAddLine:"+ Add line", poItemNo:"Item #", poDesc:"Description", poQtyL:"Qty", poPriceL:"Price", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Shipping", poTaxL:"Tax", poOtherL:"Other", poGrandL:"Total", poSaveBtn:"Save PO", poBackList:"Back to list", poSavedMsg:"PO saved", poNeedVendor:"Enter a vendor first",
+      poEmail:"Email PO", poEmailTo:"To", poEmailSubjectL:"Subject", poEmailSubjectTpl:"Purchase Order", poEmailBody:"Message", poEmailSend:"Send email", poEmailCopy:"Copy PO summary",
+      poEmailHint:"If email sending isn't set up yet, Send will open this in your email app instead - the PO file link is included in the message so you can attach/share it.",
+      poEmailNeedTo:"Enter the vendor's email first", poEmailSending:"Sending...", poEmailOk:"PO emailed", poEmailCopied:"Copied to clipboard",
+      poEmailNo:"Sending isn't set up yet - opening your email app instead.", poEmailFail:"Could not send - opening your email app instead.",
       rdHint:"Request samples and ingredients here. Each request generates a PDF and is tracked Pending until it arrives.",
       rdPending:"Pending", rdDone:"Received", rdAdd:"+ New request", rdSave:"Save request", rdCancel:"Cancel",
       rdType:"Request type", rdCompany:"Company / supplier", rdContact:"Contact name", rdEmail:"Contact email",
@@ -246,6 +250,10 @@
       ciProblem:"Problema / meta", ciProblemP:"Que estamos arreglando o mejorando?", ciImpact:"Impacto / logro", ciImpactHint:"el resultado", ciImpactP:"Que cambio? tiempo ahorrado, menos desperdicio, mas seguro, etc.",
       ciCompleted:"Completada", ciReopen:"Reabrir", ciNoActive:"No hay iniciativas activas. Agregue una arriba.", ciNoWins:"Aun no hay logros completados.", ciSearchP:"Buscar titulo, tipo, area, responsable...", ciConfirmDel:"Eliminar esta iniciativa?",
       poCreate:"+ Crear OC", poNewTitle:"Nueva Orden de Compra", poVendorAddr:"Direccion del proveedor", poVendorEmail:"Correo del proveedor", poVendorPhone:"Telefono del proveedor", poShipTo:"Enviar a", poPreparedBy:"Preparado por", poAddLine:"+ Agregar linea", poItemNo:"Articulo #", poDesc:"Descripcion", poQtyL:"Cant", poPriceL:"Precio", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Envio", poTaxL:"Impuesto", poOtherL:"Otro", poGrandL:"Total", poSaveBtn:"Guardar OC", poBackList:"Volver a la lista", poSavedMsg:"OC guardada", poNeedVendor:"Ingrese un proveedor primero",
+      poEmail:"Enviar OC por correo", poEmailTo:"Para", poEmailSubjectL:"Asunto", poEmailSubjectTpl:"Orden de Compra", poEmailBody:"Mensaje", poEmailSend:"Enviar correo", poEmailCopy:"Copiar resumen de OC",
+      poEmailHint:"Si el envio de correo aun no esta configurado, Enviar abrira esto en su aplicacion de correo - el enlace del archivo de la OC va incluido en el mensaje para que lo pueda adjuntar/compartir.",
+      poEmailNeedTo:"Ingrese primero el correo del proveedor", poEmailSending:"Enviando...", poEmailOk:"OC enviada por correo", poEmailCopied:"Copiado al portapapeles",
+      poEmailNo:"El envio de correo aun no esta configurado - abriendo su aplicacion de correo.", poEmailFail:"No se pudo enviar - abriendo su aplicacion de correo.",
       rdHint:"Solicite muestras e ingredientes aqui. Cada solicitud genera un PDF y se sigue como Pendiente hasta que llega.",
       rdPending:"Pendiente", rdDone:"Recibido", rdAdd:"+ Nueva solicitud", rdSave:"Guardar solicitud", rdCancel:"Cancelar",
       rdType:"Tipo de solicitud", rdCompany:"Empresa / proveedor", rdContact:"Nombre de contacto", rdEmail:"Correo de contacto",
@@ -375,6 +383,10 @@
       ciProblem:"Problema / meta", ciProblemP:"O que estamos corrigindo ou melhorando?", ciImpact:"Impacto / conquista", ciImpactHint:"o resultado", ciImpactP:"O que mudou? tempo economizado, menos desperdicio, mais seguro, etc.",
       ciCompleted:"Concluida", ciReopen:"Reabrir", ciNoActive:"Nenhuma iniciativa ativa. Adicione uma acima.", ciNoWins:"Nenhuma conquista concluida ainda.", ciSearchP:"Buscar titulo, tipo, area, responsavel...", ciConfirmDel:"Excluir esta iniciativa?",
       poCreate:"+ Criar OC", poNewTitle:"Nova Ordem de Compra", poVendorAddr:"Endereco do fornecedor", poVendorEmail:"Email do fornecedor", poVendorPhone:"Telefone do fornecedor", poShipTo:"Enviar para", poPreparedBy:"Preparado por", poAddLine:"+ Adicionar linha", poItemNo:"Item #", poDesc:"Descricao", poQtyL:"Qtd", poPriceL:"Preco", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Frete", poTaxL:"Imposto", poOtherL:"Outro", poGrandL:"Total", poSaveBtn:"Salvar OC", poBackList:"Voltar a lista", poSavedMsg:"OC salva", poNeedVendor:"Insira um fornecedor primeiro",
+      poEmail:"Enviar OC por email", poEmailTo:"Para", poEmailSubjectL:"Assunto", poEmailSubjectTpl:"Ordem de Compra", poEmailBody:"Mensagem", poEmailSend:"Enviar email", poEmailCopy:"Copiar resumo da OC",
+      poEmailHint:"Se o envio de email ainda nao estiver configurado, Enviar vai abrir isto no seu aplicativo de email - o link do arquivo da OC esta incluido na mensagem para voce anexar/compartilhar.",
+      poEmailNeedTo:"Insira primeiro o email do fornecedor", poEmailSending:"Enviando...", poEmailOk:"OC enviada por email", poEmailCopied:"Copiado para a area de transferencia",
+      poEmailNo:"O envio de email ainda nao esta configurado - abrindo seu aplicativo de email.", poEmailFail:"Nao foi possivel enviar - abrindo seu aplicativo de email.",
       rdHint:"Solicite amostras e ingredientes aqui. Cada solicitacao gera um PDF e e acompanhada como Pendente ate chegar.",
       rdPending:"Pendente", rdDone:"Recebido", rdAdd:"+ Nova solicitacao", rdSave:"Salvar solicitacao", rdCancel:"Cancelar",
       rdType:"Tipo de solicitacao", rdCompany:"Empresa / fornecedor", rdContact:"Nome do contato", rdEmail:"E-mail do contato",
@@ -625,6 +637,7 @@
   let spoView = "list";   // Supplier POs: "list" | "create" (Excel-style PO entry form)
   let spoDetailId = null; // Supplier POs: when set, show full-detail view for that PO (v56)
   let poRows = 4;         // number of line-item rows shown in the Create-PO form
+  let poEmailOpen = false; // Supplier PO detail: Email PO compose panel open?
   // ---- Demand section state ----
   let retMode = "major";   // Returns entry mode: "major" (customer) | "ecom" (Amazon/marketplace)
   let dmdPartner = "", dmdFlavor = "", dmdStatus = "Open";  // Demand Board filters
@@ -1237,7 +1250,7 @@
       return '<tr data-txt="' + txt + '"><td><b>' + (s.vendor || "&mdash;") + '</b>' + (s.uploaded_by ? '<div class="muted sm">' + L("oByPrefix") + " " + s.uploaded_by + '</div>' : "") + '</td>' +
         '<td>' + poCell + '</td><td class="sm">' + (s.po_date || "") + '</td>' +
         '<td class="right">' + money(s.total) + '</td><td class="right muted">' + (s.item_count || 0) + '</td>' +
-        '<td>' + dl + '</td><td><button class="ghost sm danger" onclick="UI.spoDelete(\'' + s.id + '\')">&#10005;</button></td></tr>';
+        '<td>' + dl + '</td><td><button class="ghost sm" title="' + L("poEmail") + '" onclick="UI.poEmailFromList(\'' + s.id + '\')">&#9993;</button> <button class="ghost sm danger" onclick="UI.spoDelete(\'' + s.id + '\')">&#10005;</button></td></tr>';
     }).join("") : '<tr><td colspan="7" class="muted">' + L("spoNone") + '</td></tr>';
     return '<div class="card"><div class="spohead"><h2>' + L("supplierpos") + '</h2>' +
       '<button class="primary sm" onclick="UI.poCreateOpen()">' + L("poCreate") + '</button></div>' +
@@ -1252,21 +1265,69 @@
       '<th class="right sortable" onclick="UI.spoSortBy(\'item_count\')">' + L("spoItems") + spoArrow("item_count") + '</th>' +
       '<th>' + L("spoFile") + '</th><th></th></tr></thead><tbody id="spoBody">' + rows + '</tbody></table></div>';
   }
-  function viewPoDetail(id) {
-    const s = DB.supplierPos().find(x => String(x.id) === String(id));
-    if (!s) { spoDetailId = null; return viewSupplierPos(); }
-    // parse line items defensively (imports & Create-PO use slightly different keys)
+  // Parse a supplier PO's line items defensively (imports & Create-PO use slightly different keys).
+  // Shared by the detail table render and the Email PO summary builder.
+  function poLinesOf(s) {
     let lines = [];
     try { const p = typeof s.lines === "string" ? JSON.parse(s.lines || "[]") : (s.lines || []); if (Array.isArray(p)) lines = p; } catch (e) {}
     const g = (o, keys) => { for (const k of keys) if (o[k] != null && o[k] !== "") return o[k]; return ""; };
+    return lines.map(l => ({
+      item: g(l, ["item", "item_no", "itemNo", "part", "part_no", "sku", "code"]),
+      desc: g(l, ["desc", "description", "name", "product"]),
+      qty: g(l, ["qty", "quantity", "cases"]),
+      price: g(l, ["price", "unit_price", "unitPrice", "cost"]),
+      tot: g(l, ["total", "line_total", "lineTotal", "amount", "ext"])
+    }));
+  }
+  // Plain-text PO summary used to prefill the Email PO body, the mailto fallback, and Copy PO summary.
+  function poSummaryText(s) {
+    const lines = poLinesOf(s);
+    const p = [];
+    p.push((s.vendor || "Vendor") + (s.po_num ? " - PO " + s.po_num : ""));
+    if (s.po_date) p.push("Date: " + s.po_date);
+    if (s.ship_to) p.push("Ship to: " + s.ship_to);
+    p.push(""); p.push("Items:");
+    if (lines.length) {
+      lines.forEach(l => {
+        const bits = []; if (l.item) bits.push(l.item); if (l.desc) bits.push(l.desc);
+        let row = "  - " + (bits.join(" ") || "(item)");
+        if (l.qty !== "") row += "  x" + l.qty;
+        if (l.price !== "") row += "  @ " + money(l.price);
+        if (l.tot !== "") row += "  = " + money(l.tot);
+        p.push(row);
+      });
+    } else { p.push("  (no line items on file)"); }
+    p.push("");
+    if (s.subtotal != null && s.subtotal !== "") p.push("Subtotal: " + money(s.subtotal));
+    if (s.shipping != null && s.shipping !== "") p.push("Shipping: " + money(s.shipping));
+    if (s.tax != null && s.tax !== "") p.push("Tax: " + money(s.tax));
+    if (s.other != null && s.other !== "") p.push("Other: " + money(s.other));
+    p.push("Total: " + money(s.total));
+    if (s.notes) { p.push(""); p.push("Notes: " + s.notes); }
+    if (s.file_url) { p.push(""); p.push("PO document: " + s.file_url); }
+    return p.join("\n");
+  }
+  // Inline compose panel for emailing a Supplier PO to the vendor (mirrors the ordform pattern).
+  function poEmailForm(s) {
+    if (!poEmailOpen) return "";
+    const subject = L("poEmailSubjectTpl") + " " + (s.po_num || "") + " — Smackin' Snacks";
+    const body = poSummaryText(s);
+    return '<div class="ordform">' +
+      '<div><label>' + L("poEmailTo") + '</label><input id="po-em-to" type="email" autocomplete="off" value="' + esc(s.vendor_email || "") + '" placeholder="vendor@company.com"></div>' +
+      '<div><label>' + L("poEmailSubjectL") + '</label><input id="po-em-subj" autocomplete="off" value="' + esc(subject) + '"></div>' +
+      '<div><label>' + L("poEmailBody") + '</label><textarea id="po-em-body" rows="12">' + esc(body) + '</textarea></div>' +
+      '<button class="primary" onclick="UI.poEmailSend()">' + L("poEmailSend") + '</button> ' +
+      '<button class="ghost" onclick="UI.poEmailCopy()">' + L("poEmailCopy") + '</button> ' +
+      '<button class="ghost" onclick="UI.poEmailCancel()">' + L("spoCancel") + '</button>' +
+      '<p class="hint">' + L("poEmailHint") + '</p></div>';
+  }
+  function viewPoDetail(id) {
+    const s = DB.supplierPos().find(x => String(x.id) === String(id));
+    if (!s) { spoDetailId = null; return viewSupplierPos(); }
+    const lines = poLinesOf(s);
     const lineRows = lines.length ? lines.map(l => {
-      const item = g(l, ["item", "item_no", "itemNo", "part", "part_no", "sku", "code"]);
-      const desc = g(l, ["desc", "description", "name", "product"]);
-      const qty = g(l, ["qty", "quantity", "cases"]);
-      const price = g(l, ["price", "unit_price", "unitPrice", "cost"]);
-      const tot = g(l, ["total", "line_total", "lineTotal", "amount", "ext"]);
-      return '<tr><td>' + esc(item) + '</td><td>' + esc(desc) + '</td><td class="right">' + esc(qty) + '</td>' +
-        '<td class="right">' + (price !== "" ? money(price) : "") + '</td><td class="right">' + (tot !== "" ? money(tot) : "") + '</td></tr>';
+      return '<tr><td>' + esc(l.item) + '</td><td>' + esc(l.desc) + '</td><td class="right">' + esc(l.qty) + '</td>' +
+        '<td class="right">' + (l.price !== "" ? money(l.price) : "") + '</td><td class="right">' + (l.tot !== "" ? money(l.tot) : "") + '</td></tr>';
     }).join("") : '<tr><td colspan="5" class="muted">' + L("poNoLines") + '</td></tr>';
     // info field helper: only render rows that have a value
     const fld = (label, val) => (val != null && val !== "") ? '<div class="podf"><span class="podl">' + label + '</span><span class="podv">' + esc(val) + '</span></div>' : "";
@@ -1284,9 +1345,11 @@
       ? '<a class="order" href="' + s.file_url + '" target="_blank" rel="noopener">&#128229; ' + L("spoDownload") + (s.file_name ? ' &middot; ' + esc(s.file_name) : "") + '</a>'
       : '<span class="muted">' + L("poNoFile") + '</span>';
     return '<div class="card"><div class="spohead"><h2 style="margin:0">' + esc(s.vendor || L("supplierpos")) + (s.po_num ? ' &middot; ' + L("spoPO") + ' ' + esc(s.po_num) : "") + '</h2>' +
-      '<button class="ghost sm" onclick="UI.spoCloseDetail()">&#8592; ' + L("poBackList") + '</button></div>' +
+      '<div><button class="primary sm" onclick="UI.poEmailToggle()">&#9993; ' + L("poEmail") + '</button> ' +
+      '<button class="ghost sm" onclick="UI.spoCloseDetail()">&#8592; ' + L("poBackList") + '</button></div></div>' +
       '<div class="poinfo">' + info + '</div>' +
-      '<div class="podoc">' + fileBlock + '</div></div>' +
+      '<div class="podoc">' + fileBlock + '</div>' +
+      poEmailForm(s) + '</div>' +
       '<div class="card"><h2 class="sub2">' + L("spoItems") + ' (' + lines.length + ')</h2>' +
       '<table class="potable"><thead><tr><th>' + L("poItemNo") + '</th><th>' + L("poDesc") + '</th><th class="right">' + L("poQtyL") + '</th><th class="right">' + L("poPriceL") + '</th><th class="right">' + L("poLineTot") + '</th></tr></thead><tbody>' + lineRows + '</tbody></table>' +
       '<div class="pototals" style="margin-top:12px">' + totalsRows + '</div>' +
@@ -3383,7 +3446,32 @@
       document.querySelectorAll("#spoBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
     spoSortBy(k) { if (spoSort.key === k) spoSort.dir *= -1; else spoSort = { key: k, dir: (k === "total" || k === "item_count" || k === "po_date") ? -1 : 1 }; render(); },
     spoOpen(id) { spoDetailId = id; render(); window.scrollTo(0, 0); },
-    spoCloseDetail() { spoDetailId = null; render(); },
+    spoCloseDetail() { spoDetailId = null; poEmailOpen = false; render(); },
+    // ---- Email PO (Supplier PO -> vendor) ----
+    poEmailFromList(id) { spoDetailId = id; poEmailOpen = true; render(); window.scrollTo(0, 0); },
+    poEmailToggle() { poEmailOpen = !poEmailOpen; render(); },
+    poEmailCancel() { poEmailOpen = false; render(); },
+    poEmailCopy() {
+      const s = DB.supplierPos().find(x => String(x.id) === String(spoDetailId)); if (!s) return;
+      const text = ($("po-em-body") ? $("po-em-body").value : "") || poSummaryText(s);
+      const done = () => toast(L("poEmailCopied"));
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, done); else done();
+    },
+    async poEmailSend() {
+      const s = DB.supplierPos().find(x => String(x.id) === String(spoDetailId)); if (!s) return;
+      const to = ($("po-em-to") ? $("po-em-to").value : "").trim();
+      const subject = ($("po-em-subj") ? $("po-em-subj").value : "").trim();
+      const body = ($("po-em-body") ? $("po-em-body").value : "");
+      if (!to) return toast(L("poEmailNeedTo"));
+      toast(L("poEmailSending"));
+      const html = '<div style="font-family:Arial,sans-serif;color:#222;white-space:pre-wrap">' + esc(body).replace(/\n/g, "<br>") + '</div>';
+      const res = await DB.emailPO(s, { to: to, subject: subject, html: html }, opVal());
+      if (res.ok) { toast(L("poEmailOk")); poEmailOpen = false; render(); return; }
+      // Graceful fallback: open a prefilled mailto so the send is still one click away.
+      const mailto = "mailto:" + encodeURIComponent(to) + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+      window.location.href = mailto;
+      toast(res.msg === "not-configured" ? L("poEmailNo") : L("poEmailFail"));
+    },
     refPick(input) { refFiles = input.files && input.files.length ? input.files : null; render(); },
     refClear() { refFiles = null; render(); },
     async refSave() {
