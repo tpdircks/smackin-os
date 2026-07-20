@@ -2821,9 +2821,38 @@
     return drop + fileList + warn + recon + preview;
   }
   // ===== E-Com Demand (ShipStation "Product Sales" CSV -> bags-needed-per-flavor, window.ECOM) =====
+  // ===== 1.5oz e-com demand baseline (ShipStation FY Jul2025-Jun2026) — trend + by-flavor =====
+  var EC15_MONTHS = ["Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun"];
+  var EC15_BAGS = [170054,243853,227725,174748,239021,210650,84754,113982,294000,241844,269143,189284];
+  var EC15_ROWS = [{f:"Backyard BBQ",t:252286,w:4852,c:1},{f:"Dill Pickle",t:224436,w:4316,c:1},{f:"Ranch",t:221919,w:4268,c:1},{f:"Cinnamon Churro",t:210373,w:4046,c:1},{f:"Cheddar Jalapeno",t:207274,w:3986,c:1},{f:"Lemon Pepper",t:198158,w:3811,c:1},{f:"Garlic Parmesan",t:195195,w:3754,c:1},{f:"Maple Brown Sugar",t:189147,w:3637,c:1},{f:"Sour Cream & Onion",t:184011,w:3539,c:1},{f:"Cracked Pepper",t:167138,w:3214,c:1},{f:"OG Original",t:146200,w:2812,c:1},{f:"Spicy Queso",t:53356,w:1026,c:1},{f:"Chili Lime",t:51340,w:987,c:1},{f:"PB&J",t:38047,w:732,c:1},{f:"Buffalo Ranch",t:29494,w:567,c:1},{f:"Cheddar Ghost Pepper",t:28337,w:545,c:1},{f:"Strawberry Cheesecake",t:28220,w:543,c:1},{f:"Cinnamon Roll (LTO)",t:27233,w:524,c:1},{f:"Loaded Potato",t:1779,w:34,c:0},{f:"Guacamole",t:1458,w:28,c:0},{f:"Taco",t:633,w:12,c:0},{f:"Salsa",t:423,w:8,c:0}];
+  let ecChartMode = "total";
+  function ec15Val(r){ return ecChartMode === "s4" ? r.w*4 : (ecChartMode === "w" ? r.w : r.t); }
+  function ecOneFiveCard(){
+    var W=700,H=190,pl=44,pr=12,ptp=14,pb=26,iw=W-pl-pr,ih=H-ptp-pb,mx=300000;
+    var xf=function(i){return pl+iw*i/11;}, yf=function(v){return ptp+ih*(1-v/mx);};
+    var pathd="",area="M"+xf(0).toFixed(1)+" "+yf(0),grid="",dots="",lab="";
+    EC15_BAGS.forEach(function(v,i){ pathd+=(i?"L":"M")+xf(i).toFixed(1)+" "+yf(v).toFixed(1)+" "; area+=" L"+xf(i).toFixed(1)+" "+yf(v).toFixed(1); });
+    area+=" L"+xf(11).toFixed(1)+" "+yf(0)+" Z";
+    [0,100000,200000,300000].forEach(function(g){ grid+='<line x1="'+pl+'" y1="'+yf(g)+'" x2="'+(W-pr)+'" y2="'+yf(g)+'" stroke="#EEF2F7"/><text x="'+(pl-6)+'" y="'+(yf(g)+3)+'" text-anchor="end" font-size="9" fill="#9AA8B8">'+(g/1000)+'k</text>'; });
+    var vmax=Math.max.apply(null,EC15_BAGS), vmin=Math.min.apply(null,EC15_BAGS);
+    EC15_BAGS.forEach(function(v,i){ var pk=v===vmax,lo=v===vmin; dots+='<circle cx="'+xf(i).toFixed(1)+'" cy="'+yf(v).toFixed(1)+'" r="'+(pk||lo?4:3)+'" fill="'+(pk?"#F26722":lo?"#4C8FD6":"#0B2138")+'"/>'; if(pk||lo){ dots+='<text x="'+xf(i).toFixed(1)+'" y="'+(yf(v)-9)+'" text-anchor="middle" font-size="10" font-weight="700" fill="'+(pk?"#F26722":"#4C8FD6")+'">'+Math.round(v/1000)+'k</text>'; } });
+    EC15_MONTHS.forEach(function(m,i){ lab+='<text x="'+xf(i).toFixed(1)+'" y="'+(H-8)+'" text-anchor="middle" font-size="10" fill="#6B7A8C">'+m+'</text>'; });
+    var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="Monthly 1.5oz demand">'+grid+'<path d="'+area+'" fill="#F26722" opacity="0.10"/><path d="'+pathd+'" fill="none" stroke="#F26722" stroke-width="2.5"/>'+dots+lab+'</svg>';
+    var modes=[["total","Per year"],["w","Per week"],["s4","Stock @ 4 wks"]];
+    var mbtn=modes.map(function(m){ var on=ecChartMode===m[0]; return '<button class="ghost sm" style="border-color:'+(on?"#F26722":"#D4DCE6")+';background:'+(on?"#F26722":"#fff")+';color:'+(on?"#fff":"#3A4A5C")+';font-weight:700" onclick="UI.ecChartMode(\''+m[0]+'\')">'+m[1]+'</button>'; }).join(" ");
+    var rows=EC15_ROWS.slice().sort(function(a,b){return ec15Val(b)-ec15Val(a);});
+    var bmax=ec15Val(rows[0])||1;
+    var bars=rows.map(function(r){ var v=ec15Val(r),pct=Math.max(2,v/bmax*100); return '<div style="display:flex;align-items:center;gap:10px;margin:3px 0"><div style="width:150px;flex:none;font-size:12.5px;font-weight:'+(r.c?700:500)+';color:'+(r.c?"#0B2138":"#7A8A9A")+';text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(r.f)+'</div><div style="flex:1;background:#EEF2F7;border-radius:5px;height:19px"><div style="width:'+pct+'%;height:100%;border-radius:5px;background:'+(r.c?"#F26722":"#F7B48A")+'"></div></div><div style="width:64px;flex:none;font-size:12px;font-weight:700;text-align:right">'+fmt(v)+'</div></div>'; }).join("");
+    return '<div class="card"><div class="suprow"><h2 style="margin:0">1.5oz Demand — Last 12 Months</h2><span class="muted sm">ShipStation · Jul 2025–Jun 2026</span></div>'+
+      '<p class="hint">Every 1.5oz bag shipped, including those inside 6-packs, cases, buckets &amp; variety packs. 2.46M bags/yr · ~47,290/wk · 84% ship inside multipacks.</p>'+
+      '<div style="font-size:13px;font-weight:800;margin:6px 0 2px">Monthly demand (bags)</div>'+svg+
+      '<div class="suprow" style="margin-top:12px"><div style="font-size:13px;font-weight:800">By flavor</div><div style="display:flex;gap:6px;flex-wrap:wrap">'+mbtn+'</div></div>'+bars+
+      '<p class="hint" style="margin-top:8px">Multipack bags allocated across the 11 core flavors by single-bag share. Stock = weeks × avg weekly demand (starting reorder target; add lead time + safety stock).</p></div>';
+  }
+
   function viewEcomDemand() {
     const snap = (DB.ecomDemand ? DB.ecomDemand() : []);
-    const drop = '<div class="card"><h2>' + L("ecomdemand") + '</h2><p class="hint">' + L("ecdHint") + '</p>' +
+    const drop = ecOneFiveCard() + '<div class="card"><h2>' + L("ecomdemand") + '</h2><p class="hint">' + L("ecdHint") + '</p>' +
       '<div class="row"><div style="flex:2"><label>' + L("ecdDrop") + '</label>' +
       '<input id="ec-file" type="file" accept=".csv,text/csv" onchange="UI.ecFiles(this)"></div>' +
       '<div><label>' + L("ecdPeriod") + '</label><input id="ec-days" type="number" min="1" value="' + (ecParsed && ecParsed.periodDays ? ecParsed.periodDays : 14) + '" onchange="UI.ecRecalc()"></div>' +
@@ -3327,6 +3356,7 @@
 
   const UI = {
     cat(c) { catFilter = c; render(); },
+    ecChartMode(k) { ecChartMode = k; render(); },
     // ---- Demand section ----
     dmdSet(k, v) { if (k === "partner") dmdPartner = v; else if (k === "flavor") dmdFlavor = v; else if (k === "status") dmdStatus = v; render(); },
     dmdDept(d) { dmdDept = d; render(); },
