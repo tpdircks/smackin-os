@@ -26,7 +26,7 @@
       moveHint:"Scan item, pick from and to (slot, WIP, Pack-Out, Shipping...).",
       produceHint:"Record finished 4oz bags off the line. Adds bags, consumes film + seasoning.",
       countHint:"Cycle count: scan item + slot, enter the counted quantity; the system adjusts.",
-      locHint:"What is in each location now.", purchHint:"Reorder alerts plus full purchase orders.",purchBuyList:"Buy List",purchSetup:"Reorder Setup",rsHint:"Set a reorder point and preferred supplier for each item. Items with both set will trigger on the Buy List when stock runs low.",rsNoSup:"— none —",rsNeeds:"Needs setup",rsReady:"Ready",rsReorderPt:"Reorder point",rsNeedShort:"need setup",rsSaved:"Saved",rsSearchP:"Search items...",prodlog:"Daily Production",bags:"Bags",plLot:"Lot #",plShiftLead:"Shift Lead",plCounter:"Metal Detector Box Counter",plStart:"Start Count",plEnd:"End Count",plBoxes:"Boxes Produced",plCounterHint:"Record the counter BEFORE and AFTER the shift. Do not reset it.",plAddPallet:"Add Pallet",plLine:"Line",plFlavor:"Flavor",plCases:"Cases",plNotes:"Notes / Customer",plAdd:"Add to log",plAdded:"Pallet added",plNeedCases:"Enter case count",plLog:"Pallet Log",plPalletsUsed:"Pallets Used",plNoPallets:"No pallets logged yet today.",plSummary:"Daily Summary by Flavor",plCode:"Code",plCasesLogged:"Cases Logged",plVariance:"Variance (counter - log)",
+      locHint:"What is in each location now.", purchHint:"Reorder alerts plus full purchase orders.",purchPOs:"Purchase Orders",purchBuyList:"Buy List",purchSetup:"Reorder Setup",rsHint:"Set a reorder point and preferred supplier for each item. Items with both set will trigger on the Buy List when stock runs low.",rsNoSup:"— none —",rsNeeds:"Needs setup",rsReady:"Ready",rsReorderPt:"Reorder point",rsNeedShort:"need setup",rsSaved:"Saved",rsSearchP:"Search items...",prodlog:"Daily Production",bags:"Bags",plLot:"Lot #",plShiftLead:"Shift Lead",plCounter:"Metal Detector Box Counter",plStart:"Start Count",plEnd:"End Count",plBoxes:"Boxes Produced",plCounterHint:"Record the counter BEFORE and AFTER the shift. Do not reset it.",plAddPallet:"Add Pallet",plLine:"Line",plFlavor:"Flavor",plCases:"Cases",plNotes:"Notes / Customer",plAdd:"Add to log",plAdded:"Pallet added",plNeedCases:"Enter case count",plLog:"Pallet Log",plPalletsUsed:"Pallets Used",plNoPallets:"No pallets logged yet today.",plSummary:"Daily Summary by Flavor",plCode:"Code",plCasesLogged:"Cases Logged",plVariance:"Variance (counter - log)",
       fulfilldaily:"Daily Fulfillment", fdHint:"Log today's E-Commerce labels and Amazon (FBA) build output, plus notes on any custom/unique orders. Saved per day - also acts as a backup and double-check while automation is built out.",
       fdDate:"Date", fdEcomTitle:"E-Commerce - Labels per Person", fdEcomHint:"One row per person who worked e-com labels today. The day's total is the sum of everyone's labels.",
       fdEmployee:"Employee", fdPickEmployee:"Pick a person...", fdLabelsDone:"# Labels Done", fdAddPerson:"+ Add person", fdEcomLabelsTotal:"E-Com Labels Total",
@@ -113,7 +113,7 @@
       hOut:"Out of stock", hLow:"Low / reorder", hExp:"Expiring lots", hOpen:"Open orders", hIssues:"Order issues", hRd:"R&D pending",
       hAttention:"Needs attention now", hAllClear:"All clear - nothing urgent right now.", hSnapshot:"On-hand snapshot", hSeeAll:"See all",
       hEssential:"Essential items - stock by flavor", hFlavor:"Flavor", essFilm:"Film 4oz", hBase:"Base materials", hCovered:"OK", hLowShort:"Low", hOutShort:"Out",
-      supplierpos:"Supplier POs", spoHint:"Upload the POs you create in outside systems (Excel or PDF). The file is stored and the details are read in automatically when the format is recognized.",
+      supplierpos:"Supplier POs", spoHint:"Enter a purchase order with Create PO, or upload one from Excel or PDF. Every PO is stored and searchable below.",
       spoDrop:"Drop a PO file here, or click to choose  (.xlsx, .csv, .pdf)", spoVendor:"Vendor", spoPO:"PO #", spoDate:"PO date", spoTotal:"Total", spoItems:"Line items", spoNotes:"Notes", spoFile:"File", spoUploadedBy:"Uploaded by",
       spoSave:"Save PO", spoCancel:"Clear", spoSaved:"Supplier PO saved", spoNoFile:"Choose a file first", spoParsed:"Read from file", spoDownload:"Download",spoOpenDetails:"Click to see full PO details",spoView2:"View",poNoLines:"No line items on file",poNoFile:"No file attached to this PO", spoDelete:"Deleted", spoList:"Uploaded supplier POs", spoNone:"No supplier POs yet. Upload one above.", spoSearchP:"Search vendor, PO #...", spoConfirmDel:"Delete this supplier PO?",
       orderdocs:"Order Docs", odocHint:"Store the paperwork for fulfilled orders (BOL, packing list, pull sheet, labels, invoice) by customer and PO - like SPS. Searchable so CS can pull any order's docs fast.",
@@ -181,7 +181,7 @@
       moveHint:"Escanee articulo, elija desde y hacia (slot, WIP, Empaque, Embarque...).",
       produceHint:"Registre bolsas 4oz de la linea. Suma bolsas, consume film + sazon.",
       countHint:"Conteo ciclico: escanee articulo + slot, ingrese la cantidad contada.",
-      locHint:"Lo que hay en cada ubicacion ahora.", purchHint:"Alertas de reorden mas ordenes de compra.",purchBuyList:"Lista de compra",purchSetup:"Config. de reorden",rsHint:"Defina un punto de reorden y proveedor preferido para cada articulo. Los articulos con ambos configurados apareceran en la Lista de compra cuando el stock baje.",rsNoSup:"— ninguno —",rsNeeds:"Falta config.",rsReady:"Listo",rsReorderPt:"Punto de reorden",rsNeedShort:"por configurar",rsSaved:"Guardado",rsSearchP:"Buscar articulos...",prodlog:"Produccion Diaria",bags:"Bolsas",plLot:"Lote #",plShiftLead:"Lider de Turno",plCounter:"Contador de Cajas - Detector de Metales",plStart:"Conteo Inicial",plEnd:"Conteo Final",plBoxes:"Cajas Producidas",plCounterHint:"Registrar el contador ANTES y DESPUES del turno. No reiniciar.",plAddPallet:"Agregar Paleta",plLine:"Linea",plFlavor:"Sabor",plCases:"Cajas",plNotes:"Notas / Cliente",plAdd:"Agregar al registro",plAdded:"Paleta agregada",plNeedCases:"Ingrese cantidad de cajas",plLog:"Registro de Paletas",plPalletsUsed:"Paletas Usadas",plNoPallets:"Aun no hay paletas registradas hoy.",plSummary:"Resumen Diario por Sabor",plCode:"Codigo",plCasesLogged:"Cajas Registradas",plVariance:"Variacion (contador - registro)",
+      locHint:"Lo que hay en cada ubicacion ahora.", purchHint:"Alertas de reorden mas ordenes de compra.",purchPOs:"Ordenes de Compra",purchBuyList:"Lista de compra",purchSetup:"Config. de reorden",rsHint:"Defina un punto de reorden y proveedor preferido para cada articulo. Los articulos con ambos configurados apareceran en la Lista de compra cuando el stock baje.",rsNoSup:"— ninguno —",rsNeeds:"Falta config.",rsReady:"Listo",rsReorderPt:"Punto de reorden",rsNeedShort:"por configurar",rsSaved:"Guardado",rsSearchP:"Buscar articulos...",prodlog:"Produccion Diaria",bags:"Bolsas",plLot:"Lote #",plShiftLead:"Lider de Turno",plCounter:"Contador de Cajas - Detector de Metales",plStart:"Conteo Inicial",plEnd:"Conteo Final",plBoxes:"Cajas Producidas",plCounterHint:"Registrar el contador ANTES y DESPUES del turno. No reiniciar.",plAddPallet:"Agregar Paleta",plLine:"Linea",plFlavor:"Sabor",plCases:"Cajas",plNotes:"Notas / Cliente",plAdd:"Agregar al registro",plAdded:"Paleta agregada",plNeedCases:"Ingrese cantidad de cajas",plLog:"Registro de Paletas",plPalletsUsed:"Paletas Usadas",plNoPallets:"Aun no hay paletas registradas hoy.",plSummary:"Resumen Diario por Sabor",plCode:"Codigo",plCasesLogged:"Cajas Registradas",plVariance:"Variacion (contador - registro)",
       fulfilldaily:"Cumplimiento Diario", fdHint:"Registre las etiquetas de E-Commerce de hoy y la produccion de Amazon (FBA), mas notas de pedidos especiales. Se guarda por dia - tambien sirve de respaldo y doble verificacion mientras se automatiza.",
       fdDate:"Fecha", fdEcomTitle:"E-Commerce - Etiquetas por Persona", fdEcomHint:"Una fila por cada persona que trabajo etiquetas de e-com hoy. El total del dia es la suma de todos.",
       fdEmployee:"Empleado", fdPickEmployee:"Elija una persona...", fdLabelsDone:"# Etiquetas Hechas", fdAddPerson:"+ Agregar persona", fdEcomLabelsTotal:"Total Etiquetas E-Com",
@@ -267,7 +267,7 @@
       hOut:"Agotado", hLow:"Bajo / reorden", hExp:"Lotes por vencer", hOpen:"Ordenes abiertas", hIssues:"Ordenes con problema", hRd:"I+D pendiente",
       hAttention:"Necesita atencion ahora", hAllClear:"Todo en orden - nada urgente ahora.", hSnapshot:"Resumen de disponible", hSeeAll:"Ver todo",
       hEssential:"Articulos esenciales - stock por sabor", hFlavor:"Sabor", essFilm:"Film 4oz", hBase:"Materiales base", hCovered:"OK", hLowShort:"Bajo", hOutShort:"Agotado",
-      supplierpos:"OC Proveedor", spoHint:"Suba las OC que crea en sistemas externos (Excel o PDF). El archivo se guarda y los datos se leen automaticamente cuando se reconoce el formato.",
+      supplierpos:"OC Proveedor", spoHint:"Ingrese una orden de compra con Crear OC, o suba una desde Excel o PDF. Cada OC se guarda y se puede buscar abajo.",
       spoDrop:"Suelte un archivo de OC aqui, o haga clic para elegir  (.xlsx, .csv, .pdf)", spoVendor:"Proveedor", spoPO:"OC #", spoDate:"Fecha OC", spoTotal:"Total", spoItems:"Lineas", spoNotes:"Notas", spoFile:"Archivo", spoUploadedBy:"Subido por",
       spoSave:"Guardar OC", spoCancel:"Limpiar", spoSaved:"OC de proveedor guardada", spoNoFile:"Elija un archivo primero", spoParsed:"Leido del archivo", spoDownload:"Descargar",spoOpenDetails:"Clic para ver los detalles completos de la OC",spoView2:"Ver",poNoLines:"Sin lineas de articulo registradas",poNoFile:"Sin archivo adjunto a esta OC", spoDelete:"Eliminado", spoList:"OC de proveedor subidas", spoNone:"Aun no hay OC de proveedor. Suba una arriba.", spoSearchP:"Buscar proveedor, OC #...", spoConfirmDel:"Eliminar esta OC de proveedor?",
       orderdocs:"Docs de Orden", odocHint:"Guarde el papeleo de ordenes cumplidas (BOL, lista de empaque, hoja de picking, etiquetas, factura) por cliente y OC - como SPS. Buscable para que servicio al cliente encuentre los documentos rapido.",
@@ -335,7 +335,7 @@
       moveHint:"Escaneie item, escolha de e para (slot, WIP, Empacotamento, Expedicao...).",
       produceHint:"Registre sacos 4oz da linha. Adiciona sacos, consome filme + tempero.",
       countHint:"Contagem ciclica: escaneie item + slot, digite a quantidade contada.",
-      locHint:"O que ha em cada local agora.", purchHint:"Alertas de reposicao mais ordens de compra.",purchBuyList:"Lista de compras",purchSetup:"Config. de reposicao",rsHint:"Defina um ponto de reposicao e fornecedor preferido para cada item. Itens com ambos configurados aparecerao na Lista de compras quando o estoque baixar.",rsNoSup:"— nenhum —",rsNeeds:"Falta config.",rsReady:"Pronto",rsReorderPt:"Ponto de reposicao",rsNeedShort:"a configurar",rsSaved:"Salvo",rsSearchP:"Buscar itens...",prodlog:"Producao Diaria",bags:"Bolsas",plLot:"Lote #",plShiftLead:"Lider de Turno",plCounter:"Contador de Caixas - Detector de Metais",plStart:"Contagem Inicial",plEnd:"Contagem Final",plBoxes:"Caixas Produzidas",plCounterHint:"Registrar o contador ANTES e DEPOIS do turno. Nao reiniciar.",plAddPallet:"Adicionar Palete",plLine:"Linha",plFlavor:"Sabor",plCases:"Caixas",plNotes:"Notas / Cliente",plAdd:"Adicionar ao registro",plAdded:"Palete adicionado",plNeedCases:"Insira a quantidade de caixas",plLog:"Registro de Paletes",plPalletsUsed:"Paletes Usados",plNoPallets:"Nenhum palete registrado hoje ainda.",plSummary:"Resumo Diario por Sabor",plCode:"Codigo",plCasesLogged:"Caixas Registradas",plVariance:"Variacao (contador - registro)",
+      locHint:"O que ha em cada local agora.", purchHint:"Alertas de reposicao mais ordens de compra.",purchPOs:"Ordens de Compra",purchBuyList:"Lista de compras",purchSetup:"Config. de reposicao",rsHint:"Defina um ponto de reposicao e fornecedor preferido para cada item. Itens com ambos configurados aparecerao na Lista de compras quando o estoque baixar.",rsNoSup:"— nenhum —",rsNeeds:"Falta config.",rsReady:"Pronto",rsReorderPt:"Ponto de reposicao",rsNeedShort:"a configurar",rsSaved:"Salvo",rsSearchP:"Buscar itens...",prodlog:"Producao Diaria",bags:"Bolsas",plLot:"Lote #",plShiftLead:"Lider de Turno",plCounter:"Contador de Caixas - Detector de Metais",plStart:"Contagem Inicial",plEnd:"Contagem Final",plBoxes:"Caixas Produzidas",plCounterHint:"Registrar o contador ANTES e DEPOIS do turno. Nao reiniciar.",plAddPallet:"Adicionar Palete",plLine:"Linha",plFlavor:"Sabor",plCases:"Caixas",plNotes:"Notas / Cliente",plAdd:"Adicionar ao registro",plAdded:"Palete adicionado",plNeedCases:"Insira a quantidade de caixas",plLog:"Registro de Paletes",plPalletsUsed:"Paletes Usados",plNoPallets:"Nenhum palete registrado hoje ainda.",plSummary:"Resumo Diario por Sabor",plCode:"Codigo",plCasesLogged:"Caixas Registradas",plVariance:"Variacao (contador - registro)",
       fulfilldaily:"Cumprimento Diario", fdHint:"Registre as etiquetas de E-Commerce de hoje e a producao da Amazon (FBA), mais notas de pedidos especiais. Salvo por dia - tambem serve de backup e dupla verificacao enquanto a automacao e construida.",
       fdDate:"Data", fdEcomTitle:"E-Commerce - Etiquetas por Pessoa", fdEcomHint:"Uma linha por pessoa que trabalhou etiquetas de e-com hoje. O total do dia e a soma de todos.",
       fdEmployee:"Funcionario", fdPickEmployee:"Escolha uma pessoa...", fdLabelsDone:"# Etiquetas Feitas", fdAddPerson:"+ Adicionar pessoa", fdEcomLabelsTotal:"Total Etiquetas E-Com",
@@ -421,7 +421,7 @@
       hOut:"Esgotado", hLow:"Baixo / reposicao", hExp:"Lotes vencendo", hOpen:"Pedidos abertos", hIssues:"Pedidos com problema", hRd:"P&D pendente",
       hAttention:"Precisa de atencao agora", hAllClear:"Tudo certo - nada urgente agora.", hSnapshot:"Resumo em estoque", hSeeAll:"Ver tudo",
       hEssential:"Itens essenciais - estoque por sabor", hFlavor:"Sabor", essFilm:"Filme 4oz", hBase:"Materiais base", hCovered:"OK", hLowShort:"Baixo", hOutShort:"Esgotado",
-      supplierpos:"OC Fornecedor", spoHint:"Envie as OCs que voce cria em sistemas externos (Excel ou PDF). O arquivo e armazenado e os dados sao lidos automaticamente quando o formato e reconhecido.",
+      supplierpos:"OC Fornecedor", spoHint:"Crie uma ordem de compra com Criar OC, ou envie uma de Excel ou PDF. Cada OC e armazenada e pesquisavel abaixo.",
       spoDrop:"Solte um arquivo de OC aqui, ou clique para escolher  (.xlsx, .csv, .pdf)", spoVendor:"Fornecedor", spoPO:"OC #", spoDate:"Data OC", spoTotal:"Total", spoItems:"Linhas", spoNotes:"Observacoes", spoFile:"Arquivo", spoUploadedBy:"Enviado por",
       spoSave:"Salvar OC", spoCancel:"Limpar", spoSaved:"OC de fornecedor salva", spoNoFile:"Escolha um arquivo primeiro", spoParsed:"Lido do arquivo", spoDownload:"Baixar",spoOpenDetails:"Clique para ver os detalhes completos da OC",spoView2:"Ver",poNoLines:"Sem itens de linha registrados",poNoFile:"Nenhum arquivo anexado a esta OC", spoDelete:"Excluido", spoList:"OCs de fornecedor enviadas", spoNone:"Ainda nao ha OCs de fornecedor. Envie uma acima.", spoSearchP:"Buscar fornecedor, OC #...", spoConfirmDel:"Excluir esta OC de fornecedor?",
       orderdocs:"Docs de Pedido", odocHint:"Armazene a papelada de pedidos concluidos (BOL, lista de embalagem, folha de separacao, etiquetas, fatura) por cliente e OC - como o SPS. Pesquisavel para o SAC encontrar os documentos rapido.",
@@ -473,7 +473,7 @@
   let lang = "en"; const L = k => (T[lang][k] !== undefined ? T[lang][k] : (T.en[k] !== undefined ? T.en[k] : k));
   let active = "home"; let catFilter = "all";
   let purchMode = "list"; let purchSup = null; let receivingPOid = null;
-  let purchView = "buy";  // Purchasing: "buy" (Buy List + POs) | "setup" (reorder-point/supplier config)
+  let purchView = "po";   // Purchasing hub tab: "po" (Purchase Orders) | "buy" (Buy List) | "setup" (reorder config)
   let purchSetupCat = "all";  // Reorder-setup category filter
   let plDate = null;  // Daily Production log: selected date (defaults to today)
   // Retail production flavor codes (mirrors Jesus's "Flavors codes" sheet); bpc = bags per case/box
@@ -711,7 +711,7 @@
     { key:"grpShipping", items:["shiplog"] },
     { key:"grpMixing", items:["mixing","floor"] },
     { key:"grpPmac", items:["pmac","pmacout","floor"] },
-    { key:"grpPurchasing", items:["purchasing","supplierpos"] },
+    { key:"grpPurchasing", items:["purchasing"] },
     { key:"grpRnd", items:["rd"] },
     { key:"grpHr", items:["people"] },
     { key:"grpImprove", items:["improve"] },
@@ -854,7 +854,7 @@
     return DB.allLocations().indexOf(code) >= 0 || /^[A-E]-\d{2}-L[1-4]$/.test(code); }
 
   function setLang(l) { lang = l; ["en","es","pt"].forEach(x => { const b = $("lang-" + x); if (b) b.classList.toggle("active", l === x); }); render(); }
-  function go(t) { active = t; if (t !== "purchasing") { purchMode = "list"; receivingPOid = null; } if (t === "orders") markOrdersSeen(); closeDrawer(); render(); }
+  function go(t) { active = t; if (t !== "purchasing") { purchMode = "list"; receivingPOid = null; } else { spoDetailId = null; spoView = "list"; } if (t === "orders") markOrdersSeen(); closeDrawer(); render(); }
   function opVal() { const e = $("op"); return e ? e.value : "Troy"; }
 
   // ---------- edit lock (PIN) — viewing is open, changes require the PIN ----------
@@ -1367,7 +1367,7 @@
         '<td class="right">' + money(s.total) + '</td><td class="right muted">' + (s.item_count || 0) + '</td>' +
         '<td>' + dl + '</td><td><button class="ghost sm" title="' + L("poEmail") + '" onclick="UI.poEmailFromList(\'' + s.id + '\')">&#9993;</button> <button class="ghost sm danger" onclick="UI.spoDelete(\'' + s.id + '\')">&#10005;</button></td></tr>';
     }).join("") : '<tr><td colspan="7" class="muted">' + L("spoNone") + '</td></tr>';
-    return '<div class="card"><div class="spohead"><h2>' + L("supplierpos") + '</h2>' +
+    return '<div class="card"><div class="spohead"><h2>' + L("purchPOs") + '</h2>' +
       '<button class="primary sm" onclick="UI.poCreateOpen()">' + L("poCreate") + '</button></div>' +
       '<p class="hint">' + L("spoHint") + '</p>' + form + '</div>' +
       '<div class="card"><h2 class="sub2">' + L("spoList") + ' (' + list.length + ')</h2>' +
@@ -2327,8 +2327,7 @@
         '<td><select onchange="UI.itemSupplier(\'' + i.id + '\',this.value)">' + supOpts(i.supplier) + '</select></td>' +
         '<td>' + chip + '</td></tr>';
     }).join("");
-    return '<div class="card"><div class="suprow"><h2 style="flex:1">' + L("purchasing") + '</h2>' +
-      '<button class="primary sm" onclick="UI.poNew(\'\')">+ ' + L("newPO") + '</button></div>' +
+    return '<div class="card"><h2 style="margin:0 0 4px">' + L("purchasing") + '</h2>' +
       toggle + '<p class="hint" style="margin-top:10px">' + L("rsHint") + '</p></div>' +
       '<div class="card"><h2 class="sub2">' + L("purchSetup") + ' &middot; ' + needCount + ' ' + L("rsNeedShort") + '</h2>' +
       '<div class="catbar">' + cbar + '</div>' +
@@ -2440,16 +2439,18 @@
   }
 
   function viewPurchasing() {
-    if (purchMode === "new") return viewPONew();
-    const toggle = '<div class="ordtabs" style="margin:0">' +
-      '<button class="' + (purchView === "buy" ? "active" : "") + '" onclick="UI.purchView(\'buy\')">' + L("purchBuyList") + '</button>' +
-      '<button class="' + (purchView === "setup" ? "active" : "") + '" onclick="UI.purchView(\'setup\')">' + L("purchSetup") + '</button></div>';
-    if (purchView === "setup") return viewReorderSetup(toggle);
-    let html = '<div class="card"><div class="suprow"><h2 style="flex:1">' + L("purchasing") + '</h2>' +
-      '<button class="primary sm" onclick="UI.poNew(\'\')">+ ' + L("newPO") + '</button></div>' +
-      toggle + '<p class="hint" style="margin-top:10px">' + L("purchHint") + '</p></div>';
+    // Full-screen sub-flows (each renders its own back button)
+    if (purchMode === "new") return viewPONew();            // reorder draft PO (from Buy List)
+    if (spoDetailId) return viewPoDetail(spoDetailId);      // PO archive detail
+    if (spoView === "create") return viewPoCreate();        // manual Create PO form (Michelle)
+    const tab = (purchView === "buy" || purchView === "setup") ? purchView : "po";
+    const tbtn = (v, lbl) => '<button class="' + (tab === v ? "active" : "") + '" onclick="UI.purchView(\'' + v + '\')">' + lbl + '</button>';
+    const toggle = '<div class="ordtabs" style="margin:0">' + tbtn("po", L("purchPOs")) + tbtn("buy", L("purchBuyList")) + tbtn("setup", L("purchSetup")) + '</div>';
+    if (tab === "setup") return viewReorderSetup(toggle);
+    if (tab === "po") return '<div class="card">' + toggle + '</div>' + viewSupplierPos();
 
-    // --- reorder suggestions, grouped by supplier ---
+    // --- Buy List tab: low-stock reorder suggestions + receivable draft POs ---
+    let html = '<div class="card">' + toggle + '<p class="hint" style="margin-top:10px">' + L("purchHint") + '</p></div>';
     const low = DB.items().filter(i => statusOf(i) !== "ok" && i.supplier);
     if (low.length) {
       const bySup = {}; low.forEach(i => { (bySup[i.supplier] = bySup[i.supplier] || []).push(i); });
@@ -2469,8 +2470,6 @@
     } else {
       html += '<div class="card"><p class="ok pill big">' + L("allgood") + '</p></div>';
     }
-
-    // --- existing purchase orders ---
     const pos = DB.purchaseOrders();
     html += '<div class="card"><h2 class="sub2">' + L("purchOrders") + '</h2>';
     html += pos.length ? pos.map(poCard).join("") : '<p class="muted">' + L("noPOs") + '</p>';
