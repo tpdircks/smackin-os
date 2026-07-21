@@ -55,7 +55,7 @@
       noLots:"No seasoning lots yet.", markQuar:"Quarantine", markGood:"Mark good", expiredTag:"EXPIRED", quarTag:"QUARANTINE", goodTag:"GOOD",
       seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdReceived:"Received",sdIntCode:"Internal code",sdPackaging:"Packaging",sdPickPack:"Select packaging...",sdPallets:"# Pallets",sdPalletsShort:"pallet(s)",sdPackDate:"Packaging date", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
       skus:"SKUs", skusHint:"Finished-goods / retail SKU catalog - bundles, singles, and cases with bag count and flavor contents. Reference only.", skuCode:"SKU", skuTitle:"Product", skuBags:"Bags", skuComp:"Contents", skuSearchP:"Search SKU, product, or flavor...", skuCount:"SKUs",
-      stockbuild:"Stock Build", sbHint:"Live build progress vs goals. Update On Hand as you go - the whole team sees it instantly. Yellow field = enter today's count.", sbGoal:"Goal", sbOnHand:"On hand", sbToBuild:"To build", sbPallets:"Pallets", sbDone:"Done", sbTotalGoal:"Total goal", sbComplete:"Complete", sbSaved:"Saved", sbRetail:"Retail", sbEcom:"E-Commerce", sb12pk:"12-Pack Boxes",
+      stockbuild:"Stock Build", sbHint:"Live build progress vs goals. Update On Hand as you go - the whole team sees it instantly. Yellow field = enter today's count.", sbGoal:"Goal", sbOnHand:"On hand", sbToBuild:"To build", sbPallets:"Pallets", sbDone:"Done", sbTotalGoal:"Total goal", sbComplete:"Complete", sbSaved:"Saved", sbRetail:"Retail", sbEcom:"E-Commerce", sb12pk:"12-Pack Boxes", sbCoverage:"Coverage by group", sbBuilt:"Built vs goal",
       board:"Board Mode / TV", boardPick:"Pick a department", boardPickHint:"Open this on the TV and pick a department, or bookmark the URL (example: ?board=pmac).", boardExit:"Exit", grpDemand:"Demand", demand:"By Department", demandboard:"Order Board", demandsched:"Production Schedule", demandimport:"Import Orders", ecomdemand:"E-Com Demand", forecast:"Forecast vs Target",
       fcHint:"Compare only - the app's targets are not changed by this.", fcSnapshot:"Snapshot", fcFlavor:"Flavor", fcApp4:"App Target (4oz)", fcWip4:"WIP Forecast (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"App Target (1.5oz)", fcWip15:"WIP Forecast (1.5oz)", fcDelta15:"Δ (1.5oz)",
       fcNoAppTarget15:"No per-flavor 1.5oz target in the app (bucket / variety-pack only)", fcNone:"No forecast snapshot yet. Ask Claude to refresh it from the WIP FORECAST sheet.", fcBags:"bags",
@@ -210,7 +210,7 @@
       noLots:"Sin lotes de sazon aun.", markQuar:"Cuarentena", markGood:"Marcar bueno", expiredTag:"VENCIDO", quarTag:"CUARENTENA", goodTag:"BUENO",
       seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdReceived:"Recibido",sdIntCode:"Codigo interno",sdPackaging:"Empaque",sdPickPack:"Elegir empaque...",sdPallets:"# Paletas",sdPalletsShort:"paleta(s)",sdPackDate:"Fecha de empaque", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
       skus:"SKUs", skusHint:"Catalogo de SKU de producto terminado / retail - paquetes, individuales y cajas con cantidad de bolsas y sabores. Solo referencia.", skuCode:"SKU", skuTitle:"Producto", skuBags:"Bolsas", skuComp:"Contenido", skuSearchP:"Buscar SKU, producto o sabor...", skuCount:"SKUs",
-      stockbuild:"Construir Inventario", sbHint:"Progreso de construccion vs metas en vivo. Actualice En Mano segun avanza - todo el equipo lo ve al instante. Campo amarillo = ingrese el conteo de hoy.", sbGoal:"Meta", sbOnHand:"En mano", sbToBuild:"Por hacer", sbPallets:"Paletas", sbDone:"Listo", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Guardado", sbRetail:"Minorista", sbEcom:"Comercio Electronico", sb12pk:"Cajas de 12",
+      stockbuild:"Construir Inventario", sbHint:"Progreso de construccion vs metas en vivo. Actualice En Mano segun avanza - todo el equipo lo ve al instante. Campo amarillo = ingrese el conteo de hoy.", sbGoal:"Meta", sbOnHand:"En mano", sbToBuild:"Por hacer", sbPallets:"Paletas", sbDone:"Listo", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Guardado", sbRetail:"Minorista", sbEcom:"Comercio Electronico", sb12pk:"Cajas de 12", sbCoverage:"Cobertura por grupo", sbBuilt:"Hecho vs meta",
       board:"Modo Pizarra / TV", boardPick:"Elija un departamento", boardPickHint:"Abra esto en la TV y elija un departamento, o guarde el URL (ejemplo: ?board=pmac).", boardExit:"Salir", grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Tablero de Pedidos", demandsched:"Programa de Produccion", demandimport:"Importar Pedidos", ecomdemand:"Demanda E-Com", forecast:"Pronostico vs Objetivo",
       fcHint:"Solo comparacion - esto no cambia los objetivos de la aplicacion.", fcSnapshot:"Instantanea", fcFlavor:"Sabor", fcApp4:"Objetivo App (4oz)", fcWip4:"Pronostico WIP (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"Objetivo App (1.5oz)", fcWip15:"Pronostico WIP (1.5oz)", fcDelta15:"Δ (1.5oz)",
       fcNoAppTarget15:"Sin objetivo por sabor de 1.5oz en la app (solo cubeta / variety pack)", fcNone:"Aun no hay instantanea de pronostico. Pida a Claude que la actualice desde la hoja WIP FORECAST.", fcBags:"bolsas",
@@ -364,7 +364,7 @@
       noLots:"Nenhum lote de tempero ainda.", markQuar:"Quarentena", markGood:"Marcar bom", expiredTag:"VENCIDO", quarTag:"QUARENTENA", goodTag:"BOM",
       seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdReceived:"Recebido",sdIntCode:"Codigo interno",sdPackaging:"Embalagem",sdPickPack:"Selecionar embalagem...",sdPallets:"# Paletes",sdPalletsShort:"palete(s)",sdPackDate:"Data de embalagem", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
       skus:"SKUs", skusHint:"Catalogo de SKU de produto acabado / varejo - pacotes, individuais e caixas com contagem de sacos e sabores. Apenas referencia.", skuCode:"SKU", skuTitle:"Produto", skuBags:"Sacos", skuComp:"Conteudo", skuSearchP:"Buscar SKU, produto ou sabor...", skuCount:"SKUs",
-      stockbuild:"Construir Estoque", sbHint:"Progresso de construcao vs metas ao vivo. Atualize Em Estoque conforme avanca - toda a equipe ve na hora. Campo amarelo = insira a contagem de hoje.", sbGoal:"Meta", sbOnHand:"Em estoque", sbToBuild:"A fazer", sbPallets:"Paletes", sbDone:"Pronto", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Salvo", sbRetail:"Varejo", sbEcom:"E-Commerce", sb12pk:"Caixas de 12",
+      stockbuild:"Construir Estoque", sbHint:"Progresso de construcao vs metas ao vivo. Atualize Em Estoque conforme avanca - toda a equipe ve na hora. Campo amarelo = insira a contagem de hoje.", sbGoal:"Meta", sbOnHand:"Em estoque", sbToBuild:"A fazer", sbPallets:"Paletes", sbDone:"Pronto", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Salvo", sbRetail:"Varejo", sbEcom:"E-Commerce", sb12pk:"Caixas de 12", sbCoverage:"Cobertura por grupo", sbBuilt:"Feito vs meta",
       board:"Modo Painel / TV", boardPick:"Escolha um departamento", boardPickHint:"Abra isto na TV e escolha um departamento, ou salve o URL (exemplo: ?board=pmac).", boardExit:"Sair", grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Painel de Pedidos", demandsched:"Programa de Producao", demandimport:"Importar Pedidos", ecomdemand:"Demanda E-Com", forecast:"Previsao vs Meta",
       fcHint:"Somente comparacao - isso nao altera as metas do aplicativo.", fcSnapshot:"Instantaneo", fcFlavor:"Sabor", fcApp4:"Meta App (4oz)", fcWip4:"Previsao WIP (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"Meta App (1.5oz)", fcWip15:"Previsao WIP (1.5oz)", fcDelta15:"Δ (1.5oz)",
       fcNoAppTarget15:"Sem meta por sabor de 1.5oz no app (somente balde / variety pack)", fcNone:"Ainda sem instantaneo de previsao. Peca ao Claude para atualizar a partir da planilha WIP FORECAST.", fcBags:"sacos",
@@ -1860,12 +1860,25 @@
     SB_ITEMS.forEach(i => { gGoal += i.goal; gOn += val(i.key); });
     const gPct = gGoal ? Math.round(gOn / gGoal * 100) : 0;
     const gToBuild = Math.max(gGoal - gOn, 0);
+    const catStats = SB_CATS.map(cat => {
+      const items = SB_ITEMS.filter(i => i.cat === cat);
+      let cg = 0, co = 0; items.forEach(i => { cg += i.goal; co += val(i.key); });
+      return { cat, goal: cg, on: co, pct: cg ? Math.round(co / cg * 100) : 0 };
+    }).filter(c => c.goal > 0);
+    const chartBar = c => {
+      const col = c.pct >= 100 ? "#2E9E5B" : (c.pct >= 50 ? "#F2A93B" : "#E0533B");
+      return '<div style="display:flex;align-items:center;gap:10px;margin:6px 0">' +
+        '<div style="width:110px;flex:none;font-size:12.5px;font-weight:600">' + esc(c.cat) + '</div>' +
+        '<div style="flex:1;background:#EEF2F7;border-radius:6px;height:22px"><div style="width:' + Math.max(2, Math.min(100, c.pct)) + '%;height:100%;border-radius:6px;background:' + col + '"></div></div>' +
+        '<div style="width:150px;flex:none;font-size:12px;font-weight:700;text-align:right">' + fmt(c.on) + ' / ' + fmt(c.goal) + ' (' + c.pct + '%)</div></div>';
+    };
+    const sbChart = '<div style="margin-top:14px"><div class="muted sm" style="margin-bottom:4px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">' + L("sbCoverage") + '</div>' + catStats.map(chartBar).join("") + '</div>';
     const summary = '<div class="card"><h2>' + L("stockbuild") + '</h2><p class="hint">' + L("sbHint") + '</p>' +
       '<div class="kpis"><div class="kpi"><div class="n">' + fmt(gGoal) + '</div><div class="l">' + L("sbTotalGoal") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(gOn) + '</div><div class="l">' + L("sbOnHand") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(gToBuild) + '</div><div class="l">' + L("sbToBuild") + '</div></div>' +
       '<div class="kpi"><div class="n">' + gPct + '%</div><div class="l">' + L("sbComplete") + '</div></div></div>' +
-      '<div style="margin-top:12px"><button class="ghost sm" onclick="UI.sbReportPdf()">&#11015; ' + L("dlPdf") + '</button> <button class="ghost sm" onclick="UI.sbReportXlsx()">&#11015; ' + L("dlExcel") + '</button></div></div>';
+      sbChart + '<div style="margin-top:12px"><button class="ghost sm" onclick="UI.sbReportPdf()">&#11015; ' + L("dlPdf") + '</button> <button class="ghost sm" onclick="UI.sbReportXlsx()">&#11015; ' + L("dlExcel") + '</button></div></div>';
     const barCls = p => p >= 100 ? "ok" : p >= 50 ? "low" : "out";
     const rowHtml = i => {
       const on = val(i.key), goal = i.goal, toBuild = Math.max(goal - on, 0);
@@ -2323,6 +2336,52 @@
       '<table><thead><tr><th>' + L("item") + '</th><th class="right">' + L("onhand") + '</th><th>' + L("rsReorderPt") + '</th><th>' + L("alSupplier") + '</th><th>' + L("status") + '</th></tr></thead><tbody id="rsBody">' + rows + '</tbody></table></div>';
   }
   // ===== Analytics: Inventory Health (Stock Build coverage vs goal + low/out) =====
+  function prodTrendCard() {
+    var recs = (DB.productionOutput ? DB.productionOutput() : []) || [];
+    var days = [];
+    var today = new Date();
+    for (var d = 13; d >= 0; d--) { var dt = new Date(today); dt.setDate(dt.getDate() - d); days.push(dt.toISOString().slice(0, 10)); }
+    var byDay = {}; days.forEach(function(d){ byDay[d] = 0; });
+    var deptTot = {};
+    recs.forEach(function(r){
+      var pd = (r.prod_date || "").slice(0, 10);
+      var c = Number(r.cases) || 0;
+      if (byDay[pd] != null) byDay[pd] += c;
+      if (c) deptTot[r.dept || "?"] = (deptTot[r.dept || "?"] || 0) + c;
+    });
+    var vals = days.map(function(d){ return byDay[d]; });
+    var total = vals.reduce(function(a, b){ return a + b; }, 0);
+    var active = days.filter(function(d){ return byDay[d] > 0; }).length;
+    var avg = active ? Math.round(total / active) : 0;
+    var W = 700, H = 190, pl = 40, pr = 12, ptp = 14, pb = 30, iw = W - pl - pr, ih = H - ptp - pb;
+    var mx = Math.max(10, Math.max.apply(null, vals.length ? vals : [0]));
+    var bw = iw / days.length * 0.62;
+    var xf = function(i){ return pl + iw * (i + 0.5) / days.length; };
+    var yf = function(v){ return ptp + ih * (1 - v / mx); };
+    var grid = "", bars = "", lab = "";
+    [0, mx / 2, mx].forEach(function(g){ grid += '<line x1="' + pl + '" y1="' + yf(g).toFixed(1) + '" x2="' + (W - pr) + '" y2="' + yf(g).toFixed(1) + '" stroke="#EEF2F7"/><text x="' + (pl - 6) + '" y="' + (yf(g) + 3).toFixed(1) + '" text-anchor="end" font-size="9" fill="#9AA8B8">' + fmt(Math.round(g)) + '</text>'; });
+    var vmax = Math.max.apply(null, vals);
+    days.forEach(function(d, i){
+      var v = byDay[d], x = xf(i) - bw / 2, y = yf(v), h = ptp + ih - y;
+      var col = v > 0 ? (v === vmax ? "#F26722" : "#0B2138") : "#E6ECF2";
+      bars += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + Math.max(0, h).toFixed(1) + '" rx="2" fill="' + col + '"/>';
+      if (v === vmax && v > 0) bars += '<text x="' + xf(i).toFixed(1) + '" y="' + (y - 5).toFixed(1) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#F26722">' + fmt(v) + '</text>';
+      var md = d.slice(5).replace("-", "/");
+      lab += '<text x="' + xf(i).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="8.5" fill="#6B7A8C">' + md + '</text>';
+    });
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="Daily production cases">' + grid + bars + lab + '</svg>';
+    var deptKeys = Object.keys(deptTot).sort(function(a, b){ return deptTot[b] - deptTot[a]; });
+    var deptMap = { mix: "Mixing", pmac: "P-Mac", ful: "Fulfillment", retail: "Retail", ecom: "E-Commerce" };
+    var dmax = deptKeys.length ? deptTot[deptKeys[0]] : 1;
+    var deptBars = deptKeys.map(function(k){ var v = deptTot[k], p = Math.max(2, v / dmax * 100); return '<div style="display:flex;align-items:center;gap:10px;margin:3px 0"><div style="width:120px;flex:none;font-size:12.5px;font-weight:600;text-align:right">' + esc(deptMap[k] || k) + '</div><div style="flex:1;background:#EEF2F7;border-radius:5px;height:19px"><div style="width:' + p + '%;height:100%;border-radius:5px;background:#4C8FD6"></div></div><div style="width:70px;flex:none;font-size:12px;font-weight:700;text-align:right">' + fmt(v) + '</div></div>'; }).join("");
+    return '<div class="card"><div class="suprow"><h2 style="margin:0">&#128200; Production Trend &mdash; Last 14 Days</h2><span class="muted sm">Logged output</span></div>' +
+      '<div class="kpis"><div class="kpi"><div class="n">' + fmt(total) + '</div><div class="l">Cases (14 days)</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(avg) + '</div><div class="l">Avg / active day</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(active) + '</div><div class="l">Days with output</div></div></div>' +
+      '<div style="font-size:13px;font-weight:800;margin:8px 0 2px">Cases logged per day</div>' + svg +
+      (deptBars ? '<div style="font-size:13px;font-weight:800;margin:10px 0 2px">By department</div>' + deptBars : '<p class="hint">No production logged in this window yet.</p>') + '</div>';
+  }
+
   function viewAnalytics() {
     var oh = DB.stockBuild ? DB.stockBuild() : {};
     var on = function(i){ return Number((oh[i.key] || {}).on_hand) || 0; };
@@ -2351,7 +2410,7 @@
       '<div class="kpis"><div class="kpi"><div class="n">' + pct + '%</div><div class="l">Stock build to goal</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(low) + '</div><div class="l">Items low</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(out) + '</div><div class="l">Items out</div></div></div>' +
-      body + '</div>';
+      body + '</div>' + prodTrendCard() + ecOneFiveCard();
   }
 
   // ===== Disposition / Held Stock (older / short-dated / off-quality inventory awaiting disposition) =====
