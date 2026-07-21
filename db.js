@@ -1028,6 +1028,18 @@ window.DB = (function () {
     }
     emit();
   }
+  async function updateSupplierPO(id, patch, op) {
+    if (mode === "cloud") {
+      const r = await sb.from("supplier_pos").update(patch).eq("id", id).select();
+      if (r && r.error) return { ok: false, msg: r.error.message || "update failed" };
+      await cloud.loadAll();
+    } else {
+      const s = (cache.supplierPos || []).find(x => String(x.id) === String(id));
+      if (s) Object.assign(s, patch);
+      local.save();
+    }
+    emit(); return { ok: true };
+  }
   // Email a Supplier PO to the vendor via the same Supabase Edge Function relay used for R&D
   // requests (which holds the Resend key). payload: { to, cc, subject, html }. Returns {ok, msg}.
   // Degrades gracefully: if the relay isn't configured/reachable, the UI falls back to mailto.
@@ -1502,7 +1514,7 @@ window.DB = (function () {
     fulfillmentDaily, saveFulfillmentDaily, deleteFulfillmentDaily,
     orders, createOrder, updateOrder, setOrderStatus, deleteOrder, notifyNewOrder,
     rdRequests, createRdRequest, updateRdRequest, setRdStatus, deleteRdRequest, sendRdEmail,
-    supplierPos, createSupplierPO, deleteSupplierPO, emailPO,
+    supplierPos, createSupplierPO, updateSupplierPO, deleteSupplierPO, emailPO,
     orderDocs, createOrderDoc, deleteOrderDoc,
     referenceDocs, createRefDoc, deleteRefDoc,
     consumption, consume,

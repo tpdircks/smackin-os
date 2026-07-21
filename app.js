@@ -137,7 +137,7 @@
       mtWaitingOn:"Waiting on", mtWaitingOnP:"e.g. part on order, vendor quote, approval", mtRequestedBy:"Requested by", mtRequestedByP:"Who's asking",
       mtReopen:"Reopen", mtNoActive:"Nothing active. Add a request above.", mtNoDone:"No completed items yet.", mtSearchP:"Search title, area, assignee...", mtConfirmDel:"Delete this item?",
       mtKpiRequested:"Requested", mtKpiInProgress:"In progress", mtKpiWaiting:"Waiting (blocked)", mtKpiDone:"Done",
-      poCreate:"+ Create PO", poNewTitle:"New Purchase Order", poVendorAddr:"Vendor address", poVendorEmail:"Vendor email", poVendorPhone:"Vendor phone", poShipTo:"Ship to", poPreparedBy:"Prepared by", poAddLine:"+ Add line", poItemNo:"Item #", poDesc:"Description", poQtyL:"Qty", poPriceL:"Price", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Shipping", poTaxL:"Tax", poOtherL:"Other", poGrandL:"Total", poSaveBtn:"Save PO", poBackList:"Back to list", poSavedMsg:"PO saved", poNeedVendor:"Enter a vendor first",
+      poCreate:"+ Create PO", nonPoBtn:"Log purchase (no PO)", nonPoTitle:"Log a purchase (no PO)", nonPoHint:"For quick buys that don't need a formal PO - still saved to the archive and tagged No PO.", nonPoDesc:"What was purchased", nonPoAmount:"Amount", nonPoBy:"Purchased by", nonPoTag:"No PO", poExpectedEdit:"Expected / lead time", poEtaSaved:"Expected date updated", poNewTitle:"New Purchase Order", poVendorAddr:"Vendor address", poVendorEmail:"Vendor email", poVendorPhone:"Vendor phone", poShipTo:"Ship to", poPreparedBy:"Prepared by", poAddLine:"+ Add line", poItemNo:"Item #", poDesc:"Description", poQtyL:"Qty", poPriceL:"Price", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Shipping", poTaxL:"Tax", poOtherL:"Other", poGrandL:"Total", poSaveBtn:"Save PO", poBackList:"Back to list", poSavedMsg:"PO saved", poNeedVendor:"Enter a vendor first",
       poEmail:"Email PO", poEmailTo:"To", poEmailSubjectL:"Subject", poEmailSubjectTpl:"Purchase Order", poEmailBody:"Message", poEmailSend:"Send email", poEmailCopy:"Copy PO summary",
       poEmailHint:"If email sending isn't set up yet, Send will open this in your email app instead - the PO file link is included in the message so you can attach/share it.",
       poEmailNeedTo:"Enter the vendor's email first", poEmailSending:"Sending...", poEmailOk:"PO emailed", poEmailCopied:"Copied to clipboard",
@@ -291,7 +291,7 @@
       mtWaitingOn:"Esperando por", mtWaitingOnP:"ej. pieza pedida, cotizacion del proveedor, aprobacion", mtRequestedBy:"Solicitado por", mtRequestedByP:"Quien lo solicita",
       mtReopen:"Reabrir", mtNoActive:"Nada activo. Agregue una solicitud arriba.", mtNoDone:"Aun no hay elementos completados.", mtSearchP:"Buscar titulo, area, asignado...", mtConfirmDel:"Eliminar este elemento?",
       mtKpiRequested:"Solicitados", mtKpiInProgress:"En curso", mtKpiWaiting:"Esperando (bloqueado)", mtKpiDone:"Hechos",
-      poCreate:"+ Crear OC", poNewTitle:"Nueva Orden de Compra", poVendorAddr:"Direccion del proveedor", poVendorEmail:"Correo del proveedor", poVendorPhone:"Telefono del proveedor", poShipTo:"Enviar a", poPreparedBy:"Preparado por", poAddLine:"+ Agregar linea", poItemNo:"Articulo #", poDesc:"Descripcion", poQtyL:"Cant", poPriceL:"Precio", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Envio", poTaxL:"Impuesto", poOtherL:"Otro", poGrandL:"Total", poSaveBtn:"Guardar OC", poBackList:"Volver a la lista", poSavedMsg:"OC guardada", poNeedVendor:"Ingrese un proveedor primero",
+      poCreate:"+ Crear OC", nonPoBtn:"Registrar compra (sin OC)", nonPoTitle:"Registrar una compra (sin OC)", nonPoHint:"Para compras rapidas que no necesitan una OC formal - igual se guardan en el archivo y se etiquetan Sin OC.", nonPoDesc:"Que se compro", nonPoAmount:"Monto", nonPoBy:"Comprado por", nonPoTag:"Sin OC", poExpectedEdit:"Esperado / tiempo de entrega", poEtaSaved:"Fecha esperada actualizada", poNewTitle:"Nueva Orden de Compra", poVendorAddr:"Direccion del proveedor", poVendorEmail:"Correo del proveedor", poVendorPhone:"Telefono del proveedor", poShipTo:"Enviar a", poPreparedBy:"Preparado por", poAddLine:"+ Agregar linea", poItemNo:"Articulo #", poDesc:"Descripcion", poQtyL:"Cant", poPriceL:"Precio", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Envio", poTaxL:"Impuesto", poOtherL:"Otro", poGrandL:"Total", poSaveBtn:"Guardar OC", poBackList:"Volver a la lista", poSavedMsg:"OC guardada", poNeedVendor:"Ingrese un proveedor primero",
       poEmail:"Enviar OC por correo", poEmailTo:"Para", poEmailSubjectL:"Asunto", poEmailSubjectTpl:"Orden de Compra", poEmailBody:"Mensaje", poEmailSend:"Enviar correo", poEmailCopy:"Copiar resumen de OC",
       poEmailHint:"Si el envio de correo aun no esta configurado, Enviar abrira esto en su aplicacion de correo - el enlace del archivo de la OC va incluido en el mensaje para que lo pueda adjuntar/compartir.",
       poEmailNeedTo:"Ingrese primero el correo del proveedor", poEmailSending:"Enviando...", poEmailOk:"OC enviada por correo", poEmailCopied:"Copiado al portapapeles",
@@ -445,7 +445,7 @@
       mtWaitingOn:"Aguardando", mtWaitingOnP:"ex. peca em pedido, orcamento do fornecedor, aprovacao", mtRequestedBy:"Solicitado por", mtRequestedByP:"Quem esta solicitando",
       mtReopen:"Reabrir", mtNoActive:"Nada ativo. Adicione uma solicitacao acima.", mtNoDone:"Nenhum item concluido ainda.", mtSearchP:"Buscar titulo, area, responsavel...", mtConfirmDel:"Excluir este item?",
       mtKpiRequested:"Solicitados", mtKpiInProgress:"Em andamento", mtKpiWaiting:"Aguardando (bloqueado)", mtKpiDone:"Concluidos",
-      poCreate:"+ Criar OC", poNewTitle:"Nova Ordem de Compra", poVendorAddr:"Endereco do fornecedor", poVendorEmail:"Email do fornecedor", poVendorPhone:"Telefone do fornecedor", poShipTo:"Enviar para", poPreparedBy:"Preparado por", poAddLine:"+ Adicionar linha", poItemNo:"Item #", poDesc:"Descricao", poQtyL:"Qtd", poPriceL:"Preco", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Frete", poTaxL:"Imposto", poOtherL:"Outro", poGrandL:"Total", poSaveBtn:"Salvar OC", poBackList:"Voltar a lista", poSavedMsg:"OC salva", poNeedVendor:"Insira um fornecedor primeiro",
+      poCreate:"+ Criar OC", nonPoBtn:"Registrar compra (sem OC)", nonPoTitle:"Registrar uma compra (sem OC)", nonPoHint:"Para compras rapidas que nao precisam de uma OC formal - ainda salvas no arquivo e marcadas Sem OC.", nonPoDesc:"O que foi comprado", nonPoAmount:"Valor", nonPoBy:"Comprado por", nonPoTag:"Sem OC", poExpectedEdit:"Esperado / prazo", poEtaSaved:"Data esperada atualizada", poNewTitle:"Nova Ordem de Compra", poVendorAddr:"Endereco do fornecedor", poVendorEmail:"Email do fornecedor", poVendorPhone:"Telefone do fornecedor", poShipTo:"Enviar para", poPreparedBy:"Preparado por", poAddLine:"+ Adicionar linha", poItemNo:"Item #", poDesc:"Descricao", poQtyL:"Qtd", poPriceL:"Preco", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Frete", poTaxL:"Imposto", poOtherL:"Outro", poGrandL:"Total", poSaveBtn:"Salvar OC", poBackList:"Voltar a lista", poSavedMsg:"OC salva", poNeedVendor:"Insira um fornecedor primeiro",
       poEmail:"Enviar OC por email", poEmailTo:"Para", poEmailSubjectL:"Assunto", poEmailSubjectTpl:"Ordem de Compra", poEmailBody:"Mensagem", poEmailSend:"Enviar email", poEmailCopy:"Copiar resumo da OC",
       poEmailHint:"Se o envio de email ainda nao estiver configurado, Enviar vai abrir isto no seu aplicativo de email - o link do arquivo da OC esta incluido na mensagem para voce anexar/compartilhar.",
       poEmailNeedTo:"Insira primeiro o email do fornecedor", poEmailSending:"Enviando...", poEmailOk:"OC enviada por email", poEmailCopied:"Copiado para a area de transferencia",
@@ -1340,6 +1340,7 @@
   function viewSupplierPos() {
     if (spoDetailId) return viewPoDetail(spoDetailId);
     if (spoView === "create") return viewPoCreate();
+    if (spoView === "nonpo") return viewNonPo();
     const list = spoSortList(DB.supplierPos());
     let form;
     if (!spoParsed) {
@@ -1362,13 +1363,15 @@
       const txt = ((s.vendor || "") + " " + (s.po_num || "") + " " + (s.file_name || "")).toLowerCase().replace(/"/g, "");
       const dl = s.file_url ? '<a class="order sm" href="' + s.file_url + '" target="_blank" rel="noopener">' + L("spoDownload") + '</a>' : (s.file_name ? '<span class="muted sm">' + s.file_name + '</span>' : "&mdash;");
       const poCell = '<a class="polink" onclick="UI.spoOpen(\'' + s.id + '\')" title="' + L("spoOpenDetails") + '">' + (s.po_num || L("spoView2")) + '</a>';
-      return '<tr data-txt="' + txt + '"><td><b>' + (s.vendor || "&mdash;") + '</b>' + (s.uploaded_by ? '<div class="muted sm">' + L("oByPrefix") + " " + s.uploaded_by + '</div>' : "") + '</td>' +
+      const _np = /^NP-/.test(s.po_num || ""); const _eta = etaOfNotes(s.notes);
+      const _tags = (_np ? ' <span class="pill">' + L("nonPoTag") + '</span>' : "") + (_eta ? ' <span class="pill low">ETA ' + _eta.slice(5).replace("-", "/") + '</span>' : "");
+      return '<tr data-txt="' + txt + '"><td><b>' + (s.vendor || "&mdash;") + '</b>' + _tags + (s.uploaded_by ? '<div class="muted sm">' + L("oByPrefix") + " " + s.uploaded_by + '</div>' : "") + '</td>' +
         '<td>' + poCell + '</td><td class="sm">' + (s.po_date || "") + '</td>' +
         '<td class="right">' + money(s.total) + '</td><td class="right muted">' + (s.item_count || 0) + '</td>' +
         '<td>' + dl + '</td><td><button class="ghost sm" title="' + L("poEmail") + '" onclick="UI.poEmailFromList(\'' + s.id + '\')">&#9993;</button> <button class="ghost sm danger" onclick="UI.spoDelete(\'' + s.id + '\')">&#10005;</button></td></tr>';
     }).join("") : '<tr><td colspan="7" class="muted">' + L("spoNone") + '</td></tr>';
     return '<div class="card"><div class="spohead"><h2>' + L("purchPOs") + '</h2>' +
-      '<button class="primary sm" onclick="UI.poCreateOpen()">' + L("poCreate") + '</button></div>' +
+      '<span><button class="primary sm" onclick="UI.poCreateOpen()">' + L("poCreate") + '</button> <button class="ghost sm" onclick="UI.nonPoOpen()">' + L("nonPoBtn") + '</button></span></div>' +
       '<p class="hint">' + L("spoHint") + '</p>' + form + '</div>' +
       '<div class="card"><h2 class="sub2">' + L("spoList") + ' (' + list.length + ')</h2>' +
       '<input id="spoSearch" autocomplete="off" oninput="UI.spoSearch(this.value)" placeholder="' + L("spoSearchP") + '" style="margin-bottom:10px">' +
@@ -1382,6 +1385,10 @@
   }
   // Parse a supplier PO's line items defensively (imports & Create-PO use slightly different keys).
   // Shared by the detail table render and the Email PO summary builder.
+  // ETA / lead-time is stored inside the PO notes as a [[ETA:YYYY-MM-DD]] token (no schema change).
+  function etaOfNotes(n){ var m=/\[\[ETA:(\d{4}-\d{2}-\d{2})\]\]/.exec(n||""); return m?m[1]:""; }
+  function notesClean(n){ return String(n||"").replace(/\s*\[\[ETA:\d{4}-\d{2}-\d{2}\]\]\s*/,"").trim(); }
+  function notesWithEta(n,eta){ var base=notesClean(n); return eta?("[[ETA:"+eta+"]]"+(base?" "+base:"")):base; }
   function poLinesOf(s) {
     let lines = [];
     try { const p = typeof s.lines === "string" ? JSON.parse(s.lines || "[]") : (s.lines || []); if (Array.isArray(p)) lines = p; } catch (e) {}
@@ -1449,7 +1456,8 @@
     const info = fld(L("spoVendor"), s.vendor) + fld(L("spoPO"), s.po_num) + fld(L("spoDate"), s.po_date) +
       fld(L("poVendorAddr"), s.vendor_addr) + fld(L("poVendorEmail"), s.vendor_email) + fld(L("poVendorPhone"), s.vendor_phone) +
       fld(L("poShipTo"), s.ship_to) + fld(L("poPreparedBy"), s.prepared_by) + fld(L("spoUploadedBy"), s.uploaded_by) +
-      fld(L("when"), s.created_at ? String(s.created_at).slice(0, 10) : "");
+      fld(L("when"), s.created_at ? String(s.created_at).slice(0, 10) : "") +
+      '<div class="podf"><span class="podl">' + L("poExpectedEdit") + '</span><span class="podv"><input type="date" value="' + esc(etaOfNotes(s.notes)) + '" onchange="UI.spoSetEta(\'' + s.id + '\',this.value)"></span></div>';
     const totalsRows =
       (s.subtotal != null && s.subtotal !== "" ? '<div><span>' + L("poSubtotalL") + '</span><b>' + money(s.subtotal) + '</b></div>' : "") +
       (s.shipping != null && s.shipping !== "" ? '<div><span>' + L("poShippingL") + '</span><b>' + money(s.shipping) + '</b></div>' : "") +
@@ -1468,7 +1476,7 @@
       '<div class="card"><h2 class="sub2">' + L("spoItems") + ' (' + lines.length + ')</h2>' +
       '<table class="potable"><thead><tr><th>' + L("poItemNo") + '</th><th>' + L("poDesc") + '</th><th class="right">' + L("poQtyL") + '</th><th class="right">' + L("poPriceL") + '</th><th class="right">' + L("poLineTot") + '</th></tr></thead><tbody>' + lineRows + '</tbody></table>' +
       '<div class="pototals" style="margin-top:12px">' + totalsRows + '</div>' +
-      (s.notes ? '<h3 class="sub2" style="margin-top:14px">' + L("spoNotes") + '</h3><p>' + esc(s.notes) + '</p>' : "") + '</div>';
+      (notesClean(s.notes) ? '<h3 class="sub2" style="margin-top:14px">' + L("spoNotes") + '</h3><p>' + esc(notesClean(s.notes)) + '</p>' : "") + '</div>';
   }
   function poRowInner(i) {
     return '<td><input id="pl-item-' + i + '" autocomplete="off"></td>' +
@@ -1476,6 +1484,21 @@
       '<td><input id="pl-qty-' + i + '" type="number" min="0" step="any" inputmode="decimal" oninput="UI.poRecalc()"></td>' +
       '<td><input id="pl-price-' + i + '" type="number" min="0" step="any" inputmode="decimal" oninput="UI.poRecalc()"></td>' +
       '<td class="right"><span id="pl-tot-' + i + '">$0.00</span></td>';
+  }
+  function viewNonPo() {
+    var vendors = Array.from(new Set(DB.supplierPos().map(x => x.vendor).filter(Boolean))).sort();
+    var dl = '<datalist id="dl-np-vendor">' + vendors.map(v => '<option value="' + esc(v) + '"></option>').join("") + '</datalist>';
+    var today = new Date().toISOString().slice(0, 10);
+    return dl + '<div class="card"><div class="spohead"><h2>' + L("nonPoTitle") + '</h2>' +
+      '<button class="ghost sm" onclick="UI.nonPoBack()">' + L("poBackList") + '</button></div>' +
+      '<p class="hint">' + L("nonPoHint") + '</p>' +
+      '<div class="row"><div><label>' + L("spoVendor") + '</label><input id="np-vendor" list="dl-np-vendor" autocomplete="off"></div>' +
+      '<div><label>' + L("nonPoAmount") + '</label><input id="np-amount" type="number" min="0" step="any" inputmode="decimal"></div>' +
+      '<div><label>' + L("spoDate") + '</label><input id="np-date" type="date" value="' + today + '"></div></div>' +
+      '<div><label>' + L("nonPoDesc") + '</label><input id="np-desc" autocomplete="off"></div>' +
+      '<div class="row" style="margin-top:10px"><div><label>' + L("nonPoBy") + '</label><select id="np-by">' + PO_PREPARERS.map(n => "<option>" + n + "</option>").join("") + '</select></div>' +
+      '<div><label>' + L("spoNotes") + '</label><input id="np-notes" autocomplete="off"></div></div>' +
+      '<button class="primary" onclick="UI.nonPoSave()">' + L("poSaveBtn") + '</button></div>';
   }
   function viewPoCreate() {
     const vendors = Array.from(new Set(DB.supplierPos().map(s => s.vendor).filter(Boolean))).sort();
@@ -2470,12 +2493,12 @@
       '<td class="sm">' + esc(d.status) + (d.note ? '<div class="muted sm">' + esc(d.note) + '</div>' : '') + '</td></tr>'; }).join("");
     var units = 20700 + 5000 + 5200, lbs = 800 + 2700;
     return '<div class="card"><h2>&#128230; Disposition / Held Stock</h2>' +
-      '<p class="hint">Older, short-dated, or off-quality inventory pulled from normal stock and held for disposition (sell-off, rework, or scrap). Snapshot from Adriana’s 7/21 inventory update - live editable tracking coming next.</p>' +
+      '<p class="hint">Older, short-dated, or off-quality inventory pulled from normal stock and held for disposition (sell-off, rework, or scrap). Confirmed with Adriana 7/21 - live editable tracking coming next.</p>' +
       '<div class="kpis"><div class="kpi"><div class="n">' + fmt(units) + '</div><div class="l">Off-quality units (LP)</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(lbs) + '</div><div class="l">Expired seasoning (lbs)</div></div>' +
       '<div class="kpi"><div class="n">' + DISPOSITION_ITEMS.length + '</div><div class="l">Held line items</div></div></div>' +
       '<table class="sortable" style="margin-top:12px"><thead><tr><th>Item</th><th class="right">Qty</th><th>Date / Exp</th><th>Reason</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-      '<p class="hint" style="margin-top:10px">&#9888;&#65039; Confirm with Adriana whether the 30,900 Lemon Pepper (Aug/Sep/Nov 2026) is finished bags or seasoning before we finalize the sell-off.</p></div>';
+      '<p class="hint" style="margin-top:10px">&#10003; Confirmed by Adriana 7/21: the 30,900 Lemon Pepper (Aug/Sep/Nov 2026) are FINISHED BAGS pulled for off-flavor - separate from the good 2027 LP and from the expired seasoning lots.</p></div>';
   }
 
   function viewPurchasing() {
@@ -2483,6 +2506,7 @@
     if (purchMode === "new") return viewPONew();            // reorder draft PO (from Buy List)
     if (spoDetailId) return viewPoDetail(spoDetailId);      // PO archive detail
     if (spoView === "create") return viewPoCreate();        // manual Create PO form (Michelle)
+    if (spoView === "nonpo") return viewNonPo();            // non-PO purchase log
     const tab = (purchView === "buy" || purchView === "setup") ? purchView : "po";
     const tbtn = (v, lbl) => '<button class="' + (tab === v ? "active" : "") + '" onclick="UI.purchView(\'' + v + '\')">' + lbl + '</button>';
     const toggle = '<div class="ordtabs" style="margin:0">' + tbtn("po", L("purchPOs")) + tbtn("buy", L("purchBuyList")) + tbtn("setup", L("purchSetup")) + '</div>';
@@ -4340,6 +4364,27 @@
     // ---- Create PO (Excel-style entry form) ----
     poCreateOpen() { spoView = "create"; poRows = 4; render(); },
     poCreateBack() { spoView = "list"; render(); },
+    nonPoOpen() { spoView = "nonpo"; render(); },
+    nonPoBack() { spoView = "list"; render(); },
+    async nonPoSave() {
+      const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
+      const vendor = v("np-vendor"); if (!vendor) return toast(L("poNeedVendor"));
+      const desc = v("np-desc"), extra = v("np-notes");
+      const seq = Math.random().toString(36).slice(2, 5).toUpperCase();
+      const pnum = "NP-" + (v("np-date") || "").replace(/-/g, "").slice(2) + "-" + seq;
+      const rec = { vendor: vendor, po_num: pnum, po_date: v("np-date"), total: v("np-amount"),
+        item_count: 0, lines: "", prepared_by: v("np-by"), uploaded_by: v("np-by"),
+        notes: (desc || "") + (extra ? " - " + extra : "") };
+      const res = await DB.createSupplierPO(rec, null, rec.prepared_by);
+      if (res && res.ok === false) return toast(res.msg || "save failed");
+      toast(L("poSavedMsg")); spoView = "list"; render();
+    },
+    async spoSetEta(id, val) {
+      const s = DB.supplierPos().find(x => String(x.id) === String(id)); if (!s) return;
+      const res = await DB.updateSupplierPO(id, { notes: notesWithEta(s.notes, val) }, opVal());
+      if (res && res.ok === false) return toast(res.msg || "save failed");
+      toast(L("poEtaSaved")); render();
+    },
     poAddLine() { const tb = $("po-lines"); if (!tb) return; const i = tb.querySelectorAll("tr").length; const tr = document.createElement("tr"); tr.innerHTML = poRowInner(i); tb.appendChild(tr); },
     poRecalc() {
       let sub = 0;
