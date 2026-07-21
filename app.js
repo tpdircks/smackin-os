@@ -39,7 +39,7 @@
       locMap:"Rack map", locList:"List", locFloor:"Floor plan", locOccupied:"Occupied", locEmpty:"Empty", locBlocked:"Blocked", locSection:"Section", locDocks:"Dock doors", locZones:"Zones & staging", locClickHint:"Top-down view of the racks. Green = occupied, click any slot to see what is stored there. Bay 01 is at the dock end.", locNothing:"Nothing stored in this slot.",lmMove:"Move",lmSet:"Fix count",lmAddItem:"Add item",lmAssign:"Place item here",lmEmpty:"Clear to Staging",lmClearConfirm:"Move all items to STAGING from",lmMoveTitle:"Move item to another location",lmSetTitle:"Correct the count",lmAssignTitle:"Place an item in this location",lmDest:"Move to (location)",lmMoveBtn:"Move",lmAssignBtn:"Place here",lmEmptyConfirm:"Remove ALL items from",lmEmptied:"emptied", locSlot:"Slot", locBaysUsed:"slots used", locOfficeEnd:"office end", locFarEnd:"far end", locView3d:"View in 3D",
       locFloorNote:"Top-down map of the building - every place product is stored or moves through. Click a rack section or staging zone to see its contents. Section A/B/C/D letters are a best guess - tell me which physical run is which and I will lock them in.", locStorage:"Storage (racking)", locTransfer:"Production & transfer areas", locStaging:"Staging & work zones",
       reorderSug:"Reorder suggestions", purchOrders:"Purchase orders", newPO:"New PO", createDraft:"Create draft PO",
-      chooseSupplier:"Supplier", poExpected:"Expected", poCost:"Unit cost", addLines:"Set quantities to order (0 = skip).",
+      chooseSupplier:"Supplier", poExpected:"Expected", poCost:"Unit cost", addLines:"Enter a quantity only for what you are ordering now - leave the rest blank.",
       savePO:"Save draft PO", markOrdered:"Mark as ordered", receivePO:"Receive", confirmReceipt:"Confirm receipt",
       cancelPO:"Cancel PO", deletePO:"Delete", backList:"Back", orderedQ:"Ordered", received:"Received", outstanding:"Outstanding",
       noPOs:"No purchase orders yet.", poCreated:"PO created", poTotal:"Est. total", recvNow:"Receive now",
@@ -859,6 +859,7 @@
 
   // ---------- edit lock (PIN) — viewing is open, changes require the PIN ----------
   const EDIT_PIN = "2210";
+  const PURCH_PIN = "0470"; // Purchasing area (Michelle/Matt/Troy)
   let unlocked = (function(){ try { return sessionStorage.getItem("smk_unlocked") === "1"; } catch (e) { return false; } })();
   function lockEdits() { unlocked = false; try { sessionStorage.removeItem("smk_unlocked"); } catch (e) {} toast(L("locked")); render(); }
   function pinPrompt() {
@@ -881,7 +882,7 @@
     if (unlocked) return true;
     const v = await pinPrompt();
     if (v === null) return false;
-    if (v === EDIT_PIN) { unlocked = true; try { sessionStorage.setItem("smk_unlocked", "1"); } catch (e) {} toast(L("unlocked")); render(); return true; }
+    if (v === EDIT_PIN || v === PURCH_PIN) { unlocked = true; try { sessionStorage.setItem("smk_unlocked", "1"); } catch (e) {} toast(L("unlocked")); render(); return true; }
     toast(L("pinWrong")); return false;
   }
 
@@ -892,6 +893,10 @@
   }
   // Same as opField but with a caller-chosen id — needed when more than one operator
   // field appears on the same page (e.g. the Now Running board has one per section).
+  function opFieldPurch(def) {
+    return '<label>' + L("operator") + '</label><select id="op">' +
+      ["Michelle","Matt","Troy"].map(n => '<option' + (n === def ? ' selected' : '') + '>' + n + "</option>").join("") + "</select>";
+  }
   function opFieldFor(id, def) {
     return '<label>' + L("operator") + '</label><select id="' + id + '">' +
       ["Jesus","Adriana","Marlin","Edgar","Troy"].map(n => '<option' + (n === def ? ' selected' : '') + '>' + n + "</option>").join("") + "</select>";
@@ -2399,18 +2404,19 @@
       const sugg = statusOf(i) !== "ok" ? suggestQty(i) : "";
       return '<tr><td>' + i.name + '<div class="muted sm">' + i.code + '</div></td>' +
         '<td class="right muted">' + fmt(DB.onHand(i.id)) + ' ' + i.unit + '</td>' +
-        '<td><input id="poq-' + i.id + '" type="number" min="0" value="' + sugg + '"></td>' +
+        '<td><input id="poq-' + i.id + '" type="number" min="0" value="" placeholder="' + (sugg || "") + '"></td>' +
         '<td><input id="poc-' + i.id + '" type="number" min="0" step="0.01" placeholder="0.00"></td></tr>';
     }).join("");
     return '<div class="card"><div class="suprow"><h2>' + L("newPO") + '</h2>' +
       '<button class="ghost sm" onclick="UI.poBack()">' + L("backList") + '</button></div>' +
       '<div class="row"><div><label>' + L("chooseSupplier") + '</label><select id="po-sup" onchange="UI.poSupChange()">' + supOpts + '</select></div>' +
-      '<div><label>' + L("poExpected") + '</label><input id="po-exp" type="date"></div></div>' +
+      '<div><label>PO date (issued)</label><input type="date" value="' + new Date().toISOString().slice(0,10) + '" disabled></div>' +
+      '<div><label>' + L("poExpected") + ' (optional - add when supplier confirms lead time)</label><input id="po-exp" type="date"></div></div>' +
       '<p class="hint">' + L("addLines") + '</p>' +
       (supItems.length
         ? '<table><thead><tr><th>' + L("item") + '</th><th class="right">' + L("onhand") + '</th><th>' + L("qty") + '</th><th>' + L("poCost") + ' $</th></tr></thead><tbody>' + rows + '</tbody></table>'
         : '<p class="muted">&mdash;</p>') +
-      opField() + '<button class="primary" onclick="UI.poSave()">' + L("savePO") + '</button></div>';
+      opFieldPurch() + '<button class="primary" onclick="UI.poSave()">' + L("savePO") + '</button></div>';
   }
   function viewLabels() {
     return '<div class="card"><h2>' + L("labels") + '</h2><p class="hint">' + L("labelsHint") + '</p>' +
