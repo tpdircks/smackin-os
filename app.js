@@ -26,11 +26,20 @@
       moveHint:"Scan item, pick from and to (slot, WIP, Pack-Out, Shipping...).",
       produceHint:"Record finished 4oz bags off the line. Adds bags, consumes film + seasoning.",
       countHint:"Cycle count: scan item + slot, enter the counted quantity; the system adjusts.",
-      locHint:"What is in each location now.", purchHint:"Reorder alerts plus full purchase orders.",purchBuyList:"Buy List",purchSetup:"Reorder Setup",rsHint:"Set a reorder point and preferred supplier for each item. Items with both set will trigger on the Buy List when stock runs low.",rsNoSup:"— none —",rsNeeds:"Needs setup",rsReady:"Ready",rsReorderPt:"Reorder point",rsNeedShort:"need setup",rsSaved:"Saved",rsSearchP:"Search items...",prodlog:"Daily Production",bags:"Bags",plLot:"Lot #",plShiftLead:"Shift Lead",plCounter:"Metal Detector Box Counter",plStart:"Start Count",plEnd:"End Count",plBoxes:"Boxes Produced",plCounterHint:"Record the counter BEFORE and AFTER the shift. Do not reset it.",plAddPallet:"Add Pallet",plLine:"Line",plFlavor:"Flavor",plCases:"Cases",plNotes:"Notes / Customer",plAdd:"Add to log",plAdded:"Pallet added",plNeedCases:"Enter case count",plLog:"Pallet Log",plPalletsUsed:"Pallets Used",plNoPallets:"No pallets logged yet today.",plSummary:"Daily Summary by Flavor",plCode:"Code",plCasesLogged:"Cases Logged",plVariance:"Variance (counter - log)",plToday:"Today",plDaySummary:"Summary",plTodaySummary:"Today's Summary",plRecentDays:"Recent Days",plRecentHint:"Click a day to open it.",plRecentNone:"No prior days logged yet.",plDate2:"Date",plColBoxes:"Boxes",plColCases:"Cases",plColVar:"Variance",
+      locHint:"What is in each location now.", purchHint:"Reorder alerts plus full purchase orders.",purchPOs:"Purchase Orders",purchBuyList:"Buy List",purchSetup:"Reorder Setup",rsHint:"Set a reorder point and preferred supplier for each item. Items with both set will trigger on the Buy List when stock runs low.",rsNoSup:"— none —",rsNeeds:"Needs setup",rsReady:"Ready",rsReorderPt:"Reorder point",rsNeedShort:"need setup",rsSaved:"Saved",rsSearchP:"Search items...",prodlog:"Daily Production",bags:"Bags",plLot:"Lot #",plLotPh:"e.g. L2451, L2452",plLotHint:"Multiple lots? Separate with commas.",plDayNotesHint:"Anything special about today's run - customers, issues, custom builds.",plShiftLead:"Shift Lead",plCounter:"Metal Detector Box Counter",plStart:"Start Count",plEnd:"End Count",plBoxes:"Boxes Produced",plCounterHint:"Record the counter BEFORE and AFTER the shift. Do not reset it.",plAddPallet:"Add Pallet",plLine:"Line",plFlavor:"Flavor",plCases:"Cases",plNotes:"Notes / Customer",plAdd:"Add to log",plAdded:"Pallet added",plNeedCases:"Enter case count",plLog:"Pallet Log",plPalletsUsed:"Pallets Used",plNoPallets:"No pallets logged yet today.",plSummary:"Daily Summary by Flavor",plCode:"Code",plCasesLogged:"Cases Logged",plVariance:"Variance (counter - log)",plToday:"Today",plRecentDays:"Recent Days",plRecentHint:"Click a day to open it.",plRecentNone:"No prior days logged yet.",plDate2:"Date",plColBoxes:"Boxes",plColCases:"Cases",plColVar:"Variance",
+      fulfilldaily:"Daily Fulfillment", fdHint:"Log today's E-Commerce labels and Amazon (FBA) build output, plus notes on any custom/unique orders. Saved per day - also acts as a backup and double-check while automation is built out.",
+      fdDate:"Date", fdEcomTitle:"E-Commerce - Labels per Person", fdEcomHint:"One row per person who worked e-com labels today. The day's total is the sum of everyone's labels.",
+      fdEmployee:"Employee", fdPickEmployee:"Pick a person...", fdLabelsDone:"# Labels Done", fdAddPerson:"+ Add person", fdEcomLabelsTotal:"E-Com Labels Total",
+      fdAmzTitle:"Amazon (FBA)", fdAmzHint:"Pick a SKU (or add a custom one) and the units made. Bags = units x bags/unit - counted separately from e-com labels.",
+      fdSku:"SKU", fdPickSku:"Pick a SKU...", fdCustomSku:"+ Custom SKU...", fdCustomSkuPh:"Enter SKU", fdUnitsMade:"Units Made", fdBagsPerUnit:"Bags / Unit", fdBags:"Bags",
+      fdAddSku:"+ Add SKU", fdAmzUnitsTotal:"Amazon Units Total", fdAmzBagsTotal:"Amazon Bags Total",
+      fdNotesTitle:"Notes", fdNotesHint:"Custom / unique builds or anything special about today's orders.", fdNotesPh:"Notes...",
+      fdSave:"Save Day", fdSaved:"Daily Fulfillment saved", fdSummary:"Today's Summary", fdHistory:"Recent Days", fdNoHistory:"No days logged yet.",
+      fdRemove:"Remove", fdDeleteConfirm:"Delete this day's entry?", fdHistDate:"Date", fdHistEcom:"E-Com Labels", fdHistAmzBags:"Amazon Bags", fdHistNotes:"Notes", fdHistBy:"Entered by",
       locMap:"Rack map", locList:"List", locFloor:"Floor plan", locOccupied:"Occupied", locEmpty:"Empty", locBlocked:"Blocked", locSection:"Section", locDocks:"Dock doors", locZones:"Zones & staging", locClickHint:"Top-down view of the racks. Green = occupied, click any slot to see what is stored there. Bay 01 is at the dock end.", locNothing:"Nothing stored in this slot.",lmMove:"Move",lmSet:"Fix count",lmAddItem:"Add item",lmAssign:"Place item here",lmEmpty:"Clear to Staging",lmClearConfirm:"Move all items to STAGING from",lmMoveTitle:"Move item to another location",lmSetTitle:"Correct the count",lmAssignTitle:"Place an item in this location",lmDest:"Move to (location)",lmMoveBtn:"Move",lmAssignBtn:"Place here",lmEmptyConfirm:"Remove ALL items from",lmEmptied:"emptied", locSlot:"Slot", locBaysUsed:"slots used", locOfficeEnd:"office end", locFarEnd:"far end", locView3d:"View in 3D",
       locFloorNote:"Top-down map of the building - every place product is stored or moves through. Click a rack section or staging zone to see its contents. Section A/B/C/D letters are a best guess - tell me which physical run is which and I will lock them in.", locStorage:"Storage (racking)", locTransfer:"Production & transfer areas", locStaging:"Staging & work zones",
       reorderSug:"Reorder suggestions", purchOrders:"Purchase orders", newPO:"New PO", createDraft:"Create draft PO",
-      chooseSupplier:"Supplier", poExpected:"Expected", poCost:"Unit cost", addLines:"Set quantities to order (0 = skip).",
+      chooseSupplier:"Supplier", poExpected:"Expected", poCost:"Unit cost", addLines:"Enter a quantity only for what you are ordering now - leave the rest blank.",
       savePO:"Save draft PO", markOrdered:"Mark as ordered", receivePO:"Receive", confirmReceipt:"Confirm receipt",
       cancelPO:"Cancel PO", deletePO:"Delete", backList:"Back", orderedQ:"Ordered", received:"Received", outstanding:"Outstanding",
       noPOs:"No purchase orders yet.", poCreated:"PO created", poTotal:"Est. total", recvNow:"Receive now",
@@ -46,7 +55,7 @@
       noLots:"No seasoning lots yet.", markQuar:"Quarantine", markGood:"Mark good", expiredTag:"EXPIRED", quarTag:"QUARANTINE", goodTag:"GOOD",
       seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdReceived:"Received",sdIntCode:"Internal code",sdPackaging:"Packaging",sdPickPack:"Select packaging...",sdPallets:"# Pallets",sdPalletsShort:"pallet(s)",sdPackDate:"Packaging date", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
       skus:"SKUs", skusHint:"Finished-goods / retail SKU catalog - bundles, singles, and cases with bag count and flavor contents. Reference only.", skuCode:"SKU", skuTitle:"Product", skuBags:"Bags", skuComp:"Contents", skuSearchP:"Search SKU, product, or flavor...", skuCount:"SKUs",
-      stockbuild:"Stock Build", sbHint:"Live build progress vs goals. Update On Hand as you go - the whole team sees it instantly. Yellow field = enter today's count.", sbGoal:"Goal", sbOnHand:"On hand", sbToBuild:"To build", sbPallets:"Pallets", sbDone:"Done", sbTotalGoal:"Total goal", sbComplete:"Complete", sbSaved:"Saved", sbRetail:"Retail", sbEcom:"E-Commerce", sb12pk:"12-Pack Boxes",
+      stockbuild:"Stock Build", reorder15:"1.5oz Reorder", r15Hint:"Trigger-based reorder for 1.5oz finished bags (Allen's rule): when a flavor drops to 2 pallets (12,500 bags) or less, build the tier quantity. Prime = 48 bins, Secondary = 24 bins. Coverage uses actual per-flavor ShipStation demand.", r15Prime:"Prime flavors", r15Secondary:"Secondary flavors", r15Bins:"bins", r15After:"after reorder", r15Reorder:"REORDER", r15Ok:"OK", r15NoItem:"no 1.5oz item", r15WksLeft:"Wks left", r15WksAfter:"Wks after", r15ToReorder:"Flavors to reorder now", r15BuildNow:"Build needed now (bags)", r15Trigger:"Trigger (2 pallets)", r15Note:"Coverage after reorder uses actual per-flavor 1.5oz ShipStation demand (FY), not an even split - fast movers like Dill, Maple, Cracked Pepper and BBQ run shorter. Pull recent per-flavor sales before locking targets.", sbHint:"Live build progress vs goals. Update On Hand as you go - the whole team sees it instantly. Yellow field = enter today's count.", sbGoal:"Goal", sbOnHand:"On hand", sbToBuild:"To build", sbPallets:"Pallets", sbDone:"Done", sbTotalGoal:"Total goal", sbComplete:"Complete", sbSaved:"Saved", sbRetail:"Retail", sbEcom:"E-Commerce", sb12pk:"12-Pack Boxes", sbCoverage:"Coverage by group", sbBuilt:"Built vs goal",
       board:"Board Mode / TV", boardPick:"Pick a department", boardPickHint:"Open this on the TV and pick a department, or bookmark the URL (example: ?board=pmac).", boardExit:"Exit", grpDemand:"Demand", demand:"By Department", demandboard:"Order Board", demandsched:"Production Schedule", demandimport:"Import Orders", ecomdemand:"E-Com Demand", forecast:"Forecast vs Target",
       fcHint:"Compare only - the app's targets are not changed by this.", fcSnapshot:"Snapshot", fcFlavor:"Flavor", fcApp4:"App Target (4oz)", fcWip4:"WIP Forecast (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"App Target (1.5oz)", fcWip15:"WIP Forecast (1.5oz)", fcDelta15:"Δ (1.5oz)",
       fcNoAppTarget15:"No per-flavor 1.5oz target in the app (bucket / variety-pack only)", fcNone:"No forecast snapshot yet. Ask Claude to refresh it from the WIP FORECAST sheet.", fcBags:"bags",
@@ -73,6 +82,7 @@
       facility:"Facility Map", facHint:"Interactive 3D digital twin of the SLC plant — exact layout, rooms, systems, and every pallet rack. Drag to rotate, scroll to zoom, click a bay for details. Red-flagged bays are PROPOSED future racking (not yet installed). Rack colors update live: red = occupied, green = available (Sections A-D). Built by Salvador.", facOpen:"Open full screen",
       printRecvBook:"Receiving book (Letter, fill-in)", recvBookDone:"Receiving labels ready",
       averyBtn:"Print Avery 5160 item labels", averyDone:"Avery 5160 labels ready", ident4x6Btn:"4x6 identifier labels", ident4x6Done:"4x6 labels ready",
+      batchLabelBtn:"Batch label (4x6)", batchLabelDone:"Batch label ready", batchLabelHint:"Fill in Recipe, Date, and Chef, then print on the 4x6 roll.", batchRecipe:"Recipe / Flavor", batchDate:"Date", batchChef:"Chef / Made By", batchPrint:"Print Batch Label",
       bnTitle:"What to Build Now", bnNone:"No open orders loaded yet. Import SPS + ShipIQ under Demand to see the build need.", bnHintProd:"Bags to produce by flavor — driven by open customer orders OR your minimum stock levels, whichever needs more. So when there are no orders, your stock targets keep the line busy. Green = covered, amber = build, red = film short. The tag shows the driver: order or stock.", bnHintFul:"Production need by flavor, in bags and cases — the greater of open demand or minimum stock level, minus on-hand.", bnDemandBags:"Demand (bags)", bnOnHandBags:"On hand (bags)", bnToProduceBags:"To produce (BAGS)", bnToProduceCs:"To produce (cs)", bnFlavors:"flavors to build", bnDriverOrder:"order", bnDriverStock:"stock", bnAllCovered:"All flavors at target — nothing to build right now.",
       averyHint:"Both buttons include EVERY item in the system automatically — add a product and it appears here, so labels never go stale. The Avery button prints onto the 5160 sticker sheets Adriana has (just set Margins: None, Scale: 100%); the Receiving book is a Letter-size fill-in form for the dock.",
       retailprod:"Retail Production",ecomprod:"E-Commerce",epHint:"E-commerce / DTC product (variety packs). Scan or pick the item, enter the quantity built, and it is added to stock instantly. ShipStation and TikTok orders will draw this down automatically once connected.", rpHint:"When a pallet is made, scan its product barcode (or pick it), enter the quantity, and it is added to stock instantly. Print the barcode sheet with the button below and post it at the line.", rpScanP:"Scan product barcode", rpPickProduct:"Or pick a product...", rpQty:"Quantity made", rpAdd:"Add to stock", rpAdded:"Added to stock", rpCurrent:"Current on hand", rpRecent:"Recent production", rpNone:"Nothing added yet.", rpPrint:"Print product barcodes", rpNotFound:"Barcode not recognized",
@@ -91,7 +101,7 @@
       mixing:"Mixing", pmac:"P-Mac", roleMixing:"Mixing (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mixing", grpPmac:"P-Mac",
       deptSoon:"This area is being set up. Allen's team screens will live here - tell us what you'd like tracked and we'll build it in.",
       conHint:"Scan each material as it moves from the racking into this room. Records real-time usage and removes it from inventory. Lot # required on every scan.", conLot:"Lot # (required)", conBtn:"Log usage", conRecent:"Recent usage", conNone:"Nothing logged yet.", conWhen:"When", conMat:"Material", conBy:"By", conErr:"Scan an item, quantity, and lot #", conNotInList:"not in item list",
-      grpReceiving:"Receiving", grpInventory:"Inventory", grpProduction:"Production", grpFulfillment:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpImprove:"Improvement", grpQuality:"Quality", compliance:"Compliance / SQF", cmpHint:"SQF food-safety program - certifications, the recurring activity schedule, and the controlled documents in the Operations shared drive.", cmpCerts:"Certifications & Audits", cmpCert:"Certification / Audit", cmpFreq:"Frequency", cmpWhen:"When / Notes", cmpBody:"Body", cmpDueThis:"Due this month", cmpAllMonthly:"Only the standard monthly reviews this month.", cmpSchedule:"SQF Activity Schedule", cmpScheduleHint:"Recurring SQF activities by frequency (from the 2026 SQF Calendar). Monthly items are also documented daily/weekly.", cmpDocs:"Document Register", cmpDocsHint:"Key SQF controlled documents - open in the Operations shared drive.", grpDocs:"Reference", reference:"Reference / SOPs", refHint:"SOPs, cheat sheets, and policies from the Smackin Docs library - one click for the floor. Upload a file and pick a category.", refDrop:"Upload document(s)", refSelected:"file(s) ready", refCategory:"Category", refNotes:"Notes (optional)", refSaveBtn:"Add to library", refNone:"No reference documents yet.", refLibrary:"Document Library", refNoFile:"Choose a file first", refSaved:"added", refConfirmDel:"Remove this document?", grpSystem:"System",
+      analytics:"Analytics", mnTitle:"Make Next — E-Com Queue", mnHint:"Flavors to make so inventory keeps up with the e-commerce order queue (all unshipped ShipStation orders, incl. weekend backlog). Short = queue demand minus on-hand.", mnNone:"No e-com queue loaded yet. The hourly ShipStation sync fills this in.", mnMake:"MAKE", mnOk:"OK", mnFlavorsShort:"Flavors short", mnToMake:"Bags to make", mnQueue:"Queue demand (bags)", mnUpdated:"Updated", mnOnHand:"On hand", mnDemand:"Queue demand", mnShort:"Short by", grpReceiving:"Receiving", grpInventory:"Inventory", grpProduction:"Production", grpFulfillment:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpImprove:"Improvement", grpQuality:"Quality", compliance:"Compliance / SQF", cmpHint:"SQF food-safety program - certifications, the recurring activity schedule, and the controlled documents in the Operations shared drive.", cmpCerts:"Certifications & Audits", cmpCert:"Certification / Audit", cmpFreq:"Frequency", cmpWhen:"When / Notes", cmpBody:"Body", cmpDueThis:"Due this month", cmpAllMonthly:"Only the standard monthly reviews this month.", cmpSchedule:"SQF Activity Schedule", cmpScheduleHint:"Recurring SQF activities by frequency (from the 2026 SQF Calendar). Monthly items are also documented daily/weekly.", cmpDocs:"Document Register", cmpDocsHint:"Key SQF controlled documents - open in the Operations shared drive.", grpDocs:"Reference", reference:"Reference / SOPs", refHint:"SOPs, cheat sheets, and policies from the Smackin Docs library - one click for the floor. Upload a file and pick a category.", refDrop:"Upload document(s)", refSelected:"file(s) ready", refCategory:"Category", refNotes:"Notes (optional)", refSaveBtn:"Add to library", refNone:"No reference documents yet.", refLibrary:"Document Library", refNoFile:"Choose a file first", refSaved:"added", refConfirmDel:"Remove this document?", disposition:"Held Stock", grpSystem:"System",
       people:"People", hrHint:"Team directory and org chart. Non-sensitive info only - no pay or personal data.", hrGate:"This section shows employee information. Enter the manager PIN to view.",
       hrDir:"Directory", hrOrg:"Org chart", hrRole:"Role", hrDept:"Department", hrStart:"Started", hrMgr:"Reports to", hrSearchP:"Search name or role...", hrCount:"people", hrNoMatch:"No matching people.", hrYr:"yr", hrMo:"mo",
       alerts:"Alerts", alertsHint:"What needs attention now: items to reorder and seasoning lots nearing expiration.",
@@ -103,7 +113,7 @@
       hOut:"Out of stock", hLow:"Low / reorder", hExp:"Expiring lots", hOpen:"Open orders", hIssues:"Order issues", hRd:"R&D pending",
       hAttention:"Needs attention now", hAllClear:"All clear - nothing urgent right now.", hSnapshot:"On-hand snapshot", hSeeAll:"See all",
       hEssential:"Essential items - stock by flavor", hFlavor:"Flavor", essFilm:"Film 4oz", hBase:"Base materials", hCovered:"OK", hLowShort:"Low", hOutShort:"Out",
-      supplierpos:"Supplier POs", spoHint:"Upload the POs you create in outside systems (Excel or PDF). The file is stored and the details are read in automatically when the format is recognized.",
+      supplierpos:"Supplier POs", spoHint:"Enter a purchase order with Create PO, or upload one from Excel or PDF. Every PO is stored and searchable below.",
       spoDrop:"Drop a PO file here, or click to choose  (.xlsx, .csv, .pdf)", spoVendor:"Vendor", spoPO:"PO #", spoDate:"PO date", spoTotal:"Total", spoItems:"Line items", spoNotes:"Notes", spoFile:"File", spoUploadedBy:"Uploaded by",
       spoSave:"Save PO", spoCancel:"Clear", spoSaved:"Supplier PO saved", spoNoFile:"Choose a file first", spoParsed:"Read from file", spoDownload:"Download",spoOpenDetails:"Click to see full PO details",spoView2:"View",poNoLines:"No line items on file",poNoFile:"No file attached to this PO", spoDelete:"Deleted", spoList:"Uploaded supplier POs", spoNone:"No supplier POs yet. Upload one above.", spoSearchP:"Search vendor, PO #...", spoConfirmDel:"Delete this supplier PO?",
       orderdocs:"Order Docs", odocHint:"Store the paperwork for fulfilled orders (BOL, packing list, pull sheet, labels, invoice) by customer and PO - like SPS. Searchable so CS can pull any order's docs fast.",
@@ -127,7 +137,7 @@
       mtWaitingOn:"Waiting on", mtWaitingOnP:"e.g. part on order, vendor quote, approval", mtRequestedBy:"Requested by", mtRequestedByP:"Who's asking",
       mtReopen:"Reopen", mtNoActive:"Nothing active. Add a request above.", mtNoDone:"No completed items yet.", mtSearchP:"Search title, area, assignee...", mtConfirmDel:"Delete this item?",
       mtKpiRequested:"Requested", mtKpiInProgress:"In progress", mtKpiWaiting:"Waiting (blocked)", mtKpiDone:"Done",
-      poCreate:"+ Create PO", poNewTitle:"New Purchase Order", poVendorAddr:"Vendor address", poVendorEmail:"Vendor email", poVendorPhone:"Vendor phone", poShipTo:"Ship to", poPreparedBy:"Prepared by", poAddLine:"+ Add line", poItemNo:"Item #", poDesc:"Description", poQtyL:"Qty", poPriceL:"Price", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Shipping", poTaxL:"Tax", poOtherL:"Other", poGrandL:"Total", poSaveBtn:"Save PO", poBackList:"Back to list", poSavedMsg:"PO saved", poNeedVendor:"Enter a vendor first",
+      poCreate:"+ Create PO", nonPoBtn:"Log purchase (no PO)", nonPoTitle:"Log a purchase (no PO)", nonPoHint:"For quick buys that don't need a formal PO - still saved to the archive and tagged No PO.", nonPoDesc:"What was purchased", nonPoAmount:"Amount", nonPoBy:"Purchased by", nonPoTag:"No PO", poExpectedEdit:"Expected / lead time", poEtaSaved:"Expected date updated", poNewTitle:"New Purchase Order", poVendorAddr:"Vendor address", poVendorEmail:"Vendor email", poVendorPhone:"Vendor phone", poShipTo:"Ship to", poPreparedBy:"Prepared by", poAddLine:"+ Add line", poItemNo:"Item #", poDesc:"Description", poQtyL:"Qty", poPriceL:"Price", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Shipping", poTaxL:"Tax", poOtherL:"Other", poGrandL:"Total", poSaveBtn:"Save PO", poBackList:"Back to list", poSavedMsg:"PO saved", poNeedVendor:"Enter a vendor first",
       poEmail:"Email PO", poEmailTo:"To", poEmailSubjectL:"Subject", poEmailSubjectTpl:"Purchase Order", poEmailBody:"Message", poEmailSend:"Send email", poEmailCopy:"Copy PO summary",
       poEmailHint:"If email sending isn't set up yet, Send will open this in your email app instead - the PO file link is included in the message so you can attach/share it.",
       poEmailNeedTo:"Enter the vendor's email first", poEmailSending:"Sending...", poEmailOk:"PO emailed", poEmailCopied:"Copied to clipboard",
@@ -171,7 +181,16 @@
       moveHint:"Escanee articulo, elija desde y hacia (slot, WIP, Empaque, Embarque...).",
       produceHint:"Registre bolsas 4oz de la linea. Suma bolsas, consume film + sazon.",
       countHint:"Conteo ciclico: escanee articulo + slot, ingrese la cantidad contada.",
-      locHint:"Lo que hay en cada ubicacion ahora.", purchHint:"Alertas de reorden mas ordenes de compra.",purchBuyList:"Lista de compra",purchSetup:"Config. de reorden",rsHint:"Defina un punto de reorden y proveedor preferido para cada articulo. Los articulos con ambos configurados apareceran en la Lista de compra cuando el stock baje.",rsNoSup:"— ninguno —",rsNeeds:"Falta config.",rsReady:"Listo",rsReorderPt:"Punto de reorden",rsNeedShort:"por configurar",rsSaved:"Guardado",rsSearchP:"Buscar articulos...",prodlog:"Produccion Diaria",bags:"Bolsas",plLot:"Lote #",plShiftLead:"Lider de Turno",plCounter:"Contador de Cajas - Detector de Metales",plStart:"Conteo Inicial",plEnd:"Conteo Final",plBoxes:"Cajas Producidas",plCounterHint:"Registrar el contador ANTES y DESPUES del turno. No reiniciar.",plAddPallet:"Agregar Paleta",plLine:"Linea",plFlavor:"Sabor",plCases:"Cajas",plNotes:"Notas / Cliente",plAdd:"Agregar al registro",plAdded:"Paleta agregada",plNeedCases:"Ingrese cantidad de cajas",plLog:"Registro de Paletas",plPalletsUsed:"Paletas Usadas",plNoPallets:"Aun no hay paletas registradas hoy.",plSummary:"Resumen Diario por Sabor",plCode:"Codigo",plCasesLogged:"Cajas Registradas",plVariance:"Variacion (contador - registro)",plToday:"Hoy",plDaySummary:"Resumen",plTodaySummary:"Resumen de Hoy",plRecentDays:"Dias Recientes",plRecentHint:"Haz clic en un dia para abrirlo.",plRecentNone:"No hay dias anteriores registrados.",plDate2:"Fecha",plColBoxes:"Cajas",plColCases:"Cajas",plColVar:"Variacion",
+      locHint:"Lo que hay en cada ubicacion ahora.", purchHint:"Alertas de reorden mas ordenes de compra.",purchPOs:"Ordenes de Compra",purchBuyList:"Lista de compra",purchSetup:"Config. de reorden",rsHint:"Defina un punto de reorden y proveedor preferido para cada articulo. Los articulos con ambos configurados apareceran en la Lista de compra cuando el stock baje.",rsNoSup:"— ninguno —",rsNeeds:"Falta config.",rsReady:"Listo",rsReorderPt:"Punto de reorden",rsNeedShort:"por configurar",rsSaved:"Guardado",rsSearchP:"Buscar articulos...",prodlog:"Produccion Diaria",bags:"Bolsas",plLot:"Lote #",plLotPh:"ej. L2451, L2452",plLotHint:"Varios lotes? Separe con comas.",plDayNotesHint:"Algo especial sobre la produccion de hoy - clientes, problemas, montajes especiales.",plShiftLead:"Lider de Turno",plCounter:"Contador de Cajas - Detector de Metales",plStart:"Conteo Inicial",plEnd:"Conteo Final",plBoxes:"Cajas Producidas",plCounterHint:"Registrar el contador ANTES y DESPUES del turno. No reiniciar.",plAddPallet:"Agregar Paleta",plLine:"Linea",plFlavor:"Sabor",plCases:"Cajas",plNotes:"Notas / Cliente",plAdd:"Agregar al registro",plAdded:"Paleta agregada",plNeedCases:"Ingrese cantidad de cajas",plLog:"Registro de Paletas",plPalletsUsed:"Paletas Usadas",plNoPallets:"Aun no hay paletas registradas hoy.",plSummary:"Resumen Diario por Sabor",plCode:"Codigo",plCasesLogged:"Cajas Registradas",plVariance:"Variacion (contador - registro)",plToday:"Hoy",plRecentDays:"Dias Recientes",plRecentHint:"Haz clic en un dia para abrirlo.",plRecentNone:"No hay dias anteriores.",plDate2:"Fecha",plColBoxes:"Cajas",plColCases:"Cajas",plColVar:"Variacion",
+      fulfilldaily:"Cumplimiento Diario", fdHint:"Registre las etiquetas de E-Commerce de hoy y la produccion de Amazon (FBA), mas notas de pedidos especiales. Se guarda por dia - tambien sirve de respaldo y doble verificacion mientras se automatiza.",
+      fdDate:"Fecha", fdEcomTitle:"E-Commerce - Etiquetas por Persona", fdEcomHint:"Una fila por cada persona que trabajo etiquetas de e-com hoy. El total del dia es la suma de todos.",
+      fdEmployee:"Empleado", fdPickEmployee:"Elija una persona...", fdLabelsDone:"# Etiquetas Hechas", fdAddPerson:"+ Agregar persona", fdEcomLabelsTotal:"Total Etiquetas E-Com",
+      fdAmzTitle:"Amazon (FBA)", fdAmzHint:"Elija un SKU (o agregue uno personalizado) y las unidades hechas. Bolsas = unidades x bolsas/unidad - se cuenta aparte de las etiquetas e-com.",
+      fdSku:"SKU", fdPickSku:"Elija un SKU...", fdCustomSku:"+ SKU personalizado...", fdCustomSkuPh:"Ingrese SKU", fdUnitsMade:"Unidades Hechas", fdBagsPerUnit:"Bolsas / Unidad", fdBags:"Bolsas",
+      fdAddSku:"+ Agregar SKU", fdAmzUnitsTotal:"Total Unidades Amazon", fdAmzBagsTotal:"Total Bolsas Amazon",
+      fdNotesTitle:"Notas", fdNotesHint:"Construcciones personalizadas o algo especial sobre los pedidos de hoy.", fdNotesPh:"Notas...",
+      fdSave:"Guardar Dia", fdSaved:"Cumplimiento Diario guardado", fdSummary:"Resumen de Hoy", fdHistory:"Dias Recientes", fdNoHistory:"Aun no hay dias registrados.",
+      fdRemove:"Quitar", fdDeleteConfirm:"Eliminar el registro de este dia?", fdHistDate:"Fecha", fdHistEcom:"Etiquetas E-Com", fdHistAmzBags:"Bolsas Amazon", fdHistNotes:"Notas", fdHistBy:"Ingresado por",
       locMap:"Mapa de racks", locList:"Lista", locFloor:"Plano", locOccupied:"Ocupado", locEmpty:"Vacio", locBlocked:"Bloqueado", locSection:"Seccion", locDocks:"Puertas de muelle", locZones:"Zonas y staging", locClickHint:"Vista superior de los racks. Verde = ocupado, haga clic en un slot para ver que hay. La bahia 01 esta junto a los muelles.", locNothing:"Nada almacenado en este slot.",lmMove:"Mover",lmSet:"Corregir conteo",lmAddItem:"Agregar articulo",lmAssign:"Colocar articulo aqui",lmEmpty:"Enviar a Staging",lmClearConfirm:"Mover todos los articulos a STAGING desde",lmMoveTitle:"Mover articulo a otra ubicacion",lmSetTitle:"Corregir el conteo",lmAssignTitle:"Colocar un articulo en esta ubicacion",lmDest:"Mover a (ubicacion)",lmMoveBtn:"Mover",lmAssignBtn:"Colocar aqui",lmEmptyConfirm:"Quitar TODOS los articulos de",lmEmptied:"vaciado", locSlot:"Slot", locBaysUsed:"slots usados", locOfficeEnd:"lado oficina", locFarEnd:"lado lejano", locView3d:"Ver en 3D",
       locFloorNote:"Plano superior del edificio - cada lugar donde se almacena o mueve producto. Haga clic en una seccion de rack o zona para ver su contenido. Las letras A/B/C/D son un estimado - digame que fila fisica es cual y las fijo.", locStorage:"Almacenamiento (racks)", locTransfer:"Areas de produccion y transferencia", locStaging:"Zonas de staging y trabajo",
       reorderSug:"Sugerencias de reorden", purchOrders:"Ordenes de compra", newPO:"Nueva orden", createDraft:"Crear borrador",
@@ -191,7 +210,7 @@
       noLots:"Sin lotes de sazon aun.", markQuar:"Cuarentena", markGood:"Marcar bueno", expiredTag:"VENCIDO", quarTag:"CUARENTENA", goodTag:"BUENO",
       seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdReceived:"Recibido",sdIntCode:"Codigo interno",sdPackaging:"Empaque",sdPickPack:"Elegir empaque...",sdPallets:"# Paletas",sdPalletsShort:"paleta(s)",sdPackDate:"Fecha de empaque", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
       skus:"SKUs", skusHint:"Catalogo de SKU de producto terminado / retail - paquetes, individuales y cajas con cantidad de bolsas y sabores. Solo referencia.", skuCode:"SKU", skuTitle:"Producto", skuBags:"Bolsas", skuComp:"Contenido", skuSearchP:"Buscar SKU, producto o sabor...", skuCount:"SKUs",
-      stockbuild:"Construir Inventario", sbHint:"Progreso de construccion vs metas en vivo. Actualice En Mano segun avanza - todo el equipo lo ve al instante. Campo amarillo = ingrese el conteo de hoy.", sbGoal:"Meta", sbOnHand:"En mano", sbToBuild:"Por hacer", sbPallets:"Paletas", sbDone:"Listo", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Guardado", sbRetail:"Minorista", sbEcom:"Comercio Electronico", sb12pk:"Cajas de 12",
+      stockbuild:"Construir Inventario", reorder15:"Reorden 1.5oz", r15Hint:"Reorden por disparador para bolsas 1.5oz (regla de Allen): cuando un sabor baja a 2 paletas (12,500 bolsas) o menos, produzca la cantidad del nivel. Prime = 48 bins, Secundario = 24 bins. La cobertura usa la demanda real por sabor de ShipStation.", r15Prime:"Sabores Prime", r15Secondary:"Sabores Secundarios", r15Bins:"bins", r15After:"tras reorden", r15Reorder:"REORDENAR", r15Ok:"OK", r15NoItem:"sin item 1.5oz", r15WksLeft:"Sem. rest.", r15WksAfter:"Sem. tras", r15ToReorder:"Sabores a reordenar ahora", r15BuildNow:"Produccion necesaria (bolsas)", r15Trigger:"Disparador (2 paletas)", r15Note:"La cobertura tras reorden usa la demanda real por sabor de 1.5oz de ShipStation (ano fiscal), no un promedio - los rapidos como Dill, Maple, Cracked Pepper y BBQ duran menos. Use ventas recientes por sabor antes de fijar metas.", sbHint:"Progreso de construccion vs metas en vivo. Actualice En Mano segun avanza - todo el equipo lo ve al instante. Campo amarillo = ingrese el conteo de hoy.", sbGoal:"Meta", sbOnHand:"En mano", sbToBuild:"Por hacer", sbPallets:"Paletas", sbDone:"Listo", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Guardado", sbRetail:"Minorista", sbEcom:"Comercio Electronico", sb12pk:"Cajas de 12", sbCoverage:"Cobertura por grupo", sbBuilt:"Hecho vs meta",
       board:"Modo Pizarra / TV", boardPick:"Elija un departamento", boardPickHint:"Abra esto en la TV y elija un departamento, o guarde el URL (ejemplo: ?board=pmac).", boardExit:"Salir", grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Tablero de Pedidos", demandsched:"Programa de Produccion", demandimport:"Importar Pedidos", ecomdemand:"Demanda E-Com", forecast:"Pronostico vs Objetivo",
       fcHint:"Solo comparacion - esto no cambia los objetivos de la aplicacion.", fcSnapshot:"Instantanea", fcFlavor:"Sabor", fcApp4:"Objetivo App (4oz)", fcWip4:"Pronostico WIP (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"Objetivo App (1.5oz)", fcWip15:"Pronostico WIP (1.5oz)", fcDelta15:"Δ (1.5oz)",
       fcNoAppTarget15:"Sin objetivo por sabor de 1.5oz en la app (solo cubeta / variety pack)", fcNone:"Aun no hay instantanea de pronostico. Pida a Claude que la actualice desde la hoja WIP FORECAST.", fcBags:"bolsas",
@@ -217,6 +236,7 @@
       backupTitle:"Respaldo", backupHint:"Descargue una copia completa de todos los datos de la app (cada tabla) en un archivo JSON. Guardelo en OneDrive como copia segura. Consejo: configure la carpeta de descargas de su navegador en su OneDrive para que cada respaldo llegue alli automaticamente.", backupBtn:"Descargar respaldo completo", backupDone:"Respaldo descargado",
       facility:"Mapa de Planta", facHint:"Gemelo digital 3D interactivo de la planta SLC — diseno exacto, salas, sistemas y cada rack de pallets. Arrastre para girar, desplace para zoom, clic en una bahia para detalles. Las bahias en rojo son racking PROPUESTO a futuro (aun no instalado). Los colores de los racks se actualizan en vivo: rojo = ocupado, verde = disponible (Secciones A-D). Creado por Salvador.", facOpen:"Abrir pantalla completa",
       printRecvBook:"Libro de recibo (Carta, llenar)", recvBookDone:"Etiquetas listas", averyBtn:"Imprimir etiquetas Avery 5160", averyDone:"Etiquetas Avery 5160 listas", ident4x6Btn:"Etiquetas identificadoras 4x6", ident4x6Done:"Etiquetas 4x6 listas",
+      batchLabelBtn:"Etiqueta de lote (4x6)", batchLabelDone:"Etiqueta de lote lista", batchLabelHint:"Llene Receta, Fecha y Chef, luego imprima en el rollo 4x6.", batchRecipe:"Receta / Sabor", batchDate:"Fecha", batchChef:"Chef / Hecho Por", batchPrint:"Imprimir Etiqueta de Lote",
       bnTitle:"Que Producir Ahora", bnNone:"Aun no hay pedidos abiertos. Importe SPS + ShipIQ en Demanda para ver la necesidad de produccion.", bnHintProd:"Bolsas a producir por sabor — segun pedidos abiertos O sus niveles minimos de inventario, lo que necesite mas. Asi, cuando no hay pedidos, sus metas de stock mantienen la linea ocupada. Verde = cubierto, ambar = producir, rojo = falta pelicula. La etiqueta muestra el origen: pedido o stock.", bnHintFul:"Necesidad de produccion por sabor, en bolsas y cajas — el mayor entre demanda abierta o nivel minimo de stock, menos en mano.", bnDemandBags:"Demanda (bolsas)", bnOnHandBags:"En mano (bolsas)", bnToProduceBags:"Por producir (BOLSAS)", bnToProduceCs:"Por producir (cj)", bnFlavors:"sabores por producir", bnDriverOrder:"pedido", bnDriverStock:"stock", bnAllCovered:"Todos los sabores en meta — nada que producir ahora.",
       averyHint:"Ambos botones incluyen TODOS los articulos del sistema automaticamente — agregue un producto y aparece aqui, asi las etiquetas nunca quedan desactualizadas. El boton Avery imprime en las hojas de stickers 5160 de Adriana (configure Margenes: Ninguno, Escala: 100%); el Libro de recibo es un formulario tamano Carta para llenar en el muelle.",
       retailprod:"Produccion Retail",ecomprod:"E-Commerce",epHint:"Producto e-commerce / DTC (paquetes variados). Escanee o elija el articulo, ingrese la cantidad producida y se agrega al inventario al instante. Los pedidos de ShipStation y TikTok lo descontaran automaticamente cuando se conecten.", rpHint:"Cuando se hace una paleta, escanee su codigo de producto (o eligalo), ingrese la cantidad y se agrega al inventario al instante. Imprima la hoja de codigos con el boton de abajo y pongala en la linea.", rpScanP:"Escanee codigo del producto", rpPickProduct:"O elija un producto...", rpQty:"Cantidad hecha", rpAdd:"Agregar al inventario", rpAdded:"Agregado al inventario", rpCurrent:"En mano actual", rpRecent:"Produccion reciente", rpNone:"Nada agregado aun.", rpPrint:"Imprimir codigos de producto", rpNotFound:"Codigo no reconocido",
@@ -235,7 +255,7 @@
       mixing:"Mezcla", pmac:"P-Mac", roleMixing:"Mezcla (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mezcla", grpPmac:"P-Mac",
       deptSoon:"Esta area se esta configurando. Aqui viviran las pantallas del equipo de Allen - diganos que desea controlar y lo agregamos.",
       conHint:"Escanee cada material al pasar del estante a esta sala. Registra el uso en tiempo real y lo descuenta del inventario. Numero de lote requerido en cada escaneo.", conLot:"Lote # (requerido)", conBtn:"Registrar uso", conRecent:"Uso reciente", conNone:"Nada registrado aun.", conWhen:"Cuando", conMat:"Material", conBy:"Por", conErr:"Escanee articulo, cantidad y lote #", conNotInList:"no esta en la lista",
-      grpReceiving:"Recibo", grpInventory:"Inventario", grpProduction:"Produccion", grpFulfillment:"Fulfillment", grpShipping:"Envios", grpPurchasing:"Compras", grpRnd:"I+D", grpHr:"RH", grpImprove:"Mejora", grpQuality:"Calidad", compliance:"Cumplimiento / SQF", cmpHint:"Programa de inocuidad SQF - certificaciones, el calendario de actividades recurrentes y los documentos controlados en la unidad compartida de Operaciones.", cmpCerts:"Certificaciones y Auditorias", cmpCert:"Certificacion / Auditoria", cmpFreq:"Frecuencia", cmpWhen:"Cuando / Notas", cmpBody:"Organismo", cmpDueThis:"Vence este mes", cmpAllMonthly:"Solo las revisiones mensuales estandar este mes.", cmpSchedule:"Calendario de Actividades SQF", cmpScheduleHint:"Actividades SQF recurrentes por frecuencia (del Calendario SQF 2026). Los items mensuales tambien se documentan diario/semanal.", cmpDocs:"Registro de Documentos", cmpDocsHint:"Documentos controlados SQF clave - abrir en la unidad compartida de Operaciones.", grpDocs:"Referencia", reference:"Referencia / SOPs", refHint:"SOPs, hojas de referencia y politicas de la biblioteca Smackin Docs - un clic para el piso. Suba un archivo y elija una categoria.", refDrop:"Subir documento(s)", refSelected:"archivo(s) listos", refCategory:"Categoria", refNotes:"Notas (opcional)", refSaveBtn:"Agregar a la biblioteca", refNone:"Aun no hay documentos de referencia.", refLibrary:"Biblioteca de Documentos", refNoFile:"Elija un archivo primero", refSaved:"agregado(s)", refConfirmDel:"Quitar este documento?", grpSystem:"Sistema",
+      analytics:"Analiticas", mnTitle:"Producir Ahora — Cola E-Com", mnHint:"Sabores a producir para que el inventario alcance la cola de pedidos e-commerce (todos los pedidos sin enviar de ShipStation, incl. acumulado del fin de semana). Faltante = demanda de cola menos en mano.", mnNone:"Aun no hay cola e-com cargada. La sincronizacion horaria de ShipStation la llenara.", mnMake:"PRODUCIR", mnOk:"OK", mnFlavorsShort:"Sabores faltantes", mnToMake:"Bolsas a producir", mnQueue:"Demanda de cola (bolsas)", mnUpdated:"Actualizado", mnOnHand:"En mano", mnDemand:"Demanda de cola", mnShort:"Faltante", grpReceiving:"Recibo", grpInventory:"Inventario", grpProduction:"Produccion", grpFulfillment:"Fulfillment", grpShipping:"Envios", grpPurchasing:"Compras", grpRnd:"I+D", grpHr:"RH", grpImprove:"Mejora", grpQuality:"Calidad", compliance:"Cumplimiento / SQF", cmpHint:"Programa de inocuidad SQF - certificaciones, el calendario de actividades recurrentes y los documentos controlados en la unidad compartida de Operaciones.", cmpCerts:"Certificaciones y Auditorias", cmpCert:"Certificacion / Auditoria", cmpFreq:"Frecuencia", cmpWhen:"Cuando / Notas", cmpBody:"Organismo", cmpDueThis:"Vence este mes", cmpAllMonthly:"Solo las revisiones mensuales estandar este mes.", cmpSchedule:"Calendario de Actividades SQF", cmpScheduleHint:"Actividades SQF recurrentes por frecuencia (del Calendario SQF 2026). Los items mensuales tambien se documentan diario/semanal.", cmpDocs:"Registro de Documentos", cmpDocsHint:"Documentos controlados SQF clave - abrir en la unidad compartida de Operaciones.", grpDocs:"Referencia", reference:"Referencia / SOPs", refHint:"SOPs, hojas de referencia y politicas de la biblioteca Smackin Docs - un clic para el piso. Suba un archivo y elija una categoria.", refDrop:"Subir documento(s)", refSelected:"archivo(s) listos", refCategory:"Categoria", refNotes:"Notas (opcional)", refSaveBtn:"Agregar a la biblioteca", refNone:"Aun no hay documentos de referencia.", refLibrary:"Biblioteca de Documentos", refNoFile:"Elija un archivo primero", refSaved:"agregado(s)", refConfirmDel:"Quitar este documento?", disposition:"Retenido", grpSystem:"Sistema",
       people:"Personal", hrHint:"Directorio del equipo y organigrama. Solo informacion no sensible - sin pago ni datos personales.", hrGate:"Esta seccion muestra informacion de empleados. Ingrese el PIN de gerente para ver.",
       hrDir:"Directorio", hrOrg:"Organigrama", hrRole:"Puesto", hrDept:"Departamento", hrStart:"Ingreso", hrMgr:"Reporta a", hrSearchP:"Buscar nombre o puesto...", hrCount:"personas", hrNoMatch:"Sin coincidencias.", hrYr:"ano", hrMo:"mes",
       alerts:"Alertas", alertsHint:"Lo que necesita atencion ahora: articulos por reordenar y lotes de sazon por vencer.",
@@ -247,7 +267,7 @@
       hOut:"Agotado", hLow:"Bajo / reorden", hExp:"Lotes por vencer", hOpen:"Ordenes abiertas", hIssues:"Ordenes con problema", hRd:"I+D pendiente",
       hAttention:"Necesita atencion ahora", hAllClear:"Todo en orden - nada urgente ahora.", hSnapshot:"Resumen de disponible", hSeeAll:"Ver todo",
       hEssential:"Articulos esenciales - stock por sabor", hFlavor:"Sabor", essFilm:"Film 4oz", hBase:"Materiales base", hCovered:"OK", hLowShort:"Bajo", hOutShort:"Agotado",
-      supplierpos:"OC Proveedor", spoHint:"Suba las OC que crea en sistemas externos (Excel o PDF). El archivo se guarda y los datos se leen automaticamente cuando se reconoce el formato.",
+      supplierpos:"OC Proveedor", spoHint:"Ingrese una orden de compra con Crear OC, o suba una desde Excel o PDF. Cada OC se guarda y se puede buscar abajo.",
       spoDrop:"Suelte un archivo de OC aqui, o haga clic para elegir  (.xlsx, .csv, .pdf)", spoVendor:"Proveedor", spoPO:"OC #", spoDate:"Fecha OC", spoTotal:"Total", spoItems:"Lineas", spoNotes:"Notas", spoFile:"Archivo", spoUploadedBy:"Subido por",
       spoSave:"Guardar OC", spoCancel:"Limpiar", spoSaved:"OC de proveedor guardada", spoNoFile:"Elija un archivo primero", spoParsed:"Leido del archivo", spoDownload:"Descargar",spoOpenDetails:"Clic para ver los detalles completos de la OC",spoView2:"Ver",poNoLines:"Sin lineas de articulo registradas",poNoFile:"Sin archivo adjunto a esta OC", spoDelete:"Eliminado", spoList:"OC de proveedor subidas", spoNone:"Aun no hay OC de proveedor. Suba una arriba.", spoSearchP:"Buscar proveedor, OC #...", spoConfirmDel:"Eliminar esta OC de proveedor?",
       orderdocs:"Docs de Orden", odocHint:"Guarde el papeleo de ordenes cumplidas (BOL, lista de empaque, hoja de picking, etiquetas, factura) por cliente y OC - como SPS. Buscable para que servicio al cliente encuentre los documentos rapido.",
@@ -271,7 +291,7 @@
       mtWaitingOn:"Esperando por", mtWaitingOnP:"ej. pieza pedida, cotizacion del proveedor, aprobacion", mtRequestedBy:"Solicitado por", mtRequestedByP:"Quien lo solicita",
       mtReopen:"Reabrir", mtNoActive:"Nada activo. Agregue una solicitud arriba.", mtNoDone:"Aun no hay elementos completados.", mtSearchP:"Buscar titulo, area, asignado...", mtConfirmDel:"Eliminar este elemento?",
       mtKpiRequested:"Solicitados", mtKpiInProgress:"En curso", mtKpiWaiting:"Esperando (bloqueado)", mtKpiDone:"Hechos",
-      poCreate:"+ Crear OC", poNewTitle:"Nueva Orden de Compra", poVendorAddr:"Direccion del proveedor", poVendorEmail:"Correo del proveedor", poVendorPhone:"Telefono del proveedor", poShipTo:"Enviar a", poPreparedBy:"Preparado por", poAddLine:"+ Agregar linea", poItemNo:"Articulo #", poDesc:"Descripcion", poQtyL:"Cant", poPriceL:"Precio", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Envio", poTaxL:"Impuesto", poOtherL:"Otro", poGrandL:"Total", poSaveBtn:"Guardar OC", poBackList:"Volver a la lista", poSavedMsg:"OC guardada", poNeedVendor:"Ingrese un proveedor primero",
+      poCreate:"+ Crear OC", nonPoBtn:"Registrar compra (sin OC)", nonPoTitle:"Registrar una compra (sin OC)", nonPoHint:"Para compras rapidas que no necesitan una OC formal - igual se guardan en el archivo y se etiquetan Sin OC.", nonPoDesc:"Que se compro", nonPoAmount:"Monto", nonPoBy:"Comprado por", nonPoTag:"Sin OC", poExpectedEdit:"Esperado / tiempo de entrega", poEtaSaved:"Fecha esperada actualizada", poNewTitle:"Nueva Orden de Compra", poVendorAddr:"Direccion del proveedor", poVendorEmail:"Correo del proveedor", poVendorPhone:"Telefono del proveedor", poShipTo:"Enviar a", poPreparedBy:"Preparado por", poAddLine:"+ Agregar linea", poItemNo:"Articulo #", poDesc:"Descripcion", poQtyL:"Cant", poPriceL:"Precio", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Envio", poTaxL:"Impuesto", poOtherL:"Otro", poGrandL:"Total", poSaveBtn:"Guardar OC", poBackList:"Volver a la lista", poSavedMsg:"OC guardada", poNeedVendor:"Ingrese un proveedor primero",
       poEmail:"Enviar OC por correo", poEmailTo:"Para", poEmailSubjectL:"Asunto", poEmailSubjectTpl:"Orden de Compra", poEmailBody:"Mensaje", poEmailSend:"Enviar correo", poEmailCopy:"Copiar resumen de OC",
       poEmailHint:"Si el envio de correo aun no esta configurado, Enviar abrira esto en su aplicacion de correo - el enlace del archivo de la OC va incluido en el mensaje para que lo pueda adjuntar/compartir.",
       poEmailNeedTo:"Ingrese primero el correo del proveedor", poEmailSending:"Enviando...", poEmailOk:"OC enviada por correo", poEmailCopied:"Copiado al portapapeles",
@@ -315,7 +335,16 @@
       moveHint:"Escaneie item, escolha de e para (slot, WIP, Empacotamento, Expedicao...).",
       produceHint:"Registre sacos 4oz da linha. Adiciona sacos, consome filme + tempero.",
       countHint:"Contagem ciclica: escaneie item + slot, digite a quantidade contada.",
-      locHint:"O que ha em cada local agora.", purchHint:"Alertas de reposicao mais ordens de compra.",purchBuyList:"Lista de compras",purchSetup:"Config. de reposicao",rsHint:"Defina um ponto de reposicao e fornecedor preferido para cada item. Itens com ambos configurados aparecerao na Lista de compras quando o estoque baixar.",rsNoSup:"— nenhum —",rsNeeds:"Falta config.",rsReady:"Pronto",rsReorderPt:"Ponto de reposicao",rsNeedShort:"a configurar",rsSaved:"Salvo",rsSearchP:"Buscar itens...",prodlog:"Producao Diaria",bags:"Bolsas",plLot:"Lote #",plShiftLead:"Lider de Turno",plCounter:"Contador de Caixas - Detector de Metais",plStart:"Contagem Inicial",plEnd:"Contagem Final",plBoxes:"Caixas Produzidas",plCounterHint:"Registrar o contador ANTES e DEPOIS do turno. Nao reiniciar.",plAddPallet:"Adicionar Palete",plLine:"Linha",plFlavor:"Sabor",plCases:"Caixas",plNotes:"Notas / Cliente",plAdd:"Adicionar ao registro",plAdded:"Palete adicionado",plNeedCases:"Insira a quantidade de caixas",plLog:"Registro de Paletes",plPalletsUsed:"Paletes Usados",plNoPallets:"Nenhum palete registrado hoje ainda.",plSummary:"Resumo Diario por Sabor",plCode:"Codigo",plCasesLogged:"Caixas Registradas",plVariance:"Variacao (contador - registro)",plToday:"Hoje",plDaySummary:"Resumo",plTodaySummary:"Resumo de Hoje",plRecentDays:"Dias Recentes",plRecentHint:"Clique em um dia para abrir.",plRecentNone:"Nenhum dia anterior registrado.",plDate2:"Data",plColBoxes:"Caixas",plColCases:"Caixas",plColVar:"Variacao",
+      locHint:"O que ha em cada local agora.", purchHint:"Alertas de reposicao mais ordens de compra.",purchPOs:"Ordens de Compra",purchBuyList:"Lista de compras",purchSetup:"Config. de reposicao",rsHint:"Defina um ponto de reposicao e fornecedor preferido para cada item. Itens com ambos configurados aparecerao na Lista de compras quando o estoque baixar.",rsNoSup:"— nenhum —",rsNeeds:"Falta config.",rsReady:"Pronto",rsReorderPt:"Ponto de reposicao",rsNeedShort:"a configurar",rsSaved:"Salvo",rsSearchP:"Buscar itens...",prodlog:"Producao Diaria",bags:"Bolsas",plLot:"Lote #",plLotPh:"ex. L2451, L2452",plLotHint:"Varios lotes? Separe com virgulas.",plDayNotesHint:"Algo especial sobre a producao de hoje - clientes, problemas, montagens especiais.",plShiftLead:"Lider de Turno",plCounter:"Contador de Caixas - Detector de Metais",plStart:"Contagem Inicial",plEnd:"Contagem Final",plBoxes:"Caixas Produzidas",plCounterHint:"Registrar o contador ANTES e DEPOIS do turno. Nao reiniciar.",plAddPallet:"Adicionar Palete",plLine:"Linha",plFlavor:"Sabor",plCases:"Caixas",plNotes:"Notas / Cliente",plAdd:"Adicionar ao registro",plAdded:"Palete adicionado",plNeedCases:"Insira a quantidade de caixas",plLog:"Registro de Paletes",plPalletsUsed:"Paletes Usados",plNoPallets:"Nenhum palete registrado hoje ainda.",plSummary:"Resumo Diario por Sabor",plCode:"Codigo",plCasesLogged:"Caixas Registradas",plVariance:"Variacao (contador - registro)",plToday:"Hoje",plRecentDays:"Dias Recentes",plRecentHint:"Clique em um dia para abrir.",plRecentNone:"Nenhum dia anterior.",plDate2:"Data",plColBoxes:"Caixas",plColCases:"Caixas",plColVar:"Variacao",
+      fulfilldaily:"Cumprimento Diario", fdHint:"Registre as etiquetas de E-Commerce de hoje e a producao da Amazon (FBA), mais notas de pedidos especiais. Salvo por dia - tambem serve de backup e dupla verificacao enquanto a automacao e construida.",
+      fdDate:"Data", fdEcomTitle:"E-Commerce - Etiquetas por Pessoa", fdEcomHint:"Uma linha por pessoa que trabalhou etiquetas de e-com hoje. O total do dia e a soma de todos.",
+      fdEmployee:"Funcionario", fdPickEmployee:"Escolha uma pessoa...", fdLabelsDone:"# Etiquetas Feitas", fdAddPerson:"+ Adicionar pessoa", fdEcomLabelsTotal:"Total Etiquetas E-Com",
+      fdAmzTitle:"Amazon (FBA)", fdAmzHint:"Escolha um SKU (ou adicione um personalizado) e as unidades feitas. Sacos = unidades x sacos/unidade - contado separado das etiquetas e-com.",
+      fdSku:"SKU", fdPickSku:"Escolha um SKU...", fdCustomSku:"+ SKU personalizado...", fdCustomSkuPh:"Digite o SKU", fdUnitsMade:"Unidades Feitas", fdBagsPerUnit:"Sacos / Unidade", fdBags:"Sacos",
+      fdAddSku:"+ Adicionar SKU", fdAmzUnitsTotal:"Total Unidades Amazon", fdAmzBagsTotal:"Total Sacos Amazon",
+      fdNotesTitle:"Notas", fdNotesHint:"Construcoes personalizadas ou algo especial sobre os pedidos de hoje.", fdNotesPh:"Notas...",
+      fdSave:"Salvar Dia", fdSaved:"Cumprimento Diario salvo", fdSummary:"Resumo de Hoje", fdHistory:"Dias Recentes", fdNoHistory:"Nenhum dia registrado ainda.",
+      fdRemove:"Remover", fdDeleteConfirm:"Excluir o registro deste dia?", fdHistDate:"Data", fdHistEcom:"Etiquetas E-Com", fdHistAmzBags:"Sacos Amazon", fdHistNotes:"Notas", fdHistBy:"Inserido por",
       locMap:"Mapa de racks", locList:"Lista", locFloor:"Planta", locOccupied:"Ocupado", locEmpty:"Vazio", locBlocked:"Bloqueado", locSection:"Secao", locDocks:"Portas de doca", locZones:"Zonas e staging", locClickHint:"Vista de cima dos racks. Verde = ocupado, clique em um slot para ver o que ha. A baia 01 fica junto as docas.", locNothing:"Nada armazenado neste slot.",lmMove:"Mover",lmSet:"Corrigir contagem",lmAddItem:"Adicionar item",lmAssign:"Colocar item aqui",lmEmpty:"Enviar para Staging",lmClearConfirm:"Mover todos os itens para STAGING de",lmMoveTitle:"Mover item para outra localizacao",lmSetTitle:"Corrigir a contagem",lmAssignTitle:"Colocar um item nesta localizacao",lmDest:"Mover para (localizacao)",lmMoveBtn:"Mover",lmAssignBtn:"Colocar aqui",lmEmptyConfirm:"Remover TODOS os itens de",lmEmptied:"esvaziado", locSlot:"Slot", locBaysUsed:"slots usados", locOfficeEnd:"lado escritorio", locFarEnd:"lado distante", locView3d:"Ver em 3D",
       locFloorNote:"Planta de cima do predio - cada lugar onde produto e armazenado ou movimentado. Clique em uma secao de rack ou zona para ver o conteudo. As letras A/B/C/D sao um palpite - diga qual fila fisica e qual e eu fixo.", locStorage:"Armazenamento (racks)", locTransfer:"Areas de producao e transferencia", locStaging:"Zonas de staging e trabalho",
       reorderSug:"Sugestoes de reposicao", purchOrders:"Ordens de compra", newPO:"Nova ordem", createDraft:"Criar rascunho",
@@ -335,7 +364,7 @@
       noLots:"Nenhum lote de tempero ainda.", markQuar:"Quarentena", markGood:"Marcar bom", expiredTag:"VENCIDO", quarTag:"QUARENTENA", goodTag:"BOM",
       seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdReceived:"Recebido",sdIntCode:"Codigo interno",sdPackaging:"Embalagem",sdPickPack:"Selecionar embalagem...",sdPallets:"# Paletes",sdPalletsShort:"palete(s)",sdPackDate:"Data de embalagem", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
       skus:"SKUs", skusHint:"Catalogo de SKU de produto acabado / varejo - pacotes, individuais e caixas com contagem de sacos e sabores. Apenas referencia.", skuCode:"SKU", skuTitle:"Produto", skuBags:"Sacos", skuComp:"Conteudo", skuSearchP:"Buscar SKU, produto ou sabor...", skuCount:"SKUs",
-      stockbuild:"Construir Estoque", sbHint:"Progresso de construcao vs metas ao vivo. Atualize Em Estoque conforme avanca - toda a equipe ve na hora. Campo amarelo = insira a contagem de hoje.", sbGoal:"Meta", sbOnHand:"Em estoque", sbToBuild:"A fazer", sbPallets:"Paletes", sbDone:"Pronto", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Salvo", sbRetail:"Varejo", sbEcom:"E-Commerce", sb12pk:"Caixas de 12",
+      stockbuild:"Construir Estoque", reorder15:"Reposicao 1.5oz", r15Hint:"Reposicao por gatilho para bolsas 1.5oz (regra do Allen): quando um sabor cai para 2 paletes (12,500 bolsas) ou menos, produza a quantidade do nivel. Prime = 48 bins, Secundario = 24 bins. A cobertura usa a demanda real por sabor do ShipStation.", r15Prime:"Sabores Prime", r15Secondary:"Sabores Secundarios", r15Bins:"bins", r15After:"apos reposicao", r15Reorder:"REPOR", r15Ok:"OK", r15NoItem:"sem item 1.5oz", r15WksLeft:"Sem. rest.", r15WksAfter:"Sem. apos", r15ToReorder:"Sabores a repor agora", r15BuildNow:"Producao necessaria (bolsas)", r15Trigger:"Gatilho (2 paletes)", r15Note:"A cobertura apos reposicao usa a demanda real por sabor de 1.5oz do ShipStation (ano fiscal), nao uma media - rapidos como Dill, Maple, Cracked Pepper e BBQ duram menos. Use vendas recentes por sabor antes de fixar metas.", sbHint:"Progresso de construcao vs metas ao vivo. Atualize Em Estoque conforme avanca - toda a equipe ve na hora. Campo amarelo = insira a contagem de hoje.", sbGoal:"Meta", sbOnHand:"Em estoque", sbToBuild:"A fazer", sbPallets:"Paletes", sbDone:"Pronto", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Salvo", sbRetail:"Varejo", sbEcom:"E-Commerce", sb12pk:"Caixas de 12", sbCoverage:"Cobertura por grupo", sbBuilt:"Feito vs meta",
       board:"Modo Painel / TV", boardPick:"Escolha um departamento", boardPickHint:"Abra isto na TV e escolha um departamento, ou salve o URL (exemplo: ?board=pmac).", boardExit:"Sair", grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Painel de Pedidos", demandsched:"Programa de Producao", demandimport:"Importar Pedidos", ecomdemand:"Demanda E-Com", forecast:"Previsao vs Meta",
       fcHint:"Somente comparacao - isso nao altera as metas do aplicativo.", fcSnapshot:"Instantaneo", fcFlavor:"Sabor", fcApp4:"Meta App (4oz)", fcWip4:"Previsao WIP (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"Meta App (1.5oz)", fcWip15:"Previsao WIP (1.5oz)", fcDelta15:"Δ (1.5oz)",
       fcNoAppTarget15:"Sem meta por sabor de 1.5oz no app (somente balde / variety pack)", fcNone:"Ainda sem instantaneo de previsao. Peca ao Claude para atualizar a partir da planilha WIP FORECAST.", fcBags:"sacos",
@@ -361,6 +390,7 @@
       backupTitle:"Backup", backupHint:"Baixe uma copia completa de todos os dados do app (cada tabela) em um arquivo JSON. Salve no OneDrive como copia segura. Dica: configure a pasta de downloads do seu navegador para o seu OneDrive para que cada backup va para la automaticamente.", backupBtn:"Baixar backup completo", backupDone:"Backup baixado",
       facility:"Mapa da Planta", facHint:"Gemeo digital 3D interativo da planta SLC — layout exato, salas, sistemas e cada rack de paletes. Arraste para girar, role para zoom, clique numa baia para detalhes. Baias em vermelho sao racking PROPOSTO futuro (ainda nao instalado). As cores dos racks atualizam ao vivo: vermelho = ocupado, verde = disponivel (Secoes A-D). Feito pelo Salvador.", facOpen:"Abrir tela cheia",
       printRecvBook:"Livro de recebimento (Carta, preencher)", recvBookDone:"Etiquetas prontas", averyBtn:"Imprimir etiquetas Avery 5160", averyDone:"Etiquetas Avery 5160 prontas", ident4x6Btn:"Etiquetas identificadoras 4x6", ident4x6Done:"Etiquetas 4x6 prontas",
+      batchLabelBtn:"Etiqueta de lote (4x6)", batchLabelDone:"Etiqueta de lote pronta", batchLabelHint:"Preencha Receita, Data e Chef, depois imprima no rolo 4x6.", batchRecipe:"Receita / Sabor", batchDate:"Data", batchChef:"Chef / Feito Por", batchPrint:"Imprimir Etiqueta de Lote",
       bnTitle:"O Que Produzir Agora", bnNone:"Nenhum pedido aberto ainda. Importe SPS + ShipIQ em Demanda para ver a necessidade de producao.", bnHintProd:"Bolsas a produzir por sabor — conforme pedidos abertos OU seus niveis minimos de estoque, o que precisar mais. Assim, quando nao ha pedidos, suas metas de estoque mantem a linha ocupada. Verde = coberto, ambar = produzir, vermelho = falta filme. A etiqueta mostra a origem: pedido ou estoque.", bnHintFul:"Necessidade de producao por sabor, em bolsas e caixas — o maior entre demanda aberta ou nivel minimo de estoque, menos em estoque.", bnDemandBags:"Demanda (bolsas)", bnOnHandBags:"Em estoque (bolsas)", bnToProduceBags:"A produzir (BOLSAS)", bnToProduceCs:"A produzir (cx)", bnFlavors:"sabores a produzir", bnDriverOrder:"pedido", bnDriverStock:"estoque", bnAllCovered:"Todos os sabores na meta — nada a produzir agora.",
       averyHint:"Ambos os botoes incluem TODOS os itens do sistema automaticamente — adicione um produto e ele aparece aqui, entao as etiquetas nunca ficam desatualizadas. O botao Avery imprime nas folhas de adesivos 5160 da Adriana (configure Margens: Nenhuma, Escala: 100%); o Livro de recebimento e um formulario tamanho Carta para preencher na doca.",
       retailprod:"Producao Varejo",ecomprod:"E-Commerce",epHint:"Produto e-commerce / DTC (pacotes variados). Escaneie ou escolha o item, insira a quantidade produzida e ela e adicionada ao estoque na hora. Os pedidos do ShipStation e TikTok vao baixar isso automaticamente quando conectados.", rpHint:"Quando um palete e feito, escaneie o codigo do produto (ou escolha), insira a quantidade e ela e adicionada ao estoque na hora. Imprima a folha de codigos com o botao abaixo e coloque na linha.", rpScanP:"Escaneie codigo do produto", rpPickProduct:"Ou escolha um produto...", rpQty:"Quantidade feita", rpAdd:"Adicionar ao estoque", rpAdded:"Adicionado ao estoque", rpCurrent:"Em estoque atual", rpRecent:"Producao recente", rpNone:"Nada adicionado ainda.", rpPrint:"Imprimir codigos de produto", rpNotFound:"Codigo nao reconhecido",
@@ -379,7 +409,7 @@
       mixing:"Mistura", pmac:"P-Mac", roleMixing:"Mistura (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mistura", grpPmac:"P-Mac",
       deptSoon:"Esta area esta sendo configurada. As telas da equipe do Allen ficarao aqui - diga o que deseja acompanhar e vamos incluir.",
       conHint:"Escaneie cada material ao passar da prateleira para esta sala. Registra o uso em tempo real e baixa do estoque. Numero de lote obrigatorio em cada leitura.", conLot:"Lote # (obrigatorio)", conBtn:"Registrar uso", conRecent:"Uso recente", conNone:"Nada registrado ainda.", conWhen:"Quando", conMat:"Material", conBy:"Por", conErr:"Escaneie item, quantidade e lote #", conNotInList:"nao esta na lista",
-      grpReceiving:"Recebimento", grpInventory:"Estoque", grpProduction:"Producao", grpFulfillment:"Fulfillment", grpShipping:"Envios", grpPurchasing:"Compras", grpRnd:"P&D", grpHr:"RH", grpImprove:"Melhoria", grpQuality:"Qualidade", compliance:"Conformidade / SQF", cmpHint:"Programa de seguranca de alimentos SQF - certificacoes, o calendario de atividades recorrentes e os documentos controlados no drive compartilhado de Operacoes.", cmpCerts:"Certificacoes e Auditorias", cmpCert:"Certificacao / Auditoria", cmpFreq:"Frequencia", cmpWhen:"Quando / Notas", cmpBody:"Orgao", cmpDueThis:"Vence este mes", cmpAllMonthly:"Apenas as revisoes mensais padrao este mes.", cmpSchedule:"Calendario de Atividades SQF", cmpScheduleHint:"Atividades SQF recorrentes por frequencia (do Calendario SQF 2026). Itens mensais tambem documentados diario/semanal.", cmpDocs:"Registro de Documentos", cmpDocsHint:"Documentos controlados SQF principais - abrir no drive compartilhado de Operacoes.", grpDocs:"Referencia", reference:"Referencia / SOPs", refHint:"SOPs, folhas de referencia e politicas da biblioteca Smackin Docs - um clique para o chao de fabrica. Envie um arquivo e escolha uma categoria.", refDrop:"Enviar documento(s)", refSelected:"arquivo(s) prontos", refCategory:"Categoria", refNotes:"Notas (opcional)", refSaveBtn:"Adicionar a biblioteca", refNone:"Ainda nao ha documentos de referencia.", refLibrary:"Biblioteca de Documentos", refNoFile:"Escolha um arquivo primeiro", refSaved:"adicionado(s)", refConfirmDel:"Remover este documento?", grpSystem:"Sistema",
+      analytics:"Analises", mnTitle:"Produzir Agora — Fila E-Com", mnHint:"Sabores a produzir para o estoque acompanhar a fila de pedidos e-commerce (todos os pedidos nao enviados do ShipStation, incl. acumulo do fim de semana). Falta = demanda da fila menos em estoque.", mnNone:"Ainda nao ha fila e-com carregada. A sincronizacao horaria do ShipStation vai preencher.", mnMake:"PRODUZIR", mnOk:"OK", mnFlavorsShort:"Sabores em falta", mnToMake:"Bolsas a produzir", mnQueue:"Demanda da fila (bolsas)", mnUpdated:"Atualizado", mnOnHand:"Em estoque", mnDemand:"Demanda da fila", mnShort:"Falta", grpReceiving:"Recebimento", grpInventory:"Estoque", grpProduction:"Producao", grpFulfillment:"Fulfillment", grpShipping:"Envios", grpPurchasing:"Compras", grpRnd:"P&D", grpHr:"RH", grpImprove:"Melhoria", grpQuality:"Qualidade", compliance:"Conformidade / SQF", cmpHint:"Programa de seguranca de alimentos SQF - certificacoes, o calendario de atividades recorrentes e os documentos controlados no drive compartilhado de Operacoes.", cmpCerts:"Certificacoes e Auditorias", cmpCert:"Certificacao / Auditoria", cmpFreq:"Frequencia", cmpWhen:"Quando / Notas", cmpBody:"Orgao", cmpDueThis:"Vence este mes", cmpAllMonthly:"Apenas as revisoes mensais padrao este mes.", cmpSchedule:"Calendario de Atividades SQF", cmpScheduleHint:"Atividades SQF recorrentes por frequencia (do Calendario SQF 2026). Itens mensais tambem documentados diario/semanal.", cmpDocs:"Registro de Documentos", cmpDocsHint:"Documentos controlados SQF principais - abrir no drive compartilhado de Operacoes.", grpDocs:"Referencia", reference:"Referencia / SOPs", refHint:"SOPs, folhas de referencia e politicas da biblioteca Smackin Docs - um clique para o chao de fabrica. Envie um arquivo e escolha uma categoria.", refDrop:"Enviar documento(s)", refSelected:"arquivo(s) prontos", refCategory:"Categoria", refNotes:"Notas (opcional)", refSaveBtn:"Adicionar a biblioteca", refNone:"Ainda nao ha documentos de referencia.", refLibrary:"Biblioteca de Documentos", refNoFile:"Escolha um arquivo primeiro", refSaved:"adicionado(s)", refConfirmDel:"Remover este documento?", disposition:"Retido", grpSystem:"Sistema",
       people:"Pessoas", hrHint:"Diretorio da equipe e organograma. Apenas informacoes nao sensiveis - sem salario ou dados pessoais.", hrGate:"Esta secao mostra informacoes de funcionarios. Digite o PIN de gerente para ver.",
       hrDir:"Diretorio", hrOrg:"Organograma", hrRole:"Cargo", hrDept:"Departamento", hrStart:"Inicio", hrMgr:"Reporta a", hrSearchP:"Buscar nome ou cargo...", hrCount:"pessoas", hrNoMatch:"Nenhuma correspondencia.", hrYr:"ano", hrMo:"mes",
       alerts:"Alertas", alertsHint:"O que precisa de atencao agora: itens para repor e lotes de tempero perto do vencimento.",
@@ -391,7 +421,7 @@
       hOut:"Esgotado", hLow:"Baixo / reposicao", hExp:"Lotes vencendo", hOpen:"Pedidos abertos", hIssues:"Pedidos com problema", hRd:"P&D pendente",
       hAttention:"Precisa de atencao agora", hAllClear:"Tudo certo - nada urgente agora.", hSnapshot:"Resumo em estoque", hSeeAll:"Ver tudo",
       hEssential:"Itens essenciais - estoque por sabor", hFlavor:"Sabor", essFilm:"Filme 4oz", hBase:"Materiais base", hCovered:"OK", hLowShort:"Baixo", hOutShort:"Esgotado",
-      supplierpos:"OC Fornecedor", spoHint:"Envie as OCs que voce cria em sistemas externos (Excel ou PDF). O arquivo e armazenado e os dados sao lidos automaticamente quando o formato e reconhecido.",
+      supplierpos:"OC Fornecedor", spoHint:"Crie uma ordem de compra com Criar OC, ou envie uma de Excel ou PDF. Cada OC e armazenada e pesquisavel abaixo.",
       spoDrop:"Solte um arquivo de OC aqui, ou clique para escolher  (.xlsx, .csv, .pdf)", spoVendor:"Fornecedor", spoPO:"OC #", spoDate:"Data OC", spoTotal:"Total", spoItems:"Linhas", spoNotes:"Observacoes", spoFile:"Arquivo", spoUploadedBy:"Enviado por",
       spoSave:"Salvar OC", spoCancel:"Limpar", spoSaved:"OC de fornecedor salva", spoNoFile:"Escolha um arquivo primeiro", spoParsed:"Lido do arquivo", spoDownload:"Baixar",spoOpenDetails:"Clique para ver os detalhes completos da OC",spoView2:"Ver",poNoLines:"Sem itens de linha registrados",poNoFile:"Nenhum arquivo anexado a esta OC", spoDelete:"Excluido", spoList:"OCs de fornecedor enviadas", spoNone:"Ainda nao ha OCs de fornecedor. Envie uma acima.", spoSearchP:"Buscar fornecedor, OC #...", spoConfirmDel:"Excluir esta OC de fornecedor?",
       orderdocs:"Docs de Pedido", odocHint:"Armazene a papelada de pedidos concluidos (BOL, lista de embalagem, folha de separacao, etiquetas, fatura) por cliente e OC - como o SPS. Pesquisavel para o SAC encontrar os documentos rapido.",
@@ -415,7 +445,7 @@
       mtWaitingOn:"Aguardando", mtWaitingOnP:"ex. peca em pedido, orcamento do fornecedor, aprovacao", mtRequestedBy:"Solicitado por", mtRequestedByP:"Quem esta solicitando",
       mtReopen:"Reabrir", mtNoActive:"Nada ativo. Adicione uma solicitacao acima.", mtNoDone:"Nenhum item concluido ainda.", mtSearchP:"Buscar titulo, area, responsavel...", mtConfirmDel:"Excluir este item?",
       mtKpiRequested:"Solicitados", mtKpiInProgress:"Em andamento", mtKpiWaiting:"Aguardando (bloqueado)", mtKpiDone:"Concluidos",
-      poCreate:"+ Criar OC", poNewTitle:"Nova Ordem de Compra", poVendorAddr:"Endereco do fornecedor", poVendorEmail:"Email do fornecedor", poVendorPhone:"Telefone do fornecedor", poShipTo:"Enviar para", poPreparedBy:"Preparado por", poAddLine:"+ Adicionar linha", poItemNo:"Item #", poDesc:"Descricao", poQtyL:"Qtd", poPriceL:"Preco", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Frete", poTaxL:"Imposto", poOtherL:"Outro", poGrandL:"Total", poSaveBtn:"Salvar OC", poBackList:"Voltar a lista", poSavedMsg:"OC salva", poNeedVendor:"Insira um fornecedor primeiro",
+      poCreate:"+ Criar OC", nonPoBtn:"Registrar compra (sem OC)", nonPoTitle:"Registrar uma compra (sem OC)", nonPoHint:"Para compras rapidas que nao precisam de uma OC formal - ainda salvas no arquivo e marcadas Sem OC.", nonPoDesc:"O que foi comprado", nonPoAmount:"Valor", nonPoBy:"Comprado por", nonPoTag:"Sem OC", poExpectedEdit:"Esperado / prazo", poEtaSaved:"Data esperada atualizada", poNewTitle:"Nova Ordem de Compra", poVendorAddr:"Endereco do fornecedor", poVendorEmail:"Email do fornecedor", poVendorPhone:"Telefone do fornecedor", poShipTo:"Enviar para", poPreparedBy:"Preparado por", poAddLine:"+ Adicionar linha", poItemNo:"Item #", poDesc:"Descricao", poQtyL:"Qtd", poPriceL:"Preco", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Frete", poTaxL:"Imposto", poOtherL:"Outro", poGrandL:"Total", poSaveBtn:"Salvar OC", poBackList:"Voltar a lista", poSavedMsg:"OC salva", poNeedVendor:"Insira um fornecedor primeiro",
       poEmail:"Enviar OC por email", poEmailTo:"Para", poEmailSubjectL:"Assunto", poEmailSubjectTpl:"Ordem de Compra", poEmailBody:"Mensagem", poEmailSend:"Enviar email", poEmailCopy:"Copiar resumo da OC",
       poEmailHint:"Se o envio de email ainda nao estiver configurado, Enviar vai abrir isto no seu aplicativo de email - o link do arquivo da OC esta incluido na mensagem para voce anexar/compartilhar.",
       poEmailNeedTo:"Insira primeiro o email do fornecedor", poEmailSending:"Enviando...", poEmailOk:"OC enviada por email", poEmailCopied:"Copiado para a area de transferencia",
@@ -443,7 +473,7 @@
   let lang = "en"; const L = k => (T[lang][k] !== undefined ? T[lang][k] : (T.en[k] !== undefined ? T.en[k] : k));
   let active = "home"; let catFilter = "all";
   let purchMode = "list"; let purchSup = null; let receivingPOid = null;
-  let purchView = "buy";  // Purchasing: "buy" (Buy List + POs) | "setup" (reorder-point/supplier config)
+  let purchView = "po";   // Purchasing hub tab: "po" (Purchase Orders) | "buy" (Buy List) | "setup" (reorder config)
   let purchSetupCat = "all";  // Reorder-setup category filter
   let plDate = null;  // Daily Production log: selected date (defaults to today)
   // Retail production flavor codes (mirrors Jesus's "Flavors codes" sheet); bpc = bags per case/box
@@ -461,6 +491,16 @@
     { code: "L21", name: "Cheeseburger", bpc: 72 }, { code: "L38", name: "Salt & Vinegar", bpc: 72 }, { code: "L34", name: "Honey BBQ", bpc: 72 }
   ];
   const PROD_FMAP = {}; PROD_FLAVORS.forEach(f => PROD_FMAP[f.code] = f);
+  // Daily Fulfillment tracker: Amazon (FBA) SKU -> bags-per-unit map. Editable here as new packs are added;
+  // any SKU not in this map (custom / free-text entry) defaults to a user-entered bags-per-unit, or 1.
+  const AMZ_SKU_BAGS = { "SS-SP-10-FBA": 10, "SS-SP-11-FBA": 11, "SS-VP-7-FBA": 6 };
+  const AMZ_SKU_LABELS = {
+    "SS-SP-10-FBA": "10-Flavor Variety 1.5oz (10 bags/unit)",
+    "SS-SP-11-FBA": "11-Pack Variety 1.5oz (11 bags/unit)",
+    "SS-VP-7-FBA": "6-Flavor Variety 1.5oz (6 bags/unit)"
+  };
+  let fdDate = null;   // Daily Fulfillment: selected date (defaults to today)
+  let fdDraft = null;  // Daily Fulfillment: in-progress draft { date, ecom:[{employee,labels}], amazon:[{sku,units,bagsPerUnit}], notes }
   // Seed packaging profiles (Adriana): per = total lbs per pallet -> auto weight = pallets x per
   const SEED_PACKS = [
     { key: "30x50", label: "30 bags x 50 lb / pallet", per: 1500 },
@@ -468,7 +508,7 @@
     { key: "tote", label: "Tote - 1 bag x 1,200 lb", per: 1200 }
   ];
   const SEED_PACK_MAP = {}; SEED_PACKS.forEach(p => SEED_PACK_MAP[p.key] = p);
-  const TABS = ["home","dash","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","stockbuild","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","supplierpos","people","improve","maintenance","compliance","reference","labels","log","settings","board"];
+  const TABS = ["home","dash","analytics","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","fulfilldaily","stockbuild","reorder15","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","supplierpos","people","improve","maintenance","compliance","disposition","reference","labels","log","settings","board"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -502,7 +542,26 @@
     sourcreamonion: CDN + "SourCream_Onion_4_Front_d1bf59f8-2d3b-4f2a-a69e-a3dea130cd27.png?width=72",
     maplebrownsugar: CDN + "MapleBrownSugar_4_Front_2112beec-1fb1-45f6-89ff-ef72a70fe05f.png?width=72",
     lemonpepper: CDN + "LemonPepper_4_Front_2b7bf9f2-5012-4f7f-adc0-ac1e54696466.png?width=72",
-    crackedpepper: CDN + "CrackedPepper_4_Front_59837e87-ef45-4540-8540-f98da28bdea2.png?width=72"
+    crackedpepper: CDN + "CrackedPepper_4_Front_59837e87-ef45-4540-8540-f98da28bdea2.png?width=72",
+    // LTO / co-brand flavors (batch-label + finished-bags feature)
+    cheeseburger: CDN + "09.09.25_PDP_LTO_Cheeseburger_6Bags.png?width=72",
+    honeybbq: CDN + "04.01.26_PDP_LTO_ARod_6Bags.png?width=72",
+    arodhoneybbq: CDN + "04.01.26_PDP_LTO_ARod_6Bags.png?width=72",
+    honeybbqarod: CDN + "04.01.26_PDP_LTO_ARod_6Bags.png?width=72",
+    pizza: CDN + "02.16.26_SMACKINxPCA_4-6Bags.png?width=72",
+    deepdishpizza: CDN + "02.16.26_SMACKINxPCA_4-6Bags.png?width=72",
+    pcapizza: CDN + "02.16.26_SMACKINxPCA_4-6Bags.png?width=72",
+    saltvinegar: CDN + "PDPs_GoodGood6Bag.png?width=72",
+    goodgoodsaltvinegar: CDN + "PDPs_GoodGood6Bag.png?width=72",
+    guacamole: CDN + "PDPs_6Bag_Guac.png?width=72",
+    salsa: CDN + "PDPs_6Bag_Salsa.png?width=72",
+    taco: CDN + "PDPs_6Bag_Taco.png?width=72",
+    sweetthaichili: CDN + "PDPs_6bagSTC.png?width=72",
+    loadedpotato: CDN + "PDPs_6bagLP.png?width=72",
+    blueberrypie: CDN + "04.30.26_PDP_LTO_BlueberryPie-6Bags.png?width=72",
+    spicyqueso: CDN + "PDPs_SpicyQueso_6Bag.png?width=72",
+    chilicheesedog: CDN + "04.30.26_PDP_LTO_ChiliCheeseDog-6Bags.png?width=72",
+    baconmaccheese: CDN + "04.30.26_PDP_LTO_BaconMac_Cheese-6Bags.png?width=72"
   };
   function flavorImg(fl) { const k = String(fl || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, ""); return FLAVOR_IMG[k] || ""; }
   // Fuzzy: find a flavor image anywhere inside a longer string (e.g. a SKU title)
@@ -633,38 +692,45 @@
     ["Megan Matthai","Marketing","Marketing","Max DeWolf"],
     ["Peter Albertson","Marketing","Marketing","Max DeWolf"],
     ["Rajil Wasif","Marketing","Marketing","Max DeWolf"],
-    ["Brian Lepro","Independent Contractor","Contractor",""]
+    ["Brian Lepro","Independent Contractor","Contractor",""],
+    ["Lorelei Davis","Fulfillment Associate","Fulfillment","Troy Dircks"]
   ].map(a => ({ n:a[0], r:a[1], d:a[2], m:a[3] }));
+  // Daily Fulfillment tracker: anyone who can work e-com labels on a given day -- the whole Fulfillment /
+  // Shipping roster, plus the Operations people who report to Troy on the fulfillment side.
+  function fdEmployeeList() {
+    return PEOPLE.filter(p => p.d === "Fulfillment" || p.d === "Shipping" || (p.d === "Operations" && p.m === "Troy Dircks"))
+      .map(p => p.n).sort();
+  }
   // ---- left sidebar: tabs grouped by department (NetSuite-style) ----
   const NAV_GROUPS = [
     { key:"", items:["home","alerts"] },
     { key:"grpReceiving", items:["receive","recvlog","returns","qa"] },
-    { key:"grpInventory", items:["dash","adjust","count","move","locations","facility","finbags","seasoning","seed","skus","labels"] },
+    { key:"grpInventory", items:["dash","analytics","adjust","count","move","locations","facility","finbags","seasoning","seed","skus","labels"] },
     { key:"grpProduction", items:["produce","retailprod","ecomprod"] },
-    { key:"grpFulfillment", items:["prodlog","stockbuild","orders","orderdocs"] },
+    { key:"grpFulfillment", items:["prodlog","fulfilldaily","stockbuild","reorder15","orders","orderdocs"] },
     { key:"grpDemand", items:["demand","demandboard","demandsched","demandimport","ecomdemand","forecast"] },
     { key:"grpShipping", items:["shiplog"] },
     { key:"grpMixing", items:["mixing","floor"] },
     { key:"grpPmac", items:["pmac","pmacout","floor"] },
-    { key:"grpPurchasing", items:["purchasing","supplierpos"] },
+    { key:"grpPurchasing", items:["purchasing"] },
     { key:"grpRnd", items:["rd"] },
     { key:"grpHr", items:["people"] },
     { key:"grpImprove", items:["improve"] },
     { key:"grpMaintenance", items:["maintenance"] },
-    { key:"grpQuality", items:["compliance"] },
+    { key:"grpQuality", items:["compliance","disposition"] },
     { key:"grpDocs", items:["reference"] },
     { key:"grpSystem", items:["board","log","settings"] }
   ];
   // Lucide icon names (clean SVG line icons) rendered via lucide.createIcons()
   const NAV_ICON = {
-    home:"home", dash:"layout-dashboard", alerts:"bell", adjust:"sliders-horizontal",
+    home:"home", dash:"layout-dashboard", analytics:"bar-chart-3", alerts:"bell", adjust:"sliders-horizontal",
     receive:"package-plus", recvlog:"clipboard-list", putaway:"package-check", returns:"rotate-ccw",
     orders:"receipt", orderdocs:"folder", shiplog:"truck", rd:"flask-conical", qa:"shield-alert",
-    move:"arrow-left-right", produce:"factory", retailprod:"package", ecomprod:"laptop", prodlog:"clipboard-list", stockbuild:"layers",
+    move:"arrow-left-right", produce:"factory", retailprod:"package", ecomprod:"laptop", prodlog:"clipboard-list", fulfilldaily:"clipboard-list", stockbuild:"layers", reorder15:"repeat",
     seasoning:"flame", seed:"sprout", skus:"barcode", finbags:"shopping-bag", pmacout:"package-open",
     mixing:"cooking-pot", pmac:"wrench", count:"clipboard-check", locations:"map-pin",
     purchasing:"shopping-cart", supplierpos:"file-text", people:"users", labels:"tag",
-    board:"tv", log:"history", settings:"settings", improve:"trending-up", maintenance:"hard-hat", compliance:"shield-check", reference:"book-open",
+    board:"tv", log:"history", settings:"settings", improve:"trending-up", maintenance:"hard-hat", compliance:"shield-check", disposition:"archive", reference:"book-open",
     demand:"calendar-clock", demandboard:"list-checks", demandsched:"gauge", demandimport:"file-up", ecomdemand:"globe", forecast:"scale", facility:"warehouse", floor:"activity" };
   function drawIcons() { try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {} }
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
@@ -789,11 +855,12 @@
     return DB.allLocations().indexOf(code) >= 0 || /^[A-E]-\d{2}-L[1-4]$/.test(code); }
 
   function setLang(l) { lang = l; ["en","es","pt"].forEach(x => { const b = $("lang-" + x); if (b) b.classList.toggle("active", l === x); }); render(); }
-  function go(t) { active = t; if (t !== "purchasing") { purchMode = "list"; receivingPOid = null; } if (t === "orders") markOrdersSeen(); closeDrawer(); render(); }
+  function go(t) { active = t; if (t !== "purchasing") { purchMode = "list"; receivingPOid = null; } else { spoDetailId = null; spoView = "list"; } if (t === "orders") markOrdersSeen(); closeDrawer(); render(); }
   function opVal() { const e = $("op"); return e ? e.value : "Troy"; }
 
   // ---------- edit lock (PIN) — viewing is open, changes require the PIN ----------
   const EDIT_PIN = "2210";
+  const PURCH_PIN = "0470"; // Purchasing area (Michelle/Matt/Troy)
   let unlocked = (function(){ try { return sessionStorage.getItem("smk_unlocked") === "1"; } catch (e) { return false; } })();
   function lockEdits() { unlocked = false; try { sessionStorage.removeItem("smk_unlocked"); } catch (e) {} toast(L("locked")); render(); }
   function pinPrompt() {
@@ -816,7 +883,7 @@
     if (unlocked) return true;
     const v = await pinPrompt();
     if (v === null) return false;
-    if (v === EDIT_PIN) { unlocked = true; try { sessionStorage.setItem("smk_unlocked", "1"); } catch (e) {} toast(L("unlocked")); render(); return true; }
+    if (v === EDIT_PIN || v === PURCH_PIN) { unlocked = true; try { sessionStorage.setItem("smk_unlocked", "1"); } catch (e) {} toast(L("unlocked")); render(); return true; }
     toast(L("pinWrong")); return false;
   }
 
@@ -827,6 +894,10 @@
   }
   // Same as opField but with a caller-chosen id — needed when more than one operator
   // field appears on the same page (e.g. the Now Running board has one per section).
+  function opFieldPurch(def) {
+    return '<label>' + L("operator") + '</label><select id="op">' +
+      ["Michelle","Matt","Troy"].map(n => '<option' + (n === def ? ' selected' : '') + '>' + n + "</option>").join("") + "</select>";
+  }
   function opFieldFor(id, def) {
     return '<label>' + L("operator") + '</label><select id="' + id + '">' +
       ["Jesus","Adriana","Marlin","Edgar","Troy"].map(n => '<option' + (n === def ? ' selected' : '') + '>' + n + "</option>").join("") + "</select>";
@@ -1270,6 +1341,7 @@
   function viewSupplierPos() {
     if (spoDetailId) return viewPoDetail(spoDetailId);
     if (spoView === "create") return viewPoCreate();
+    if (spoView === "nonpo") return viewNonPo();
     const list = spoSortList(DB.supplierPos());
     let form;
     if (!spoParsed) {
@@ -1292,13 +1364,15 @@
       const txt = ((s.vendor || "") + " " + (s.po_num || "") + " " + (s.file_name || "")).toLowerCase().replace(/"/g, "");
       const dl = s.file_url ? '<a class="order sm" href="' + s.file_url + '" target="_blank" rel="noopener">' + L("spoDownload") + '</a>' : (s.file_name ? '<span class="muted sm">' + s.file_name + '</span>' : "&mdash;");
       const poCell = '<a class="polink" onclick="UI.spoOpen(\'' + s.id + '\')" title="' + L("spoOpenDetails") + '">' + (s.po_num || L("spoView2")) + '</a>';
-      return '<tr data-txt="' + txt + '"><td><b>' + (s.vendor || "&mdash;") + '</b>' + (s.uploaded_by ? '<div class="muted sm">' + L("oByPrefix") + " " + s.uploaded_by + '</div>' : "") + '</td>' +
+      const _np = /^NP-/.test(s.po_num || ""); const _eta = etaOfNotes(s.notes);
+      const _tags = (_np ? ' <span class="pill">' + L("nonPoTag") + '</span>' : "") + (_eta ? ' <span class="pill low">ETA ' + _eta.slice(5).replace("-", "/") + '</span>' : "");
+      return '<tr data-txt="' + txt + '"><td><b>' + (s.vendor || "&mdash;") + '</b>' + _tags + (s.uploaded_by ? '<div class="muted sm">' + L("oByPrefix") + " " + s.uploaded_by + '</div>' : "") + '</td>' +
         '<td>' + poCell + '</td><td class="sm">' + (s.po_date || "") + '</td>' +
         '<td class="right">' + money(s.total) + '</td><td class="right muted">' + (s.item_count || 0) + '</td>' +
         '<td>' + dl + '</td><td><button class="ghost sm" title="' + L("poEmail") + '" onclick="UI.poEmailFromList(\'' + s.id + '\')">&#9993;</button> <button class="ghost sm danger" onclick="UI.spoDelete(\'' + s.id + '\')">&#10005;</button></td></tr>';
     }).join("") : '<tr><td colspan="7" class="muted">' + L("spoNone") + '</td></tr>';
-    return '<div class="card"><div class="spohead"><h2>' + L("supplierpos") + '</h2>' +
-      '<button class="primary sm" onclick="UI.poCreateOpen()">' + L("poCreate") + '</button></div>' +
+    return '<div class="card"><div class="spohead"><h2>' + L("purchPOs") + '</h2>' +
+      '<span><button class="primary sm" onclick="UI.poCreateOpen()">' + L("poCreate") + '</button> <button class="ghost sm" onclick="UI.nonPoOpen()">' + L("nonPoBtn") + '</button></span></div>' +
       '<p class="hint">' + L("spoHint") + '</p>' + form + '</div>' +
       '<div class="card"><h2 class="sub2">' + L("spoList") + ' (' + list.length + ')</h2>' +
       '<input id="spoSearch" autocomplete="off" oninput="UI.spoSearch(this.value)" placeholder="' + L("spoSearchP") + '" style="margin-bottom:10px">' +
@@ -1312,6 +1386,10 @@
   }
   // Parse a supplier PO's line items defensively (imports & Create-PO use slightly different keys).
   // Shared by the detail table render and the Email PO summary builder.
+  // ETA / lead-time is stored inside the PO notes as a [[ETA:YYYY-MM-DD]] token (no schema change).
+  function etaOfNotes(n){ var m=/\[\[ETA:(\d{4}-\d{2}-\d{2})\]\]/.exec(n||""); return m?m[1]:""; }
+  function notesClean(n){ return String(n||"").replace(/\s*\[\[ETA:\d{4}-\d{2}-\d{2}\]\]\s*/,"").trim(); }
+  function notesWithEta(n,eta){ var base=notesClean(n); return eta?("[[ETA:"+eta+"]]"+(base?" "+base:"")):base; }
   function poLinesOf(s) {
     let lines = [];
     try { const p = typeof s.lines === "string" ? JSON.parse(s.lines || "[]") : (s.lines || []); if (Array.isArray(p)) lines = p; } catch (e) {}
@@ -1379,7 +1457,8 @@
     const info = fld(L("spoVendor"), s.vendor) + fld(L("spoPO"), s.po_num) + fld(L("spoDate"), s.po_date) +
       fld(L("poVendorAddr"), s.vendor_addr) + fld(L("poVendorEmail"), s.vendor_email) + fld(L("poVendorPhone"), s.vendor_phone) +
       fld(L("poShipTo"), s.ship_to) + fld(L("poPreparedBy"), s.prepared_by) + fld(L("spoUploadedBy"), s.uploaded_by) +
-      fld(L("when"), s.created_at ? String(s.created_at).slice(0, 10) : "");
+      fld(L("when"), s.created_at ? String(s.created_at).slice(0, 10) : "") +
+      '<div class="podf"><span class="podl">' + L("poExpectedEdit") + '</span><span class="podv"><input type="date" value="' + esc(etaOfNotes(s.notes)) + '" onchange="UI.spoSetEta(\'' + s.id + '\',this.value)"></span></div>';
     const totalsRows =
       (s.subtotal != null && s.subtotal !== "" ? '<div><span>' + L("poSubtotalL") + '</span><b>' + money(s.subtotal) + '</b></div>' : "") +
       (s.shipping != null && s.shipping !== "" ? '<div><span>' + L("poShippingL") + '</span><b>' + money(s.shipping) + '</b></div>' : "") +
@@ -1398,7 +1477,7 @@
       '<div class="card"><h2 class="sub2">' + L("spoItems") + ' (' + lines.length + ')</h2>' +
       '<table class="potable"><thead><tr><th>' + L("poItemNo") + '</th><th>' + L("poDesc") + '</th><th class="right">' + L("poQtyL") + '</th><th class="right">' + L("poPriceL") + '</th><th class="right">' + L("poLineTot") + '</th></tr></thead><tbody>' + lineRows + '</tbody></table>' +
       '<div class="pototals" style="margin-top:12px">' + totalsRows + '</div>' +
-      (s.notes ? '<h3 class="sub2" style="margin-top:14px">' + L("spoNotes") + '</h3><p>' + esc(s.notes) + '</p>' : "") + '</div>';
+      (notesClean(s.notes) ? '<h3 class="sub2" style="margin-top:14px">' + L("spoNotes") + '</h3><p>' + esc(notesClean(s.notes)) + '</p>' : "") + '</div>';
   }
   function poRowInner(i) {
     return '<td><input id="pl-item-' + i + '" autocomplete="off"></td>' +
@@ -1406,6 +1485,21 @@
       '<td><input id="pl-qty-' + i + '" type="number" min="0" step="any" inputmode="decimal" oninput="UI.poRecalc()"></td>' +
       '<td><input id="pl-price-' + i + '" type="number" min="0" step="any" inputmode="decimal" oninput="UI.poRecalc()"></td>' +
       '<td class="right"><span id="pl-tot-' + i + '">$0.00</span></td>';
+  }
+  function viewNonPo() {
+    var vendors = Array.from(new Set(DB.supplierPos().map(x => x.vendor).filter(Boolean))).sort();
+    var dl = '<datalist id="dl-np-vendor">' + vendors.map(v => '<option value="' + esc(v) + '"></option>').join("") + '</datalist>';
+    var today = new Date().toISOString().slice(0, 10);
+    return dl + '<div class="card"><div class="spohead"><h2>' + L("nonPoTitle") + '</h2>' +
+      '<button class="ghost sm" onclick="UI.nonPoBack()">' + L("poBackList") + '</button></div>' +
+      '<p class="hint">' + L("nonPoHint") + '</p>' +
+      '<div class="row"><div><label>' + L("spoVendor") + '</label><input id="np-vendor" list="dl-np-vendor" autocomplete="off"></div>' +
+      '<div><label>' + L("nonPoAmount") + '</label><input id="np-amount" type="number" min="0" step="any" inputmode="decimal"></div>' +
+      '<div><label>' + L("spoDate") + '</label><input id="np-date" type="date" value="' + today + '"></div></div>' +
+      '<div><label>' + L("nonPoDesc") + '</label><input id="np-desc" autocomplete="off"></div>' +
+      '<div class="row" style="margin-top:10px"><div><label>' + L("nonPoBy") + '</label><select id="np-by">' + PO_PREPARERS.map(n => "<option>" + n + "</option>").join("") + '</select></div>' +
+      '<div><label>' + L("spoNotes") + '</label><input id="np-notes" autocomplete="off"></div></div>' +
+      '<button class="primary" onclick="UI.nonPoSave()">' + L("poSaveBtn") + '</button></div>';
   }
   function viewPoCreate() {
     const vendors = Array.from(new Set(DB.supplierPos().map(s => s.vendor).filter(Boolean))).sort();
@@ -1790,12 +1884,25 @@
     SB_ITEMS.forEach(i => { gGoal += i.goal; gOn += val(i.key); });
     const gPct = gGoal ? Math.round(gOn / gGoal * 100) : 0;
     const gToBuild = Math.max(gGoal - gOn, 0);
+    const catStats = SB_CATS.map(cat => {
+      const items = SB_ITEMS.filter(i => i.cat === cat);
+      let cg = 0, co = 0; items.forEach(i => { cg += i.goal; co += val(i.key); });
+      return { cat, goal: cg, on: co, pct: cg ? Math.round(co / cg * 100) : 0 };
+    }).filter(c => c.goal > 0);
+    const chartBar = c => {
+      const col = c.pct >= 100 ? "#2E9E5B" : (c.pct >= 50 ? "#F2A93B" : "#E0533B");
+      return '<div style="display:flex;align-items:center;gap:10px;margin:6px 0">' +
+        '<div style="width:110px;flex:none;font-size:12.5px;font-weight:600">' + esc(c.cat) + '</div>' +
+        '<div style="flex:1;background:#EEF2F7;border-radius:6px;height:22px"><div style="width:' + Math.max(2, Math.min(100, c.pct)) + '%;height:100%;border-radius:6px;background:' + col + '"></div></div>' +
+        '<div style="width:150px;flex:none;font-size:12px;font-weight:700;text-align:right">' + fmt(c.on) + ' / ' + fmt(c.goal) + ' (' + c.pct + '%)</div></div>';
+    };
+    const sbChart = '<div style="margin-top:14px"><div class="muted sm" style="margin-bottom:4px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">' + L("sbCoverage") + '</div>' + catStats.map(chartBar).join("") + '</div>';
     const summary = '<div class="card"><h2>' + L("stockbuild") + '</h2><p class="hint">' + L("sbHint") + '</p>' +
       '<div class="kpis"><div class="kpi"><div class="n">' + fmt(gGoal) + '</div><div class="l">' + L("sbTotalGoal") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(gOn) + '</div><div class="l">' + L("sbOnHand") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(gToBuild) + '</div><div class="l">' + L("sbToBuild") + '</div></div>' +
       '<div class="kpi"><div class="n">' + gPct + '%</div><div class="l">' + L("sbComplete") + '</div></div></div>' +
-      '<div style="margin-top:12px"><button class="ghost sm" onclick="UI.sbReportPdf()">&#11015; ' + L("dlPdf") + '</button> <button class="ghost sm" onclick="UI.sbReportXlsx()">&#11015; ' + L("dlExcel") + '</button></div></div>';
+      sbChart + '<div style="margin-top:12px"><button class="ghost sm" onclick="UI.sbReportPdf()">&#11015; ' + L("dlPdf") + '</button> <button class="ghost sm" onclick="UI.sbReportXlsx()">&#11015; ' + L("dlExcel") + '</button></div></div>';
     const barCls = p => p >= 100 ? "ok" : p >= 50 ? "low" : "out";
     const rowHtml = i => {
       const on = val(i.key), goal = i.goal, toBuild = Math.max(goal - on, 0);
@@ -1826,6 +1933,46 @@
       return '<div class="card">' + head + '<div class="tblwrap"><table class="sbtable">' + thead + '<tbody>' + body + '</tbody></table></div></div>';
     };
     return summary + SB_CATS.map(catBlock).join("");
+  }
+  function viewReorder15() {
+    var BIN = 535, PAL = 6250, TRIG = 12500;
+    var nameByCode = { S01:"OG Original", S02:"Cinnamon Churro", S03:"Backyard BBQ", S04:"Garlic Parmesan", S05:"Dill Pickle", S06:"Cracked Pepper", S07:"Cheddar Jalapeno", S08:"Ranch", S09:"Maple Brown Sugar", S10:"Lemon Pepper", S11:"Sour Cream & Onion", L01:"Cheeseburger" };
+    var tiers = [
+      { label: L("r15Prime"), bins: 48, codes: ["S02","S03","S07","S04","S05","S08"] },
+      { label: L("r15Secondary"), bins: 24, codes: ["S01","S10","S06","S09","L01","S11"] }
+    ];
+    var wkOf = function(nm){ try { var r = (typeof EC15_ROWS !== "undefined") ? EC15_ROWS.find(function(x){ return x.f === nm; }) : null; return r ? r.w : 0; } catch(e){ return 0; } };
+    var reorderCount = 0, buildNow = 0;
+    var groupHtml = tiers.map(function(t){
+      var build = t.bins * BIN, afterTot = build + TRIG, afterPal = afterTot / PAL;
+      var rows = t.codes.map(function(c){
+        var nm = nameByCode[c], tracked = (c !== "L01");
+        var oh = tracked ? (Number(DB.onHand("BAG15-" + c)) || 0) : null;
+        var pal = oh != null ? oh / PAL : null;
+        var need = oh != null && oh <= TRIG;
+        if (need) { reorderCount++; buildNow += build; }
+        var w = wkOf(nm);
+        var wkLeft = (w && oh != null) ? oh / w : null;
+        var wkAfter = w ? afterTot / w : null;
+        var pill = !tracked ? '<span class="pill">' + L("r15NoItem") + '</span>'
+          : (need ? '<span class="pill out">' + L("r15Reorder") + '</span>' : '<span class="pill ok">' + L("r15Ok") + '</span>');
+        return '<tr><td><b>' + esc(nm) + '</b></td>' +
+          '<td class="right">' + (oh != null ? fmt(oh) : "&mdash;") + '</td>' +
+          '<td class="right muted">' + (pal != null ? pal.toFixed(1) : "&mdash;") + '</td>' +
+          '<td>' + pill + '</td>' +
+          '<td class="right muted">' + (wkLeft != null ? wkLeft.toFixed(1) : "&mdash;") + '</td>' +
+          '<td class="right"><b>' + (wkAfter != null ? wkAfter.toFixed(1) : "&mdash;") + '</b></td></tr>';
+      }).join("");
+      var head = '<div class="suprow"><h2 class="sub2" style="margin:0">' + esc(t.label) + '</h2>' +
+        '<span class="muted sm">' + t.bins + ' ' + L("r15Bins") + ' = ' + fmt(build) + ' ' + L("bags") + ' &middot; ' + L("r15After") + ' ' + fmt(afterTot) + ' (' + afterPal.toFixed(1) + ' ' + L("sbPallets") + ')</span></div>';
+      return '<div class="card">' + head +
+        '<table><thead><tr><th>' + L("plFlavor") + '</th><th class="right">' + L("sbOnHand") + '</th><th class="right">' + L("sbPallets") + '</th><th>' + L("status") + '</th><th class="right">' + L("r15WksLeft") + '</th><th class="right">' + L("r15WksAfter") + '</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+    }).join("");
+    var kpis = '<div class="kpis"><div class="kpi"><div class="n">' + reorderCount + '</div><div class="l">' + L("r15ToReorder") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(buildNow) + '</div><div class="l">' + L("r15BuildNow") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(TRIG) + '</div><div class="l">' + L("r15Trigger") + '</div></div></div>';
+    return '<div class="card"><h2>&#128260; ' + L("reorder15") + '</h2><p class="hint">' + L("r15Hint") + '</p>' + kpis + '</div>' + groupHtml +
+      '<div class="card"><p class="hint">&#9888;&#65039; ' + L("r15Note") + '</p></div>';
   }
   function viewProdLog() {
     const today = new Date().toISOString().slice(0, 10);
@@ -1861,7 +2008,7 @@
       '<button class="ghost sm" title="Next day" onclick="UI.plDateShift(1)">&#9654;</button>' +
       (date === today ? '' : '<button class="ghost sm" onclick="UI.plDate(\'' + today + '\')">' + L("plToday") + '</button>') +
       '</div></div>' +
-      '<div class="row"><div><label>' + L("plLot") + '</label><input value="' + esc(av(day.lot)) + '" onchange="UI.plDay(\'lot\',this.value)"></div>' +
+      '<div class="row"><div><label>' + L("plLot") + '</label><input value="' + esc(av(day.lot)) + '" placeholder="' + L("plLotPh") + '" onchange="UI.plDay(\'lot\',this.value)"><div class="muted sm" style="margin-top:3px">' + L("plLotHint") + '</div></div>' +
       '<div><label>' + L("plShiftLead") + '</label><input value="' + esc(day.shift_lead != null && day.shift_lead !== "" ? day.shift_lead : "Jesus Arias") + '" onchange="UI.plDay(\'shift_lead\',this.value)"></div></div>' +
       '<h3 class="sub2" style="margin-top:14px">\u{1F4E6} ' + L("plCounter") + '</h3>' +
       '<div class="row"><div><label>' + L("plStart") + '</label><input type="number" value="' + esc(av(day.counter_start)) + '" onchange="UI.plDay(\'counter_start\',this.value)"></div>' +
@@ -1880,35 +2027,124 @@
       '<span class="muted sm">' + L("plPalletsUsed") + ': <input type="number" value="' + esc(av(day.pallets_used)) + '" onchange="UI.plDay(\'pallets_used\',this.value)" style="width:70px;display:inline-block;padding:5px"></span></div>' +
       '<table><thead><tr><th>#</th><th>' + L("plLine") + '</th><th>' + L("plFlavor") + '</th><th class="right">' + L("plCases") + '</th><th>' + L("when") + '</th><th>' + L("plNotes") + '</th><th></th></tr></thead><tbody>' + palRows + '</tbody></table></div>';
     const varClass = variance === 0 ? "ok" : "low";
-    const sumCard = '<div class="card"><h2 class="sub2">' + (date === today ? L("plTodaySummary") : L("plDaySummary") + ' · ' + date) + '</h2>' +
+    const sumCard = '<div class="card"><h2 class="sub2">' + L("plSummary") + '</h2>' +
       '<table class="sortable"><thead><tr><th>' + L("plCode") + '</th><th>' + L("hFlavor") + '</th><th class="right">' + L("plCases") + '</th><th class="right">' + L("bags") + '</th></tr></thead><tbody>' + sumRows +
       '<tr><td colspan="2"><b>' + L("total") + '</b></td><td class="right"><b>' + fmt(totCases) + '</b></td><td class="right"><b>' + fmt(totBags) + '</b></td></tr></tbody></table>' +
       '<div class="kpis" style="margin-top:12px"><div class="kpi"><div class="n">' + fmt(boxes) + '</div><div class="l">' + L("plBoxes") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(totCases) + '</div><div class="l">' + L("plCasesLogged") + '</div></div>' +
       '<div class="kpi ' + (variance !== 0 ? "alert" : "") + '"><div class="n">' + fmt(variance) + '</div><div class="l">' + L("plVariance") + '</div></div></div></div>';
-    // ---- Recent Days: quick jump to prior production days with their totals ----
-    const dates = (DB.prodDates ? DB.prodDates() : []).slice(0, 10);
-    const recentRows = dates.map(d => {
-      const dp = DB.prodPallets(d).filter(p => (p.channel || "retail") === "retail");
-      const dCases = dp.reduce((s, p) => s + (Number(p.cases) || 0), 0);
-      const dd = DB.prodDay(d, "retail") || {};
+    const notesCard = '<div class="card"><h2 class="sub2">' + L("fdNotesTitle") + '</h2><p class="hint">' + L("plDayNotesHint") + '</p>' +
+      '<textarea rows="3" placeholder="' + L("fdNotesPh") + '" onchange="UI.plDay(\'notes\',this.value)">' + esc(av(day.notes)) + '</textarea></div>';
+    // ---- Recent Days: jump to prior production days w/ day totals (mirrors Daily Fulfillment) ----
+    const recentDays = [];
+    for (let i = 0; i < 21; i++) {
+      const dt = new Date(today + 'T00:00:00'); dt.setDate(dt.getDate() - i);
+      const ds = dt.toISOString().slice(0, 10);
+      const dp = DB.prodPallets(ds).filter(p => (p.channel || 'retail') === 'retail');
+      const dd = DB.prodDay(ds, 'retail') || {};
+      const hasData = dp.length > 0 || dd.counter_start != null || dd.counter_end != null || (dd.lot && dd.lot !== '');
+      if (!hasData && ds !== date) continue;
+      const dCases = dp.reduce((a, p) => a + (Number(p.cases) || 0), 0);
       const dcs = Number(dd.counter_start) || 0, dce = Number(dd.counter_end) || 0;
       const dBoxes = dce > dcs ? dce - dcs : 0;
-      const dVar = dBoxes - dCases;
-      const isSel = d === date;
-      const label = d === today ? d + ' <span class="tag">' + L("plToday") + '</span>' : d;
-      return '<tr style="cursor:pointer' + (isSel ? ';font-weight:700' : '') + '" onclick="UI.plDate(\'' + d + '\')">' +
-        '<td>' + label + (isSel ? ' &#9664;' : '') + '</td>' +
-        '<td class="right">' + fmt(dBoxes) + '</td><td class="right">' + fmt(dCases) + '</td>' +
-        '<td class="right ' + (dVar !== 0 ? 'low' : 'ok') + '">' + fmt(dVar) + '</td></tr>';
-    }).join('');
-    const recentCard = '<div class="card"><h2 class="sub2">' + L("plRecentDays") + '</h2>' +
-      '<p class="hint" style="margin-top:0">' + L("plRecentHint") + '</p>' +
-      (dates.length
-        ? '<table class="sortable"><thead><tr><th>' + L("plDate2") + '</th><th class="right">' + L("plColBoxes") + '</th><th class="right">' + L("plColCases") + '</th><th class="right">' + L("plColVar") + '</th></tr></thead><tbody>' + recentRows + '</tbody></table>'
-        : '<p class="muted">' + L("plRecentNone") + '</p>') +
-      '</div>';
-    return header + addCard + logCard + sumCard + recentCard;
+      recentDays.push({ ds, dCases, dBoxes, dVar: dBoxes - dCases });
+    }
+    const recentRows = recentDays.length ? recentDays.map(r => {
+      const isSel = r.ds === date;
+      const lbl = r.ds === today ? r.ds + ' <span class="tag">' + L('plToday') + '</span>' : r.ds;
+      return '<tr style="cursor:pointer' + (isSel ? ';font-weight:700' : '') + '" onclick="UI.plDate(\'' + r.ds + '\')"><td>' + lbl + (isSel ? ' &#9664;' : '') + '</td>' +
+        '<td class="right">' + fmt(r.dBoxes) + '</td><td class="right">' + fmt(r.dCases) + '</td>' +
+        '<td class="right ' + (r.dVar !== 0 ? 'low' : 'ok') + '">' + fmt(r.dVar) + '</td></tr>';
+    }).join('') : '<tr><td colspan="4" class="muted">' + L('plRecentNone') + '</td></tr>';
+    const recentCard = '<div class="card"><h2 class="sub2">' + L('plRecentDays') + '</h2>' +
+      '<p class="hint" style="margin-top:0">' + L('plRecentHint') + '</p>' +
+      '<table class="sortable"><thead><tr><th>' + L('plDate2') + '</th><th class="right">' + L('plColBoxes') + '</th><th class="right">' + L('plColCases') + '</th><th class="right">' + L('plColVar') + '</th></tr></thead><tbody>' + recentRows + '</tbody></table></div>';
+    return header + notesCard + addCard + logCard + sumCard + recentCard;
+  }
+  // ---- Daily Fulfillment tracker (Jesus logs E-Com labels/person + Amazon FBA units->bags + notes) ----
+  // Manual backup / double-check while automation is built out. One record per day, upsert on fdate.
+  function fdEnsureDraft() {
+    const today = new Date().toISOString().slice(0, 10);
+    const date = fdDate || today;
+    if (fdDraft && fdDraft.date === date) return fdDraft;
+    const existing = (DB.fulfillmentDaily ? DB.fulfillmentDaily() : []).find(r => r.fdate === date);
+    if (existing) {
+      fdDraft = {
+        date: date, id: existing.id,
+        ecom: (existing.ecom_labels && existing.ecom_labels.length) ? existing.ecom_labels.map(r => ({ employee: r.employee || "", labels: r.labels != null ? r.labels : "" })) : [{ employee: "", labels: "" }],
+        amazon: (existing.amazon && existing.amazon.length) ? existing.amazon.map(r => ({
+          sku: r.sku || "", units: r.units != null ? r.units : "",
+          bagsPerUnit: (Number(r.units) ? Math.round((Number(r.bags) / Number(r.units)) * 100) / 100 : (AMZ_SKU_BAGS[r.sku] != null ? AMZ_SKU_BAGS[r.sku] : 1)),
+          custom: AMZ_SKU_BAGS[r.sku] === undefined
+        })) : [{ sku: "", units: "", bagsPerUnit: "", custom: false }],
+        notes: existing.notes || ""
+      };
+    } else {
+      fdDraft = { date: date, id: null, ecom: [{ employee: "", labels: "" }], amazon: [{ sku: "", units: "", bagsPerUnit: "", custom: false }], notes: "" };
+    }
+    return fdDraft;
+  }
+  function viewFulfillDaily() {
+    const today = new Date().toISOString().slice(0, 10);
+    const date = fdDate || today;
+    const d = fdEnsureDraft();
+    const emps = fdEmployeeList();
+    let ecomTotal = 0;
+    const ecomRows = d.ecom.map((r, i) => {
+      ecomTotal += Number(r.labels) || 0;
+      return '<tr><td><select onchange="UI.fdEcomSet(' + i + ',\'employee\',this.value)">' +
+        '<option value="">' + L("fdPickEmployee") + '</option>' +
+        emps.map(n => '<option value="' + esc(n) + '"' + (n === r.employee ? ' selected' : '') + '>' + esc(n) + '</option>').join("") +
+        '</select></td>' +
+        '<td><input type="number" min="0" step="1" inputmode="numeric" value="' + esc(r.labels) + '" onchange="UI.fdEcomSet(' + i + ',\'labels\',this.value)" style="width:110px"></td>' +
+        '<td><button class="ghost sm danger" onclick="UI.fdEcomRemove(' + i + ')">&#10005;</button></td></tr>';
+    }).join("");
+    const knownSkuOpts = Object.keys(AMZ_SKU_BAGS).map(k => '<option value="' + k + '">' + k + ' - ' + esc(AMZ_SKU_LABELS[k] || '') + '</option>').join("");
+    let amzTotalUnits = 0, amzTotalBags = 0;
+    const amzRows = d.amazon.map((r, i) => {
+      const isKnown = !r.custom && AMZ_SKU_BAGS[r.sku] !== undefined;
+      const bpu = (r.bagsPerUnit !== "" && r.bagsPerUnit != null) ? Number(r.bagsPerUnit) : (isKnown ? AMZ_SKU_BAGS[r.sku] : 1);
+      const units = Number(r.units) || 0;
+      const bags = units * bpu;
+      amzTotalUnits += units; amzTotalBags += bags;
+      const selVal = r.custom ? "__custom__" : (r.sku || "");
+      return '<tr><td><select onchange="UI.fdAmzSku(' + i + ',this.value)">' +
+        '<option value="">' + L("fdPickSku") + '</option>' + knownSkuOpts +
+        '<option value="__custom__"' + (selVal === "__custom__" ? ' selected' : '') + '>' + L("fdCustomSku") + '</option>' +
+        '</select>' +
+        (r.custom ? '<input value="' + esc(r.sku) + '" placeholder="' + L("fdCustomSkuPh") + '" onchange="UI.fdAmzSet(' + i + ',\'sku\',this.value)" style="margin-top:4px;width:160px;display:block">' : '') +
+        '</td>' +
+        '<td><input type="number" min="0" step="1" inputmode="numeric" value="' + esc(r.units) + '" onchange="UI.fdAmzSet(' + i + ',\'units\',this.value)" style="width:100px"></td>' +
+        '<td><input type="number" min="0" step="0.1" value="' + (r.bagsPerUnit !== "" && r.bagsPerUnit != null ? esc(r.bagsPerUnit) : bpu) + '" onchange="UI.fdAmzSet(' + i + ',\'bagsPerUnit\',this.value)" style="width:90px" title="' + L("fdBagsPerUnit") + '"></td>' +
+        '<td class="right"><b>' + fmt(bags) + '</b></td>' +
+        '<td><button class="ghost sm danger" onclick="UI.fdAmzRemove(' + i + ')">&#10005;</button></td></tr>';
+    }).join("");
+    const header = '<div class="card"><div class="suprow"><h2 style="flex:1;margin:0">' + L("fulfilldaily") + '</h2>' +
+      '<input type="date" value="' + date + '" onchange="UI.fdSetDate(this.value)" style="width:auto"></div>' +
+      '<p class="hint">' + L("fdHint") + '</p></div>';
+    const ecomCard = '<div class="card"><div class="suprow"><h2 class="sub2" style="flex:1;margin:0">' + L("fdEcomTitle") + '</h2>' +
+      '<span class="muted sm">' + L("fdEcomLabelsTotal") + ': <b>' + fmt(ecomTotal) + '</b></span></div>' +
+      '<p class="hint">' + L("fdEcomHint") + '</p>' +
+      '<table><thead><tr><th>' + L("fdEmployee") + '</th><th>' + L("fdLabelsDone") + '</th><th></th></tr></thead><tbody>' + ecomRows + '</tbody></table>' +
+      '<button class="ghost" style="margin-top:8px" onclick="UI.fdEcomAddRow()">' + L("fdAddPerson") + '</button></div>';
+    const amzCard = '<div class="card"><div class="suprow"><h2 class="sub2" style="flex:1;margin:0">' + L("fdAmzTitle") + '</h2>' +
+      '<span class="muted sm">' + fmt(amzTotalUnits) + ' &middot; <b>' + fmt(amzTotalBags) + '</b> ' + L("fdBags").toLowerCase() + '</span></div>' +
+      '<p class="hint">' + L("fdAmzHint") + '</p>' +
+      '<table><thead><tr><th>' + L("fdSku") + '</th><th>' + L("fdUnitsMade") + '</th><th>' + L("fdBagsPerUnit") + '</th><th class="right">' + L("fdBags") + '</th><th></th></tr></thead><tbody>' + amzRows + '</tbody></table>' +
+      '<button class="ghost" style="margin-top:8px" onclick="UI.fdAmzAddRow()">' + L("fdAddSku") + '</button></div>';
+    const notesCard = '<div class="card"><h2 class="sub2">' + L("fdNotesTitle") + '</h2><p class="hint">' + L("fdNotesHint") + '</p>' +
+      '<textarea id="fd-notes" rows="3" placeholder="' + L("fdNotesPh") + '" onchange="UI.fdNotesSet(this.value)">' + esc(d.notes) + '</textarea></div>';
+    const summaryCard = '<div class="card"><h2 class="sub2">' + L("fdSummary") + '</h2>' +
+      '<div class="kpis"><div class="kpi"><div class="n">' + fmt(ecomTotal) + '</div><div class="l">' + L("fdEcomLabelsTotal") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(amzTotalUnits) + '</div><div class="l">' + L("fdAmzUnitsTotal") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(amzTotalBags) + '</div><div class="l">' + L("fdAmzBagsTotal") + '</div></div></div>' +
+      '<button class="primary" style="margin-top:12px" onclick="UI.fdSave()">' + L("fdSave") + '</button></div>';
+    const hist = (DB.fulfillmentDaily ? DB.fulfillmentDaily() : []).slice().sort((a, b) => String(b.fdate).localeCompare(String(a.fdate))).slice(0, 10);
+    const histRows = hist.length ? hist.map(r => '<tr><td>' + esc(r.fdate) + '</td><td class="right">' + fmt(r.ecom_total) + '</td><td class="right">' + fmt(r.amazon_bags) + '</td><td class="sm">' + esc(r.notes || '') + '</td><td class="sm muted">' + esc(r.entered_by || '') + '</td>' +
+      '<td><button class="ghost sm danger" onclick="UI.fdDeleteDay(\'' + r.id + '\')">&#10005;</button></td></tr>').join('') : '<tr><td colspan="6" class="muted">' + L("fdNoHistory") + '</td></tr>';
+    const histCard = '<div class="card"><h2 class="sub2">' + L("fdHistory") + '</h2>' +
+      '<table class="sortable"><thead><tr><th>' + L("fdHistDate") + '</th><th class="right">' + L("fdHistEcom") + '</th><th class="right">' + L("fdHistAmzBags") + '</th><th>' + L("fdHistNotes") + '</th><th>' + L("fdHistBy") + '</th><th></th></tr></thead><tbody>' + histRows + '</tbody></table></div>';
+    return header + ecomCard + amzCard + notesCard + summaryCard + histCard;
   }
   function isEcomItem(i) { return i.cat === "Others" && i.sub === "E-Com"; }
   function productionEntry(channel) {
@@ -2186,25 +2422,131 @@
         '<td><select onchange="UI.itemSupplier(\'' + i.id + '\',this.value)">' + supOpts(i.supplier) + '</select></td>' +
         '<td>' + chip + '</td></tr>';
     }).join("");
-    return '<div class="card"><div class="suprow"><h2 style="flex:1">' + L("purchasing") + '</h2>' +
-      '<button class="primary sm" onclick="UI.poNew(\'\')">+ ' + L("newPO") + '</button></div>' +
+    return '<div class="card"><h2 style="margin:0 0 4px">' + L("purchasing") + '</h2>' +
       toggle + '<p class="hint" style="margin-top:10px">' + L("rsHint") + '</p></div>' +
       '<div class="card"><h2 class="sub2">' + L("purchSetup") + ' &middot; ' + needCount + ' ' + L("rsNeedShort") + '</h2>' +
       '<div class="catbar">' + cbar + '</div>' +
       '<input id="rsSearch" autocomplete="off" oninput="UI.rsSearch(this.value)" placeholder="' + L("rsSearchP") + '" style="margin-bottom:10px">' +
       '<table><thead><tr><th>' + L("item") + '</th><th class="right">' + L("onhand") + '</th><th>' + L("rsReorderPt") + '</th><th>' + L("alSupplier") + '</th><th>' + L("status") + '</th></tr></thead><tbody id="rsBody">' + rows + '</tbody></table></div>';
   }
-  function viewPurchasing() {
-    if (purchMode === "new") return viewPONew();
-    const toggle = '<div class="ordtabs" style="margin:0">' +
-      '<button class="' + (purchView === "buy" ? "active" : "") + '" onclick="UI.purchView(\'buy\')">' + L("purchBuyList") + '</button>' +
-      '<button class="' + (purchView === "setup" ? "active" : "") + '" onclick="UI.purchView(\'setup\')">' + L("purchSetup") + '</button></div>';
-    if (purchView === "setup") return viewReorderSetup(toggle);
-    let html = '<div class="card"><div class="suprow"><h2 style="flex:1">' + L("purchasing") + '</h2>' +
-      '<button class="primary sm" onclick="UI.poNew(\'\')">+ ' + L("newPO") + '</button></div>' +
-      toggle + '<p class="hint" style="margin-top:10px">' + L("purchHint") + '</p></div>';
+  // ===== Analytics: Inventory Health (Stock Build coverage vs goal + low/out) =====
+  function prodTrendCard() {
+    var recs = (DB.productionOutput ? DB.productionOutput() : []) || [];
+    var days = [];
+    var today = new Date();
+    for (var d = 13; d >= 0; d--) { var dt = new Date(today); dt.setDate(dt.getDate() - d); days.push(dt.toISOString().slice(0, 10)); }
+    var byDay = {}; days.forEach(function(d){ byDay[d] = 0; });
+    var deptTot = {};
+    recs.forEach(function(r){
+      var pd = (r.prod_date || "").slice(0, 10);
+      var c = Number(r.cases) || 0;
+      if (byDay[pd] != null) byDay[pd] += c;
+      if (c) deptTot[r.dept || "?"] = (deptTot[r.dept || "?"] || 0) + c;
+    });
+    var vals = days.map(function(d){ return byDay[d]; });
+    var total = vals.reduce(function(a, b){ return a + b; }, 0);
+    var active = days.filter(function(d){ return byDay[d] > 0; }).length;
+    var avg = active ? Math.round(total / active) : 0;
+    var W = 700, H = 190, pl = 40, pr = 12, ptp = 14, pb = 30, iw = W - pl - pr, ih = H - ptp - pb;
+    var mx = Math.max(10, Math.max.apply(null, vals.length ? vals : [0]));
+    var bw = iw / days.length * 0.62;
+    var xf = function(i){ return pl + iw * (i + 0.5) / days.length; };
+    var yf = function(v){ return ptp + ih * (1 - v / mx); };
+    var grid = "", bars = "", lab = "";
+    [0, mx / 2, mx].forEach(function(g){ grid += '<line x1="' + pl + '" y1="' + yf(g).toFixed(1) + '" x2="' + (W - pr) + '" y2="' + yf(g).toFixed(1) + '" stroke="#EEF2F7"/><text x="' + (pl - 6) + '" y="' + (yf(g) + 3).toFixed(1) + '" text-anchor="end" font-size="9" fill="#9AA8B8">' + fmt(Math.round(g)) + '</text>'; });
+    var vmax = Math.max.apply(null, vals);
+    days.forEach(function(d, i){
+      var v = byDay[d], x = xf(i) - bw / 2, y = yf(v), h = ptp + ih - y;
+      var col = v > 0 ? (v === vmax ? "#F26722" : "#0B2138") : "#E6ECF2";
+      bars += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + Math.max(0, h).toFixed(1) + '" rx="2" fill="' + col + '"/>';
+      if (v === vmax && v > 0) bars += '<text x="' + xf(i).toFixed(1) + '" y="' + (y - 5).toFixed(1) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#F26722">' + fmt(v) + '</text>';
+      var md = d.slice(5).replace("-", "/");
+      lab += '<text x="' + xf(i).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="8.5" fill="#6B7A8C">' + md + '</text>';
+    });
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="Daily production cases">' + grid + bars + lab + '</svg>';
+    var deptKeys = Object.keys(deptTot).sort(function(a, b){ return deptTot[b] - deptTot[a]; });
+    var deptMap = { mix: "Mixing", pmac: "P-Mac", ful: "Fulfillment", retail: "Retail", ecom: "E-Commerce" };
+    var dmax = deptKeys.length ? deptTot[deptKeys[0]] : 1;
+    var deptBars = deptKeys.map(function(k){ var v = deptTot[k], p = Math.max(2, v / dmax * 100); return '<div style="display:flex;align-items:center;gap:10px;margin:3px 0"><div style="width:120px;flex:none;font-size:12.5px;font-weight:600;text-align:right">' + esc(deptMap[k] || k) + '</div><div style="flex:1;background:#EEF2F7;border-radius:5px;height:19px"><div style="width:' + p + '%;height:100%;border-radius:5px;background:#4C8FD6"></div></div><div style="width:70px;flex:none;font-size:12px;font-weight:700;text-align:right">' + fmt(v) + '</div></div>'; }).join("");
+    return '<div class="card"><div class="suprow"><h2 style="margin:0">&#128200; Production Trend &mdash; Last 14 Days</h2><span class="muted sm">Logged output</span></div>' +
+      '<div class="kpis"><div class="kpi"><div class="n">' + fmt(total) + '</div><div class="l">Cases (14 days)</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(avg) + '</div><div class="l">Avg / active day</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(active) + '</div><div class="l">Days with output</div></div></div>' +
+      '<div style="font-size:13px;font-weight:800;margin:8px 0 2px">Cases logged per day</div>' + svg +
+      (deptBars ? '<div style="font-size:13px;font-weight:800;margin:10px 0 2px">By department</div>' + deptBars : '<p class="hint">No production logged in this window yet.</p>') + '</div>';
+  }
 
-    // --- reorder suggestions, grouped by supplier ---
+  function viewAnalytics() {
+    var oh = DB.stockBuild ? DB.stockBuild() : {};
+    var on = function(i){ return Number((oh[i.key] || {}).on_hand) || 0; };
+    var totGoal = 0, totOn = 0;
+    SB_ITEMS.forEach(function(i){ totGoal += i.goal; totOn += on(i); });
+    var pct = totGoal ? Math.round(totOn / totGoal * 100) : 0;
+    var items = DB.items();
+    var low = items.filter(function(i){ return statusOf(i) === "low"; }).length;
+    var out = items.filter(function(i){ return statusOf(i) === "out"; }).length;
+    var body = "";
+    SB_CATS.forEach(function(cat){
+      var list = SB_ITEMS.filter(function(i){ return i.cat === cat; });
+      if (!list.length) return;
+      body += '<h3 class="sub2" style="margin-top:16px">' + esc(cat) + '</h3>';
+      body += list.map(function(i){
+        var o = on(i), g = i.goal, p = g ? Math.min(100, Math.round(o / g * 100)) : 0;
+        var col = o >= g ? "#2E9E5B" : (o >= g * 0.5 ? "#F2A93B" : "#E0533B");
+        return '<div style="display:flex;align-items:center;gap:10px;margin:3px 0">' +
+          '<div style="width:200px;flex:none;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(i.name) + '</div>' +
+          '<div style="flex:1;background:#EEF2F7;border-radius:5px;height:18px"><div style="width:' + Math.max(2, p) + '%;height:100%;border-radius:5px;background:' + col + '"></div></div>' +
+          '<div style="width:130px;flex:none;font-size:12px;font-weight:700;text-align:right">' + fmt(o) + ' / ' + fmt(g) + ' ' + esc(i.unit || "") + '</div></div>';
+      }).join("");
+    });
+    return '<div class="card"><h2>&#128202; Inventory Health</h2>' +
+      '<p class="hint">Live stock-build coverage against goals, plus reorder health. Green = at/above goal, amber = 50-99%, red = under 50%.</p>' +
+      '<div class="kpis"><div class="kpi"><div class="n">' + pct + '%</div><div class="l">Stock build to goal</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(low) + '</div><div class="l">Items low</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(out) + '</div><div class="l">Items out</div></div></div>' +
+      body + '</div>' + prodTrendCard() + ecOneFiveCard();
+  }
+
+  // ===== Disposition / Held Stock (older / short-dated / off-quality inventory awaiting disposition) =====
+  var DISPOSITION_ITEMS = [
+    {flavor:"Lemon Pepper", kind:"Finished product - 2026 batch", qty:"20,700", unit:"units", date:"Aug 2026", reason:"Off-flavor", status:"Awaiting disposition", note:"Excluded from usage sheet"},
+    {flavor:"Lemon Pepper", kind:"Finished product - 2026 batch", qty:"5,000", unit:"units", date:"Sep 2026", reason:"Off-flavor", status:"Awaiting disposition", note:"Excluded from usage sheet"},
+    {flavor:"Lemon Pepper", kind:"Finished product - 2026 batch", qty:"5,200", unit:"units", date:"Nov 2026", reason:"Off-flavor", status:"Awaiting disposition", note:"Excluded from usage sheet"},
+    {flavor:"Lemon Pepper", kind:"Seasoning - lot #E2725A", qty:"800", unit:"lbs", date:"Exp 06/20/26", reason:"Expired", status:"Awaiting instructions", note:""},
+    {flavor:"Lemon Pepper", kind:"Seasoning - lot #E2725B", qty:"2,700", unit:"lbs", date:"Exp 06/20/26", reason:"Expired", status:"Awaiting instructions", note:""}
+  ];
+  function viewDisposition() {
+    var reasonPill = function(r){ return '<span class="pill ' + (r === "Expired" ? "out" : "low") + '">' + esc(r) + '</span>'; };
+    var rows = DISPOSITION_ITEMS.map(function(d){ return '<tr>' +
+      '<td><b>' + esc(d.flavor) + '</b><div class="muted sm">' + esc(d.kind) + '</div></td>' +
+      '<td class="right"><b>' + esc(d.qty) + '</b> ' + esc(d.unit) + '</td>' +
+      '<td class="sm">' + esc(d.date) + '</td>' +
+      '<td>' + reasonPill(d.reason) + '</td>' +
+      '<td class="sm">' + esc(d.status) + (d.note ? '<div class="muted sm">' + esc(d.note) + '</div>' : '') + '</td></tr>'; }).join("");
+    var units = 20700 + 5000 + 5200, lbs = 800 + 2700;
+    return '<div class="card"><h2>&#128230; Disposition / Held Stock</h2>' +
+      '<p class="hint">Older, short-dated, or off-quality inventory pulled from normal stock and held for disposition (sell-off, rework, or scrap). Confirmed with Adriana 7/21 - live editable tracking coming next.</p>' +
+      '<div class="kpis"><div class="kpi"><div class="n">' + fmt(units) + '</div><div class="l">Off-quality units (LP)</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(lbs) + '</div><div class="l">Expired seasoning (lbs)</div></div>' +
+      '<div class="kpi"><div class="n">' + DISPOSITION_ITEMS.length + '</div><div class="l">Held line items</div></div></div>' +
+      '<table class="sortable" style="margin-top:12px"><thead><tr><th>Item</th><th class="right">Qty</th><th>Date / Exp</th><th>Reason</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+      '<p class="hint" style="margin-top:10px">&#10003; Confirmed by Adriana 7/21: the 30,900 Lemon Pepper (Aug/Sep/Nov 2026) are FINISHED BAGS pulled for off-flavor - separate from the good 2027 LP and from the expired seasoning lots.</p></div>';
+  }
+
+  function viewPurchasing() {
+    // Full-screen sub-flows (each renders its own back button)
+    if (purchMode === "new") return viewPONew();            // reorder draft PO (from Buy List)
+    if (spoDetailId) return viewPoDetail(spoDetailId);      // PO archive detail
+    if (spoView === "create") return viewPoCreate();        // manual Create PO form (Michelle)
+    if (spoView === "nonpo") return viewNonPo();            // non-PO purchase log
+    const tab = (purchView === "buy" || purchView === "setup") ? purchView : "po";
+    const tbtn = (v, lbl) => '<button class="' + (tab === v ? "active" : "") + '" onclick="UI.purchView(\'' + v + '\')">' + lbl + '</button>';
+    const toggle = '<div class="ordtabs" style="margin:0">' + tbtn("po", L("purchPOs")) + tbtn("buy", L("purchBuyList")) + tbtn("setup", L("purchSetup")) + '</div>';
+    if (tab === "setup") return viewReorderSetup(toggle);
+    if (tab === "po") return '<div class="card">' + toggle + '</div>' + viewSupplierPos();
+
+    // --- Buy List tab: low-stock reorder suggestions + receivable draft POs ---
+    let html = '<div class="card">' + toggle + '<p class="hint" style="margin-top:10px">' + L("purchHint") + '</p></div>';
     const low = DB.items().filter(i => statusOf(i) !== "ok" && i.supplier);
     if (low.length) {
       const bySup = {}; low.forEach(i => { (bySup[i.supplier] = bySup[i.supplier] || []).push(i); });
@@ -2224,8 +2566,6 @@
     } else {
       html += '<div class="card"><p class="ok pill big">' + L("allgood") + '</p></div>';
     }
-
-    // --- existing purchase orders ---
     const pos = DB.purchaseOrders();
     html += '<div class="card"><h2 class="sub2">' + L("purchOrders") + '</h2>';
     html += pos.length ? pos.map(poCard).join("") : '<p class="muted">' + L("noPOs") + '</p>';
@@ -2276,18 +2616,19 @@
       const sugg = statusOf(i) !== "ok" ? suggestQty(i) : "";
       return '<tr><td>' + i.name + '<div class="muted sm">' + i.code + '</div></td>' +
         '<td class="right muted">' + fmt(DB.onHand(i.id)) + ' ' + i.unit + '</td>' +
-        '<td><input id="poq-' + i.id + '" type="number" min="0" value="' + sugg + '"></td>' +
+        '<td><input id="poq-' + i.id + '" type="number" min="0" value="" placeholder="' + (sugg || "") + '"></td>' +
         '<td><input id="poc-' + i.id + '" type="number" min="0" step="0.01" placeholder="0.00"></td></tr>';
     }).join("");
     return '<div class="card"><div class="suprow"><h2>' + L("newPO") + '</h2>' +
       '<button class="ghost sm" onclick="UI.poBack()">' + L("backList") + '</button></div>' +
       '<div class="row"><div><label>' + L("chooseSupplier") + '</label><select id="po-sup" onchange="UI.poSupChange()">' + supOpts + '</select></div>' +
-      '<div><label>' + L("poExpected") + '</label><input id="po-exp" type="date"></div></div>' +
+      '<div><label>PO date (issued)</label><input type="date" value="' + new Date().toISOString().slice(0,10) + '" disabled></div>' +
+      '<div><label>' + L("poExpected") + ' (optional - add when supplier confirms lead time)</label><input id="po-exp" type="date"></div></div>' +
       '<p class="hint">' + L("addLines") + '</p>' +
       (supItems.length
         ? '<table><thead><tr><th>' + L("item") + '</th><th class="right">' + L("onhand") + '</th><th>' + L("qty") + '</th><th>' + L("poCost") + ' $</th></tr></thead><tbody>' + rows + '</tbody></table>'
         : '<p class="muted">&mdash;</p>') +
-      opField() + '<button class="primary" onclick="UI.poSave()">' + L("savePO") + '</button></div>';
+      opFieldPurch() + '<button class="primary" onclick="UI.poSave()">' + L("savePO") + '</button></div>';
   }
   function viewLabels() {
     return '<div class="card"><h2>' + L("labels") + '</h2><p class="hint">' + L("labelsHint") + '</p>' +
@@ -2296,6 +2637,7 @@
       '<button class="ghost" onclick="UI.labels(\'lpn\')">' + L("newLpn") + '</button>' +
       '<button class="primary" onclick="UI.printAvery5160()">&#127991; ' + L("averyBtn") + '</button>' +
       '<button class="ghost" onclick="UI.printIdent4x6()">&#128230; ' + L("ident4x6Btn") + '</button>' +
+      '<button class="ghost" onclick="UI.labels(\'batch\')">&#128221; ' + L("batchLabelBtn") + '</button>' +
       '<button class="ghost" onclick="UI.printRecvBook()">' + L("printRecvBook") + '</button>' +
       '<p class="hint" style="margin-top:8px">' + L("averyHint") + '</p>' +
       '<div id="labelArea"></div></div>';
@@ -2572,6 +2914,30 @@
     return '<div class="ordtabs" style="margin-bottom:12px">' + t("mixing", L("dqMix")) + t("pmac", L("dqPmac")) + t("ful", L("dqFul")) + '</div>';
   }
   function dqDowLocal(d) { const dt = new Date(d + "T00:00:00"); return DQ_DOW[(dt.getDay() + 6) % 7]; }
+  // E-Com "Make Next" card for Mixing / P-Mac: unshipped ShipStation queue (per flavor) vs on-hand.
+  function ecMakeNextCard() {
+    const snap = (DB.ecomDemand ? DB.ecomDemand() : []);
+    if (!snap.length) return '<div class="card"><h2>&#128722; ' + L("mnTitle") + '</h2><p class="hint">' + L("mnNone") + '</p></div>';
+    const q = {}; snap.forEach(r => { q[r.flavor] = (q[r.flavor] || 0) + (Number(r.bags) || 0); });
+    const items = DB.items().filter(i => i.category === "bag4" || i.category === "bag15");
+    const ohByF = {}; items.forEach(i => { ohByF[i.flavor] = (ohByF[i.flavor] || 0) + (Number(DB.onHand(i.id)) || 0); });
+    const rows = Object.keys(q).map(fl => { const demand = q[fl], oh = ohByF[fl] || 0; return { flavor: fl, demand, oh, short: Math.max(0, demand - oh) }; })
+      .filter(x => x.demand > 0).sort((a, b) => b.short - a.short || b.demand - a.demand);
+    const toMake = rows.filter(x => x.short > 0);
+    const totShort = toMake.reduce((s, x) => s + x.short, 0);
+    const totQueue = rows.reduce((s, x) => s + x.demand, 0);
+    const upd = (snap[0] && snap[0].updated_at) ? String(snap[0].updated_at).slice(0, 16).replace("T", " ") : "";
+    const body = rows.map(x => {
+      const pill = x.short > 0 ? '<span class="pill out">' + L("mnMake") + '</span>' : '<span class="pill ok">' + L("mnOk") + '</span>';
+      return '<tr><td><b>' + esc(x.flavor) + '</b></td><td class="right">' + fmt(x.oh) + '</td><td class="right">' + fmt(x.demand) + '</td><td class="right"><b>' + (x.short > 0 ? fmt(x.short) : "&mdash;") + '</b></td><td>' + pill + '</td></tr>';
+    }).join("");
+    const kpis = '<div class="kpis"><div class="kpi"><div class="n">' + toMake.length + '</div><div class="l">' + L("mnFlavorsShort") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(totShort) + '</div><div class="l">' + L("mnToMake") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(totQueue) + '</div><div class="l">' + L("mnQueue") + '</div></div></div>';
+    return '<div class="card"><div class="suprow"><h2 style="flex:1;margin:0">&#128722; ' + L("mnTitle") + '</h2>' + (upd ? '<span class="muted sm">' + L("mnUpdated") + ' ' + esc(upd) + '</span>' : '') + '</div>' +
+      '<p class="hint">' + L("mnHint") + '</p>' + kpis +
+      '<div class="tblwrap"><table class="sortable"><thead><tr><th>' + L("dqFlavor") + '</th><th class="right">' + L("mnOnHand") + '</th><th class="right">' + L("mnDemand") + '</th><th class="right">' + L("mnShort") + '</th><th data-nosort>' + L("status") + '</th></tr></thead><tbody>' + body + '</tbody></table></div></div>';
+  }
   function deptDemandBoard(dept, withTabs) {
     const isFul = dept === "ful";
     const today = dqToday();
@@ -2626,7 +2992,7 @@
     });
     const totRow = '<tr style="background:#F0F0F0"><td><b>' + L("dqTotal") + '</b></td>' + colTot.map(v => '<td class="right"><b>' + (v ? fmt(v) : "&mdash;") + '</b></td>').join("") + '<td class="right"><b>' + fmt(grand) + '</b></td></tr>';
     const resultsCard = '<div class="card"><h2 class="sub2">' + L("dqResults") + '</h2><p class="hint">' + L("dqResultsHint") + ' (' + unit + ')</p><div class="tblwrap"><table><thead>' + hdr + '</thead><tbody>' + bodyRows + totRow + '</tbody></table></div>' + dqTodayLog(dept, isFul) + '</div>';
-    return (withTabs ? dqTabs(dept) : '') + todayCard + logCard + scheduledCard + resultsCard + buildNeedCard(isFul ? "ful" : "prod", "buildnow");
+    return (withTabs ? dqTabs(dept) : '') + (isFul ? '' : ecMakeNextCard()) + todayCard + logCard + scheduledCard + resultsCard + buildNeedCard(isFul ? "ful" : "prod", "buildnow");
   }
   function dqTodayLog(dept, isFul) {
     const today = dqToday();
@@ -3354,6 +3720,19 @@
       if (res && res.ok === false) { toast(res.msg || "error"); render(); return; }
       toast((res && res.count ? res.count : rows.length) + " " + L("ecdLoaded")); render();
     },
+    // Programmatic import of a ShipStation Awaiting-Shipment export (used by the hourly auto-sync).
+    async ecQueueImport(text, label) {
+      if (!window.ECOM || !window.ECOM.parseShipStationQueue) return { ok: false, msg: "queue parser missing" };
+      const p = window.ECOM.parseShipStationQueue(text);
+      if (p.warnings && p.warnings.length) return { ok: false, msg: p.warnings[0] };
+      const rows = [];
+      Object.keys(p.totals).forEach(flavor => { const t = p.totals[flavor];
+        ["4oz", "1.5oz"].forEach(size => { const bags = t[size] || 0; if (bags > 0) rows.push({ flavor, size, bags, avg_day: 0 }); }); });
+      if (!rows.length) return { ok: false, msg: "no mappable order lines" };
+      const res = await DB.addEcomDemand(rows, { period_days: 0, source_label: "ShipStation queue" + (label ? " " + label : "") }, opVal());
+      if (res && res.ok) { render(); return { ok: true, count: rows.length, flavors: Object.keys(p.totals).length, unmapped: (p.unmapped || []).length }; }
+      return res || { ok: false, msg: "save failed" };
+    },
     async ecClearAll() {
       if (!confirm(L("ecdConfirmClear"))) return;
       await DB.clearEcomDemand(opVal()); ecParsed = null; toast("✓"); render();
@@ -3523,6 +3902,42 @@
         '</body></html>');
       w.document.close();
       toast(L("ident4x6Done") + " (" + items.length + ")");
+    },
+    // Digital 4x6 Batch Label (RD Batch Label 4x6.xlsx layout): RECIPE / DATE / CHEF,
+    // filled in from the form above and printed 1-up at true 4x6 for the Munbyn roll.
+    printBatchLabel() {
+      const recipe = ($("batch-recipe") ? $("batch-recipe").value : "").trim();
+      const date = $("batch-date") ? $("batch-date").value : "";
+      const chef = ($("batch-chef") ? $("batch-chef").value : "").trim();
+      if (!recipe) return toast(L("batchRecipe") + "?");
+      const w = window.open("", "_blank"); if (!w) return toast("Popup blocked - allow popups");
+      w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Batch Label 4x6</title>' +
+        '<style>' +
+        '@page{size:4in 6in;margin:0}' +
+        'html,body{margin:0;padding:0;font-family:Arial}' +
+        '.bar{background:#1F3864;color:#fff;padding:10px 14px;font-size:13px}.bar b{font-size:15px}' +
+        '.btn{display:inline-block;margin-top:8px;background:#fff;color:#1F3864;border:0;border-radius:6px;padding:7px 14px;font-weight:bold;cursor:pointer}' +
+        '.lbl{width:4in;height:6in;box-sizing:border-box;padding:0.12in;page-break-after:always;display:grid;grid-template-columns:18% 10% 72%;grid-template-rows:29.7% 20.3% 29.7% 20.3%;border:2px solid #000}' +
+        '.cell{border:1px solid #000;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;padding:4px;box-sizing:border-box;word-break:break-word}' +
+        '.cap{background:#e8e8e8;font-weight:bold;font-size:15px;letter-spacing:1px}' +
+        '.val{font-size:24px;font-weight:bold}' +
+        '.recipecap{background:#e8e8e8;font-weight:bold;font-size:15px;letter-spacing:2px}' +
+        '.recipeval{font-size:38px;font-weight:bold;line-height:1.1}' +
+        '@media print{.bar{display:none}}' +
+        '</style></head><body>' +
+        '<div class="bar"><b>Batch Label (4x6)</b> &mdash; Load the 4x6 roll (Munbyn), click Print, set paper 4x6, Margins None, Scale 100%.<br>' +
+        '<button class="btn" onclick="window.print()">&#128424; Print now</button></div>' +
+        '<div class="lbl">' +
+        '<div class="cell val" style="grid-column:1;grid-row:1">' + esc(date) + '</div>' +
+        '<div class="cell cap" style="grid-column:1;grid-row:2">DATE</div>' +
+        '<div class="cell val" style="grid-column:1;grid-row:3">' + esc(chef) + '</div>' +
+        '<div class="cell cap" style="grid-column:1;grid-row:4">CHEF</div>' +
+        '<div class="cell recipecap" style="grid-column:2;grid-row:1/5">RECIPE</div>' +
+        '<div class="cell recipeval" style="grid-column:3;grid-row:1/5">' + esc(recipe) + '</div>' +
+        '</div>' +
+        '</body></html>');
+      w.document.close();
+      toast(L("batchLabelDone"));
     },
     // Avery 5160 sticker sheet (30/sheet, 3 x 10, label 2.625in x 1in) for EVERY current item.
     // Exact grid so it prints perfectly onto the physical Avery 5160 sheets. Always current.
@@ -4018,6 +4433,27 @@
     // ---- Create PO (Excel-style entry form) ----
     poCreateOpen() { spoView = "create"; poRows = 4; render(); },
     poCreateBack() { spoView = "list"; render(); },
+    nonPoOpen() { spoView = "nonpo"; render(); },
+    nonPoBack() { spoView = "list"; render(); },
+    async nonPoSave() {
+      const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
+      const vendor = v("np-vendor"); if (!vendor) return toast(L("poNeedVendor"));
+      const desc = v("np-desc"), extra = v("np-notes");
+      const seq = Math.random().toString(36).slice(2, 5).toUpperCase();
+      const pnum = "NP-" + (v("np-date") || "").replace(/-/g, "").slice(2) + "-" + seq;
+      const rec = { vendor: vendor, po_num: pnum, po_date: v("np-date"), total: v("np-amount"),
+        item_count: 0, lines: "", prepared_by: v("np-by"), uploaded_by: v("np-by"),
+        notes: (desc || "") + (extra ? " - " + extra : "") };
+      const res = await DB.createSupplierPO(rec, null, rec.prepared_by);
+      if (res && res.ok === false) return toast(res.msg || "save failed");
+      toast(L("poSavedMsg")); spoView = "list"; render();
+    },
+    async spoSetEta(id, val) {
+      const s = DB.supplierPos().find(x => String(x.id) === String(id)); if (!s) return;
+      const res = await DB.updateSupplierPO(id, { notes: notesWithEta(s.notes, val) }, opVal());
+      if (res && res.ok === false) return toast(res.msg || "save failed");
+      toast(L("poEtaSaved")); render();
+    },
     poAddLine() { const tb = $("po-lines"); if (!tb) return; const i = tb.querySelectorAll("tr").length; const tr = document.createElement("tr"); tr.innerHTML = poRowInner(i); tb.appendChild(tr); },
     poRecalc() {
       let sub = 0;
@@ -4091,7 +4527,7 @@
     poNew(sk) { purchSup = sk || null; purchMode = "new"; active = "purchasing"; closeDrawer(); render(); },
     purchView(v) { purchView = v; render(); },
     plDate(v) { plDate = v; render(); },
-    plDateShift(delta) { const base = plDate || new Date().toISOString().slice(0, 10); const dt = new Date(base + "T00:00:00"); dt.setDate(dt.getDate() + delta); plDate = dt.toISOString().slice(0, 10); render(); },
+    plDateShift(delta) { const base = plDate || new Date().toISOString().slice(0, 10); const dt = new Date(base + 'T00:00:00'); dt.setDate(dt.getDate() + delta); plDate = dt.toISOString().slice(0, 10); render(); },
     async plDay(field, val) { const today = new Date().toISOString().slice(0, 10); const r = await DB.setProdDay(plDate || today, "retail", { [field]: val }, opVal()); if (r && r.ok === false) return toast(r.msg || "error"); render(); },
     async plAdd() {
       const g = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
@@ -4104,6 +4540,34 @@
       toast(L("plAdded")); render();
     },
     async plDel(id) { const r = await DB.deleteProdPallet(id, opVal()); if (r && r.ok === false) return toast(r.msg || "error"); render(); },
+    // ---- Daily Fulfillment tracker ----
+    fdSetDate(v) { fdDate = v; fdDraft = null; render(); },
+    fdEcomAddRow() { const d = fdEnsureDraft(); d.ecom.push({ employee: "", labels: "" }); render(); },
+    fdEcomSet(idx, field, val) { const d = fdEnsureDraft(); if (d.ecom[idx]) d.ecom[idx][field] = val; render(); },
+    fdEcomRemove(idx) { const d = fdEnsureDraft(); d.ecom.splice(idx, 1); if (!d.ecom.length) d.ecom.push({ employee: "", labels: "" }); render(); },
+    fdAmzAddRow() { const d = fdEnsureDraft(); d.amazon.push({ sku: "", units: "", bagsPerUnit: "", custom: false }); render(); },
+    fdAmzSku(idx, val) {
+      const d = fdEnsureDraft(); const r = d.amazon[idx]; if (!r) return;
+      if (val === "__custom__") { r.custom = true; r.sku = ""; if (!r.bagsPerUnit) r.bagsPerUnit = 1; }
+      else { r.custom = false; r.sku = val; r.bagsPerUnit = AMZ_SKU_BAGS[val] !== undefined ? AMZ_SKU_BAGS[val] : 1; }
+      render();
+    },
+    fdAmzSet(idx, field, val) { const d = fdEnsureDraft(); if (d.amazon[idx]) d.amazon[idx][field] = val; render(); },
+    fdAmzRemove(idx) { const d = fdEnsureDraft(); d.amazon.splice(idx, 1); if (!d.amazon.length) d.amazon.push({ sku: "", units: "", bagsPerUnit: "", custom: false }); render(); },
+    fdNotesSet(val) { const d = fdEnsureDraft(); d.notes = val; },
+    async fdSave() {
+      const d = fdEnsureDraft();
+      const ecom = d.ecom.filter(r => r.employee || Number(r.labels) > 0).map(r => ({ employee: r.employee || "", labels: Number(r.labels) || 0 }));
+      const amazon = d.amazon.filter(r => r.sku || Number(r.units) > 0).map(r => {
+        const bpu = (r.bagsPerUnit !== "" && r.bagsPerUnit != null) ? (Number(r.bagsPerUnit) || 0) : (AMZ_SKU_BAGS[r.sku] != null ? AMZ_SKU_BAGS[r.sku] : 1);
+        const units = Number(r.units) || 0;
+        return { sku: r.sku || "", units: units, bags: units * bpu };
+      });
+      const res = await DB.saveFulfillmentDaily({ fdate: d.date, ecom_labels: ecom, amazon: amazon, notes: d.notes }, opVal());
+      if (res && res.ok === false) return toast(res.msg || "error");
+      fdDraft = null; toast(L("fdSaved")); render();
+    },
+    async fdDeleteDay(id) { if (!confirm(L("fdDeleteConfirm"))) return; await DB.deleteFulfillmentDaily(id, opVal()); fdDraft = null; toast(L("spoDelete") + " ✓"); render(); },
     purchSetupCat(c) { purchSetupCat = c; render(); },
     rsSearch(val) { const q = (val || "").toLowerCase().trim();
       document.querySelectorAll("#rsBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
@@ -4137,6 +4601,16 @@
       if (kind === "loc") list = DB.allLocations().map(c => ({ code: c, name: c }));
       else if (kind === "item") list = DB.items().map(i => ({ code: i.code, name: i.name }));
       else if (kind === "lpn") { const lpn = "LPN-" + Date.now().toString().slice(-8); list = [{ code: lpn, name: "Pallet " + lpn }]; }
+      else if (kind === "batch") {
+        const today = new Date().toISOString().slice(0, 10);
+        area.innerHTML = '<div class="card" style="margin-top:10px"><h3 class="sub2">' + L("batchLabelBtn") + '</h3>' +
+          '<p class="hint">' + L("batchLabelHint") + '</p>' +
+          '<div class="row"><div><label>' + L("batchRecipe") + '</label><input id="batch-recipe" autocomplete="off" placeholder="' + L("batchRecipe") + '"></div>' +
+          '<div><label>' + L("batchDate") + '</label><input id="batch-date" type="date" value="' + today + '"></div></div>' +
+          '<div class="row"><div><label>' + L("batchChef") + '</label><input id="batch-chef" autocomplete="off" placeholder="' + L("batchChef") + '"></div></div>' +
+          '<button class="primary" onclick="UI.printBatchLabel()">&#128424; ' + L("batchPrint") + '</button></div>';
+        return;
+      }
       area.innerHTML = '<div class="labelgrid" id="labelgrid">' +
         list.map((x, n) => '<div class="lbl"><svg id="bc' + n + '"></svg><div class="lblcap">' + x.name + '</div></div>').join("") +
         '</div><button class="primary" onclick="window.print()">' + L("print") + '</button>';
@@ -4246,10 +4720,10 @@
   }
   function render() {
     renderNav(); refreshDatalists();
-    const map = { home: viewHome, dash: viewDash, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
-      move: viewMove, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, stockbuild: viewStockBuild, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
+    const map = { home: viewHome, dash: viewDash, analytics: viewAnalytics, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
+      move: viewMove, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, fulfilldaily: viewFulfillDaily, stockbuild: viewStockBuild, reorder15: viewReorder15, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, maintenance: viewMaintenance, compliance: viewCompliance, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
-      demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, ecomdemand: viewEcomDemand, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor, board: viewBoard };
+      demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, ecomdemand: viewEcomDemand, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor, board: viewBoard, disposition: viewDisposition };
     $("view").innerHTML = (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
     $("modeBadge").className = "modebadge " + (DB.mode === "cloud" ? "ok" : "low");
@@ -4268,7 +4742,7 @@
     if ($("navToggle")) $("navToggle").onclick = () => { const n = $("nav"), b = $("navBackdrop"); const open = !n.classList.contains("open"); n.classList.toggle("open", open); if (b) b.classList.toggle("show", open); };
     if ($("navBackdrop")) $("navBackdrop").onclick = closeDrawer;
     await DB.init();
-    if (!ordersSeen) markOrdersSeen();  // first run: existing orders are not "new"
+    if (!ordersSeen) markOrdersSeen(); // first run: existing orders are not "new"
     DB.onChange(render);
     render();
     if ("serviceWorker" in navigator) { try { navigator.serviceWorker.register("service-worker.js"); } catch (e) {} }
