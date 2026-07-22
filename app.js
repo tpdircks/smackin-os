@@ -20,7 +20,7 @@
       labelsHint:"Print barcodes on your thermal label printer. Location labels are permanent; a pallet LPN is one barcode per incoming pallet.",
       dashHint:"Live on hand across every location. Filter by category.",
       receiveHint:"Scan an item, enter qty + details, then pick where it goes (scan the slot or tap Section-Bay-Level) - it lands there in one step. Leave the location blank to hold at Receiving.",rniNewBtn:"New item (not in list)",rniCancelBtn:"Use existing item",rniTitle:"Create a new item",rniCode:"Item code / SKU",rniName:"Item name",rniNamePh:"e.g. Kraft box 12x9",rniUnit:"Unit",rniHint:"This adds a brand-new item to the master, then receives it below.",rniNeed:"Enter a code and name for the new item",
-      rSupplier:"Supplier", rInvoice:"Invoice / PO #", rCategory:"Category", rPallets:"Pallets", rCondition:"Condition", rStatus:"Status",
+      rSupplier:"Supplier", rInvoice:"Invoice / PO #", rCategory:"Category", rPallets:"Pallets", rCondition:"Condition", rStatus:"Status", rDeliveryHdr:"Delivery & paperwork (saved to Receiving Log)", rAttachDoc:"Attach paperwork (packing slip / BOL / invoice)", rCarrier:"Carrier", rProNum:"Tracking / PRO", rQtyOrd:"Qty ordered", rLogNotes:"Notes", rMergeHint:"Choose a supplier (and add carrier/PRO or attach paperwork) and this receipt is saved to the Receiving Log automatically - no separate entry needed.",
       putHint:"Scan the item, then scan the slot barcode OR tap Section - Bay - Level. Moves from Receiving in real time.",
       puDest:"Destination", puSection:"Section", puBay:"Bay", puLevel:"Level", puZones:"Floor / zones", puScanLoc:"A-05-L3 / scan slot barcode",
       moveHint:"Scan item, pick from and to (slot, WIP, Pack-Out, Shipping...).",
@@ -50,7 +50,7 @@
       rChannel:"Channel", rReason:"Reason", rDisposition:"Disposition", rRMA:"Order / RMA #",
       submitReturn:"Log return", recentReturns:"Recent returns", noReturns:"No returns logged yet.",
       seasHint:"Track seasoning by lot with expiration (FEFO). Flag expired lots to quarantine.",
-      slProduct:"Product / flavor", slLot:"Lot #", slMfr:"Manufacturer", slExp:"Expiration", slWeight:"Weight (lbs)",slLoc:"Location",
+      slProduct:"Product / flavor",slNewFlavor:"+ Add new / LTO flavor",slNewFlavorPh:"Type the flavor name",slNewNeed:"Enter the new flavor name", slLot:"Lot #", slMfr:"Manufacturer", slExp:"Expiration", slWeight:"Weight (lbs)",slLoc:"Location",
       addLot:"Add lot", seasLotsTitle:"Seasoning lots (earliest expiration first)", quarantineExpired:"Quarantine expired lots",
       noLots:"No seasoning lots yet.", markQuar:"Quarantine", markGood:"Mark good", expiredTag:"EXPIRED", quarTag:"QUARANTINE", goodTag:"GOOD",
       seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdReceived:"Received",sdIntCode:"Internal code",sdPackaging:"Packaging",sdPickPack:"Select packaging...",sdPallets:"# Pallets",sdPalletsShort:"pallet(s)",sdPackDate:"Packaging date", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
@@ -175,7 +175,7 @@
       labelsHint:"Imprima codigos en su impresora termica. Las de ubicacion son permanentes; el LPN es un codigo por pallet entrante.",
       dashHint:"Disponible en vivo en todas las ubicaciones. Filtre por categoria.",
       receiveHint:"Escanee un articulo, ingrese cant. + detalles, luego elija a donde va (escanee el slot o toque Seccion-Bahia-Nivel) - llega ahi en un paso. Deje la ubicacion en blanco para dejarlo en Recibo.",rniNewBtn:"Articulo nuevo (no en la lista)",rniCancelBtn:"Usar articulo existente",rniTitle:"Crear un articulo nuevo",rniCode:"Codigo / SKU",rniName:"Nombre del articulo",rniNamePh:"ej. Caja Kraft 12x9",rniUnit:"Unidad",rniHint:"Esto agrega un articulo nuevo al maestro y luego lo recibe abajo.",rniNeed:"Ingrese codigo y nombre del articulo nuevo",
-      rSupplier:"Proveedor", rInvoice:"Factura / OC #", rCategory:"Categoria", rPallets:"Pallets", rCondition:"Condicion", rStatus:"Estado",
+      rSupplier:"Proveedor", rInvoice:"Factura / OC #", rCategory:"Categoria", rPallets:"Pallets", rCondition:"Condicion", rStatus:"Estado", rDeliveryHdr:"Entrega y documentos (se guarda en el Registro de Recepcion)", rAttachDoc:"Adjuntar documentos (packing slip / BOL / factura)", rCarrier:"Transportista", rProNum:"Rastreo / PRO", rQtyOrd:"Cant. pedida", rLogNotes:"Notas", rMergeHint:"Elige un proveedor (y agrega transportista/PRO o adjunta documentos) y este recibo se guarda en el Registro de Recepcion automaticamente - sin entrada aparte.",
       putHint:"Escanee el articulo, luego escanee el codigo del slot O toque Seccion - Bahia - Nivel. Sale de Recibo en tiempo real.",
       puDest:"Destino", puSection:"Seccion", puBay:"Bahia", puLevel:"Nivel", puZones:"Piso / zonas", puScanLoc:"A-05-L3 / escanee slot",
       moveHint:"Escanee articulo, elija desde y hacia (slot, WIP, Empaque, Embarque...).",
@@ -205,7 +205,7 @@
       rChannel:"Canal", rReason:"Motivo", rDisposition:"Disposicion", rRMA:"Orden / RMA #",
       submitReturn:"Registrar devolucion", recentReturns:"Devoluciones recientes", noReturns:"Sin devoluciones aun.",
       seasHint:"Controle la sazon por lote con vencimiento (FEFO). Marque lotes vencidos a cuarentena.",
-      slProduct:"Producto / sabor", slLot:"Lote #", slMfr:"Fabricante", slExp:"Vencimiento", slWeight:"Peso (lbs)",slLoc:"Ubicacion",
+      slProduct:"Producto / sabor",slNewFlavor:"+ Agregar sabor nuevo / LTO",slNewFlavorPh:"Escribe el nombre del sabor",slNewNeed:"Ingresa el nombre del nuevo sabor", slLot:"Lote #", slMfr:"Fabricante", slExp:"Vencimiento", slWeight:"Peso (lbs)",slLoc:"Ubicacion",
       addLot:"Agregar lote", seasLotsTitle:"Lotes de sazon (vencimiento mas proximo primero)", quarantineExpired:"Cuarentena de vencidos",
       noLots:"Sin lotes de sazon aun.", markQuar:"Cuarentena", markGood:"Marcar bueno", expiredTag:"VENCIDO", quarTag:"CUARENTENA", goodTag:"BUENO",
       seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdReceived:"Recibido",sdIntCode:"Codigo interno",sdPackaging:"Empaque",sdPickPack:"Elegir empaque...",sdPallets:"# Paletas",sdPalletsShort:"paleta(s)",sdPackDate:"Fecha de empaque", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
@@ -329,7 +329,7 @@
       labelsHint:"Imprima codigos na sua impressora termica. As de local sao permanentes; o LPN e um codigo por palete recebido.",
       dashHint:"Estoque ao vivo em todos os locais. Filtre por categoria.",
       receiveHint:"Escaneie um item, digite qtd. + detalhes, depois escolha para onde vai (escaneie o slot ou toque Secao-Baia-Nivel) - chega la em um passo. Deixe o local em branco para segurar no Recebimento.",rniNewBtn:"Item novo (nao esta na lista)",rniCancelBtn:"Usar item existente",rniTitle:"Criar um item novo",rniCode:"Codigo / SKU",rniName:"Nome do item",rniNamePh:"ex. Caixa Kraft 12x9",rniUnit:"Unidade",rniHint:"Isto adiciona um item novo ao mestre e depois o recebe abaixo.",rniNeed:"Insira codigo e nome do item novo",
-      rSupplier:"Fornecedor", rInvoice:"Fatura / OC #", rCategory:"Categoria", rPallets:"Paletes", rCondition:"Condicao", rStatus:"Status",
+      rSupplier:"Fornecedor", rInvoice:"Fatura / OC #", rCategory:"Categoria", rPallets:"Paletes", rCondition:"Condicao", rStatus:"Status", rDeliveryHdr:"Entrega e documentos (salvo no Registro de Recebimento)", rAttachDoc:"Anexar documentos (packing slip / BOL / nota)", rCarrier:"Transportadora", rProNum:"Rastreio / PRO", rQtyOrd:"Qtd pedida", rLogNotes:"Notas", rMergeHint:"Escolha um fornecedor (e adicione transportadora/PRO ou anexe documentos) e este recebimento e salvo no Registro de Recebimento automaticamente - sem entrada separada.",
       putHint:"Escaneie o item, depois escaneie o codigo do slot OU toque Secao - Baia - Nivel. Sai de Recebimento em tempo real.",
       puDest:"Destino", puSection:"Secao", puBay:"Baia", puLevel:"Nivel", puZones:"Piso / zonas", puScanLoc:"A-05-L3 / escaneie slot",
       moveHint:"Escaneie item, escolha de e para (slot, WIP, Empacotamento, Expedicao...).",
@@ -359,7 +359,7 @@
       rChannel:"Canal", rReason:"Motivo", rDisposition:"Destino", rRMA:"Pedido / RMA #",
       submitReturn:"Registrar devolucao", recentReturns:"Devolucoes recentes", noReturns:"Nenhuma devolucao registrada ainda.",
       seasHint:"Controle o tempero por lote com validade (FEFO). Marque lotes vencidos para quarentena.",
-      slProduct:"Produto / sabor", slLot:"Lote #", slMfr:"Fabricante", slExp:"Validade", slWeight:"Peso (lbs)",slLoc:"Localizacao",
+      slProduct:"Produto / sabor",slNewFlavor:"+ Adicionar sabor novo / LTO",slNewFlavorPh:"Digite o nome do sabor",slNewNeed:"Digite o nome do novo sabor", slLot:"Lote #", slMfr:"Fabricante", slExp:"Validade", slWeight:"Peso (lbs)",slLoc:"Localizacao",
       addLot:"Adicionar lote", seasLotsTitle:"Lotes de tempero (validade mais proxima primeiro)", quarantineExpired:"Quarentena de vencidos",
       noLots:"Nenhum lote de tempero ainda.", markQuar:"Quarentena", markGood:"Marcar bom", expiredTag:"VENCIDO", quarTag:"QUARENTENA", goodTag:"BOM",
       seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdReceived:"Recebido",sdIntCode:"Codigo interno",sdPackaging:"Embalagem",sdPickPack:"Selecionar embalagem...",sdPallets:"# Paletes",sdPalletsShort:"palete(s)",sdPackDate:"Data de embalagem", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
@@ -1712,6 +1712,14 @@
       '<div><label>' + L("rCategory") + '</label><select id="r-cat"><option value=""></option>' + selOpts(DB.recvCategories) + '</select></div></div>' +
       '<div class="row"><div><label>' + L("rCondition") + '</label><select id="r-cond">' + selOpts(DB.conditions) + '</select></div>' +
       '<div><label>' + L("rStatus") + '</label><select id="r-stat">' + selOpts(DB.recvStatuses) + '</select></div></div>' +
+      '<h3 class="sub2" style="margin-top:12px">' + L("rDeliveryHdr") + '</h3>' +
+      '<div class="spodrop"><input type="file" id="r-doc-input" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.docx" style="display:none" onchange="UI.rlFile(this)"><label for="r-doc-input" class="spodroplabel">&#128193; ' + L("rAttachDoc") + '</label></div>' +
+      (recvFile ? '<p class="hint">&#128206; ' + esc(recvFile.name) + ' <button class="ghost sm" onclick="UI.rlClear()">' + L("spoCancel") + '</button></p>' : '') +
+      '<div class="row"><div><label>' + L("rCarrier") + ' <span class="muted">(opt.)</span></label><select id="r-carrier"><option value=""></option>' + selOpts(SHIP_CARRIERS) + '</select></div>' +
+      '<div><label>' + L("rProNum") + ' <span class="muted">(opt.)</span></label><input id="r-tracking" autocomplete="off" placeholder="PRO / 1Z..."></div>' +
+      '<div><label>' + L("rQtyOrd") + ' <span class="muted">(opt.)</span></label><input id="r-qord" type="number" min="0" placeholder="0"></div></div>' +
+      '<div><label>' + L("rLogNotes") + ' <span class="muted">(opt.)</span></label><input id="r-notes" autocomplete="off"></div>' +
+      '<p class="hint" style="margin:6px 0 0">' + L("rMergeHint") + '</p>' +
       locPickerBlock("r-loc") +
       opField("Adriana") + '<button class="primary" onclick="UI.receive()">' + L("submitReceive") + '</button></div>';
   }
@@ -1798,6 +1806,7 @@
     const sediting = !!(seasEditId && sed.id);
     const av = x => esc(x == null ? "" : x);
     const opts = seas.map(i => { const code = i.id.replace("SEAS-", ""); return '<option value="' + code + '|' + i.flavor + '"' + (sediting && sed.flavor_code === code ? ' selected' : '') + '>' + i.flavor + '</option>'; }).join("");
+    const isCustom = !!(sediting && sed.flavor_code && !seas.some(i => i.id.replace("SEAS-", "") === sed.flavor_code));
     const today = new Date().toISOString().slice(0, 10);
     const lots = DB.seasLots().slice().sort((a, b) => (a.exp || "9999") < (b.exp || "9999") ? -1 : 1);
     const body = lots.length ? lots.map(l => {
@@ -1813,7 +1822,8 @@
     }).join("") : '<tr><td colspan="7" class="muted">' + L("noLots") + '</td></tr>';
     return '<div class="card"><h2>' + L("seasoning") + '</h2><p class="hint">' + L("seasHint") + '</p>' +
       (sediting ? '<p class="hint">&#9998; ' + L("editingRow") + '</p>' : '') +
-      '<div class="row"><div><label>' + L("slProduct") + '</label><select id="sl-prod">' + opts + '</select></div>' +
+      '<div class="row"><div><label>' + L("slProduct") + '</label><select id="sl-prod" onchange="UI.seasProdPick(this.value)">' + opts + '<option value="__new__"' + (isCustom ? ' selected' : '') + '>' + L("slNewFlavor") + '</option></select></div>' +
+      '<div id="sl-newwrap" style="' + (isCustom ? '' : 'display:none') + '"><label>' + L("slNewFlavor") + '</label><input id="sl-newflavor" autocomplete="off" placeholder="' + L("slNewFlavorPh") + '" value="' + (isCustom ? av(sed.product) : '') + '"></div>' +
       '<div><label>' + L("slLot") + '</label><input id="sl-lot" autocomplete="off" placeholder="# 6105" value="' + av(sed.lot) + '"></div>' +
       '<div><label>' + L("slMfr") + '</label><input id="sl-mfr" autocomplete="off" placeholder="Commercial Creations" value="' + av(sed.manufacturer) + '"></div></div>' +
       '<div class="row"><div><label>' + L("slExp") + '</label><input id="sl-exp" type="date" value="' + (sediting && sed.exp ? (sed.exp + "").slice(0, 10) : "") + '"></div>' +
@@ -3804,6 +3814,13 @@
       }
       if (!it) return toast(L("notfound"));
       const r = await DB.receive(it, q, lot, op, meta);
+      // Single-entry receiving: also save a Receiving Log record when this is an inbound delivery
+      // (supplier picked) or carrier/PRO/paperwork was provided - no separate Receiving Log entry.
+      const rlCarrier = v("r-carrier"), rlTrack = v("r-tracking").trim(), rlQord = v("r-qord").trim();
+      if (meta.supplier || rlCarrier || rlTrack || recvFile) {
+        try { await DB.addReceivingLog({ recv_date: new Date().toISOString().slice(0, 10), supplier: meta.supplier || "", po_num: meta.invoice || "", carrier: rlCarrier, tracking: rlTrack, contents: it.name, qty_ordered: rlQord, qty_received: q, condition: meta.condition || "Good", received_by: op, notes: v("r-notes").trim() }, recvFile, op); } catch (e) {}
+        recvFile = null;
+      }
       puSec = ""; puBay = ""; puLevel = ""; recvNewItem = false;
       toast("+" + fmt(q) + " " + it.name + (r && r.location ? " → " + r.location : "")); go("receive"); },
     // ---- Put-Away location picker (tap Section/Bay/Level, or scan/type the slot) ----
@@ -4111,10 +4128,13 @@
     // ---- Seasoning lots ----
     seasEdit(id) { seasEditId = id; render(); window.scrollTo(0, 0); },
     seasEditCancel() { seasEditId = null; render(); },
+    seasProdPick(v) { const w = $("sl-newwrap"); if (w) w.style.display = (v === "__new__") ? "" : "none"; },
     async addSeasLot() {
-      const pv = ($("sl-prod").value || "").split("|"); const wt = parseFloat($("sl-wt").value);
-      if (!pv[0]) return toast(L("notfound")); if (!(wt > 0)) return toast(L("enter"));
-      const rec = { flavor_code: pv[0], product: pv[1] || pv[0], lot: ($("sl-lot").value || "").trim(),
+      const rawProd = ($("sl-prod").value || ""); let fcode, prod;
+      if (rawProd === "__new__") { prod = (($("sl-newflavor") || {}).value || "").trim(); if (!prod) return toast(L("slNewNeed")); fcode = "LTO-" + (prod.toUpperCase().replace(/[^A-Z0-9]+/g, "").slice(0, 8) || "NEW"); }
+      else { const pv = rawProd.split("|"); if (!pv[0]) return toast(L("notfound")); fcode = pv[0]; prod = pv[1] || pv[0]; }
+      const wt = parseFloat($("sl-wt").value); if (!(wt > 0)) return toast(L("enter"));
+      const rec = { flavor_code: fcode, product: prod, lot: ($("sl-lot").value || "").trim(),
         manufacturer: ($("sl-mfr").value || "").trim(), exp: $("sl-exp").value || null, weight: wt,
         location: (($("sl-loc") || {}).value || "").trim() };
       if (seasEditId) { await DB.updateSeasLot(seasEditId, rec, $("op").value); seasEditId = null; toast(L("saved") + " ✓"); render(); return; }
