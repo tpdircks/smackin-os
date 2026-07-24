@@ -139,7 +139,7 @@
       mtKpiRequested:"Requested", mtKpiInProgress:"In progress", mtKpiWaiting:"Waiting (blocked)", mtKpiDone:"Done",
       poCreate:"+ Create PO", nonPoBtn:"Log purchase (no PO)", nonPoTitle:"Log a purchase (no PO)", nonPoHint:"For quick buys that don't need a formal PO - still saved to the archive and tagged No PO.", nonPoDesc:"What was purchased", nonPoAmount:"Amount", nonPoBy:"Purchased by", nonPoTag:"No PO", poExpectedEdit:"Expected / lead time", poEtaSaved:"Expected date updated", poNewTitle:"New Purchase Order", poVendorAddr:"Vendor address", poVendorEmail:"Vendor email", poVendorPhone:"Vendor phone", poShipTo:"Ship to", poPreparedBy:"Prepared by", poAddLine:"+ Add line", poItemNo:"Item #", poDesc:"Description", poQtyL:"Qty", poPriceL:"Price", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Shipping", poTaxL:"Tax", poOtherL:"Other", poGrandL:"Total", poSaveBtn:"Save PO", poBackList:"Back to list", poSavedMsg:"PO saved", poNeedVendor:"Enter a vendor first",
       poEmail:"Email PO", poEmailTo:"To", poEmailSubjectL:"Subject", poEmailSubjectTpl:"Purchase Order", poEmailBody:"Message", poEmailSend:"Send email", poEmailCopy:"Copy PO summary",
-      poEmailHint:"If email sending isn't set up yet, Send will open this in your email app instead - the PO file link is included in the message so you can attach/share it.",
+      poEmailHint:"Use Download PDF to get a printable PO you can attach or print. Server-side sending isn't turned on yet, so Send opens your email app with the summary and auto-downloads the PO PDF - just attach it before sending.",
       poEmailNeedTo:"Enter the vendor's email first", poEmailSending:"Sending...", poEmailOk:"PO emailed", poEmailCopied:"Copied to clipboard",
       poEmailNo:"Sending isn't set up yet - opening your email app instead.", poEmailFail:"Could not send - opening your email app instead.",
       rdHint:"Request samples and ingredients here. Each request generates a PDF and is tracked Pending until it arrives.",
@@ -293,7 +293,7 @@
       mtKpiRequested:"Solicitados", mtKpiInProgress:"En curso", mtKpiWaiting:"Esperando (bloqueado)", mtKpiDone:"Hechos",
       poCreate:"+ Crear OC", nonPoBtn:"Registrar compra (sin OC)", nonPoTitle:"Registrar una compra (sin OC)", nonPoHint:"Para compras rapidas que no necesitan una OC formal - igual se guardan en el archivo y se etiquetan Sin OC.", nonPoDesc:"Que se compro", nonPoAmount:"Monto", nonPoBy:"Comprado por", nonPoTag:"Sin OC", poExpectedEdit:"Esperado / tiempo de entrega", poEtaSaved:"Fecha esperada actualizada", poNewTitle:"Nueva Orden de Compra", poVendorAddr:"Direccion del proveedor", poVendorEmail:"Correo del proveedor", poVendorPhone:"Telefono del proveedor", poShipTo:"Enviar a", poPreparedBy:"Preparado por", poAddLine:"+ Agregar linea", poItemNo:"Articulo #", poDesc:"Descripcion", poQtyL:"Cant", poPriceL:"Precio", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Envio", poTaxL:"Impuesto", poOtherL:"Otro", poGrandL:"Total", poSaveBtn:"Guardar OC", poBackList:"Volver a la lista", poSavedMsg:"OC guardada", poNeedVendor:"Ingrese un proveedor primero",
       poEmail:"Enviar OC por correo", poEmailTo:"Para", poEmailSubjectL:"Asunto", poEmailSubjectTpl:"Orden de Compra", poEmailBody:"Mensaje", poEmailSend:"Enviar correo", poEmailCopy:"Copiar resumen de OC",
-      poEmailHint:"Si el envio de correo aun no esta configurado, Enviar abrira esto en su aplicacion de correo - el enlace del archivo de la OC va incluido en el mensaje para que lo pueda adjuntar/compartir.",
+      poEmailHint:"Use Descargar PDF para obtener una OC imprimible que puede adjuntar o imprimir. El envio por servidor aun no esta activo, asi que Enviar abre su correo con el resumen y descarga el PDF de la OC - adjuntelo antes de enviar.",
       poEmailNeedTo:"Ingrese primero el correo del proveedor", poEmailSending:"Enviando...", poEmailOk:"OC enviada por correo", poEmailCopied:"Copiado al portapapeles",
       poEmailNo:"El envio de correo aun no esta configurado - abriendo su aplicacion de correo.", poEmailFail:"No se pudo enviar - abriendo su aplicacion de correo.",
       rdHint:"Solicite muestras e ingredientes aqui. Cada solicitud genera un PDF y se sigue como Pendiente hasta que llega.",
@@ -447,7 +447,7 @@
       mtKpiRequested:"Solicitados", mtKpiInProgress:"Em andamento", mtKpiWaiting:"Aguardando (bloqueado)", mtKpiDone:"Concluidos",
       poCreate:"+ Criar OC", nonPoBtn:"Registrar compra (sem OC)", nonPoTitle:"Registrar uma compra (sem OC)", nonPoHint:"Para compras rapidas que nao precisam de uma OC formal - ainda salvas no arquivo e marcadas Sem OC.", nonPoDesc:"O que foi comprado", nonPoAmount:"Valor", nonPoBy:"Comprado por", nonPoTag:"Sem OC", poExpectedEdit:"Esperado / prazo", poEtaSaved:"Data esperada atualizada", poNewTitle:"Nova Ordem de Compra", poVendorAddr:"Endereco do fornecedor", poVendorEmail:"Email do fornecedor", poVendorPhone:"Telefone do fornecedor", poShipTo:"Enviar para", poPreparedBy:"Preparado por", poAddLine:"+ Adicionar linha", poItemNo:"Item #", poDesc:"Descricao", poQtyL:"Qtd", poPriceL:"Preco", poLineTot:"Total", poSubtotalL:"Subtotal", poShippingL:"Frete", poTaxL:"Imposto", poOtherL:"Outro", poGrandL:"Total", poSaveBtn:"Salvar OC", poBackList:"Voltar a lista", poSavedMsg:"OC salva", poNeedVendor:"Insira um fornecedor primeiro",
       poEmail:"Enviar OC por email", poEmailTo:"Para", poEmailSubjectL:"Assunto", poEmailSubjectTpl:"Ordem de Compra", poEmailBody:"Mensagem", poEmailSend:"Enviar email", poEmailCopy:"Copiar resumo da OC",
-      poEmailHint:"Se o envio de email ainda nao estiver configurado, Enviar vai abrir isto no seu aplicativo de email - o link do arquivo da OC esta incluido na mensagem para voce anexar/compartilhar.",
+      poEmailHint:"Use Baixar PDF para obter uma OC impressa que voce pode anexar ou imprimir. O envio pelo servidor ainda nao esta ativo, entao Enviar abre seu email com o resumo e baixa o PDF da OC - anexe-o antes de enviar.",
       poEmailNeedTo:"Insira primeiro o email do fornecedor", poEmailSending:"Enviando...", poEmailOk:"OC enviada por email", poEmailCopied:"Copiado para a area de transferencia",
       poEmailNo:"O envio de email ainda nao esta configurado - abrindo seu aplicativo de email.", poEmailFail:"Nao foi possivel enviar - abrindo seu aplicativo de email.",
       rdHint:"Solicite amostras e ingredientes aqui. Cada solicitacao gera um PDF e e acompanhada como Pendente ate chegar.",
@@ -1441,6 +1441,65 @@
     if (s.file_url) { p.push(""); p.push("PO document: " + s.file_url); }
     return p.join("\n");
   }
+  // Build a clean Purchase Order PDF (jsPDF) for any PO - including ones created in the app
+  // that have no uploaded file. Mirrors the R&D PDF style.
+  function poDoc(s) {
+    const jsPDFctor = window.jspdf && window.jspdf.jsPDF; if (!jsPDFctor) return null;
+    const doc = new jsPDFctor({ unit: "pt", format: "letter" });
+    const M = 54, W = 612, RM = W - M; let y = 58;
+    const navy = [31, 56, 100], grey = [90, 90, 90], ink = [34, 34, 34];
+    const rule = yy => { doc.setDrawColor(210, 216, 226); doc.setLineWidth(1); doc.line(M, yy, RM, yy); };
+    doc.setFont("helvetica", "bold"); doc.setFontSize(20); doc.setTextColor(navy[0], navy[1], navy[2]);
+    doc.text("SMACKIN' SNACKS", M, y);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(grey[0], grey[1], grey[2]);
+    doc.text("SLC Fulfillment Center", M, y + 15);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(180, 120, 10);
+    doc.text("BETA - PROTOTYPE", RM, y - 6, { align: "right" });
+    y += 30; rule(y); y += 26;
+    doc.setFont("helvetica", "bold"); doc.setFontSize(16); doc.setTextColor(ink[0], ink[1], ink[2]);
+    doc.text("PURCHASE ORDER", M, y); y += 22;
+    doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(ink[0], ink[1], ink[2]);
+    doc.text("PO #: " + (s.po_num || "-"), M, y);
+    doc.text("Date: " + (s.po_date || new Date().toISOString().slice(0, 10)), RM, y, { align: "right" }); y += 22;
+    const colR = 320;
+    doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(grey[0], grey[1], grey[2]);
+    doc.text("VENDOR", M, y); doc.text("SHIP TO", colR, y); y += 14;
+    doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(ink[0], ink[1], ink[2]);
+    const vend = []; if (s.vendor) vend.push(s.vendor); if (s.vendor_addr) vend.push(s.vendor_addr); if (s.vendor_email) vend.push(s.vendor_email); if (s.vendor_phone) vend.push(s.vendor_phone);
+    const vlines = []; (vend.length ? vend : ["-"]).forEach(v => doc.splitTextToSize(String(v), colR - M - 12).forEach(x => vlines.push(x)));
+    const ship = doc.splitTextToSize(s.ship_to || "-", RM - colR);
+    doc.text(vlines, M, y); doc.text(ship, colR, y);
+    y += Math.max(vlines.length, ship.length) * 13 + 14; rule(y); y += 16;
+    const cItem = M, cDesc = M + 66, cQty = 396, cPrice = 456, cTot = RM;
+    doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(grey[0], grey[1], grey[2]);
+    doc.text("ITEM", cItem, y); doc.text("DESCRIPTION", cDesc, y); doc.text("QTY", cQty, y, { align: "right" });
+    doc.text("PRICE", cPrice, y, { align: "right" }); doc.text("TOTAL", cTot, y, { align: "right" });
+    y += 6; rule(y); y += 14;
+    doc.setFont("helvetica", "normal"); doc.setFontSize(9.5); doc.setTextColor(ink[0], ink[1], ink[2]);
+    const lines = poLinesOf(s);
+    if (lines.length) {
+      lines.forEach(l => {
+        if (y > 720) { doc.addPage(); y = 58; }
+        const dl = doc.splitTextToSize(String(l.desc || ""), cQty - cDesc - 44);
+        doc.text(String(l.item || ""), cItem, y);
+        doc.text(dl.length ? dl : [""], cDesc, y);
+        if (l.qty !== "") doc.text(String(l.qty), cQty, y, { align: "right" });
+        if (l.price !== "") doc.text(money(l.price), cPrice, y, { align: "right" });
+        if (l.tot !== "") doc.text(money(l.tot), cTot, y, { align: "right" });
+        y += Math.max(dl.length * 12, 14);
+      });
+    } else { doc.text("(no line items on file)", cItem, y); y += 14; }
+    y += 4; rule(y); y += 18;
+    const tRow = (lbl, val) => { if (val == null || val === "") return; doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(grey[0], grey[1], grey[2]); doc.text(lbl, cPrice, y, { align: "right" }); doc.setTextColor(ink[0], ink[1], ink[2]); doc.text(money(val), cTot, y, { align: "right" }); y += 15; };
+    tRow("Subtotal", s.subtotal); tRow("Shipping", s.shipping); tRow("Tax", s.tax); tRow("Other", s.other);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(ink[0], ink[1], ink[2]);
+    doc.text("TOTAL", cPrice, y, { align: "right" }); doc.text(money(s.total), cTot, y, { align: "right" }); y += 24;
+    const nc = notesClean(s.notes);
+    if (nc) { doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(grey[0], grey[1], grey[2]); doc.text("NOTES", M, y); y += 13; doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(ink[0], ink[1], ink[2]); const ns = doc.splitTextToSize(nc, RM - M); doc.text(ns, M, y); y += ns.length * 13; }
+    doc.setFontSize(8); doc.setTextColor(grey[0], grey[1], grey[2]);
+    doc.text("Generated by Smackin' OS (BETA)  -  PO " + (s.po_num || ""), M, 762);
+    return doc;
+  }
   // Inline compose panel for emailing a Supplier PO to the vendor (mirrors the ordform pattern).
   function poEmailForm(s) {
     if (!poEmailOpen) return "";
@@ -1451,6 +1510,7 @@
       '<div><label>' + L("poEmailSubjectL") + '</label><input id="po-em-subj" autocomplete="off" value="' + esc(subject) + '"></div>' +
       '<div><label>' + L("poEmailBody") + '</label><textarea id="po-em-body" rows="12">' + esc(body) + '</textarea></div>' +
       '<button class="primary" onclick="UI.poEmailSend()">' + L("poEmailSend") + '</button> ' +
+      '<button class="ghost" onclick="UI.poPdf(\'' + s.id + '\')">&#128229; ' + L("rdDownload") + '</button> ' +
       '<button class="ghost" onclick="UI.poEmailCopy()">' + L("poEmailCopy") + '</button> ' +
       '<button class="ghost" onclick="UI.poEmailCancel()">' + L("spoCancel") + '</button>' +
       '<p class="hint">' + L("poEmailHint") + '</p></div>';
@@ -1481,6 +1541,7 @@
       : '<span class="muted">' + L("poNoFile") + '</span>';
     return '<div class="card"><div class="spohead"><h2 style="margin:0">' + esc(s.vendor || L("supplierpos")) + (s.po_num ? ' &middot; ' + L("spoPO") + ' ' + esc(s.po_num) : "") + '</h2>' +
       '<div><button class="primary sm" onclick="UI.poEmailToggle()">&#9993; ' + L("poEmail") + '</button> ' +
+      '<button class="ghost sm" onclick="UI.poPdf(\'' + s.id + '\')">&#128229; ' + L("rdDownload") + '</button> ' +
       '<button class="ghost sm" onclick="UI.spoCloseDetail()">&#8592; ' + L("poBackList") + '</button></div></div>' +
       '<div class="poinfo">' + info + '</div>' +
       '<div class="podoc">' + fileBlock + '</div>' +
@@ -4451,10 +4512,17 @@
       const html = '<div style="font-family:Arial,sans-serif;color:#222;white-space:pre-wrap">' + esc(body).replace(/\n/g, "<br>") + '</div>';
       const res = await DB.emailPO(s, { to: to, subject: subject, html: html }, opVal());
       if (res.ok) { toast(L("poEmailOk")); poEmailOpen = false; render(); return; }
-      // Graceful fallback: open a prefilled mailto so the send is still one click away.
+      // Graceful fallback: download the PO PDF (mailto can't carry attachments), then open a
+      // prefilled mailto so the send is one click away and the PDF is ready to attach.
+      try { const d = poDoc(s); if (d) d.save("PO " + (s.po_num || "draft") + (s.vendor ? " - " + s.vendor : "") + ".pdf"); } catch (e) {}
       const mailto = "mailto:" + encodeURIComponent(to) + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
       window.location.href = mailto;
       toast(res.msg === "not-configured" ? L("poEmailNo") : L("poEmailFail"));
+    },
+    poPdf(id) {
+      const s = DB.supplierPos().find(x => String(x.id) === String(id)); if (!s) return;
+      const doc = poDoc(s); if (!doc) return toast("PDF lib not loaded");
+      doc.save("PO " + (s.po_num || "draft") + (s.vendor ? " - " + s.vendor : "") + ".pdf");
     },
     refPick(input) { refFiles = input.files && input.files.length ? input.files : null; render(); },
     refClear() { refFiles = null; render(); },
