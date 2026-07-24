@@ -53,7 +53,7 @@
       slProduct:"Product / flavor",slNewFlavor:"+ Add new / LTO flavor",slNewFlavorPh:"Type the flavor name",slNewNeed:"Enter the new flavor name", slLot:"Lot #", slMfr:"Manufacturer", slExp:"Expiration", slWeight:"Weight (lbs)",slLoc:"Location",
       addLot:"Add lot", seasLotsTitle:"Seasoning lots (earliest expiration first)", quarantineExpired:"Quarantine expired lots",
       noLots:"No seasoning lots yet.", markQuar:"Quarantine", markGood:"Mark good", expiredTag:"EXPIRED", quarTag:"QUARANTINE", goodTag:"GOOD",
-      seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdReceived:"Received",sdIntCode:"Internal code",sdPackaging:"Packaging",sdPickPack:"Select packaging...",sdPallets:"# Pallets",sdPalletsShort:"pallet(s)",sdPackDate:"Packaging date", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
+      seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdOnHand:"On hand by type", sdReceived:"Received",sdIntCode:"Internal code",sdPackaging:"Packaging",sdPickPack:"Select packaging...",sdPallets:"# Pallets",sdPalletsShort:"pallet(s)",sdPackDate:"Packaging date", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
       skus:"SKUs", skusHint:"Finished-goods / retail SKU catalog - bundles, singles, and cases with bag count and flavor contents. Reference only.", skuCode:"SKU", skuTitle:"Product", skuBags:"Bags", skuComp:"Contents", skuSearchP:"Search SKU, product, or flavor...", skuCount:"SKUs",
       stockbuild:"Stock Build", reorder15:"1.5oz Reorder", r15Hint:"Trigger-based reorder for 1.5oz finished bags (Allen's rule): when a flavor drops to 2 pallets (12,500 bags) or less, build the tier quantity. Prime = 48 bins, Secondary = 24 bins. Coverage uses actual per-flavor ShipStation demand.", r15Prime:"Prime flavors", r15Secondary:"Secondary flavors", r15Bins:"bins", r15After:"after reorder", r15Reorder:"REORDER", r15Ok:"OK", r15NoItem:"no 1.5oz item", r15WksLeft:"Wks left", r15WksAfter:"Wks after", r15ToReorder:"Flavors to reorder now", r15BuildNow:"Build needed now (bags)", r15Trigger:"Trigger (2 pallets)", r15Note:"Coverage after reorder uses actual per-flavor 1.5oz ShipStation demand (FY), not an even split - fast movers like Dill, Maple, Cracked Pepper and BBQ run shorter. Pull recent per-flavor sales before locking targets.", sbHint:"Live build progress vs goals. Update On Hand as you go - the whole team sees it instantly. Yellow field = enter today's count.", sbGoal:"Goal", sbOnHand:"On hand", sbToBuild:"To build", sbPallets:"Pallets", sbDone:"Done", sbTotalGoal:"Total goal", sbComplete:"Complete", sbSaved:"Saved", sbRetail:"Retail", sbEcom:"E-Commerce", sb12pk:"12-Pack Boxes", sbCoverage:"Coverage by group", sbBuilt:"Built vs goal",
       board:"Board Mode / TV", boardPick:"Pick a department", boardPickHint:"Open this on the TV and pick a department, or bookmark the URL (example: ?board=pmac).", boardExit:"Exit", grpDemand:"Demand", demand:"By Department", demandboard:"Order Board", demandsched:"Production Schedule", demandimport:"Import Orders", ecomdemand:"E-Com Demand", forecast:"Forecast vs Target",
@@ -208,7 +208,7 @@
       slProduct:"Producto / sabor",slNewFlavor:"+ Agregar sabor nuevo / LTO",slNewFlavorPh:"Escribe el nombre del sabor",slNewNeed:"Ingresa el nombre del nuevo sabor", slLot:"Lote #", slMfr:"Fabricante", slExp:"Vencimiento", slWeight:"Peso (lbs)",slLoc:"Ubicacion",
       addLot:"Agregar lote", seasLotsTitle:"Lotes de sazon (vencimiento mas proximo primero)", quarantineExpired:"Cuarentena de vencidos",
       noLots:"Sin lotes de sazon aun.", markQuar:"Cuarentena", markGood:"Marcar bueno", expiredTag:"VENCIDO", quarTag:"CUARENTENA", goodTag:"BUENO",
-      seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdReceived:"Recibido",sdIntCode:"Codigo interno",sdPackaging:"Empaque",sdPickPack:"Elegir empaque...",sdPallets:"# Paletas",sdPalletsShort:"paleta(s)",sdPackDate:"Fecha de empaque", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
+      seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdOnHand:"En mano por tipo", sdReceived:"Recibido",sdIntCode:"Codigo interno",sdPackaging:"Empaque",sdPickPack:"Elegir empaque...",sdPallets:"# Paletas",sdPalletsShort:"paleta(s)",sdPackDate:"Fecha de empaque", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
       skus:"SKUs", skusHint:"Catalogo de SKU de producto terminado / retail - paquetes, individuales y cajas con cantidad de bolsas y sabores. Solo referencia.", skuCode:"SKU", skuTitle:"Producto", skuBags:"Bolsas", skuComp:"Contenido", skuSearchP:"Buscar SKU, producto o sabor...", skuCount:"SKUs",
       stockbuild:"Construir Inventario", reorder15:"Reorden 1.5oz", r15Hint:"Reorden por disparador para bolsas 1.5oz (regla de Allen): cuando un sabor baja a 2 paletas (12,500 bolsas) o menos, produzca la cantidad del nivel. Prime = 48 bins, Secundario = 24 bins. La cobertura usa la demanda real por sabor de ShipStation.", r15Prime:"Sabores Prime", r15Secondary:"Sabores Secundarios", r15Bins:"bins", r15After:"tras reorden", r15Reorder:"REORDENAR", r15Ok:"OK", r15NoItem:"sin item 1.5oz", r15WksLeft:"Sem. rest.", r15WksAfter:"Sem. tras", r15ToReorder:"Sabores a reordenar ahora", r15BuildNow:"Produccion necesaria (bolsas)", r15Trigger:"Disparador (2 paletas)", r15Note:"La cobertura tras reorden usa la demanda real por sabor de 1.5oz de ShipStation (ano fiscal), no un promedio - los rapidos como Dill, Maple, Cracked Pepper y BBQ duran menos. Use ventas recientes por sabor antes de fijar metas.", sbHint:"Progreso de construccion vs metas en vivo. Actualice En Mano segun avanza - todo el equipo lo ve al instante. Campo amarillo = ingrese el conteo de hoy.", sbGoal:"Meta", sbOnHand:"En mano", sbToBuild:"Por hacer", sbPallets:"Paletas", sbDone:"Listo", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Guardado", sbRetail:"Minorista", sbEcom:"Comercio Electronico", sb12pk:"Cajas de 12", sbCoverage:"Cobertura por grupo", sbBuilt:"Hecho vs meta",
       board:"Modo Pizarra / TV", boardPick:"Elija un departamento", boardPickHint:"Abra esto en la TV y elija un departamento, o guarde el URL (ejemplo: ?board=pmac).", boardExit:"Salir", grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Tablero de Pedidos", demandsched:"Programa de Produccion", demandimport:"Importar Pedidos", ecomdemand:"Demanda E-Com", forecast:"Pronostico vs Objetivo",
@@ -362,7 +362,7 @@
       slProduct:"Produto / sabor",slNewFlavor:"+ Adicionar sabor novo / LTO",slNewFlavorPh:"Digite o nome do sabor",slNewNeed:"Digite o nome do novo sabor", slLot:"Lote #", slMfr:"Fabricante", slExp:"Validade", slWeight:"Peso (lbs)",slLoc:"Localizacao",
       addLot:"Adicionar lote", seasLotsTitle:"Lotes de tempero (validade mais proxima primeiro)", quarantineExpired:"Quarentena de vencidos",
       noLots:"Nenhum lote de tempero ainda.", markQuar:"Quarentena", markGood:"Marcar bom", expiredTag:"VENCIDO", quarTag:"QUARENTENA", goodTag:"BOM",
-      seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdReceived:"Recebido",sdIntCode:"Codigo interno",sdPackaging:"Embalagem",sdPickPack:"Selecionar embalagem...",sdPallets:"# Paletes",sdPalletsShort:"palete(s)",sdPackDate:"Data de embalagem", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
+      seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdOnHand:"Em estoque por tipo", sdReceived:"Recebido",sdIntCode:"Codigo interno",sdPackaging:"Embalagem",sdPickPack:"Selecionar embalagem...",sdPallets:"# Paletes",sdPalletsShort:"palete(s)",sdPackDate:"Data de embalagem", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
       skus:"SKUs", skusHint:"Catalogo de SKU de produto acabado / varejo - pacotes, individuais e caixas com contagem de sacos e sabores. Apenas referencia.", skuCode:"SKU", skuTitle:"Produto", skuBags:"Sacos", skuComp:"Conteudo", skuSearchP:"Buscar SKU, produto ou sabor...", skuCount:"SKUs",
       stockbuild:"Construir Estoque", reorder15:"Reposicao 1.5oz", r15Hint:"Reposicao por gatilho para bolsas 1.5oz (regra do Allen): quando um sabor cai para 2 paletes (12,500 bolsas) ou menos, produza a quantidade do nivel. Prime = 48 bins, Secundario = 24 bins. A cobertura usa a demanda real por sabor do ShipStation.", r15Prime:"Sabores Prime", r15Secondary:"Sabores Secundarios", r15Bins:"bins", r15After:"apos reposicao", r15Reorder:"REPOR", r15Ok:"OK", r15NoItem:"sem item 1.5oz", r15WksLeft:"Sem. rest.", r15WksAfter:"Sem. apos", r15ToReorder:"Sabores a repor agora", r15BuildNow:"Producao necessaria (bolsas)", r15Trigger:"Gatilho (2 paletes)", r15Note:"A cobertura apos reposicao usa a demanda real por sabor de 1.5oz do ShipStation (ano fiscal), nao uma media - rapidos como Dill, Maple, Cracked Pepper e BBQ duram menos. Use vendas recentes por sabor antes de fixar metas.", sbHint:"Progresso de construcao vs metas ao vivo. Atualize Em Estoque conforme avanca - toda a equipe ve na hora. Campo amarelo = insira a contagem de hoje.", sbGoal:"Meta", sbOnHand:"Em estoque", sbToBuild:"A fazer", sbPallets:"Paletes", sbDone:"Pronto", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Salvo", sbRetail:"Varejo", sbEcom:"E-Commerce", sb12pk:"Caixas de 12", sbCoverage:"Cobertura por grupo", sbBuilt:"Feito vs meta",
       board:"Modo Painel / TV", boardPick:"Escolha um departamento", boardPickHint:"Abra isto na TV e escolha um departamento, ou salve o URL (exemplo: ?board=pmac).", boardExit:"Sair", grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Painel de Pedidos", demandsched:"Programa de Producao", demandimport:"Importar Pedidos", ecomdemand:"Demanda E-Com", forecast:"Previsao vs Meta",
@@ -673,9 +673,9 @@
     ["Leonel Marquez-Dimas","Packaging Operator","Packaging","Allen Back"],
     ["Luvencio Rondon Sanchez","Packaging Operator","Packaging","Allen Back"],
     ["Pedro Chacin Angarita","Packaging Operator","Packaging","Allen Back"],
-    ["Brandon Coronado","Maintenance Technician Apprentice","Technician","Matt Bollinger"],
-    ["Dallas Martinez","Technician","Technician","Matt Bollinger"],
-    ["Todd Herre","Maintenance Technician","Technician","Matt Bollinger"],
+    ["Brandon Coronado","Maintenance Technician","Maintenance","Matt Bollinger","Swing 2:00pm-10:30pm M-F"],
+    ["Dallas Martinez","Maintenance Technician","Maintenance","Matt Bollinger","Day 7:00am-3:30pm M-F"],
+    ["Todd Herre","Maintenance Technician","Maintenance","Matt Bollinger","Day 6:30am-4:00pm M-Th"],
     ["Gloria Perez","Cleaner","Operations","Matt Bollinger"],
     ["Alex Wonderlic","Director of Sales - Grocery","Sales","Josh Laughlin"],
     ["Allie Gale","Director of Sales - Convenience","Sales","Josh Laughlin"],
@@ -692,7 +692,7 @@
     ["Rajil Wasif","Marketing","Marketing","Max DeWolf"],
     ["Brian Lepro","Independent Contractor","Contractor",""],
     ["Lorelei Davis","Fulfillment Associate","Fulfillment","Troy Dircks"]
-  ].map(a => ({ n:a[0], r:a[1], d:a[2], m:a[3] }));
+  ].map(a => ({ n:a[0], r:a[1], d:a[2], m:a[3], s:a[4] || "" }));
   // Daily Fulfillment tracker: anyone who can work e-com labels on a given day -- the whole Fulfillment /
   // Shipping roster, plus the Operations people who report to Troy on the fulfillment side.
   function fdEmployeeList() {
@@ -1017,7 +1017,8 @@
     const baseCodes = DB.items().filter(i => i.category === "seed" && /^SEED-/.test(i.id)).map(i => i.id).concat(["MALTO", "OIL", "STEVIA"]);
     const baseTiles = baseCodes.map(c => {
       const it = bc(c); if (!it) return ""; const st = statusOf(it);
-      return '<div class="btile ess-' + st + '"><div class="n">' + fmt(DB.onHand(it.id)) + '<span class="u"> ' + it.unit + '</span></div><div class="l">' + esc(it.name.split(" - ")[0].split(" (")[0]) + '</div></div>';
+      const lbl = /^SEED-/.test(it.id) ? seedShort(it.name) : it.name.split(" - ")[0].split(" (")[0];
+      return '<div class="btile ess-' + st + '"><div class="n">' + fmt(DB.onHand(it.id)) + '<span class="u"> ' + it.unit + '</span></div><div class="l">' + esc(lbl) + '</div></div>';
     }).join("");
     const snapshot = '<div class="card"><div class="suprow"><h2 class="sub2" style="margin:0;flex:1">' + L("hSnapshot") + '</h2><a class="order sm" onclick="UI_go(\'dash\')" style="cursor:pointer">' + L("hSeeAll") + '</a></div>' +
       '<div class="kpis" style="margin-top:10px"><div class="kpi"><div class="n">' + items.length + '</div><div class="l">' + L("totalItems") + '</div></div>' +
@@ -1025,6 +1026,14 @@
       '<div class="kpi"><div class="n">' + fmt(bag15) + '</div><div class="l">' + L("bag15") + '</div></div></div>' +
       '<h2 class="sub2" style="margin:16px 0 8px">' + L("hBase") + '</h2><div class="btiles">' + baseTiles + '</div></div>';
     return '<div class="card"><h2>' + L("homeTitle") + '</h2><p class="hint">' + L("homeHint") + '</p><div class="htiles">' + tiles + '</div></div>' + attention + essTable + snapshot;
+  }
+  // Clean short label for a seed item: prefer the trailing "(...)" descriptor so
+  // Extreme / 7% Salt / Brown / White / Tote stay distinct (their base names collide).
+  function seedShort(name) {
+    name = String(name || "");
+    var m = name.match(/\(([^)]+)\)\s*$/);
+    if (m) return /tote/i.test(name) ? "Tote " + m[1] : m[1];
+    return name.split(" - ")[0].split(" (")[0];
   }
   function viewDash() {
     let its = DB.items().filter(i => catFilter === "all" || i.category === catFilter);
@@ -1046,7 +1055,7 @@
       if (prefs.sortKey === c) th = th.replace("</th>", ' <span class="sortar">' + (prefs.sortDir > 0 ? "&#9650;" : "&#9660;") + "</span></th>");
       return th.replace("<th", '<th onclick="UI.sort(\'' + c + '\')" style="cursor:pointer"');
     }).join("");
-    const rows = its.map(i => '<tr>' + cols.map(c => COL_DEF[c].td(i)).join("") + '</tr>').join("");
+    const rows = its.map(i => '<tr data-txt="' + esc(((i.name || "") + " " + (i.code || "") + " " + (CATLBL[i.category] || i.category || "")).toLowerCase().replace(/"/g, "")) + '">' + cols.map(c => COL_DEF[c].td(i)).join("") + '</tr>').join("");
     const cbar = CATS.map(c => '<button class="' + (c === catFilter ? "active" : "") + '" onclick="UI.cat(\'' + c + '\')">' + (CATLBL[c] || c) + "</button>").join("");
     return '<div class="card"><h2>' + L("dash") + '</h2><p class="hint">' + L("dashHint") + '</p>' +
       '<div class="kpis"><div class="kpi"><div class="n">' + DB.items().length + '</div><div class="l">' + L("totalItems") + '</div></div>' +
@@ -1055,7 +1064,9 @@
       '<div class="kpi ' + (low ? "alert" : "") + '"><div class="n">' + low + '</div><div class="l">' + L("lowItems") + '</div></div>' +
       '<div class="kpi" style="cursor:pointer" onclick="UI_go(\'stockbuild\')"><div class="n">' + sbPct + '%</div><div class="l">' + L("stockbuild") + ' &#8250;</div><div class="muted sm">' + fmt(sbToBuild) + ' ' + L("sbToBuild") + '</div></div></div>' +
       '<div class="catbar">' + cbar + '</div>' + colControls() +
-      '<table><thead><tr>' + head + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+      '<input id="dashSearch" autocomplete="off" oninput="UI.dashSearch(this.value)" placeholder="' + L("searchItems") + '" style="width:100%;max-width:420px;margin:4px 0 8px">' +
+      '<table><thead><tr>' + head + '</tr></thead><tbody id="dashBody">' + rows + '</tbody></table></div>' +
+      prodTrendCard();
   }
   function viewAlerts() {
     const out = DB.items().filter(i => i.reorder > 0 && DB.onHand(i.id) <= 0);
@@ -1744,7 +1755,8 @@
       fin.map(i => '<option value="' + i.id + '">' + i.flavor + "</option>").join("") + '</select></div>' +
       '<div><label>' + L("qtyBags") + '</label><input id="pr-qty" type="number" min="0" placeholder="' + L("enter") + '"></div>' +
       '<div>' + locInput("pr-loc", "to") + '</div></div>' +
-      opField() + '<button class="primary" onclick="UI.produce()">' + L("submitProduce") + '</button></div>';
+      opField() + '<button class="primary" onclick="UI.produce()">' + L("submitProduce") + '</button></div>' +
+      prodTrendCard();
   }
   function viewCount() {
     return '<div class="card"><h2>' + L("count") + '</h2><p class="hint">' + L("countHint") + '</p>' +
@@ -1857,7 +1869,12 @@
         '</td><td>' + (rec || "—") + '</td><td class="right">' + fmt(l.weight) + '</td><td class="muted sm">' + (packDesc || "—") + '</td><td>' + stat + '</td><td>' + act + ' <button class="ghost sm" title="' + L("editRow") + '" onclick="UI.seedEdit(\'' + l.id + '\')">&#9998;</button></td></tr>';
     }).join("") : '<tr><td colspan="9" class="muted">' + L("noSeedLots") + '</td></tr>';
     const today = new Date().toISOString().slice(0, 10);
-    return '<div class="card"><h2>' + L("seed") + '</h2><p class="hint">' + L("seedHint") + '</p>' +
+    const seedSummary = '<div class="muted sm" style="font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:6px 0 2px">' + L("sdOnHand") + '</div>' +
+      '<div class="btiles" style="margin-bottom:8px">' + seeds.map(i => {
+        const st = statusOf(i);
+        return '<div class="btile ess-' + st + '"><div class="n">' + fmt(DB.onHand(i.id)) + '<span class="u"> ' + esc(i.unit || "lbs") + '</span></div><div class="l">' + esc(seedShort(i.name)) + '</div></div>';
+      }).join("") + '</div>';
+    return '<div class="card"><h2>' + L("seed") + '</h2><p class="hint">' + L("seedHint") + '</p>' + seedSummary +
       (sdediting ? '<p class="hint">&#9998; ' + L("editingRow") + '</p>' : '') +
       '<div class="row"><div><label>' + L("sdType") + '</label><select id="sd-type">' + opts + '</select></div>' +
       '<div><label>' + L("slLot") + '</label><input id="sd-lot" autocomplete="off" placeholder="# 4471" value="' + av2(sedt.lot) + '"></div>' +
@@ -3400,6 +3417,7 @@
     return '<div class="pcard"><div class="pav">' + esc(init) + '</div>' +
       '<div class="pmeta"><div class="pname">' + esc(pr.n) + '</div>' +
       '<div class="prole">' + esc(pr.r || "") + '</div>' +
+      (pr.s ? '<div class="muted sm">' + esc(pr.s) + '</div>' : '') +
       '</div></div>';
   }
   function orgHtml() {
@@ -3425,7 +3443,7 @@
     else {
       const byDept = {};
       PEOPLE.forEach(p => { (byDept[p.d] = byDept[p.d] || []).push(p); });
-      const order = ["Operations Management", "Fulfillment", "Operations", "Shipping", "Mixing", "Packaging", "Manufacturing", "Quality", "Technician", "Human Resources", "Executive", "Sales", "Marketing", "Contractor"];
+      const order = ["Operations Management", "Fulfillment", "Operations", "Shipping", "Mixing", "Packaging", "Manufacturing", "Quality", "Maintenance", "Technician", "Human Resources", "Executive", "Sales", "Marketing", "Contractor"];
       const depts = Object.keys(byDept).sort((a, b) => { const ia = order.indexOf(a), ib = order.indexOf(b); return ((ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib)) || a.localeCompare(b); });
       body = '<input class="search" id="pSearch" autocomplete="off" placeholder="' + L("hrSearchP") + '" oninput="UI.peopleSearch(this.value)">' +
         depts.map(d => '<div class="pdept"><div class="pdepthead">' + esc(d || "Other") + ' <span class="muted">(' + byDept[d].length + ')</span></div>' +
@@ -4236,6 +4254,8 @@
     // ---- Adjust (spreadsheet-style counts) ----
     adjSearch(v) { const q = (v || "").toLowerCase().trim();
       document.querySelectorAll("#adjBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
+    dashSearch(v) { const q = (v || "").toLowerCase().trim();
+      document.querySelectorAll("#dashBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
     async saveAdjust() {
       const changes = [];
       document.querySelectorAll("#adjBody input.adjq").forEach(inp => {
