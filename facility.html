@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smackin' — Digital Twin 3D (v1 structural)</title>
+<title>Smackin' — 3D Digital Twin (structural v1)</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{width:100%;height:100%;overflow:hidden;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#0f1420;}
@@ -37,21 +37,22 @@
 <body>
 <div id="app"></div>
 <div id="loading">Loading 3D digital twin…</div>
-<div id="errbox">Could not load the 3D library (no internet or network blocked).<br>Connect to the internet and reload the page.</div>
+<div id="errbox">Couldn't load the 3D library (no internet or blocked network).<br>Connect to the internet and reload the page.</div>
 
 <div id="topbar">
-  <h1>Smackin' · Digital Twin 3D — v1 structural</h1>
-  <span class="hint">5 sections · ~536 positions · levels L1–L4 · drag = rotate · scroll = zoom · click a position to see the code · live colors (Sections A–D)</span>
+  <h1>Smackin' · 3D Digital Twin — structural v1</h1>
+  <span class="hint">drag = rotate · right-drag or Shift+drag = pan (move to any corner) · double-click = zoom to that spot · scroll = zoom · click a position for its code</span>
 </div>
 
 <div id="legend">
   <h2>Sections (racking)</h2><div id="leg-sec"></div>
   <h2>Zones</h2><div id="leg-zone"></div>
-  <div class="note" id="leg-live">
-    <span class="b" style="background:#E24A4A"></span>occupied — used (live, Sections A–D)<br>
-    <span class="b" style="background:#BFE3B6"></span>available (live, Sections A–D)<br>
-    <span class="b" style="background:#c7cede"></span>pallet position (no stock data / section not tracked)<br>
-    <span class="b" style="background:#e24b4a"></span>blocked position (AC / panel / pest)
+  <div class="note">
+    <span class="b" style="background:#E24A4A"></span>occupied — live (Sections A–D)<br>
+    <span class="b" style="background:#BFE3B6"></span>available — live (Sections A–D)<br>
+    <span class="b" style="background:#c7cede"></span>pallet position (section not tracked)<br>
+    <span class="b" style="background:#e24b4a"></span>blocked position (AC / panel / pest)<br>
+    <span class="b" style="background:rgba(255,77,77,.55)"></span>future unit — not installed yet (Sections I, J)
   </div>
 </div>
 
@@ -92,49 +93,60 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
              {bayFrom:10,bayTo:22, x:112, zStart:-44, pitch:7, wall:'Bagging (P-Mac)'} ] },
     // G (antiga F) — na MESMA linha vertical da J (x58); vão entre G e J alinhado com a porta da Mistura
     { id:'G', color:0xd85a30, bays:12, blocked:[],
-      runs:[ {bayFrom:1,bayTo:12, x:58, zStart:14, pitch:8, orient:'z'} ] },
-    // H (antiga G) — fila horizontal curta perto da parede do fundo
+      runs:[ {bayFrom:1,bayTo:12, x:90, zStart:14, pitch:8, orient:'z'} ] },
+    // H — encostada na Bay G (movida em direção à Bagging)
     { id:'H', color:0xba7517, bays:4, blocked:[],
-      runs:[ {bayFrom:1,bayTo:4, z:-120, xStart:-4, pitch:8, orient:'x'} ] },
-    // I (4) — bay suspensa sobre as docas (elevada 9 ft, 2 níveis) — CRIADA HOJE
-    { id:'I', color:0xf0997b, bays:8, blocked:[], isNew:true,
-      runs:[ {bayFrom:1,bayTo:8, z:150, xStart:-95, pitch:22, orient:'x', yBase:9, levels:2} ] },
-    // J (1) — bay em L: braço vertical (encurtado p/ abrir o vão na linha da porta) + pé horizontal — CRIADA HOJE
-    { id:'J', color:0x9d7be8, bays:15, blocked:[], isNew:true,
-      runs:[ {bayFrom:1, bayTo:10, x:58, zStart:104, pitch:8, orient:'z'},
-             {bayFrom:11,bayTo:15, z:110, xStart:24, pitch:8, orient:'x'} ] },
+      runs:[ {bayFrom:1,bayTo:4, z:-70, xStart:59, pitch:8, orient:'x'} ] },
+    // Seções I e J removidas (racks não instalados) — a marcação vermelha no chão permanece
   ];
   // fila de bays na parede do fundo (horizontal) — seção/qtd provisórias
-  const BACKWALL = { id:'E', color:0xd9c48a, bays:26, z:-150, xStart:-150, pitch:9, use:'Seeds received (raw material)', gapBays:[17,20] };
+  const BACKWALL = { id:'E', color:0xd9c48a, bays:26, z:-150, xStart:-150, pitch:9, levels:3, use:'Received seeds (raw material)', gapBays:[17,20] };
   const BLOCK_REASON = code => {
     if(code==='A-23-L1') return 'Pest control traps';
     if(code==='F-06-L1') return 'Electrical panel';
-    return 'Air conditioning unit';
+    return 'Air-conditioning unit';
   };
   // zonas da planta v5 (x0,z0,x1,z1)
   const ZONES = [
-    // coluna direita: 1 Ensacamento (estendido até parede do fundo), Mistura, Higienização, Escritório
+    // right column: 1 Bagging (extended to back wall), Mixing, Sanitation, Office
     { name:'Bagging (P-Mac)', color:0x1d9e75, x0:116,z0:-158,x1:176,z1:-42 },
     { name:'Mixing Room', color:0x1d9e75, x0:116,z0:-32,x1:176,z1:28 },
     { name:'Door · Mixing Room', color:0xf4c0d1, x0:104,z0:14,x1:118,z1:30 },
     { name:'Sanitation Room', color:0x5dcaa5, x0:116,z0:38,x1:176,z1:88 },
-    { name:'Office (front · 1736)', color:0x0c447c, x0:110,z0:98,x1:176,z1:158 },
-    // 2 — nova Sala de Manutenção no canto traseiro esquerdo
+    // Office suite (1736) sectorized per Office Emergency Map — MIRRORED to match the map (office palette, not green)
+    { name:'Front Desk', color:0x378add, x0:149,z0:150,x1:176,z1:158, noLegend:true, labelScale:0.42, labelY:7 },
+    { name:'HR Office', color:0x378add, x0:149,z0:131,x1:176,z1:150, noLegend:true, labelScale:0.42, labelY:7 },
+    { name:"Matt's Office", color:0x378add, x0:149,z0:112,x1:176,z1:131, noLegend:true, labelScale:0.42, labelY:7 },
+    { name:'Manufacturing Manager', color:0x378add, x0:161,z0:98,x1:176,z1:112, noLegend:true, labelScale:0.4, labelY:7 },
+    { name:'Break Room · Sala de Descanso', color:0x4f9dff, x0:110,z0:98,x1:160,z1:108, noLegend:true, labelScale:0.4, labelY:7 },
+    { name:'Corridor', color:0xb4b2a9, x0:136,z0:108,x1:149,z1:154, noLegend:true, labelScale:0.4, labelY:7 },
+    { name:"Women's Restroom", color:0x6f86b5, x0:110,z0:109,x1:136,z1:123, noLegend:true, labelScale:0.4, labelY:7 },
+    { name:'Closet', color:0x888780, x0:110,z0:123,x1:136,z1:128, noLegend:true, labelScale:0.4, labelY:7 },
+    { name:"Men's Restroom", color:0x6f86b5, x0:110,z0:128,x1:136,z1:140, noLegend:true, labelScale:0.4, labelY:7 },
+    { name:'Fulfillment Mgmt Office', color:0x185fa5, x0:110,z0:140,x1:136,z1:154, noLegend:true, labelScale:0.4, labelY:7 },
+    { name:'Maintenance Closet', color:0x888780, x0:110,z0:154,x1:149,z1:158, noLegend:true, labelScale:0.4, labelY:7 },
+    // 2 — new Maintenance Room in the back-left corner
     { name:'Maintenance Room', color:0x888780, x0:-178,z0:-160,x1:-150,z1:-128 },
-    // 1 — E-Commerce (bloco grande à esquerda do centro)
+    // 1 — E-Commerce (large block left of center)
     { name:'E-Commerce', color:0x185fa5, x0:-90,z0:-120,x1:-18,z1:-18 },
-    // 6 — Área de produção
+    // 6 — Production area
     { name:'Produce (production area)', color:0x97c459, x0:-14,z0:-82,x1:16,z1:-42 },
-    // 5 — Linha de produção (esteira, faixa estreita vertical)
+    // 5 — Production line (conveyor, narrow vertical strip)
     { name:'Produce (production line)', color:0x639922, x0:18,z0:-116,x1:30,z1:44 },
-    // 4 — Fulfillment Staff (movido um espaço em direção ao Bay D)
+    // 4 — Fulfillment Staff
     { name:'Fulfillment Staff', color:0x85b7eb, x0:-52,z0:50,x1:18,z1:92 },
-    // 5 — Sala de Controle de Estoque ampliada
-    { name:'Inventory Control Room', color:0xef9f27, x0:-178,z0:96,x1:-100,z1:152 },
+    // 5 — Inventory Control Room (reduced: removed the right strip)
+    { name:'Inventory Control Room', color:0xef9f27, x0:-178,z0:96,x1:-132,z1:152 },
+    // exit doors (marked in black) — back-wall exit sits in the Section E opening (bays 17-20)
+    { name:'Exit', color:0x35d07f, x0:-8,z0:-164,x1:23,z1:-146 },
+    { name:'Exit', color:0x35d07f, x0:130,z0:158,x1:162,z1:164 },
+    { name:'Exit', color:0x35d07f, x0:-180,z0:150,x1:-162,z1:164 },
+    { name:'Exit', color:0x35d07f, x0:36,z0:158,x1:58,z1:164 },
   ];
 
   // geometria racking
   const BAY_PITCH=8, DECK_W=7, DECK_D=7, LEVEL_H=6, POST_H=27, Z_START=92;
+  const PAL_FACE=4, PAL_DEPTH=3.34;   // palete 48" (face p/ corredor) x 40" (profundidade)
 
   let scene,camera,renderer,raycaster,mouse;
   const cam={target:new THREE.Vector3(0,-10,0),radius:470,theta:0.95,phi:0.7};
@@ -152,13 +164,8 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
   let labelsOn=true;
 
   // materiais/geometrias compartilhados
-  let GEO_DECK, GEO_POST, MAT_DECK, MAT_BLOCK, MAT_USED, MAT_AVAIL, MAT_POSTS={}, MAT_BEAM;
-
-  // ----- ocupação ao vivo (Supabase) -----
-  // Só as Seções A–D têm rastreamento de estoque no app hoje (ver seed-data.js CONFIG.sections);
-  // as demais seções do gêmeo 3D são estruturais/propostas e continuam neutras até serem cadastradas
-  // (Salvador: para rastrear uma seção nova, dê a cada mesh de posição userData.code = "A-05-L3", igual
-  // ao formato Section-Bay-Level que o app já usa — este arquivo já faz isso para A–D).
+  let GEO_DECK, GEO_POST, MAT_DECK, MAT_BLOCK, MAT_POSTS={}, MAT_BEAM, GEO_PAL_Z, GEO_PAL_X, MAT_NEW, MAT_USED, MAT_AVAIL;
+  // ----- live occupancy (Supabase): colors A-D pallets red/green by app stock; other sections stay neutral -----
   const SUPA_URL='https://otwjxqhhwljwfyqbfuxz.supabase.co';
   const SUPA_KEY='sb_publishable_KlPxfCQUmxbIAVc2p_M5Lw_ligy0COY';
   const TRACKED_RE=/^[A-D]-\d{2}-L[1-4]$/;
@@ -186,8 +193,11 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
     raycaster=new THREE.Raycaster(); mouse=new THREE.Vector2();
 
     GEO_DECK=new THREE.BoxGeometry(DECK_W,0.4,DECK_D);
+    GEO_PAL_Z=new THREE.BoxGeometry(PAL_DEPTH,0.4,PAL_FACE);  // fila vertical (face ao longo de z)
+    GEO_PAL_X=new THREE.BoxGeometry(PAL_FACE,0.4,PAL_DEPTH);  // fila horizontal (face ao longo de x)
     GEO_POST=new THREE.BoxGeometry(0.6,POST_H,0.6);
     MAT_DECK=new THREE.MeshStandardMaterial({color:0xc7cede,roughness:.8});
+    MAT_NEW=new THREE.MeshStandardMaterial({color:0xff2a2a,roughness:.5,transparent:true,opacity:.62});
     MAT_BLOCK=new THREE.MeshStandardMaterial({color:0xe24b4a,roughness:.6,transparent:true,opacity:.85});
     MAT_BEAM=new THREE.MeshStandardMaterial({color:0xd85a30,roughness:.5,metalness:.2});
     MAT_USED=new THREE.MeshStandardMaterial({color:0xE24A4A,roughness:.75});
@@ -197,6 +207,51 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
     ZONES.forEach(buildZone);
     SECTIONS.forEach(buildSection);
     buildBackWall();
+    // sombra vermelha da Seção I futura (sobre docas)
+    [[-100,144,64,156]].forEach(r=>{
+      const w=r[2]-r[0], d=r[3]-r[1];
+      const sh=new THREE.Mesh(new THREE.PlaneGeometry(w,d), new THREE.MeshBasicMaterial({color:0xd00000,transparent:true,opacity:0.42}));
+      sh.rotation.x=-Math.PI/2; sh.position.set((r[0]+r[2])/2,0.09,(r[1]+r[3])/2); scene.add(sh);
+    });
+    // FLOOR STORAGE por sabor (esquema da planilha) — 8 paletes/linha; 16 = 2 linhas
+    (function(){
+      const FLAV=[['S01','Original',2,0x1c3f8f],['S02','Churros',2,0x6a3d9a],['S03','BBQ',2,0xcc2027],['S04','Parmesan',2,0xf4c400],['S05','Dill',2,0x4ea62e],['S06','Cracked Pepper',1,0x4b515a],['S07','Cheddar Jalapeno',2,0xec7a1e],['S08','Ranch',2,0x2f7fd0],['S09','Maple',1,0x8a5a2b],['S10','Lemon Pepper',1,0xd9d13a],['S11','Sour Cream',1,0x3bb089],['S12','Limited Flavor',1,0xb58a3b],['S13','Teriyaki',1,0x7d3320],['S14','Taco',1,0xcf6a2a],['S15','Salsa',1,0xb8271f],['S16','Guacamole',1,0x6f9128],['S17','Chile Limon',1,0xd33b2e],['S18','Honey Shiracha',1,0xe46420],['S19','Deep Dish Pizza',1,0xe6e2d6],['S20','Strawberry Cheesecake',1,0xe56aa0],['S21','Loaded Nacho Potato',1,0xd99a3a],['S22','Cheddar Ghost Pepper',1,0xe35a1e],['S23','Parmuffalo',1,0xe89626],['S24','Cheese Burger',1,0xbb3324],['S25','Buffalo Ranch',1,0xe06a24],['S26','Peanut Butter & Jelly',1,0x9a3f8f]];
+      const x0=38,x1=80,z0=-35,cols=8,rp=3.9;
+      const totalRows=FLAV.reduce((a,f)=>a+f[2],0), z1=z0+totalRows*rp;
+      const fl=new THREE.Mesh(new THREE.PlaneGeometry(x1-x0+8,z1-z0+8), new THREE.MeshStandardMaterial({color:0x5dcaa5,roughness:.85,transparent:true,opacity:.16}));
+      fl.rotation.x=-Math.PI/2; fl.position.set((x0+x1)/2,0.08,(z0+z1)/2); scene.add(fl);
+      const edge=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(x1-x0+8,z1-z0+8)), new THREE.LineBasicMaterial({color:0x159c4e}));
+      edge.rotation.x=-Math.PI/2; edge.position.set((x0+x1)/2,0.12,(z0+z1)/2); scene.add(edge);
+      const cp=(x1-x0)/cols, pgeo=new THREE.BoxGeometry(cp*0.82,1.5,rp*0.8);
+      let z=z1-rp/2; // S01 começa no lado das docas (frente) e segue para o fundo
+      FLAV.forEach((f,fi)=>{const c=f[3];
+        const matS=new THREE.MeshStandardMaterial({color:c,roughness:.6}), matE=new THREE.MeshStandardMaterial({color:c,roughness:.6,transparent:true,opacity:0.2});
+        for(let r=0;r<f[2];r++){for(let cc=0;cc<cols;cc++){const occ=false; /* sem dados de estoque: tudo vazio/translúcido */ const p=new THREE.Mesh(pgeo, occ?matS:matE);p.position.set(x0+cp*(cc+0.5),0.85,z);p.castShadow=true;p.receiveShadow=true;p.userData={code:f[0]+' '+f[1],section:'STORAGE',bay:0,level:1,blocked:false,use:f[0]+' '+f[1]+(occ?' · stocked / estocado':' · EMPTY / vazio')};scene.add(p);pickables.push(p);}
+          if(r===0){const l=makeLabel(f[0],c);l.position.set(x0-5,4,z);l.scale.multiplyScalar(.44);scene.add(l);labelSprites.push(l);}
+          z-=rp;}});
+      const title=makeLabel('Floor storage · flavors S01–S26 · 8 pallets/row',0x0e7a35);title.position.set((x0+x1)/2,8,z0-6);scene.add(title);labelSprites.push(title);
+    })();
+    // FLOOR STORAGE 2 — área demarcada: sabores de peso diferente (S01–S08), 2 linhas de 8 cada
+    // HORIZONTAL: linhas lado a lado no eixo x, 8 pallets em profundidade (z) — libera a rota da empilhadeira
+    (function(){
+      const FLAV2=[['S01','Original',2,0x1c3f8f],['S02','Churros',2,0x6a3d9a],['S03','BBQ',2,0xcc2027],['S04','Parmesan',2,0xf4c400],['S05','Dill',2,0x4ea62e],['S06','Cracked Pepper',2,0x4b515a],['S07','Cheddar Jalapeno',2,0xec7a1e],['S08','Ranch',2,0x2f7fd0]];
+      const rp=3.9, cp=4.2, cols=8;      // rp = passo entre linhas (x); cp = passo entre pallets (z)
+      const xStart=4, zFront=-98;        // início à esquerda; frente = lado das docas
+      const totalRows=FLAV2.reduce((a,f)=>a+f[2],0);
+      const x0=xStart, x1=xStart+(totalRows-1)*rp, z1=zFront, z0=zFront-(cols-1)*cp;
+      const fl=new THREE.Mesh(new THREE.PlaneGeometry(x1-x0+8,z1-z0+8), new THREE.MeshStandardMaterial({color:0xe4c04a,roughness:.85,transparent:true,opacity:.16}));
+      fl.rotation.x=-Math.PI/2; fl.position.set((x0+x1)/2,0.08,(z0+z1)/2); scene.add(fl);
+      const edge=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(x1-x0+8,z1-z0+8)), new THREE.LineBasicMaterial({color:0xd9a521}));
+      edge.rotation.x=-Math.PI/2; edge.position.set((x0+x1)/2,0.12,(z0+z1)/2); scene.add(edge);
+      const pgeo=new THREE.BoxGeometry(rp*0.82,1.5,cp*0.8);
+      let x=xStart; // cada linha ocupa uma posição em x; pallets seguem para o fundo (z)
+      FLAV2.forEach((f)=>{const c=f[3];
+        const matE=new THREE.MeshStandardMaterial({color:c,roughness:.6,transparent:true,opacity:0.2});
+        for(let r=0;r<f[2];r++){for(let cc=0;cc<cols;cc++){const occ=false; const p=new THREE.Mesh(pgeo,matE);p.position.set(x,0.85,zFront-cc*cp);p.castShadow=true;p.receiveShadow=true;p.userData={code:f[0]+' '+f[1]+' (2)',section:'STORAGE-2',bay:0,level:1,blocked:false,use:f[0]+' '+f[1]+' · peso diferente / heavier · EMPTY / vazio'};scene.add(p);pickables.push(p);}
+          if(r===0){const l=makeLabel(f[0],c);l.position.set(x,4,zFront+5);l.scale.multiplyScalar(.44);scene.add(l);labelSprites.push(l);}
+          x+=rp;}});
+      const title=makeLabel('Floor storage · S01–S08 (peso diferente / heavier) · 8/row',0xd9a521);title.position.set((x0+x1)/2,8,z0-6);scene.add(title);labelSprites.push(title);
+    })();
     buildLegend();
 
     addEventListener('resize',onResize);
@@ -204,7 +259,7 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
     document.getElementById('loading').style.display='none';
     animate();
     loadOccupancy();
-    setInterval(loadOccupancy, 90000); // atualiza a cada 90s
+    setInterval(loadOccupancy, 90000);
   }
 
   function buildFloor(){
@@ -246,7 +301,7 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
     edge.rotation.x=-Math.PI/2; edge.position.set(cx,0.12,cz); g.add(edge);
     // volume leve para salas grandes
     if(w>40&&d>40){ const b=box(g,new THREE.MeshStandardMaterial({color:z.color,roughness:.7,transparent:true,opacity:.22}),w-6,10,d-6,cx,5,cz); }
-    const l=makeLabel(z.name,z.color); l.position.set(cx,14,cz); g.add(l); labelSprites.push(l);
+    const l=makeLabel(z.name,z.color); l.position.set(cx,z.labelY||14,cz); l.scale.multiplyScalar(z.labelScale||1); g.add(l); labelSprites.push(l);
     scene.add(g); groupsById['zone:'+z.name]=g; z._group=g;
   }
 
@@ -279,23 +334,28 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
       const beamGeo = orient==='z' ? new THREE.BoxGeometry(0.5,0.5,runLen) : new THREE.BoxGeometry(runLen,0.5,0.5);
       const midAlong=(start+endAlong)/2;
       for(let lv=1;lv<=levels;lv++){const y=yBase+lv*LEVEL_H;[-beamHalf,beamHalf].forEach(off=>{const bm=new THREE.Mesh(beamGeo,MAT_BEAM);const q=P(midAlong,off,y);bm.position.set(q[0],q[1],q[2]);g.add(bm);});}
-      // posições
+      // posições — 2 paletes de 48x40 por bay-nível (P1 / P2)
       for(let b=run.bayFrom;b<=run.bayTo;b++){
         const along = start + dir*(b-run.bayFrom)*run.pitch;
         for(let lv=1;lv<=levels;lv++){
-          const code=sec.id+'-'+String(b).padStart(2,'0')+'-L'+lv;
-          const isB=blocked.has(code);
+          const base=sec.id+'-'+String(b).padStart(2,'0')+'-L'+lv;
+          const isB=blocked.has(base);
           const y=yBase+(lv-1)*LEVEL_H+1.4;
-          const m=new THREE.Mesh(isB?new THREE.BoxGeometry(DECK_W,4.6,DECK_D):GEO_DECK, isB?MAT_BLOCK:MAT_DECK);
-          const q=P(along,0,isB?y+1.6:y); m.position.set(q[0],q[1],q[2]); m.castShadow=true; m.receiveShadow=true;
-          m.userData={code,section:sec.id,bay:b,level:lv,blocked:isB, isNew:!!sec.isNew, use: run.wall?('Against the wall: '+run.wall):(yBase?'Suspended bay (over the docks)':null)};
-          g.add(m); pickables.push(m);
+          for(let p=1;p<=2;p++){
+            const geo = isB ? (orient==='z'?new THREE.BoxGeometry(PAL_DEPTH,4.6,PAL_FACE):new THREE.BoxGeometry(PAL_FACE,4.6,PAL_DEPTH))
+                            : (orient==='z'?GEO_PAL_Z:GEO_PAL_X);
+            const m=new THREE.Mesh(geo, isB?MAT_BLOCK:(sec.isNew?MAT_NEW:MAT_DECK));
+            const q=P(along+(p===1?-1:1)*(PAL_FACE/2),0,isB?y+1.6:y); m.position.set(q[0],q[1],q[2]); m.castShadow=true; m.receiveShadow=true;
+            m.userData={code:base+'-P'+p,section:sec.id,bay:b,level:lv,pallet:p,blocked:isB, isNew:!!sec.isNew, use: run.wall?('Against wall: '+run.wall):(yBase?'Suspended bay (over docks)':null)};
+            g.add(m); pickables.push(m);
+          }
         }
         const bl=makeLabel(sec.id+'-'+String(b).padStart(2,'0'),sec.color); const qb=P(along,0,postH+2.5); bl.position.set(qb[0],qb[1],qb[2]); bl.scale.multiplyScalar(.34); g.add(bl); labelSprites.push(bl);
         if(sec.isNew){ const fl=makeFlag(); const qf=P(along,0,postH+6.5); fl.position.set(qf[0],qf[1],qf[2]); g.add(fl); }
       }
       // rótulo da seção
-      const txt = run.wall ? ('Section '+sec.id+' · '+run.wall) : (yBase?('Section '+sec.id+' · suspended'):('Section '+sec.id));
+      const fut = sec.isNew?' · FUTURE':'';
+      const txt = run.wall ? ('Section '+sec.id+' · '+run.wall+fut) : (yBase?('Section '+sec.id+' · suspended'+fut):('Section '+sec.id+fut));
       const sl=makeLabel(txt,sec.color,false); const qs=P(start + dir*4,0,postH+5); sl.position.set(qs[0],qs[1],qs[2]); sl.scale.multiplyScalar(run.wall?0.8:1.0); g.add(sl); labelSprites.push(sl);
     });
     scene.add(g); groupsById['sec:'+sec.id]=g;
@@ -306,10 +366,11 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
     const beamHalf=DECK_D/2+0.3;
     const xEnd=bw.xStart+(bw.bays-1)*bw.pitch;
     const postMat=new THREE.MeshStandardMaterial({color:0x8a7a4a,roughness:.5,metalness:.35});
+    const bwLev=bw.levels||3, postH_bw=bwLev*LEVEL_H+2, postGeoBw=new THREE.BoxGeometry(0.6,postH_bw,0.6);
     for(let b=0;b<=bw.bays;b++){
       if(bw.gapBays && b>bw.gapBays[0] && b<bw.gapBays[1]) continue; // vão da saída de emergência
       const x=bw.xStart-bw.pitch/2+b*bw.pitch;
-      [-beamHalf,beamHalf].forEach(dz=>{const p=new THREE.Mesh(GEO_POST,postMat);p.position.set(x,POST_H/2,bw.z+dz);p.castShadow=true;g.add(p);});
+      [-beamHalf,beamHalf].forEach(dz=>{const p=new THREE.Mesh(postGeoBw,postMat);p.position.set(x,postH_bw/2,bw.z+dz);p.castShadow=true;g.add(p);});
     }
     // longarinas — quebradas no vão da saída de emergência
     let segs;
@@ -318,20 +379,23 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
       const gx2=bw.xStart+(bw.gapBays[1]-1)*bw.pitch + bw.pitch/2;
       segs=[[bw.xStart-bw.pitch/2,gx1],[gx2,xEnd+bw.pitch/2]];
     } else { segs=[[bw.xStart-bw.pitch/2,xEnd+bw.pitch/2]]; }
-    for(let lv=1;lv<=4;lv++){const y=lv*LEVEL_H; segs.forEach(seg=>{const len=seg[1]-seg[0],cx=(seg[0]+seg[1])/2;[-beamHalf,beamHalf].forEach(dz=>{const bm=new THREE.Mesh(new THREE.BoxGeometry(len,0.5,0.5),MAT_BEAM);bm.position.set(cx,y,bw.z+dz);g.add(bm);});});}
+    for(let lv=1;lv<=bwLev;lv++){const y=lv*LEVEL_H; segs.forEach(seg=>{const len=seg[1]-seg[0],cx=(seg[0]+seg[1])/2;[-beamHalf,beamHalf].forEach(dz=>{const bm=new THREE.Mesh(new THREE.BoxGeometry(len,0.5,0.5),MAT_BEAM);bm.position.set(cx,y,bw.z+dz);g.add(bm);});});}
     const seedMat=new THREE.MeshStandardMaterial({color:0xd9c48a,roughness:.9});
     for(let b=1;b<=bw.bays;b++){
       if(bw.gapBays && b>=bw.gapBays[0] && b<=bw.gapBays[1]) continue; // vão da saída de emergência
       const x=bw.xStart+(b-1)*bw.pitch;
-      for(let lv=1;lv<=4;lv++){
-        const code=bw.id+'-'+String(b).padStart(2,'0')+'-L'+lv;
+      for(let lv=1;lv<=bwLev;lv++){
+        const base=bw.id+'-'+String(b).padStart(2,'0')+'-L'+lv;
         const y=(lv-1)*LEVEL_H+1.4;
-        const m=new THREE.Mesh(GEO_DECK,seedMat); m.position.set(x,y,bw.z); m.castShadow=true; m.receiveShadow=true;
-        m.userData={code,section:bw.id,bay:b,level:lv,blocked:false,use:bw.use};
-        g.add(m); pickables.push(m);
+        for(let p=1;p<=2;p++){
+          const m=new THREE.Mesh(GEO_PAL_X,seedMat); m.position.set(x+(p===1?-1:1)*(PAL_FACE/2),y,bw.z); m.castShadow=true; m.receiveShadow=true;
+          m.userData={code:base+'-P'+p,section:bw.id,bay:b,level:lv,pallet:p,blocked:false,use:bw.use};
+          g.add(m); pickables.push(m);
+        }
       }
+      const bl=makeLabel(bw.id+'-'+String(b).padStart(2,'0'),bw.color); bl.position.set(x,postH_bw+2.5,bw.z); bl.scale.multiplyScalar(.34); g.add(bl); labelSprites.push(bl);
     }
-    const sl=makeLabel('Section E · seeds received (back wall)',bw.color,false); sl.position.set((bw.xStart+xEnd)/2,POST_H+5,bw.z-2); g.add(sl); labelSprites.push(sl);
+    const sl=makeLabel('Section E · received seeds · 3 levels (back wall)',bw.color,false); sl.position.set((bw.xStart+xEnd)/2,postH_bw+5,bw.z-2); g.add(sl); labelSprites.push(sl);
     scene.add(g); groupsById['bw']=g; bw._group=g;
   }
 
@@ -373,6 +437,7 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
     bw.addEventListener('click',()=>{BACKWALL._group.visible=!BACKWALL._group.visible;bw.classList.toggle('off',!BACKWALL._group.visible);});
     sc.appendChild(bw);
     ZONES.forEach(z=>{
+      if(z.noLegend) return;
       const it=document.createElement('div'); it.className='leg-item';
       it.innerHTML='<span class="swatch" style="background:#'+z.color.toString(16).padStart(6,'0')+'"></span>'+z.name;
       it.addEventListener('click',()=>{z._group.visible=!z._group.visible;it.classList.toggle('off',!z._group.visible);});
@@ -380,7 +445,8 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
     });
   }
 
-  // ----- ocupação ao vivo -----
+  // ----- live occupancy -----
+  function bayLevelCode(u){ return u.section+'-'+String(u.bay).padStart(2,'0')+'-L'+u.level; }
   function loadOccupancy(){
     fetch(SUPA_URL+'/rest/v1/stock?select=item_id,location,qty&qty=gt.0', {
       headers:{ apikey:SUPA_KEY, Authorization:'Bearer '+SUPA_KEY }
@@ -395,15 +461,16 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
       usedSet=set; stockByLoc=byLoc;
       applyOccupancyColors();
       if(!deepLinkDone){ deepLinkDone=true; applyDeepLink(); }
-    }).catch(()=>{ /* offline ou bloqueado — cores ao vivo indisponíveis, mantém neutro */ });
+    }).catch(()=>{ /* offline or blocked - live colors unavailable, stay neutral */ });
   }
   function applyOccupancyColors(){
     if(!usedSet) return;
     pickables.forEach(m=>{
       const u=m.userData;
-      if(u.blocked) return;                 // bloqueada permanece com sua própria cor
-      if(!TRACKED_RE.test(u.code)) return;   // só Seções A–D têm dado de estoque no app hoje
-      m.material = usedSet.has(u.code) ? MAT_USED : MAT_AVAIL;
+      if(u.blocked || u.pallet==null) return;      // only real rack pallet meshes
+      const bl=bayLevelCode(u);
+      if(!TRACKED_RE.test(bl)) return;             // only Sections A-D are tracked in the app today
+      m.material = usedSet.has(bl) ? MAT_USED : MAT_AVAIL;
     });
   }
   function applyDeepLink(){
@@ -411,58 +478,75 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
       const p=new URLSearchParams(location.search);
       const loc=(p.get('loc')||'').trim().toUpperCase();
       if(!loc) return;
-      const mesh=pickables.find(m=>m.userData.code===loc);
+      const mesh=pickables.find(m=>m.userData.pallet!=null && bayLevelCode(m.userData)===loc);
       if(!mesh) return;
       cam.target.copy(mesh.position); cam.radius=95; cam.phi=0.62; applyCam();
-      showInfoFor(mesh.userData);
     }catch(e){}
   }
 
-  // ----- interação -----
-  function showInfoFor(u){
-    document.getElementById('info-title').textContent=u.code;
-    document.getElementById('info-desc').textContent='Section '+u.section+' · Bay '+String(u.bay).padStart(2,'0')+' · Level L'+u.level;
-    const bd=document.getElementById('info-badge');
-    if(u.blocked){bd.textContent='Blocked — '+BLOCK_REASON(u.code);bd.style.background='rgba(226,75,74,.25)';bd.style.color='#ff9aa6';}
-    else if(usedSet && TRACKED_RE.test(u.code)){
-      const items=stockByLoc[u.code];
-      if(items && items.length){
-        const qty=items.reduce((s,x)=>s+x.qty,0);
-        bd.textContent='Occupied · '+items.length+' SKU(s) · '+qty+' un.';
-        bd.style.background='rgba(226,74,74,.25)';bd.style.color='#ffb3b0';
-      } else {
-        bd.textContent='Available (live)';
-        bd.style.background='rgba(191,227,182,.28)';bd.style.color='#2f5a2f';
-      }
-    }
-    else if(u.isNew){bd.textContent='⚑ Created today'+(u.use?' · '+u.use:'');bd.style.background='rgba(255,59,59,.22)';bd.style.color='#ff9aa6';}
-    else if(u.use){bd.textContent=u.use;bd.style.background='rgba(217,196,138,.2)';bd.style.color='#e6d3a0';}
-    else{bd.textContent='Pallet position · awaiting stock data';bd.style.background='rgba(199,206,222,.18)';bd.style.color='#c7cede';}
-    document.getElementById('info').classList.add('show');
-  }
+  // ----- interacao -----
   function onClick(e){
     if(moved>6) return;
     mouse.x=(e.clientX/innerWidth)*2-1; mouse.y=-(e.clientY/innerHeight)*2+1;
     raycaster.setFromCamera(mouse,camera);
     const h=raycaster.intersectObjects(pickables,false);
-    if(h.length){ showInfoFor(h[0].object.userData); }
+    if(h.length){const u=h[0].object.userData;
+      document.getElementById('info-title').textContent=u.code;
+      document.getElementById('info-desc').textContent='Section '+u.section+' · Bay '+String(u.bay).padStart(2,'0')+' · Level L'+u.level+(u.pallet?(' · Pallet P'+u.pallet+' (48×40)'):'');
+      const bd=document.getElementById('info-badge');
+      if(u.blocked){bd.textContent='Blocked — '+BLOCK_REASON(u.code);bd.style.background='rgba(226,75,74,.25)';bd.style.color='#ff9aa6';}
+      else if(u.pallet!=null && usedSet && TRACKED_RE.test(bayLevelCode(u))){
+        const items=stockByLoc[bayLevelCode(u)];
+        if(items && items.length){ const qty=items.reduce((s,x)=>s+x.qty,0); bd.textContent='Occupied · '+items.length+' SKU(s) · '+qty+' un.'; bd.style.background='rgba(226,74,74,.25)'; bd.style.color='#ffb3b0'; }
+        else { bd.textContent='Available (live)'; bd.style.background='rgba(191,227,182,.28)'; bd.style.color='#2f5a2f'; }
+      }
+      else if(u.isNew){bd.textContent='⚑ Future unit — not installed yet'+(u.use?' · '+u.use:'');bd.style.background='rgba(255,59,59,.22)';bd.style.color='#ff9aa6';}
+      else if(u.use){bd.textContent=u.use;bd.style.background='rgba(217,196,138,.2)';bd.style.color='#e6d3a0';}
+      else{bd.textContent='Pallet position · awaiting stock data';bd.style.background='rgba(199,206,222,.18)';bd.style.color='#c7cede';}
+      document.getElementById('info').classList.add('show');
+    }
   }
   document.getElementById('info-close').addEventListener('click',()=>document.getElementById('info').classList.remove('show'));
 
   // ----- controles de câmera -----
-  let dragging=false,lastX=0,lastY=0,moved=0;
+  let dragging=false,panning=false,lastX=0,lastY=0,moved=0;
+  function clampTarget(){cam.target.x=Math.max(-220,Math.min(220,cam.target.x));cam.target.z=Math.max(-210,Math.min(210,cam.target.z));}
+  function panBy(dx,dy){
+    const s=cam.radius*0.0016;
+    const rX=Math.sin(cam.theta), rZ=-Math.cos(cam.theta);   // screen-right on ground
+    const uX=-Math.cos(cam.theta), uZ=-Math.sin(cam.theta);  // screen-up (into scene) on ground
+    cam.target.x += (-dx*rX + dy*uX)*s;
+    cam.target.z += (-dx*rZ + dy*uZ)*s;
+    clampTarget(); applyCam();
+  }
+  function focusAt(cx,cy){ // duplo-clique: foca e aproxima no ponto
+    mouse.x=(cx/innerWidth)*2-1; mouse.y=-(cy/innerHeight)*2+1;
+    raycaster.setFromCamera(mouse,camera);
+    const hits=raycaster.intersectObjects(pickables,false);
+    let p;
+    if(hits.length){ p=hits[0].point; }
+    else { p=new THREE.Vector3(); raycaster.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0,1,0),0),p); }
+    if(p){ cam.target.set(p.x,0,p.z); cam.radius=Math.max(70,cam.radius*0.55); clampTarget(); applyCam(); }
+  }
   function setupControls(el){
-    el.addEventListener('mousedown',e=>{dragging=true;moved=0;lastX=e.clientX;lastY=e.clientY;});
-    addEventListener('mouseup',()=>dragging=false);
-    addEventListener('mousemove',e=>{if(!dragging)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;moved+=Math.abs(dx)+Math.abs(dy);lastX=e.clientX;lastY=e.clientY;cam.theta+=dx*0.006;cam.phi-=dy*0.006;applyCam();});
+    el.addEventListener('contextmenu',e=>e.preventDefault());
+    el.addEventListener('mousedown',e=>{dragging=true;panning=(e.button===2||e.button===1||e.shiftKey);moved=0;lastX=e.clientX;lastY=e.clientY;});
+    addEventListener('mouseup',()=>{dragging=false;panning=false;});
+    addEventListener('mousemove',e=>{if(!dragging)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;moved+=Math.abs(dx)+Math.abs(dy);lastX=e.clientX;lastY=e.clientY;
+      if(panning){panBy(dx,dy);} else {cam.theta+=dx*0.006;cam.phi-=dy*0.006;applyCam();}});
+    el.addEventListener('dblclick',e=>focusAt(e.clientX,e.clientY));
     el.addEventListener('wheel',e=>{e.preventDefault();cam.radius*=(1+Math.sign(e.deltaY)*0.09);applyCam();},{passive:false});
-    let tX=0,tY=0,pinch=0;
-    el.addEventListener('touchstart',e=>{if(e.touches.length===1){tX=e.touches[0].clientX;tY=e.touches[0].clientY;moved=0;}else if(e.touches.length===2){pinch=d2(e);}},{passive:true});
-    el.addEventListener('touchmove',e=>{if(e.touches.length===1){const dx=e.touches[0].clientX-tX,dy=e.touches[0].clientY-tY;moved+=Math.abs(dx)+Math.abs(dy);tX=e.touches[0].clientX;tY=e.touches[0].clientY;cam.theta+=dx*0.006;cam.phi-=dy*0.006;applyCam();}else if(e.touches.length===2){const d=d2(e);if(pinch)cam.radius*=pinch/d;pinch=d;applyCam();}},{passive:true});
+    let tX=0,tY=0,pinch=0,mX=0,mY=0;
+    const mid=e=>({x:(e.touches[0].clientX+e.touches[1].clientX)/2,y:(e.touches[0].clientY+e.touches[1].clientY)/2});
+    el.addEventListener('touchstart',e=>{if(e.touches.length===1){tX=e.touches[0].clientX;tY=e.touches[0].clientY;moved=0;}else if(e.touches.length===2){pinch=d2(e);const m=mid(e);mX=m.x;mY=m.y;}},{passive:true});
+    el.addEventListener('touchmove',e=>{
+      if(e.touches.length===1){const dx=e.touches[0].clientX-tX,dy=e.touches[0].clientY-tY;moved+=Math.abs(dx)+Math.abs(dy);tX=e.touches[0].clientX;tY=e.touches[0].clientY;cam.theta+=dx*0.006;cam.phi-=dy*0.006;applyCam();}
+      else if(e.touches.length===2){const d=d2(e);if(pinch)cam.radius*=pinch/d;pinch=d;const m=mid(e);panBy(m.x-mX,m.y-mY);mX=m.x;mY=m.y;}
+    },{passive:true});
     function d2(e){const a=e.touches[0],b=e.touches[1];return Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);}
   }
-  function setIso(){cam.theta=0.95;cam.phi=0.7;cam.radius=470;applyCam();}
-  function setTop(){cam.theta=Math.PI/2;cam.phi=0.12;cam.radius=470;applyCam();}
+  function setIso(){cam.target.set(0,-10,0);cam.theta=0.95;cam.phi=0.7;cam.radius=470;applyCam();}
+  function setTop(){cam.target.set(0,-10,0);cam.theta=Math.PI/2;cam.phi=0.12;cam.radius=470;applyCam();}
   document.getElementById('btn-iso').addEventListener('click',setIso);
   document.getElementById('btn-top').addEventListener('click',setTop);
   document.getElementById('btn-labels').addEventListener('click',()=>{labelsOn=!labelsOn;labelSprites.forEach(s=>s.visible=labelsOn);document.getElementById('btn-labels').textContent='Labels: '+(labelsOn?'ON':'OFF');});

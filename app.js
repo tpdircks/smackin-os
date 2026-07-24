@@ -131,7 +131,7 @@
       ciProblem:"Problem / goal", ciProblemP:"What are we fixing or improving?", ciImpact:"Impact / win", ciImpactHint:"the result", ciImpactP:"What changed? time saved, waste cut, safer, etc.",
       ciCompleted:"Completed", ciReopen:"Reopen", ciNoActive:"No active initiatives. Add one above.", ciNoWins:"No completed wins yet.", ciSearchP:"Search title, type, area, owner...", ciConfirmDel:"Delete this initiative?",
       grpMaintenance:"Maintenance", maintenance:"Maintenance", mtHint:"Track maintenance requests, repairs, and projects - what's active, what's blocking a pending item, and a completed history. Move each one Requested -> In Progress -> Waiting -> Done.",
-      mtActive:"Active", mtDone:"Done", mtAdd:"Add request", mtAdded:"Request added",
+      mtActive:"Active", mtDone:"Done", mtAdd:"Log in app", mtAdded:"Request added", mtMaintainly:"Submit in Maintainly ↗", mtMaintainlyHint:"New request? Submit it in Maintainly — it notifies the maintenance team. The list below is the in-app tracker for visibility.",
       mtTitle:"What needs doing", mtTitleP:"e.g. P-Mac auger belt slipping", mtType:"Type", mtArea:"Area / Machine", mtAssignee:"Assignee", mtPriority:"Urgency", mtStatus:"Status", mtOpened:"Opened", mtTarget:"Target date", mtCompleted:"Completed",
       mtProblem:"Problem / description", mtProblemP:"What's wrong or what's needed?", mtNotes:"Notes", mtNotesP:"Additional notes",
       mtWaitingOn:"Waiting on", mtWaitingOnP:"e.g. part on order, vendor quote, approval", mtRequestedBy:"Requested by", mtRequestedByP:"Who's asking",
@@ -285,7 +285,7 @@
       ciProblem:"Problema / meta", ciProblemP:"Que estamos arreglando o mejorando?", ciImpact:"Impacto / logro", ciImpactHint:"el resultado", ciImpactP:"Que cambio? tiempo ahorrado, menos desperdicio, mas seguro, etc.",
       ciCompleted:"Completada", ciReopen:"Reabrir", ciNoActive:"No hay iniciativas activas. Agregue una arriba.", ciNoWins:"Aun no hay logros completados.", ciSearchP:"Buscar titulo, tipo, area, responsable...", ciConfirmDel:"Eliminar esta iniciativa?",
       grpMaintenance:"Mantenimiento", maintenance:"Mantenimiento", mtHint:"Rastree solicitudes de mantenimiento, reparaciones y proyectos - que esta activo, que bloquea un pendiente y un historial de completados. Mueva cada uno Solicitado -> En Curso -> Esperando -> Hecho.",
-      mtActive:"Activos", mtDone:"Hechos", mtAdd:"Agregar solicitud", mtAdded:"Solicitud agregada",
+      mtActive:"Activos", mtDone:"Hechos", mtAdd:"Registrar en app", mtAdded:"Solicitud agregada", mtMaintainly:"Enviar en Maintainly ↗", mtMaintainlyHint:"Nueva solicitud? Envialа en Maintainly — notifica al equipo de mantenimiento. La lista de abajo es el seguimiento interno.",
       mtTitle:"Que se necesita hacer", mtTitleP:"ej. Correa del auger de P-Mac resbalando", mtType:"Tipo", mtArea:"Area / Maquina", mtAssignee:"Asignado a", mtPriority:"Urgencia", mtStatus:"Estado", mtOpened:"Abierta", mtTarget:"Fecha objetivo", mtCompleted:"Completada",
       mtProblem:"Problema / descripcion", mtProblemP:"Que esta mal o que se necesita?", mtNotes:"Notas", mtNotesP:"Notas adicionales",
       mtWaitingOn:"Esperando por", mtWaitingOnP:"ej. pieza pedida, cotizacion del proveedor, aprobacion", mtRequestedBy:"Solicitado por", mtRequestedByP:"Quien lo solicita",
@@ -439,7 +439,7 @@
       ciProblem:"Problema / meta", ciProblemP:"O que estamos corrigindo ou melhorando?", ciImpact:"Impacto / conquista", ciImpactHint:"o resultado", ciImpactP:"O que mudou? tempo economizado, menos desperdicio, mais seguro, etc.",
       ciCompleted:"Concluida", ciReopen:"Reabrir", ciNoActive:"Nenhuma iniciativa ativa. Adicione uma acima.", ciNoWins:"Nenhuma conquista concluida ainda.", ciSearchP:"Buscar titulo, tipo, area, responsavel...", ciConfirmDel:"Excluir esta iniciativa?",
       grpMaintenance:"Manutencao", maintenance:"Manutencao", mtHint:"Acompanhe solicitacoes de manutencao, reparos e projetos - o que esta ativo, o que esta bloqueando um pendente e um historico de concluidos. Mova cada um Solicitado -> Em Andamento -> Aguardando -> Concluido.",
-      mtActive:"Ativos", mtDone:"Concluidos", mtAdd:"Adicionar solicitacao", mtAdded:"Solicitacao adicionada",
+      mtActive:"Ativos", mtDone:"Concluidos", mtAdd:"Registrar no app", mtAdded:"Solicitacao adicionada", mtMaintainly:"Enviar no Maintainly ↗", mtMaintainlyHint:"Nova solicitacao? Envie no Maintainly — notifica a equipe de manutencao. A lista abaixo e o acompanhamento interno.",
       mtTitle:"O que precisa ser feito", mtTitleP:"ex. Correia do rosca do P-Mac escorregando", mtType:"Tipo", mtArea:"Area / Maquina", mtAssignee:"Responsavel", mtPriority:"Urgencia", mtStatus:"Status", mtOpened:"Aberta", mtTarget:"Data alvo", mtCompleted:"Concluida",
       mtProblem:"Problema / descricao", mtProblemP:"O que esta errado ou o que e necessario?", mtNotes:"Observacoes", mtNotesP:"Observacoes adicionais",
       mtWaitingOn:"Aguardando", mtWaitingOnP:"ex. peca em pedido, orcamento do fornecedor, aprovacao", mtRequestedBy:"Solicitado por", mtRequestedByP:"Quem esta solicitando",
@@ -823,6 +823,7 @@
   const MNT_PRIORITIES = ["Urgent", "High", "Medium", "Low"];
   const MNT_STATUSES = ["Requested", "In Progress", "Waiting", "Done"];
   const MNT_ASSIGNEES = ["Daniel Henshaw", "Brandon Androes", "Brandon Coronado", "Todd Herre", "Outside Vendor", "Other"];
+  const MAINTAINLY_URL = "https://app.maintainly.com/yoqzrzeo/requests/create/gzj778k54q";
   const BAG_STAGE = "PACKOUT";       // finished bags stage here when they come off P-Mac
   let locSel = null;      // selected slot/zone code in the rack map
   let locAct = "";        // editable rack map: "" | "move" | "setqty" | "assign"
@@ -3318,8 +3319,10 @@
       ? '<tr><th>' + L("mtTitle") + '</th><th>' + L("mtType") + '</th><th>' + L("mtArea") + '</th><th>' + L("mtAssignee") + '</th><th>' + L("mtCompleted") + '</th><th data-nosort></th></tr>'
       : '<tr><th>' + L("mtTitle") + '</th><th>' + L("mtType") + '</th><th>' + L("mtArea") + '</th><th>' + L("mtAssignee") + '</th><th>' + L("mtPriority") + '</th><th>' + L("mtStatus") + '</th><th data-nosort></th></tr>';
     return assigneeDl + '<div class="card"><div class="suprow"><h2 style="margin:0">' + L("maintenance") + '</h2>' +
-      '<button class="primary sm" onclick="UI.mtAddToggle()">' + L("mtAdd") + '</button></div>' +
-      '<p class="hint">' + L("mtHint") + '</p>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary sm" onclick="window.open(MAINTAINLY_URL,\'_blank\',\'noopener\')">' + L("mtMaintainly") + '</button>' +
+      '<button class="ghost sm" onclick="UI.mtAddToggle()">' + L("mtAdd") + '</button></div></div>' +
+      '<p class="hint">' + L("mtMaintainlyHint") + '</p>' +
+      '<p class="hint" style="margin-top:0">' + L("mtHint") + '</p>' +
       '<div class="kpis"><div class="kpi"><div class="n">' + reqCount + '</div><div class="l">' + L("mtKpiRequested") + '</div></div>' +
       '<div class="kpi"><div class="n">' + ipCount + '</div><div class="l">' + L("mtKpiInProgress") + '</div></div>' +
       '<div class="kpi alert"><div class="n">' + waitCount + '</div><div class="l">' + L("mtKpiWaiting") + '</div></div>' +
