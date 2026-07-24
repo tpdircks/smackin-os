@@ -655,7 +655,6 @@
     ["Zuleika Tirado","Fulfillment Associate","Fulfillment","Troy Dircks"],
     ["Leo Ontiveros","Manufacturing Supervisor","Mixing","Allen Back"],
     ["Wilson Delgado","Manufacturing Supervisor","Manufacturing","Allen Back"],
-    ["Daniel Henshaw","Contracted Maintenance Technician","Manufacturing","Allen Back"],
     ["Antony Garcia","Mixing Operator","Mixing","Allen Back"],
     ["Darwin Zambrano","Mixing Operator","Mixing","Allen Back"],
     ["David Burgett","Mixing Operator","Mixing","Allen Back"],
@@ -674,7 +673,6 @@
     ["Leonel Marquez-Dimas","Packaging Operator","Packaging","Allen Back"],
     ["Luvencio Rondon Sanchez","Packaging Operator","Packaging","Allen Back"],
     ["Pedro Chacin Angarita","Packaging Operator","Packaging","Allen Back"],
-    ["Brandon Androes","Maintenance Technician","Technician","Matt Bollinger"],
     ["Brandon Coronado","Maintenance Technician Apprentice","Technician","Matt Bollinger"],
     ["Dallas Martinez","Technician","Technician","Matt Bollinger"],
     ["Todd Herre","Maintenance Technician","Technician","Matt Bollinger"],
@@ -822,7 +820,7 @@
   const MNT_AREAS = ["P-Mac", "Mixing", "Facility", "Forklift", "Receiving", "Shipping", "Warehouse", "Office", "Other"];
   const MNT_PRIORITIES = ["Urgent", "High", "Medium", "Low"];
   const MNT_STATUSES = ["Requested", "In Progress", "Waiting", "Done"];
-  const MNT_ASSIGNEES = ["Daniel Henshaw", "Brandon Androes", "Brandon Coronado", "Todd Herre", "Outside Vendor", "Other"];
+  const MNT_ASSIGNEES = ["Dallas Martinez", "Brandon Coronado", "Todd Herre", "Outside Vendor", "Other"];
   const MAINTAINLY_URL = "https://app.maintainly.com/yoqzrzeo/requests/create/gzj778k54q";
   const BAG_STAGE = "PACKOUT";       // finished bags stage here when they come off P-Mac
   let locSel = null;      // selected slot/zone code in the rack map
