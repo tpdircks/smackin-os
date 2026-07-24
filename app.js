@@ -1014,7 +1014,8 @@
       '<div class="esslegend"><span class="ess-key ok">' + L("hCovered") + '</span><span class="ess-key low">' + L("hLowShort") + '</span><span class="ess-key out">' + L("hOutShort") + '</span></div>' +
       '<div class="tblwrap"><table class="esstable"><thead><tr><th>' + L("hFlavor") + '</th><th class="right">' + L("bag4") + '</th><th class="right">' + L("bag15") + '</th><th class="right">' + L("essFilm") + '</th><th class="right">' + L("seasoning") + '</th></tr></thead><tbody>' + frows + '</tbody></table></div></div>';
     // ---- Base materials strip (raw seed / malto / oil / stevia gate all production) ----
-    const baseTiles = ["SEED-WHITE", "SEED-BROWN", "MALTO", "OIL", "STEVIA"].map(c => {
+    const baseCodes = DB.items().filter(i => i.category === "seed" && /^SEED-/.test(i.id)).map(i => i.id).concat(["MALTO", "OIL", "STEVIA"]);
+    const baseTiles = baseCodes.map(c => {
       const it = bc(c); if (!it) return ""; const st = statusOf(it);
       return '<div class="btile ess-' + st + '"><div class="n">' + fmt(DB.onHand(it.id)) + '<span class="u"> ' + it.unit + '</span></div><div class="l">' + esc(it.name.split(" - ")[0].split(" (")[0]) + '</div></div>';
     }).join("");
