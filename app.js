@@ -1470,7 +1470,7 @@
     const ship = doc.splitTextToSize(s.ship_to || "-", RM - colR);
     doc.text(vlines, M, y); doc.text(ship, colR, y);
     y += Math.max(vlines.length, ship.length) * 13 + 14; rule(y); y += 16;
-    const cItem = M, cDesc = M + 66, cQty = 396, cPrice = 456, cTot = RM;
+    const cItem = M, cDesc = M + 104, cQty = 396, cPrice = 456, cTot = RM;
     doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(grey[0], grey[1], grey[2]);
     doc.text("ITEM", cItem, y); doc.text("DESCRIPTION", cDesc, y); doc.text("QTY", cQty, y, { align: "right" });
     doc.text("PRICE", cPrice, y, { align: "right" }); doc.text("TOTAL", cTot, y, { align: "right" });
