@@ -1027,6 +1027,36 @@
       '<h2 class="sub2" style="margin:16px 0 8px">' + L("hBase") + '</h2><div class="btiles">' + baseTiles + '</div></div>';
     return '<div class="card"><h2>' + L("homeTitle") + '</h2><p class="hint">' + L("homeHint") + '</p><div class="htiles">' + tiles + '</div></div>' + attention + essTable + snapshot;
   }
+  // ===== Data freshness / health: show how current each feed is, so nobody trusts stale data =====
+  function daysAgo(iso) { if (!iso) return null; return Math.floor((Date.now() - new Date(iso).getTime()) / 864e5); }
+  function dhMax(arr) {
+    const keys = ["created_at", "updated_at", "received_date", "received_at", "prod_date", "ship_date", "date", "po_date"];
+    let m = null;
+    (arr || []).forEach(r => keys.forEach(k => { const v = r && r[k]; if (v) { const t = new Date(v).getTime(); if (!isNaN(t) && (m === null || t > m)) m = t; } }));
+    return m ? new Date(m).toISOString() : null;
+  }
+  function freshChip(iso, warn) {
+    warn = warn || 2; const d = daysAgo(iso);
+    let color = "#B52024", lbl = "n/a";
+    if (d !== null) { lbl = d <= 0 ? "0d" : d + "d"; color = d <= warn ? "#2E9E5B" : (d <= warn * 4 ? "#F2A93B" : "#B52024"); }
+    return '<span title="' + esc(iso || "no data") + '" style="display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:10px;color:#fff;background:' + color + ';vertical-align:middle">&#8635; ' + lbl + '</span>';
+  }
+  function dataHealthCard() {
+    const g = f => { try { return f() || []; } catch (e) { return []; } };
+    const sbLatest = () => { try { return dhMax(Object.values(DB.stockBuild())); } catch (e) { return null; } };
+    const src = [
+      { n: "Orders (SPS open)", iso: dhMax(g(() => DB.orders())), warn: 1 },
+      { n: "Demand board", iso: dhMax(g(() => DB.demandLines ? DB.demandLines() : [])), warn: 1 },
+      { n: "Stock Build", iso: sbLatest(), warn: 2 },
+      { n: "Receiving Log", iso: dhMax(g(() => DB.receivingLog ? DB.receivingLog() : [])), warn: 3 },
+      { n: "Supplier POs", iso: dhMax(g(() => DB.supplierPos())), warn: 7 }
+    ];
+    const stale = src.filter(s => { const d = daysAgo(s.iso); return d === null || d > s.warn; }).length;
+    const rows = src.map(s => '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 2px;border-bottom:1px solid #EEF2F7">' +
+      '<span style="font-size:13px;font-weight:600">' + esc(s.n) + '</span>' + freshChip(s.iso, s.warn) + '</div>').join("");
+    const banner = stale ? '<div style="margin:8px 0 4px;font-size:12px;font-weight:700;color:#B52024">&#9888; ' + stale + ' feed' + (stale > 1 ? "s" : "") + ' stale &mdash; do not treat as live until refreshed</div>' : '<div style="margin:8px 0 4px;font-size:12px;font-weight:700;color:#2E9E5B">&#10003; All feeds current</div>';
+    return '<div class="card"><div class="suprow"><h2 class="sub2" style="margin:0">&#128225; Data Freshness</h2><span class="muted sm">days since each feed last updated</span></div>' + banner + rows + '</div>';
+  }
   // Clean short label for a seed item: prefer the trailing "(...)" descriptor so
   // Extreme / 7% Salt / Brown / White / Tote stay distinct (their base names collide).
   function seedShort(name) {
@@ -1057,7 +1087,7 @@
     }).join("");
     const rows = its.map(i => '<tr data-txt="' + esc(((i.name || "") + " " + (i.code || "") + " " + (CATLBL[i.category] || i.category || "")).toLowerCase().replace(/"/g, "")) + '">' + cols.map(c => COL_DEF[c].td(i)).join("") + '</tr>').join("");
     const cbar = CATS.map(c => '<button class="' + (c === catFilter ? "active" : "") + '" onclick="UI.cat(\'' + c + '\')">' + (CATLBL[c] || c) + "</button>").join("");
-    return '<div class="card"><h2>' + L("dash") + '</h2><p class="hint">' + L("dashHint") + '</p>' +
+    return dataHealthCard() + '<div class="card"><h2>' + L("dash") + '</h2><p class="hint">' + L("dashHint") + '</p>' +
       '<div class="kpis"><div class="kpi"><div class="n">' + DB.items().length + '</div><div class="l">' + L("totalItems") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(bag4) + '</div><div class="l">' + L("bag4") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(bag15) + '</div><div class="l">' + L("bag15") + '</div></div>' +
@@ -1168,7 +1198,7 @@
         '<td>' + (o.notes ? '<span class="sm">' + o.notes + '</span>' : "") + '</td>' +
         '<td>' + act + ' <button class="ghost sm" title="' + L("editRow") + '" onclick="UI.ordEdit(\'' + o.id + '\')">&#9998;</button></td></tr>';
     }).join("") : '<tr><td colspan="6" class="muted">' + (orderView === "complete" ? L("noCompleteOrders") : L("noOpenOrders")) + '</td></tr>';
-    return '<div class="card"><div class="suprow"><h2>' + L("orders") + '</h2>' +
+    return '<div class="card"><div class="suprow"><h2>' + L("orders") + ' ' + freshChip(dhMax(all), 1) + '</h2>' +
       '<button class="primary sm" onclick="UI.ordAddToggle()">' + L("ordAdd") + '</button></div>' +
       '<p class="hint">' + L("ordersHint") + '</p>' + toggle +
       '<div class="ordlegend"><span class="lg lg-ship"></span>' + L("oLegShip") + '<span class="lg lg-ip"></span>' + L("oLegIP") + '<span class="lg lg-issue"></span>' + L("oLegIssue") + '</div>' + addForm +
@@ -2915,7 +2945,7 @@
       flavors.map(f => '<option' + (f === dmdFlavor ? ' selected' : '') + '>' + esc(f) + '</option>').join("") + '</select>';
     const ssel = '<select onchange="UI.dmdSet(\'status\',this.value)">' +
       ['Open', 'Shipped', 'All'].map(s => '<option value="' + s + '"' + (s === dmdStatus ? ' selected' : '') + '>' + L(s === "Open" ? "dmOpen" : s === "Shipped" ? "dmShipped" : "dmAll") + '</option>').join("") + '</select>';
-    const head = '<div class="card"><div class="suprow"><h2 style="flex:1;margin:0">' + L("demand") + '</h2>' +
+    const head = '<div class="card"><div class="suprow"><h2 style="flex:1;margin:0">' + L("demand") + ' ' + freshChip(dhMax(DB.demandLines ? DB.demandLines() : []), 1) + '</h2>' +
       '<button class="ghost sm" onclick="UI_go(\'demandimport\')">&#8635; ' + L("demandimport") + '</button></div>' +
       '<p class="hint">' + L("dmHint") + '</p>' +
       '<div class="kpis"><div class="kpi"><div class="n">' + fmt(openPOs) + '</div><div class="l">' + L("dmPOs") + '</div></div>' +
