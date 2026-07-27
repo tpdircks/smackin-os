@@ -796,6 +796,7 @@
   let dragCol = null;
   let orderView = "open"; // orders: "open" | "complete"
   let orderAddOpen = false;
+  let ordSpsOpen = false; // orders: SPS-open paste/sync panel open?
   let peopleView = "dir"; // People: "dir" | "org"
   let locView = "map";    // Locations: "floor" | "map" | "list" (rack grid is default; floor plan optional)
   let puSec = "", puBay = "", puLevel = "";  // Put-Away location picker state (Section/Bay/Level)
@@ -1199,7 +1200,12 @@
         '<td>' + act + ' <button class="ghost sm" title="' + L("editRow") + '" onclick="UI.ordEdit(\'' + o.id + '\')">&#9998;</button></td></tr>';
     }).join("") : '<tr><td colspan="6" class="muted">' + (orderView === "complete" ? L("noCompleteOrders") : L("noOpenOrders")) + '</td></tr>';
     return '<div class="card"><div class="suprow"><h2>' + L("orders") + ' ' + freshChip(dhMax(all), 1) + '</h2>' +
-      '<button class="primary sm" onclick="UI.ordAddToggle()">' + L("ordAdd") + '</button></div>' +
+      '<div><button class="ghost sm" onclick="UI.ordSpsToggle()">&#8635; Sync SPS Open</button> ' +
+      '<button class="primary sm" onclick="UI.ordAddToggle()">' + L("ordAdd") + '</button></div></div>' +
+      (ordSpsOpen ? '<div class="ordform"><p class="hint">Paste the SPS "Exclude Target" open orders, one per line as <b>Customer | Document ID | Date</b>. This sets the board to exactly those (marks any SPS order that dropped off as shipped). Legacy orders are untouched.</p>' +
+        '<textarea id="sps-paste" rows="6" style="width:100%" placeholder="McLane | SW10101575-01 | Jul 20, 2026&#10;Bass Pro | 14687637 | Jul 20, 2026"></textarea>' +
+        '<button class="primary" style="margin-top:8px" onclick="UI.ordSpsSync()">Reconcile board to these</button> ' +
+        '<button class="ghost" style="margin-top:8px" onclick="UI.ordSpsToggle()">' + L("ordCancel") + '</button></div>' : '') +
       '<p class="hint">' + L("ordersHint") + '</p>' + toggle +
       '<div class="ordlegend"><span class="lg lg-ship"></span>' + L("oLegShip") + '<span class="lg lg-ip"></span>' + L("oLegIP") + '<span class="lg lg-issue"></span>' + L("oLegIssue") + '</div>' + addForm +
       '<input id="ordSearch" autocomplete="off" style="margin-top:10px" oninput="UI.ordSearch(this.value)" placeholder="' + L("ordSearchP") + '">' +
@@ -4446,6 +4452,19 @@
     // ---- Orders ----
     ordView(v) { orderView = v; render(); },
     ordAddToggle() { orderAddOpen = !orderAddOpen; render(); },
+    ordSpsToggle() { ordSpsOpen = !ordSpsOpen; orderAddOpen = false; render(); },
+    async ordSpsSync() {
+      const raw = ($("sps-paste") ? $("sps-paste").value : "") || "";
+      const list = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(l => {
+        const p = l.split("|").map(s => s.trim());
+        return { customer: p[0] || "", docId: p[1] || "", date: p[2] || "" };
+      }).filter(x => x.docId);
+      if (!list.length) return toast("Paste at least one line: Customer | Document ID | Date");
+      toast("Syncing " + list.length + " open orders...");
+      const r = await DB.reconcileSpsOrders(list, opVal());
+      ordSpsOpen = false; orderView = "open"; render();
+      toast("Orders board = " + r.open + " open (+" + r.inserted + " new / " + r.archived + " shipped)");
+    },
     ordSearch(val) { const q = (val || "").toLowerCase().trim();
       document.querySelectorAll("#ordBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
     ordEdit(id) { orderEditId = id; orderAddOpen = false; render(); window.scrollTo(0, 0); },

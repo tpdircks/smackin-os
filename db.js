@@ -888,6 +888,32 @@ window.DB = (function () {
     else { cache.orders = cache.orders.filter(o => String(o.id) !== String(id)); local.addLog({ a: "Order deleted", d: String(id), u: op, t: new Date().toISOString() }); local.save(); }
     emit();
   }
+  // Reconcile the Orders board to the current SPS "Exclude Target" open set.
+  // list = [{customer, docId, date}]. Only touches the SPS-synced subset (entered_by "SPS Sync"):
+  // inserts new opens, marks any that dropped off SPS as Complete (shipped). Legacy orders untouched.
+  async function reconcileSpsOrders(list, op) {
+    list = (list || []).filter(x => x && x.docId);
+    const openKeys = {}; list.forEach(x => { openKeys[String(x.docId)] = x; });
+    const existing = (cache.orders || []).filter(o => o.entered_by === "SPS Sync");
+    const openExisting = {}; existing.forEach(o => { if ((o.status || "Open") !== "Complete") openExisting[String(o.order_id)] = o; });
+    const toInsert = list.filter(x => !openExisting[String(x.docId)]).map(x => ({
+      customer: x.customer || "", order_id: String(x.docId), customer_po: String(x.docId),
+      ship_date: x.date || "", status: "Open", entered_by: "SPS Sync", notes: "SPS Exclude-Target (open)"
+    }));
+    const toArchive = existing.filter(o => (o.status || "Open") !== "Complete" && !openKeys[String(o.order_id)]).map(o => o.id);
+    if (mode === "cloud") {
+      if (toInsert.length) await sb.from("orders").insert(toInsert);
+      if (toArchive.length) await sb.from("orders").update({ status: "Complete" }).in("id", toArchive);
+      await cloud.addLog({ a: "SPS orders synced", d: "open " + list.length + " (+" + toInsert.length + " new / " + toArchive.length + " shipped)", u: op || "SPS Sync", t: new Date().toISOString() });
+      await cloud.loadAll();
+    } else {
+      toArchive.forEach(id => { const c = cache.orders.find(o => String(o.id) === String(id)); if (c) c.status = "Complete"; });
+      toInsert.forEach(r => { r.id = orderLocalId(); r.created_at = new Date().toISOString(); cache.orders.unshift(r); });
+      local.save();
+    }
+    emit();
+    return { ok: true, inserted: toInsert.length, archived: toArchive.length, open: list.length };
+  }
 
   // ---------- R&D / sample requests ----------
   const RD_FIELDS = ["req_no","req_type","company","contact_name","contact_email","items","quantity","needed_by","purpose","requested_by","status","sent_at","received_at","follow_up","notes"];
@@ -1512,7 +1538,7 @@ window.DB = (function () {
     improvements, addImprovement, updateImprovement, setImprovementStatus, deleteImprovement,
     maintenance, addMaintenance, updateMaintenance, setMaintenanceStatus, deleteMaintenance,
     fulfillmentDaily, saveFulfillmentDaily, deleteFulfillmentDaily,
-    orders, createOrder, updateOrder, setOrderStatus, deleteOrder, notifyNewOrder,
+    orders, createOrder, updateOrder, setOrderStatus, deleteOrder, notifyNewOrder, reconcileSpsOrders,
     rdRequests, createRdRequest, updateRdRequest, setRdStatus, deleteRdRequest, sendRdEmail,
     supplierPos, createSupplierPO, updateSupplierPO, deleteSupplierPO, emailPO,
     orderDocs, createOrderDoc, deleteOrderDoc,
