@@ -1066,6 +1066,37 @@ window.DB = (function () {
     }
     emit(); return { ok: true };
   }
+  // ---------- Expected Receipts (per-line ship dates on supplier POs) ----------
+  function poLinesRaw(po) { try { return typeof po.lines === "string" ? JSON.parse(po.lines || "[]") : (po.lines || []); } catch (e) { return []; } }
+  // Flatten every supplier-PO line that carries a ship/expected date into one arrival list.
+  function expectedReceipts() {
+    const out = [];
+    (cache.supplierPos || []).forEach(po => {
+      poLinesRaw(po).forEach((l, i) => {
+        const ship = String(l.ship || l.ship_date || l.expected || "").slice(0, 10);
+        if (!ship) return;
+        out.push({
+          poId: po.id, po_num: po.po_num || "", vendor: po.vendor || "", idx: i,
+          item: l.item || l.item_no || "", desc: l.desc || l.description || l.product || "",
+          qty: l.qty || l.quantity || "", uom: l.uom || l.unit_of_measure || "",
+          ship: ship, recv: !!(l.recv || l.received === true), recv_date: String(l.recv_date || "").slice(0, 10)
+        });
+      });
+    });
+    return out;
+  }
+  // Mark one PO line received (persists recv flag onto the line JSON) + logs it. Returns line info for notify.
+  async function markLineReceived(poId, idx, op) {
+    const po = (cache.supplierPos || []).find(x => String(x.id) === String(poId)); if (!po) return { ok: false };
+    const lines = poLinesRaw(po); if (!lines[idx]) return { ok: false };
+    lines[idx].recv = true; lines[idx].recv_date = new Date().toISOString().slice(0, 10);
+    const desc = lines[idx].desc || lines[idx].item || "";
+    const logEntry = { a: "PO item received", d: (po.vendor || "") + " " + (po.po_num || "") + " - " + desc + " (" + (lines[idx].qty || "") + " " + (lines[idx].uom || "") + ")", u: op || "", t: new Date().toISOString() };
+    if (mode === "cloud") { await sb.from("supplier_pos").update({ lines: JSON.stringify(lines) }).eq("id", poId); await cloud.addLog(logEntry); await cloud.loadAll(); }
+    else { po.lines = JSON.stringify(lines); local.addLog(logEntry); local.save(); }
+    emit();
+    return { ok: true, vendor: po.vendor || "", po_num: po.po_num || "", desc: desc, qty: lines[idx].qty || "", uom: lines[idx].uom || "" };
+  }
   // Email a Supplier PO to the vendor via the same Supabase Edge Function relay used for R&D
   // requests (which holds the Resend key). payload: { to, cc, subject, html }. Returns {ok, msg}.
   // Degrades gracefully: if the relay isn't configured/reachable, the UI falls back to mailto.
@@ -1540,7 +1571,7 @@ window.DB = (function () {
     fulfillmentDaily, saveFulfillmentDaily, deleteFulfillmentDaily,
     orders, createOrder, updateOrder, setOrderStatus, deleteOrder, notifyNewOrder, reconcileSpsOrders,
     rdRequests, createRdRequest, updateRdRequest, setRdStatus, deleteRdRequest, sendRdEmail,
-    supplierPos, createSupplierPO, updateSupplierPO, deleteSupplierPO, emailPO,
+    supplierPos, createSupplierPO, updateSupplierPO, deleteSupplierPO, emailPO, expectedReceipts, markLineReceived,
     orderDocs, createOrderDoc, deleteOrderDoc,
     referenceDocs, createRefDoc, deleteRefDoc,
     consumption, consume,

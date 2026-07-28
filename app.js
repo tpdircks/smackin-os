@@ -7,7 +7,7 @@
   // build v69 — Demand section
   const T = {
     en: { dash:"Overview", home:"Dashboard", receive:"Receive", putaway:"Put-Away", move:"Move / Pick", produce:"Produce",
-      count:"Count", locations:"Locations", purchasing:"Purchasing", labels:"Labels", log:"Activity", settings:"Settings",
+      count:"Count", locations:"Locations", purchasing:"Purchasing", expreceipts:"Expected Receipts", labels:"Labels", log:"Activity", settings:"Settings",
       onhand:"On hand", item:"Item", unit:"Unit", qty:"Qty", lot:"Lot", status:"Status", reorder:"Reorder pt",
       scanItem:"Scan or type item code / UPC", to:"To location", from:"From location",
       submitReceive:"Receive", submitPut:"Put away", submitMove:"Move / pick", submitProduce:"Record production", submitCount:"Save count",
@@ -162,7 +162,7 @@
       flSensor:"bags (sensor)", flDeleteConfirm:"Remove this machine?",
       settingsHint:"Mode, layout, and demo controls." },
     es: { dash:"Resumen", home:"Panel", receive:"Recibir", putaway:"Almacenar", move:"Mover / Sacar", produce:"Producir",
-      count:"Conteo", locations:"Ubicaciones", purchasing:"Compras", labels:"Etiquetas", log:"Actividad", settings:"Ajustes",
+      count:"Conteo", locations:"Ubicaciones", purchasing:"Compras", expreceipts:"Recepciones Esperadas", labels:"Etiquetas", log:"Actividad", settings:"Ajustes",
       onhand:"Disponible", item:"Articulo", unit:"Unidad", qty:"Cant.", lot:"Lote", status:"Estado", reorder:"Punto reorden",
       scanItem:"Escanee o escriba codigo / UPC", to:"Hacia ubicacion", from:"Desde ubicacion",
       submitReceive:"Recibir", submitPut:"Almacenar", submitMove:"Mover / sacar", submitProduce:"Registrar produccion", submitCount:"Guardar conteo",
@@ -316,7 +316,7 @@
       flSensor:"bolsas (sensor)", flDeleteConfirm:"Quitar esta maquina?",
       settingsHint:"Modo, distribucion y controles demo." },
     pt: { dash:"Visao geral", home:"Painel", receive:"Receber", putaway:"Armazenar", move:"Mover / Separar", produce:"Produzir",
-      count:"Contagem", locations:"Locais", purchasing:"Compras", labels:"Etiquetas", log:"Atividade", settings:"Configuracoes",
+      count:"Contagem", locations:"Locais", purchasing:"Compras", expreceipts:"Recebimentos Esperados", labels:"Etiquetas", log:"Atividade", settings:"Configuracoes",
       onhand:"Em estoque", item:"Item", unit:"Unid.", qty:"Qtd.", lot:"Lote", status:"Status", reorder:"Ponto de reposicao",
       scanItem:"Escaneie ou digite codigo / UPC", to:"Para o local", from:"Do local",
       submitReceive:"Receber", submitPut:"Armazenar", submitMove:"Mover / separar", submitProduce:"Registrar producao", submitCount:"Salvar contagem",
@@ -710,7 +710,7 @@
     { key:"grpShipping", items:["shiplog"] },
     { key:"grpMixing", items:["mixing","floor"] },
     { key:"grpPmac", items:["pmac","pmacout","floor"] },
-    { key:"grpPurchasing", items:["purchasing"] },
+    { key:"grpPurchasing", items:["purchasing","expreceipts"] },
     { key:"grpRnd", items:["rd"] },
     { key:"grpHr", items:["people"] },
     { key:"grpImprove", items:["improve"] },
@@ -727,7 +727,7 @@
     move:"arrow-left-right", produce:"factory", retailprod:"package", ecomprod:"laptop", prodlog:"clipboard-list", fulfilldaily:"clipboard-list", stockbuild:"layers", reorder15:"repeat",
     seasoning:"flame", seed:"sprout", skus:"barcode", finbags:"shopping-bag", pmacout:"package-open",
     mixing:"cooking-pot", pmac:"wrench", count:"clipboard-check", locations:"map-pin",
-    purchasing:"shopping-cart", supplierpos:"file-text", people:"users", labels:"tag",
+    purchasing:"shopping-cart", expreceipts:"package", supplierpos:"file-text", people:"users", labels:"tag",
     board:"tv", log:"history", settings:"settings", improve:"trending-up", maintenance:"hard-hat", compliance:"shield-check", disposition:"archive", reference:"book-open",
     demand:"calendar-clock", demandboard:"list-checks", demandsched:"gauge", demandimport:"file-up", ecomdemand:"globe", forecast:"scale", facility:"warehouse", floor:"activity" };
   function drawIcons() { try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {} }
@@ -1446,7 +1446,9 @@
       desc: g(l, ["desc", "description", "name", "product"]),
       qty: g(l, ["qty", "quantity", "cases"]),
       price: g(l, ["price", "unit_price", "unitPrice", "cost"]),
-      tot: g(l, ["total", "line_total", "lineTotal", "amount", "ext"])
+      tot: g(l, ["total", "line_total", "lineTotal", "amount", "ext"]),
+      ship: String(g(l, ["ship", "ship_date", "shipdate", "expected", "eta"]) || "").slice(0, 10),
+      recv: !!(l.recv || l.received === true)
     }));
   }
   // Plain-text PO summary used to prefill the Email PO body, the mailto fallback, and Copy PO summary.
@@ -1464,6 +1466,7 @@
         if (l.qty !== "") row += "  x" + l.qty;
         if (l.price !== "") row += "  @ " + money(l.price);
         if (l.tot !== "") row += "  = " + money(l.tot);
+        if (l.ship) row += "  [ships " + l.ship + "]";
         p.push(row);
       });
     } else { p.push("  (no line items on file)"); }
@@ -1516,7 +1519,8 @@
     if (lines.length) {
       lines.forEach(l => {
         if (y > 720) { doc.addPage(); y = 58; }
-        const dl = doc.splitTextToSize(String(l.desc || ""), cQty - cDesc - 44);
+        const descTxt = String(l.desc || "") + (l.ship ? "   (ships " + l.ship + ")" : "");
+        const dl = doc.splitTextToSize(descTxt, cQty - cDesc - 44);
         doc.text(String(l.item || ""), cItem, y);
         doc.text(dl.length ? dl : [""], cDesc, y);
         if (l.qty !== "") doc.text(String(l.qty), cQty, y, { align: "right" });
@@ -1551,14 +1555,41 @@
       '<button class="ghost" onclick="UI.poEmailCancel()">' + L("spoCancel") + '</button>' +
       '<p class="hint">' + L("poEmailHint") + '</p></div>';
   }
+  // Who gets emailed when an inbound PO item is received (per Troy 2026-07-27).
+  const RECEIPT_NOTIFY = ["michelle.nydegger@smackinsnacks.com", "mattb@smackinsnacks.com", "brittney.christensen@smackinsnacks.com", "lizeth.toloza@smackinsnacks.com", "shipping@smackinsnacks.com", "inventory@smackinsnacks.com", "allen.back@smackinsnacks.com", "leo.ontiveros@smackinsnacks.com", "fulfillment@smackinsnacks.com"];
+  function viewExpectedReceipts() {
+    const rows = (DB.expectedReceipts ? DB.expectedReceipts() : []).slice();
+    const today = new Date().toISOString().slice(0, 10);
+    const daysT = s => { if (!s) return null; return Math.round((new Date(s + "T00:00:00") - new Date(today + "T00:00:00")) / 864e5); };
+    const open = rows.filter(r => !r.recv).sort((a, b) => (a.ship < b.ship ? -1 : a.ship > b.ship ? 1 : 0));
+    const done = rows.filter(r => r.recv).sort((a, b) => (a.recv_date < b.recv_date ? 1 : -1));
+    const chip = s => { const d = daysT(s); if (d === null) return ""; const c = d < 0 ? "#B52024" : (d <= 5 ? "#F2A93B" : "#2E9E5B"); const t = d < 0 ? Math.abs(d) + "d late" : (d === 0 ? "today" : "in " + d + "d"); return '<span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;color:#fff;background:' + c + '">' + t + "</span>"; };
+    const row = r => '<tr><td class="sm">' + esc(r.ship) + " " + chip(r.ship) + "</td>" +
+      "<td><b>" + esc(r.desc || r.item || "") + "</b>" + (r.item && r.desc ? '<div class="muted sm">' + esc(r.item) + "</div>" : "") + "</td>" +
+      '<td class="right">' + esc(r.qty) + " " + esc(r.uom || "") + "</td>" +
+      "<td>" + esc(r.vendor || "") + '<div class="muted sm">PO ' + esc(r.po_num || "") + "</div></td>" +
+      "<td>" + (r.recv ? '<span class="pill ok">received ' + esc(r.recv_date) + "</span>" : '<button class="primary sm" onclick="UI.markReceived(\'' + r.poId + "'," + r.idx + ')">Mark received</button>') + "</td></tr>";
+    const head = "<thead><tr><th>Ship date</th><th>Item</th><th class=\"right\">Qty</th><th>Vendor / PO</th><th data-nosort></th></tr></thead>";
+    const openTbl = open.length ? '<table class="sortable">' + head + "<tbody>" + open.map(row).join("") + "</tbody></table>" : '<p class="muted">No open expected receipts. Ship dates flow in from POs that have per-line ship dates.</p>';
+    const late = open.filter(r => { const d = daysT(r.ship); return d !== null && d < 0; }).length;
+    const wk = open.filter(r => { const d = daysT(r.ship); return d !== null && d >= 0 && d <= 7; }).length;
+    return '<div class="card"><h2>&#128230; Expected Receipts</h2><p class="hint">Every open PO line with a ship date, soonest first. Mark one received to log it and notify the team.</p>' +
+      '<div class="kpis"><div class="kpi' + (late ? " alert" : "") + '"><div class="n">' + open.length + '</div><div class="l">Open lines</div></div>' +
+      '<div class="kpi"><div class="n">' + wk + '</div><div class="l">Arriving this week</div></div>' +
+      '<div class="kpi' + (late ? " alert" : "") + '"><div class="n">' + late + '</div><div class="l">Past ship date</div></div></div>' +
+      openTbl +
+      (done.length ? '<h2 class="sub2" style="margin-top:16px">Received (' + done.length + ")</h2><table class=\"sortable\">" + head + "<tbody>" + done.slice(0, 40).map(row).join("") + "</tbody></table>" : "") +
+      "</div>";
+  }
   function viewPoDetail(id) {
     const s = DB.supplierPos().find(x => String(x.id) === String(id));
     if (!s) { spoDetailId = null; return viewSupplierPos(); }
     const lines = poLinesOf(s);
     const lineRows = lines.length ? lines.map(l => {
-      return '<tr><td>' + esc(l.item) + '</td><td>' + esc(l.desc) + '</td><td class="right">' + esc(l.qty) + '</td>' +
+      const shipCell = l.recv ? '<span class="pill ok">received</span>' : (l.ship ? esc(l.ship) : "");
+      return '<tr><td>' + esc(l.item) + '</td><td>' + esc(l.desc) + '</td><td class="sm">' + shipCell + '</td><td class="right">' + esc(l.qty) + '</td>' +
         '<td class="right">' + (l.price !== "" ? money(l.price) : "") + '</td><td class="right">' + (l.tot !== "" ? money(l.tot) : "") + '</td></tr>';
-    }).join("") : '<tr><td colspan="5" class="muted">' + L("poNoLines") + '</td></tr>';
+    }).join("") : '<tr><td colspan="6" class="muted">' + L("poNoLines") + '</td></tr>';
     // info field helper: only render rows that have a value
     const fld = (label, val) => (val != null && val !== "") ? '<div class="podf"><span class="podl">' + label + '</span><span class="podv">' + esc(val) + '</span></div>' : "";
     const info = fld(L("spoVendor"), s.vendor) + fld(L("spoPO"), s.po_num) + fld(L("spoDate"), s.po_date) +
@@ -1583,13 +1614,14 @@
       '<div class="podoc">' + fileBlock + '</div>' +
       poEmailForm(s) + '</div>' +
       '<div class="card"><h2 class="sub2">' + L("spoItems") + ' (' + lines.length + ')</h2>' +
-      '<table class="potable"><thead><tr><th>' + L("poItemNo") + '</th><th>' + L("poDesc") + '</th><th class="right">' + L("poQtyL") + '</th><th class="right">' + L("poPriceL") + '</th><th class="right">' + L("poLineTot") + '</th></tr></thead><tbody>' + lineRows + '</tbody></table>' +
+      '<table class="potable"><thead><tr><th>' + L("poItemNo") + '</th><th>' + L("poDesc") + '</th><th>Ship date</th><th class="right">' + L("poQtyL") + '</th><th class="right">' + L("poPriceL") + '</th><th class="right">' + L("poLineTot") + '</th></tr></thead><tbody>' + lineRows + '</tbody></table>' +
       '<div class="pototals" style="margin-top:12px">' + totalsRows + '</div>' +
       (notesClean(s.notes) ? '<h3 class="sub2" style="margin-top:14px">' + L("spoNotes") + '</h3><p>' + esc(notesClean(s.notes)) + '</p>' : "") + '</div>';
   }
   function poRowInner(i) {
     return '<td><input id="pl-item-' + i + '" autocomplete="off"></td>' +
       '<td><input id="pl-desc-' + i + '" autocomplete="off"></td>' +
+      '<td><input id="pl-ship-' + i + '" type="date"></td>' +
       '<td><input id="pl-qty-' + i + '" type="number" min="0" step="any" inputmode="decimal" oninput="UI.poRecalc()"></td>' +
       '<td><input id="pl-price-' + i + '" type="number" min="0" step="any" inputmode="decimal" oninput="UI.poRecalc()"></td>' +
       '<td class="right"><span id="pl-tot-' + i + '">$0.00</span></td>';
@@ -1628,7 +1660,7 @@
       '<div><label>' + L("poVendorPhone") + '</label><input id="po-vphone" autocomplete="off"></div></div>' +
       '<div><label>' + L("poShipTo") + '</label><input id="po-shipto" list="dl-po-shipto" autocomplete="off"></div>' +
       '<h3 class="sub2" style="margin-top:14px">' + L("spoItems") + '</h3>' +
-      '<table class="potable"><thead><tr><th>' + L("poItemNo") + '</th><th>' + L("poDesc") + '</th><th>' + L("poQtyL") + '</th><th>' + L("poPriceL") + '</th><th class="right">' + L("poLineTot") + '</th></tr></thead><tbody id="po-lines">' + rows + '</tbody></table>' +
+      '<table class="potable"><thead><tr><th>' + L("poItemNo") + '</th><th>' + L("poDesc") + '</th><th>Ship date</th><th>' + L("poQtyL") + '</th><th>' + L("poPriceL") + '</th><th class="right">' + L("poLineTot") + '</th></tr></thead><tbody id="po-lines">' + rows + '</tbody></table>' +
       '<button class="ghost sm" onclick="UI.poAddLine()">' + L("poAddLine") + '</button>' +
       '<div class="pototals">' +
       '<div><span>' + L("poSubtotalL") + '</span><b id="po-subtotal">$0.00</b></div>' +
@@ -4573,6 +4605,24 @@
       const doc = poDoc(s); if (!doc) return toast("PDF lib not loaded");
       doc.save("PO " + (s.po_num || "draft") + (s.vendor ? " - " + s.vendor : "") + ".pdf");
     },
+    async markReceived(poId, idx) {
+      const r = await DB.markLineReceived(poId, idx, opVal());
+      if (!r || !r.ok) return toast("Could not mark received");
+      render();
+      const when = new Date().toISOString().slice(0, 10);
+      const subject = "Received: " + (r.desc || r.item || "item") + " - PO " + (r.po_num || "");
+      const body = (r.desc || r.item || "Item") + " (" + (r.qty || "") + " " + (r.uom || "") + ") from " +
+        (r.vendor || "vendor") + " on PO " + (r.po_num || "") + " was received " + when + " at the SLC Fulfillment Center.";
+      const html = '<div style="font-family:Arial,sans-serif;color:#222">' + esc(body) + "</div>";
+      // Try the app email backend; fall back to a pre-addressed mailto until Resend is live.
+      try {
+        const res = await DB.emailPO({ vendor: r.vendor, po_num: r.po_num }, { to: RECEIPT_NOTIFY, subject: subject, html: html }, opVal());
+        if (res && res.ok) { toast("Received - team notified"); return; }
+      } catch (e) {}
+      const mailto = "mailto:" + encodeURIComponent(RECEIPT_NOTIFY.join(",")) + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+      window.location.href = mailto;
+      toast("Received - email ready to send");
+    },
     refPick(input) { refFiles = input.files && input.files.length ? input.files : null; render(); },
     refClear() { refFiles = null; render(); },
     async refSave() {
@@ -4641,10 +4691,10 @@
       const lines = []; let sub = 0;
       document.querySelectorAll("#po-lines tr").forEach(tr => {
         const g = sel => { const el = tr.querySelector(sel); return el ? (el.value || "").trim() : ""; };
-        const item = g("[id^=pl-item-]"), desc = g("[id^=pl-desc-]"), qty = g("[id^=pl-qty-]"), price = g("[id^=pl-price-]");
+        const item = g("[id^=pl-item-]"), desc = g("[id^=pl-desc-]"), qty = g("[id^=pl-qty-]"), price = g("[id^=pl-price-]"), ship = g("[id^=pl-ship-]");
         if (!item && !desc && !qty && !price) return;
         const lt = (parseFloat(qty) || 0) * (parseFloat(price) || 0); sub += lt;
-        lines.push({ item: item, desc: desc, qty: qty, price: price, total: String(Math.round(lt * 100) / 100) });
+        lines.push({ item: item, desc: desc, qty: qty, price: price, ship: ship, total: String(Math.round(lt * 100) / 100) });
       });
       const gg = id => parseFloat(v(id)) || 0;
       const grand = sub + gg("po-shipping") + gg("po-tax") + gg("po-other");
@@ -4881,7 +4931,7 @@
     renderNav(); refreshDatalists();
     const map = { home: viewHome, dash: viewDash, analytics: viewAnalytics, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
       move: viewMove, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, fulfilldaily: viewFulfillDaily, stockbuild: viewStockBuild, reorder15: viewReorder15, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
-      count: viewCount, locations: viewLocations, purchasing: viewPurchasing, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, maintenance: viewMaintenance, compliance: viewCompliance, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
+      count: viewCount, locations: viewLocations, purchasing: viewPurchasing, expreceipts: viewExpectedReceipts, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, maintenance: viewMaintenance, compliance: viewCompliance, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
       demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, ecomdemand: viewEcomDemand, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor, board: viewBoard, disposition: viewDisposition };
     $("view").innerHTML = (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
