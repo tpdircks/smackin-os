@@ -4952,7 +4952,30 @@
       else if (!idle) { const g = document.createElement("span"); g.className = "sortglyph"; g.textContent = "↕"; th.appendChild(g); }
     });
   }
+  // A full render() rebuilds the whole view's HTML, which wipes any half-typed form (inputs
+  // live only in the DOM). Realtime sync (stock/transactions changes anywhere) fires render()
+  // via DB.onChange -- so while someone is entering a PO, a background inventory change would
+  // erase their work. Guard: background/realtime renders are deferred while a data-entry form
+  // is active; user-initiated render() calls (navigation, save) always run.
+  let pendingExternalRender = false;
+  function isBusyEditing() {
+    // PO create / non-PO / reorder-draft forms: inputs exist only in the DOM until saved.
+    if (active === "purchasing" && (spoView === "create" || spoView === "nonpo" || purchMode === "new")) return true;
+    // Any other view: if the user is focused in a text field, they're mid-entry -- don't clobber.
+    const ae = document.activeElement;
+    if (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) {
+      const t = String(ae.type || "").toLowerCase();
+      if (t !== "button" && t !== "submit" && t !== "checkbox" && t !== "radio") return true;
+    }
+    return false;
+  }
+  // Subscriber for background data changes -- defer if the user is entering data.
+  function renderExternal() {
+    if (isBusyEditing()) { pendingExternalRender = true; return; }
+    render();
+  }
   function render() {
+    pendingExternalRender = false;
     renderNav(); refreshDatalists();
     const map = { home: viewHome, dash: viewDash, analytics: viewAnalytics, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
       move: viewMove, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, fulfilldaily: viewFulfillDaily, stockbuild: viewStockBuild, reorder15: viewReorder15, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
@@ -4977,7 +5000,7 @@
     if ($("navBackdrop")) $("navBackdrop").onclick = closeDrawer;
     await DB.init();
     if (!ordersSeen) markOrdersSeen(); // first run: existing orders are not "new"
-    DB.onChange(render);
+    DB.onChange(renderExternal);
     render();
     if ("serviceWorker" in navigator) { try { navigator.serviceWorker.register("service-worker.js"); } catch (e) {} }
   });
