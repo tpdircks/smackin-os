@@ -904,6 +904,19 @@
       ["Jesus","Adriana","Marlin","Edgar","Troy"].map(n => '<option' + (n === def ? ' selected' : '') + '>' + n + "</option>").join("") + "</select>";
   }
   function opValFor(id) { const e = $(id); return e ? e.value : "Troy"; }
+  // Operator dropdown scoped to a production area, from the Gusto-sourced roster:
+  //  mixing = Mixing dept; pmac = Packaging (+ Manufacturing supervisor Wilson) crew.
+  function areaOperators(area) {
+    const list = area === "pmac"
+      ? PEOPLE.filter(p => p.d === "Packaging" || p.d === "Manufacturing").map(p => p.n)
+      : PEOPLE.filter(p => p.d === "Mixing").map(p => p.n);
+    return list;
+  }
+  function opFieldArea(id, area, def) {
+    const list = areaOperators(area);
+    return '<label>' + L("operator") + '</label><select id="' + id + '">' +
+      list.map(n => '<option' + (n === def ? ' selected' : '') + '>' + esc(n) + '</option>').join("") + '</select>';
+  }
   // Reusable tap-or-scan location picker (Section/Bay/Level chips + scan field + zone chips).
   // Writes the composed code into the field with id=fid. Shared by Receive + Put-Away.
   function locPickerBlock(fid) {
@@ -2490,11 +2503,23 @@
         });
         if (cand) defId = cand.id;
       }
-      const opts = DB.items().slice().sort((a, b) => String(a.name).localeCompare(String(b.name)))
-        .map(i => '<option value="' + esc(i.id) + '"' + (i.id === defId ? " selected" : "") + '>' + esc(i.name) + ' [' + esc(i.code) + ']</option>').join("");
-      panel = '<div class="locact"><h3 class="sub2">' + L("lmAssignTitle") + (flab ? ' &mdash; ' + esc(flab) : '') + '</h3>' +
-        '<div class="row"><div><label>' + L("item") + '</label><select id="la-item">' + opts + '</select></div>' +
-        '<div><label>' + (flab ? "Pallets" : L("qty")) + '</label><input id="la-qty" type="number" min="0" placeholder="' + L("enter") + '"></div></div>' +
+      const itemsSorted = DB.items().slice().sort((a, b) => String(a.name).localeCompare(String(b.name)));
+      const disp = i => i.name + " [" + i.code + "]";
+      const dl = '<datalist id="dl-locitem">' + itemsSorted.map(i => '<option value="' + esc(disp(i)) + '"></option>').join("") + '</datalist>';
+      const defItem = defId ? itemsSorted.find(i => i.id === defId) : null;
+      // Floor pallet slot -> allow adding several pallets at once (fills empty positions for the flavor).
+      const isFloorPallet = /^S\d{2}-\d{2}$/.test(code);
+      let capHint = "";
+      if (isFloorPallet) {
+        const base = code.split("-")[0], occ0 = locOccupancy();
+        const slots = (DB.floorSlots ? DB.floorSlots() : []).filter(s => s.split("-")[0] === base);
+        const empty = slots.filter(s => !(occ0[s] && occ0[s].qty > 0)).length;
+        capHint = empty + " of " + slots.length + " pallet spots open for this flavor. ";
+      }
+      panel = '<div class="locact"><h3 class="sub2">' + L("lmAssignTitle") + (flab ? ' &mdash; ' + esc(flab) : '') + '</h3>' + dl +
+        '<div class="row"><div><label>Item (type to search)</label><input id="la-item" list="dl-locitem" autocomplete="off" placeholder="Type a flavor or item&hellip;" value="' + esc(defItem ? disp(defItem) : "") + '"></div>' +
+        '<div><label>' + (isFloorPallet ? "Pallets to add" : flab ? "Pallets" : L("qty")) + '</label><input id="la-qty" type="number" min="1" value="1"></div></div>' +
+        (isFloorPallet ? '<p class="hint" style="margin:0 0 8px">' + capHint + 'Adds that many pallets at once, filling this flavor\'s empty spots.</p>' : '') +
         '<button class="primary" onclick="UI.locAssignGo(\'' + esc(code) + '\')">' + L("lmAssignBtn") + '</button> ' +
         '<button class="ghost" style="margin-top:14px" onclick="UI.locActCancel()">' + L("ordCancel") + '</button></div>';
     } else if (locAct === "deadflag") {
@@ -2989,7 +3014,7 @@
     return '<div class="card"><h2>' + L("pmacout") + '</h2><p class="hint">' + L("pmoHint") + '</p>' +
       '<div class="row"><div><label>' + L("pmoRunning") + '</label><select id="pmo-sel" onchange="UI.pmoPick(this.value)"><option value="">' + L("pmoRunning") + '</option>' + opts + '</select></div>' +
       '<div><label>' + L("pmoQty") + '</label><input id="pmo-qty" type="number" min="0" placeholder="' + L("enter") + '"></div>' +
-      '<div style="align-self:end">' + opField("Jesus") + '</div></div>' + selBlock +
+      '<div style="align-self:end">' + opFieldArea("op", "pmac", "Wilson Delgado") + '</div></div>' + selBlock +
       '<button class="primary" onclick="UI.pmoAdd()">' + L("pmoAdd") + '</button>' +
       '<h2 class="sub2" style="margin-top:18px">' + L("rpRecent") + '</h2>' + recent + '</div>';
   }
@@ -3263,7 +3288,7 @@
     const shiftSel = shifts > 1 ? '<div><label>' + L("dqShift") + '</label><select id="pl-shift"><option value="1">' + L("dqS1") + '</option><option value="2">' + L("dqS2") + '</option></select></div>' : '';
     const qtyField = isFul ? '<div><label>' + L("dqCases") + '</label><input id="pl-cases" type="number" min="0" placeholder="0"></div>' : '<div><label>' + L("dqBags") + '</label><input id="pl-bags" type="number" min="0" placeholder="0"></div>';
     const logCard = '<div class="card"><h2 class="sub2">' + L("dqLog") + '</h2><p class="hint">' + L("dqLogHint") + '</p>' +
-      '<div class="row">' + shiftSel + '<div><label>' + L("dqFlavor") + '</label><select id="pl-flavor">' + flavOpts + '</select></div>' + qtyField + '<div style="align-self:end">' + opField(isFul ? "Jesus" : "Leo") + '</div></div>' +
+      '<div class="row">' + shiftSel + '<div><label>' + L("dqFlavor") + '</label><select id="pl-flavor">' + flavOpts + '</select></div>' + qtyField + '<div style="align-self:end">' + (isFul ? opField("Jesus") : opFieldArea("op", dept, dept === "pmac" ? "Wilson Delgado" : "Leo Ontiveros")) + '</div></div>' +
       '<button class="primary" onclick="UI.prodLog(\'' + dept + '\')">' + L("dqLogBtn") + '</button></div>';
     // Scheduled orders: Target / McLane / Bass Pro — held to their routed/scheduled ship dates, not part of today's build.
     const sched = openAll.filter(r => isSchedPartner(r.partner));
@@ -3659,14 +3684,14 @@
     const list = (DB.lineStatus ? DB.lineStatus() : []).filter(r => r.area === area).slice().sort((a, b) => (Number(a.sort) || 0) - (Number(b.sort) || 0));
     const tiles = list.length ? '<div class="floorgrid">' + list.map(floorTile).join("") + '</div>'
       : '<p class="muted">' + L("flNoMachines") + '</p>';
-    return '<div class="card"><div class="suprow"><h2 class="sub2" style="flex:1;margin:0">' + esc(title) + '</h2>' + opFieldFor("fl-op-" + area, opDefault) + '</div>' +
+    return '<div class="card"><div class="suprow"><h2 class="sub2" style="flex:1;margin:0">' + esc(title) + '</h2>' + opFieldArea("fl-op-" + area, area, opDefault) + '</div>' +
       tiles +
       '<button class="ghost sm" style="margin-top:10px" onclick="UI.flAdd(\'' + area + '\')">' + L("flAddMachine") + '</button></div>';
   }
   function viewFloor() {
     return '<div class="card"><h2>' + L("floor") + '</h2><p class="hint">' + L("floorHint") + '</p></div>' +
-      floorSection("mixing", L("mixing"), "Leo") +
-      floorSection("pmac", L("pmac"), "Jesus");
+      floorSection("mixing", L("mixing"), "Leo Ontiveros") +
+      floorSection("pmac", L("pmac"), "Wilson Delgado");
   }
   function tenureStr(s) {
     if (!s) return "";
@@ -4072,12 +4097,25 @@
       locAct = ""; toast(L("saved") + " ✓"); render();
     },
     async locAssignGo(code) {
-      const id = ($("la-item") || {}).value; const q = parseFloat(($("la-qty") || {}).value);
-      const it = DB.items().find(i => String(i.id) === String(id));
+      const raw = (($("la-item") || {}).value || "").trim(); const q = parseFloat(($("la-qty") || {}).value);
+      // Resolve the typed value ("Name [CODE]", a bare code, name, or id) back to an item.
+      let it = null;
+      const m = raw.match(/\[([^\]]+)\]\s*$/);
+      if (m) it = DB.items().find(i => String(i.code).toLowerCase() === m[1].trim().toLowerCase());
+      if (!it) { const nm = raw.replace(/\s*\[[^\]]*\]\s*$/, "").toLowerCase(); it = DB.items().find(i => String(i.name).toLowerCase() === nm || String(i.code).toLowerCase() === raw.toLowerCase() || String(i.id).toLowerCase() === raw.toLowerCase()); }
       if (!it) return toast(L("notfound")); if (!(q > 0)) return toast(L("enter"));
+      // Floor pallet slot + more than one pallet -> fill that many empty positions for the flavor.
+      if (/^S\d{2}-\d{2}$/.test(code) && q > 1) {
+        const base = code.split("-")[0], occ = locOccupancy();
+        const slots = (DB.floorSlots ? DB.floorSlots() : []).filter(s => s.split("-")[0] === base);
+        const targets = [code].concat(slots.filter(s => s !== code && !(occ[s] && occ[s].qty > 0)));
+        let filled = 0;
+        for (const s of targets) { if (filled >= q) break; const cur = DB.atLoc ? DB.atLoc(it.id, s) : 0; if (Number(cur) > 0 && s !== code) continue; await DB.adjust(it, s, (Number(cur) || 0) + 1, opVal()); filled++; }
+        locAct = ""; toast(filled + " pallets of " + it.name + " -> " + base); render(); return;
+      }
       const cur = DB.atLoc ? DB.atLoc(it.id, code) : 0;
       await DB.adjust(it, code, (Number(cur) || 0) + q, opVal());
-      locAct = ""; toast(it.name + " → " + code); render();
+      locAct = ""; toast(it.name + " -> " + code); render();
     },
     async locEmpty(code) {
       const occ = locOccupancy(); const e = occ[code]; if (!e || !e.items.length) return;
