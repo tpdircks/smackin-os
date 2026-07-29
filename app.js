@@ -827,6 +827,8 @@
   let locSel = null;      // selected slot/zone code in the rack map
   let locAct = "";        // editable rack map: "" | "move" | "setqty" | "assign"
   let locPopXY = null;    // where the user clicked (so the slot panel pops up there, not at the top)
+  let locMultiMode = false;        // rack/floor multi-select: tap several bins, then add one item to all
+  let locMulti = new Set();        // selected bin codes while in multi-select mode
   let recvNewItem = false; // Receive: create a brand-new item on the fly
   // Physically blocked rack slots (numbering unchanged; not storable) - Troy's real floor
   const BLOCKED_SLOTS = new Set(["A-23-L1","B-15-L4","B-16-L4","B-17-L4","B-21-L4","B-22-L4","C-21-L4","C-22-L4","D-17-L4","D-18-L4","D-23-L4","D-24-L4","F-06-L1"]);
@@ -2571,11 +2573,12 @@
         if (!blocked) total++;
         if (has || d) used++;
         const cls = (d || (!blocked && has)) ? "occ" : blocked ? "blocked" : "empty";
-        const st = d ? ' style="background:#3a0a0c;box-shadow:inset 0 0 0 2px #ff5b5f"' : '';
+        const styleBits = (d ? "background:#3a0a0c;box-shadow:inset 0 0 0 2px #ff5b5f;" : "") + (locMulti.has(code) ? "outline:3px solid #F26722;outline-offset:1px;" : "");
+        const st = styleBits ? ' style="' + styleBits + '"' : '';
         const sel = locSel === code ? " sel" : "";
         const title = d ? (code + " — DEAD STOCK: " + d.reason) : blocked ? code + " (blocked)" : has ? code + " - " + occ[code].items.length + " item(s)" : code + " (empty)";
-        tds += '<td class="rk-cell"><span class="slot ' + cls + sel + '" title="' + esc(title) + '"' + st +
-          (blocked ? "" : ' onclick="UI.locPick(\'' + code + '\', event)"') + '></span></td>';
+        const onc = blocked ? "" : (locMultiMode ? ' onclick="UI.locToggleMulti(\'' + code + '\')"' : ' onclick="UI.locPick(\'' + code + '\', event)"');
+        tds += '<td class="rk-cell"><span class="slot ' + cls + sel + '" title="' + esc(title) + '"' + st + onc + '></span></td>';
       });
       return '<tr>' + tds + '</tr>';
     }).join("");
@@ -2591,10 +2594,11 @@
     for (let p = 1; p <= pallets; p++) {
       const c = code + "-" + String(p).padStart(2, "0");
       const d = dead[c]; const has = occ[c] && occ[c].qty > 0;
-      const sel = locSel === c ? "outline:2px solid #04223B;outline-offset:1px;" : "";
+      const sel = locMulti.has(c) ? "outline:3px solid #F26722;outline-offset:1px;" : (locSel === c ? "outline:2px solid #04223B;outline-offset:1px;" : "");
       const bg = d ? "background:#3a0a0c;box-shadow:inset 0 0 0 2px #ff5b5f;" : has ? "background:#E24A4A;" : "background:#BFE3B6;";
       const title = d ? (c + " — DEAD STOCK: " + d.reason) : has ? (c + " - " + occ[c].items.length + " item(s)") : (c + " (empty)");
-      cells += '<span title="' + esc(title) + '" style="width:15px;height:15px;border-radius:3px;cursor:pointer;' + bg + sel + '" onclick="UI.locPick(\'' + c + '\', event)"></span>';
+      const onc = locMultiMode ? 'UI.locToggleMulti(\'' + c + '\')' : 'UI.locPick(\'' + c + '\', event)';
+      cells += '<span title="' + esc(title) + '" style="width:15px;height:15px;border-radius:3px;cursor:pointer;' + bg + sel + '" onclick="' + onc + '"></span>';
     }
     return '<div style="flex:0 0 auto"><div class="muted sm" style="margin-bottom:3px"><b style="color:#04223B">' + esc(code) + '</b> ' + esc(name) + ' <span style="opacity:.7">&middot; ' + pallets + 'p</span></div>' +
       '<div style="display:grid;grid-template-columns:repeat(8,15px);gap:3px">' + cells + '</div></div>';
@@ -2638,17 +2642,29 @@
           '<td><button class="ghost sm" onclick="UI.locPick(\'' + esc(r.location) + '\', event)">View</button></td></tr>').join("") +
         '</tbody></table></div>'
       : "";
-    const sel = locSel ? locContentsCard(locSel, occ) : "";
+    const sel = (locSel && !locMultiMode) ? locContentsCard(locSel, occ) : "";
+    const multiBtn = '<button class="ghost sm" onclick="UI.locMultiToggle()">' + (locMultiMode ? '&#10005; Done selecting' : '&#9776; Select multiple bins') + '</button>';
+    const multiBar = locMultiMode
+      ? '<datalist id="dl-locmulti">' + DB.items().slice().sort((a, b) => String(a.name).localeCompare(String(b.name))).map(i => '<option value="' + esc(i.name + ' [' + i.code + ']') + '"></option>').join("") + '</datalist>' +
+        '<div style="position:fixed;left:0;right:0;bottom:0;z-index:9997;background:#04223B;color:#fff;padding:10px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;box-shadow:0 -4px 18px rgba(0,0,0,.35)">' +
+        '<b>' + locMulti.size + ' bin' + (locMulti.size === 1 ? '' : 's') + ' selected</b>' +
+        '<input id="lmulti-item" list="dl-locmulti" autocomplete="off" placeholder="Type a flavor or item&hellip;" style="flex:1;min-width:170px;padding:7px 9px;border-radius:6px;border:0">' +
+        '<label style="display:flex;align-items:center;gap:6px;white-space:nowrap">Pallets each <input id="lmulti-qty" type="number" min="1" value="1" style="width:56px;padding:6px;border-radius:6px;border:0"></label>' +
+        '<button class="primary sm" onclick="UI.locMultiAdd()"' + (locMulti.size ? '' : ' disabled') + '>Add to selected</button>' +
+        '<button class="ghost sm" style="color:#fff;border-color:#7d93ad" onclick="UI.locMultiClear()">Clear</button></div>'
+      : "";
     return '<div class="card"><div class="suprow"><h2 style="margin:0">' + L("locations") + '</h2>' +
       '<div class="ordtabs"><button class="' + (locView === "floor" ? "active" : "") + '" onclick="UI.locView(\'floor\')">' + L("locFloor") + '</button><button class="' + (locView === "map" ? "active" : "") + '" onclick="UI.locView(\'map\')">' + L("locMap") + '</button>' +
       '<button class="' + (locView === "list" ? "active" : "") + '" onclick="UI.locView(\'list\')">' + L("locList") + '</button></div></div>' +
-      '<p class="hint">' + L("locClickHint") + '</p>' + legend + '</div>' +
+      '<p class="hint">' + L("locClickHint") + (locMultiMode ? ' <b style="color:#F26722">Tap bins to select, then add one item to all of them.</b>' : '') + '</p>' + legend +
+      '<div style="margin-top:8px">' + multiBtn + '</div></div>' +
       sel +
       deadCard +
       '<div class="card"><div class="rackmap">' + sections + '</div></div>' +
       floorCard +
       '<div class="card"><h2 class="sub2">' + L("locDocks") + '</h2><p class="hint" style="margin-bottom:8px">19 = ' + L("locOfficeEnd") + ' &middot; 11 = ' + L("locFarEnd") + '</p><div class="ztiles">' + docks + '</div>' +
-      '<h2 class="sub2" style="margin-top:16px">' + L("locZones") + '</h2><div class="ztiles">' + zones + '</div></div>';
+      '<h2 class="sub2" style="margin-top:16px">' + L("locZones") + '</h2><div class="ztiles">' + zones + '</div></div>' +
+      multiBar;
   }
   function viewLocationsList() {
     const used = DB.allLocations().filter(loc => DB.items().some(i => DB.atLoc(i.id, loc) > 0));
@@ -4079,6 +4095,21 @@
     async locClearDead(code) {
       await DB.clearDeadStock(code, opVal());
       toast("✓ " + code + " cleared"); render();
+    },
+    locMultiToggle() { locMultiMode = !locMultiMode; if (!locMultiMode) locMulti.clear(); locSel = null; locAct = ""; render(); },
+    locToggleMulti(code) { if (locMulti.has(code)) locMulti.delete(code); else locMulti.add(code); render(); },
+    locMultiClear() { locMulti.clear(); render(); },
+    async locMultiAdd() {
+      const raw = (($("lmulti-item") || {}).value || "").trim(); const q = parseFloat(($("lmulti-qty") || {}).value) || 1;
+      if (!locMulti.size) return toast("Select some bins first");
+      let it = null; const m = raw.match(/\[([^\]]+)\]\s*$/);
+      if (m) it = DB.items().find(i => String(i.code).toLowerCase() === m[1].trim().toLowerCase());
+      if (!it) { const nm = raw.replace(/\s*\[[^\]]*\]\s*$/, "").toLowerCase(); it = DB.items().find(i => String(i.name).toLowerCase() === nm || String(i.code).toLowerCase() === raw.toLowerCase()); }
+      if (!it) return toast(L("notfound")); if (!(q > 0)) return toast(L("enter"));
+      const bins = [...locMulti].filter(b => !(typeof BLOCKED_SLOTS !== "undefined" && BLOCKED_SLOTS.has && BLOCKED_SLOTS.has(b)));
+      let n = 0;
+      for (const b of bins) { const cur = DB.atLoc ? DB.atLoc(it.id, b) : 0; await DB.adjust(it, b, (Number(cur) || 0) + q, opVal()); n++; }
+      locMulti.clear(); toast(n + " bins <- " + it.name); render();
     },
     async locMoveGo(code) {
       const id = ($("lm-item") || {}).value; const dest = (($("lm-dest") || {}).value || "").trim().toUpperCase();
