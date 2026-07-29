@@ -2659,7 +2659,12 @@
       '<div class="ordtabs"><button class="' + (locView === "floor" ? "active" : "") + '" onclick="UI.locView(\'floor\')">' + L("locFloor") + '</button><button class="' + (locView === "map" ? "active" : "") + '" onclick="UI.locView(\'map\')">' + L("locMap") + '</button>' +
       '<button class="' + (locView === "list" ? "active" : "") + '" onclick="UI.locView(\'list\')">' + L("locList") + '</button></div></div>' +
       '<p class="hint">' + L("locClickHint") + (locMultiMode ? ' <b style="color:#F26722">Tap bins to select, then add one item to all of them.</b>' : '') + '</p>' + legend +
-      '<div style="margin-top:8px">' + multiPanel + '</div></div>' +
+      '<div style="margin-top:8px">' + multiPanel + '</div>' +
+      '<div style="margin-top:8px;border-top:1px solid #eee;padding-top:8px"><span class="hint" style="margin-right:6px">&#128462; Print scan labels:</span>' +
+      '<button class="ghost sm" onclick="UI.printLocLabels(\'racks\')">Racks</button> ' +
+      '<button class="ghost sm" onclick="UI.printLocLabels(\'floor\')">Floor pallets</button> ' +
+      '<button class="ghost sm" onclick="UI.printLocLabels(\'zones\')">Zones &amp; docks</button> ' +
+      '<button class="ghost sm" onclick="UI.printLocLabels(\'all\')">All</button></div></div>' +
       sel +
       deadCard +
       '<div class="card"><div class="rackmap">' + sections + '</div></div>' +
@@ -4100,6 +4105,28 @@
     locMultiToggle() { locMultiMode = !locMultiMode; if (!locMultiMode) locMulti.clear(); locSel = null; locAct = ""; render(); },
     locToggleMulti(code) { if (locMulti.has(code)) locMulti.delete(code); else locMulti.add(code); render(); },
     locMultiClear() { locMulti.clear(); render(); },
+    printLocLabels(scope) {
+      const all = DB.allLocations ? DB.allLocations() : [];
+      const isRack = c => /^[A-H]-\d+-L\d+$/i.test(c);
+      const isFloor = c => /^S\d{2}(-\d{2})?$/i.test(c);
+      let codes = all.slice();
+      if (scope === "racks") codes = all.filter(isRack);
+      else if (scope === "floor") codes = all.filter(isFloor);
+      else if (scope === "zones") codes = all.filter(c => !isRack(c) && !isFloor(c));
+      codes = codes.filter(Boolean).sort();
+      if (!codes.length) return toast("No locations for that set");
+      const labels = codes.map((c, i) => '<div class="lbl"><div class="code">' + c + '</div><svg id="bc' + i + '"></svg></div>').join("");
+      const html = '<!doctype html><html><head><meta charset="utf-8"><title>Location Labels (' + scope + ')</title>' +
+        '<scr' + 'ipt src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></scr' + 'ipt>' +
+        '<style>@page{margin:0.4in}body{font-family:Arial;margin:0}.sheet{display:flex;flex-wrap:wrap}' +
+        '.lbl{width:2.5in;height:1in;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px dashed #ddd;padding:2px}' +
+        '.code{font-weight:700;font-size:15px;margin-bottom:3px}svg{width:2.2in;height:0.45in}@media print{.lbl{border:none}}</style></head><body>' +
+        '<div class="sheet">' + labels + '</div>' +
+        '<scr' + 'ipt>window.onload=function(){var C=' + JSON.stringify(codes) + ';C.forEach(function(c,i){try{JsBarcode("#bc"+i,c,{format:"CODE128",displayValue:false,margin:0,height:40,width:1.5});}catch(e){}});setTimeout(function(){window.print();},700);};</scr' + 'ipt></body></html>';
+      const w = window.open("", "_blank");
+      if (!w) return toast("Allow pop-ups to print labels");
+      w.document.write(html); w.document.close();
+    },
     async locMultiAdd() {
       const raw = (($("lmulti-item") || {}).value || "").trim(); const q = parseFloat(($("lmulti-qty") || {}).value) || 1;
       if (!locMulti.size) return toast("Select some bins first");
