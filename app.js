@@ -2422,9 +2422,20 @@
         '<button class="primary" onclick="UI.locSetGo(\'' + esc(code) + '\')">' + L("saveChanges") + '</button> ' +
         '<button class="ghost" style="margin-top:14px" onclick="UI.locActCancel()">' + L("ordCancel") + '</button></div>';
     } else if (locAct === "assign") {
-      panel = '<div class="locact"><h3 class="sub2">' + L("lmAssignTitle") + '</h3>' +
-        '<div class="row"><div><label>' + L("item") + '</label><select id="la-item">' + allOpts + '</select></div>' +
-        '<div><label>' + L("qty") + '</label><input id="la-qty" type="number" min="0" placeholder="' + L("enter") + '"></div></div>' +
+      // For a floor flavor slot, default the item to that flavor's finished bags and label qty "Pallets".
+      const flab = DB.floorLabel ? DB.floorLabel(code) : "";
+      let defId = "";
+      if (flab) {
+        const flav = flab.replace(/\s*·.*$/, "").toLowerCase(); const is15 = /1\.5/.test(flab);
+        const w = flav.split(/[^a-z0-9]+/).filter(Boolean);
+        const cand = DB.items().find(i => { const n = String(i.name).toLowerCase(); return w.length && w.every(x => n.indexOf(x) >= 0) && (is15 ? /1\.?5/.test(n) : /4\s?oz|4oz/.test(n)); });
+        if (cand) defId = cand.id;
+      }
+      const opts = DB.items().slice().sort((a, b) => String(a.name).localeCompare(String(b.name)))
+        .map(i => '<option value="' + esc(i.id) + '"' + (i.id === defId ? " selected" : "") + '>' + esc(i.name) + ' [' + esc(i.code) + ']</option>').join("");
+      panel = '<div class="locact"><h3 class="sub2">' + L("lmAssignTitle") + (flab ? ' &mdash; ' + esc(flab) : '') + '</h3>' +
+        '<div class="row"><div><label>' + L("item") + '</label><select id="la-item">' + opts + '</select></div>' +
+        '<div><label>' + (flab ? "Pallets" : L("qty")) + '</label><input id="la-qty" type="number" min="0" placeholder="' + L("enter") + '"></div></div>' +
         '<button class="primary" onclick="UI.locAssignGo(\'' + esc(code) + '\')">' + L("lmAssignBtn") + '</button> ' +
         '<button class="ghost" style="margin-top:14px" onclick="UI.locActCancel()">' + L("ordCancel") + '</button></div>';
     } else {
@@ -3928,7 +3939,14 @@
       await DB.clearEcomDemand(opVal()); ecParsed = null; toast("✓"); render();
     },
     locView(v) { locView = v; locSel = null; locAct = ""; render(); },
-    locPick(code) { locSel = code || null; locAct = ""; render(); },
+    locPick(code) {
+      locSel = code || null; locAct = "";
+      // Empty slot -> jump straight into the Add form so "select a spot, add pallets" is one step.
+      if (code) { const occ = locOccupancy(); if (!(occ[code] && occ[code].qty > 0)) locAct = "assign"; }
+      render();
+      // Bring the selected-slot panel to the user (it renders at the top, away from where they clicked).
+      if (code) { const el = document.querySelector(".locsel"); if (el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "center" }); }
+    },
     locActStart(mode) { locAct = mode; render(); },
     locActCancel() { locAct = ""; render(); },
     async locMoveGo(code) {
