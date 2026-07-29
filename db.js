@@ -19,7 +19,7 @@ window.DB = (function () {
   function onChange(fn) { subscribers.push(fn); }
 
   // ---------- derived reads (work the same in both modes) ----------
-  function items() { return cache.items; }
+  function items() { return (cache.items || []).filter(i => String(i.id) !== "DEADSTOCK"); } // hide the dead-stock sentinel from all UI lists
   function suppliers() { return cache.suppliers; }
   function stock() { return cache.stock; }
   function purchaseOrders() { return cache.pos || []; }
