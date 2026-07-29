@@ -47,7 +47,8 @@
     floor15: FLOOR_15OZ
   };
   // Floor location codes: 4 oz = S01.. (with -1/-2 when a flavor has 2 lines); 1.5 oz = S27.. (one per core flavor).
-  function floorLineSlots(arr) { const out = []; arr.forEach(f => { for (let l = 1; l <= f[2]; l++) out.push(f[2] > 1 ? f[0] + "-" + l : f[0]); }); return out; }
+  // 8 pallet positions per line -> individual selectable pallet slots, e.g. S01-01 .. S01-16 (OG = 2 lines).
+  function floorLineSlots(arr) { const out = []; arr.forEach(f => { const n = f[2] * 8; for (let p = 1; p <= n; p++) out.push(f[0] + "-" + String(p).padStart(2, "0")); }); return out; }
   function floor4Slots() { return floorLineSlots(FLOOR_4OZ); }
   function floor15Slots() { return floorLineSlots(FLOOR_15OZ); }
   // Label lookup for floor codes (for tiles/pickers): code -> "flavor · 4oz/1.5oz".

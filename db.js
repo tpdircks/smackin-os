@@ -844,6 +844,28 @@ window.DB = (function () {
     return { ok: true };
   }
 
+  // ---------- Dead stock (unusable/expired product occupying rack/floor space) ----------
+  // Stored as sentinel stock rows (item_id="DEADSTOCK", reason in lot, pallets in qty). Shared/cloud
+  // and marks the slot occupied WITHOUT touching any real flavor counts (different item_id). Writes
+  // are scoped strictly to item_id="DEADSTOCK" so Adriana's rack rows are never altered.
+  function deadStock() { return (cache.stock || []).filter(r => String(r.item_id) === "DEADSTOCK"); }
+  async function flagDeadStock(location, reason, pallets, op) {
+    if (!location) return { ok: false };
+    const loc = String(location);
+    const row = { item_id: "DEADSTOCK", location: loc, qty: Number(pallets) || 0, lot: String(reason || "").slice(0, 140) };
+    const logEntry = { a: "Dead stock flagged", d: loc + " - " + (reason || "") + " (" + (Number(pallets) || 0) + " pallets)", u: op || "", t: new Date().toISOString() };
+    if (mode === "cloud") { await sb.from("stock").delete().eq("item_id", "DEADSTOCK").eq("location", loc); await sb.from("stock").insert([row]); await cloud.addLog(logEntry); await cloud.loadAll(); }
+    else { cache.stock = (cache.stock || []).filter(r => !(String(r.item_id) === "DEADSTOCK" && r.location === loc)); cache.stock.push(row); local.addLog(logEntry); local.save(); }
+    emit(); return { ok: true };
+  }
+  async function clearDeadStock(location, op) {
+    const loc = String(location);
+    const logEntry = { a: "Dead stock cleared", d: loc, u: op || "", t: new Date().toISOString() };
+    if (mode === "cloud") { await sb.from("stock").delete().eq("item_id", "DEADSTOCK").eq("location", loc); await cloud.addLog(logEntry); await cloud.loadAll(); }
+    else { cache.stock = (cache.stock || []).filter(r => !(String(r.item_id) === "DEADSTOCK" && r.location === loc)); local.addLog(logEntry); local.save(); }
+    emit(); return { ok: true };
+  }
+
   // ---------- Orders (non-SPS / Stripe outbound order log) ----------
   const ORDER_FIELDS = ["customer","customer_po","appointment","order_id","stripe_link","invoice_date","ship_date","tracking","carrier","status","notes","entered_by"];
   function orderLocalId() { return "OR-" + Date.now().toString(36) + "-" + Math.floor(Math.random() * 1000); }
@@ -1564,6 +1586,7 @@ window.DB = (function () {
     returnStock, seasLots, addSeasLot, setSeasLotStatus, updateSeasLot, quarantineExpiredSeas,
     seedLots, addSeedLot, setSeedLotStatus, updateSeedLot,
     stockBuild, setStockBuildOnHand,
+    deadStock, flagDeadStock, clearDeadStock,
     shippingLog, addShipping, setShippingStatus, updateShipping, deleteShipping,
     receivingLog, addReceivingLog, updateReceivingLog, deleteReceivingLog,
     improvements, addImprovement, updateImprovement, setImprovementStatus, deleteImprovement,

@@ -2390,9 +2390,17 @@
       '</th><th class="right">' + L("onhand") + '</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>';
   }
   // Build { location: {qty, items:[{name,code,qty,unit}]} } from raw stock rows in ONE pass.
+  let _deadCache = null; // per-render cache of dead-stock-flagged locations
+  function deadStockMap() {
+    if (_deadCache) return _deadCache;
+    const m = {};
+    (DB.deadStock ? DB.deadStock() : []).forEach(r => { m[r.location] = { reason: r.lot || "", pallets: Number(r.qty) || 0 }; });
+    _deadCache = m; return m;
+  }
   function locOccupancy() {
     const map = {};
     (DB.stock() || []).forEach(r => {
+      if (String(r.item_id) === "DEADSTOCK") return; // dead stock is tracked separately, not normal occupancy
       const q = Number(r.qty) || 0; if (q <= 0) return;
       const it = DB.itemByCode(r.item_id) || { name: r.item_id, code: r.item_id, unit: "" };
       const e = map[r.location] || (map[r.location] = { qty: 0, items: [] });
@@ -2443,14 +2451,26 @@
         '<div><label>' + (flab ? "Pallets" : L("qty")) + '</label><input id="la-qty" type="number" min="0" placeholder="' + L("enter") + '"></div></div>' +
         '<button class="primary" onclick="UI.locAssignGo(\'' + esc(code) + '\')">' + L("lmAssignBtn") + '</button> ' +
         '<button class="ghost" style="margin-top:14px" onclick="UI.locActCancel()">' + L("ordCancel") + '</button></div>';
+    } else if (locAct === "deadflag") {
+      panel = '<div class="locact"><h3 class="sub2" style="color:#B52024">&#9940; Flag as dead stock</h3>' +
+        '<p class="hint" style="margin:0 0 8px">Unusable / expired product holding this space (e.g. expired gum awaiting disposal). It shows red &amp; unavailable.</p>' +
+        '<div class="row"><div><label>Reason</label><input id="ld-reason" autocomplete="off" placeholder="Expired gum - awaiting disposal"></div>' +
+        '<div><label>Pallets held</label><input id="ld-qty" type="number" min="0" placeholder="1"></div></div>' +
+        '<button class="primary" style="background:#B52024" onclick="UI.locDeadGo(\'' + esc(code) + '\')">Flag unavailable</button> ' +
+        '<button class="ghost" style="margin-top:14px" onclick="UI.locActCancel()">' + L("ordCancel") + '</button></div>';
     } else {
-      const buttons = !items.length
+      const isDead = deadStockMap()[code];
+      let buttons = !items.length
         ? '<button class="ghost sm" onclick="UI.locActStart(\'assign\')">&#10133; ' + L("lmAssign") + '</button>'
         : '<button class="ghost sm" onclick="UI.locActStart(\'move\')">&#8594; ' + L("lmMove") + '</button>' +
           '<button class="ghost sm" onclick="UI.locActStart(\'setqty\')">&#9998; ' + L("lmSet") + '</button>' +
           '<button class="ghost sm" onclick="UI.locActStart(\'assign\')">&#10133; ' + L("lmAddItem") + '</button>' +
           '<button class="ghost sm danger" onclick="UI.locEmpty(\'' + esc(code) + '\')">&#10005; ' + L("lmEmpty") + '</button>';
-      panel = '<div class="poactions" style="margin-top:10px">' + buttons + '</div>';
+      buttons += isDead
+        ? '<button class="ghost sm" onclick="UI.locClearDead(\'' + esc(code) + '\')">&#9989; Clear dead stock</button>'
+        : '<button class="ghost sm danger" onclick="UI.locActStart(\'deadflag\')">&#9940; Flag dead stock</button>';
+      const deadInfo = isDead ? '<div style="background:#fbe3e0;color:#B52024;font-weight:700;margin:8px 0;padding:6px 10px;border-radius:6px">&#9940; DEAD STOCK: ' + esc(isDead.reason) + ' &middot; ' + isDead.pallets + ' pallet(s) held</div>' : '';
+      panel = deadInfo + '<div class="poactions" style="margin-top:10px">' + buttons + '</div>';
     }
     const is3dRack = /^[A-D]-\d{2}-L[1-4]$/.test(code);
     const view3dLink = is3dRack
@@ -2476,12 +2496,14 @@
         const code = id + "-" + String(b).padStart(2, "0") + "-" + lv;
         const blocked = BLOCKED_SLOTS.has(code);
         const has = occ[code] && occ[code].qty > 0;
+        const d = deadStockMap()[code];
         if (!blocked) total++;
-        if (has) used++;
-        const cls = blocked ? "blocked" : has ? "occ" : "empty";
+        if (has || d) used++;
+        const cls = (d || (!blocked && has)) ? "occ" : blocked ? "blocked" : "empty";
+        const st = d ? ' style="background:#3a0a0c;box-shadow:inset 0 0 0 2px #ff5b5f"' : '';
         const sel = locSel === code ? " sel" : "";
-        const title = blocked ? code + " (blocked)" : has ? code + " - " + occ[code].items.length + " item(s)" : code + " (empty)";
-        tds += '<td class="rk-cell"><span class="slot ' + cls + sel + '" title="' + esc(title) + '"' +
+        const title = d ? (code + " — DEAD STOCK: " + d.reason) : blocked ? code + " (blocked)" : has ? code + " - " + occ[code].items.length + " item(s)" : code + " (empty)";
+        tds += '<td class="rk-cell"><span class="slot ' + cls + sel + '" title="' + esc(title) + '"' + st +
           (blocked ? "" : ' onclick="UI.locPick(\'' + code + '\', event)"') + '></span></td>';
       });
       return '<tr>' + tds + '</tr>';
@@ -2491,20 +2513,28 @@
       '<span class="muted sm">' + used + ' / ' + total + ' ' + L("locBaysUsed") + '</span></div>' +
       '<div class="tblwrap"><table class="rackgrid"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div></div>';
   }
-  // Floor-storage tile (4oz / 1.5oz flavor lines) — shows the code + flavor short name.
-  function floorTileHtml(code, occ) {
-    const has = occ[code] && occ[code].qty > 0;
-    const sel = locSel === code ? " sel" : "";
-    const lbl = (DB.floorLabel ? DB.floorLabel(code) : "").replace(/\s*·.*$/, "");
-    return '<div class="ztile ' + (has ? "occ" : "empty") + sel + '" onclick="UI.locPick(\'' + code + '\', event)" title="' + esc(code + (lbl ? " · " + lbl : "")) + '">' +
-      '<div class="zc">' + esc(code) + '</div>' + (lbl ? '<div class="muted sm" style="font-size:10px;line-height:1.1">' + esc(lbl) + '</div>' : '') +
-      (has ? '<div class="zq">' + occ[code].items.length + '</div>' : '') + '</div>';
+  // Floor flavor block: one label + a grid of its individual pallet positions (8 per line), each clickable.
+  function floorFlavorHtml(code, name, pallets, occ) {
+    const dead = deadStockMap();
+    let cells = "";
+    for (let p = 1; p <= pallets; p++) {
+      const c = code + "-" + String(p).padStart(2, "0");
+      const d = dead[c]; const has = occ[c] && occ[c].qty > 0;
+      const sel = locSel === c ? "outline:2px solid #04223B;outline-offset:1px;" : "";
+      const bg = d ? "background:#3a0a0c;box-shadow:inset 0 0 0 2px #ff5b5f;" : has ? "background:#E24A4A;" : "background:#BFE3B6;";
+      const title = d ? (c + " — DEAD STOCK: " + d.reason) : has ? (c + " - " + occ[c].items.length + " item(s)") : (c + " (empty)");
+      cells += '<span title="' + esc(title) + '" style="width:15px;height:15px;border-radius:3px;cursor:pointer;' + bg + sel + '" onclick="UI.locPick(\'' + c + '\', event)"></span>';
+    }
+    return '<div style="flex:0 0 auto"><div class="muted sm" style="margin-bottom:3px"><b style="color:#04223B">' + esc(code) + '</b> ' + esc(name) + ' <span style="opacity:.7">&middot; ' + pallets + 'p</span></div>' +
+      '<div style="display:grid;grid-template-columns:repeat(8,15px);gap:3px">' + cells + '</div></div>';
   }
   function zoneTileHtml(code, occ) {
+    const d = deadStockMap()[code];
     const has = occ[code] && occ[code].qty > 0;
     const sel = locSel === code ? " sel" : "";
-    return '<div class="ztile ' + (has ? "occ" : "empty") + sel + '" onclick="UI.locPick(\'' + code + '\', event)">' +
-      '<div class="zc">' + esc(code) + '</div>' + (has ? '<div class="zq">' + occ[code].items.length + '</div>' : '') + '</div>';
+    const st = d ? ' style="border-color:#B52024;background:#fbe3e0"' : '';
+    return '<div class="ztile ' + (d || has ? "occ" : "empty") + sel + '"' + st + ' onclick="UI.locPick(\'' + code + '\', event)" title="' + esc(d ? code + " — DEAD STOCK: " + d.reason : code) + '">' +
+      '<div class="zc">' + esc(code) + '</div>' + (d ? '<div class="zq" style="background:#B52024">⛔</div>' : has ? '<div class="zq">' + occ[code].items.length + '</div>' : '') + '</div>';
   }
   function viewLocationsMap() {
     const occ = locOccupancy();
@@ -2518,11 +2548,24 @@
     // docks strip (19 office end .. 11 far end)
     const docks = (cfg.docks || []).slice().sort((a, b) => b - a).map(d => zoneTileHtml("DOCK-" + d, occ)).join("");
     const zones = (cfg.zones || []).map(z => zoneTileHtml(z, occ)).join("");
-    const f4 = (DB.floor4Slots ? DB.floor4Slots() : []);
-    const f15 = (DB.floor15Slots ? DB.floor15Slots() : []);
-    const floorCard = (f4.length || f15.length)
-      ? '<div class="card"><h2 class="sub2">&#128230; Floor storage &middot; 4 oz</h2><div class="ztiles">' + f4.map(c => floorTileHtml(c, occ)).join("") + '</div>' +
-        '<h2 class="sub2" style="margin-top:16px">&#128230; Floor storage &middot; 1.5 oz</h2><div class="ztiles">' + f15.map(c => floorTileHtml(c, occ)).join("") + '</div></div>'
+    const f4arr = (cfg.floor4 || []), f15arr = (cfg.floor15 || []);
+    const floorCard = (f4arr.length || f15arr.length)
+      ? '<div class="card"><h2 class="sub2">&#128230; Floor storage &middot; 4 oz</h2><p class="hint" style="margin-bottom:10px">Each flavor shows its pallet positions (8 per line). Click a pallet to add stock or flag it.</p>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:18px">' + f4arr.map(f => floorFlavorHtml(f[0], f[1], f[2] * 8, occ)).join("") + '</div>' +
+        '<h2 class="sub2" style="margin-top:18px">&#128230; Floor storage &middot; 1.5 oz</h2>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:18px">' + f15arr.map(f => floorFlavorHtml(f[0], f[1], f[2] * 8, occ)).join("") + '</div></div>'
+      : "";
+    // Dead-stock summary (unusable/expired product occupying space)
+    const deadList = (DB.deadStock ? DB.deadStock() : []).slice().sort((a, b) => String(a.location).localeCompare(String(b.location)));
+    const deadPallets = deadList.reduce((s, r) => s + (Number(r.qty) || 0), 0);
+    const deadCard = deadList.length
+      ? '<div class="card"><h2 class="sub2" style="color:#B52024">&#9940; Dead stock — unavailable space</h2>' +
+        '<div class="kpis"><div class="kpi alert"><div class="n">' + deadList.length + '</div><div class="l">Flagged locations</div></div>' +
+        '<div class="kpi alert"><div class="n">' + deadPallets + '</div><div class="l">Pallet spaces held</div></div></div>' +
+        '<table class="sortable"><thead><tr><th>Location</th><th class="right">Pallets</th><th>Reason</th><th data-nosort></th></tr></thead><tbody>' +
+        deadList.map(r => '<tr><td><b>' + esc(r.location) + '</b></td><td class="right">' + esc(r.qty) + '</td><td>' + esc(r.lot || "") + '</td>' +
+          '<td><button class="ghost sm" onclick="UI.locPick(\'' + esc(r.location) + '\', event)">View</button></td></tr>').join("") +
+        '</tbody></table></div>'
       : "";
     const sel = locSel ? locContentsCard(locSel, occ) : "";
     return '<div class="card"><div class="suprow"><h2 style="margin:0">' + L("locations") + '</h2>' +
@@ -2530,6 +2573,7 @@
       '<button class="' + (locView === "list" ? "active" : "") + '" onclick="UI.locView(\'list\')">' + L("locList") + '</button></div></div>' +
       '<p class="hint">' + L("locClickHint") + '</p>' + legend + '</div>' +
       sel +
+      deadCard +
       '<div class="card"><div class="rackmap">' + sections + '</div></div>' +
       floorCard +
       '<div class="card"><h2 class="sub2">' + L("locDocks") + '</h2><p class="hint" style="margin-bottom:8px">19 = ' + L("locOfficeEnd") + ' &middot; 11 = ' + L("locFarEnd") + '</p><div class="ztiles">' + docks + '</div>' +
@@ -3947,12 +3991,24 @@
     locPick(code, ev) {
       if (ev && (ev.clientX || ev.clientY)) locPopXY = { x: ev.clientX, y: ev.clientY };
       locSel = code || null; locAct = "";
-      // Empty slot -> jump straight into the Add form so "select a spot, add pallets" is one step.
-      if (code) { const occ = locOccupancy(); if (!(occ[code] && occ[code].qty > 0)) locAct = "assign"; }
+      // Empty slot -> jump straight into the Add form. (Skip if it's dead-flagged: show its status instead.)
+      if (code) { const occ = locOccupancy(); if (!deadStockMap()[code] && !(occ[code] && occ[code].qty > 0)) locAct = "assign"; }
       render(); // render() calls positionLocPopover() so the panel pops up where they clicked
     },
     locActStart(mode) { locAct = mode; render(); },
     locActCancel() { locAct = ""; render(); },
+    async locDeadGo(code) {
+      const reason = (($("ld-reason") || {}).value || "").trim();
+      const pallets = parseFloat(($("ld-qty") || {}).value) || 0;
+      if (!reason) return toast("Enter a reason");
+      const r = await DB.flagDeadStock(code, reason, pallets, opVal());
+      if (r && r.ok === false) return toast("Could not flag");
+      locAct = ""; toast("⛔ " + code + " flagged dead stock"); render();
+    },
+    async locClearDead(code) {
+      await DB.clearDeadStock(code, opVal());
+      toast("✓ " + code + " cleared"); render();
+    },
     async locMoveGo(code) {
       const id = ($("lm-item") || {}).value; const dest = (($("lm-dest") || {}).value || "").trim().toUpperCase();
       const q = parseFloat(($("lm-qty") || {}).value);
@@ -5038,6 +5094,7 @@
   }
   function render() {
     pendingExternalRender = false;
+    _deadCache = null; // recompute dead-stock flags fresh each render
     renderNav(); refreshDatalists();
     const map = { home: viewHome, dash: viewDash, analytics: viewAnalytics, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
       move: viewMove, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, fulfilldaily: viewFulfillDaily, stockbuild: viewStockBuild, reorder15: viewReorder15, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
