@@ -826,6 +826,7 @@
   const BAG_STAGE = "PACKOUT";       // finished bags stage here when they come off P-Mac
   let locSel = null;      // selected slot/zone code in the rack map
   let locAct = "";        // editable rack map: "" | "move" | "setqty" | "assign"
+  let locPopXY = null;    // where the user clicked (so the slot panel pops up there, not at the top)
   let recvNewItem = false; // Receive: create a brand-new item on the fly
   // Physically blocked rack slots (numbering unchanged; not storable) - Troy's real floor
   const BLOCKED_SLOTS = new Set(["A-23-L1","B-15-L4","B-16-L4","B-17-L4","B-21-L4","B-22-L4","C-21-L4","C-22-L4","D-17-L4","D-18-L4","D-23-L4","D-24-L4","F-06-L1"]);
@@ -2481,7 +2482,7 @@
         const sel = locSel === code ? " sel" : "";
         const title = blocked ? code + " (blocked)" : has ? code + " - " + occ[code].items.length + " item(s)" : code + " (empty)";
         tds += '<td class="rk-cell"><span class="slot ' + cls + sel + '" title="' + esc(title) + '"' +
-          (blocked ? "" : ' onclick="UI.locPick(\'' + code + '\')"') + '></span></td>';
+          (blocked ? "" : ' onclick="UI.locPick(\'' + code + '\', event)"') + '></span></td>';
       });
       return '<tr>' + tds + '</tr>';
     }).join("");
@@ -2495,14 +2496,14 @@
     const has = occ[code] && occ[code].qty > 0;
     const sel = locSel === code ? " sel" : "";
     const lbl = (DB.floorLabel ? DB.floorLabel(code) : "").replace(/\s*·.*$/, "");
-    return '<div class="ztile ' + (has ? "occ" : "empty") + sel + '" onclick="UI.locPick(\'' + code + '\')" title="' + esc(code + (lbl ? " · " + lbl : "")) + '">' +
+    return '<div class="ztile ' + (has ? "occ" : "empty") + sel + '" onclick="UI.locPick(\'' + code + '\', event)" title="' + esc(code + (lbl ? " · " + lbl : "")) + '">' +
       '<div class="zc">' + esc(code) + '</div>' + (lbl ? '<div class="muted sm" style="font-size:10px;line-height:1.1">' + esc(lbl) + '</div>' : '') +
       (has ? '<div class="zq">' + occ[code].items.length + '</div>' : '') + '</div>';
   }
   function zoneTileHtml(code, occ) {
     const has = occ[code] && occ[code].qty > 0;
     const sel = locSel === code ? " sel" : "";
-    return '<div class="ztile ' + (has ? "occ" : "empty") + sel + '" onclick="UI.locPick(\'' + code + '\')">' +
+    return '<div class="ztile ' + (has ? "occ" : "empty") + sel + '" onclick="UI.locPick(\'' + code + '\', event)">' +
       '<div class="zc">' + esc(code) + '</div>' + (has ? '<div class="zq">' + occ[code].items.length + '</div>' : '') + '</div>';
   }
   function viewLocationsMap() {
@@ -3943,13 +3944,12 @@
       await DB.clearEcomDemand(opVal()); ecParsed = null; toast("✓"); render();
     },
     locView(v) { locView = v; locSel = null; locAct = ""; render(); },
-    locPick(code) {
+    locPick(code, ev) {
+      if (ev && (ev.clientX || ev.clientY)) locPopXY = { x: ev.clientX, y: ev.clientY };
       locSel = code || null; locAct = "";
       // Empty slot -> jump straight into the Add form so "select a spot, add pallets" is one step.
       if (code) { const occ = locOccupancy(); if (!(occ[code] && occ[code].qty > 0)) locAct = "assign"; }
-      render();
-      // Bring the selected-slot panel to the user (it renders at the top, away from where they clicked).
-      if (code) { const el = document.querySelector(".locsel"); if (el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "center" }); }
+      render(); // render() calls positionLocPopover() so the panel pops up where they clicked
     },
     locActStart(mode) { locAct = mode; render(); },
     locActCancel() { locAct = ""; render(); },
@@ -5018,6 +5018,24 @@
     if (isBusyEditing()) { pendingExternalRender = true; return; }
     render();
   }
+  // Float the selected-slot panel as a popup right where the user clicked (not at the top of the page).
+  function positionLocPopover() {
+    const bd = document.getElementById("locPopBackdrop");
+    const card = document.querySelector(".locsel");
+    if (!locSel || !card) { if (bd) bd.remove(); return; }
+    let b = bd;
+    if (!b) { b = document.createElement("div"); b.id = "locPopBackdrop"; b.onclick = function () { UI.locPick(""); }; document.body.appendChild(b); }
+    b.setAttribute("style", "position:fixed;inset:0;background:rgba(4,34,59,.28);z-index:9998;");
+    const s = card.style;
+    s.position = "fixed"; s.zIndex = "9999"; s.width = "340px"; s.maxWidth = "92vw"; s.maxHeight = "82vh";
+    s.overflow = "auto"; s.margin = "0"; s.boxShadow = "0 12px 36px rgba(0,0,0,.34)";
+    const w = 340, h = card.offsetHeight || 320;
+    const xy = locPopXY || { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    let left = Math.max(12, Math.min(xy.x + 12, window.innerWidth - w - 12));
+    let top = Math.max(12, Math.min(xy.y + 12, window.innerHeight - h - 12));
+    s.left = left + "px"; s.top = top + "px";
+    const fld = card.querySelector("select, input"); if (fld) try { fld.focus(); } catch (e) {}
+  }
   function render() {
     pendingExternalRender = false;
     renderNav(); refreshDatalists();
@@ -5032,6 +5050,7 @@
     drawIcons();
     document.body.classList.toggle("boardmode", active === "board");
     if (active === "board") { boardLastRefresh = Date.now(); boardStartTimers(); } else { boardStopTimers(); }
+    try { positionLocPopover(); } catch (e) {}
   }
 
   // ---------- boot ----------
