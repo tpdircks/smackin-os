@@ -837,7 +837,7 @@
   const ORDERS_SEEN_KEY = "smackin_orders_seen_v1";
   let ordersSeen = (function(){ try { return localStorage.getItem(ORDERS_SEEN_KEY) || ""; } catch(e){ return ""; } })();
   function markOrdersSeen(){ ordersSeen = new Date().toISOString(); try { localStorage.setItem(ORDERS_SEEN_KEY, ordersSeen); } catch(e){} }
-  function newOrdersCount(){ return DB.orders().filter(o => (o.created_at || "") > ordersSeen && (o.status || "Open") !== "Complete").length; }
+  function newOrdersCount(){ return DB.orders().filter(o => (o.created_at || "") > ordersSeen && (o.status || "Open") !== "Complete" && !orderShipped(o)).length; }
   const CATS = ["all","bag4","bag15","film4","film15","seasoning","seed","bucket","packaging","display","mastercase","supply"];
   const CATLBL = { all:"All", bag4:"Bags 4oz", bag15:"Bags 1.5oz", film4:"Film 4oz", film15:"Film 1.5oz",
     seasoning:"Seasoning", seed:"Seed/Base", bucket:"Buckets", packaging:"Packaging", display:"Displays", mastercase:"Sleeves", supply:"Supplies" };
@@ -1159,8 +1159,10 @@
   function orderStateClass(o) { return orderIssue(o) ? "o-issue" : (orderShipped(o) ? "o-ship" : "o-ip"); }
   function viewOrders() {
     const all = DB.orders().slice().sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
-    const openList = all.filter(o => !orderIsComplete(o));
-    const compList = all.filter(o => orderIsComplete(o));
+    // Green = shipped (has a real tracking/PRO #) -> auto-drops off the Open board and moves to Shipped,
+    // matching SPS (once it leaves the SPS open set it's done). No manual "mark complete" needed.
+    const openList = all.filter(o => !orderIsComplete(o) && !orderShipped(o));
+    const compList = all.filter(o => orderIsComplete(o) || orderShipped(o));
     const list = orderView === "complete" ? compList : openList;
     const toggle = '<div class="ordtabs">' +
       '<button class="' + (orderView === "open" ? "active" : "") + '" onclick="UI.ordView(\'open\')">' + L("ordOpen") + ' (' + openList.length + ')</button>' +
@@ -1190,9 +1192,8 @@
       const txt = ((o.customer || "") + " " + (o.customer_po || "") + " " + (o.order_id || "") + " " + (o.tracking || "") + " " + (o.carrier || "")).toLowerCase().replace(/"/g, "");
       const trk = o.tracking ? (o.tracking + (o.carrier ? ' <span class="muted sm">' + o.carrier + '</span>' : "")) : (o.carrier || "&mdash;");
       const stripe = o.stripe_link ? ' <a class="order sm" href="' + o.stripe_link + '" target="_blank" rel="noopener">Stripe &#8599;</a>' : "";
-      const act = orderIsComplete(o)
-        ? '<button class="ghost sm" onclick="UI.ordReopen(\'' + o.id + '\')">' + L("reopen") + '</button>'
-        : '<button class="ghost sm" onclick="UI.ordComplete(\'' + o.id + '\')">' + L("markComplete") + '</button>';
+      // No manual complete/reopen -- orders drop off automatically when they ship (tracking added). Edit stays so tracking can be entered.
+      const act = "";
       return '<tr class="' + orderStateClass(o) + '" data-txt="' + txt + (o.entered_by ? " " + o.entered_by.toLowerCase() : "") + '"><td><b>' + (o.customer || "&mdash;") + '</b>' + (o.appointment ? '<div class="muted sm">' + o.appointment + '</div>' : "") + (o.entered_by ? '<div class="muted sm">' + L("oByPrefix") + ' ' + o.entered_by + '</div>' : "") + '</td>' +
         '<td>' + (o.customer_po || "&mdash;") + '<div class="muted sm">' + (o.order_id || "") + '</div></td>' +
         '<td class="muted sm">' + (o.ship_date || o.invoice_date || "") + '</td>' +
