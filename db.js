@@ -866,6 +866,40 @@ window.DB = (function () {
     emit(); return { ok: true };
   }
 
+  // ---------- Pallet license plates (LPN). A pallet = a stock row whose lot = LPN. ----------
+  function isLpn(lot) { return /^SMK\d{6}-[0-9A-Z]{4}$/.test(String(lot || "")); }
+  function pallets() {
+    return (cache.stock || []).filter(r => isLpn(r.lot)).map(r => {
+      const it = (cache.items || []).find(i => String(i.id) === String(r.item_id));
+      return { lpn: r.lot, item_id: r.item_id, name: it ? (it.name || it.flavor) : r.item_id, location: r.location, bags: Number(r.qty) || 0 };
+    });
+  }
+  function palletByLpn(lpn) { return (cache.stock || []).find(r => String(r.lot) === String(lpn) && isLpn(r.lot)); }
+  function newLpn() { return "SMK" + new Date().toISOString().slice(2, 10).replace(/-/g, "") + "-" + Math.random().toString(36).slice(2, 6).toUpperCase(); }
+  async function mintPallet(item, bags, op, loc) {
+    if (!item || !(Number(bags) > 0)) return { ok: false, msg: "Item and bags required" };
+    const lpn = newLpn(); const at = loc || "STAGING";
+    await applyDeltas([{ item_id: item.id, location: at, delta: Number(bags), lot: lpn }],
+      { a: "Mint Pallet", d: fmt(bags) + " bags " + (item.flavor || item.name || item.id) + " LPN " + lpn + " @ " + at, u: op, t: new Date().toISOString() });
+    return { ok: true, lpn: lpn, bags: Number(bags), location: at };
+  }
+  async function putawayPallet(lpn, toLoc, op) {
+    const row = palletByLpn(lpn); if (!row) return { ok: false, msg: "Unknown pallet " + lpn };
+    toLoc = String(toLoc || "").trim().toUpperCase(); if (!toLoc) return { ok: false, msg: "Scan a location" };
+    if (row.location === toLoc) return { ok: true, already: true, bags: row.qty, item_id: row.item_id };
+    await applyDeltas([{ item_id: row.item_id, location: row.location, delta: -row.qty, lot: lpn }, { item_id: row.item_id, location: toLoc, delta: row.qty, lot: lpn }],
+      { a: "Put-Away", d: "LPN " + lpn + " " + row.location + " -> " + toLoc, u: op, t: new Date().toISOString() });
+    return { ok: true, bags: row.qty, item_id: row.item_id, from: row.location, to: toLoc };
+  }
+  async function pickPallet(lpn, qty, op) {
+    const row = palletByLpn(lpn); if (!row) return { ok: false, msg: "Unknown pallet " + lpn };
+    const take = qty != null ? Math.min(Number(qty), Number(row.qty)) : Number(row.qty);
+    if (!(take > 0)) return { ok: false, msg: "Nothing to pick" };
+    await applyDeltas([{ item_id: row.item_id, location: row.location, delta: -take, lot: lpn }],
+      { a: "Pick", d: "LPN " + lpn + " -" + fmt(take) + " @ " + row.location, u: op, t: new Date().toISOString() });
+    return { ok: true, took: take, item_id: row.item_id, location: row.location, remaining: Number(row.qty) - take };
+  }
+
   // ---------- Orders (non-SPS / Stripe outbound order log) ----------
   const ORDER_FIELDS = ["customer","customer_po","appointment","order_id","stripe_link","invoice_date","ship_date","tracking","carrier","status","notes","entered_by"];
   function orderLocalId() { return "OR-" + Date.now().toString(36) + "-" + Math.floor(Math.random() * 1000); }
@@ -1587,6 +1621,7 @@ window.DB = (function () {
     seedLots, addSeedLot, setSeedLotStatus, updateSeedLot,
     stockBuild, setStockBuildOnHand,
     deadStock, flagDeadStock, clearDeadStock,
+    pallets, palletByLpn, mintPallet, putawayPallet, pickPallet, newLpn, isLpn,
     shippingLog, addShipping, setShippingStatus, updateShipping, deleteShipping,
     receivingLog, addReceivingLog, updateReceivingLog, deleteReceivingLog,
     improvements, addImprovement, updateImprovement, setImprovementStatus, deleteImprovement,

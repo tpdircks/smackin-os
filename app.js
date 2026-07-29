@@ -2657,7 +2657,8 @@
       : '<button class="ghost sm" onclick="UI.locMultiToggle()">&#9776; Select multiple bins</button>';
     return '<div class="card"><div class="suprow"><h2 style="margin:0">' + L("locations") + '</h2>' +
       '<div class="ordtabs"><button class="' + (locView === "floor" ? "active" : "") + '" onclick="UI.locView(\'floor\')">' + L("locFloor") + '</button><button class="' + (locView === "map" ? "active" : "") + '" onclick="UI.locView(\'map\')">' + L("locMap") + '</button>' +
-      '<button class="' + (locView === "list" ? "active" : "") + '" onclick="UI.locView(\'list\')">' + L("locList") + '</button></div></div>' +
+      '<button class="' + (locView === "list" ? "active" : "") + '" onclick="UI.locView(\'list\')">' + L("locList") + '</button>' +
+      '<button class="' + (locView === "scan" ? "active" : "") + '" onclick="UI.locView(\'scan\')">&#128248; Scan</button></div></div>' +
       '<p class="hint">' + L("locClickHint") + (locMultiMode ? ' <b style="color:#F26722">Tap bins to select, then add one item to all of them.</b>' : '') + '</p>' + legend +
       '<div style="margin-top:8px">' + multiPanel + '</div>' +
       '<div style="margin-top:8px;border-top:1px solid #eee;padding-top:8px"><span class="hint" style="margin-right:6px">&#128462; Print scan labels:</span>' +
@@ -2676,7 +2677,8 @@
     const used = DB.allLocations().filter(loc => DB.items().some(i => DB.atLoc(i.id, loc) > 0));
     const head = '<div class="card"><div class="suprow"><h2 style="margin:0">' + L("locations") + '</h2>' +
       '<div class="ordtabs"><button class="' + (locView === "floor" ? "active" : "") + '" onclick="UI.locView(\'floor\')">' + L("locFloor") + '</button><button class="' + (locView === "map" ? "active" : "") + '" onclick="UI.locView(\'map\')">' + L("locMap") + '</button>' +
-      '<button class="' + (locView === "list" ? "active" : "") + '" onclick="UI.locView(\'list\')">' + L("locList") + '</button></div></div>' +
+      '<button class="' + (locView === "list" ? "active" : "") + '" onclick="UI.locView(\'list\')">' + L("locList") + '</button>' +
+      '<button class="' + (locView === "scan" ? "active" : "") + '" onclick="UI.locView(\'scan\')">&#128248; Scan</button></div></div>' +
       '<p class="hint">' + L("locHint") + '</p></div>';
     if (!used.length) return head + '<div class="card"><p class="muted">' + L("locNothing") + '</p></div>';
     return head + used.map(loc => {
@@ -2728,14 +2730,52 @@
     return '<div class="card"><div class="suprow"><h2 style="margin:0">' + L("locations") + '</h2>' +
       '<div class="ordtabs"><button class="active" onclick="UI.locView(\'floor\')">' + L("locFloor") + '</button>' +
       '<button onclick="UI.locView(\'map\')">' + L("locMap") + '</button>' +
-      '<button onclick="UI.locView(\'list\')">' + L("locList") + '</button></div></div>' +
+      '<button onclick="UI.locView(\'list\')">' + L("locList") + '</button>' +
+      '<button class="' + (locView === "scan" ? "active" : "") + '" onclick="UI.locView(\'scan\')">&#128248; Scan</button></div></div>' +
       '<p class="hint">' + L("locFloorNote") + '</p></div>' +
       sel +
       '<div class="card"><div class="fpwrap">' + svg + '</div></div>' +
       '<div class="card"><h2 class="sub2">' + L("locDocks") + '</h2><div class="ztiles">' + docks + '</div>' +
       '<h2 class="sub2" style="margin-top:16px">' + L("locStaging") + '</h2><div class="ztiles">' + zones + '</div></div>';
   }
-  function viewLocations() { return locView === "list" ? viewLocationsList() : locView === "floor" ? viewLocationsFloor() : viewLocationsMap(); }
+  let scanMode = "putaway";
+  function viewLocations() { return locView === "scan" ? viewLocationsScan() : locView === "list" ? viewLocationsList() : locView === "floor" ? viewLocationsFloor() : viewLocationsMap(); }
+  function viewLocationsScan() {
+    const tabRow = '<div class="card"><div class="suprow"><h2 style="margin:0">' + L("locations") + '</h2>' +
+      '<div class="ordtabs"><button onclick="UI.locView(\'floor\')">' + L("locFloor") + '</button>' +
+      '<button onclick="UI.locView(\'map\')">' + L("locMap") + '</button>' +
+      '<button onclick="UI.locView(\'list\')">' + L("locList") + '</button>' +
+      '<button class="active" onclick="UI.locView(\'scan\')">&#128248; Scan</button></div></div>' +
+      '<p class="hint">USB scanner ready &mdash; each scan types the code and presses Enter, so you can run the whole flow hands-free.</p></div>';
+    const bagItems = DB.items().filter(i => i.category === "bag4" || i.category === "bag15" || /^Bags /.test(i.name || ""));
+    const dl = '<datalist id="dl-scanitem">' + bagItems.slice().sort((a, b) => String(a.name).localeCompare(String(b.name))).map(i => '<option value="' + esc(i.name + ' [' + i.code + ']') + '"></option>').join("") + '</datalist>';
+    const modeBtn = (m, label) => '<button class="' + (scanMode === m ? "primary" : "ghost") + ' sm" onclick="UI.scanSetMode(\'' + m + '\')">' + label + '</button>';
+    const modeRow = '<div style="margin-bottom:10px">' + modeBtn("build", "&#127991; Build pallet") + " " + modeBtn("putaway", "&#128230; Put-Away") + " " + modeBtn("pick", "&#9989; Pick") + '</div>';
+    let panel = "";
+    if (scanMode === "build") {
+      panel = '<div class="row"><div><label>Flavor / item (type to search)</label><input id="sc-item" list="dl-scanitem" autocomplete="off" placeholder="Type a flavor&hellip;"></div>' +
+        '<div><label>Bags on this pallet</label><input id="sc-bags" type="number" min="1" placeholder="e.g. 2520"></div></div>' +
+        '<button class="primary" onclick="UI.scanMint()">&#127991; Mint &amp; print sticker</button>' +
+        '<p class="hint" style="margin-top:6px">Creates a unique license plate, drops the pallet at STAGING, and prints a 4&times;6 barcode sticker to put on the pallet.</p>';
+    } else if (scanMode === "putaway") {
+      panel = '<div class="row"><div><label>1. Scan pallet (license plate)</label><input id="sc-lpn" autocomplete="off" placeholder="Scan the pallet sticker&hellip;" onkeydown="if(event.key===\'Enter\'){event.preventDefault();var l=document.getElementById(\'sc-loc\');if(l)l.focus();}"></div>' +
+        '<div><label>2. Scan location</label><input id="sc-loc" autocomplete="off" placeholder="Scan the bin / floor label&hellip;" onkeydown="if(event.key===\'Enter\'){event.preventDefault();UI.scanPutaway();}"></div></div>' +
+        '<button class="primary" onclick="UI.scanPutaway()">Put away</button>';
+    } else {
+      panel = '<div class="row"><div><label>Scan pallet to pick (license plate)</label><input id="sc-plpn" autocomplete="off" placeholder="Scan the pallet sticker&hellip;" onkeydown="if(event.key===\'Enter\'){event.preventDefault();UI.scanPick();}"></div></div>' +
+        '<button class="primary" onclick="UI.scanPick()">Pick full pallet</button>';
+    }
+    const pals = DB.pallets ? DB.pallets() : [];
+    const staged = pals.filter(p => p.location === "STAGING");
+    const kpis = '<div class="kpis"><div class="kpi"><div class="n">' + pals.length + '</div><div class="l">Pallets on plates</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(pals.reduce((s, p) => s + p.bags, 0)) + '</div><div class="l">Bags tracked</div></div>' +
+      '<div class="kpi ' + (staged.length ? "alert" : "") + '"><div class="n">' + staged.length + '</div><div class="l">Waiting at staging</div></div></div>';
+    const stagedCard = '<div class="card"><h2 class="sub2">Staged pallets (' + staged.length + ')</h2>' +
+      (staged.length ? '<table class="tbl"><thead><tr><th>License plate</th><th>Flavor</th><th>Bags</th></tr></thead><tbody>' +
+        staged.slice(0, 25).map(p => '<tr><td>' + esc(p.lpn) + '</td><td>' + esc(p.name) + '</td><td>' + fmt(p.bags) + '</td></tr>').join("") + '</tbody></table>'
+        : '<p class="muted">None waiting. Use Build pallet to create one.</p>') + '</div>';
+    return tabRow + dl + '<div class="card">' + modeRow + panel + '</div><div class="card">' + kpis + '</div>' + stagedCard;
+  }
   const PO_PILL = { draft:"low", ordered:"low", partial:"low", received:"ok", cancelled:"out" };
   function poStatusPill(s) { return '<span class="pill ' + (PO_PILL[s] || "low") + '">' + L("st_" + s) + '</span>'; }
   function suggestQty(i) { const oh = DB.onHand(i.id); return Math.max(i.reorder - oh, Math.round(i.reorder * 0.5)); }
@@ -4105,6 +4145,45 @@
     locMultiToggle() { locMultiMode = !locMultiMode; if (!locMultiMode) locMulti.clear(); locSel = null; locAct = ""; render(); },
     locToggleMulti(code) { if (locMulti.has(code)) locMulti.delete(code); else locMulti.add(code); render(); },
     locMultiClear() { locMulti.clear(); render(); },
+    scanSetMode(m) { scanMode = m; render(); setTimeout(() => { const f = document.getElementById(m === "pick" ? "sc-plpn" : m === "putaway" ? "sc-lpn" : "sc-item"); if (f) f.focus(); }, 40); },
+    async scanMint() {
+      const raw = (($("sc-item") || {}).value || "").trim(); const bags = parseFloat(($("sc-bags") || {}).value);
+      let it = null; const mm = raw.match(/\[([^\]]+)\]\s*$/);
+      if (mm) it = DB.items().find(i => String(i.code).toLowerCase() === mm[1].trim().toLowerCase());
+      if (!it) { const nm = raw.replace(/\s*\[[^\]]*\]\s*$/, "").toLowerCase(); it = DB.items().find(i => String(i.name).toLowerCase() === nm || String(i.code).toLowerCase() === raw.toLowerCase()); }
+      if (!it) return toast(L("notfound")); if (!(bags > 0)) return toast("Enter bags on the pallet");
+      const r = await DB.mintPallet(it, bags, opVal());
+      if (!r || !r.ok) return toast((r && r.msg) || "error");
+      UI.scanPrintSticker(r.lpn, it.name || it.flavor, r.bags);
+      toast("Pallet " + r.lpn + " minted ✓"); render();
+    },
+    async scanPutaway() {
+      const lpn = (($("sc-lpn") || {}).value || "").trim(); const loc = (($("sc-loc") || {}).value || "").trim().toUpperCase();
+      if (!lpn) { const e = $("sc-lpn"); if (e) e.focus(); return toast("Scan a pallet first"); }
+      if (!loc) { const l = $("sc-loc"); if (l) l.focus(); return; }
+      if (typeof validLoc === "function" && !validLoc(loc)) return toast(L("badloc"));
+      if (typeof BLOCKED_SLOTS !== "undefined" && BLOCKED_SLOTS.has && BLOCKED_SLOTS.has(loc)) return toast("⛔ " + L("locBlocked"));
+      const r = await DB.putawayPallet(lpn, loc, opVal());
+      if (!r || !r.ok) return toast((r && r.msg) || "error");
+      toast(r.already ? (lpn + " already at " + loc) : (lpn + " → " + loc + " ✓")); render();
+      setTimeout(() => { const f = $("sc-lpn"); if (f) f.focus(); }, 40);
+    },
+    async scanPick() {
+      const lpn = (($("sc-plpn") || {}).value || "").trim(); if (!lpn) return toast("Scan a pallet first");
+      const r = await DB.pickPallet(lpn, null, opVal());
+      if (!r || !r.ok) return toast((r && r.msg) || "error");
+      toast("Picked " + fmt(r.took) + " bags (" + lpn + ") ✓"); render();
+      setTimeout(() => { const f = $("sc-plpn"); if (f) f.focus(); }, 40);
+    },
+    scanPrintSticker(lpn, name, bags) {
+      const w = window.open("", "_blank"); if (!w) return toast("Allow pop-ups to print the sticker");
+      const html = '<!doctype html><html><head><meta charset="utf-8"><title>' + lpn + '</title>' +
+        '<scr' + 'ipt src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></scr' + 'ipt>' +
+        '<style>@page{size:6in 4in;margin:0.2in}body{font-family:Arial;margin:0;text-align:center}h1{font-size:34px;margin:10px 0 2px}.b{font-size:22px;margin:2px 0}svg{width:5in;height:1in}.lpn{font-size:20px;letter-spacing:1px;margin-top:6px}</style></head><body>' +
+        '<h1>' + String(name || "").replace(/[<>]/g, "") + '</h1><div class="b">' + fmt(bags) + ' bags &middot; 4oz</div><svg id="bc"></svg><div class="lpn">' + lpn + '</div>' +
+        '<scr' + 'ipt>window.onload=function(){try{JsBarcode("#bc","' + lpn + '",{format:"CODE128",displayValue:false,height:70,width:2,margin:0});}catch(e){}setTimeout(function(){window.print();},500);};</scr' + 'ipt></body></html>';
+      w.document.write(html); w.document.close();
+    },
     printLocLabels(scope) {
       const all = DB.allLocations ? DB.allLocations() : [];
       const isRack = c => /^[A-H]-\d+-L\d+$/i.test(c);
