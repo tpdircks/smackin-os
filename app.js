@@ -2643,28 +2643,27 @@
         '</tbody></table></div>'
       : "";
     const sel = (locSel && !locMultiMode) ? locContentsCard(locSel, occ) : "";
-    const multiBtn = '<button class="ghost sm" onclick="UI.locMultiToggle()">' + (locMultiMode ? '&#10005; Done selecting' : '&#9776; Select multiple bins') + '</button>';
-    const multiBar = locMultiMode
+    const multiPanel = locMultiMode
       ? '<datalist id="dl-locmulti">' + DB.items().slice().sort((a, b) => String(a.name).localeCompare(String(b.name))).map(i => '<option value="' + esc(i.name + ' [' + i.code + ']') + '"></option>').join("") + '</datalist>' +
-        '<div style="position:fixed;left:0;right:0;bottom:0;z-index:9997;background:#04223B;color:#fff;padding:10px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;box-shadow:0 -4px 18px rgba(0,0,0,.35)">' +
-        '<b>' + locMulti.size + ' bin' + (locMulti.size === 1 ? '' : 's') + ' selected</b>' +
-        '<input id="lmulti-item" list="dl-locmulti" autocomplete="off" placeholder="Type a flavor or item&hellip;" style="flex:1;min-width:170px;padding:7px 9px;border-radius:6px;border:0">' +
-        '<label style="display:flex;align-items:center;gap:6px;white-space:nowrap">Pallets each <input id="lmulti-qty" type="number" min="1" value="1" style="width:56px;padding:6px;border-radius:6px;border:0"></label>' +
-        '<button class="primary sm" onclick="UI.locMultiAdd()"' + (locMulti.size ? '' : ' disabled') + '>Add to selected</button>' +
-        '<button class="ghost sm" style="color:#fff;border-color:#7d93ad" onclick="UI.locMultiClear()">Clear</button></div>'
-      : "";
+        '<div style="margin-top:10px;padding:12px;background:#EAF2FA;border:1px solid #006DB6;border-radius:8px">' +
+        '<div style="font-weight:700;margin-bottom:8px">&#9776; ' + locMulti.size + ' bin' + (locMulti.size === 1 ? '' : 's') + ' selected &mdash; tap bins on the map to add or remove.</div>' +
+        '<div class="row"><div><label>Item (type to search)</label><input id="lmulti-item" list="dl-locmulti" autocomplete="off" placeholder="Type a flavor or item&hellip;"></div>' +
+        '<div><label>Pallets each</label><input id="lmulti-qty" type="number" min="1" value="1"></div></div>' +
+        '<button class="primary" onclick="UI.locMultiAdd()"' + (locMulti.size ? '' : ' disabled') + '>&#10133; Add to ' + locMulti.size + ' selected bin' + (locMulti.size === 1 ? '' : 's') + '</button> ' +
+        '<button class="ghost" onclick="UI.locMultiClear()">Clear selection</button> ' +
+        '<button class="ghost" onclick="UI.locMultiToggle()">Cancel</button></div>'
+      : '<button class="ghost sm" onclick="UI.locMultiToggle()">&#9776; Select multiple bins</button>';
     return '<div class="card"><div class="suprow"><h2 style="margin:0">' + L("locations") + '</h2>' +
       '<div class="ordtabs"><button class="' + (locView === "floor" ? "active" : "") + '" onclick="UI.locView(\'floor\')">' + L("locFloor") + '</button><button class="' + (locView === "map" ? "active" : "") + '" onclick="UI.locView(\'map\')">' + L("locMap") + '</button>' +
       '<button class="' + (locView === "list" ? "active" : "") + '" onclick="UI.locView(\'list\')">' + L("locList") + '</button></div></div>' +
       '<p class="hint">' + L("locClickHint") + (locMultiMode ? ' <b style="color:#F26722">Tap bins to select, then add one item to all of them.</b>' : '') + '</p>' + legend +
-      '<div style="margin-top:8px">' + multiBtn + '</div></div>' +
+      '<div style="margin-top:8px">' + multiPanel + '</div></div>' +
       sel +
       deadCard +
       '<div class="card"><div class="rackmap">' + sections + '</div></div>' +
       floorCard +
       '<div class="card"><h2 class="sub2">' + L("locDocks") + '</h2><p class="hint" style="margin-bottom:8px">19 = ' + L("locOfficeEnd") + ' &middot; 11 = ' + L("locFarEnd") + '</p><div class="ztiles">' + docks + '</div>' +
-      '<h2 class="sub2" style="margin-top:16px">' + L("locZones") + '</h2><div class="ztiles">' + zones + '</div></div>' +
-      multiBar;
+      '<h2 class="sub2" style="margin-top:16px">' + L("locZones") + '</h2><div class="ztiles">' + zones + '</div></div>';
   }
   function viewLocationsList() {
     const used = DB.allLocations().filter(loc => DB.items().some(i => DB.atLoc(i.id, loc) > 0));
