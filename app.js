@@ -3208,6 +3208,7 @@
     const ssel = '<select onchange="UI.dmdSet(\'status\',this.value)">' +
       ['Open', 'Shipped', 'All'].map(s => '<option value="' + s + '"' + (s === dmdStatus ? ' selected' : '') + '>' + L(s === "Open" ? "dmOpen" : s === "Shipped" ? "dmShipped" : "dmAll") + '</option>').join("") + '</select>';
     const head = '<div class="card"><div class="suprow"><h2 style="flex:1;margin:0">' + L("demand") + ' ' + freshChip(dhMax(DB.demandLines ? DB.demandLines() : []), 1) + '</h2>' +
+      (all.some(r => /^UNMAPPED/i.test(String(r.flavor || ""))) ? '<button class="ghost sm" style="color:#C55A11;border-color:#C55A11" onclick="UI.demandRemap()">&#128260; Re-map ' + all.filter(r => /^UNMAPPED/i.test(String(r.flavor || ""))).length + ' unmapped</button> ' : "") +
       '<button class="ghost sm" onclick="UI_go(\'demandimport\')">&#8635; ' + L("demandimport") + '</button></div>' +
       '<p class="hint">' + L("dmHint") + '</p>' +
       '<div class="kpis"><div class="kpi"><div class="n">' + fmt(openPOs) + '</div><div class="l">' + L("dmPOs") + '</div></div>' +
@@ -4145,6 +4146,11 @@
     locMultiToggle() { locMultiMode = !locMultiMode; if (!locMultiMode) locMulti.clear(); locSel = null; locAct = ""; render(); },
     locToggleMulti(code) { if (locMulti.has(code)) locMulti.delete(code); else locMulti.add(code); render(); },
     locMultiClear() { locMulti.clear(); render(); },
+    async demandRemap() {
+      const r = await DB.remapDemandFlavors(opVal());
+      if (!r || !r.ok) return toast("Re-map failed");
+      toast("Re-mapped " + r.fixed + " of " + r.scanned + " unmapped ✓"); render();
+    },
     scanSetMode(m) { scanMode = m; render(); setTimeout(() => { const f = document.getElementById(m === "pick" ? "sc-plpn" : m === "putaway" ? "sc-lpn" : "sc-item"); if (f) f.focus(); }, 40); },
     async scanMint() {
       const raw = (($("sc-item") || {}).value || "").trim(); const bags = parseFloat(($("sc-bags") || {}).value);

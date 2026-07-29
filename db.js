@@ -900,6 +900,26 @@ window.DB = (function () {
     return { ok: true, took: take, item_id: row.item_id, location: row.location, remaining: Number(row.qty) - take };
   }
 
+  // ---------- Demand flavor re-map (fix stale UNMAPPED rows using the parser's rules) ----------
+  async function remapDemandFlavors(op) {
+    const rules = [[/cinnamon|churro/i, "Cinnamon Churro"], [/garlic|parm|grlc|prmsn/i, "Garlic Parmesan"], [/backyard|bbq|barbe|byrd/i, "Backyard BBQ"], [/dill|pickle|dll|pckl/i, "Dill Pickle"], [/crack|crck|black pepper/i, "Cracked Pepper"], [/cheddar|jalap|chd/i, "Cheddar Jalapeno"], [/ranch/i, "Ranch"], [/maple|brown sugar/i, "Maple Brown Sugar"], [/lemon/i, "Lemon Pepper"], [/sour cream|onion|s&o|sco/i, "Sour Cream & Onion"], [/cheeseburger/i, "Cheeseburger"], [/pizza|deep dish|pca/i, "PCA Pizza"], [/4\s*-?\s*var|variety/i, "Variety Pack"], [/original|\bog\b/i, "OG Original"]];
+    const codeFor = flavor => { const it = (cache.items || []).find(i => String(i.name || "").toLowerCase() === ("bags 4oz - " + flavor).toLowerCase()); return it ? String(it.code).replace(/^B4-/, "") : ""; };
+    const rows = (cache.demandLines || []).filter(d => /^UNMAPPED/i.test(String(d.flavor || "")));
+    let fixed = 0;
+    for (const d of rows) {
+      const desc = String(d.flavor || "").replace(/^UNMAPPED:?\s*/i, "");
+      const hit = rules.find(r => r[0].test(desc));
+      if (!hit) continue;
+      const patch = { flavor: hit[1], flavor_code: codeFor(hit[1]) };
+      if (mode === "cloud") { if (d.id != null) await sb.from("demand_lines").update(patch).eq("id", d.id); }
+      else { d.flavor = hit[1]; d.flavor_code = patch.flavor_code; }
+      fixed++;
+    }
+    if (mode === "cloud") await cloud.loadAll(); else local.save();
+    emit();
+    return { ok: true, fixed: fixed, scanned: rows.length };
+  }
+
   // ---------- Orders (non-SPS / Stripe outbound order log) ----------
   const ORDER_FIELDS = ["customer","customer_po","appointment","order_id","stripe_link","invoice_date","ship_date","tracking","carrier","status","notes","entered_by"];
   function orderLocalId() { return "OR-" + Date.now().toString(36) + "-" + Math.floor(Math.random() * 1000); }
@@ -1607,7 +1627,7 @@ window.DB = (function () {
 
   return {
     init, onChange, get mode() { return mode; },
-    demandLines, importDemand, setDemandStatus, shipDemandPO, clearDemandBatch, clearAllDemand,
+    demandLines, importDemand, setDemandStatus, shipDemandPO, clearDemandBatch, clearAllDemand, remapDemandFlavors,
     productionOutput, addProdOutput, deleteProdOutput,
     lineStatus, addMachine, setLineStatus, deleteMachine,
     forecast,
