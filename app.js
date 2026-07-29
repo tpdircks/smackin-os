@@ -2520,8 +2520,10 @@
       }
       panel = '<div class="locact"><h3 class="sub2">' + L("lmAssignTitle") + (flab ? ' &mdash; ' + esc(flab) : '') + '</h3>' + dl +
         '<div class="row"><div><label>Item (type to search)</label><input id="la-item" list="dl-locitem" autocomplete="off" placeholder="Type a flavor or item&hellip;" value="' + esc(defItem ? disp(defItem) : "") + '"></div>' +
-        '<div><label>' + (isFloorPallet ? "Pallets to add" : flab ? "Pallets" : L("qty")) + '</label><input id="la-qty" type="number" min="1" value="1"></div></div>' +
-        (isFloorPallet ? '<p class="hint" style="margin:0 0 8px">' + capHint + 'Adds that many pallets at once, filling this flavor\'s empty spots.</p>' : '') +
+        '<div><label>' + (isFloorPallet ? "Pallets to add" : flab ? "Pallets" : L("qty")) + '</label><input id="la-qty" type="number" min="1" value="1"></div>' +
+        (isFloorPallet ? '<div><label>Bags on each pallet</label><input id="la-bpp" type="number" min="1" placeholder="e.g. 2520"></div>' : '') +
+        '</div>' +
+        (isFloorPallet ? '<p class="hint" style="margin:0 0 8px">' + capHint + 'Each spot is filled with the bags-per-pallet you enter (e.g. 2,520). Adding multiple pallets fills that many empty spots for this flavor.</p>' : '') +
         '<button class="primary" onclick="UI.locAssignGo(\'' + esc(code) + '\')">' + L("lmAssignBtn") + '</button> ' +
         '<button class="ghost" style="margin-top:14px" onclick="UI.locActCancel()">' + L("ordCancel") + '</button></div>';
     } else if (locAct === "deadflag") {
@@ -4134,14 +4136,17 @@
       if (m) it = DB.items().find(i => String(i.code).toLowerCase() === m[1].trim().toLowerCase());
       if (!it) { const nm = raw.replace(/\s*\[[^\]]*\]\s*$/, "").toLowerCase(); it = DB.items().find(i => String(i.name).toLowerCase() === nm || String(i.code).toLowerCase() === raw.toLowerCase() || String(i.id).toLowerCase() === raw.toLowerCase()); }
       if (!it) return toast(L("notfound")); if (!(q > 0)) return toast(L("enter"));
-      // Floor pallet slot + more than one pallet -> fill that many empty positions for the flavor.
-      if (/^S\d{2}-\d{2}$/.test(code) && q > 1) {
+      // Floor pallet slot -> each pallet spot holds "bags per pallet" bags (not 1).
+      if (/^S\d{2}-\d{2}$/.test(code)) {
+        const bpp = parseFloat(($("la-bpp") || {}).value);
+        if (!(bpp > 0)) return toast("Enter bags on each pallet");
+        const pallets = q > 0 ? Math.floor(q) : 1;
         const base = code.split("-")[0], occ = locOccupancy();
         const slots = (DB.floorSlots ? DB.floorSlots() : []).filter(s => s.split("-")[0] === base);
         const targets = [code].concat(slots.filter(s => s !== code && !(occ[s] && occ[s].qty > 0)));
-        let filled = 0;
-        for (const s of targets) { if (filled >= q) break; const cur = DB.atLoc ? DB.atLoc(it.id, s) : 0; if (Number(cur) > 0 && s !== code) continue; await DB.adjust(it, s, (Number(cur) || 0) + 1, opVal()); filled++; }
-        locAct = ""; toast(filled + " pallets of " + it.name + " -> " + base); render(); return;
+        let filled = 0, added = 0;
+        for (const s of targets) { if (filled >= pallets) break; const cur = DB.atLoc ? DB.atLoc(it.id, s) : 0; if (Number(cur) > 0 && s !== code) continue; await DB.adjust(it, s, (Number(cur) || 0) + bpp, opVal()); filled++; added += bpp; }
+        locAct = ""; toast(filled + " pallet" + (filled === 1 ? "" : "s") + " × " + fmt(bpp) + " = " + fmt(added) + " bags " + it.name + " → " + base); render(); return;
       }
       const cur = DB.atLoc ? DB.atLoc(it.id, code) : 0;
       await DB.adjust(it, code, (Number(cur) || 0) + q, opVal());
