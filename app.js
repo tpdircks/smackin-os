@@ -1619,8 +1619,8 @@
       (notesClean(s.notes) ? '<h3 class="sub2" style="margin-top:14px">' + L("spoNotes") + '</h3><p>' + esc(notesClean(s.notes)) + '</p>' : "") + '</div>';
   }
   function poRowInner(i) {
-    return '<td><input id="pl-item-' + i + '" autocomplete="off"></td>' +
-      '<td><input id="pl-desc-' + i + '" autocomplete="off"></td>' +
+    return '<td><input id="pl-item-' + i + '" list="dl-po-item" autocomplete="off" onchange="UI.poLineFill(' + i + ',\'item\')"></td>' +
+      '<td><input id="pl-desc-' + i + '" list="dl-po-flavor" autocomplete="off" onchange="UI.poLineFill(' + i + ',\'desc\')"></td>' +
       '<td><input id="pl-ship-' + i + '" type="date"></td>' +
       '<td><input id="pl-qty-' + i + '" type="number" min="0" step="any" inputmode="decimal" oninput="UI.poRecalc()"></td>' +
       '<td><input id="pl-price-' + i + '" type="number" min="0" step="any" inputmode="decimal" oninput="UI.poRecalc()"></td>' +
@@ -1645,8 +1645,17 @@
     const vendors = Array.from(new Set(DB.supplierPos().map(s => s.vendor).filter(Boolean))).sort();
     const ships = Array.from(new Set(DB.supplierPos().map(s => s.ship_to).filter(Boolean)));
     if (!ships.some(s => /4250 W/i.test(s))) ships.unshift("1736 S 4250 W, Salt Lake City, UT 84104");
+    // Flavor / item lookup for the PO line fields: item catalog names+codes plus any
+    // descriptions/codes already used on past POs, so Michelle can type-to-search a flavor.
+    const catalog = DB.items().slice();
+    const histL = [];
+    DB.supplierPos().forEach(p => { try { (typeof p.lines === "string" ? JSON.parse(p.lines || "[]") : (p.lines || [])).forEach(l => l && histL.push(l)); } catch (e) {} });
+    const flavorNames = Array.from(new Set(catalog.map(i => i.name).concat(histL.map(l => l.desc)).filter(Boolean))).sort();
+    const itemCodes = Array.from(new Set(catalog.map(i => i.code).concat(histL.map(l => l.item)).filter(Boolean))).sort();
     const dl = '<datalist id="dl-po-vendor">' + vendors.map(v => '<option value="' + esc(v) + '"></option>').join("") + '</datalist>' +
-      '<datalist id="dl-po-shipto">' + ships.map(v => '<option value="' + esc(v) + '"></option>').join("") + '</datalist>';
+      '<datalist id="dl-po-shipto">' + ships.map(v => '<option value="' + esc(v) + '"></option>').join("") + '</datalist>' +
+      '<datalist id="dl-po-flavor">' + flavorNames.map(v => '<option value="' + esc(v) + '"></option>').join("") + '</datalist>' +
+      '<datalist id="dl-po-item">' + itemCodes.map(v => '<option value="' + esc(v) + '"></option>').join("") + '</datalist>';
     let rows = "";
     for (let i = 0; i < poRows; i++) rows += '<tr>' + poRowInner(i) + '</tr>';
     const today = new Date().toISOString().slice(0, 10);
@@ -4684,6 +4693,22 @@
       if (!src) return;
       const set = (id, val) => { const el = $(id); if (el && !el.value && val) el.value = val; };
       set("po-vaddr", src.vendor_addr); set("po-vemail", src.vendor_email); set("po-vphone", src.vendor_phone); set("po-shipto", src.ship_to);
+    },
+    // Flavor lookup on a PO line: when a flavor/desc is picked, fill the matching item code
+    // (and vice-versa) from the item catalog. Only fills the paired field if it's empty.
+    poLineFill(i, which) {
+      const itemEl = $("pl-item-" + i), descEl = $("pl-desc-" + i);
+      if (!itemEl || !descEl) return;
+      const items = DB.items();
+      if (which === "desc" && !itemEl.value.trim()) {
+        const v = descEl.value.trim().toLowerCase();
+        const m = items.find(x => String(x.name || "").toLowerCase() === v);
+        if (m && m.code) itemEl.value = m.code;
+      } else if (which === "item" && !descEl.value.trim()) {
+        const v = itemEl.value.trim().toLowerCase();
+        const m = items.find(x => String(x.code || "").toLowerCase() === v);
+        if (m && m.name) descEl.value = m.name;
+      }
     },
     async poCreate() {
       const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
