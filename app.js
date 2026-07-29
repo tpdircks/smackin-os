@@ -7,7 +7,7 @@
   // build v69 — Demand section
   const T = {
     en: { dash:"Overview", home:"Dashboard", receive:"Receive", putaway:"Put-Away", move:"Move / Pick", produce:"Produce",
-      count:"Count", locations:"Locations", purchasing:"Purchasing", expreceipts:"Expected Receipts", labels:"Labels", log:"Activity", settings:"Settings",
+      count:"Count", locations:"Locations", purchasing:"Purchasing", expreceipts:"Expected Receipts", flavinv:"Flavor Inventory", labels:"Labels", log:"Activity", settings:"Settings",
       onhand:"On hand", item:"Item", unit:"Unit", qty:"Qty", lot:"Lot", status:"Status", reorder:"Reorder pt",
       scanItem:"Scan or type item code / UPC", to:"To location", from:"From location",
       submitReceive:"Receive", submitPut:"Put away", submitMove:"Move / pick", submitProduce:"Record production", submitCount:"Save count",
@@ -162,7 +162,7 @@
       flSensor:"bags (sensor)", flDeleteConfirm:"Remove this machine?",
       settingsHint:"Mode, layout, and demo controls." },
     es: { dash:"Resumen", home:"Panel", receive:"Recibir", putaway:"Almacenar", move:"Mover / Sacar", produce:"Producir",
-      count:"Conteo", locations:"Ubicaciones", purchasing:"Compras", expreceipts:"Recepciones Esperadas", labels:"Etiquetas", log:"Actividad", settings:"Ajustes",
+      count:"Conteo", locations:"Ubicaciones", purchasing:"Compras", expreceipts:"Recepciones Esperadas", flavinv:"Inventario de Sabores", labels:"Etiquetas", log:"Actividad", settings:"Ajustes",
       onhand:"Disponible", item:"Articulo", unit:"Unidad", qty:"Cant.", lot:"Lote", status:"Estado", reorder:"Punto reorden",
       scanItem:"Escanee o escriba codigo / UPC", to:"Hacia ubicacion", from:"Desde ubicacion",
       submitReceive:"Recibir", submitPut:"Almacenar", submitMove:"Mover / sacar", submitProduce:"Registrar produccion", submitCount:"Guardar conteo",
@@ -316,7 +316,7 @@
       flSensor:"bolsas (sensor)", flDeleteConfirm:"Quitar esta maquina?",
       settingsHint:"Modo, distribucion y controles demo." },
     pt: { dash:"Visao geral", home:"Painel", receive:"Receber", putaway:"Armazenar", move:"Mover / Separar", produce:"Produzir",
-      count:"Contagem", locations:"Locais", purchasing:"Compras", expreceipts:"Recebimentos Esperados", labels:"Etiquetas", log:"Atividade", settings:"Configuracoes",
+      count:"Contagem", locations:"Locais", purchasing:"Compras", expreceipts:"Recebimentos Esperados", flavinv:"Inventario de Sabores", labels:"Etiquetas", log:"Atividade", settings:"Configuracoes",
       onhand:"Em estoque", item:"Item", unit:"Unid.", qty:"Qtd.", lot:"Lote", status:"Status", reorder:"Ponto de reposicao",
       scanItem:"Escaneie ou digite codigo / UPC", to:"Para o local", from:"Do local",
       submitReceive:"Receber", submitPut:"Armazenar", submitMove:"Mover / separar", submitProduce:"Registrar producao", submitCount:"Salvar contagem",
@@ -508,7 +508,7 @@
     { key: "tote", label: "Tote - 1 bag x 1,200 lb", per: 1200 }
   ];
   const SEED_PACK_MAP = {}; SEED_PACKS.forEach(p => SEED_PACK_MAP[p.key] = p);
-  const TABS = ["home","dash","analytics","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","fulfilldaily","stockbuild","reorder15","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","expreceipts","supplierpos","people","improve","maintenance","compliance","disposition","reference","labels","log","settings","board"];
+  const TABS = ["home","dash","analytics","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","fulfilldaily","flavinv","stockbuild","reorder15","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","expreceipts","supplierpos","people","improve","maintenance","compliance","disposition","reference","labels","log","settings","board"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -705,7 +705,7 @@
     { key:"grpReceiving", items:["receive","recvlog","returns","qa"] },
     { key:"grpInventory", items:["dash","analytics","adjust","count","move","locations","facility","finbags","seasoning","seed","skus","labels"] },
     { key:"grpProduction", items:["produce","retailprod","ecomprod"] },
-    { key:"grpFulfillment", items:["prodlog","fulfilldaily","stockbuild","reorder15","orders","orderdocs"] },
+    { key:"grpFulfillment", items:["prodlog","fulfilldaily","flavinv","stockbuild","reorder15","orders","orderdocs"] },
     { key:"grpDemand", items:["demand","demandboard","demandsched","demandimport","ecomdemand","forecast"] },
     { key:"grpShipping", items:["shiplog"] },
     { key:"grpMixing", items:["mixing","floor"] },
@@ -725,7 +725,7 @@
     receive:"package-plus", recvlog:"clipboard-list", putaway:"package-check", returns:"rotate-ccw",
     orders:"receipt", orderdocs:"folder", shiplog:"truck", rd:"flask-conical", qa:"shield-alert",
     move:"arrow-left-right", produce:"factory", retailprod:"package", ecomprod:"laptop", prodlog:"clipboard-list", fulfilldaily:"clipboard-list", stockbuild:"layers", reorder15:"repeat",
-    seasoning:"flame", seed:"sprout", skus:"barcode", finbags:"shopping-bag", pmacout:"package-open",
+    seasoning:"flame", seed:"sprout", skus:"barcode", finbags:"shopping-bag", pmacout:"package-open", flavinv:"bar-chart-2",
     mixing:"cooking-pot", pmac:"wrench", count:"clipboard-check", locations:"map-pin",
     purchasing:"shopping-cart", expreceipts:"package", supplierpos:"file-text", people:"users", labels:"tag",
     board:"tv", log:"history", settings:"settings", improve:"trending-up", maintenance:"hard-hat", compliance:"shield-check", disposition:"archive", reference:"book-open",
@@ -1581,6 +1581,51 @@
       openTbl +
       (done.length ? '<h2 class="sub2" style="margin-top:16px">Received (' + done.length + ")</h2><table class=\"sortable\">" + head + "<tbody>" + done.slice(0, 40).map(row).join("") + "</tbody></table>" : "") +
       "</div>";
+  }
+  // ---- Flavor / Floor Inventory board (live version of Fulfillment's flavor tracker) ----
+  function flavorFloorPallets(scode) {
+    let n = 0;
+    (DB.stock() || []).forEach(r => {
+      if (String(r.item_id) === "DEADSTOCK") return;
+      const loc = String(r.location || "");
+      if (/^S\d{2}-\d{2}$/.test(loc) && loc.split("-")[0] === scode) n += Number(r.qty) || 0;
+    });
+    return n;
+  }
+  function flavorFinishedItem(name, is15) {
+    const w = String(name).toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+    return DB.items().find(i => {
+      const nn = String(i.name).toLowerCase();
+      if (/film|seasoning|roll|box|sleeve|display|bucket|lid|tape|label/.test(nn)) return false;
+      return w.length && w.every(x => nn.indexOf(x) >= 0) && (is15 ? /1\.?5/.test(nn) : /4\s?oz|4oz/.test(nn));
+    });
+  }
+  function viewFlavorInventory() {
+    const cfg = DB.config || {};
+    const f4 = cfg.floor4 || [], f15 = cfg.floor15 || [];
+    let shortCount = 0, floorTotal = 0;
+    const rowFor = (scode, name, is15) => {
+      const floor = flavorFloorPallets(scode); floorTotal += floor;
+      const it = flavorFinishedItem(name, is15);
+      const oh = it ? DB.onHand(it.id) : 0; const unit = it ? (it.unit || "") : ""; const reorder = it ? (Number(it.reorder) || 0) : 0;
+      let status;
+      if (oh <= 0) { status = '<span class="pill out">Out</span>'; shortCount++; }
+      else if (reorder && oh < reorder) { status = '<span class="pill low">Low</span>'; shortCount++; }
+      else status = '<span class="pill ok">OK</span>';
+      return '<tr><td><b>' + esc(name) + '</b> <span class="muted sm">' + esc(scode) + '</span></td>' +
+        '<td class="right">' + fmt(floor) + '</td><td class="right">' + fmt(oh) + ' ' + esc(unit) + '</td><td>' + status + '</td></tr>';
+    };
+    const tbl = (title, arr, is15) => '<div class="card"><h2 class="sub2">' + title + '</h2>' +
+      '<table class="sortable"><thead><tr><th>Flavor</th><th class="right">On floor (pallets)</th><th class="right">Finished on-hand</th><th>Status</th></tr></thead><tbody>' +
+      arr.map(f => rowFor(f[0], f[1], is15)).join("") + '</tbody></table></div>';
+    const body4 = tbl("&#127871; 4 oz flavors", f4, false);
+    const body15 = tbl("&#127871; 1.5 oz flavors", f15, true);
+    return '<div class="card"><h2>&#128202; Flavor Inventory</h2>' +
+      '<p class="hint">Live per-flavor view of what\'s on the floor and finished on-hand, with shortage flags. Note: the 4 oz floor is shared between e-commerce and retail production &mdash; both draw from it.</p>' +
+      '<div class="kpis"><div class="kpi' + (shortCount ? " alert" : "") + '"><div class="n">' + shortCount + '</div><div class="l">Flavors low / out</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(floorTotal) + '</div><div class="l">Pallets on floor</div></div>' +
+      '<div class="kpi"><div class="n">' + (f4.length + f15.length) + '</div><div class="l">Flavors tracked</div></div></div></div>' +
+      body4 + body15;
   }
   function viewPoDetail(id) {
     const s = DB.supplierPos().find(x => String(x.id) === String(id));
@@ -5098,7 +5143,7 @@
     renderNav(); refreshDatalists();
     const map = { home: viewHome, dash: viewDash, analytics: viewAnalytics, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
       move: viewMove, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, fulfilldaily: viewFulfillDaily, stockbuild: viewStockBuild, reorder15: viewReorder15, seasoning: viewSeasoning, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
-      count: viewCount, locations: viewLocations, purchasing: viewPurchasing, expreceipts: viewExpectedReceipts, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, maintenance: viewMaintenance, compliance: viewCompliance, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
+      count: viewCount, locations: viewLocations, purchasing: viewPurchasing, expreceipts: viewExpectedReceipts, flavinv: viewFlavorInventory, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, maintenance: viewMaintenance, compliance: viewCompliance, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
       demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, ecomdemand: viewEcomDemand, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor, board: viewBoard, disposition: viewDisposition };
     $("view").innerHTML = (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
