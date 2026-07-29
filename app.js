@@ -2428,7 +2428,11 @@
       if (flab) {
         const flav = flab.replace(/\s*·.*$/, "").toLowerCase(); const is15 = /1\.5/.test(flab);
         const w = flav.split(/[^a-z0-9]+/).filter(Boolean);
-        const cand = DB.items().find(i => { const n = String(i.name).toLowerCase(); return w.length && w.every(x => n.indexOf(x) >= 0) && (is15 ? /1\.?5/.test(n) : /4\s?oz|4oz/.test(n)); });
+        const cand = DB.items().find(i => {
+          const n = String(i.name).toLowerCase();
+          if (/film|seasoning|roll|box|sleeve|display|bucket|lid|tape|label/.test(n)) return false; // finished bags only, not packaging
+          return w.length && w.every(x => n.indexOf(x) >= 0) && (is15 ? /1\.?5/.test(n) : /4\s?oz|4oz/.test(n));
+        });
         if (cand) defId = cand.id;
       }
       const opts = DB.items().slice().sort((a, b) => String(a.name).localeCompare(String(b.name)))
