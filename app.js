@@ -828,7 +828,7 @@
   let locAct = "";        // editable rack map: "" | "move" | "setqty" | "assign"
   let recvNewItem = false; // Receive: create a brand-new item on the fly
   // Physically blocked rack slots (numbering unchanged; not storable) - Troy's real floor
-  const BLOCKED_SLOTS = new Set(["A-23-L1","B-15-L4","B-16-L4","B-17-L4","B-21-L4","B-22-L4","C-21-L4","C-22-L4","D-17-L4","D-18-L4","D-23-L4","D-24-L4"]);
+  const BLOCKED_SLOTS = new Set(["A-23-L1","B-15-L4","B-16-L4","B-17-L4","B-21-L4","B-22-L4","C-21-L4","C-22-L4","D-17-L4","D-18-L4","D-23-L4","D-24-L4","F-06-L1"]);
   let odocFile = null; // order-doc upload state
   let rdView = "pending"; // R&D: "pending" | "received"
   let rdAddOpen = false;
@@ -2444,16 +2444,20 @@
       '<div>' + view3dLink + '<button class="ghost sm" onclick="UI.locPick(\'\')">&#10005;</button></div></div>' +
       '<table><tbody>' + rows + '</tbody></table>' + panel + '</div>';
   }
-  function rackSectionHtml(sec, bays, occ) {
-    const levels = ["L4", "L3", "L2", "L1"]; // top to floor
+  function rackSectionHtml(geom, occ) {
+    // geom: { id, from, bays, levels, skip, use } — real per-section geometry from the map.
+    if (typeof geom === "string") geom = { id: geom, from: 1, bays: 28, levels: 4 };
+    const id = geom.id, from = geom.from || 1, last = geom.bays, nLev = geom.levels || 4;
+    const levels = []; for (let l = nLev; l >= 1; l--) levels.push("L" + l); // top .. floor
+    const bayNums = []; for (let b = from; b <= last; b++) { if (geom.skip && geom.skip.indexOf(b) >= 0) continue; bayNums.push(b); }
     let used = 0, total = 0;
     let head = '<tr><th class="rk-lvl"></th>';
-    for (let b = 1; b <= bays; b++) head += '<th class="rk-bay">' + String(b).padStart(2, "0") + '</th>';
+    bayNums.forEach(b => head += '<th class="rk-bay">' + String(b).padStart(2, "0") + '</th>');
     head += '</tr>';
     const body = levels.map(lv => {
       let tds = '<td class="rk-lvl">' + lv + '</td>';
-      for (let b = 1; b <= bays; b++) {
-        const code = sec + "-" + String(b).padStart(2, "0") + "-" + lv;
+      bayNums.forEach(b => {
+        const code = id + "-" + String(b).padStart(2, "0") + "-" + lv;
         const blocked = BLOCKED_SLOTS.has(code);
         const has = occ[code] && occ[code].qty > 0;
         if (!blocked) total++;
@@ -2463,12 +2467,22 @@
         const title = blocked ? code + " (blocked)" : has ? code + " - " + occ[code].items.length + " item(s)" : code + " (empty)";
         tds += '<td class="rk-cell"><span class="slot ' + cls + sel + '" title="' + esc(title) + '"' +
           (blocked ? "" : ' onclick="UI.locPick(\'' + code + '\')"') + '></span></td>';
-      }
+      });
       return '<tr>' + tds + '</tr>';
     }).join("");
-    return '<div class="racksec"><div class="suprow"><h3 style="margin:0">' + L("locSection") + ' ' + sec + '</h3>' +
+    const useTag = geom.use ? ' <span class="muted sm">&middot; ' + esc(geom.use) + '</span>' : '';
+    return '<div class="racksec"><div class="suprow"><h3 style="margin:0">' + L("locSection") + ' ' + id + useTag + '</h3>' +
       '<span class="muted sm">' + used + ' / ' + total + ' ' + L("locBaysUsed") + '</span></div>' +
       '<div class="tblwrap"><table class="rackgrid"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div></div>';
+  }
+  // Floor-storage tile (4oz / 1.5oz flavor lines) — shows the code + flavor short name.
+  function floorTileHtml(code, occ) {
+    const has = occ[code] && occ[code].qty > 0;
+    const sel = locSel === code ? " sel" : "";
+    const lbl = (DB.floorLabel ? DB.floorLabel(code) : "").replace(/\s*·.*$/, "");
+    return '<div class="ztile ' + (has ? "occ" : "empty") + sel + '" onclick="UI.locPick(\'' + code + '\')" title="' + esc(code + (lbl ? " · " + lbl : "")) + '">' +
+      '<div class="zc">' + esc(code) + '</div>' + (lbl ? '<div class="muted sm" style="font-size:10px;line-height:1.1">' + esc(lbl) + '</div>' : '') +
+      (has ? '<div class="zq">' + occ[code].items.length + '</div>' : '') + '</div>';
   }
   function zoneTileHtml(code, occ) {
     const has = occ[code] && occ[code].qty > 0;
@@ -2483,10 +2497,17 @@
     const legend = '<div class="racklegend"><span class="rl"><span class="slot occ"></span>' + L("locOccupied") + '</span>' +
       '<span class="rl"><span class="slot empty"></span>' + L("locEmpty") + '</span>' +
       '<span class="rl"><span class="slot blocked"></span>' + L("locBlocked") + '</span></div>';
-    const sections = (cfg.sections || []).map(s => rackSectionHtml(s, cfg.baysPerSection || 28, occ)).join("");
+    const geoms = cfg.sectionGeom || (cfg.sections || []).map(id => ({ id: id, from: 1, bays: cfg.baysPerSection || 28, levels: 4 }));
+    const sections = geoms.map(g => rackSectionHtml(g, occ)).join("");
     // docks strip (19 office end .. 11 far end)
     const docks = (cfg.docks || []).slice().sort((a, b) => b - a).map(d => zoneTileHtml("DOCK-" + d, occ)).join("");
     const zones = (cfg.zones || []).map(z => zoneTileHtml(z, occ)).join("");
+    const f4 = (DB.floor4Slots ? DB.floor4Slots() : []);
+    const f15 = (DB.floor15Slots ? DB.floor15Slots() : []);
+    const floorCard = (f4.length || f15.length)
+      ? '<div class="card"><h2 class="sub2">&#128230; Floor storage &middot; 4 oz</h2><div class="ztiles">' + f4.map(c => floorTileHtml(c, occ)).join("") + '</div>' +
+        '<h2 class="sub2" style="margin-top:16px">&#128230; Floor storage &middot; 1.5 oz</h2><div class="ztiles">' + f15.map(c => floorTileHtml(c, occ)).join("") + '</div></div>'
+      : "";
     const sel = locSel ? locContentsCard(locSel, occ) : "";
     return '<div class="card"><div class="suprow"><h2 style="margin:0">' + L("locations") + '</h2>' +
       '<div class="ordtabs"><button class="' + (locView === "floor" ? "active" : "") + '" onclick="UI.locView(\'floor\')">' + L("locFloor") + '</button><button class="' + (locView === "map" ? "active" : "") + '" onclick="UI.locView(\'map\')">' + L("locMap") + '</button>' +
@@ -2494,6 +2515,7 @@
       '<p class="hint">' + L("locClickHint") + '</p>' + legend + '</div>' +
       sel +
       '<div class="card"><div class="rackmap">' + sections + '</div></div>' +
+      floorCard +
       '<div class="card"><h2 class="sub2">' + L("locDocks") + '</h2><p class="hint" style="margin-bottom:8px">19 = ' + L("locOfficeEnd") + ' &middot; 11 = ' + L("locFarEnd") + '</p><div class="ztiles">' + docks + '</div>' +
       '<h2 class="sub2" style="margin-top:16px">' + L("locZones") + '</h2><div class="ztiles">' + zones + '</div></div>';
   }

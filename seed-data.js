@@ -8,14 +8,55 @@
 
   // ---- Warehouse location model (Racking Location System SOP) -------------
   // Section-Bay-Level, e.g. A-05-L3. Bay 01 starts at the dock doors.
+  // Real racking geometry per the 3D Facility Map (each section can differ):
+  //   from = first bay #, bays = last bay #, levels = shelf levels, skip = missing bays (openings).
+  const SECTION_GEOM = [
+    { id: "A", from: 1, bays: 28, levels: 4 },
+    { id: "B", from: 1, bays: 28, levels: 4 },
+    { id: "C", from: 1, bays: 28, levels: 4 },
+    { id: "D", from: 1, bays: 28, levels: 4 },
+    { id: "E", from: 1, bays: 22, levels: 3, skip: [17, 18, 19, 20], use: "Raw seed (received)" }, // back wall, emergency-exit gap bays 17-20
+    { id: "F", from: 3, bays: 22, levels: 4 },  // bays 1-2 removed for the Mixing-room door
+    { id: "G", from: 1, bays: 12, levels: 4 },
+    { id: "H", from: 1, bays: 4,  levels: 4 }
+  ];
+  // 4 oz floor storage — one entry per flavor LINE; high-demand flavors have 2 lines (from the map).
+  const FLOOR_4OZ = [
+    ["S01", "Original", 2], ["S02", "Cinnamon Churro", 2], ["S03", "Backyard BBQ", 2], ["S04", "Garlic Parmesan", 2],
+    ["S05", "Dill Pickle", 2], ["S06", "Cracked Pepper", 1], ["S07", "Cheddar Jalapeno", 2], ["S08", "Ranch", 2],
+    ["S09", "Maple Brown Sugar", 1], ["S10", "Lemon Pepper", 1], ["S11", "Sour Cream & Onion", 1], ["S12", "Limited Flavor", 1],
+    ["S13", "Teriyaki", 1], ["S14", "Taco", 1], ["S15", "Salsa", 1], ["S16", "Guacamole", 1], ["S17", "Chile Limon", 1],
+    ["S18", "Honey Sriracha", 1], ["S19", "Deep Dish Pizza", 1], ["S20", "Strawberry Cheesecake", 1], ["S21", "Loaded Nacho Potato", 1],
+    ["S22", "Cheddar Ghost Pepper", 1], ["S23", "Parmuffalo", 1], ["S24", "Cheeseburger", 1], ["S25", "Buffalo Ranch", 1], ["S26", "Peanut Butter & Jelly", 1]
+  ];
+  // 1.5 oz floor storage (back demarcated area) — 8 SKUs S27-S34, each 2 rows (Salvador's map spec).
+  const FLOOR_15OZ = [
+    ["S27", "Original", 2], ["S28", "Cinnamon Churros", 2], ["S29", "Backyard BBQ", 2], ["S30", "Garlic Parmesan", 2],
+    ["S31", "Dill Pickle", 2], ["S32", "Cracked Pepper", 2], ["S33", "Cheddar Jalapeno", 2], ["S34", "Ranch", 2]
+  ];
   const CONFIG = {
-    sections: ["A", "B", "C", "D"],   // racking runs (E reserved)
-    baysPerSection: 28,               // 28 bays/section (112 positions x 4 sections). Per Adriana's map.
+    sections: SECTION_GEOM.map(s => s.id),   // ["A".."H"] — real racking runs
+    sectionGeom: SECTION_GEOM,
+    baysPerSection: 28,               // legacy default (per-section geometry lives in sectionGeom)
     levels: ["L1", "L2", "L3", "L4"], // L1 floor .. L4 top
     docks: [11, 12, 13, 14, 15, 16, 17, 18, 19], // 19 = office end, 11 = far end
-    zones: ["RECEIVING", "STAGING", "RETURNS", "QUARANTINE", "WIP", "PACKOUT", "CAGE", "PROD-WEIGH", "PROD-PACK", "SHIPPING",
-            "ST-01", "ST-02", "ST-03", "ST-04", "ST-05", "ST-06", "ST-07", "ST-08"]
+    // ST-01..08 kept for existing bucket/packaging stock; finished bags now live on the S-floor slots.
+    zones: ["RECEIVING", "STAGING", "RETURNS", "QUARANTINE", "WIP", "PACKOUT", "CAGE", "PROD-WEIGH", "PROD-PACK", "SHIPPING", "PACKAGING",
+            "ST-01", "ST-02", "ST-03", "ST-04", "ST-05", "ST-06", "ST-07", "ST-08"],
+    floor4: FLOOR_4OZ,
+    floor15: FLOOR_15OZ
   };
+  // Floor location codes: 4 oz = S01.. (with -1/-2 when a flavor has 2 lines); 1.5 oz = S27.. (one per core flavor).
+  function floorLineSlots(arr) { const out = []; arr.forEach(f => { for (let l = 1; l <= f[2]; l++) out.push(f[2] > 1 ? f[0] + "-" + l : f[0]); }); return out; }
+  function floor4Slots() { return floorLineSlots(FLOOR_4OZ); }
+  function floor15Slots() { return floorLineSlots(FLOOR_15OZ); }
+  // Label lookup for floor codes (for tiles/pickers): code -> "flavor · 4oz/1.5oz".
+  function floorLabel(code) {
+    const b = String(code).split("-")[0];
+    const f4 = FLOOR_4OZ.find(f => f[0] === b); if (f4) return f4[1] + " · 4oz";
+    const f15 = FLOOR_15OZ.find(f => f[0] === b); if (f15) return f15[1] + " · 1.5oz";
+    return "";
+  }
 
   // ---- Returns pick-lists -------------------------------------------------
   const RETURN_CHANNELS = ["Customer", "Amazon"];
@@ -45,16 +86,18 @@
 
   function rackSlots() {
     const out = [];
-    CONFIG.sections.forEach(s => {
-      for (let b = 1; b <= CONFIG.baysPerSection; b++) {
+    SECTION_GEOM.forEach(s => {
+      for (let b = (s.from || 1); b <= s.bays; b++) {
+        if (s.skip && s.skip.indexOf(b) >= 0) continue;
         const bb = String(b).padStart(2, "0");
-        CONFIG.levels.forEach(l => out.push(s + "-" + bb + "-" + l));
+        for (let l = 1; l <= (s.levels || 4); l++) out.push(s.id + "-" + bb + "-L" + l);
       }
     });
     return out;
   }
+  function floorSlots() { return [...floor4Slots(), ...floor15Slots()]; }
   function allLocations() {
-    return [...rackSlots(), ...CONFIG.zones, ...CONFIG.docks.map(d => "DOCK-" + d)];
+    return [...rackSlots(), ...floorSlots(), ...CONFIG.zones, ...CONFIG.docks.map(d => "DOCK-" + d)];
   }
 
   // ---- Suppliers (order URLs are placeholders — replace with Matt's real URLs) ----
@@ -194,7 +237,7 @@
     return { items, stock, suppliers: SUPPLIERS, config: CONFIG };
   }
 
-  const SMACKIN = { build, allLocations, rackSlots, CONFIG, SNAPSHOT: "2026-07-02",
+  const SMACKIN = { build, allLocations, rackSlots, floorSlots, floor4Slots, floor15Slots, floorLabel, CONFIG, SNAPSHOT: "2026-07-02",
     RECV_SUPPLIERS, RECV_CATEGORIES, RECV_STATUSES, CONDITIONS,
     RETURN_CHANNELS, RETURN_REASONS, RETURN_DISPOSITIONS };
   if (typeof module !== "undefined" && module.exports) module.exports = SMACKIN;
