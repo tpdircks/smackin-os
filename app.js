@@ -2412,11 +2412,12 @@
         '<span class="muted sm">' + L("qcToday") + ': <b>' + fmt(qcTotal) + '</b></span></div>' +
         '<p class="hint">' + L("qcHint") + '</p>' +
         '<div class="row"><div style="flex:2"><label>' + L("qcFlavor") + '</label><select id="qc-flavor" onchange="UI.qcPick(this.value)"><option value="">' + L("qcFlavor") + '&hellip;</option>' + qcOpts + '</select></div>' +
-        '<div><label>' + L("qcQty") + '</label><input id="qc-qty" type="number" min="1" step="1" value="1" inputmode="numeric"></div></div>' +
+        '<div><label>Pallets</label><input id="qc-pallets" type="number" min="1" step="1" value="1" inputmode="numeric"></div>' +
+        '<div><label>Cases / pallet</label><input id="qc-cpp" type="number" min="1" step="1" placeholder="e.g. 60" inputmode="numeric"></div></div>' +
         (qcSelF ? '<p class="muted sm" style="margin:2px 0 8px"><b>' + esc(qcSelF.name) + '</b> ' + L("qcToday").toLowerCase() + ': <b>' + fmt(qcFlavorTotal) + '</b></p>' : '') +
         '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">' +
-        '<button class="primary" style="flex:1;min-width:150px;font-size:22px;padding:20px 10px;margin-top:0" onclick="UI.qcAdd(1)">+1 ' + L("qcCase") + '</button>' +
-        '<button class="ghost" style="flex:1;min-width:120px;font-size:18px;padding:19px 10px" onclick="UI.qcAdd()">+N ' + L("qcCase") + '</button>' +
+        '<button class="primary" style="flex:1;min-width:170px;font-size:20px;padding:20px 10px;margin-top:0" onclick="UI.qcAddPallets()">\u{2795} Log pallets</button>' +
+        '<button class="ghost" style="flex:1;min-width:120px;font-size:18px;padding:19px 10px" onclick="UI.qcAdd(1)">+1 ' + L("qcCase") + '</button>' +
         '<button type="button" class="ghost" style="flex:1;min-width:120px;font-size:18px;padding:19px 10px" onclick="UI.qcScan()">\u{1F4F7} ' + L("qcScan") + '</button>' +
         '</div>' +
         '<input id="qc-scan-in" type="hidden" oninput="UI.qcScanResolve(this.value)">' +
@@ -4361,6 +4362,21 @@
       if (r && r.ok === false) return toast(r.msg || "error");
       qcFlavor = code;
       toast(L("qcAdded") + ": " + f.name + " +" + fmt(q));
+      render();
+    },
+    async qcAddPallets() {
+      const code = (($("qc-flavor") || {}).value || qcFlavor || "");
+      const f = PROD_FMAP[code]; if (!f) return toast(L("qcPickFirst"));
+      const pallets = parseFloat(($("qc-pallets") || {}).value) || 0;
+      const cpp = parseFloat(($("qc-cpp") || {}).value) || 0;
+      if (!(pallets > 0) || !(cpp > 0)) return toast("Enter pallets and cases per pallet");
+      const cases = Math.round(pallets * cpp);
+      const today = new Date().toISOString().slice(0, 10);
+      const t = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const r = await DB.addProdPallet({ prod_date: today, channel: "retail", line: "", flavor_code: code, cases: cases, log_time: t, notes: pallets + " pallet" + (pallets === 1 ? "" : "s") + " x " + cpp + " cases/pallet" }, opVal());
+      if (r && r.ok === false) return toast(r.msg || "error");
+      qcFlavor = code;
+      toast(f.name + " +" + fmt(cases) + " cases (" + pallets + " x " + cpp + ")");
       render();
     },
     async qcScan() { await UI.cam("qc-scan-in"); },
