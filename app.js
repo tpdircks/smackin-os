@@ -2521,10 +2521,11 @@
       }
       panel = '<div class="locact"><h3 class="sub2">' + L("lmAssignTitle") + (flab ? ' &mdash; ' + esc(flab) : '') + '</h3>' + dl +
         '<div class="row"><div><label>Item (type to search)</label><input id="la-item" list="dl-locitem" autocomplete="off" placeholder="Type a flavor or item&hellip;" value="' + esc(defItem ? disp(defItem) : "") + '"></div>' +
-        '<div><label>' + (isFloorPallet ? "Pallets to add" : flab ? "Pallets" : L("qty")) + '</label><input id="la-qty" type="number" min="1" value="1"></div>' +
-        (isFloorPallet ? '<div><label>Bags on each pallet</label><input id="la-bpp" type="number" min="1" placeholder="e.g. 2520"></div>' : '') +
+        '<div><label>' + (isFloorPallet ? "Pallets to add" : "Pallets") + '</label><input id="la-qty" type="number" min="1" value="1"></div>' +
+        (isFloorPallet ? '<div><label>Bags on each pallet</label><input id="la-bpp" type="number" min="1" placeholder="e.g. 2520"></div>' : '<div><label>Units on each pallet</label><input id="la-upp" type="number" min="1" placeholder="e.g. 300"></div>') +
         '</div>' +
-        (isFloorPallet ? '<p class="hint" style="margin:0 0 8px">' + capHint + 'Each spot is filled with the bags-per-pallet you enter (e.g. 2,520). Adding multiple pallets fills that many empty spots for this flavor.</p>' : '') +
+        (isFloorPallet ? '<p class="hint" style="margin:0 0 8px">' + capHint + 'Each spot is filled with the bags-per-pallet you enter (e.g. 2,520). Adding multiple pallets fills that many empty spots for this flavor.</p>'
+          : '<p class="hint" style="margin:0 0 8px">Total added = pallets &times; units on each pallet (e.g. 2 pallets &times; 300 = 600). Leave units blank to enter a plain count.</p>') +
         '<button class="primary" onclick="UI.locAssignGo(\'' + esc(code) + '\')">' + L("lmAssignBtn") + '</button> ' +
         '<button class="ghost" style="margin-top:14px" onclick="UI.locActCancel()">' + L("ordCancel") + '</button></div>';
     } else if (locAct === "deadflag") {
@@ -2651,7 +2652,8 @@
         '<div style="margin-top:10px;padding:12px;background:#EAF2FA;border:1px solid #006DB6;border-radius:8px">' +
         '<div style="font-weight:700;margin-bottom:8px">&#9776; ' + locMulti.size + ' bin' + (locMulti.size === 1 ? '' : 's') + ' selected &mdash; tap bins on the map to add or remove.</div>' +
         '<div class="row"><div><label>Item (type to search)</label><input id="lmulti-item" list="dl-locmulti" autocomplete="off" placeholder="Type a flavor or item&hellip;"></div>' +
-        '<div><label>Pallets each</label><input id="lmulti-qty" type="number" min="1" value="1"></div></div>' +
+        '<div><label>Pallets each</label><input id="lmulti-qty" type="number" min="1" value="1"></div>' +
+        '<div><label>Units per pallet</label><input id="lmulti-upp" type="number" min="1" placeholder="optional"></div></div>' +
         '<button class="primary" onclick="UI.locMultiAdd()"' + (locMulti.size ? '' : ' disabled') + '>&#10133; Add to ' + locMulti.size + ' selected bin' + (locMulti.size === 1 ? '' : 's') + '</button> ' +
         '<button class="ghost" onclick="UI.locMultiClear()">Clear selection</button> ' +
         '<button class="ghost" onclick="UI.locMultiToggle()">Cancel</button></div>'
@@ -4222,8 +4224,9 @@
       if (!it) return toast(L("notfound")); if (!(q > 0)) return toast(L("enter"));
       const bins = [...locMulti].filter(b => !(typeof BLOCKED_SLOTS !== "undefined" && BLOCKED_SLOTS.has && BLOCKED_SLOTS.has(b)));
       let n = 0;
-      for (const b of bins) { const cur = DB.atLoc ? DB.atLoc(it.id, b) : 0; await DB.adjust(it, b, (Number(cur) || 0) + q, opVal()); n++; }
-      locMulti.clear(); toast(n + " bins <- " + it.name); render();
+      const upp = parseFloat(($("lmulti-upp") || {}).value); const per = upp > 0 ? q * upp : q;
+      for (const b of bins) { const cur = DB.atLoc ? DB.atLoc(it.id, b) : 0; await DB.adjust(it, b, (Number(cur) || 0) + per, opVal()); n++; }
+      locMulti.clear(); toast(n + " bins <- " + fmt(per) + " " + it.name); render();
     },
     async locMoveGo(code) {
       const id = ($("lm-item") || {}).value; const dest = (($("lm-dest") || {}).value || "").trim().toUpperCase();
@@ -4261,9 +4264,11 @@
         for (const s of targets) { if (filled >= pallets) break; const cur = DB.atLoc ? DB.atLoc(it.id, s) : 0; if (Number(cur) > 0 && s !== code) continue; await DB.adjust(it, s, (Number(cur) || 0) + bpp, opVal()); filled++; added += bpp; }
         locAct = ""; toast(filled + " pallet" + (filled === 1 ? "" : "s") + " × " + fmt(bpp) + " = " + fmt(added) + " bags " + it.name + " → " + base); render(); return;
       }
+      const upp = parseFloat(($("la-upp") || {}).value);
+      const total = upp > 0 ? q * upp : q;
       const cur = DB.atLoc ? DB.atLoc(it.id, code) : 0;
-      await DB.adjust(it, code, (Number(cur) || 0) + q, opVal());
-      locAct = ""; toast(it.name + " -> " + code); render();
+      await DB.adjust(it, code, (Number(cur) || 0) + total, opVal());
+      locAct = ""; toast(it.name + " +" + fmt(total) + (upp > 0 ? " (" + fmt(q) + " x " + fmt(upp) + ")" : "") + " -> " + code); render();
     },
     async locEmpty(code) {
       const occ = locOccupancy(); const e = occ[code]; if (!e || !e.items.length) return;
