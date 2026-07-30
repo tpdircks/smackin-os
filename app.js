@@ -1021,11 +1021,28 @@
     const flav = items.filter(i => i.category === "bag4" && /^B4-(S|L)\d/.test(i.code))
       .map(i => ({ code: i.code.replace("B4-", ""), name: i.flavor }))
       .sort((a, b) => (a.code < b.code ? -1 : a.code > b.code ? 1 : 0));
+    // ---- Order Now: everything at/below reorder, out, OR made with no seasoning tracked (the Cheeseburger gap) ----
+    const seasGaps = flav.filter(f => !DB.itemByCode("SEAS-" + f.code) && DB.onHand("B4-" + f.code) > 0);
+    const buyItems = [];
+    out.forEach(i => buyItems.push({ s: "out", nm: i.name, sub: i.code, oh: "0 " + i.unit, sug: fmt(suggestQty(i)) + " " + i.unit }));
+    seasGaps.forEach(f => buyItems.push({ s: "gap", nm: "Seasoning - " + f.name, sub: "not tracked - add it & order", oh: "?", sug: "set up" }));
+    low.forEach(i => buyItems.push({ s: "low", nm: i.name, sub: i.code, oh: fmt(DB.onHand(i.id)) + " " + i.unit, sug: fmt(suggestQty(i)) + " " + i.unit }));
+    const buyPill = s => s === "low" ? '<span class="pill low">LOW</span>' : s === "gap" ? '<span class="pill out">NOT TRACKED</span>' : '<span class="pill out">OUT</span>';
+    const buyCard = buyItems.length
+      ? '<div class="card" style="border:2px solid #B52024">' +
+        '<div class="suprow"><h2 class="sub2" style="margin:0;flex:1;color:#B52024">&#128722; Order Now &mdash; ' + buyItems.length + ' item' + (buyItems.length === 1 ? '' : 's') + '</h2>' +
+        '<a class="order sm" onclick="UI_go(\'purchasing\')" style="cursor:pointer">Purchasing &rarr;</a></div>' +
+        '<p class="hint" style="margin:2px 0 8px">At or below reorder, out of stock, or being made with no seasoning tracked. Order these before we run out.</p>' +
+        '<div class="tblwrap"><table><thead><tr><th>Status</th><th>Item</th><th class="right">On hand</th><th class="right">Suggested</th></tr></thead><tbody>' +
+        buyItems.map(b => '<tr><td>' + buyPill(b.s) + '</td><td><b>' + esc(b.nm) + '</b><div class="muted sm">' + esc(b.sub) + '</div></td><td class="right">' + b.oh + '</td><td class="right muted">' + b.sug + '</td></tr>').join("") +
+        '</tbody></table></div></div>'
+      : "";
     const ec = it => { if (!it) return '<td class="right ess-na">&mdash;</td>';
       const st = statusOf(it); return '<td class="right ess-' + st + '"><b>' + fmt(DB.onHand(it.id)) + '</b></td>'; };
     const frows = flav.map(f =>
       '<tr><td>' + flavCell(f.name, flavorImg(f.name), true) + '</td>' +
-      ec(bc("B4-" + f.code)) + ec(bc("B15-" + f.code)) + ec(bc("F4-" + f.code)) + ec(bc("SEAS-" + f.code)) + '</tr>').join("");
+      ec(bc("B4-" + f.code)) + ec(bc("B15-" + f.code)) + ec(bc("F4-" + f.code)) +
+      (bc("SEAS-" + f.code) ? ec(bc("SEAS-" + f.code)) : '<td class="right ess-' + (DB.onHand("B4-" + f.code) > 0 ? 'out" title="Seasoning not tracked - add it"><b>?' : 'na"><b>&mdash;') + '</b></td>') + '</tr>').join("");
     const essTable = '<div class="card"><div class="suprow"><h2 class="sub2" style="margin:0;flex:1">' + L("hEssential") + '</h2>' +
       '<a class="order sm" onclick="UI_go(\'dash\')" style="cursor:pointer">' + L("hSeeAll") + '</a></div>' +
       '<div class="esslegend"><span class="ess-key ok">' + L("hCovered") + '</span><span class="ess-key low">' + L("hLowShort") + '</span><span class="ess-key out">' + L("hOutShort") + '</span></div>' +
@@ -1042,7 +1059,7 @@
       '<div class="kpi"><div class="n">' + fmt(bag4) + '</div><div class="l">' + L("bag4") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(bag15) + '</div><div class="l">' + L("bag15") + '</div></div></div>' +
       '<h2 class="sub2" style="margin:16px 0 8px">' + L("hBase") + '</h2><div class="btiles">' + baseTiles + '</div></div>';
-    return '<div class="card"><h2>' + L("homeTitle") + '</h2><p class="hint">' + L("homeHint") + '</p><div class="htiles">' + tiles + '</div></div>' + attention + essTable + snapshot;
+    return '<div class="card"><h2>' + L("homeTitle") + '</h2><p class="hint">' + L("homeHint") + '</p><div class="htiles">' + tiles + '</div></div>' + buyCard + attention + essTable + snapshot;
   }
   // ===== Data freshness / health: show how current each feed is, so nobody trusts stale data =====
   function daysAgo(iso) { if (!iso) return null; return Math.floor((Date.now() - new Date(iso).getTime()) / 864e5); }
