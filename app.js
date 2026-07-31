@@ -1028,13 +1028,16 @@
     const ooOf = id => ooMap[id] || 0;
     const buyItems = [], inbound = [];
     // Order actionable reorders first (OUT, then LOW), then the seasoning setup tasks last.
+    const isMade = c => c === "bag4" || c === "bag15";   // finished bags are produced in-house, not purchased
     out.forEach(i => { const o = ooOf(i.id), need = suggestQty(i);
-      const row = { s: "out", id: i.id, nm: i.name, sub: i.code, unit: i.unit, ohN: 0, reN: Number(i.reorder) || 0, oo: o, sugN: need, hasSup: !!i.supplier };
+      const row = { s: "out", id: i.id, nm: i.name, sub: i.code, unit: i.unit, ohN: 0, reN: Number(i.reorder) || 0, oo: o, sugN: need, hasSup: !!i.supplier, produce: isMade(i.category) };
       (o > 0 && o >= need ? inbound : buyItems).push(row); });
     low.forEach(i => { const o = ooOf(i.id), need = suggestQty(i);
-      const row = { s: "low", id: i.id, nm: i.name, sub: i.code, unit: i.unit, ohN: DB.onHand(i.id), reN: Number(i.reorder) || 0, oo: o, sugN: need, hasSup: !!i.supplier };
+      const row = { s: "low", id: i.id, nm: i.name, sub: i.code, unit: i.unit, ohN: DB.onHand(i.id), reN: Number(i.reorder) || 0, oo: o, sugN: need, hasSup: !!i.supplier, produce: isMade(i.category) };
       (o > 0 && o >= need ? inbound : buyItems).push(row); });
     const gapItems = seasGaps.map(f => ({ s: "gap", id: null, seasFor: f.id, nm: "Seasoning - " + f.name, sub: "not tracked", unit: "", ohN: 0, reN: 0, oo: 0, sugN: 0, hasSup: false }));
+    const orderItems = buyItems.filter(b => !b.produce);   // purchasables -> PO
+    const produceItems = buyItems.filter(b => b.produce);  // finished bags -> production
     const arrivals = (DB.expectedReceipts ? DB.expectedReceipts() : []).filter(a => !a.recv && a.ship).sort((a, b) => (a.ship < b.ship ? -1 : a.ship > b.ship ? 1 : 0));
     // --- Visual styles for the dashboard status strip + order-card grid (theme-neutral) ---
     const dStyle = '<style>' +
@@ -1056,6 +1059,8 @@
     const barPct = b => b.reN > 0 ? Math.max(4, Math.min(100, Math.round(b.ohN / b.reN * 100))) : (b.ohN > 0 ? 100 : 4);
     const ordBtn = b => b.s === "gap"
       ? '<button class="ot-order" onclick="UI.orderItem(\'' + (b.seasFor || '') + '\',\'gap\')">Set up &rarr;</button>'
+      : b.produce
+      ? '<button class="ot-order" style="background:#2E6FB5" onclick="UI_go(\'stockbuild\')">Produce &rarr;</button>'
       : '<button class="ot-order" onclick="UI.orderItem(\'' + b.id + '\')">Order &rarr;</button>';
     const ordTile = (b, inb) => '<div class="ordtile s-' + b.s + '">' +
       '<div class="ot-top"><span class="ot-nm">' + esc(b.nm) + '</span><span class="ot-pill">' + pillTxt(b.s) + '</span></div>' +
@@ -1065,26 +1070,34 @@
         ? '<span>Seasoning not tracked</span>'
         : '<span><b>' + fmt(b.ohN) + '</b> on hand</span><span style="opacity:.6">reorder ' + fmt(b.reN) + '</span>') + '</div>' +
       '<div class="ot-foot">' +
-        (b.s === "gap" ? '<span class="ot-need">Add item</span>' : '<span class="ot-need">Order <b>' + fmt(b.sugN) + '</b> ' + esc(b.unit) + '</span>') +
+        (b.s === "gap" ? '<span class="ot-need">Add item</span>' : '<span class="ot-need">' + (b.produce ? "Make" : "Order") + ' <b>' + fmt(b.sugN) + '</b> ' + esc(b.unit) + '</span>') +
         (inb ? '<span class="ot-oo">on order</span>' : ordBtn(b)) + '</div>' +
       (b.oo ? '<div class="ot-oo">' + fmt(b.oo) + ' already on order</div>' : '') +
       '</div>';
     const stripTile = (emoji, count, label, color, click) => '<button class="dstat" style="border-top:3px solid ' + color + '" onclick="' + click + '"><span class="ds-n" style="color:' + color + '">' + count + '</span><span class="ds-l">' + emoji + ' ' + label + '</span></button>';
     const scrollTo = id => 'var e=document.getElementById(\'' + id + '\');if(e){if(e.tagName===\'DETAILS\')e.open=true;e.scrollIntoView({behavior:\'smooth\',block:\'start\'})}';
     const statusStrip = dStyle + '<div class="dstrip">' +
-      stripTile("&#128722;", buyItems.length, "Order Now", "#B52024", scrollTo("ordnow")) +
+      stripTile("&#128722;", orderItems.length, "Order Now", "#B52024", scrollTo("ordnow")) +
+      (produceItems.length ? stripTile("&#127981;", produceItems.length, "Produce", "#C67F16", scrollTo("ordproduce")) : "") +
       stripTile("&#128666;", inbound.length, "On Order", "#2E6FB5", scrollTo("ordinbound")) +
       stripTile("&#128230;", arrivals.length, "Incoming", "#6B7280", scrollTo("ordincoming")) +
       (seasGaps.length ? stripTile("&#9888;", seasGaps.length, "Not Tracked", "#8A63D2", scrollTo("ordgaps")) : "") +
-      stripTile("&#127793;", flav.length, "Flavors", "#2E9E5B", "UI_go('dash')") +
       '</div>';
-    const buyCard = buyItems.length
+    const buyCard = orderItems.length
       ? '<div class="card" id="ordnow" style="border:2px solid #B52024">' +
-        '<div class="suprow"><h2 class="sub2" style="margin:0;flex:1;color:#B52024">&#128722; Order Now &mdash; ' + buyItems.length + ' item' + (buyItems.length === 1 ? '' : 's') + '</h2>' +
+        '<div class="suprow"><h2 class="sub2" style="margin:0;flex:1;color:#B52024">&#128722; Order Now &mdash; ' + orderItems.length + ' item' + (orderItems.length === 1 ? '' : 's') + '</h2>' +
         '<a class="order sm" onclick="UI_go(\'purchasing\')" style="cursor:pointer">Purchasing &rarr;</a></div>' +
-        '<p class="hint" style="margin:2px 0 10px">At or below reorder or out &mdash; and not already on an open PO. Click <b>Order</b> to open a PO pre-filled for that item.</p>' +
-        '<div class="ordgrid">' + buyItems.map(b => ordTile(b, false)).join("") + '</div></div>'
+        '<p class="hint" style="margin:2px 0 10px">Purchased materials at or below reorder or out &mdash; and not already on an open PO. Click <b>Order</b> to open a PO pre-filled for that item.</p>' +
+        '<div class="ordgrid">' + orderItems.map(b => ordTile(b, false)).join("") + '</div></div>'
       : '<div class="card" id="ordnow"><p class="ok pill big">&#127807; Nothing to order right now</p></div>';
+    // Finished bags that are low/out — a PRODUCTION need, not a purchase. Routes to Stock Build.
+    const produceCard = produceItems.length
+      ? '<div class="card" id="ordproduce" style="border:2px solid #C67F16">' +
+        '<div class="suprow"><h2 class="sub2" style="margin:0;flex:1;color:#B87413">&#127981; Produce Now &mdash; ' + produceItems.length + ' item' + (produceItems.length === 1 ? '' : 's') + '</h2>' +
+        '<a class="order sm" onclick="UI_go(\'stockbuild\')" style="cursor:pointer">Stock Build &rarr;</a></div>' +
+        '<p class="hint" style="margin:2px 0 10px">Finished bags at or below reorder &mdash; these are made in-house, not purchased. Click <b>Produce</b> to open Stock Build.</p>' +
+        '<div class="ordgrid">' + produceItems.map(b => ordTile(b, false)).join("") + '</div></div>'
+      : "";
     // Low/out but already covered by a placed PO — calm, collapsed by default so it doesn't add scroll.
     const inboundCard = inbound.length
       ? '<details class="card" id="ordinbound" style="border:1px solid #2E6FB5"><summary style="cursor:pointer;font-weight:700;color:#2E6FB5">&#128666; Already On Order &mdash; ' + inbound.length + ' item' + (inbound.length === 1 ? '' : 's') + ' (tap to expand)</summary>' +
@@ -1127,7 +1140,7 @@
       '<div class="kpi"><div class="n">' + fmt(bag4) + '</div><div class="l">' + L("bag4") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(bag15) + '</div><div class="l">' + L("bag15") + '</div></div></div>' +
       '<h2 class="sub2" style="margin:16px 0 8px">' + L("hBase") + '</h2><div class="btiles">' + baseTiles + '</div></div>';
-    return '<div class="card"><h2>' + L("homeTitle") + '</h2><p class="hint">' + L("homeHint") + '</p><div class="htiles">' + tiles + '</div></div>' + statusStrip + buyCard + inboundCard + incomingCard + gapCard + attention + essTable + snapshot;
+    return '<div class="card"><h2>' + L("homeTitle") + '</h2><p class="hint">' + L("homeHint") + '</p><div class="htiles">' + tiles + '</div></div>' + statusStrip + buyCard + produceCard + inboundCard + incomingCard + gapCard + attention + essTable + snapshot;
   }
   // ===== Data freshness / health: show how current each feed is, so nobody trusts stale data =====
   function daysAgo(iso) { if (!iso) return null; return Math.floor((Date.now() - new Date(iso).getTime()) / 864e5); }
