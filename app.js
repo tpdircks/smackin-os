@@ -1027,13 +1027,14 @@
     const ooMap = DB.onOrderMap ? DB.onOrderMap() : {};
     const ooOf = id => ooMap[id] || 0;
     const buyItems = [], inbound = [];
+    // Order actionable reorders first (OUT, then LOW), then the seasoning setup tasks last.
     out.forEach(i => { const o = ooOf(i.id), need = suggestQty(i);
       const row = { s: "out", id: i.id, nm: i.name, sub: i.code, unit: i.unit, ohN: 0, reN: Number(i.reorder) || 0, oo: o, sugN: need, hasSup: !!i.supplier };
       (o > 0 && o >= need ? inbound : buyItems).push(row); });
-    seasGaps.forEach(f => buyItems.push({ s: "gap", id: null, seasFor: f.id, nm: "Seasoning - " + f.name, sub: "not tracked", unit: "", ohN: 0, reN: 0, oo: 0, sugN: 0, hasSup: false }));
     low.forEach(i => { const o = ooOf(i.id), need = suggestQty(i);
       const row = { s: "low", id: i.id, nm: i.name, sub: i.code, unit: i.unit, ohN: DB.onHand(i.id), reN: Number(i.reorder) || 0, oo: o, sugN: need, hasSup: !!i.supplier };
       (o > 0 && o >= need ? inbound : buyItems).push(row); });
+    const gapItems = seasGaps.map(f => ({ s: "gap", id: null, seasFor: f.id, nm: "Seasoning - " + f.name, sub: "not tracked", unit: "", ohN: 0, reN: 0, oo: 0, sugN: 0, hasSup: false }));
     const arrivals = (DB.expectedReceipts ? DB.expectedReceipts() : []).filter(a => !a.recv && a.ship).sort((a, b) => (a.ship < b.ship ? -1 : a.ship > b.ship ? 1 : 0));
     // --- Visual styles for the dashboard status strip + order-card grid (theme-neutral) ---
     const dStyle = '<style>' +
@@ -1074,6 +1075,7 @@
       stripTile("&#128722;", buyItems.length, "Order Now", "#B52024", scrollTo("ordnow")) +
       stripTile("&#128666;", inbound.length, "On Order", "#2E6FB5", scrollTo("ordinbound")) +
       stripTile("&#128230;", arrivals.length, "Incoming", "#6B7280", scrollTo("ordincoming")) +
+      (seasGaps.length ? stripTile("&#9888;", seasGaps.length, "Not Tracked", "#8A63D2", scrollTo("ordgaps")) : "") +
       stripTile("&#127793;", flav.length, "Flavors", "#2E9E5B", "UI_go('dash')") +
       '</div>';
     const buyCard = buyItems.length
@@ -1097,6 +1099,12 @@
         arrivals.slice(0, 12).map(a => '<tr><td class="sm">' + esc(a.ship) + '</td><td><b>' + esc(a.desc || a.item || "-") + '</b>' + (a.po_num ? '<div class="muted sm">PO ' + esc(a.po_num) + '</div>' : '') + '</td><td class="sm">' + esc(a.vendor || "") + '</td><td class="right muted">' + esc(String(a.qty || "")) + (a.uom ? " " + esc(a.uom) : "") + '</td></tr>').join("") +
         '</tbody></table></div></details>'
       : "";
+    // Seasonings that are being made but not tracked yet — a data-setup task, kept out of the urgent Order Now list.
+    const gapCard = gapItems.length
+      ? '<details class="card" id="ordgaps" style="border:1px solid #8A63D2"><summary style="cursor:pointer;font-weight:700;color:#7A4FCF">&#9888; Seasonings Not Tracked &mdash; ' + gapItems.length + ' (tap to set up)</summary>' +
+        '<p class="hint" style="margin:6px 0 10px">These flavors are being made but have no seasoning item in the system, so we cannot alert on them (this is what caused the Cheeseburger surprise). Add each one so it starts triggering reorders.</p>' +
+        '<div class="ordgrid">' + gapItems.map(b => ordTile(b, false)).join("") + '</div></details>'
+      : "";
     const ec = it => { if (!it) return '<td class="right ess-na">&mdash;</td>';
       const st = statusOf(it); return '<td class="right ess-' + st + '"><b>' + fmt(DB.onHand(it.id)) + '</b></td>'; };
     const frows = flav.map(f =>
@@ -1119,7 +1127,7 @@
       '<div class="kpi"><div class="n">' + fmt(bag4) + '</div><div class="l">' + L("bag4") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(bag15) + '</div><div class="l">' + L("bag15") + '</div></div></div>' +
       '<h2 class="sub2" style="margin:16px 0 8px">' + L("hBase") + '</h2><div class="btiles">' + baseTiles + '</div></div>';
-    return '<div class="card"><h2>' + L("homeTitle") + '</h2><p class="hint">' + L("homeHint") + '</p><div class="htiles">' + tiles + '</div></div>' + statusStrip + buyCard + inboundCard + incomingCard + attention + essTable + snapshot;
+    return '<div class="card"><h2>' + L("homeTitle") + '</h2><p class="hint">' + L("homeHint") + '</p><div class="htiles">' + tiles + '</div></div>' + statusStrip + buyCard + inboundCard + incomingCard + gapCard + attention + essTable + snapshot;
   }
   // ===== Data freshness / health: show how current each feed is, so nobody trusts stale data =====
   function daysAgo(iso) { if (!iso) return null; return Math.floor((Date.now() - new Date(iso).getTime()) / 864e5); }
