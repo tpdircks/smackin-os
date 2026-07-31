@@ -353,8 +353,33 @@ window.DB = (function () {
     }
     return { ok: true, location: loc };
   }
+  // ---------- Recipe engine (Allen's Manufacturing doc: Recipes + Codes tabs) ----------
+  // Real per-flavor seasoning consumption. seas_lbs = lbs per 100-lb seed batch.
+  // 100 lb seed => ~400 bags 4oz OR ~1067 bags 1.5oz. The old flat 0.0035 lb/bag under-counted
+  // seasoning ~4-5x (e.g. BBQ real = 6.5/400 = 0.01625 lb/bag), a key cause of surprise stockouts.
+  const SEAS_LB_PER_BAG_FALLBACK = 0.0165;   // ~recipe average, used only when a flavor has no recipe
+  function recipeFor(flavorName) { return (typeof window !== "undefined" && window.RECIPE_LOOKUP) ? window.RECIPE_LOOKUP(flavorName) : null; }
+  function bagsPerBatch(size) { return (String(size).indexOf("1.5") >= 0) ? 1067 : 400; }
+  function seasLbPerBag(flavorName, size) {
+    const r = recipeFor(flavorName);
+    if (r && r.seas_lbs) return r.seas_lbs / bagsPerBatch(size);
+    return SEAS_LB_PER_BAG_FALLBACK;
+  }
+  // Open demand bags for a flavor (SPS demandLines today; Phase 2 adds e-com).
+  function flavorDemandBags(flavorName) {
+    const k = String(flavorName || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    let t = 0;
+    (cache.demandLines || []).forEach(d => { if (String(d.flavor || "").toLowerCase().replace(/[^a-z0-9]/g, "") === k) t += Number(d.bags) || 0; });
+    return t;
+  }
+  // Recommended seasoning reorder point (lbs) = cover (lead+safety) weeks at current weekly demand.
+  function recommendedSeasReorder(flavorName, size, weeklyBags, leadWeeks, safetyWeeks) {
+    leadWeeks = leadWeeks == null ? 5 : leadWeeks; safetyWeeks = safetyWeeks == null ? 2 : safetyWeeks;
+    const perBag = seasLbPerBag(flavorName, size || "4oz");
+    const wk = weeklyBags != null ? weeklyBags : flavorDemandBags(flavorName);
+    return Math.ceil(wk * perBag * (leadWeeks + safetyWeeks));
+  }
   // Produce finished 4oz bags: +bags, consume 1 film (4oz) impression/bag + seasoning.
-  const SEAS_LB_PER_BAG = 0.0035;
   async function produce(flavorCode, qty, loc, op) {
     const bagItem = itemByCode("B4-" + flavorCode) || cache.items.find(i => i.id === "BAG4-" + flavorCode);
     const deltas = [{ item_id: "BAG4-" + flavorCode, location: loc, delta: qty }];
@@ -367,7 +392,7 @@ window.DB = (function () {
       deltas.push({ item_id: "FILM4-" + flavorCode, location: r.location, delta: -take });
       filmNeed -= take; filmUsed += take;
     });
-    let seasNeed = qty * SEAS_LB_PER_BAG, seasUsed = 0;
+    let seasNeed = qty * seasLbPerBag(bagItem ? bagItem.flavor : flavorCode, "4oz"), seasUsed = 0;
     cache.stock.filter(r => r.item_id === "SEAS-" + flavorCode).forEach(r => {
       if (seasNeed <= 0) return;
       const take = Math.min(r.qty, seasNeed);
@@ -1674,6 +1699,7 @@ window.DB = (function () {
     rdRequests, createRdRequest, updateRdRequest, setRdStatus, deleteRdRequest, sendRdEmail,
     supplierPos, createSupplierPO, updateSupplierPO, deleteSupplierPO, emailPO, expectedReceipts, markLineReceived,
     onOrderMap, onOrder,
+    recipeFor, seasLbPerBag, bagsPerBatch, flavorDemandBags, recommendedSeasReorder,
     orderDocs, createOrderDoc, deleteOrderDoc,
     referenceDocs, createRefDoc, deleteRefDoc,
     consumption, consume,
