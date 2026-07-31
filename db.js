@@ -1168,6 +1168,22 @@ window.DB = (function () {
     });
     return out;
   }
+  // ---- On-order quantities: how much of each item is already on a placed PO (ordered/partial),
+  // net of what has been received. Lets the dashboard stop nagging to reorder something already inbound.
+  function onOrderMap() {
+    const m = {};
+    (cache.pos || []).forEach(po => {
+      const st = String(po.status || "").toLowerCase();
+      if (st !== "ordered" && st !== "partial") return; // draft = not placed yet; received = done
+      (po.lines || []).forEach(l => {
+        const id = l.item_id; if (!id) return;
+        const open = (Number(l.qty) || 0) - (Number(l.received) || 0);
+        if (open > 0) m[id] = (m[id] || 0) + open;
+      });
+    });
+    return m;
+  }
+  function onOrder(itemId) { return onOrderMap()[itemId] || 0; }
   // Mark one PO line received (persists recv flag onto the line JSON) + logs it. Returns line info for notify.
   async function markLineReceived(poId, idx, op) {
     const po = (cache.supplierPos || []).find(x => String(x.id) === String(poId)); if (!po) return { ok: false };
@@ -1657,6 +1673,7 @@ window.DB = (function () {
     orders, createOrder, updateOrder, setOrderStatus, deleteOrder, notifyNewOrder, reconcileSpsOrders,
     rdRequests, createRdRequest, updateRdRequest, setRdStatus, deleteRdRequest, sendRdEmail,
     supplierPos, createSupplierPO, updateSupplierPO, deleteSupplierPO, emailPO, expectedReceipts, markLineReceived,
+    onOrderMap, onOrder,
     orderDocs, createOrderDoc, deleteOrderDoc,
     referenceDocs, createRefDoc, deleteRefDoc,
     consumption, consume,

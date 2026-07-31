@@ -1024,18 +1024,45 @@
     // ---- Order Now: everything at/below reorder, out, OR made with no seasoning tracked (the Cheeseburger gap) ----
     const NO_SEAS = new Set(["S01"]); // OG Original = plain salted seed, uses no seasoning (not a gap)
     const seasGaps = flav.filter(f => !DB.itemByCode("SEAS-" + f.code) && DB.onHand(f.id) > 0 && !NO_SEAS.has(f.code));
-    const buyItems = [];
-    out.forEach(i => buyItems.push({ s: "out", nm: i.name, sub: i.code, oh: "0 " + i.unit, sug: fmt(suggestQty(i)) + " " + i.unit }));
-    seasGaps.forEach(f => buyItems.push({ s: "gap", nm: "Seasoning - " + f.name, sub: "not tracked - add it & order", oh: "?", sug: "set up" }));
-    low.forEach(i => buyItems.push({ s: "low", nm: i.name, sub: i.code, oh: fmt(DB.onHand(i.id)) + " " + i.unit, sug: fmt(suggestQty(i)) + " " + i.unit }));
+    const ooMap = DB.onOrderMap ? DB.onOrderMap() : {};
+    const ooOf = id => ooMap[id] || 0;
+    const buyItems = [], inbound = [];
+    out.forEach(i => { const o = ooOf(i.id), need = suggestQty(i);
+      const row = { s: "out", nm: i.name, sub: i.code, oh: "0 " + i.unit, oo: o, sug: fmt(need) + " " + i.unit, unit: i.unit };
+      (o > 0 && o >= need ? inbound : buyItems).push(row); });
+    seasGaps.forEach(f => buyItems.push({ s: "gap", nm: "Seasoning - " + f.name, sub: "not tracked - add it & order", oh: "?", oo: 0, sug: "set up" }));
+    low.forEach(i => { const o = ooOf(i.id), need = suggestQty(i);
+      const row = { s: "low", nm: i.name, sub: i.code, oh: fmt(DB.onHand(i.id)) + " " + i.unit, oo: o, sug: fmt(need) + " " + i.unit, unit: i.unit };
+      (o > 0 && o >= need ? inbound : buyItems).push(row); });
     const buyPill = s => s === "low" ? '<span class="pill low">LOW</span>' : s === "gap" ? '<span class="pill out">NOT TRACKED</span>' : '<span class="pill out">OUT</span>';
+    const ooCell = b => '<td class="right muted">' + (b.oo ? fmt(b.oo) + (b.unit ? " " + b.unit : "") : "&mdash;") + '</td>';
     const buyCard = buyItems.length
       ? '<div class="card" style="border:2px solid #B52024">' +
         '<div class="suprow"><h2 class="sub2" style="margin:0;flex:1;color:#B52024">&#128722; Order Now &mdash; ' + buyItems.length + ' item' + (buyItems.length === 1 ? '' : 's') + '</h2>' +
         '<a class="order sm" onclick="UI_go(\'purchasing\')" style="cursor:pointer">Purchasing &rarr;</a></div>' +
-        '<p class="hint" style="margin:2px 0 8px">At or below reorder, out of stock, or being made with no seasoning tracked. Order these before we run out.</p>' +
-        '<div class="tblwrap"><table><thead><tr><th>Status</th><th>Item</th><th class="right">On hand</th><th class="right">Suggested</th></tr></thead><tbody>' +
-        buyItems.map(b => '<tr><td>' + buyPill(b.s) + '</td><td><b>' + esc(b.nm) + '</b><div class="muted sm">' + esc(b.sub) + '</div></td><td class="right">' + b.oh + '</td><td class="right muted">' + b.sug + '</td></tr>').join("") +
+        '<p class="hint" style="margin:2px 0 8px">At or below reorder, out of stock, or being made with no seasoning tracked &mdash; and not already covered by an open PO. Order these before we run out.</p>' +
+        '<div class="tblwrap"><table><thead><tr><th>Status</th><th>Item</th><th class="right">On hand</th><th class="right">On order</th><th class="right">Suggested</th></tr></thead><tbody>' +
+        buyItems.map(b => '<tr><td>' + buyPill(b.s) + '</td><td><b>' + esc(b.nm) + '</b><div class="muted sm">' + esc(b.sub) + '</div></td><td class="right">' + b.oh + '</td>' + ooCell(b) + '<td class="right muted">' + b.sug + '</td></tr>').join("") +
+        '</tbody></table></div></div>'
+      : "";
+    // Low/out but already covered by a placed PO — shown calm (blue), not red, so nobody double-orders.
+    const inboundCard = inbound.length
+      ? '<div class="card" style="border:1px solid #2E6FB5">' +
+        '<div class="suprow"><h2 class="sub2" style="margin:0;flex:1;color:#2E6FB5">&#128666; Already On Order &mdash; ' + inbound.length + ' item' + (inbound.length === 1 ? '' : 's') + '</h2>' +
+        '<a class="order sm" onclick="UI_go(\'purchasing\')" style="cursor:pointer">Purchasing &rarr;</a></div>' +
+        '<p class="hint" style="margin:2px 0 8px">Low or out, but already on a placed PO. No action needed unless a delivery slips.</p>' +
+        '<div class="tblwrap"><table><thead><tr><th>Status</th><th>Item</th><th class="right">On hand</th><th class="right">On order</th></tr></thead><tbody>' +
+        inbound.map(b => '<tr><td>' + buyPill(b.s) + '</td><td><b>' + esc(b.nm) + '</b><div class="muted sm">' + esc(b.sub) + '</div></td><td class="right">' + b.oh + '</td>' + ooCell(b) + '</tr>').join("") +
+        '</tbody></table></div></div>'
+      : "";
+    // Incoming shipments: uploaded supplier-PO lines with a ship/expected date that are not yet received.
+    const arrivals = (DB.expectedReceipts ? DB.expectedReceipts() : []).filter(a => !a.recv && a.ship).sort((a, b) => (a.ship < b.ship ? -1 : a.ship > b.ship ? 1 : 0));
+    const incomingCard = arrivals.length
+      ? '<div class="card"><div class="suprow"><h2 class="sub2" style="margin:0;flex:1">&#128230; Incoming Shipments &mdash; ' + arrivals.length + '</h2>' +
+        '<a class="order sm" onclick="UI_go(\'purchasing\')" style="cursor:pointer">' + L("hSeeAll") + '</a></div>' +
+        '<p class="hint" style="margin:2px 0 8px">Ordered and on the way &mdash; supplier POs with a ship/expected date.</p>' +
+        '<div class="tblwrap"><table><thead><tr><th>Expected</th><th>Item</th><th>Vendor</th><th class="right">Qty</th></tr></thead><tbody>' +
+        arrivals.slice(0, 10).map(a => '<tr><td class="sm">' + esc(a.ship) + '</td><td><b>' + esc(a.desc || a.item || "-") + '</b>' + (a.po_num ? '<div class="muted sm">PO ' + esc(a.po_num) + '</div>' : '') + '</td><td class="sm">' + esc(a.vendor || "") + '</td><td class="right muted">' + esc(String(a.qty || "")) + (a.uom ? " " + esc(a.uom) : "") + '</td></tr>').join("") +
         '</tbody></table></div></div>'
       : "";
     const ec = it => { if (!it) return '<td class="right ess-na">&mdash;</td>';
@@ -1060,7 +1087,7 @@
       '<div class="kpi"><div class="n">' + fmt(bag4) + '</div><div class="l">' + L("bag4") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(bag15) + '</div><div class="l">' + L("bag15") + '</div></div></div>' +
       '<h2 class="sub2" style="margin:16px 0 8px">' + L("hBase") + '</h2><div class="btiles">' + baseTiles + '</div></div>';
-    return '<div class="card"><h2>' + L("homeTitle") + '</h2><p class="hint">' + L("homeHint") + '</p><div class="htiles">' + tiles + '</div></div>' + buyCard + attention + essTable + snapshot;
+    return '<div class="card"><h2>' + L("homeTitle") + '</h2><p class="hint">' + L("homeHint") + '</p><div class="htiles">' + tiles + '</div></div>' + buyCard + inboundCard + attention + essTable + incomingCard + snapshot;
   }
   // ===== Data freshness / health: show how current each feed is, so nobody trusts stale data =====
   function daysAgo(iso) { if (!iso) return null; return Math.floor((Date.now() - new Date(iso).getTime()) / 864e5); }
