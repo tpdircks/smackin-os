@@ -3998,7 +3998,7 @@
       ? '<tr><th>' + L("mtTitle") + '</th><th>' + L("mtType") + '</th><th>' + L("mtArea") + '</th><th>' + L("mtAssignee") + '</th><th>' + L("mtCompleted") + '</th><th data-nosort></th></tr>'
       : '<tr><th>' + L("mtTitle") + '</th><th>' + L("mtType") + '</th><th>' + L("mtArea") + '</th><th>' + L("mtAssignee") + '</th><th>' + L("mtPriority") + '</th><th>' + L("mtStatus") + '</th><th data-nosort></th></tr>';
     return assigneeDl + '<div class="card"><div class="suprow"><h2 style="margin:0">' + L("maintenance") + '</h2>' +
-      '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary sm" onclick="window.open(MAINTAINLY_URL,\'_blank\',\'noopener\')">' + L("mtMaintainly") + '</button>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap"><a class="primary sm" href="' + MAINTAINLY_URL + '" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center">' + L("mtMaintainly") + '</a>' +
       '<button class="ghost sm" onclick="UI.mtAddToggle()">' + L("mtAdd") + '</button></div></div>' +
       '<p class="hint">' + L("mtMaintainlyHint") + '</p>' +
       '<p class="hint" style="margin-top:0">' + L("mtHint") + '</p>' +
