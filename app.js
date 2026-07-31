@@ -1081,7 +1081,8 @@
     const sbLatest = () => { try { return dhMax(Object.values(DB.stockBuild())); } catch (e) { return null; } };
     const src = [
       { n: "Orders (SPS open)", iso: dhMax(g(() => DB.orders())), warn: 1 },
-      { n: "Demand board", iso: dhMax(g(() => DB.demandLines ? DB.demandLines() : [])), warn: 1 },
+      { n: "Demand board (SPS)", iso: dhMax(g(() => DB.demandLines ? DB.demandLines() : [])), warn: 1 },
+      { n: "E-Com demand (ShipStation)", iso: dhMax(g(() => DB.ecomDemand ? DB.ecomDemand() : [])), warn: 2 },
       { n: "Stock Build", iso: sbLatest(), warn: 2 },
       { n: "Receiving Log", iso: dhMax(g(() => DB.receivingLog ? DB.receivingLog() : [])), warn: 3 },
       { n: "Supplier POs", iso: dhMax(g(() => DB.supplierPos())), warn: 7 }
