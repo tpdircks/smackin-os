@@ -472,7 +472,7 @@
   };
   let lang = "en"; const L = k => (T[lang][k] !== undefined ? T[lang][k] : (T.en[k] !== undefined ? T.en[k] : k));
   let active = "home"; let catFilter = "all";
-  let purchMode = "list"; let purchSup = null; let receivingPOid = null;
+  let purchMode = "list"; let purchSup = null; let receivingPOid = null; let poPrefill = null;
   let purchView = "po";   // Purchasing hub tab: "po" (Purchase Orders) | "buy" (Buy List) | "setup" (reorder config)
   let purchSetupCat = "all";  // Reorder-setup category filter
   let plDate = null;  // Daily Production log: selected date (defaults to today)
@@ -1028,42 +1028,74 @@
     const ooOf = id => ooMap[id] || 0;
     const buyItems = [], inbound = [];
     out.forEach(i => { const o = ooOf(i.id), need = suggestQty(i);
-      const row = { s: "out", nm: i.name, sub: i.code, oh: "0 " + i.unit, oo: o, sug: fmt(need) + " " + i.unit, unit: i.unit };
+      const row = { s: "out", id: i.id, nm: i.name, sub: i.code, unit: i.unit, ohN: 0, reN: Number(i.reorder) || 0, oo: o, sugN: need, hasSup: !!i.supplier };
       (o > 0 && o >= need ? inbound : buyItems).push(row); });
-    seasGaps.forEach(f => buyItems.push({ s: "gap", nm: "Seasoning - " + f.name, sub: "not tracked - add it & order", oh: "?", oo: 0, sug: "set up" }));
+    seasGaps.forEach(f => buyItems.push({ s: "gap", id: null, seasFor: f.id, nm: "Seasoning - " + f.name, sub: "not tracked", unit: "", ohN: 0, reN: 0, oo: 0, sugN: 0, hasSup: false }));
     low.forEach(i => { const o = ooOf(i.id), need = suggestQty(i);
-      const row = { s: "low", nm: i.name, sub: i.code, oh: fmt(DB.onHand(i.id)) + " " + i.unit, oo: o, sug: fmt(need) + " " + i.unit, unit: i.unit };
+      const row = { s: "low", id: i.id, nm: i.name, sub: i.code, unit: i.unit, ohN: DB.onHand(i.id), reN: Number(i.reorder) || 0, oo: o, sugN: need, hasSup: !!i.supplier };
       (o > 0 && o >= need ? inbound : buyItems).push(row); });
-    const buyPill = s => s === "low" ? '<span class="pill low">LOW</span>' : s === "gap" ? '<span class="pill out">NOT TRACKED</span>' : '<span class="pill out">OUT</span>';
-    const ooCell = b => '<td class="right muted">' + (b.oo ? fmt(b.oo) + (b.unit ? " " + b.unit : "") : "&mdash;") + '</td>';
+    const arrivals = (DB.expectedReceipts ? DB.expectedReceipts() : []).filter(a => !a.recv && a.ship).sort((a, b) => (a.ship < b.ship ? -1 : a.ship > b.ship ? 1 : 0));
+    // --- Visual styles for the dashboard status strip + order-card grid (theme-neutral) ---
+    const dStyle = '<style>' +
+      '.dstrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:0 0 14px}' +
+      '.dstat{background:rgba(128,128,128,.06);border:1px solid rgba(128,128,128,.18);border-radius:12px;padding:12px 10px;text-align:center;cursor:pointer;display:flex;flex-direction:column;gap:3px;transition:transform .08s;color:inherit;font:inherit}' +
+      '.dstat:hover{transform:translateY(-2px)}.ds-n{font-size:26px;font-weight:800;line-height:1}.ds-l{font-size:12px;font-weight:600;opacity:.72}' +
+      '.ordgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}' +
+      '.ordtile{border:1px solid rgba(128,128,128,.18);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:7px;background:rgba(128,128,128,.05)}' +
+      '.ordtile.s-out{border-left:5px solid #B52024}.ordtile.s-low{border-left:5px solid #E39412}.ordtile.s-gap{border-left:5px solid #8A63D2}' +
+      '.ot-top{display:flex;align-items:flex-start;gap:6px}.ot-nm{font-weight:700;font-size:14px;flex:1;line-height:1.15}' +
+      '.ot-pill{font-size:10px;font-weight:800;padding:2px 6px;border-radius:8px;color:#fff;background:#B52024;white-space:nowrap}' +
+      '.s-low .ot-pill{background:#E39412}.s-gap .ot-pill{background:#8A63D2}.ot-sub{font-size:11px;opacity:.6;margin-top:-3px}' +
+      '.ot-bar{height:7px;border-radius:5px;background:rgba(128,128,128,.2);overflow:hidden}.ot-bar i{display:block;height:100%;background:#B52024}.s-low .ot-bar i{background:#E39412}' +
+      '.ot-stats{display:flex;justify-content:space-between;font-size:12px}.ot-foot{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:2px}.ot-need{font-size:12px}' +
+      '.ot-order{background:#B52024;color:#fff;border:none;border-radius:8px;padding:6px 11px;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap}' +
+      '.s-low .ot-order{background:#C67F16}.s-gap .ot-order{background:#6E4CB8}.ot-order:hover{filter:brightness(1.1)}.ot-oo{font-size:11px;color:#2E6FB5;font-weight:600}' +
+      '</style>';
+    const pillTxt = s => s === "low" ? "LOW" : s === "gap" ? "NOT TRACKED" : "OUT";
+    const barPct = b => b.reN > 0 ? Math.max(4, Math.min(100, Math.round(b.ohN / b.reN * 100))) : (b.ohN > 0 ? 100 : 4);
+    const ordBtn = b => b.s === "gap"
+      ? '<button class="ot-order" onclick="UI.orderItem(\'' + (b.seasFor || '') + '\',\'gap\')">Set up &rarr;</button>'
+      : '<button class="ot-order" onclick="UI.orderItem(\'' + b.id + '\')">Order &rarr;</button>';
+    const ordTile = (b, inb) => '<div class="ordtile s-' + b.s + '">' +
+      '<div class="ot-top"><span class="ot-nm">' + esc(b.nm) + '</span><span class="ot-pill">' + pillTxt(b.s) + '</span></div>' +
+      '<div class="ot-sub">' + esc(b.sub) + '</div>' +
+      (b.s !== "gap" ? '<div class="ot-bar"><i style="width:' + barPct(b) + '%"></i></div>' : '') +
+      '<div class="ot-stats">' + (b.s === "gap"
+        ? '<span>Seasoning not tracked</span>'
+        : '<span><b>' + fmt(b.ohN) + '</b> on hand</span><span style="opacity:.6">reorder ' + fmt(b.reN) + '</span>') + '</div>' +
+      '<div class="ot-foot">' +
+        (b.s === "gap" ? '<span class="ot-need">Add item</span>' : '<span class="ot-need">Order <b>' + fmt(b.sugN) + '</b> ' + esc(b.unit) + '</span>') +
+        (inb ? '<span class="ot-oo">on order</span>' : ordBtn(b)) + '</div>' +
+      (b.oo ? '<div class="ot-oo">' + fmt(b.oo) + ' already on order</div>' : '') +
+      '</div>';
+    const stripTile = (emoji, count, label, color, click) => '<button class="dstat" style="border-top:3px solid ' + color + '" onclick="' + click + '"><span class="ds-n" style="color:' + color + '">' + count + '</span><span class="ds-l">' + emoji + ' ' + label + '</span></button>';
+    const scrollTo = id => 'var e=document.getElementById(\'' + id + '\');if(e){if(e.tagName===\'DETAILS\')e.open=true;e.scrollIntoView({behavior:\'smooth\',block:\'start\'})}';
+    const statusStrip = dStyle + '<div class="dstrip">' +
+      stripTile("&#128722;", buyItems.length, "Order Now", "#B52024", scrollTo("ordnow")) +
+      stripTile("&#128666;", inbound.length, "On Order", "#2E6FB5", scrollTo("ordinbound")) +
+      stripTile("&#128230;", arrivals.length, "Incoming", "#6B7280", scrollTo("ordincoming")) +
+      stripTile("&#127793;", flav.length, "Flavors", "#2E9E5B", "UI_go('dash')") +
+      '</div>';
     const buyCard = buyItems.length
-      ? '<div class="card" style="border:2px solid #B52024">' +
+      ? '<div class="card" id="ordnow" style="border:2px solid #B52024">' +
         '<div class="suprow"><h2 class="sub2" style="margin:0;flex:1;color:#B52024">&#128722; Order Now &mdash; ' + buyItems.length + ' item' + (buyItems.length === 1 ? '' : 's') + '</h2>' +
         '<a class="order sm" onclick="UI_go(\'purchasing\')" style="cursor:pointer">Purchasing &rarr;</a></div>' +
-        '<p class="hint" style="margin:2px 0 8px">At or below reorder, out of stock, or being made with no seasoning tracked &mdash; and not already covered by an open PO. Order these before we run out.</p>' +
-        '<div class="tblwrap"><table><thead><tr><th>Status</th><th>Item</th><th class="right">On hand</th><th class="right">On order</th><th class="right">Suggested</th></tr></thead><tbody>' +
-        buyItems.map(b => '<tr><td>' + buyPill(b.s) + '</td><td><b>' + esc(b.nm) + '</b><div class="muted sm">' + esc(b.sub) + '</div></td><td class="right">' + b.oh + '</td>' + ooCell(b) + '<td class="right muted">' + b.sug + '</td></tr>').join("") +
-        '</tbody></table></div></div>'
-      : "";
-    // Low/out but already covered by a placed PO — shown calm (blue), not red, so nobody double-orders.
+        '<p class="hint" style="margin:2px 0 10px">At or below reorder or out &mdash; and not already on an open PO. Click <b>Order</b> to open a PO pre-filled for that item.</p>' +
+        '<div class="ordgrid">' + buyItems.map(b => ordTile(b, false)).join("") + '</div></div>'
+      : '<div class="card" id="ordnow"><p class="ok pill big">&#127807; Nothing to order right now</p></div>';
+    // Low/out but already covered by a placed PO — calm, collapsed by default so it doesn't add scroll.
     const inboundCard = inbound.length
-      ? '<div class="card" style="border:1px solid #2E6FB5">' +
-        '<div class="suprow"><h2 class="sub2" style="margin:0;flex:1;color:#2E6FB5">&#128666; Already On Order &mdash; ' + inbound.length + ' item' + (inbound.length === 1 ? '' : 's') + '</h2>' +
-        '<a class="order sm" onclick="UI_go(\'purchasing\')" style="cursor:pointer">Purchasing &rarr;</a></div>' +
-        '<p class="hint" style="margin:2px 0 8px">Low or out, but already on a placed PO. No action needed unless a delivery slips.</p>' +
-        '<div class="tblwrap"><table><thead><tr><th>Status</th><th>Item</th><th class="right">On hand</th><th class="right">On order</th></tr></thead><tbody>' +
-        inbound.map(b => '<tr><td>' + buyPill(b.s) + '</td><td><b>' + esc(b.nm) + '</b><div class="muted sm">' + esc(b.sub) + '</div></td><td class="right">' + b.oh + '</td>' + ooCell(b) + '</tr>').join("") +
-        '</tbody></table></div></div>'
+      ? '<details class="card" id="ordinbound" style="border:1px solid #2E6FB5"><summary style="cursor:pointer;font-weight:700;color:#2E6FB5">&#128666; Already On Order &mdash; ' + inbound.length + ' item' + (inbound.length === 1 ? '' : 's') + ' (tap to expand)</summary>' +
+        '<p class="hint" style="margin:6px 0 10px">Low or out, but already on a placed PO. No action needed unless a delivery slips.</p>' +
+        '<div class="ordgrid">' + inbound.map(b => ordTile(b, true)).join("") + '</div></details>'
       : "";
-    // Incoming shipments: uploaded supplier-PO lines with a ship/expected date that are not yet received.
-    const arrivals = (DB.expectedReceipts ? DB.expectedReceipts() : []).filter(a => !a.recv && a.ship).sort((a, b) => (a.ship < b.ship ? -1 : a.ship > b.ship ? 1 : 0));
+    // Incoming shipments: uploaded supplier-PO lines with a ship/expected date, collapsed by default.
     const incomingCard = arrivals.length
-      ? '<div class="card"><div class="suprow"><h2 class="sub2" style="margin:0;flex:1">&#128230; Incoming Shipments &mdash; ' + arrivals.length + '</h2>' +
-        '<a class="order sm" onclick="UI_go(\'purchasing\')" style="cursor:pointer">' + L("hSeeAll") + '</a></div>' +
-        '<p class="hint" style="margin:2px 0 8px">Ordered and on the way &mdash; supplier POs with a ship/expected date.</p>' +
+      ? '<details class="card" id="ordincoming"><summary style="cursor:pointer;font-weight:700">&#128230; Incoming Shipments &mdash; ' + arrivals.length + ' (tap to expand)</summary>' +
+        '<p class="hint" style="margin:6px 0 8px">Ordered and on the way &mdash; supplier POs with a ship/expected date.</p>' +
         '<div class="tblwrap"><table><thead><tr><th>Expected</th><th>Item</th><th>Vendor</th><th class="right">Qty</th></tr></thead><tbody>' +
-        arrivals.slice(0, 10).map(a => '<tr><td class="sm">' + esc(a.ship) + '</td><td><b>' + esc(a.desc || a.item || "-") + '</b>' + (a.po_num ? '<div class="muted sm">PO ' + esc(a.po_num) + '</div>' : '') + '</td><td class="sm">' + esc(a.vendor || "") + '</td><td class="right muted">' + esc(String(a.qty || "")) + (a.uom ? " " + esc(a.uom) : "") + '</td></tr>').join("") +
-        '</tbody></table></div></div>'
+        arrivals.slice(0, 12).map(a => '<tr><td class="sm">' + esc(a.ship) + '</td><td><b>' + esc(a.desc || a.item || "-") + '</b>' + (a.po_num ? '<div class="muted sm">PO ' + esc(a.po_num) + '</div>' : '') + '</td><td class="sm">' + esc(a.vendor || "") + '</td><td class="right muted">' + esc(String(a.qty || "")) + (a.uom ? " " + esc(a.uom) : "") + '</td></tr>').join("") +
+        '</tbody></table></div></details>'
       : "";
     const ec = it => { if (!it) return '<td class="right ess-na">&mdash;</td>';
       const st = statusOf(it); return '<td class="right ess-' + st + '"><b>' + fmt(DB.onHand(it.id)) + '</b></td>'; };
@@ -1087,7 +1119,7 @@
       '<div class="kpi"><div class="n">' + fmt(bag4) + '</div><div class="l">' + L("bag4") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(bag15) + '</div><div class="l">' + L("bag15") + '</div></div></div>' +
       '<h2 class="sub2" style="margin:16px 0 8px">' + L("hBase") + '</h2><div class="btiles">' + baseTiles + '</div></div>';
-    return '<div class="card"><h2>' + L("homeTitle") + '</h2><p class="hint">' + L("homeHint") + '</p><div class="htiles">' + tiles + '</div></div>' + buyCard + inboundCard + attention + essTable + incomingCard + snapshot;
+    return '<div class="card"><h2>' + L("homeTitle") + '</h2><p class="hint">' + L("homeHint") + '</p><div class="htiles">' + tiles + '</div></div>' + statusStrip + buyCard + inboundCard + incomingCard + attention + essTable + snapshot;
   }
   // ===== Data freshness / health: show how current each feed is, so nobody trusts stale data =====
   function daysAgo(iso) { if (!iso) return null; return Math.floor((Date.now() - new Date(iso).getTime()) / 864e5); }
@@ -3043,11 +3075,14 @@
     const supOpts = sups.map(s => '<option value="' + s.id + '"' + (s.id === sk ? " selected" : "") + '>' + s.name + '</option>').join("");
     const rows = supItems.map(i => {
       const sugg = statusOf(i) !== "ok" ? suggestQty(i) : "";
-      return '<tr><td>' + i.name + '<div class="muted sm">' + i.code + '</div></td>' +
+      const pref = (poPrefill && poPrefill.id === i.id) ? poPrefill.qty : "";
+      const hl = pref !== "" ? ' style="background:rgba(242,169,59,.16)"' : '';
+      return '<tr' + hl + '><td>' + i.name + '<div class="muted sm">' + i.code + '</div></td>' +
         '<td class="right muted">' + fmt(DB.onHand(i.id)) + ' ' + i.unit + '</td>' +
-        '<td><input id="poq-' + i.id + '" type="number" min="0" value="" placeholder="' + (sugg || "") + '"></td>' +
+        '<td><input id="poq-' + i.id + '" type="number" min="0" value="' + (pref !== "" ? pref : "") + '" placeholder="' + (sugg || "") + '"></td>' +
         '<td><input id="poc-' + i.id + '" type="number" min="0" step="0.01" placeholder="0.00"></td></tr>';
     }).join("");
+    poPrefill = null;
     return '<div class="card"><div class="suprow"><h2>' + L("newPO") + '</h2>' +
       '<button class="ghost sm" onclick="UI.poBack()">' + L("backList") + '</button></div>' +
       '<div class="row"><div><label>' + L("chooseSupplier") + '</label><select id="po-sup" onchange="UI.poSupChange()">' + supOpts + '</select></div>' +
@@ -5157,6 +5192,24 @@
     },
     // ---- Purchase Orders ----
     poNew(sk) { purchSup = sk || null; purchMode = "new"; active = "purchasing"; closeDrawer(); render(); },
+    // Deep-link from the dashboard Order-Now tile: open a PO pre-filled with this item's suggested qty.
+    orderItem(id, mode) {
+      if (mode === "gap") {   // seasoning not tracked yet — route to Reorder Setup to add + assign a supplier
+        purchView = "setup"; purchMode = "list"; spoView = "list"; spoDetailId = null; active = "purchasing"; closeDrawer(); render();
+        toast("Add this seasoning as an item and assign a supplier, then create the PO");
+        return;
+      }
+      const it = DB.items().find(x => String(x.id) === String(id));
+      if (!it) { active = "purchasing"; purchMode = "list"; closeDrawer(); render(); return; }
+      if (it.supplier) {
+        poPrefill = { id: it.id, qty: suggestQty(it) };
+        purchSup = it.supplier; purchMode = "new"; active = "purchasing"; closeDrawer(); render();
+        setTimeout(function () { var el = document.getElementById("poq-" + it.id); if (el) { try { el.focus(); } catch (e) {} var tr = el.closest && el.closest("tr"); if (tr && tr.scrollIntoView) tr.scrollIntoView({ behavior: "smooth", block: "center" }); } }, 90);
+      } else {
+        purchView = "setup"; purchMode = "list"; spoView = "list"; spoDetailId = null; active = "purchasing"; closeDrawer(); render();
+        toast("Assign a supplier for " + it.name + " first, then create the PO");
+      }
+    },
     purchView(v) { purchView = v; render(); },
     plDate(v) { plDate = v; render(); },
     plDateShift(delta) { const base = plDate || new Date().toISOString().slice(0, 10); const dt = new Date(base + 'T00:00:00'); dt.setDate(dt.getDate() + delta); plDate = dt.toISOString().slice(0, 10); render(); },
