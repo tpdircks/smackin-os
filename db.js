@@ -227,6 +227,14 @@ window.DB = (function () {
           source_label: r.source_label || "", updated_at: r.updated_at
         }));
       } catch (e) { cache.ecomDemand = cache.ecomDemand || []; }
+      // kv_status: generic cloud key/value used for production-order stages ("po:<num>") and
+      // short-dated dispositions ("sd:<id>"), so those sync to every screen. Resilient: a missing
+      // table just leaves the app on localStorage until the table is created (one-time SQL).
+      try {
+        const kvr = await sb.from("kv_status").select("*").limit(5000);
+        cache.kv = {}; (kvr && kvr.data ? kvr.data : []).forEach(r => { cache.kv[r.key] = r.value; });
+        cache.kvCloud = true;
+      } catch (e) { cache.kv = cache.kv || {}; cache.kvCloud = false; }
       // maintenance_items (Maintenance request + project tracker) loaded separately + resiliently
       // so a missing table never breaks the app shell (same pattern as demand_forecast above).
       try {
@@ -1227,6 +1235,18 @@ window.DB = (function () {
     return m;
   }
   function onOrder(itemId) { return onOrderMap()[itemId] || 0; }
+  // ---- Generic cloud key/value (syncs PO stages + short-dated dispositions to every screen) ----
+  function kvGet(key) {
+    if (cache.kv && cache.kv[key] != null) return cache.kv[key];
+    try { const v = localStorage.getItem("kv-" + key); if (v != null) return v; } catch (e) {}
+    return null;
+  }
+  async function kvSet(key, val) {
+    cache.kv = cache.kv || {}; cache.kv[key] = val;
+    try { localStorage.setItem("kv-" + key, val); } catch (e) {}
+    if (mode === "cloud") { try { await sb.from("kv_status").upsert({ key: key, value: val, updated_at: new Date().toISOString() }); } catch (e) {} }
+  }
+  function kvCloudOn() { return !!cache.kvCloud; }
   // Mark one PO line received (persists recv flag onto the line JSON) + logs it. Returns line info for notify.
   async function markLineReceived(poId, idx, op) {
     const po = (cache.supplierPos || []).find(x => String(x.id) === String(poId)); if (!po) return { ok: false };
@@ -1716,7 +1736,7 @@ window.DB = (function () {
     orders, createOrder, updateOrder, setOrderStatus, deleteOrder, notifyNewOrder, reconcileSpsOrders,
     rdRequests, createRdRequest, updateRdRequest, setRdStatus, deleteRdRequest, sendRdEmail,
     supplierPos, createSupplierPO, updateSupplierPO, deleteSupplierPO, emailPO, expectedReceipts, markLineReceived,
-    onOrderMap, onOrder,
+    onOrderMap, onOrder, kvGet, kvSet, kvCloudOn,
     recipeFor, seasLbPerBag, bagsPerBatch, flavorDemandBags, recommendedSeasReorder,
     ecomBagsFor, ecomWeeklyBags, unifiedWeeklyBags, unifiedDemand,
     orderDocs, createOrderDoc, deleteOrderDoc,

@@ -101,7 +101,7 @@
       mixing:"Mixing", pmac:"P-Mac", roleMixing:"Mixing (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mixing", grpPmac:"P-Mac",
       deptSoon:"This area is being set up. Allen's team screens will live here - tell us what you'd like tracked and we'll build it in.",
       conHint:"Scan each material as it moves from the racking into this room. Records real-time usage and removes it from inventory. Lot # required on every scan.", conLot:"Lot # (required)", conBtn:"Log usage", conRecent:"Recent usage", conNone:"Nothing logged yet.", conWhen:"When", conMat:"Material", conBy:"By", conErr:"Scan an item, quantity, and lot #", conNotInList:"not in item list",
-      analytics:"Analytics", mnTitle:"Make Next — E-Com Queue", mnHint:"Flavors to make so inventory keeps up with the e-commerce order queue (all unshipped ShipStation orders, incl. weekend backlog). Short = queue demand minus on-hand.", mnNone:"No e-com queue loaded yet. The hourly ShipStation sync fills this in.", mnMake:"MAKE", mnOk:"OK", mnFlavorsShort:"Flavors short", mnToMake:"Bags to make", mnQueue:"Queue demand (bags)", mnUpdated:"Updated", mnOnHand:"On hand", mnDemand:"Queue demand", mnShort:"Short by", grpReceiving:"Receiving", grpInventory:"Inventory", grpProduction:"Production", grpFulfillment:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpImprove:"Improvement", grpQuality:"Quality", compliance:"Compliance / SQF", cmpHint:"SQF food-safety program - certifications, the recurring activity schedule, and the controlled documents in the Operations shared drive.", cmpCerts:"Certifications & Audits", cmpCert:"Certification / Audit", cmpFreq:"Frequency", cmpWhen:"When / Notes", cmpBody:"Body", cmpDueThis:"Due this month", cmpAllMonthly:"Only the standard monthly reviews this month.", cmpSchedule:"SQF Activity Schedule", cmpScheduleHint:"Recurring SQF activities by frequency (from the 2026 SQF Calendar). Monthly items are also documented daily/weekly.", cmpDocs:"Document Register", cmpDocsHint:"Key SQF controlled documents - open in the Operations shared drive.", grpDocs:"Reference", reference:"Reference / SOPs", refHint:"SOPs, cheat sheets, and policies from the Smackin Docs library - one click for the floor. Upload a file and pick a category.", refDrop:"Upload document(s)", refSelected:"file(s) ready", refCategory:"Category", refNotes:"Notes (optional)", refSaveBtn:"Add to library", refNone:"No reference documents yet.", refLibrary:"Document Library", refNoFile:"Choose a file first", refSaved:"added", refConfirmDel:"Remove this document?", disposition:"Held Stock", recipes:"Recipes", prodorders:"Prod Orders", grpSystem:"System",
+      analytics:"Analytics", mnTitle:"Make Next — E-Com Queue", mnHint:"Flavors to make so inventory keeps up with the e-commerce order queue (all unshipped ShipStation orders, incl. weekend backlog). Short = queue demand minus on-hand.", mnNone:"No e-com queue loaded yet. The hourly ShipStation sync fills this in.", mnMake:"MAKE", mnOk:"OK", mnFlavorsShort:"Flavors short", mnToMake:"Bags to make", mnQueue:"Queue demand (bags)", mnUpdated:"Updated", mnOnHand:"On hand", mnDemand:"Queue demand", mnShort:"Short by", grpReceiving:"Receiving", grpInventory:"Inventory", grpProduction:"Production", grpFulfillment:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpImprove:"Improvement", grpQuality:"Quality", compliance:"Compliance / SQF", cmpHint:"SQF food-safety program - certifications, the recurring activity schedule, and the controlled documents in the Operations shared drive.", cmpCerts:"Certifications & Audits", cmpCert:"Certification / Audit", cmpFreq:"Frequency", cmpWhen:"When / Notes", cmpBody:"Body", cmpDueThis:"Due this month", cmpAllMonthly:"Only the standard monthly reviews this month.", cmpSchedule:"SQF Activity Schedule", cmpScheduleHint:"Recurring SQF activities by frequency (from the 2026 SQF Calendar). Monthly items are also documented daily/weekly.", cmpDocs:"Document Register", cmpDocsHint:"Key SQF controlled documents - open in the Operations shared drive.", grpDocs:"Reference", reference:"Reference / SOPs", refHint:"SOPs, cheat sheets, and policies from the Smackin Docs library - one click for the floor. Upload a file and pick a category.", refDrop:"Upload document(s)", refSelected:"file(s) ready", refCategory:"Category", refNotes:"Notes (optional)", refSaveBtn:"Add to library", refNone:"No reference documents yet.", refLibrary:"Document Library", refNoFile:"Choose a file first", refSaved:"added", refConfirmDel:"Remove this document?", disposition:"Short-Dated", recipes:"Recipes", prodorders:"Prod Orders", grpSystem:"System",
       people:"People", hrHint:"Team directory and org chart. Non-sensitive info only - no pay or personal data.", hrGate:"This section shows employee information. Enter the manager PIN to view.",
       hrDir:"Directory", hrOrg:"Org chart", hrRole:"Role", hrDept:"Department", hrStart:"Started", hrMgr:"Reports to", hrSearchP:"Search name or role...", hrCount:"people", hrNoMatch:"No matching people.", hrYr:"yr", hrMo:"mo",
       alerts:"Alerts", alertsHint:"What needs attention now: items to reorder and seasoning lots nearing expiration.",
@@ -2162,8 +2162,8 @@
   // ===== Production Orders — digital version of Allen's paper PO to Mixing & P-Mac =====
   const PROD_STAGES = ["Open", "Mixing", "Labels", "Packaged", "P-Mac", "Done"];
   let prodShowAll = false;
-  function prodStageGet(po) { try { return localStorage.getItem("po-stage-" + po) || "Open"; } catch (e) { return "Open"; } }
-  function prodStageSet(po, st) { try { localStorage.setItem("po-stage-" + po, st); } catch (e) {} }
+  function prodStageGet(po) { return (DB.kvGet ? DB.kvGet("po:" + po) : null) || "Open"; }
+  function prodStageSet(po, st) { if (DB.kvSet) DB.kvSet("po:" + po, st); }
   function prioRank(p) { p = String(p || "").toUpperCase(); if (p.indexOf("P1") >= 0 || p.indexOf("CRITICAL") >= 0) return 0; if (p.indexOf("P2") >= 0 || p.indexOf("HIGH") >= 0) return 1; if (p.indexOf("P3") >= 0 || p.indexOf("WATCH") >= 0) return 2; if (p === "NORMAL") return 3; return 4; }
   function prioColor(p) { return ["#B52024", "#E39412", "#C9A227", "#6B7280", "#9AA3AE"][prioRank(p)]; }
   function prodOrdersList() {
@@ -3123,22 +3123,52 @@
     {flavor:"Lemon Pepper", kind:"Seasoning - lot #E2725A", qty:"800", unit:"lbs", date:"Exp 06/20/26", reason:"Expired", status:"Awaiting instructions", note:""},
     {flavor:"Lemon Pepper", kind:"Seasoning - lot #E2725B", qty:"2,700", unit:"lbs", date:"Exp 06/20/26", reason:"Expired", status:"Awaiting instructions", note:""}
   ];
+  // ===== Short-Dated / Surplus / Discontinued board (auto-flag finished goods by expiration) =====
+  const SD_DISP = ["Open", "Sell-off", "Discount", "Donate", "Rework", "Scrap", "Sold"];
+  const SD_SHORT_DAYS = 120;   // flag as short-dated within this many days of expiry
+  function sdExpDate(s) {
+    s = String(s || "").trim(); let m;
+    if (m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)) return new Date(+m[3], +m[1] - 1, +m[2]);
+    if (m = s.match(/^(\d{1,2})\/(\d{4})$/)) return new Date(+m[2], +m[1] - 1, 28);
+    if (m = s.match(/^(\d{4})$/)) return new Date(+m[1], 11, 31);
+    const d = new Date(s); return isNaN(d) ? null : d;
+  }
+  function sdDays(s) { const d = sdExpDate(s); return d ? Math.round((d - Date.now()) / 864e5) : null; }
+  function sdFlag(x) {
+    const days = sdDays(x.exp), t = String(x.type || "").toLowerCase();
+    if (t.indexOf("off") >= 0) return { t: "OFF-FLAVOR", c: "#B52024" };
+    if (days != null && days < 0) return { t: "EXPIRED", c: "#B52024" };
+    if (days != null && days <= SD_SHORT_DAYS) return { t: "SHORT-DATED", c: "#E39412" };
+    if (t.indexOf("discont") >= 0) return { t: "DISCONTINUED", c: "#8A63D2" };
+    return { t: "OK", c: "#2E9E5B" };
+  }
   function viewDisposition() {
-    var reasonPill = function(r){ return '<span class="pill ' + (r === "Expired" ? "out" : "low") + '">' + esc(r) + '</span>'; };
-    var rows = DISPOSITION_ITEMS.map(function(d){ return '<tr>' +
-      '<td><b>' + esc(d.flavor) + '</b><div class="muted sm">' + esc(d.kind) + '</div></td>' +
-      '<td class="right"><b>' + esc(d.qty) + '</b> ' + esc(d.unit) + '</td>' +
-      '<td class="sm">' + esc(d.date) + '</td>' +
-      '<td>' + reasonPill(d.reason) + '</td>' +
-      '<td class="sm">' + esc(d.status) + (d.note ? '<div class="muted sm">' + esc(d.note) + '</div>' : '') + '</td></tr>'; }).join("");
-    var units = 20700 + 5000 + 5200, lbs = 800 + 2700;
-    return '<div class="card"><h2>&#128230; Disposition / Held Stock</h2>' +
-      '<p class="hint">Older, short-dated, or off-quality inventory pulled from normal stock and held for disposition (sell-off, rework, or scrap). Confirmed with Adriana 7/21 - live editable tracking coming next.</p>' +
-      '<div class="kpis"><div class="kpi"><div class="n">' + fmt(units) + '</div><div class="l">Off-quality units (LP)</div></div>' +
-      '<div class="kpi"><div class="n">' + fmt(lbs) + '</div><div class="l">Expired seasoning (lbs)</div></div>' +
-      '<div class="kpi"><div class="n">' + DISPOSITION_ITEMS.length + '</div><div class="l">Held line items</div></div></div>' +
-      '<table class="sortable" style="margin-top:12px"><thead><tr><th>Item</th><th class="right">Qty</th><th>Date / Exp</th><th>Reason</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-      '<p class="hint" style="margin-top:10px">&#10003; Confirmed by Adriana 7/21: the 30,900 Lemon Pepper (Aug/Sep/Nov 2026) are FINISHED BAGS pulled for off-flavor - separate from the good 2027 LP and from the expired seasoning lots.</p></div>';
+    const seed = (typeof window !== "undefined" && window.SHORTDATED_SEED) ? window.SHORTDATED_SEED : [];
+    let sumShort = 0, sumDisc = 0, sumOff = 0, flagged = 0;
+    const rows = seed.map(x => {
+      const f = sdFlag(x), days = sdDays(x.exp);
+      const bags = Number(String(x.bags).replace(/[^0-9.]/g, "")) || 0;
+      if (f.t === "SHORT-DATED" || f.t === "EXPIRED") { sumShort += bags; flagged++; }
+      if (f.t === "DISCONTINUED") sumDisc += bags;
+      if (f.t === "OFF-FLAVOR") { sumOff += bags; flagged++; }
+      const disp = (DB.kvGet ? DB.kvGet("sd:" + x.id) : null) || "Open";
+      const daysTxt = days == null ? "" : '<div class="muted sm">' + (days < 0 ? Math.abs(days) + "d ago" : days + "d left") + '</div>';
+      return '<tr><td><b>' + esc(x.flavor) + '</b><div class="muted sm">' + esc(x.size) + ' &middot; ' + esc(x.type) + '</div></td>' +
+        '<td class="right"><b>' + fmt(bags) + '</b></td>' +
+        '<td class="sm">' + esc(x.exp) + daysTxt + '</td>' +
+        '<td><span class="pill" style="background:' + f.c + ';color:#fff">' + f.t + '</span></td>' +
+        '<td><select onchange="UI.sdSet(\'' + x.id + '\',this.value)">' + SD_DISP.map(o => '<option' + (o === disp ? " selected" : "") + '>' + o + '</option>').join("") + '</select></td>' +
+        '<td class="muted sm">' + esc(x.notes || "") + '</td></tr>';
+    }).join("");
+    const sync = (DB.kvCloudOn && DB.kvCloudOn()) ? '<span class="pill ok">&#9729; synced to all screens</span>' : '<span class="pill low">saved on this device (enable cloud sync)</span>';
+    return '<div class="card"><div class="suprow"><h2 style="margin:0;flex:1">&#9203; Short-Dated &amp; Surplus</h2>' + sync + '</div>' +
+      '<p class="hint" style="margin:6px 0 0">Finished goods auto-flagged by expiration: <b>SHORT-DATED</b> within ' + SD_SHORT_DAYS + ' days, <b>EXPIRED</b>, <b>OFF-FLAVOR</b>, or <b>DISCONTINUED</b>. Set each item\'s disposition; it saves for everyone. This is the live version of Allie\'s weekly short-dated report.</p>' +
+      '<div class="kpis" style="margin-top:10px"><div class="kpi"><div class="n">' + fmt(sumShort) + '</div><div class="l">Short-dated / expired bags</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(sumDisc) + '</div><div class="l">Discontinued bags</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(sumOff) + '</div><div class="l">Off-flavor bags</div></div>' +
+      '<div class="kpi"><div class="n">' + flagged + '</div><div class="l">Need action now</div></div></div>' +
+      '<div class="tblwrap" style="margin-top:12px"><table class="sortable"><thead><tr><th>Item</th><th class="right">Bags</th><th>Exp</th><th>Flag</th><th>Disposition</th><th>Notes</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+      '<p class="hint" style="margin-top:10px">A weekly copy of the flagged items can be auto-emailed to Allie &mdash; ask Claude to schedule it.</p></div>';
   }
 
   function viewPurchasing() {
@@ -5233,6 +5263,7 @@
     prodToggleAll() { prodShowAll = !prodShowAll; render(); },
     prodAdvance(po) { const cur = PROD_STAGES.indexOf(prodStageGet(po)); const nx = PROD_STAGES[Math.min(cur + 1, PROD_STAGES.length - 1)]; prodStageSet(po, nx); toast(po + " → " + nx); render(); },
     prodReset(po) { prodStageSet(po, "Open"); render(); },
+    sdSet(id, val) { if (DB.kvSet) DB.kvSet("sd:" + id, val); toast("Saved"); },
     poCreateBack() { spoView = "list"; render(); },
     nonPoOpen() { spoView = "nonpo"; render(); },
     nonPoBack() { spoView = "list"; render(); },
