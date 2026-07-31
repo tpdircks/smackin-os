@@ -1022,7 +1022,8 @@
       .map(i => ({ code: i.code.replace("B4-", ""), name: i.flavor, id: i.id }))
       .sort((a, b) => (a.code < b.code ? -1 : a.code > b.code ? 1 : 0));
     // ---- Order Now: everything at/below reorder, out, OR made with no seasoning tracked (the Cheeseburger gap) ----
-    const seasGaps = flav.filter(f => !DB.itemByCode("SEAS-" + f.code) && DB.onHand(f.id) > 0);
+    const NO_SEAS = new Set(["S01"]); // OG Original = plain salted seed, uses no seasoning (not a gap)
+    const seasGaps = flav.filter(f => !DB.itemByCode("SEAS-" + f.code) && DB.onHand(f.id) > 0 && !NO_SEAS.has(f.code));
     const buyItems = [];
     out.forEach(i => buyItems.push({ s: "out", nm: i.name, sub: i.code, oh: "0 " + i.unit, sug: fmt(suggestQty(i)) + " " + i.unit }));
     seasGaps.forEach(f => buyItems.push({ s: "gap", nm: "Seasoning - " + f.name, sub: "not tracked - add it & order", oh: "?", sug: "set up" }));
@@ -1042,7 +1043,7 @@
     const frows = flav.map(f =>
       '<tr><td>' + flavCell(f.name, flavorImg(f.name), true) + '</td>' +
       ec(bc("B4-" + f.code)) + ec(bc("B15-" + f.code)) + ec(bc("F4-" + f.code)) +
-      (bc("SEAS-" + f.code) ? ec(bc("SEAS-" + f.code)) : '<td class="right ess-' + (DB.onHand(f.id) > 0 ? 'out" title="Seasoning not tracked - add it"><b>?' : 'na"><b>&mdash;') + '</b></td>') + '</tr>').join("");
+      (bc("SEAS-" + f.code) ? ec(bc("SEAS-" + f.code)) : '<td class="right ess-' + (DB.onHand(f.id) > 0 && !NO_SEAS.has(f.code) ? 'out" title="Seasoning not tracked - add it"><b>?' : 'na"><b>&mdash;') + '</b></td>') + '</tr>').join("");
     const essTable = '<div class="card"><div class="suprow"><h2 class="sub2" style="margin:0;flex:1">' + L("hEssential") + '</h2>' +
       '<a class="order sm" onclick="UI_go(\'dash\')" style="cursor:pointer">' + L("hSeeAll") + '</a></div>' +
       '<div class="esslegend"><span class="ess-key ok">' + L("hCovered") + '</span><span class="ess-key low">' + L("hLowShort") + '</span><span class="ess-key out">' + L("hOutShort") + '</span></div>' +
