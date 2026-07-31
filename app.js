@@ -2162,12 +2162,14 @@
   // ===== Production Orders — digital version of Allen's paper PO to Mixing & P-Mac =====
   const PROD_STAGES = ["Open", "Mixing", "Labels", "Packaged", "P-Mac", "Done"];
   let prodShowAll = false;
+  let poFormOpen = false;
   function prodStageGet(po) { return (DB.kvGet ? DB.kvGet("po:" + po) : null) || "Open"; }
   function prodStageSet(po, st) { if (DB.kvSet) DB.kvSet("po:" + po, st); }
   function prioRank(p) { p = String(p || "").toUpperCase(); if (p.indexOf("P1") >= 0 || p.indexOf("CRITICAL") >= 0) return 0; if (p.indexOf("P2") >= 0 || p.indexOf("HIGH") >= 0) return 1; if (p.indexOf("P3") >= 0 || p.indexOf("WATCH") >= 0) return 2; if (p === "NORMAL") return 3; return 4; }
   function prioColor(p) { return ["#B52024", "#E39412", "#C9A227", "#6B7280", "#9AA3AE"][prioRank(p)]; }
   function prodOrdersList() {
-    const all = (typeof window !== "undefined" && window.PROD_ORDERS) ? window.PROD_ORDERS.slice() : [];
+    const custom = (DB.prodOrdersCustom ? DB.prodOrdersCustom() : []);
+    const all = custom.concat((typeof window !== "undefined" && window.PROD_ORDERS) ? window.PROD_ORDERS.slice() : []);
     all.forEach(o => { o._stage = prodStageGet(o.po); });
     let list = prodShowAll ? all : all.filter(o => o._stage !== "Done");
     list.sort((a, b) => (prioRank(a.priority) - prioRank(b.priority)) || (String(a.deadline || a.date) < String(b.deadline || b.date) ? -1 : 1));
@@ -2209,9 +2211,11 @@
       '.postep.on{opacity:1;background:rgba(46,158,91,.22)}.postep.now{background:#2E9E5B;color:#fff;opacity:1}.posep{opacity:.4;font-size:11px}' +
       '.poact{display:flex;justify-content:flex-end;margin-top:2px}' +
       '</style>';
+    if (poFormOpen) return viewProdOrderNew();
     const list = prodOrdersList();
-    const openCount = (window.PROD_ORDERS || []).filter(o => prodStageGet(o.po) !== "Done").length;
+    const openCount = list.filter(o => o._stage !== "Done").length;
     const head = '<div class="card"><div class="suprow"><h2 style="margin:0;flex:1">&#128221; Production Orders</h2>' +
+      '<button class="primary sm" onclick="UI.poNewOpen()">+ New PO</button> ' +
       '<button class="ghost sm" onclick="UI.prodToggleAll()">' + (prodShowAll ? "Show open only" : "Show all") + '</button></div>' +
       '<p class="hint" style="margin:6px 0 0">Allen\'s production orders to Mixing &amp; P-Mac &mdash; the digital version of his PO. ' +
       'Sorted by priority then deadline. Tap <b>Advance</b> as each order moves Open &rsaquo; Mixing &rsaquo; Labels &rsaquo; Packaged &rsaquo; P-Mac &rsaquo; Done. ' +
@@ -2220,6 +2224,50 @@
       ? '<div class="pogrid">' + list.map(prodCard).join("") + '</div>'
       : '<div class="card"><p class="ok pill big">&#127881; No open production orders</p></div>';
     return style + head + body;
+  }
+  // New Production Order form — mirrors Allen's paper PO (Mixing + P-Mac + Recipe), bilingual.
+  function poNewNumber() {
+    const t = new Date(), s = t.getFullYear() + "." + String(t.getMonth() + 1).padStart(2, "0") + "." + String(t.getDate()).padStart(2, "0");
+    const n = (DB.prodOrdersCustom ? DB.prodOrdersCustom() : []).filter(o => String(o.po || "").indexOf(s) === 0).length + 1;
+    return s + "-" + String(n).padStart(2, "0");
+  }
+  function viewProdOrderNew() {
+    const R = (typeof window !== "undefined" && window.RECIPES) ? window.RECIPES : {};
+    const flavOpts = '<option value=""></option>' + Object.keys(R).sort((a, b) => R[a].name < R[b].name ? -1 : 1)
+      .map(k => '<option value="' + esc(R[k].name) + '">' + esc(R[k].name) + '</option>').join("");
+    const prioOpts = ["Normal", "High", "P1-CRITICAL", "P2-HIGH", "P3-WATCH"].map(p => '<option>' + p + '</option>').join("");
+    const today = new Date().toISOString().slice(0, 10);
+    const fld = (id, lbl, val, ph) => '<div><label>' + lbl + '</label><input id="' + id + '" value="' + (val || "") + '"' + (ph ? ' placeholder="' + ph + '"' : '') + '></div>';
+    const ta = (id, lbl) => '<div style="grid-column:1/-1"><label>' + lbl + '</label><textarea id="' + id + '" rows="2"></textarea></div>';
+    return '<style>.poform .row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:8px}.poform label{font-size:12px;font-weight:600;opacity:.8}.poform input,.poform select,.poform textarea{width:100%}.posec{font-weight:800;margin:14px 0 6px;border-bottom:2px solid rgba(128,128,128,.25);padding-bottom:3px}</style>' +
+      '<div class="card poform"><div class="suprow"><h2 style="margin:0;flex:1">&#128221; New Production Order / Orden de Produccion</h2>' +
+      '<button class="ghost sm" onclick="UI.poNewClose()">Back</button></div>' +
+      '<div class="row">' +
+        fld("pn-to", "TO / PARA", "Mixing & P-Mac") + fld("pn-from", "FROM / DE", "Allen") +
+        '<div><label>PO #</label><input id="pn-num" value="' + poNewNumber() + '" readonly></div></div>' +
+      '<div class="row">' +
+        '<div><label>FLAVOR / SABOR</label><select id="pn-flavor" onchange="UI.poNewFlavor()">' + flavOpts + '</select></div>' +
+        '<div><label>PRIORITY / PRIORIDAD</label><select id="pn-prio">' + prioOpts + '</select></div>' +
+        '<div><label>SIZE / TAMANO</label><select id="pn-size"><option>4.0 oz</option><option>1.5 oz</option></select></div></div>' +
+      '<div class="row">' +
+        '<div><label>DATE / FECHA</label><input id="pn-date" type="date" value="' + today + '"></div>' +
+        '<div><label>START / INICIO</label><input id="pn-start" type="date"></div>' +
+        '<div><label>DEADLINE / FECHA LIMITE</label><input id="pn-deadline" type="date"></div></div>' +
+      '<div class="posec">MIXING / MEZCLADO</div>' +
+      '<div class="row">' + fld("pn-bins", "BINS NEEDED / CONTENEDORES") + fld("pn-seed", "SEED / SEMILLA") + fld("pn-batch", "BATCH / LOTE #") + '</div>' +
+      '<div class="row">' + ta("pn-mixinstr", "MIXING INSTRUCTIONS / INSTRUCCIONES") + '</div>' +
+      '<div class="row">' + fld("pn-allg", "ALLERGENS") + fld("pn-allglvl", "ALLERGEN LEVEL") + '<div></div></div>' +
+      '<div class="row">' + ta("pn-mixnotes", "NOTES FOR NEXT SHIFT / NOTAS") + '</div>' +
+      '<div class="posec">P-MAC</div>' +
+      '<div class="row">' + fld("pn-pbins", "BINS / CONTENEDORES") + fld("pn-target", "TARGET PACKAGES / PAQUETES") + fld("pn-machines", "ASSIGNED MACHINES") + '</div>' +
+      '<div class="row">' + ta("pn-pmacinstr", "P-MAC INSTRUCTIONS / INSTRUCCIONES") + '</div>' +
+      '<div class="posec">RECIPE / RECETA (auto-fills from flavor)</div>' +
+      '<div class="row">' + fld("pn-fid", "FLAVOR ID") + fld("pn-seedtype", "SEED TYPE") + fld("pn-seedlbs", "SEED (lbs)") + '</div>' +
+      '<div class="row">' + fld("pn-water", "WATER / AGUA") + fld("pn-oil", "OIL / ACEITE") + fld("pn-malt", "MALT / MALTA") + '</div>' +
+      '<div class="row">' + fld("pn-seas", "SEASONING / CONDIMENTO") + fld("pn-stevia", "STEVIA") + '<div></div></div>' +
+      '<div class="row">' + ta("pn-notes", "NOTES / NOTAS") + '</div>' +
+      '<div style="display:flex;gap:8px;margin-top:8px"><button class="primary" onclick="UI.poNewSave()">Save PO</button>' +
+      '<button class="ghost" onclick="UI.poNewPrint()">&#128424; Print</button></div></div>';
   }
   // Compact double-check card for the Mixing / P-Mac boards.
   function prodOrdersDeptCard(dept) {
@@ -5264,6 +5312,54 @@
     prodAdvance(po) { const cur = PROD_STAGES.indexOf(prodStageGet(po)); const nx = PROD_STAGES[Math.min(cur + 1, PROD_STAGES.length - 1)]; prodStageSet(po, nx); toast(po + " → " + nx); render(); },
     prodReset(po) { prodStageSet(po, "Open"); render(); },
     sdSet(id, val) { if (DB.kvSet) DB.kvSet("sd:" + id, val); toast("Saved"); },
+    poNewOpen() { poFormOpen = true; active = "prodorders"; closeDrawer(); render(); },
+    poNewClose() { poFormOpen = false; render(); },
+    poNewFlavor() {
+      const nm = (document.getElementById("pn-flavor") || {}).value;
+      const r = window.RECIPE_LOOKUP ? window.RECIPE_LOOKUP(nm) : null; if (!r) return;
+      const setF = (id, v) => { const e = document.getElementById(id); if (e) e.value = v || ""; };
+      setF("pn-fid", r.code); setF("pn-seedtype", r.seed_type); setF("pn-seed", r.seed_type); setF("pn-seas", r.seas_desc); setF("pn-allglvl", r.allergen_level);
+      setF("pn-seedlbs", "100 lbs"); setF("pn-water", "5 cups"); setF("pn-malt", "2 lbs"); setF("pn-oil", r.oil || "None"); setF("pn-stevia", "None");
+    },
+    poNewSave() {
+      const g = id => { const e = document.getElementById(id); return e ? String(e.value).trim() : ""; };
+      const flavor = g("pn-flavor"); if (!flavor) { toast("Pick a flavor first"); return; }
+      const po = g("pn-num");
+      const o = { po: po, date: g("pn-date"), start: g("pn-start"), deadline: g("pn-deadline"), to: g("pn-to"), from: g("pn-from"),
+        flavor: flavor, priority: g("pn-prio") || "Normal", size: g("pn-size"), bins: g("pn-bins"), seed: g("pn-seed"), batch: g("pn-batch"),
+        mix_instr: g("pn-mixinstr"), allergen: g("pn-allg"), allergen_level: g("pn-allglvl"), mix_notes: g("pn-mixnotes"),
+        pbins: g("pn-pbins"), target_pkgs: g("pn-target"), machines: g("pn-machines"), pmac_instr: g("pn-pmacinstr"),
+        fid: g("pn-fid"), seed_type: g("pn-seedtype"), seed_lbs: g("pn-seedlbs"), water: g("pn-water"), oil: g("pn-oil"),
+        malt: g("pn-malt"), seasoning: g("pn-seas"), stevia: g("pn-stevia"), notes: g("pn-notes") };
+      if (DB.addProdOrder) DB.addProdOrder(o);
+      prodStageSet(po, "Open"); poFormOpen = false; toast("PO " + po + " created"); render();
+    },
+    poNewPrint() {
+      const g = id => { const e = document.getElementById(id); return e ? esc(e.value) : ""; };
+      const w = window.open("", "_blank"); if (!w) { toast("Allow pop-ups to print"); return; }
+      const H = '<html><head><title>PO ' + g("pn-num") + '</title><style>body{font-family:Arial;font-size:12px;padding:22px}h1{font-size:16px}table{width:100%;border-collapse:collapse;margin:7px 0}td{border:1px solid #999;padding:6px;vertical-align:top}.sec td{background:#eee;font-weight:bold}</style></head><body>' +
+        '<h1>Production Order / Orden de Produccion</h1>' +
+        '<table><tr><td>TO/PARA: ' + g("pn-to") + '</td><td>FLAVOR/SABOR: <b>' + g("pn-flavor") + '</b></td></tr>' +
+        '<tr><td>FROM/DE: ' + g("pn-from") + '</td><td>PRIORITY/PRIORIDAD: ' + g("pn-prio") + '</td></tr>' +
+        '<tr><td>DATE: ' + g("pn-date") + ' &nbsp; PO#: ' + g("pn-num") + '</td><td>START: ' + g("pn-start") + ' &nbsp; DEADLINE: ' + g("pn-deadline") + '</td></tr></table>' +
+        '<table><tr class="sec"><td colspan="2">MIXING / MEZCLADO</td></tr>' +
+        '<tr><td>Bins/Contenedores: <b>' + g("pn-bins") + '</b></td><td>Seed/Semilla: ' + g("pn-seed") + '</td></tr>' +
+        '<tr><td colspan="2">Instructions/Instrucciones: ' + g("pn-mixinstr") + '</td></tr>' +
+        '<tr><td>Allergens: ' + g("pn-allg") + '</td><td>Level: ' + g("pn-allglvl") + '</td></tr>' +
+        '<tr><td colspan="2">Completion/Terminacion: Date___ Time___ Actual Bins___</td></tr></table>' +
+        '<table><tr class="sec"><td colspan="2">P-MAC</td></tr>' +
+        '<tr><td>Size/Tamano: ' + g("pn-size") + '</td><td>Bins: ' + g("pn-pbins") + '</td></tr>' +
+        '<tr><td>Target Packages: ' + g("pn-target") + '</td><td>Machines: ' + g("pn-machines") + '</td></tr>' +
+        '<tr><td colspan="2">Instructions/Instrucciones: ' + g("pn-pmacinstr") + '</td></tr>' +
+        '<tr><td colspan="2">Completion: Date___ Time___ Actual Packages___</td></tr></table>' +
+        '<table><tr class="sec"><td colspan="2">RECIPE / RECETA</td></tr>' +
+        '<tr><td>Flavor ID: ' + g("pn-fid") + '</td><td>Seed Type: ' + g("pn-seedtype") + '</td></tr>' +
+        '<tr><td>Seed: ' + g("pn-seedlbs") + '</td><td>Water/Agua: ' + g("pn-water") + '</td></tr>' +
+        '<tr><td>Oil/Aceite: ' + g("pn-oil") + '</td><td>Malt/Malta: ' + g("pn-malt") + '</td></tr>' +
+        '<tr><td>Seasoning/Condimento: ' + g("pn-seas") + '</td><td>Stevia: ' + g("pn-stevia") + '</td></tr></table>' +
+        '<p>Notes/Notas: ' + g("pn-notes") + '</p></body></html>';
+      w.document.write(H); w.document.close(); w.focus(); setTimeout(() => { try { w.print(); } catch (e) {} }, 300);
+    },
     poCreateBack() { spoView = "list"; render(); },
     nonPoOpen() { spoView = "nonpo"; render(); },
     nonPoBack() { spoView = "list"; render(); },

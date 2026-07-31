@@ -232,9 +232,21 @@ window.DB = (function () {
       // table just leaves the app on localStorage until the table is created (one-time SQL).
       try {
         const kvr = await sb.from("kv_status").select("*").limit(5000);
+        if (kvr && kvr.error) throw kvr.error;    // table missing -> stay on localStorage
         cache.kv = {}; (kvr && kvr.data ? kvr.data : []).forEach(r => { cache.kv[r.key] = r.value; });
         cache.kvCloud = true;
       } catch (e) { cache.kv = cache.kv || {}; cache.kvCloud = false; }
+      // production_orders: new POs Allen creates in-app (flexible JSON blob). Resilient: falls back to
+      // localStorage until the table exists. Merged with the imported PROD_ORDERS seed on the board.
+      try {
+        const por = await sb.from("production_orders").select("*").order("created_at", { ascending: false }).limit(2000);
+        if (por && por.error) throw por.error;
+        cache.prodOrders = (por && por.data ? por.data : []).map(r => r.data || r);
+        cache.poCloud = true;
+      } catch (e) {
+        cache.poCloud = false;
+        try { cache.prodOrders = JSON.parse(localStorage.getItem("prodorders-custom") || "[]"); } catch (_) { cache.prodOrders = []; }
+      }
       // maintenance_items (Maintenance request + project tracker) loaded separately + resiliently
       // so a missing table never breaks the app shell (same pattern as demand_forecast above).
       try {
@@ -1247,6 +1259,15 @@ window.DB = (function () {
     if (mode === "cloud") { try { await sb.from("kv_status").upsert({ key: key, value: val, updated_at: new Date().toISOString() }); } catch (e) {} }
   }
   function kvCloudOn() { return !!cache.kvCloud; }
+  // ---- Production orders created in-app (Allen's digital PO) ----
+  function prodOrdersCustom() { return cache.prodOrders || []; }
+  async function addProdOrder(o) {
+    o.id = o.po; o.created_at = new Date().toISOString();
+    cache.prodOrders = cache.prodOrders || []; cache.prodOrders.unshift(o);
+    try { localStorage.setItem("prodorders-custom", JSON.stringify(cache.prodOrders)); } catch (e) {}
+    if (mode === "cloud") { try { await sb.from("production_orders").insert({ id: o.po, data: o, created_at: o.created_at }); } catch (e) {} }
+    return { ok: true };
+  }
   // Mark one PO line received (persists recv flag onto the line JSON) + logs it. Returns line info for notify.
   async function markLineReceived(poId, idx, op) {
     const po = (cache.supplierPos || []).find(x => String(x.id) === String(poId)); if (!po) return { ok: false };
@@ -1736,7 +1757,7 @@ window.DB = (function () {
     orders, createOrder, updateOrder, setOrderStatus, deleteOrder, notifyNewOrder, reconcileSpsOrders,
     rdRequests, createRdRequest, updateRdRequest, setRdStatus, deleteRdRequest, sendRdEmail,
     supplierPos, createSupplierPO, updateSupplierPO, deleteSupplierPO, emailPO, expectedReceipts, markLineReceived,
-    onOrderMap, onOrder, kvGet, kvSet, kvCloudOn,
+    onOrderMap, onOrder, kvGet, kvSet, kvCloudOn, prodOrdersCustom, addProdOrder,
     recipeFor, seasLbPerBag, bagsPerBatch, flavorDemandBags, recommendedSeasReorder,
     ecomBagsFor, ecomWeeklyBags, unifiedWeeklyBags, unifiedDemand,
     orderDocs, createOrderDoc, deleteOrderDoc,
