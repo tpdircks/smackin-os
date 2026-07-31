@@ -101,7 +101,7 @@
       mixing:"Mixing", pmac:"P-Mac", roleMixing:"Mixing (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mixing", grpPmac:"P-Mac",
       deptSoon:"This area is being set up. Allen's team screens will live here - tell us what you'd like tracked and we'll build it in.",
       conHint:"Scan each material as it moves from the racking into this room. Records real-time usage and removes it from inventory. Lot # required on every scan.", conLot:"Lot # (required)", conBtn:"Log usage", conRecent:"Recent usage", conNone:"Nothing logged yet.", conWhen:"When", conMat:"Material", conBy:"By", conErr:"Scan an item, quantity, and lot #", conNotInList:"not in item list",
-      analytics:"Analytics", mnTitle:"Make Next — E-Com Queue", mnHint:"Flavors to make so inventory keeps up with the e-commerce order queue (all unshipped ShipStation orders, incl. weekend backlog). Short = queue demand minus on-hand.", mnNone:"No e-com queue loaded yet. The hourly ShipStation sync fills this in.", mnMake:"MAKE", mnOk:"OK", mnFlavorsShort:"Flavors short", mnToMake:"Bags to make", mnQueue:"Queue demand (bags)", mnUpdated:"Updated", mnOnHand:"On hand", mnDemand:"Queue demand", mnShort:"Short by", grpReceiving:"Receiving", grpInventory:"Inventory", grpProduction:"Production", grpFulfillment:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpImprove:"Improvement", grpQuality:"Quality", compliance:"Compliance / SQF", cmpHint:"SQF food-safety program - certifications, the recurring activity schedule, and the controlled documents in the Operations shared drive.", cmpCerts:"Certifications & Audits", cmpCert:"Certification / Audit", cmpFreq:"Frequency", cmpWhen:"When / Notes", cmpBody:"Body", cmpDueThis:"Due this month", cmpAllMonthly:"Only the standard monthly reviews this month.", cmpSchedule:"SQF Activity Schedule", cmpScheduleHint:"Recurring SQF activities by frequency (from the 2026 SQF Calendar). Monthly items are also documented daily/weekly.", cmpDocs:"Document Register", cmpDocsHint:"Key SQF controlled documents - open in the Operations shared drive.", grpDocs:"Reference", reference:"Reference / SOPs", refHint:"SOPs, cheat sheets, and policies from the Smackin Docs library - one click for the floor. Upload a file and pick a category.", refDrop:"Upload document(s)", refSelected:"file(s) ready", refCategory:"Category", refNotes:"Notes (optional)", refSaveBtn:"Add to library", refNone:"No reference documents yet.", refLibrary:"Document Library", refNoFile:"Choose a file first", refSaved:"added", refConfirmDel:"Remove this document?", disposition:"Held Stock", recipes:"Recipes", grpSystem:"System",
+      analytics:"Analytics", mnTitle:"Make Next — E-Com Queue", mnHint:"Flavors to make so inventory keeps up with the e-commerce order queue (all unshipped ShipStation orders, incl. weekend backlog). Short = queue demand minus on-hand.", mnNone:"No e-com queue loaded yet. The hourly ShipStation sync fills this in.", mnMake:"MAKE", mnOk:"OK", mnFlavorsShort:"Flavors short", mnToMake:"Bags to make", mnQueue:"Queue demand (bags)", mnUpdated:"Updated", mnOnHand:"On hand", mnDemand:"Queue demand", mnShort:"Short by", grpReceiving:"Receiving", grpInventory:"Inventory", grpProduction:"Production", grpFulfillment:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpImprove:"Improvement", grpQuality:"Quality", compliance:"Compliance / SQF", cmpHint:"SQF food-safety program - certifications, the recurring activity schedule, and the controlled documents in the Operations shared drive.", cmpCerts:"Certifications & Audits", cmpCert:"Certification / Audit", cmpFreq:"Frequency", cmpWhen:"When / Notes", cmpBody:"Body", cmpDueThis:"Due this month", cmpAllMonthly:"Only the standard monthly reviews this month.", cmpSchedule:"SQF Activity Schedule", cmpScheduleHint:"Recurring SQF activities by frequency (from the 2026 SQF Calendar). Monthly items are also documented daily/weekly.", cmpDocs:"Document Register", cmpDocsHint:"Key SQF controlled documents - open in the Operations shared drive.", grpDocs:"Reference", reference:"Reference / SOPs", refHint:"SOPs, cheat sheets, and policies from the Smackin Docs library - one click for the floor. Upload a file and pick a category.", refDrop:"Upload document(s)", refSelected:"file(s) ready", refCategory:"Category", refNotes:"Notes (optional)", refSaveBtn:"Add to library", refNone:"No reference documents yet.", refLibrary:"Document Library", refNoFile:"Choose a file first", refSaved:"added", refConfirmDel:"Remove this document?", disposition:"Held Stock", recipes:"Recipes", prodorders:"Prod Orders", grpSystem:"System",
       people:"People", hrHint:"Team directory and org chart. Non-sensitive info only - no pay or personal data.", hrGate:"This section shows employee information. Enter the manager PIN to view.",
       hrDir:"Directory", hrOrg:"Org chart", hrRole:"Role", hrDept:"Department", hrStart:"Started", hrMgr:"Reports to", hrSearchP:"Search name or role...", hrCount:"people", hrNoMatch:"No matching people.", hrYr:"yr", hrMo:"mo",
       alerts:"Alerts", alertsHint:"What needs attention now: items to reorder and seasoning lots nearing expiration.",
@@ -508,7 +508,7 @@
     { key: "tote", label: "Tote - 1 bag x 1,200 lb", per: 1200 }
   ];
   const SEED_PACK_MAP = {}; SEED_PACKS.forEach(p => SEED_PACK_MAP[p.key] = p);
-  const TABS = ["home","dash","analytics","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","fulfilldaily","flavinv","stockbuild","reorder15","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","recipes","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","expreceipts","supplierpos","people","improve","maintenance","compliance","disposition","reference","labels","log","settings","board"];
+  const TABS = ["home","dash","analytics","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","fulfilldaily","flavinv","stockbuild","reorder15","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","recipes","prodorders","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","expreceipts","supplierpos","people","improve","maintenance","compliance","disposition","reference","labels","log","settings","board"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -704,7 +704,7 @@
     { key:"", items:["home","alerts"] },
     { key:"grpReceiving", items:["receive","recvlog","returns","qa"] },
     { key:"grpInventory", items:["dash","analytics","adjust","count","move","locations","facility","finbags","seasoning","recipes","seed","skus","labels"] },
-    { key:"grpProduction", items:["produce","retailprod","ecomprod"] },
+    { key:"grpProduction", items:["prodorders","produce","retailprod","ecomprod"] },
     { key:"grpFulfillment", items:["prodlog","fulfilldaily","flavinv","stockbuild","reorder15","orders","orderdocs"] },
     { key:"grpDemand", items:["demand","demandboard","demandsched","demandimport","ecomdemand","forecast"] },
     { key:"grpShipping", items:["shiplog"] },
@@ -2159,6 +2159,84 @@
       rows + '</tbody></table></div></div>';
     return note + table;
   }
+  // ===== Production Orders — digital version of Allen's paper PO to Mixing & P-Mac =====
+  const PROD_STAGES = ["Open", "Mixing", "Labels", "Packaged", "P-Mac", "Done"];
+  let prodShowAll = false;
+  function prodStageGet(po) { try { return localStorage.getItem("po-stage-" + po) || "Open"; } catch (e) { return "Open"; } }
+  function prodStageSet(po, st) { try { localStorage.setItem("po-stage-" + po, st); } catch (e) {} }
+  function prioRank(p) { p = String(p || "").toUpperCase(); if (p.indexOf("P1") >= 0 || p.indexOf("CRITICAL") >= 0) return 0; if (p.indexOf("P2") >= 0 || p.indexOf("HIGH") >= 0) return 1; if (p.indexOf("P3") >= 0 || p.indexOf("WATCH") >= 0) return 2; if (p === "NORMAL") return 3; return 4; }
+  function prioColor(p) { return ["#B52024", "#E39412", "#C9A227", "#6B7280", "#9AA3AE"][prioRank(p)]; }
+  function prodOrdersList() {
+    const all = (typeof window !== "undefined" && window.PROD_ORDERS) ? window.PROD_ORDERS.slice() : [];
+    all.forEach(o => { o._stage = prodStageGet(o.po); });
+    let list = prodShowAll ? all : all.filter(o => o._stage !== "Done");
+    list.sort((a, b) => (prioRank(a.priority) - prioRank(b.priority)) || (String(a.deadline || a.date) < String(b.deadline || b.date) ? -1 : 1));
+    return list;
+  }
+  function prodStageBar(o) {
+    const cur = PROD_STAGES.indexOf(o._stage); const done = o._stage === "Done";
+    const steps = PROD_STAGES.map((s, i) =>
+      '<span class="postep' + (i <= cur ? ' on' : '') + (i === cur && !done ? ' now' : '') + '">' + s + '</span>').join('<span class="posep">&rsaquo;</span>');
+    return '<div class="postages">' + steps + '</div>';
+  }
+  function prodCard(o) {
+    const col = prioColor(o.priority);
+    const bins = o.bins || o.bins4 || o.bins15;
+    const sizeTag = o.size ? '<span class="posize">' + esc(o.size) + '</span>' : '';
+    const nextBtn = o._stage === "Done"
+      ? '<button class="ghost sm" onclick="UI.prodReset(\'' + esc(o.po) + '\')">Reopen</button>'
+      : '<button class="ot-order" style="background:' + col + '" onclick="UI.prodAdvance(\'' + esc(o.po) + '\')">Advance &rarr;</button>';
+    const instr = (o.mix_instr ? '<div class="poinstr"><b>Mixing:</b> ' + esc(o.mix_instr) + '</div>' : '') +
+      (o.pmac_instr ? '<div class="poinstr"><b>P-Mac:</b> ' + esc(o.pmac_instr) + '</div>' : '');
+    return '<div class="pocard" style="border-left:5px solid ' + col + '">' +
+      '<div class="pohd"><span class="poflav">' + esc(o.flavor) + '</span> ' + sizeTag +
+      '<span class="poprio" style="background:' + col + '">' + esc(o.priority || "—") + '</span></div>' +
+      '<div class="pometa">PO ' + esc(o.po) + ' &middot; ' + esc(o.date) + (o.deadline ? ' &middot; due ' + esc(o.deadline) : '') + '</div>' +
+      '<div class="pometa"><b>' + (bins ? esc(String(bins)) + ' bins' : '') + '</b>' + (o.seed ? ' &middot; ' + esc(o.seed) + ' seed' : '') + (o.to ? ' &middot; ' + esc(o.to) : '') + '</div>' +
+      instr + prodStageBar(o) +
+      '<div class="poact">' + nextBtn + '</div></div>';
+  }
+  function viewProdOrders() {
+    const style = '<style>' +
+      '.pogrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}' +
+      '.pocard{border:1px solid rgba(128,128,128,.18);border-radius:12px;padding:12px;background:rgba(128,128,128,.05);display:flex;flex-direction:column;gap:6px}' +
+      '.pohd{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.poflav{font-weight:800;font-size:15px}' +
+      '.posize{font-size:11px;font-weight:700;padding:1px 7px;border-radius:8px;background:rgba(128,128,128,.2)}' +
+      '.poprio{margin-left:auto;font-size:10px;font-weight:800;color:#fff;padding:2px 7px;border-radius:8px;white-space:nowrap}' +
+      '.pometa{font-size:12px;opacity:.8}.poinstr{font-size:12px;background:rgba(128,128,128,.08);border-radius:7px;padding:5px 7px}' +
+      '.postages{display:flex;align-items:center;flex-wrap:wrap;gap:3px;margin:4px 0}' +
+      '.postep{font-size:10px;font-weight:700;padding:2px 6px;border-radius:7px;background:rgba(128,128,128,.15);opacity:.55}' +
+      '.postep.on{opacity:1;background:rgba(46,158,91,.22)}.postep.now{background:#2E9E5B;color:#fff;opacity:1}.posep{opacity:.4;font-size:11px}' +
+      '.poact{display:flex;justify-content:flex-end;margin-top:2px}' +
+      '</style>';
+    const list = prodOrdersList();
+    const openCount = (window.PROD_ORDERS || []).filter(o => prodStageGet(o.po) !== "Done").length;
+    const head = '<div class="card"><div class="suprow"><h2 style="margin:0;flex:1">&#128221; Production Orders</h2>' +
+      '<button class="ghost sm" onclick="UI.prodToggleAll()">' + (prodShowAll ? "Show open only" : "Show all") + '</button></div>' +
+      '<p class="hint" style="margin:6px 0 0">Allen\'s production orders to Mixing &amp; P-Mac &mdash; the digital version of his PO. ' +
+      'Sorted by priority then deadline. Tap <b>Advance</b> as each order moves Open &rsaquo; Mixing &rsaquo; Labels &rsaquo; Packaged &rsaquo; P-Mac &rsaquo; Done. ' +
+      '<b>' + openCount + '</b> open.</p></div>';
+    const body = list.length
+      ? '<div class="pogrid">' + list.map(prodCard).join("") + '</div>'
+      : '<div class="card"><p class="ok pill big">&#127881; No open production orders</p></div>';
+    return style + head + body;
+  }
+  // Compact double-check card for the Mixing / P-Mac boards.
+  function prodOrdersDeptCard(dept) {
+    const list = prodOrdersList().slice(0, 6);
+    if (!list.length) return "";
+    const rows = list.map(o => {
+      const bins = o.bins || o.bins4 || o.bins15;
+      return '<tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:' + prioColor(o.priority) + '"></span></td>' +
+        '<td><b>' + esc(o.flavor) + '</b><div class="muted sm">PO ' + esc(o.po) + (o.deadline ? ' &middot; due ' + esc(o.deadline) : '') + '</div></td>' +
+        '<td class="right">' + (bins ? esc(String(bins)) + ' bins' : '') + '</td>' +
+        '<td class="sm">' + esc(o._stage) + '</td></tr>';
+    }).join("");
+    return '<div class="card"><div class="suprow"><h2 class="sub2" style="margin:0;flex:1">&#128221; Allen\'s Orders (double-check)</h2>' +
+      '<a class="order sm" onclick="UI_go(\'prodorders\')" style="cursor:pointer">Open &rarr;</a></div>' +
+      '<p class="hint" style="margin:2px 0 8px">Authoritative work orders from Allen &mdash; verify the board below against these.</p>' +
+      '<div class="tblwrap"><table><thead><tr><th></th><th>Flavor</th><th class="right">Bins</th><th>Stage</th></tr></thead><tbody>' + rows + '</tbody></table></div></div>';
+  }
   function viewSeasoning() {
     const seas = DB.items().filter(i => i.category === "seasoning" && /^SEAS-/.test(i.id));
     const sed = seasEditId ? (DB.seasLots().find(l => String(l.id) === String(seasEditId)) || {}) : {};
@@ -3526,7 +3604,7 @@
     });
     const totRow = '<tr style="background:#F0F0F0"><td><b>' + L("dqTotal") + '</b></td>' + colTot.map(v => '<td class="right"><b>' + (v ? fmt(v) : "&mdash;") + '</b></td>').join("") + '<td class="right"><b>' + fmt(grand) + '</b></td></tr>';
     const resultsCard = '<div class="card"><h2 class="sub2">' + L("dqResults") + '</h2><p class="hint">' + L("dqResultsHint") + ' (' + unit + ')</p><div class="tblwrap"><table><thead>' + hdr + '</thead><tbody>' + bodyRows + totRow + '</tbody></table></div>' + dqTodayLog(dept, isFul) + '</div>';
-    return (withTabs ? dqTabs(dept) : '') + (isFul ? '' : ecMakeNextCard()) + todayCard + logCard + scheduledCard + resultsCard + buildNeedCard(isFul ? "ful" : "prod", "buildnow");
+    return (withTabs ? dqTabs(dept) : '') + (isFul ? '' : prodOrdersDeptCard(dept)) + (isFul ? '' : ecMakeNextCard()) + todayCard + logCard + scheduledCard + resultsCard + buildNeedCard(isFul ? "ful" : "prod", "buildnow");
   }
   function dqTodayLog(dept, isFul) {
     const today = dqToday();
@@ -5152,6 +5230,9 @@
       document.querySelectorAll("#refBody .odcust").forEach(el => { const t = el.getAttribute("data-txt") || ""; el.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
     // ---- Create PO (Excel-style entry form) ----
     poCreateOpen() { spoView = "create"; poRows = 4; render(); },
+    prodToggleAll() { prodShowAll = !prodShowAll; render(); },
+    prodAdvance(po) { const cur = PROD_STAGES.indexOf(prodStageGet(po)); const nx = PROD_STAGES[Math.min(cur + 1, PROD_STAGES.length - 1)]; prodStageSet(po, nx); toast(po + " → " + nx); render(); },
+    prodReset(po) { prodStageSet(po, "Open"); render(); },
     poCreateBack() { spoView = "list"; render(); },
     nonPoOpen() { spoView = "nonpo"; render(); },
     nonPoBack() { spoView = "list"; render(); },
@@ -5522,7 +5603,7 @@
     _deadCache = null; // recompute dead-stock flags fresh each render
     renderNav(); refreshDatalists();
     const map = { home: viewHome, dash: viewDash, analytics: viewAnalytics, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
-      move: viewMove, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, fulfilldaily: viewFulfillDaily, stockbuild: viewStockBuild, reorder15: viewReorder15, seasoning: viewSeasoning, recipes: viewRecipes, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
+      move: viewMove, prodorders: viewProdOrders, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, fulfilldaily: viewFulfillDaily, stockbuild: viewStockBuild, reorder15: viewReorder15, seasoning: viewSeasoning, recipes: viewRecipes, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, expreceipts: viewExpectedReceipts, flavinv: viewFlavorInventory, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, maintenance: viewMaintenance, compliance: viewCompliance, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
       demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, ecomdemand: viewEcomDemand, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor, board: viewBoard, disposition: viewDisposition };
     $("view").innerHTML = (map[active] || viewHome)();
