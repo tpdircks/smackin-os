@@ -2129,8 +2129,8 @@
       const per1k = (per4 * 1000);                   // lb per 1,000 4oz bags
       const seasItem = seasByName[normn(r.name)];
       const onHand = seasItem ? DB.onHand(seasItem.id) : null;
-      const demandBags = DB.flavorDemandBags ? DB.flavorDemandBags(r.name) : 0;
-      const rec = DB.recommendedSeasReorder ? DB.recommendedSeasReorder(r.name, "4oz", demandBags) : 0;
+      const ud = DB.unifiedDemand ? DB.unifiedDemand(r.name) : { sps: 0, ecomWeekly: 0, weekly: 0 };
+      const rec = DB.recommendedSeasReorder ? DB.recommendedSeasReorder(r.name, "4oz", ud.weekly) : 0;
       const curRe = seasItem ? Number(seasItem.reorder) || 0 : null;
       if (seasItem) tracked++;
       const ohCell = onHand == null ? '<span class="muted">not tracked</span>' : fmt(Math.round(onHand)) + ' lb';
@@ -2142,7 +2142,9 @@
         '<td class="sm">' + esc(r.seed_type || "-") + '</td>' +
         '<td class="right sm">' + esc(String(r.mix_level || "-")) + '</td>' +
         '<td class="right">' + ohCell + '</td>' +
-        '<td class="right muted">' + (demandBags ? fmt(demandBags) : "&mdash;") + '</td>' +
+        '<td class="right muted">' + (ud.sps ? fmt(ud.sps) : "&mdash;") + '</td>' +
+        '<td class="right muted">' + (ud.ecomWeekly ? fmt(ud.ecomWeekly) : "&mdash;") + '</td>' +
+        '<td class="right"><b>' + (ud.weekly ? fmt(ud.weekly) : "&mdash;") + '</b></td>' +
         '<td class="right">' + (rec > 0 ? '<b>' + fmt(rec) + '</b> lb' : "&mdash;") + '</td>' +
         '<td class="right muted">' + (curRe == null ? "&mdash;" : fmt(curRe) + ' lb') + '</td></tr>';
     });
@@ -2150,10 +2152,10 @@
       '<h2 class="sub2" style="margin:0 0 6px">&#129482; Recipe Engine &mdash; from Allen\'s Manufacturing doc</h2>' +
       '<p class="hint" style="margin:0">Per-flavor seasoning rates (lbs per 100&#8209;lb seed batch; 1 batch &asymp; 400 bags of 4oz). ' +
       'Production now consumes seasoning at these real rates instead of the old flat estimate, and the <b>recommended reorder</b> ' +
-      'below covers ~7 weeks (5 lead + 2 safety) at current open demand. A red row = on hand is under the recommended reorder point.</p></div>';
+      'below covers ~7 weeks (5 lead + 2 safety) at <b>unified weekly demand = SPS open + ShipStation e-com</b>. A red row = on hand is under the recommended reorder point.</p></div>';
     const table = '<div class="card"><div class="suprow"><h2 class="sub2" style="margin:0;flex:1">Per-Flavor Recipes &amp; Seasoning Reorder</h2>' +
       '<span class="muted sm">' + tracked + ' of ' + keys.length + ' flavors tracked in app</span></div>' +
-      '<div class="tblwrap"><table class="sortable"><thead><tr><th>Flavor</th><th class="right">Seas/batch</th><th class="right">lb/bag</th><th class="right">lb/1k bags</th><th>Seed</th><th class="right">Mix</th><th class="right">On hand</th><th class="right">Open demand</th><th class="right">Rec. reorder</th><th class="right">Current reorder</th></tr></thead><tbody>' +
+      '<div class="tblwrap"><table class="sortable"><thead><tr><th>Flavor</th><th class="right">Seas/batch</th><th class="right">lb/bag</th><th class="right">lb/1k bags</th><th>Seed</th><th class="right">Mix</th><th class="right">On hand</th><th class="right">SPS open</th><th class="right">E-com/wk</th><th class="right">Weekly</th><th class="right">Rec. reorder</th><th class="right">Current reorder</th></tr></thead><tbody>' +
       rows + '</tbody></table></div></div>';
     return note + table;
   }

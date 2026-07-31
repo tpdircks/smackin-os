@@ -365,18 +365,36 @@ window.DB = (function () {
     if (r && r.seas_lbs) return r.seas_lbs / bagsPerBatch(size);
     return SEAS_LB_PER_BAG_FALLBACK;
   }
-  // Open demand bags for a flavor (SPS demandLines today; Phase 2 adds e-com).
+  const _flNorm = s => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  // Open SPS demand bags for a flavor (wholesale backlog snapshot).
   function flavorDemandBags(flavorName) {
-    const k = String(flavorName || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-    let t = 0;
-    (cache.demandLines || []).forEach(d => { if (String(d.flavor || "").toLowerCase().replace(/[^a-z0-9]/g, "") === k) t += Number(d.bags) || 0; });
+    const k = _flNorm(flavorName); let t = 0;
+    (cache.demandLines || []).forEach(d => { if (_flNorm(d.flavor) === k) t += Number(d.bags) || 0; });
     return t;
   }
-  // Recommended seasoning reorder point (lbs) = cover (lead+safety) weeks at current weekly demand.
+  // E-com bags for a flavor from the ShipStation snapshot: period total, and a real weekly rate (avg_day*7).
+  function ecomBagsFor(flavorName) {
+    const k = _flNorm(flavorName); let t = 0;
+    (cache.ecomDemand || []).forEach(r => { if (_flNorm(r.flavor) === k) t += Number(r.bags) || 0; });
+    return t;
+  }
+  function ecomWeeklyBags(flavorName) {
+    const k = _flNorm(flavorName); let t = 0;
+    (cache.ecomDemand || []).forEach(r => { if (_flNorm(r.flavor) === k) t += (Number(r.avg_day) || 0) * 7; });
+    return Math.round(t);
+  }
+  // UNIFIED per-flavor demand: SPS Target + SPS Exclude-Target (both in demandLines) + ShipStation e-com.
+  // Weekly-rate basis for reorder math: e-com weekly rate + SPS open backlog (treated as ~current week).
+  function unifiedWeeklyBags(flavorName) { return flavorDemandBags(flavorName) + ecomWeeklyBags(flavorName); }
+  function unifiedDemand(flavorName) {
+    const sps = flavorDemandBags(flavorName), ecomWk = ecomWeeklyBags(flavorName);
+    return { sps: sps, ecomWeekly: ecomWk, ecomPeriod: ecomBagsFor(flavorName), weekly: sps + ecomWk };
+  }
+  // Recommended seasoning reorder point (lbs) = cover (lead+safety) weeks at unified weekly demand.
   function recommendedSeasReorder(flavorName, size, weeklyBags, leadWeeks, safetyWeeks) {
     leadWeeks = leadWeeks == null ? 5 : leadWeeks; safetyWeeks = safetyWeeks == null ? 2 : safetyWeeks;
     const perBag = seasLbPerBag(flavorName, size || "4oz");
-    const wk = weeklyBags != null ? weeklyBags : flavorDemandBags(flavorName);
+    const wk = weeklyBags != null ? weeklyBags : unifiedWeeklyBags(flavorName);
     return Math.ceil(wk * perBag * (leadWeeks + safetyWeeks));
   }
   // Produce finished 4oz bags: +bags, consume 1 film (4oz) impression/bag + seasoning.
@@ -1700,6 +1718,7 @@ window.DB = (function () {
     supplierPos, createSupplierPO, updateSupplierPO, deleteSupplierPO, emailPO, expectedReceipts, markLineReceived,
     onOrderMap, onOrder,
     recipeFor, seasLbPerBag, bagsPerBatch, flavorDemandBags, recommendedSeasReorder,
+    ecomBagsFor, ecomWeeklyBags, unifiedWeeklyBags, unifiedDemand,
     orderDocs, createOrderDoc, deleteOrderDoc,
     referenceDocs, createRefDoc, deleteRefDoc,
     consumption, consume,
