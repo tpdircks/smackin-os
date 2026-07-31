@@ -321,7 +321,14 @@ window.DB = (function () {
     );
     return { ok: true };
   }
+  const _lastAdjust = {};
   async function adjust(item, loc, newQty, op) {
+    // Dedupe double-submits (double-click or a re-render re-firing the save). These were double-applying
+    // the delta and corrupting counts (e.g. a 20,800->1,500 count fired twice drove the row negative and
+    // wiped it). Skip an identical item+location+newQty adjust within 1.5s.
+    const _k = String(item.id) + "|" + loc + "|" + newQty, _now = Date.now();
+    if (_lastAdjust[_k] && _now - _lastAdjust[_k] < 1500) return { ok: true, deduped: true };
+    _lastAdjust[_k] = _now;
     const cur = atLoc(item.id, loc);
     await applyDeltas(
       [{ item_id: item.id, location: loc, delta: newQty - cur }],
