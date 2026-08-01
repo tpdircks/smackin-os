@@ -101,7 +101,7 @@
       mixing:"Mixing", pmac:"P-Mac", roleMixing:"Mixing (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Manufacturing", grpPmac:"P-Mac",
       deptSoon:"This area is being set up. Allen's team screens will live here - tell us what you'd like tracked and we'll build it in.",
       conHint:"Scan each material as it moves from the racking into this room. Records real-time usage and removes it from inventory. Lot # required on every scan.", conLot:"Lot # (required)", conBtn:"Log usage", conRecent:"Recent usage", conNone:"Nothing logged yet.", conWhen:"When", conMat:"Material", conBy:"By", conErr:"Scan an item, quantity, and lot #", conNotInList:"not in item list",
-      analytics:"Analytics", mnTitle:"Make Next — E-Com Queue", mnHint:"Flavors to make so inventory keeps up with the e-commerce order queue (all unshipped ShipStation orders, incl. weekend backlog). Short = queue demand minus on-hand.", mnNone:"No e-com queue loaded yet. The hourly ShipStation sync fills this in.", mnMake:"MAKE", mnOk:"OK", mnFlavorsShort:"Flavors short", mnToMake:"Bags to make", mnQueue:"Queue demand (bags)", mnUpdated:"Updated", mnOnHand:"On hand", mnDemand:"Queue demand", mnShort:"Short by", grpReceiving:"Receiving", grpInventory:"Inventory", grpItems:"Items & Reports", grpProduction:"Production", grpFulfillment:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpImprove:"Improvement", grpQuality:"Quality", compliance:"Compliance / SQF", cmpHint:"SQF food-safety program - certifications, the recurring activity schedule, and the controlled documents in the Operations shared drive.", cmpCerts:"Certifications & Audits", cmpCert:"Certification / Audit", cmpFreq:"Frequency", cmpWhen:"When / Notes", cmpBody:"Body", cmpDueThis:"Due this month", cmpAllMonthly:"Only the standard monthly reviews this month.", cmpSchedule:"SQF Activity Schedule", cmpScheduleHint:"Recurring SQF activities by frequency (from the 2026 SQF Calendar). Monthly items are also documented daily/weekly.", cmpDocs:"Document Register", cmpDocsHint:"Key SQF controlled documents - open in the Operations shared drive.", grpDocs:"Reference", reference:"Reference / SOPs", refHint:"SOPs, cheat sheets, and policies from the Smackin Docs library - one click for the floor. Upload a file and pick a category.", refDrop:"Upload document(s)", refSelected:"file(s) ready", refCategory:"Category", refNotes:"Notes (optional)", refSaveBtn:"Add to library", refNone:"No reference documents yet.", refLibrary:"Document Library", refNoFile:"Choose a file first", refSaved:"added", refConfirmDel:"Remove this document?", daily:"Daily Metrics", disposition:"Short-Dated", quality:"Quality Logs", recipes:"Recipes", prodorders:"Prod Orders", launch:"Launches", grpSystem:"System",
+      analytics:"Analytics", mnTitle:"Make Next — E-Com Queue", mnHint:"Flavors to make so inventory keeps up with the e-commerce order queue (all unshipped ShipStation orders, incl. weekend backlog). Short = queue demand minus on-hand.", mnNone:"No e-com queue loaded yet. The hourly ShipStation sync fills this in.", mnMake:"MAKE", mnOk:"OK", mnFlavorsShort:"Flavors short", mnToMake:"Bags to make", mnQueue:"Queue demand (bags)", mnUpdated:"Updated", mnOnHand:"On hand", mnDemand:"Queue demand", mnShort:"Short by", grpReceiving:"Receiving", grpInventory:"Inventory", grpItems:"Items & Reports", grpProduction:"Production", grpFulfillment:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpImprove:"Improvement", grpQuality:"Quality", compliance:"Compliance / SQF", cmpHint:"SQF food-safety program - certifications, the recurring activity schedule, and the controlled documents in the Operations shared drive.", cmpCerts:"Certifications & Audits", cmpCert:"Certification / Audit", cmpFreq:"Frequency", cmpWhen:"When / Notes", cmpBody:"Body", cmpDueThis:"Due this month", cmpAllMonthly:"Only the standard monthly reviews this month.", cmpSchedule:"SQF Activity Schedule", cmpScheduleHint:"Recurring SQF activities by frequency (from the 2026 SQF Calendar). Monthly items are also documented daily/weekly.", cmpDocs:"Document Register", cmpDocsHint:"Key SQF controlled documents - open in the Operations shared drive.", grpDocs:"Reference", reference:"Reference / SOPs", refHint:"SOPs, cheat sheets, and policies from the Smackin Docs library - one click for the floor. Upload a file and pick a category.", refDrop:"Upload document(s)", refSelected:"file(s) ready", refCategory:"Category", refNotes:"Notes (optional)", refSaveBtn:"Add to library", refNone:"No reference documents yet.", refLibrary:"Document Library", refNoFile:"Choose a file first", refSaved:"added", refConfirmDel:"Remove this document?", daily:"Daily Metrics", disposition:"Short-Dated", quality:"Quality Logs", recipes:"Recipes", prodorders:"Prod Orders", reordertracker:"Reorder Tracker", launch:"Launches", grpSystem:"System",
       people:"People", hrHint:"Team directory and org chart. Non-sensitive info only - no pay or personal data.", hrGate:"This section shows employee information. Enter the manager PIN to view.",
       hrDir:"Directory", hrOrg:"Org chart", hrRole:"Role", hrDept:"Department", hrStart:"Started", hrMgr:"Reports to", hrSearchP:"Search name or role...", hrCount:"people", hrNoMatch:"No matching people.", hrYr:"yr", hrMo:"mo",
       alerts:"Alerts", alertsHint:"What needs attention now: items to reorder and seasoning lots nearing expiration.",
@@ -708,7 +708,7 @@
     { key:"grpFulfillment", items:["produce","retailprod","ecomprod","prodlog","fulfilldaily","flavinv","stockbuild","orders","orderdocs"] },
     { key:"grpDemand", items:["demand"] },
     { key:"grpShipping", items:["shiplog"] },
-    { key:"grpMixing", items:["prodorders","launch","mixing","pmac","pmacout","floor"] },
+    { key:"grpMixing", items:["prodorders","reordertracker","launch","mixing","pmac","pmacout","floor"] },
     { key:"grpPurchasing", items:["purchasing","expreceipts","reorder15"] },
     { key:"grpQuality", items:["compliance","quality","disposition"] },
     { key:"grpTeam", items:["people","maintenance","improve","rd","log"] },
@@ -722,7 +722,7 @@
     orders:"receipt", orderdocs:"folder", shiplog:"truck", rd:"flask-conical", qa:"shield-alert",
     move:"arrow-left-right", produce:"factory", retailprod:"package", ecomprod:"laptop", prodlog:"clipboard-list", fulfilldaily:"clipboard-list", stockbuild:"layers", reorder15:"repeat",
     seasoning:"flame", seed:"sprout", skus:"barcode", finbags:"shopping-bag", pmacout:"package-open", flavinv:"bar-chart-2",
-    mixing:"cooking-pot", pmac:"wrench", count:"clipboard-check", locations:"map-pin",
+    mixing:"cooking-pot", pmac:"wrench", count:"clipboard-check", locations:"map-pin", reordertracker:"package-search",
     purchasing:"shopping-cart", expreceipts:"package", supplierpos:"file-text", people:"users", labels:"tag",
     board:"tv", log:"history", settings:"settings", improve:"trending-up", maintenance:"hard-hat", compliance:"shield-check", disposition:"archive", reference:"book-open",
     demand:"calendar-clock", demandboard:"list-checks", demandsched:"gauge", demandimport:"file-up", ecomdemand:"globe", forecast:"scale", facility:"warehouse", floor:"activity" };
@@ -1096,6 +1096,21 @@
         '<p class="hint" style="margin:2px 0 10px">Finished bags at or below reorder &mdash; these are made in-house, not purchased. Click <b>Produce</b> to open a new production order pre-filled for that flavor (Allen\'s PO).</p>' +
         '<div class="ordgrid">' + produceItems.map(b => ordTile(b, false)).join("") + '</div></div>'
       : "";
+    // Allen's Reorder Tracker flags — flavors his trigger logic says need a PO, fed onto the dashboard.
+    const allenFlags = (typeof arReorderFlavors === "function") ? arReorderFlavors() : [];
+    const allenCard = allenFlags.length
+      ? '<div class="card" id="ordallen" style="border:2px solid #2E6FB5;background:rgba(46,111,181,.05)">' +
+        '<div class="suprow"><h2 class="sub2" style="margin:0;flex:1;color:#2E6FB5">&#128230; Reorder Tracker &mdash; ' + allenFlags.length + ' flavor' + (allenFlags.length === 1 ? '' : 's') + ' to PO<span class="deptt" style="background:rgba(46,111,181,.16)">MANUFACTURING</span></h2>' +
+        '<a class="order sm" onclick="UI_go(\'reordertracker\')" style="cursor:pointer">Open Tracker &rarr;</a></div>' +
+        '<p class="hint" style="margin:2px 0 10px">Allen\'s reorder tracker flags these flavors at/below trigger. <b>Bins to Order</b> nets out bins already mixed. Tap <b>Make PO</b> to open a production order pre-filled.</p>' +
+        '<div class="ordgrid">' + allenFlags.map(r =>
+          '<div class="ordtile s-out ot-prod"><div class="ot-top"><span class="ot-nm">' + esc(r.name) + '</span><span class="ot-pill">' + esc(r.code) + '</span></div>' +
+          '<div class="ot-sub">' + (r.status4 === "REORDER" ? "4oz " : "") + (r.status15 === "REORDER" ? "1.5oz" : "") + ' at/below trigger</div>' +
+          '<div class="ot-stats"><span><b>' + fmt(r.binsToOrder) + '</b> bins to order</span><span style="opacity:.6">' + (r.pal4 + r.pal15).toFixed(1) + ' pallets</span></div>' +
+          '<div class="ot-foot"><span class="ot-need">&rarr;4oz <b>' + fmt(r.alloc4) + '</b> &middot; &rarr;1.5oz <b>' + fmt(r.alloc15) + '</b></span>' +
+          '<button class="ot-order" style="background:#2E6FB5" onclick="UI.produceCode(\'' + r.code + '\')">Make PO &rarr;</button></div></div>').join("") +
+        '</div></div>'
+      : "";
     // Low/out but already covered by a placed PO — calm, collapsed by default so it doesn't add scroll.
     const inboundCard = inbound.length
       ? '<details class="card" id="ordinbound" style="border:1px solid #2E6FB5"><summary style="cursor:pointer;font-weight:700;color:#2E6FB5">&#128666; Already On Order &mdash; ' + inbound.length + ' item' + (inbound.length === 1 ? '' : 's') + '<span class="deptt">PURCHASING</span> (tap to expand)</summary>' +
@@ -1138,7 +1153,7 @@
       '<div class="kpi"><div class="n">' + fmt(bag4) + '</div><div class="l">' + L("bag4") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(bag15) + '</div><div class="l">' + L("bag15") + '</div></div></div>' +
       '<h2 class="sub2" style="margin:16px 0 8px">' + L("hBase") + '</h2><div class="btiles">' + baseTiles + '</div></div>';
-    return '<div class="card"><h2>' + L("homeTitle") + '</h2><p class="hint">' + L("homeHint") + '</p><div class="htiles">' + tiles + '</div></div>' + statusStrip + buyCard + produceCard + inboundCard + incomingCard + gapCard + attention + essTable + snapshot;
+    return '<div class="card"><h2>' + L("homeTitle") + '</h2><p class="hint">' + L("homeHint") + '</p><div class="htiles">' + tiles + '</div></div>' + statusStrip + buyCard + produceCard + allenCard + inboundCard + incomingCard + gapCard + attention + essTable + snapshot;
   }
   // ===== Data freshness / health: show how current each feed is, so nobody trusts stale data =====
   function daysAgo(iso) { if (!iso) return null; return Math.floor((Date.now() - new Date(iso).getTime()) / 864e5); }
@@ -2383,6 +2398,68 @@
     const t = new Date(), s = t.getFullYear() + "." + String(t.getMonth() + 1).padStart(2, "0") + "." + String(t.getDate()).padStart(2, "0");
     const n = (DB.prodOrdersCustom ? DB.prodOrdersCustom() : []).filter(o => String(o.po || "").indexOf(s) === 0).length + 1;
     return s + "-" + String(n).padStart(2, "0");
+  }
+  // ===== Allen's Flavor Reorder Tracker (digital version of his PO-decision spreadsheet) =====
+  // Pallets on hand default from LIVE finished-bag inventory (4oz /2500 per pallet, 1.5oz /6250);
+  // any manual entry overrides that. Bins Mixed (shared pool) is entered per flavor. All persist via kv.
+  function arLivePallets(code, size) {
+    const id = (size === "4oz" ? "BAG4-" : "BAG15-") + code;
+    const bags = Number(DB.onHand(id)) || 0;
+    const per = size === "4oz" ? 2500 : 6250;
+    return per ? Math.round(bags / per * 100) / 100 : 0;
+  }
+  function arPallets(code, size) {
+    const ov = DB.kvGet ? DB.kvGet("arp" + size + ":" + code) : null;
+    if (ov != null && String(ov).trim() !== "") return Number(ov) || 0;
+    return arLivePallets(code, size);
+  }
+  function arBinsMixed(code) { const v = DB.kvGet ? DB.kvGet("arbm:" + code) : null; return v != null && String(v).trim() !== "" ? (Number(v) || 0) : 0; }
+  function arRow(f) { return window.ALLEN_CALC(f, arPallets(f.code, "4oz"), arPallets(f.code, "15oz"), arBinsMixed(f.code)); }
+  function viewReorderTracker() {
+    const AR = window.ALLEN_REORDER; if (!AR) return '<div class="card"><p class="muted">Reorder tracker data not loaded.</p></div>';
+    const conv = AR.conv;
+    const stPill = s => s === "REORDER" ? '<span class="pill out">REORDER</span>' : s === "OK" ? '<span class="pill ok">OK</span>' : '<span class="muted sm">&mdash;</span>';
+    const numIn = (code, size, val) => '<input type="number" min="0" step="0.01" value="' + val + '" style="width:64px;text-align:right" onchange="UI.arSetPallets(\'' + code + '\',\'' + size + '\',this.value)">';
+    const binIn = (code, val) => '<input type="number" min="0" step="1" value="' + val + '" style="width:60px;text-align:right" onchange="UI.arSetBins(\'' + code + '\',this.value)">';
+    let totBins = 0, totPal = 0, nReorder = 0;
+    const tierBlock = tier => {
+      const rows = tier.flavors.map(f => {
+        const r = arRow(f);
+        if (r.triggered) { nReorder++; totBins += r.binsToOrder; totPal += (r.pal4 + r.pal15); }
+        const hot = r.triggered ? ' style="background:rgba(181,32,36,.05)"' : '';
+        return '<tr' + hot + '><td><b>' + esc(f.code) + '</b></td><td>' + esc(f.name) + '</td>' +
+          '<td class="right">' + numIn(f.code, "4oz", r.pallets4) + '</td><td class="right muted">' + fmt(f.t4) + '</td><td class="right muted">' + fmt(f.q4) + '</td><td>' + stPill(r.status4) + '</td>' +
+          '<td class="right">' + numIn(f.code, "15oz", r.pallets15) + '</td><td class="right muted">' + fmt(f.t15) + '</td><td class="right muted">' + fmt(f.q15) + '</td><td>' + stPill(r.status15) + '</td>' +
+          '<td class="right">' + binIn(f.code, r.binsMixed) + '</td>' +
+          '<td class="right muted">' + fmt(r.gross) + '</td>' +
+          '<td class="right" style="background:rgba(227,148,18,.14)"><b>' + fmt(r.binsToOrder) + '</b></td>' +
+          '<td class="right muted">' + fmt(r.alloc4) + '</td><td class="right muted">' + fmt(r.alloc15) + '</td>' +
+          '<td class="right">' + r.pal4.toFixed(2) + '</td><td class="right">' + r.pal15.toFixed(2) + '</td>' +
+          (r.triggered ? '<td><button class="ghost sm" onclick="UI.produceCode(\'' + f.code + '\')">Make PO &rarr;</button></td>' : '<td></td>') + '</tr>';
+      }).join("");
+      return '<div class="card"><div class="suprow"><h2 class="sub2" style="margin:0;flex:1">' + esc(tier.name) + '</h2>' +
+        (tier.note ? '<span class="muted sm">' + esc(tier.note) + '</span>' : '') + '</div>' +
+        '<div class="tblwrap"><table class="artbl"><thead>' +
+        '<tr><th rowspan="2">Code</th><th rowspan="2">Flavor</th><th colspan="4" class="ctr">4.0 oz</th><th colspan="4" class="ctr">1.5 oz</th><th rowspan="2" class="right">Bins<br>Mixed</th><th rowspan="2" class="right">Gross<br>Bins</th><th rowspan="2" class="right">BINS TO<br>ORDER</th><th rowspan="2" class="right">&rarr;4oz</th><th rowspan="2" class="right">&rarr;1.5oz</th><th rowspan="2" class="right">4oz<br>Pallets</th><th rowspan="2" class="right">1.5oz<br>Pallets</th><th rowspan="2"></th></tr>' +
+        '<tr><th class="right">Pallets</th><th class="right">Trig&le;</th><th class="right">Order</th><th>Status</th><th class="right">Pallets</th><th class="right">Trig&le;</th><th class="right">Order</th><th>Status</th></tr>' +
+        '</thead><tbody>' + rows + '</tbody></table></div></div>';
+    };
+    const body = AR.tiers.map(tierBlock).join("");
+    const head = '<style>.artbl th.ctr{text-align:center}.artbl td,.artbl th{white-space:nowrap}.artbl input{font:inherit}</style>' +
+      '<div class="card"><div class="suprow"><h2 style="margin:0;flex:1">&#128230; Flavor Reorder Tracker <span class="deptt" style="background:rgba(46,111,181,.16)">MANUFACTURING</span></h2></div>' +
+      '<p class="hint" style="margin:6px 0 8px">Allen\'s PO-decision engine. Pallets on hand auto-fill from live finished-bag inventory (4oz &divide;2,500, 1.5oz &divide;6,250) &mdash; type over any cell to correct it. A size flags <b>REORDER</b> when pallets on hand &le; its trigger. <b>Bins to Order</b> = (4oz order + 1.5oz order) &minus; bins already mixed. Tap <b>Make PO</b> to open Allen\'s production order pre-filled.</p>' +
+      '<div class="kpis"><div class="kpi"><div class="n">' + nReorder + '</div><div class="l">flavors to reorder</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(totBins) + '</div><div class="l">total bins to order</div></div>' +
+      '<div class="kpi"><div class="n">' + (Math.round(totPal * 10) / 10) + '</div><div class="l">pallets from orders</div></div></div>' +
+      '<p class="hint" style="margin:8px 0 0">Conversions: 4.0oz = ' + conv["4oz"].perBin + '/bin, ' + fmt(conv["4oz"].perPallet) + '/pallet &middot; 1.5oz = ' + conv["15oz"].perBin + '/bin, ' + fmt(conv["15oz"].perPallet) + '/pallet.</p></div>';
+    return head + body;
+  }
+  // Flavors Allen's tracker currently flags REORDER — used to feed the dashboard Produce Now cards.
+  function arReorderFlavors() {
+    const AR = window.ALLEN_REORDER; if (!AR) return [];
+    const out = [];
+    AR.tiers.forEach(t => t.flavors.forEach(f => { const r = arRow(f); if (r.triggered && r.binsToOrder > 0) out.push(r); }));
+    return out;
   }
   function viewProdOrderNew() {
     const R = (typeof window !== "undefined" && window.RECIPES) ? window.RECIPES : {};
@@ -5561,6 +5638,17 @@
       poFormOpen = true; active = "prodorders"; closeDrawer(); render();
       toast("New PO started for " + (poPrefillFlavor || "flavor"));
     },
+    // Reorder Tracker (Allen): edit pallets-on-hand overrides + bins-mixed, and open a PO by flavor code.
+    arSetPallets(code, size, val) { if (DB.kvSet) DB.kvSet("arp" + size + ":" + code, String(val)); render(); },
+    arSetBins(code, val) { if (DB.kvSet) DB.kvSet("arbm:" + code, String(val)); render(); },
+    produceCode(code) {
+      let nm = code;
+      try { (window.ALLEN_REORDER.tiers || []).forEach(t => t.flavors.forEach(f => { if (f.code === code) nm = f.name; })); } catch (e) {}
+      const r = window.RECIPE_LOOKUP ? window.RECIPE_LOOKUP(nm) : null;
+      poPrefillFlavor = r ? r.name : nm;
+      poFormOpen = true; active = "prodorders"; closeDrawer(); render();
+      toast("New PO started for " + (poPrefillFlavor || nm));
+    },
     poNewClose() { poFormOpen = false; poPrefillFlavor = ""; render(); },
     poNewFlavor() {
       const nm = (document.getElementById("pn-flavor") || {}).value;
@@ -5979,7 +6067,7 @@
     _deadCache = null; // recompute dead-stock flags fresh each render
     renderNav(); refreshDatalists();
     const map = { home: viewHome, daily: viewDaily, dash: viewDash, analytics: viewAnalytics, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
-      move: viewMove, prodorders: viewProdOrders, launch: viewLaunch, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, fulfilldaily: viewFulfillDaily, stockbuild: viewStockBuild, reorder15: viewReorder15, seasoning: viewSeasoning, recipes: viewRecipes, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
+      move: viewMove, prodorders: viewProdOrders, reordertracker: viewReorderTracker, launch: viewLaunch, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, fulfilldaily: viewFulfillDaily, stockbuild: viewStockBuild, reorder15: viewReorder15, seasoning: viewSeasoning, recipes: viewRecipes, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, expreceipts: viewExpectedReceipts, flavinv: viewFlavorInventory, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, maintenance: viewMaintenance, compliance: viewCompliance, quality: viewQuality, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
       demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, ecomdemand: viewEcomDemand, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor, board: viewBoard, disposition: viewDisposition };
     const DEMAND_FAMILY = ["demand", "demandboard", "demandsched", "demandimport", "ecomdemand", "forecast"];
