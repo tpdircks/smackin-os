@@ -1038,6 +1038,7 @@
     const arrivals = (DB.expectedReceipts ? DB.expectedReceipts() : []).filter(a => !a.recv && a.ship).sort((a, b) => (a.ship < b.ship ? -1 : a.ship > b.ship ? 1 : 0));
     // --- Visual styles for the dashboard status strip + order-card grid (theme-neutral) ---
     const dStyle = '<style>' +
+      '.deptt{font-size:10px;font-weight:800;letter-spacing:.4px;padding:2px 8px;border-radius:8px;background:rgba(128,128,128,.18);margin-left:8px;opacity:.75;vertical-align:middle;white-space:nowrap}' +
       '.dstrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:0 0 14px}' +
       '.dstat{background:rgba(128,128,128,.06);border:1px solid rgba(128,128,128,.18);border-radius:12px;padding:12px 10px;text-align:center;cursor:pointer;display:flex;flex-direction:column;gap:3px;transition:transform .08s;color:inherit;font:inherit}' +
       '.dstat:hover{transform:translateY(-2px)}.ds-n{font-size:26px;font-weight:800;line-height:1}.ds-l{font-size:12px;font-weight:600;opacity:.72}' +
@@ -1082,7 +1083,7 @@
       '</div>';
     const buyCard = orderItems.length
       ? '<div class="card" id="ordnow" style="border:2px solid #B52024">' +
-        '<div class="suprow"><h2 class="sub2" style="margin:0;flex:1;color:#B52024">&#128722; Order Now &mdash; ' + orderItems.length + ' item' + (orderItems.length === 1 ? '' : 's') + '</h2>' +
+        '<div class="suprow"><h2 class="sub2" style="margin:0;flex:1;color:#B52024">&#128722; Order Now &mdash; ' + orderItems.length + ' item' + (orderItems.length === 1 ? '' : 's') + '<span class="deptt">PURCHASING</span></h2>' +
         '<a class="order sm" onclick="UI_go(\'purchasing\')" style="cursor:pointer">Purchasing &rarr;</a></div>' +
         '<p class="hint" style="margin:2px 0 10px">Purchased materials at or below reorder or out &mdash; and not already on an open PO. Click <b>Order</b> to open a PO pre-filled for that item.</p>' +
         '<div class="ordgrid">' + orderItems.map(b => ordTile(b, false)).join("") + '</div></div>'
@@ -1090,20 +1091,20 @@
     // Finished bags that are low/out — a PRODUCTION need, not a purchase. Routes to Stock Build.
     const produceCard = produceItems.length
       ? '<div class="card" id="ordproduce" style="border:2px solid #C67F16">' +
-        '<div class="suprow"><h2 class="sub2" style="margin:0;flex:1;color:#B87413">&#127981; Produce Now &mdash; ' + produceItems.length + ' item' + (produceItems.length === 1 ? '' : 's') + '</h2>' +
+        '<div class="suprow"><h2 class="sub2" style="margin:0;flex:1;color:#B87413">&#127981; Produce Now &mdash; ' + produceItems.length + ' item' + (produceItems.length === 1 ? '' : 's') + '<span class="deptt">MIXING &amp; P-MAC</span></h2>' +
         '<a class="order sm" onclick="UI_go(\'stockbuild\')" style="cursor:pointer">Stock Build &rarr;</a></div>' +
         '<p class="hint" style="margin:2px 0 10px">Finished bags at or below reorder &mdash; these are made in-house, not purchased. Click <b>Produce</b> to open Stock Build.</p>' +
         '<div class="ordgrid">' + produceItems.map(b => ordTile(b, false)).join("") + '</div></div>'
       : "";
     // Low/out but already covered by a placed PO — calm, collapsed by default so it doesn't add scroll.
     const inboundCard = inbound.length
-      ? '<details class="card" id="ordinbound" style="border:1px solid #2E6FB5"><summary style="cursor:pointer;font-weight:700;color:#2E6FB5">&#128666; Already On Order &mdash; ' + inbound.length + ' item' + (inbound.length === 1 ? '' : 's') + ' (tap to expand)</summary>' +
+      ? '<details class="card" id="ordinbound" style="border:1px solid #2E6FB5"><summary style="cursor:pointer;font-weight:700;color:#2E6FB5">&#128666; Already On Order &mdash; ' + inbound.length + ' item' + (inbound.length === 1 ? '' : 's') + '<span class="deptt">PURCHASING</span> (tap to expand)</summary>' +
         '<p class="hint" style="margin:6px 0 10px">Low or out, but already on a placed PO. No action needed unless a delivery slips.</p>' +
         '<div class="ordgrid">' + inbound.map(b => ordTile(b, true)).join("") + '</div></details>'
       : "";
     // Incoming shipments: uploaded supplier-PO lines with a ship/expected date, collapsed by default.
     const incomingCard = arrivals.length
-      ? '<details class="card" id="ordincoming"><summary style="cursor:pointer;font-weight:700">&#128230; Incoming Shipments &mdash; ' + arrivals.length + ' (tap to expand)</summary>' +
+      ? '<details class="card" id="ordincoming"><summary style="cursor:pointer;font-weight:700">&#128230; Incoming Shipments &mdash; ' + arrivals.length + '<span class="deptt">RECEIVING</span> (tap to expand)</summary>' +
         '<p class="hint" style="margin:6px 0 8px">Ordered and on the way &mdash; supplier POs with a ship/expected date.</p>' +
         '<div class="tblwrap"><table><thead><tr><th>Expected</th><th>Item</th><th>Vendor</th><th class="right">Qty</th></tr></thead><tbody>' +
         arrivals.slice(0, 12).map(a => '<tr><td class="sm">' + esc(a.ship) + '</td><td><b>' + esc(a.desc || a.item || "-") + '</b>' + (a.po_num ? '<div class="muted sm">PO ' + esc(a.po_num) + '</div>' : '') + '</td><td class="sm">' + esc(a.vendor || "") + '</td><td class="right muted">' + esc(String(a.qty || "")) + (a.uom ? " " + esc(a.uom) : "") + '</td></tr>').join("") +
@@ -1111,7 +1112,7 @@
       : "";
     // Seasonings that are being made but not tracked yet — a data-setup task, kept out of the urgent Order Now list.
     const gapCard = gapItems.length
-      ? '<details class="card" id="ordgaps" style="border:1px solid #8A63D2"><summary style="cursor:pointer;font-weight:700;color:#7A4FCF">&#9888; Seasonings Not Tracked &mdash; ' + gapItems.length + ' (tap to set up)</summary>' +
+      ? '<details class="card" id="ordgaps" style="border:1px solid #8A63D2"><summary style="cursor:pointer;font-weight:700;color:#7A4FCF">&#9888; Seasonings Not Tracked &mdash; ' + gapItems.length + '<span class="deptt">QUALITY / PURCHASING</span> (tap to set up)</summary>' +
         '<p class="hint" style="margin:6px 0 10px">These flavors are being made but have no seasoning item in the system, so we cannot alert on them (this is what caused the Cheeseburger surprise). Add each one so it starts triggering reorders.</p>' +
         '<div class="ordgrid">' + gapItems.map(b => ordTile(b, false)).join("") + '</div></details>'
       : "";
