@@ -1214,6 +1214,50 @@
       '<table><thead><tr>' + head + '</tr></thead><tbody id="dashBody">' + rows + '</tbody></table></div>' +
       prodTrendCard();
   }
+  // ===== Contextual alerts: urgent "needs attention" items shown at the top of each section =====
+  function sectionAlerts(tab) {
+    const A = []; const push = (sev, txt) => A.push({ sev: sev, txt: txt });
+    const notBag = i => !/^(BAG4|BAG15)/.test(i.id);
+    try {
+      if (tab === "seasoning") {
+        const exp = expiringLots(), expd = exp.filter(l => daysUntil(l.exp) < 0);
+        if (expd.length) push("out", expd.length + " seasoning lot" + (expd.length > 1 ? "s" : "") + " EXPIRED — quarantine now");
+        else if (exp.length) push("low", exp.length + " seasoning lot" + (exp.length > 1 ? "s" : "") + " expiring soon");
+        const lo = DB.items().filter(i => i.category === "seasoning" && i.reorder > 0 && DB.onHand(i.id) < i.reorder);
+        if (lo.length) push("low", lo.length + " seasoning at/below reorder");
+      } else if (tab === "purchasing") {
+        const out = DB.items().filter(i => i.reorder > 0 && DB.onHand(i.id) <= 0 && notBag(i));
+        const low = DB.items().filter(i => i.reorder > 0 && DB.onHand(i.id) > 0 && DB.onHand(i.id) < i.reorder && notBag(i));
+        if (out.length) push("out", out.length + " purchased item" + (out.length > 1 ? "s" : "") + " OUT — order now");
+        if (low.length) push("low", low.length + " at/below reorder");
+      } else if (tab === "recipes") {
+        const R = window.RECIPES || {}; let under = 0;
+        Object.keys(R).forEach(k => { const r = R[k]; if (!r.seas_lbs) return; const it = DB.items().find(i => i.category === "seasoning" && String(i.flavor || "").toLowerCase().replace(/[^a-z0-9]/g, "") === k); if (it && DB.recommendedSeasReorder) { const rec = DB.recommendedSeasReorder(r.name, "4oz"); if (rec > 0 && DB.onHand(it.id) < rec) under++; } });
+        if (under) push("low", under + " seasoning below the recommended reorder point");
+      } else if (tab === "prodorders") {
+        const crit = (typeof prodOrdersList === "function") ? prodOrdersList().filter(o => prioRank(o.priority) === 0 && o._stage !== "Done") : [];
+        if (crit.length) push("out", crit.length + " P1-CRITICAL production order" + (crit.length > 1 ? "s" : "") + " still open");
+      } else if (tab === "disposition") {
+        const seed = window.SHORTDATED_SEED || [];
+        const n = seed.filter(x => { const f = sdFlag(x); return f.t === "EXPIRED" || f.t === "OFF-FLAVOR" || f.t === "SHORT-DATED"; }).length;
+        if (n) push("low", n + " short-dated / off-flavor item" + (n > 1 ? "s" : "") + " needing a disposition");
+      } else if (tab === "maintenance") {
+        const op = (DB.maintenance ? DB.maintenance() : []).filter(m => (m.status || "") !== "Done" && /high|urgent|critical/i.test(m.priority || ""));
+        if (op.length) push("out", op.length + " high-priority maintenance item" + (op.length > 1 ? "s" : "") + " open");
+      }
+    } catch (e) {}
+    return A;
+  }
+  function alertStrip(tab) {
+    if (tab === "home" || tab === "dash" || tab === "alerts") return "";   // dashboard already shows its own cards
+    const A = sectionAlerts(tab); if (!A.length) return "";
+    const worst = A.some(a => a.sev === "out") ? "out" : "low";
+    const col = worst === "out" ? "#B52024" : "#E39412";
+    const bg = worst === "out" ? "rgba(181,32,36,.08)" : "rgba(227,148,18,.1)";
+    return '<div class="secalert" style="border-left:4px solid ' + col + ';background:' + bg + ';border-radius:10px;padding:9px 12px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center">' +
+      '<span style="font-weight:800;color:' + col + '">&#9888; Needs attention:</span>' +
+      A.map(a => '<span style="font-size:13px;font-weight:600">' + esc(a.txt) + '</span>').join('<span style="opacity:.4">&middot;</span>') + '</div>';
+  }
   function viewAlerts() {
     const out = DB.items().filter(i => i.reorder > 0 && DB.onHand(i.id) <= 0);
     const low = DB.items().filter(i => i.reorder > 0 && DB.onHand(i.id) > 0 && DB.onHand(i.id) < i.reorder);
@@ -5748,7 +5792,7 @@
       move: viewMove, prodorders: viewProdOrders, launch: viewLaunch, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, fulfilldaily: viewFulfillDaily, stockbuild: viewStockBuild, reorder15: viewReorder15, seasoning: viewSeasoning, recipes: viewRecipes, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, expreceipts: viewExpectedReceipts, flavinv: viewFlavorInventory, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, maintenance: viewMaintenance, compliance: viewCompliance, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
       demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, ecomdemand: viewEcomDemand, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor, board: viewBoard, disposition: viewDisposition };
-    $("view").innerHTML = (map[active] || viewHome)();
+    $("view").innerHTML = alertStrip(active) + (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
     $("modeBadge").className = "modebadge " + (DB.mode === "cloud" ? "ok" : "low");
     try { wireSortable(); } catch (e) {}
