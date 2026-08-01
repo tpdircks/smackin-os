@@ -7,7 +7,7 @@
   // build v69 — Demand section
   const T = {
     en: { dash:"Overview", home:"Dashboard", receive:"Receive", putaway:"Put-Away", move:"Move / Pick", produce:"Produce",
-      count:"Count", locations:"Locations", purchasing:"Purchasing", expreceipts:"Expected Receipts", flavinv:"Flavor Inventory", labels:"Labels", log:"Activity", settings:"Settings",
+      count:"Count", locations:"Locations", purchasing:"Purchasing", expreceipts:"Expected Receipts", flavinv:"Flavor Inventory", labels:"Labels", log:"Accountability", settings:"Settings",
       onhand:"On hand", item:"Item", unit:"Unit", qty:"Qty", lot:"Lot", status:"Status", reorder:"Reorder pt",
       scanItem:"Scan or type item code / UPC", to:"To location", from:"From location",
       submitReceive:"Receive", submitPut:"Put away", submitMove:"Move / pick", submitProduce:"Record production", submitCount:"Save count",
@@ -162,7 +162,7 @@
       flSensor:"bags (sensor)", flDeleteConfirm:"Remove this machine?",
       settingsHint:"Mode, layout, and demo controls." },
     es: { dash:"Resumen", home:"Panel", receive:"Recibir", putaway:"Almacenar", move:"Mover / Sacar", produce:"Producir",
-      count:"Conteo", locations:"Ubicaciones", purchasing:"Compras", expreceipts:"Recepciones Esperadas", flavinv:"Inventario de Sabores", labels:"Etiquetas", log:"Actividad", settings:"Ajustes",
+      count:"Conteo", locations:"Ubicaciones", purchasing:"Compras", expreceipts:"Recepciones Esperadas", flavinv:"Inventario de Sabores", labels:"Etiquetas", log:"Responsabilidad", settings:"Ajustes",
       onhand:"Disponible", item:"Articulo", unit:"Unidad", qty:"Cant.", lot:"Lote", status:"Estado", reorder:"Punto reorden",
       scanItem:"Escanee o escriba codigo / UPC", to:"Hacia ubicacion", from:"Desde ubicacion",
       submitReceive:"Recibir", submitPut:"Almacenar", submitMove:"Mover / sacar", submitProduce:"Registrar produccion", submitCount:"Guardar conteo",
@@ -316,7 +316,7 @@
       flSensor:"bolsas (sensor)", flDeleteConfirm:"Quitar esta maquina?",
       settingsHint:"Modo, distribucion y controles demo." },
     pt: { dash:"Visao geral", home:"Painel", receive:"Receber", putaway:"Armazenar", move:"Mover / Separar", produce:"Produzir",
-      count:"Contagem", locations:"Locais", purchasing:"Compras", expreceipts:"Recebimentos Esperados", flavinv:"Inventario de Sabores", labels:"Etiquetas", log:"Atividade", settings:"Configuracoes",
+      count:"Contagem", locations:"Locais", purchasing:"Compras", expreceipts:"Recebimentos Esperados", flavinv:"Inventario de Sabores", labels:"Etiquetas", log:"Responsabilidade", settings:"Configuracoes",
       onhand:"Em estoque", item:"Item", unit:"Unid.", qty:"Qtd.", lot:"Lote", status:"Status", reorder:"Ponto de reposicao",
       scanItem:"Escaneie ou digite codigo / UPC", to:"Para o local", from:"Do local",
       submitReceive:"Receber", submitPut:"Armazenar", submitMove:"Mover / separar", submitProduce:"Registrar producao", submitCount:"Salvar contagem",
@@ -711,9 +711,9 @@
     { key:"grpMixing", items:["prodorders","launch","mixing","pmac","pmacout","floor"] },
     { key:"grpPurchasing", items:["purchasing","expreceipts","reorder15"] },
     { key:"grpQuality", items:["compliance","quality","disposition"] },
-    { key:"grpTeam", items:["people","maintenance","improve","rd"] },
+    { key:"grpTeam", items:["people","maintenance","improve","rd","log"] },
     { key:"grpDocs", items:["reference"] },
-    { key:"grpSystem", items:["board","log","settings"] }
+    { key:"grpSystem", items:["board","settings"] }
   ];
   // Lucide icon names (clean SVG line icons) rendered via lucide.createIcons()
   const NAV_ICON = {
@@ -4257,11 +4257,30 @@
     }
     return '<div class="card"><h2>' + L("people") + '</h2><p class="hint">' + L("hrHint") + '</p>' + toggle + body + '</div>';
   }
+  let logWho = "", logAct = "", logQ = "";
   function viewLog() {
-    const rows = DB.log().length ? DB.log().map(e =>
-      '<tr><td class="muted sm">' + (e.t ? new Date(e.t).toLocaleString() : "") + '</td><td><b>' + e.a + '</b></td><td>' + e.d + '</td><td>' + e.u + '</td></tr>').join("")
-      : '<tr><td colspan="4" class="muted">' + L("noLog") + '</td></tr>';
-    return '<div class="card"><h2>' + L("log") + '</h2><table class="sortable"><thead><tr><th>' + L("when") + '</th><th>' + L("action") + '</th><th>' + L("detail") + '</th><th>' + L("operator") + '</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+    const all = DB.log() || [];
+    const people = [...new Set(all.map(e => e.u).filter(Boolean))].sort();
+    const actions = [...new Set(all.map(e => e.a).filter(Boolean))].sort();
+    const q = logQ.toLowerCase();
+    const isKey = a => /PO |ordered|approv|adjust|quarantine|scrap|return|received|delete|remove|status/i.test(a || "");
+    const rows = all.filter(e =>
+      (!logWho || e.u === logWho) && (!logAct || e.a === logAct) &&
+      (!q || ((e.a || "") + " " + (e.d || "") + " " + (e.u || "")).toLowerCase().indexOf(q) >= 0));
+    const byP = {}; rows.forEach(e => { byP[e.u || "—"] = (byP[e.u || "—"] || 0) + 1; });
+    const chips = Object.keys(byP).sort((a, b) => byP[b] - byP[a]).slice(0, 10).map(p => '<span class="pill low" style="margin:2px">' + esc(p) + ': ' + byP[p] + '</span>').join("");
+    const sel = (id, val, opts, ph) => '<select onchange="UI.logFilter(\'' + id + '\',this.value)"><option value="">' + ph + '</option>' + opts.map(o => '<option' + (val === o ? " selected" : "") + '>' + esc(o) + '</option>').join("") + '</select>';
+    const trows = rows.slice(0, 400).map(e =>
+      '<tr><td class="muted sm">' + (e.t ? new Date(e.t).toLocaleString() : "") + '</td>' +
+      '<td><b>' + esc(e.a || "") + '</b>' + (isKey(e.a) ? ' <span class="pill out" style="font-size:9px">KEY</span>' : "") + '</td>' +
+      '<td>' + esc(e.d || "") + '</td><td><b>' + esc(e.u || "—") + '</b></td></tr>').join("") ||
+      '<tr><td colspan="4" class="muted">' + L("noLog") + '</td></tr>';
+    return '<div class="card"><div class="suprow"><h2 style="margin:0;flex:1">&#128270; Accountability</h2><span class="muted sm">' + rows.length + ' of ' + all.length + ' actions</span></div>' +
+      '<p class="hint" style="margin:6px 0 8px">Who did what, and when. Every recorded action &mdash; PO approvals, inventory adjustments, receiving, production, quality sign-offs &mdash; is captured here with the person who did it. Filter by person to check accountability when an issue comes up. <b>KEY</b> = high-stakes action.</p>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">' + sel("who", logWho, people, "All people") + sel("act", logAct, actions, "All actions") +
+      '<input placeholder="Search action / detail…" value="' + esc(logQ) + '" onchange="UI.logFilter(\'q\',this.value)" style="flex:1;min-width:150px"></div>' +
+      (chips ? '<div style="margin-bottom:10px">' + chips + '</div>' : "") +
+      '<div class="tblwrap"><table class="sortable"><thead><tr><th>' + L("when") + '</th><th>' + L("action") + '</th><th>' + L("detail") + '</th><th>Who</th></tr></thead><tbody>' + trows + '</tbody></table></div></div>';
   }
   function viewSettings() {
     const c = DB.config || {};
@@ -5456,6 +5475,7 @@
     prodReset(po) { prodStageSet(po, "Open"); render(); },
     sdSet(id, val) { if (DB.kvSet) DB.kvSet("sd:" + id, val); toast("Saved"); },
     dailyDate(v) { dailyDateSel = v; render(); },
+    logFilter(field, val) { if (field === "who") logWho = val; else if (field === "act") logAct = val; else if (field === "q") logQ = val; render(); },
     qualTab(t) { qualTabSel = t; render(); },
     qualSave() {
       const g = id => { const e = document.getElementById(id); return e ? String(e.value).trim() : ""; };
