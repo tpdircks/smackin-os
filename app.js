@@ -1058,7 +1058,7 @@
     const ordBtn = b => b.s === "gap"
       ? '<button class="ot-order" onclick="UI.orderItem(\'' + (b.seasFor || '') + '\',\'gap\')">Set up &rarr;</button>'
       : b.produce
-      ? '<button class="ot-order" style="background:#2E6FB5" onclick="UI_go(\'stockbuild\')">Produce &rarr;</button>'
+      ? '<button class="ot-order" style="background:#2E6FB5" onclick="UI.produceItem(\'' + b.id + '\')">Produce &rarr;</button>'
       : '<button class="ot-order" onclick="UI.orderItem(\'' + b.id + '\')">Order &rarr;</button>';
     const ordTile = (b, inb) => '<div class="ordtile s-' + b.s + (b.produce ? ' ot-prod' : '') + '">' +
       '<div class="ot-top"><span class="ot-nm">' + esc(b.nm) + '</span><span class="ot-pill">' + pillTxt(b.s) + '</span></div>' +
@@ -1092,8 +1092,8 @@
     const produceCard = produceItems.length
       ? '<div class="card" id="ordproduce" style="border:2px solid #2E6FB5;background:rgba(46,111,181,.035)">' +
         '<div class="suprow"><h2 class="sub2" style="margin:0;flex:1;color:#2E6FB5">&#127981; Produce Now &mdash; ' + produceItems.length + ' item' + (produceItems.length === 1 ? '' : 's') + '<span class="deptt" style="background:rgba(46,111,181,.16)">MIXING &amp; P-MAC</span></h2>' +
-        '<a class="order sm" onclick="UI_go(\'stockbuild\')" style="cursor:pointer">Stock Build &rarr;</a></div>' +
-        '<p class="hint" style="margin:2px 0 10px">Finished bags at or below reorder &mdash; these are made in-house, not purchased. Click <b>Produce</b> to open Stock Build.</p>' +
+        '<a class="order sm" onclick="UI_go(\'prodorders\')" style="cursor:pointer">Production Orders &rarr;</a></div>' +
+        '<p class="hint" style="margin:2px 0 10px">Finished bags at or below reorder &mdash; these are made in-house, not purchased. Click <b>Produce</b> to open a new production order pre-filled for that flavor (Allen\'s PO).</p>' +
         '<div class="ordgrid">' + produceItems.map(b => ordTile(b, false)).join("") + '</div></div>'
       : "";
     // Low/out but already covered by a placed PO — calm, collapsed by default so it doesn't add scroll.
@@ -1254,38 +1254,87 @@
   function sectionAlerts(tab) {
     const A = []; const push = (sev, txt) => A.push({ sev: sev, txt: txt });
     const notBag = i => !/^(BAG4|BAG15)/.test(i.id);
+    const today = new Date().toISOString().slice(0, 10);
+    const plural = (n, w) => n + " " + w + (n > 1 ? "s" : "");
+    // Demand family all share the same board-level alerts.
+    const demandFam = ["demand", "demandboard", "demandsched", "demandimport", "ecomdemand", "forecast"];
     try {
       if (tab === "seasoning") {
         const exp = expiringLots(), expd = exp.filter(l => daysUntil(l.exp) < 0);
-        if (expd.length) push("out", expd.length + " seasoning lot" + (expd.length > 1 ? "s" : "") + " EXPIRED — quarantine now");
-        else if (exp.length) push("low", exp.length + " seasoning lot" + (exp.length > 1 ? "s" : "") + " expiring soon");
+        if (expd.length) push("out", plural(expd.length, "seasoning lot") + " EXPIRED — quarantine now");
+        else if (exp.length) push("low", plural(exp.length, "seasoning lot") + " expiring soon");
         const lo = DB.items().filter(i => i.category === "seasoning" && i.reorder > 0 && DB.onHand(i.id) < i.reorder);
-        if (lo.length) push("low", lo.length + " seasoning at/below reorder");
-      } else if (tab === "purchasing") {
+        if (lo.length) push("low", plural(lo.length, "seasoning") + " at/below reorder");
+      } else if (tab === "purchasing" || tab === "supplierpos" || tab === "expreceipts") {
         const out = DB.items().filter(i => i.reorder > 0 && DB.onHand(i.id) <= 0 && notBag(i));
         const low = DB.items().filter(i => i.reorder > 0 && DB.onHand(i.id) > 0 && DB.onHand(i.id) < i.reorder && notBag(i));
-        if (out.length) push("out", out.length + " purchased item" + (out.length > 1 ? "s" : "") + " OUT — order now");
-        if (low.length) push("low", low.length + " at/below reorder");
+        if (out.length) push("out", plural(out.length, "purchased item") + " OUT — order now");
+        if (low.length) push("low", plural(low.length, "item") + " at/below reorder");
+        const overdue = (DB.expectedReceipts ? DB.expectedReceipts() : []).filter(a => !a.recv && a.ship && String(a.ship).slice(0, 10) < today);
+        if (overdue.length) push("out", plural(overdue.length, "expected receipt") + " past its ship date");
       } else if (tab === "recipes") {
         const R = window.RECIPES || {}; let under = 0;
         Object.keys(R).forEach(k => { const r = R[k]; if (!r.seas_lbs) return; const it = DB.items().find(i => i.category === "seasoning" && String(i.flavor || "").toLowerCase().replace(/[^a-z0-9]/g, "") === k); if (it && DB.recommendedSeasReorder) { const rec = DB.recommendedSeasReorder(r.name, "4oz"); if (rec > 0 && DB.onHand(it.id) < rec) under++; } });
-        if (under) push("low", under + " seasoning below the recommended reorder point");
-      } else if (tab === "prodorders") {
-        const crit = (typeof prodOrdersList === "function") ? prodOrdersList().filter(o => prioRank(o.priority) === 0 && o._stage !== "Done") : [];
-        if (crit.length) push("out", crit.length + " P1-CRITICAL production order" + (crit.length > 1 ? "s" : "") + " still open");
+        if (under) push("low", plural(under, "seasoning") + " below the recommended reorder point");
+      } else if (tab === "prodorders" || tab === "mixing" || tab === "pmac") {
+        const list = (typeof prodOrdersList === "function") ? prodOrdersList() : [];
+        const crit = list.filter(o => prioRank(o.priority) === 0 && o._stage !== "Done");
+        const open = list.filter(o => o._stage !== "Done");
+        if (crit.length) push("out", plural(crit.length, "P1-CRITICAL production order") + " still open");
+        else if (open.length) push("low", plural(open.length, "production order") + " open");
       } else if (tab === "disposition") {
         const seed = window.SHORTDATED_SEED || [];
         const n = seed.filter(x => { const f = sdFlag(x); return f.t === "EXPIRED" || f.t === "OFF-FLAVOR" || f.t === "SHORT-DATED"; }).length;
-        if (n) push("low", n + " short-dated / off-flavor item" + (n > 1 ? "s" : "") + " needing a disposition");
+        if (n) push("low", plural(n, "short-dated / off-flavor item") + " needing a disposition");
       } else if (tab === "maintenance") {
         const op = (DB.maintenance ? DB.maintenance() : []).filter(m => (m.status || "") !== "Done" && /high|urgent|critical/i.test(m.priority || ""));
-        if (op.length) push("out", op.length + " high-priority maintenance item" + (op.length > 1 ? "s" : "") + " open");
+        if (op.length) push("out", plural(op.length, "high-priority maintenance item") + " open");
+      } else if (tab === "dash" || tab === "flavinv") {
+        const out = DB.items().filter(i => i.reorder > 0 && DB.onHand(i.id) <= 0);
+        const low = DB.items().filter(i => i.reorder > 0 && DB.onHand(i.id) > 0 && DB.onHand(i.id) < i.reorder);
+        if (out.length) push("out", plural(out.length, "item") + " OUT of stock");
+        if (low.length) push("low", plural(low.length, "item") + " low");
+      } else if (tab === "stockbuild") {
+        const oh = DB.stockBuild ? DB.stockBuild() : {}; const val = k => Number((oh[k] || {}).on_hand) || 0;
+        let crit = 0, under = 0;
+        (typeof SB_ITEMS !== "undefined" ? SB_ITEMS : []).forEach(i => { if (!i.goal) return; const p = val(i.key) / i.goal; if (p < 0.5) crit++; else if (p < 1) under++; });
+        if (crit) push("out", plural(crit, "flavor") + " under 50% of stock-build goal");
+        if (under) push("low", plural(under, "flavor") + " below goal");
+      } else if (tab === "reorder15") {
+        var TRIG = 12500; var codes = ["S01","S02","S03","S04","S05","S06","S07","S08","S09","S10","S11"];
+        var n15 = codes.filter(c => { var v = Number(DB.onHand("BAG15-" + c)); return !isNaN(v) && v <= TRIG; }).length;
+        if (n15) push("out", plural(n15, "1.5oz flavor") + " at/below the reorder trigger");
+      } else if (tab === "seed") {
+        const s = DB.items().filter(i => i.category === "seed");
+        const out = s.filter(i => i.reorder > 0 && DB.onHand(i.id) <= 0);
+        const low = s.filter(i => i.reorder > 0 && DB.onHand(i.id) > 0 && DB.onHand(i.id) < i.reorder);
+        if (out.length) push("out", plural(out.length, "seed type") + " OUT — production is gated");
+        if (low.length) push("low", plural(low.length, "seed type") + " low");
+      } else if (tab === "qa") {
+        let held = 0; ["QA-HOLD", "QUARANTINE"].forEach(z => DB.items().forEach(i => { if (DB.atLoc(i.id, z) > 0) held++; }));
+        if (held) push("out", plural(held, "item") + " in QA-Hold / Quarantine to review");
+      } else if (tab === "orders") {
+        const nw = (typeof newOrdersCount === "function") ? newOrdersCount() : 0;
+        const openUn = DB.orders().filter(o => (o.status || "Open") !== "Complete" && !orderShipped(o)).length;
+        if (nw) push("out", plural(nw, "new order") + " to review");
+        if (openUn) push("low", plural(openUn, "open order") + " not yet shipped");
+      } else if (demandFam.indexOf(tab) >= 0) {
+        const dl = DB.demandLines ? DB.demandLines() : [];
+        const openRows = dl.filter(r => (r.status || "Open") === "Open");
+        const pastDue = openRows.filter(r => r.due_date && String(r.due_date).slice(0, 10) < today).length;
+        const unmapped = dl.filter(r => /^UNMAPPED/i.test(String(r.flavor || ""))).length;
+        if (pastDue) push("out", plural(pastDue, "open PO line") + " past its due date");
+        if (unmapped) push("low", plural(unmapped, "demand line") + " with an unmapped flavor — re-map");
+      } else if (tab === "launch") {
+        const LS = window.LAUNCH_SCHEDULE || [];
+        const soon = LS.filter(x => x.when && !DB.items().some(i => String(i.flavor || "").toLowerCase() && String(x.flavor || "").toLowerCase().indexOf(String(i.flavor || "").toLowerCase()) >= 0)).length;
+        if (soon) push("low", plural(soon, "upcoming launch flavor") + " not yet a tracked item");
       }
     } catch (e) {}
     return A;
   }
   function alertStrip(tab) {
-    if (tab === "home" || tab === "dash" || tab === "alerts") return "";   // dashboard already shows its own cards
+    if (tab === "home" || tab === "alerts") return "";   // home already shows its own order/produce cards; alerts view is the full list
     const A = sectionAlerts(tab); if (!A.length) return "";
     const worst = A.some(a => a.sev === "out") ? "out" : "low";
     const col = worst === "out" ? "#B52024" : "#E39412";
@@ -2243,6 +2292,7 @@
   const PROD_STAGES = ["Open", "Mixing", "Labels", "Packaged", "P-Mac", "Done"];
   let prodShowAll = false;
   let poFormOpen = false;
+  let poPrefillFlavor = "";   // flavor to pre-select when the PO form is opened from a dashboard "Produce" click
   function prodStageGet(po) { return (DB.kvGet ? DB.kvGet("po:" + po) : null) || "Open"; }
   function prodStageSet(po, st) { if (DB.kvSet) DB.kvSet("po:" + po, st); }
   function prioRank(p) { p = String(p || "").toUpperCase(); if (p.indexOf("P1") >= 0 || p.indexOf("CRITICAL") >= 0) return 0; if (p.indexOf("P2") >= 0 || p.indexOf("HIGH") >= 0) return 1; if (p.indexOf("P3") >= 0 || p.indexOf("WATCH") >= 0) return 2; if (p === "NORMAL") return 3; return 4; }
@@ -2329,9 +2379,16 @@
   function viewProdOrderNew() {
     const R = (typeof window !== "undefined" && window.RECIPES) ? window.RECIPES : {};
     const flavOpts = '<option value=""></option>' + Object.keys(R).sort((a, b) => R[a].name < R[b].name ? -1 : 1)
-      .map(k => '<option value="' + esc(R[k].name) + '">' + esc(R[k].name) + '</option>').join("");
+      .map(k => '<option value="' + esc(R[k].name) + '"' + (poPrefillFlavor && R[k].name === poPrefillFlavor ? ' selected' : '') + '>' + esc(R[k].name) + '</option>').join("");
     const prioOpts = ["Normal", "High", "P1-CRITICAL", "P2-HIGH", "P3-WATCH"].map(p => '<option>' + p + '</option>').join("");
     const today = new Date().toISOString().slice(0, 10);
+    // When opened from a dashboard "Produce" click, pre-fill the recipe fields for that flavor (same values poNewFlavor() would set).
+    const pr = poPrefillFlavor && window.RECIPE_LOOKUP ? window.RECIPE_LOOKUP(poPrefillFlavor) : null;
+    const P = {
+      fid: pr ? pr.code : "", seedtype: pr ? pr.seed_type : "", seed: pr ? pr.seed_type : "", seas: pr ? pr.seas_desc : "",
+      allglvl: pr ? pr.allergen_level : "", seedlbs: pr ? "100 lbs" : "", water: pr ? "5 cups" : "",
+      malt: pr ? "2 lbs" : "", oil: pr ? (pr.oil || "None") : "", stevia: pr ? "None" : ""
+    };
     const fld = (id, lbl, val, ph) => '<div><label>' + lbl + '</label><input id="' + id + '" value="' + (val || "") + '"' + (ph ? ' placeholder="' + ph + '"' : '') + '></div>';
     const ta = (id, lbl) => '<div style="grid-column:1/-1"><label>' + lbl + '</label><textarea id="' + id + '" rows="2"></textarea></div>';
     return '<style>.poform .row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:8px}.poform label{font-size:12px;font-weight:600;opacity:.8}.poform input,.poform select,.poform textarea{width:100%}.posec{font-weight:800;margin:14px 0 6px;border-bottom:2px solid rgba(128,128,128,.25);padding-bottom:3px}</style>' +
@@ -2349,17 +2406,17 @@
         '<div><label>START / INICIO</label><input id="pn-start" type="date"></div>' +
         '<div><label>DEADLINE / FECHA LIMITE</label><input id="pn-deadline" type="date"></div></div>' +
       '<div class="posec">MIXING / MEZCLADO</div>' +
-      '<div class="row">' + fld("pn-bins", "BINS NEEDED / CONTENEDORES") + fld("pn-seed", "SEED / SEMILLA") + fld("pn-batch", "BATCH / LOTE #") + '</div>' +
+      '<div class="row">' + fld("pn-bins", "BINS NEEDED / CONTENEDORES") + fld("pn-seed", "SEED / SEMILLA", P.seed) + fld("pn-batch", "BATCH / LOTE #") + '</div>' +
       '<div class="row">' + ta("pn-mixinstr", "MIXING INSTRUCTIONS / INSTRUCCIONES") + '</div>' +
-      '<div class="row">' + fld("pn-allg", "ALLERGENS") + fld("pn-allglvl", "ALLERGEN LEVEL") + '<div></div></div>' +
+      '<div class="row">' + fld("pn-allg", "ALLERGENS") + fld("pn-allglvl", "ALLERGEN LEVEL", P.allglvl) + '<div></div></div>' +
       '<div class="row">' + ta("pn-mixnotes", "NOTES FOR NEXT SHIFT / NOTAS") + '</div>' +
       '<div class="posec">P-MAC</div>' +
       '<div class="row">' + fld("pn-pbins", "BINS / CONTENEDORES") + fld("pn-target", "TARGET PACKAGES / PAQUETES") + fld("pn-machines", "ASSIGNED MACHINES") + '</div>' +
       '<div class="row">' + ta("pn-pmacinstr", "P-MAC INSTRUCTIONS / INSTRUCCIONES") + '</div>' +
       '<div class="posec">RECIPE / RECETA (auto-fills from flavor)</div>' +
-      '<div class="row">' + fld("pn-fid", "FLAVOR ID") + fld("pn-seedtype", "SEED TYPE") + fld("pn-seedlbs", "SEED (lbs)") + '</div>' +
-      '<div class="row">' + fld("pn-water", "WATER / AGUA") + fld("pn-oil", "OIL / ACEITE") + fld("pn-malt", "MALT / MALTA") + '</div>' +
-      '<div class="row">' + fld("pn-seas", "SEASONING / CONDIMENTO") + fld("pn-stevia", "STEVIA") + '<div></div></div>' +
+      '<div class="row">' + fld("pn-fid", "FLAVOR ID", P.fid) + fld("pn-seedtype", "SEED TYPE", P.seedtype) + fld("pn-seedlbs", "SEED (lbs)", P.seedlbs) + '</div>' +
+      '<div class="row">' + fld("pn-water", "WATER / AGUA", P.water) + fld("pn-oil", "OIL / ACEITE", P.oil) + fld("pn-malt", "MALT / MALTA", P.malt) + '</div>' +
+      '<div class="row">' + fld("pn-seas", "SEASONING / CONDIMENTO", P.seas) + fld("pn-stevia", "STEVIA", P.stevia) + '<div></div></div>' +
       '<div class="row">' + ta("pn-notes", "NOTES / NOTAS") + '</div>' +
       '<div style="display:flex;gap:8px;margin-top:8px"><button class="primary" onclick="UI.poNewSave()">Save PO</button>' +
       '<button class="ghost" onclick="UI.poNewPrint()">&#128424; Print</button></div></div>';
@@ -5486,8 +5543,17 @@
       if (DB.addQualityLog) DB.addQualityLog(o);
       toast("Saved &#10003;"); render();
     },
-    poNewOpen() { poFormOpen = true; active = "prodorders"; closeDrawer(); render(); },
-    poNewClose() { poFormOpen = false; render(); },
+    poNewOpen() { poPrefillFlavor = ""; poFormOpen = true; active = "prodorders"; closeDrawer(); render(); },
+    // Dashboard "Produce" deep-link: open Allen's PO creator pre-filled for this finished-bag's flavor.
+    produceItem(id) {
+      const it = DB.items().find(i => i.id === id);
+      const nm = it ? (it.flavor || it.name || "") : "";
+      const r = window.RECIPE_LOOKUP ? window.RECIPE_LOOKUP(nm) : null;
+      poPrefillFlavor = r ? r.name : nm;
+      poFormOpen = true; active = "prodorders"; closeDrawer(); render();
+      toast("New PO started for " + (poPrefillFlavor || "flavor"));
+    },
+    poNewClose() { poFormOpen = false; poPrefillFlavor = ""; render(); },
     poNewFlavor() {
       const nm = (document.getElementById("pn-flavor") || {}).value;
       const r = window.RECIPE_LOOKUP ? window.RECIPE_LOOKUP(nm) : null; if (!r) return;
@@ -5506,7 +5572,7 @@
         fid: g("pn-fid"), seed_type: g("pn-seedtype"), seed_lbs: g("pn-seedlbs"), water: g("pn-water"), oil: g("pn-oil"),
         malt: g("pn-malt"), seasoning: g("pn-seas"), stevia: g("pn-stevia"), notes: g("pn-notes") };
       if (DB.addProdOrder) DB.addProdOrder(o);
-      prodStageSet(po, "Open"); poFormOpen = false; toast("PO " + po + " created"); render();
+      prodStageSet(po, "Open"); poFormOpen = false; poPrefillFlavor = ""; toast("PO " + po + " created"); render();
     },
     poNewPrint() {
       const g = id => { const e = document.getElementById(id); return e ? esc(e.value) : ""; };
