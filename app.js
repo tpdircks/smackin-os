@@ -513,10 +513,10 @@
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
     all: TABS.slice(),
-    receiving: ["home","alerts","dash","adjust","receive","putaway","returns","qa","count","locations","labels"],
-    production: ["home","alerts","dash","adjust","produce","seasoning","move","orders","orderdocs","count","locations"],
-    mixing: ["home","alerts","mixing","floor","seasoning","produce","count"],
-    pmac: ["home","alerts","pmac","floor","labels"],
+    receiving: ["home","dash","adjust","receive","putaway","returns","qa","count","locations","labels"],
+    production: ["home","dash","adjust","produce","seasoning","move","orders","orderdocs","count","locations"],
+    mixing: ["home","mixing","floor","seasoning","produce","count"],
+    pmac: ["home","pmac","floor","labels"],
     rnd: ["home","rd"]
   };
   const RD_TYPES = ["Seasoning sample","Ingredient sample","Packaging sample","Equipment / other"];
@@ -701,7 +701,7 @@
   }
   // ---- left sidebar: tabs grouped by department (NetSuite-style) ----
   const NAV_GROUPS = [
-    { key:"", items:["home","alerts","daily"] },
+    { key:"", items:["home","daily"] },
     { key:"grpReceiving", items:["receive","recvlog","returns","qa"] },
     { key:"grpInventory", items:["dash","adjust","count","move","locations","facility","finbags"] },
     { key:"grpItems", items:["seasoning","recipes","seed","skus","analytics","labels"] },
@@ -998,9 +998,9 @@
     const bag15 = items.filter(i => i.category === "bag15").reduce((s, i) => s + DB.onHand(i.id), 0);
     const tile = (n, label, tab, alert) => '<div class="htile' + (alert ? " alert" : "") + '" onclick="UI_go(\'' + tab + '\')"><div class="n">' + n + '</div><div class="l">' + label + '</div></div>';
     const tiles =
-      tile(out.length, L("hOut"), "alerts", out.length > 0) +
-      tile(low.length, L("hLow"), "alerts", false) +
-      tile(lots.length, L("hExp"), "alerts", expiredLots.length > 0) +
+      tile(out.length, L("hOut"), "dash", out.length > 0) +
+      tile(low.length, L("hLow"), "dash", false) +
+      tile(lots.length, L("hExp"), "seasoning", expiredLots.length > 0) +
       tile(openO.length, L("hOpen"), "orders", false) +
       tile(issues.length, L("hIssues"), "orders", issues.length > 0) +
       tile(rdPend.length, L("hRd"), "rd", rdOver.length > 0);
@@ -1332,6 +1332,14 @@
       }
     } catch (e) {}
     return A;
+  }
+  // Per-section nav badge: total flagged items in a section + worst severity, for the sidebar count.
+  function sectionAlertBadge(tab) {
+    let A = []; try { A = sectionAlerts(tab) || []; } catch (e) { A = []; }
+    if (!A.length) return null;
+    let n = 0;
+    A.forEach(a => { const m = String(a.txt || "").match(/^\s*(\d[\d,]*)/); n += m ? parseInt(m[1].replace(/,/g, ""), 10) : 1; });
+    return { n: n, sev: A.some(a => a.sev === "out") ? "out" : "low" };
   }
   function alertStrip(tab) {
     if (tab === "home" || tab === "alerts") return "";   // home already shows its own order/produce cards; alerts view is the full list
@@ -5863,8 +5871,9 @@
         '<option value="' + v + '"' + (prefs.role === v ? " selected" : "") + '>' + L(k) + '</option>').join("") + '</select>';
     const navBtn = tb => {
       let badge = "";
-      if (tb === "orders" && newOrdersCount() > 0) badge = '<span class="navbadge">' + newOrdersCount() + '</span>';
-      else if (tb === "alerts" && alertCount() > 0) badge = '<span class="navbadge alert">' + alertCount() + '</span>';
+      const b = sectionAlertBadge(tb);   // contextual per-section alert count (red = urgent/out, amber = low)
+      if (b) badge = '<span class="navbadge" style="background:' + (b.sev === "out" ? "#B52024" : "#E39412") + ';color:#fff">' + b.n + '</span>';
+      else if (tb === "orders" && newOrdersCount() > 0) badge = '<span class="navbadge">' + newOrdersCount() + '</span>';
       return '<button class="navitem ' + (tb === active ? "active" : "") + '" onclick="UI_go(\'' + tb + '\')">' +
         '<i class="navico" data-lucide="' + (NAV_ICON[tb] || "circle") + '"></i><span>' + L(tb) + '</span>' + badge + '</button>';
     };
