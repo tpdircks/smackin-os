@@ -718,12 +718,12 @@
   // Lucide icon names (clean SVG line icons) rendered via lucide.createIcons()
   const NAV_ICON = {
     home:"home", dash:"layout-dashboard", analytics:"bar-chart-3", alerts:"bell", adjust:"sliders-horizontal",
-    receive:"package-plus", recvlog:"clipboard-list", putaway:"package-check", returns:"rotate-ccw",
+    receive:"package-plus", recvlog:"inbox", putaway:"package-check", returns:"rotate-ccw",
     orders:"receipt", orderdocs:"folder", shiplog:"truck", rd:"flask-conical", qa:"shield-alert",
-    move:"arrow-left-right", produce:"factory", retailprod:"package", ecomprod:"laptop", prodlog:"clipboard-list", fulfilldaily:"clipboard-list", stockbuild:"layers", reorder15:"repeat",
+    move:"arrow-left-right", produce:"factory", retailprod:"store", ecomprod:"laptop", prodlog:"notebook-pen", fulfilldaily:"list-todo", stockbuild:"layers", reorder15:"repeat",
     seasoning:"flame", seed:"sprout", skus:"barcode", finbags:"shopping-bag", pmacout:"package-open", flavinv:"bar-chart-2",
     mixing:"cooking-pot", pmac:"wrench", count:"clipboard-check", locations:"map-pin", reordertracker:"package-search",
-    purchasing:"shopping-cart", expreceipts:"package", supplierpos:"file-text", people:"users", labels:"tag",
+    purchasing:"shopping-cart", expreceipts:"container", supplierpos:"file-text", people:"users", labels:"tag",
     board:"tv", log:"history", settings:"settings", improve:"trending-up", maintenance:"hard-hat", compliance:"shield-check", disposition:"archive", reference:"book-open",
     demand:"calendar-clock", demandboard:"list-checks", demandsched:"gauge", demandimport:"file-up", ecomdemand:"globe", forecast:"scale", facility:"warehouse", floor:"activity" };
   function drawIcons() { try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {} }
