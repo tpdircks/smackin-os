@@ -101,7 +101,7 @@
       mixing:"Mixing", pmac:"P-Mac", roleMixing:"Mixing (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Manufacturing", grpPmac:"P-Mac",
       deptSoon:"This area is being set up. Allen's team screens will live here - tell us what you'd like tracked and we'll build it in.",
       conHint:"Scan each material as it moves from the racking into this room. Records real-time usage and removes it from inventory. Lot # required on every scan.", conLot:"Lot # (required)", conBtn:"Log usage", conRecent:"Recent usage", conNone:"Nothing logged yet.", conWhen:"When", conMat:"Material", conBy:"By", conErr:"Scan an item, quantity, and lot #", conNotInList:"not in item list",
-      analytics:"Analytics", mnTitle:"Make Next — E-Com Queue", mnHint:"Flavors to make so inventory keeps up with the e-commerce order queue (all unshipped ShipStation orders, incl. weekend backlog). Short = queue demand minus on-hand.", mnNone:"No e-com queue loaded yet. The hourly ShipStation sync fills this in.", mnMake:"MAKE", mnOk:"OK", mnFlavorsShort:"Flavors short", mnToMake:"Bags to make", mnQueue:"Queue demand (bags)", mnUpdated:"Updated", mnOnHand:"On hand", mnDemand:"Queue demand", mnShort:"Short by", grpReceiving:"Receiving", grpInventory:"Inventory", grpItems:"Items & Reports", grpProduction:"Production", grpFulfillment:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpImprove:"Improvement", grpQuality:"Quality", compliance:"Compliance / SQF", cmpHint:"SQF food-safety program - certifications, the recurring activity schedule, and the controlled documents in the Operations shared drive.", cmpCerts:"Certifications & Audits", cmpCert:"Certification / Audit", cmpFreq:"Frequency", cmpWhen:"When / Notes", cmpBody:"Body", cmpDueThis:"Due this month", cmpAllMonthly:"Only the standard monthly reviews this month.", cmpSchedule:"SQF Activity Schedule", cmpScheduleHint:"Recurring SQF activities by frequency (from the 2026 SQF Calendar). Monthly items are also documented daily/weekly.", cmpDocs:"Document Register", cmpDocsHint:"Key SQF controlled documents - open in the Operations shared drive.", grpDocs:"Reference", reference:"Reference / SOPs", refHint:"SOPs, cheat sheets, and policies from the Smackin Docs library - one click for the floor. Upload a file and pick a category.", refDrop:"Upload document(s)", refSelected:"file(s) ready", refCategory:"Category", refNotes:"Notes (optional)", refSaveBtn:"Add to library", refNone:"No reference documents yet.", refLibrary:"Document Library", refNoFile:"Choose a file first", refSaved:"added", refConfirmDel:"Remove this document?", disposition:"Short-Dated", quality:"Quality Logs", recipes:"Recipes", prodorders:"Prod Orders", launch:"Launches", grpSystem:"System",
+      analytics:"Analytics", mnTitle:"Make Next — E-Com Queue", mnHint:"Flavors to make so inventory keeps up with the e-commerce order queue (all unshipped ShipStation orders, incl. weekend backlog). Short = queue demand minus on-hand.", mnNone:"No e-com queue loaded yet. The hourly ShipStation sync fills this in.", mnMake:"MAKE", mnOk:"OK", mnFlavorsShort:"Flavors short", mnToMake:"Bags to make", mnQueue:"Queue demand (bags)", mnUpdated:"Updated", mnOnHand:"On hand", mnDemand:"Queue demand", mnShort:"Short by", grpReceiving:"Receiving", grpInventory:"Inventory", grpItems:"Items & Reports", grpProduction:"Production", grpFulfillment:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpImprove:"Improvement", grpQuality:"Quality", compliance:"Compliance / SQF", cmpHint:"SQF food-safety program - certifications, the recurring activity schedule, and the controlled documents in the Operations shared drive.", cmpCerts:"Certifications & Audits", cmpCert:"Certification / Audit", cmpFreq:"Frequency", cmpWhen:"When / Notes", cmpBody:"Body", cmpDueThis:"Due this month", cmpAllMonthly:"Only the standard monthly reviews this month.", cmpSchedule:"SQF Activity Schedule", cmpScheduleHint:"Recurring SQF activities by frequency (from the 2026 SQF Calendar). Monthly items are also documented daily/weekly.", cmpDocs:"Document Register", cmpDocsHint:"Key SQF controlled documents - open in the Operations shared drive.", grpDocs:"Reference", reference:"Reference / SOPs", refHint:"SOPs, cheat sheets, and policies from the Smackin Docs library - one click for the floor. Upload a file and pick a category.", refDrop:"Upload document(s)", refSelected:"file(s) ready", refCategory:"Category", refNotes:"Notes (optional)", refSaveBtn:"Add to library", refNone:"No reference documents yet.", refLibrary:"Document Library", refNoFile:"Choose a file first", refSaved:"added", refConfirmDel:"Remove this document?", daily:"Daily Metrics", disposition:"Short-Dated", quality:"Quality Logs", recipes:"Recipes", prodorders:"Prod Orders", launch:"Launches", grpSystem:"System",
       people:"People", hrHint:"Team directory and org chart. Non-sensitive info only - no pay or personal data.", hrGate:"This section shows employee information. Enter the manager PIN to view.",
       hrDir:"Directory", hrOrg:"Org chart", hrRole:"Role", hrDept:"Department", hrStart:"Started", hrMgr:"Reports to", hrSearchP:"Search name or role...", hrCount:"people", hrNoMatch:"No matching people.", hrYr:"yr", hrMo:"mo",
       alerts:"Alerts", alertsHint:"What needs attention now: items to reorder and seasoning lots nearing expiration.",
@@ -508,7 +508,7 @@
     { key: "tote", label: "Tote - 1 bag x 1,200 lb", per: 1200 }
   ];
   const SEED_PACK_MAP = {}; SEED_PACKS.forEach(p => SEED_PACK_MAP[p.key] = p);
-  const TABS = ["home","dash","analytics","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","fulfilldaily","flavinv","stockbuild","reorder15","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","recipes","prodorders","launch","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","expreceipts","supplierpos","people","improve","maintenance","compliance","quality","disposition","reference","labels","log","settings","board"];
+  const TABS = ["home","daily","dash","analytics","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","fulfilldaily","flavinv","stockbuild","reorder15","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","recipes","prodorders","launch","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","expreceipts","supplierpos","people","improve","maintenance","compliance","quality","disposition","reference","labels","log","settings","board"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -701,7 +701,7 @@
   }
   // ---- left sidebar: tabs grouped by department (NetSuite-style) ----
   const NAV_GROUPS = [
-    { key:"", items:["home","alerts"] },
+    { key:"", items:["home","alerts","daily"] },
     { key:"grpReceiving", items:["receive","recvlog","returns","qa"] },
     { key:"grpInventory", items:["dash","adjust","count","move","locations","facility","finbags"] },
     { key:"grpItems", items:["seasoning","recipes","seed","skus","analytics","labels"] },
@@ -1211,6 +1211,44 @@
       '<input id="dashSearch" autocomplete="off" oninput="UI.dashSearch(this.value)" placeholder="' + L("searchItems") + '" style="width:100%;max-width:420px;margin:4px 0 8px">' +
       '<table><thead><tr>' + head + '</tr></thead><tbody id="dashBody">' + rows + '</tbody></table></div>' +
       prodTrendCard();
+  }
+  // ===== Daily Metrics — facility-wide daily numbers from every department, with history =====
+  let dailyDateSel = "";
+  function dayMetrics(d) {
+    const on = v => String(v || "").slice(0, 10) === d;
+    const po = (DB.productionOutput ? DB.productionOutput() : []).filter(x => on(x.prod_date));
+    const fd = (DB.fulfillmentDaily ? DB.fulfillmentDaily() : []).filter(x => on(x.fdate));
+    const sh = (DB.shippingLog ? DB.shippingLog() : []).filter(x => on(x.ship_date));
+    const rc = (DB.receivingLog ? DB.receivingLog() : []).filter(x => on(x.received_date));
+    const ql = (DB.qualityLogs ? DB.qualityLogs() : []).filter(x => on(x.date || x.dt));
+    return {
+      mfgBags: po.reduce((s, x) => s + (Number(x.bags) || 0), 0),
+      mfgCases: po.reduce((s, x) => s + (Number(x.cases) || 0), 0),
+      ecomLabels: fd.reduce((s, x) => s + (Number(x.ecom_total) || 0), 0),
+      amazonBags: fd.reduce((s, x) => s + (Number(x.amazon_bags) || 0), 0),
+      shipments: sh.length, receipts: rc.length, quality: ql.length
+    };
+  }
+  function viewDaily() {
+    const d = dailyDateSel || new Date().toISOString().slice(0, 10);
+    const m = dayMetrics(d);
+    const kpi = (n, l) => '<div class="kpi"><div class="n">' + fmt(n) + '</div><div class="l">' + l + '</div></div>';
+    const deptCards =
+      '<div class="card"><div class="suprow"><h2 class="sub2" style="margin:0;flex:1">&#127981; Manufacturing</h2><span class="deptt">ALLEN</span></div><div class="kpis">' + kpi(m.mfgBags, "Bags produced") + kpi(m.mfgCases, "Cases") + '</div></div>' +
+      '<div class="card"><div class="suprow"><h2 class="sub2" style="margin:0;flex:1">&#128230; Fulfillment</h2></div><div class="kpis">' + kpi(m.ecomLabels, "E-com labels") + kpi(m.amazonBags, "Amazon bags") + '</div></div>' +
+      '<div class="card"><div class="suprow"><h2 class="sub2" style="margin:0;flex:1">&#128666; Shipping / Receiving</h2></div><div class="kpis">' + kpi(m.shipments, "Shipments out") + kpi(m.receipts, "Receipts in") + '</div></div>' +
+      '<div class="card"><div class="suprow"><h2 class="sub2" style="margin:0;flex:1">&#129514; Quality</h2></div><div class="kpis">' + kpi(m.quality, "CCP checks logged") + '</div></div>';
+    let hrows = "";
+    for (let i = 0; i < 14; i++) {
+      const dt = new Date(); dt.setDate(dt.getDate() - i); const ds = dt.toISOString().slice(0, 10); const mm = dayMetrics(ds);
+      hrows += '<tr' + (ds === d ? ' style="background:rgba(46,158,91,.08)"' : '') + '><td class="sm"><a class="polink" style="cursor:pointer" onclick="UI.dailyDate(\'' + ds + '\')">' + ds + '</a></td>' +
+        '<td class="right">' + fmt(mm.mfgBags) + '</td><td class="right">' + fmt(mm.ecomLabels) + '</td><td class="right">' + fmt(mm.amazonBags) + '</td>' +
+        '<td class="right">' + mm.shipments + '</td><td class="right">' + mm.receipts + '</td><td class="right">' + mm.quality + '</td></tr>';
+    }
+    const head = '<div class="card"><div class="suprow"><h2 style="margin:0;flex:1">&#128202; Daily Metrics &mdash; Facility</h2><input type="date" value="' + d + '" onchange="UI.dailyDate(this.value)"></div>' +
+      '<p class="hint" style="margin:6px 0 0">Every department\'s daily numbers in one place. Pick any day; the 14-day table below archives history so you can pull the trend over time. Numbers roll up automatically from each department\'s own daily entries.</p></div>';
+    const hist = '<div class="card"><h2 class="sub2">Last 14 days</h2><div class="tblwrap"><table class="sortable"><thead><tr><th>Date</th><th class="right">Mfg bags</th><th class="right">E-com</th><th class="right">Amazon</th><th class="right">Ship</th><th class="right">Recv</th><th class="right">Quality</th></tr></thead><tbody>' + hrows + '</tbody></table></div></div>';
+    return head + deptCards + hist;
   }
   // ===== Contextual alerts: urgent "needs attention" items shown at the top of each section =====
   function sectionAlerts(tab) {
@@ -5417,6 +5455,7 @@
     prodAdvance(po) { const cur = PROD_STAGES.indexOf(prodStageGet(po)); const nx = PROD_STAGES[Math.min(cur + 1, PROD_STAGES.length - 1)]; prodStageSet(po, nx); toast(po + " → " + nx); render(); },
     prodReset(po) { prodStageSet(po, "Open"); render(); },
     sdSet(id, val) { if (DB.kvSet) DB.kvSet("sd:" + id, val); toast("Saved"); },
+    dailyDate(v) { dailyDateSel = v; render(); },
     qualTab(t) { qualTabSel = t; render(); },
     qualSave() {
       const g = id => { const e = document.getElementById(id); return e ? String(e.value).trim() : ""; };
@@ -5844,7 +5883,7 @@
     pendingExternalRender = false;
     _deadCache = null; // recompute dead-stock flags fresh each render
     renderNav(); refreshDatalists();
-    const map = { home: viewHome, dash: viewDash, analytics: viewAnalytics, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
+    const map = { home: viewHome, daily: viewDaily, dash: viewDash, analytics: viewAnalytics, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
       move: viewMove, prodorders: viewProdOrders, launch: viewLaunch, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, fulfilldaily: viewFulfillDaily, stockbuild: viewStockBuild, reorder15: viewReorder15, seasoning: viewSeasoning, recipes: viewRecipes, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, expreceipts: viewExpectedReceipts, flavinv: viewFlavorInventory, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, maintenance: viewMaintenance, compliance: viewCompliance, quality: viewQuality, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
       demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, ecomdemand: viewEcomDemand, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor, board: viewBoard, disposition: viewDisposition };
