@@ -101,7 +101,7 @@
       mixing:"Mixing", pmac:"P-Mac", roleMixing:"Mixing (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Mixing", grpPmac:"P-Mac",
       deptSoon:"This area is being set up. Allen's team screens will live here - tell us what you'd like tracked and we'll build it in.",
       conHint:"Scan each material as it moves from the racking into this room. Records real-time usage and removes it from inventory. Lot # required on every scan.", conLot:"Lot # (required)", conBtn:"Log usage", conRecent:"Recent usage", conNone:"Nothing logged yet.", conWhen:"When", conMat:"Material", conBy:"By", conErr:"Scan an item, quantity, and lot #", conNotInList:"not in item list",
-      analytics:"Analytics", mnTitle:"Make Next — E-Com Queue", mnHint:"Flavors to make so inventory keeps up with the e-commerce order queue (all unshipped ShipStation orders, incl. weekend backlog). Short = queue demand minus on-hand.", mnNone:"No e-com queue loaded yet. The hourly ShipStation sync fills this in.", mnMake:"MAKE", mnOk:"OK", mnFlavorsShort:"Flavors short", mnToMake:"Bags to make", mnQueue:"Queue demand (bags)", mnUpdated:"Updated", mnOnHand:"On hand", mnDemand:"Queue demand", mnShort:"Short by", grpReceiving:"Receiving", grpInventory:"Inventory", grpProduction:"Production", grpFulfillment:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpImprove:"Improvement", grpQuality:"Quality", compliance:"Compliance / SQF", cmpHint:"SQF food-safety program - certifications, the recurring activity schedule, and the controlled documents in the Operations shared drive.", cmpCerts:"Certifications & Audits", cmpCert:"Certification / Audit", cmpFreq:"Frequency", cmpWhen:"When / Notes", cmpBody:"Body", cmpDueThis:"Due this month", cmpAllMonthly:"Only the standard monthly reviews this month.", cmpSchedule:"SQF Activity Schedule", cmpScheduleHint:"Recurring SQF activities by frequency (from the 2026 SQF Calendar). Monthly items are also documented daily/weekly.", cmpDocs:"Document Register", cmpDocsHint:"Key SQF controlled documents - open in the Operations shared drive.", grpDocs:"Reference", reference:"Reference / SOPs", refHint:"SOPs, cheat sheets, and policies from the Smackin Docs library - one click for the floor. Upload a file and pick a category.", refDrop:"Upload document(s)", refSelected:"file(s) ready", refCategory:"Category", refNotes:"Notes (optional)", refSaveBtn:"Add to library", refNone:"No reference documents yet.", refLibrary:"Document Library", refNoFile:"Choose a file first", refSaved:"added", refConfirmDel:"Remove this document?", disposition:"Short-Dated", recipes:"Recipes", prodorders:"Prod Orders", launch:"Launches", grpSystem:"System",
+      analytics:"Analytics", mnTitle:"Make Next — E-Com Queue", mnHint:"Flavors to make so inventory keeps up with the e-commerce order queue (all unshipped ShipStation orders, incl. weekend backlog). Short = queue demand minus on-hand.", mnNone:"No e-com queue loaded yet. The hourly ShipStation sync fills this in.", mnMake:"MAKE", mnOk:"OK", mnFlavorsShort:"Flavors short", mnToMake:"Bags to make", mnQueue:"Queue demand (bags)", mnUpdated:"Updated", mnOnHand:"On hand", mnDemand:"Queue demand", mnShort:"Short by", grpReceiving:"Receiving", grpInventory:"Inventory", grpProduction:"Production", grpFulfillment:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpImprove:"Improvement", grpQuality:"Quality", compliance:"Compliance / SQF", cmpHint:"SQF food-safety program - certifications, the recurring activity schedule, and the controlled documents in the Operations shared drive.", cmpCerts:"Certifications & Audits", cmpCert:"Certification / Audit", cmpFreq:"Frequency", cmpWhen:"When / Notes", cmpBody:"Body", cmpDueThis:"Due this month", cmpAllMonthly:"Only the standard monthly reviews this month.", cmpSchedule:"SQF Activity Schedule", cmpScheduleHint:"Recurring SQF activities by frequency (from the 2026 SQF Calendar). Monthly items are also documented daily/weekly.", cmpDocs:"Document Register", cmpDocsHint:"Key SQF controlled documents - open in the Operations shared drive.", grpDocs:"Reference", reference:"Reference / SOPs", refHint:"SOPs, cheat sheets, and policies from the Smackin Docs library - one click for the floor. Upload a file and pick a category.", refDrop:"Upload document(s)", refSelected:"file(s) ready", refCategory:"Category", refNotes:"Notes (optional)", refSaveBtn:"Add to library", refNone:"No reference documents yet.", refLibrary:"Document Library", refNoFile:"Choose a file first", refSaved:"added", refConfirmDel:"Remove this document?", disposition:"Short-Dated", quality:"Quality Logs", recipes:"Recipes", prodorders:"Prod Orders", launch:"Launches", grpSystem:"System",
       people:"People", hrHint:"Team directory and org chart. Non-sensitive info only - no pay or personal data.", hrGate:"This section shows employee information. Enter the manager PIN to view.",
       hrDir:"Directory", hrOrg:"Org chart", hrRole:"Role", hrDept:"Department", hrStart:"Started", hrMgr:"Reports to", hrSearchP:"Search name or role...", hrCount:"people", hrNoMatch:"No matching people.", hrYr:"yr", hrMo:"mo",
       alerts:"Alerts", alertsHint:"What needs attention now: items to reorder and seasoning lots nearing expiration.",
@@ -508,7 +508,7 @@
     { key: "tote", label: "Tote - 1 bag x 1,200 lb", per: 1200 }
   ];
   const SEED_PACK_MAP = {}; SEED_PACKS.forEach(p => SEED_PACK_MAP[p.key] = p);
-  const TABS = ["home","dash","analytics","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","fulfilldaily","flavinv","stockbuild","reorder15","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","recipes","prodorders","launch","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","expreceipts","supplierpos","people","improve","maintenance","compliance","disposition","reference","labels","log","settings","board"];
+  const TABS = ["home","dash","analytics","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","fulfilldaily","flavinv","stockbuild","reorder15","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","recipes","prodorders","launch","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","expreceipts","supplierpos","people","improve","maintenance","compliance","quality","disposition","reference","labels","log","settings","board"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -715,7 +715,7 @@
     { key:"grpHr", items:["people"] },
     { key:"grpImprove", items:["improve"] },
     { key:"grpMaintenance", items:["maintenance"] },
-    { key:"grpQuality", items:["compliance","disposition"] },
+    { key:"grpQuality", items:["compliance","quality","disposition"] },
     { key:"grpDocs", items:["reference"] },
     { key:"grpSystem", items:["board","log","settings"] }
   ];
@@ -3230,6 +3230,48 @@
     {flavor:"Lemon Pepper", kind:"Seasoning - lot #E2725A", qty:"800", unit:"lbs", date:"Exp 06/20/26", reason:"Expired", status:"Awaiting instructions", note:""},
     {flavor:"Lemon Pepper", kind:"Seasoning - lot #E2725B", qty:"2,700", unit:"lbs", date:"Exp 06/20/26", reason:"Expired", status:"Awaiting instructions", note:""}
   ];
+  // ===== Quality — CCP Monitoring Logs (digital HACCP critical-control-point records) =====
+  const SQF_TEAM = ["Monica Smith", "Michelle Nydegger", "Lizeth Toloza", "Brittney Christensen"];
+  let qualTabSel = "allergen";
+  function qualSel(id, opts, first) { return '<select id="' + id + '">' + (first ? '<option value="">' + first + '</option>' : '') + opts.map(o => '<option>' + esc(o) + '</option>').join("") + '</select>'; }
+  function viewQuality() {
+    const flavs = Array.from(new Set(DB.items().map(i => i.flavor).filter(Boolean))).sort();
+    const fdl = '<datalist id="dl-qflav">' + flavs.map(f => '<option value="' + esc(f) + '">').join("") + '</datalist>';
+    const tb = (v, l) => '<button class="' + (qualTabSel === v ? "active" : "") + '" onclick="UI.qualTab(\'' + v + '\')">' + l + '</button>';
+    const tabs = '<div class="ordtabs">' + tb("allergen", "CCP1 Allergen Changeover") + tb("label", "CCP2 Label Verify") + tb("metal", "CCP2 Metal Detector") + '</div>';
+    const logs = (DB.qualityLogs ? DB.qualityLogs() : []).filter(l => l.type === qualTabSel);
+    const passSel = id => qualSel(id, ["Pass", "Fail"], "—");
+    const now = new Date(); const dtLocal = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    const today = new Date().toISOString().slice(0, 10);
+    let form = "", table = "";
+    if (qualTabSel === "allergen") {
+      form = '<div class="row"><div><label>Date</label><input id="q-date" type="date" value="' + today + '"></div>' +
+        '<div><label>Equipment / Line</label><input id="q-equip"></div><div><label>Previous Allergen</label><input id="q-prev"></div></div>' +
+        '<div class="row"><div><label>New Product / Flavor</label><input id="q-flav" list="dl-qflav"></div>' +
+        '<div><label>Cleaning Verified By</label>' + qualSel("q-clean", SQF_TEAM, "—") + '</div>' +
+        '<div><label>QA Verification</label>' + qualSel("q-qa", SQF_TEAM, "—") + '</div></div>';
+      table = '<table class="sortable"><thead><tr><th>Date</th><th>Line</th><th>Prev Allergen</th><th>New Flavor</th><th>Cleaned By</th><th>QA</th></tr></thead><tbody>' +
+        logs.map(l => '<tr><td class="sm">' + esc(l.date || "") + '</td><td>' + esc(l.equip || "") + '</td><td>' + esc(l.prev || "") + '</td><td><b>' + esc(l.flavor || "") + '</b></td><td class="sm">' + esc(l.cleanBy || "") + '</td><td class="sm">' + esc(l.qa || "") + '</td></tr>').join("") + '</tbody></table>';
+    } else if (qualTabSel === "label") {
+      form = '<div class="row"><div><label>Date/Time</label><input id="q-dt" type="datetime-local" value="' + dtLocal + '"></div>' +
+        '<div><label>Product / Flavor</label><input id="q-flav" list="dl-qflav"></div><div><label>Label Checked</label>' + qualSel("q-checked", ["Yes", "No"], "—") + '</div></div>' +
+        '<div class="row"><div><label>Operator</label>' + qualSel("q-op", SQF_TEAM, "—") + '</div><div><label>QA Verification</label>' + qualSel("q-qa", SQF_TEAM, "—") + '</div><div><label>Comments</label><input id="q-comments"></div></div>';
+      table = '<table class="sortable"><thead><tr><th>Date/Time</th><th>Flavor</th><th>Label OK</th><th>Operator</th><th>QA</th><th>Comments</th></tr></thead><tbody>' +
+        logs.map(l => '<tr><td class="sm">' + esc((l.dt || "").replace("T", " ")) + '</td><td><b>' + esc(l.flavor || "") + '</b></td><td>' + esc(l.checked || "") + '</td><td class="sm">' + esc(l.op || "") + '</td><td class="sm">' + esc(l.qa || "") + '</td><td class="sm">' + esc(l.comments || "") + '</td></tr>').join("") + '</tbody></table>';
+    } else {
+      form = '<div class="row"><div><label>Date/Time</label><input id="q-dt" type="datetime-local" value="' + dtLocal + '"></div>' +
+        '<div><label>Product / Flavor</label><input id="q-flav" list="dl-qflav"></div><div><label>Verified By</label>' + qualSel("q-op", SQF_TEAM, "—") + '</div></div>' +
+        '<div class="row"><div><label>Ferrous</label>' + passSel("q-fe") + '</div><div><label>Non-Ferrous</label>' + passSel("q-nfe") + '</div><div><label>Stainless</label>' + passSel("q-ss") + '</div></div>' +
+        '<div class="row"><div><label>Comments</label><input id="q-comments"></div><div></div><div></div></div>';
+      table = '<table class="sortable"><thead><tr><th>Date/Time</th><th>Flavor</th><th>Ferrous</th><th>Non-Fe</th><th>Stainless</th><th>By</th></tr></thead><tbody>' +
+        logs.map(l => '<tr><td class="sm">' + esc((l.dt || "").replace("T", " ")) + '</td><td><b>' + esc(l.flavor || "") + '</b></td>' +
+          ["fe", "nfe", "ss"].map(k => '<td>' + (l[k] === "Fail" ? '<span class="pill out">FAIL</span>' : esc(l[k] || "")) + '</td>').join("") + '<td class="sm">' + esc(l.op || "") + '</td></tr>').join("") + '</tbody></table>';
+    }
+    return fdl + '<div class="card"><div class="suprow"><h2 style="margin:0;flex:1">&#129514; Quality &mdash; CCP Monitoring Logs</h2></div>' +
+      '<p class="hint" style="margin:6px 0 10px">Digital HACCP critical-control-point records. Fill on the floor; each entry is timestamped and saved for audits. Sign-off = SQF team.</p>' +
+      tabs + '<div style="margin-top:12px">' + form + '<button class="primary" style="margin-top:10px" onclick="UI.qualSave()">Save entry</button></div></div>' +
+      '<div class="card"><h2 class="sub2">Recent entries (' + logs.length + ')</h2><div class="tblwrap">' + table + '</div></div>';
+  }
   // ===== Short-Dated / Surplus / Discontinued board (auto-flag finished goods by expiration) =====
   const SD_DISP = ["Open", "Sell-off", "Discount", "Donate", "Rework", "Scrap", "Sold"];
   const SD_SHORT_DAYS = 120;   // flag as short-dated within this many days of expiry
@@ -5371,6 +5413,16 @@
     prodAdvance(po) { const cur = PROD_STAGES.indexOf(prodStageGet(po)); const nx = PROD_STAGES[Math.min(cur + 1, PROD_STAGES.length - 1)]; prodStageSet(po, nx); toast(po + " → " + nx); render(); },
     prodReset(po) { prodStageSet(po, "Open"); render(); },
     sdSet(id, val) { if (DB.kvSet) DB.kvSet("sd:" + id, val); toast("Saved"); },
+    qualTab(t) { qualTabSel = t; render(); },
+    qualSave() {
+      const g = id => { const e = document.getElementById(id); return e ? String(e.value).trim() : ""; };
+      const t = qualTabSel, flav = g("q-flav"); let o = { type: t };
+      if (t === "allergen") { o = Object.assign(o, { date: g("q-date"), equip: g("q-equip"), prev: g("q-prev"), flavor: flav, cleanBy: g("q-clean"), qa: g("q-qa") }); if (!o.equip && !flav) { toast("Fill the log first"); return; } }
+      else if (t === "label") { o = Object.assign(o, { dt: g("q-dt"), flavor: flav, checked: g("q-checked"), op: g("q-op"), qa: g("q-qa"), comments: g("q-comments") }); if (!flav) { toast("Pick a flavor"); return; } }
+      else { o = Object.assign(o, { dt: g("q-dt"), flavor: flav, fe: g("q-fe"), nfe: g("q-nfe"), ss: g("q-ss"), op: g("q-op"), comments: g("q-comments") }); if (!flav) { toast("Pick a flavor"); return; } }
+      if (DB.addQualityLog) DB.addQualityLog(o);
+      toast("Saved &#10003;"); render();
+    },
     poNewOpen() { poFormOpen = true; active = "prodorders"; closeDrawer(); render(); },
     poNewClose() { poFormOpen = false; render(); },
     poNewFlavor() {
@@ -5790,7 +5842,7 @@
     renderNav(); refreshDatalists();
     const map = { home: viewHome, dash: viewDash, analytics: viewAnalytics, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
       move: viewMove, prodorders: viewProdOrders, launch: viewLaunch, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, fulfilldaily: viewFulfillDaily, stockbuild: viewStockBuild, reorder15: viewReorder15, seasoning: viewSeasoning, recipes: viewRecipes, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
-      count: viewCount, locations: viewLocations, purchasing: viewPurchasing, expreceipts: viewExpectedReceipts, flavinv: viewFlavorInventory, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, maintenance: viewMaintenance, compliance: viewCompliance, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
+      count: viewCount, locations: viewLocations, purchasing: viewPurchasing, expreceipts: viewExpectedReceipts, flavinv: viewFlavorInventory, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, maintenance: viewMaintenance, compliance: viewCompliance, quality: viewQuality, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
       demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, ecomdemand: viewEcomDemand, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor, board: viewBoard, disposition: viewDisposition };
     $("view").innerHTML = alertStrip(active) + (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");

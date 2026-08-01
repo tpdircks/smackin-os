@@ -247,6 +247,15 @@ window.DB = (function () {
         cache.poCloud = false;
         try { cache.prodOrders = JSON.parse(localStorage.getItem("prodorders-custom") || "[]"); } catch (_) { cache.prodOrders = []; }
       }
+      // quality_logs: CCP monitoring records (allergen changeover, label check, metal detector). Flexible JSON,
+      // resilient with localStorage fallback until the table is created.
+      try {
+        const qlr = await sb.from("quality_logs").select("*").order("created_at", { ascending: false }).limit(3000);
+        if (qlr && qlr.error) throw qlr.error;
+        cache.qualityLogs = (qlr && qlr.data ? qlr.data : []).map(r => r.data || r);
+      } catch (e) {
+        try { cache.qualityLogs = JSON.parse(localStorage.getItem("quality-logs") || "[]"); } catch (_) { cache.qualityLogs = []; }
+      }
       // maintenance_items (Maintenance request + project tracker) loaded separately + resiliently
       // so a missing table never breaks the app shell (same pattern as demand_forecast above).
       try {
@@ -1259,6 +1268,15 @@ window.DB = (function () {
     if (mode === "cloud") { try { await sb.from("kv_status").upsert({ key: key, value: val, updated_at: new Date().toISOString() }); } catch (e) {} }
   }
   function kvCloudOn() { return !!cache.kvCloud; }
+  // ---- Quality CCP monitoring logs (allergen changeover / label check / metal detector) ----
+  function qualityLogs() { return cache.qualityLogs || []; }
+  async function addQualityLog(o) {
+    o.id = "QL-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); o.created_at = new Date().toISOString();
+    cache.qualityLogs = cache.qualityLogs || []; cache.qualityLogs.unshift(o);
+    try { localStorage.setItem("quality-logs", JSON.stringify(cache.qualityLogs.slice(0, 500))); } catch (e) {}
+    if (mode === "cloud") { try { await sb.from("quality_logs").insert({ id: o.id, data: o, created_at: o.created_at }); } catch (e) {} }
+    return { ok: true };
+  }
   // ---- Production orders created in-app (Allen's digital PO) ----
   function prodOrdersCustom() { return cache.prodOrders || []; }
   async function addProdOrder(o) {
@@ -1757,7 +1775,7 @@ window.DB = (function () {
     orders, createOrder, updateOrder, setOrderStatus, deleteOrder, notifyNewOrder, reconcileSpsOrders,
     rdRequests, createRdRequest, updateRdRequest, setRdStatus, deleteRdRequest, sendRdEmail,
     supplierPos, createSupplierPO, updateSupplierPO, deleteSupplierPO, emailPO, expectedReceipts, markLineReceived,
-    onOrderMap, onOrder, kvGet, kvSet, kvCloudOn, prodOrdersCustom, addProdOrder,
+    onOrderMap, onOrder, kvGet, kvSet, kvCloudOn, prodOrdersCustom, addProdOrder, qualityLogs, addQualityLog,
     recipeFor, seasLbPerBag, bagsPerBatch, flavorDemandBags, recommendedSeasReorder,
     ecomBagsFor, ecomWeeklyBags, unifiedWeeklyBags, unifiedDemand,
     orderDocs, createOrderDoc, deleteOrderDoc,
