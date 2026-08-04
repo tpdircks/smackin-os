@@ -849,6 +849,8 @@
   // ---- alerts helpers ----
   const EXPIRY_WARN_DAYS = 30;
   function daysUntil(dstr) { if (!dstr) return null; const d = new Date(String(dstr).slice(0, 10) + "T00:00:00"); if (isNaN(d.getTime())) return null; const t = new Date(new Date().toISOString().slice(0, 10) + "T00:00:00"); return Math.round((d - t) / 86400000); }
+  // Normalize a date to sortable/comparable ISO (YYYY-MM-DD). Handles ISO and MM/DD/YYYY (SPS due dates).
+  function dueISO(d) { if (!d) return ""; d = String(d).trim(); var m = d.match(/^(\d{4})-(\d{2})-(\d{2})/); if (m) return m[1] + "-" + m[2] + "-" + m[3]; m = d.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if (m) return m[3] + "-" + ("0" + m[1]).slice(-2) + "-" + ("0" + m[2]).slice(-2); return ""; }
   function expiringLots() { return DB.seasLots().filter(l => { const du = daysUntil(l.exp); return (l.status || "Good") !== "Quarantine" && du !== null && du <= EXPIRY_WARN_DAYS; }); }
   function alertCount() { return DB.items().filter(i => i.reorder > 0 && DB.onHand(i.id) < i.reorder).length + expiringLots().length; }
   function validLoc(code) { code = (code || "").trim().toUpperCase();
@@ -1337,7 +1339,7 @@
       } else if (demandFam.indexOf(tab) >= 0) {
         const dl = DB.demandLines ? DB.demandLines() : [];
         const openRows = dl.filter(r => (r.status || "Open") === "Open");
-        const pastDue = openRows.filter(r => r.due_date && String(r.due_date).slice(0, 10) < today).length;
+        const pastDue = openRows.filter(r => { const iso = dueISO(r.due_date); return iso && iso < today; }).length;
         const unmapped = dl.filter(r => /^UNMAPPED/i.test(String(r.flavor || ""))).length;
         if (pastDue) push("out", plural(pastDue, "open PO line") + " past its due date");
         if (unmapped) push("low", plural(unmapped, "demand line") + " with an unmapped flavor — re-map");
@@ -3785,7 +3787,7 @@
       (!dmdPartner || r.partner === dmdPartner) &&
       (!dmdFlavor || r.flavor === dmdFlavor));
     // sort by due date then partner then po
-    rows = rows.slice().sort((a, b) => (String(a.due_date || "9999") + a.partner + a.po).localeCompare(String(b.due_date || "9999") + b.partner + b.po));
+    rows = rows.slice().sort((a, b) => ((dueISO(a.due_date) || "9999") + a.partner + a.po).localeCompare((dueISO(b.due_date) || "9999") + b.partner + b.po));
     const openRows = all.filter(r => (r.status || "Open") === "Open");
     const totCases = openRows.reduce((s, r) => s + (Number(r.cases) || 0), 0);
     const totBags = openRows.reduce((s, r) => s + (Number(r.bags) || 0), 0);
@@ -3945,7 +3947,7 @@
     // Scheduled orders: Target / McLane / Bass Pro — held to their routed/scheduled ship dates, not part of today's build.
     const sched = openAll.filter(r => isSchedPartner(r.partner));
     const schByCust = {};
-    sched.forEach(r => { const k = r.partner || "?"; if (!schByCust[k]) schByCust[k] = { bags: 0, cases: 0, due: null }; schByCust[k].bags += Number(r.bags) || 0; schByCust[k].cases += Number(r.cases) || 0; if (r.due_date && (!schByCust[k].due || r.due_date < schByCust[k].due)) schByCust[k].due = r.due_date; });
+    sched.forEach(r => { const k = r.partner || "?"; if (!schByCust[k]) schByCust[k] = { bags: 0, cases: 0, due: null }; schByCust[k].bags += Number(r.bags) || 0; schByCust[k].cases += Number(r.cases) || 0; if (r.due_date && (!schByCust[k].due || dueISO(r.due_date) < dueISO(schByCust[k].due))) schByCust[k].due = r.due_date; });
     const schTotBags = sched.reduce((s, r) => s + (Number(r.bags) || 0), 0), schTotCases = sched.reduce((s, r) => s + (Number(r.cases) || 0), 0);
     const schRows = Object.keys(schByCust).sort().map(k => { const v = schByCust[k]; return '<tr><td>' + esc(k) + '</td><td class="right"><b>' + fmt(isFul ? v.cases : v.bags) + '</b></td><td class="sm">' + (v.due ? esc(v.due) : '<span class="muted">' + L("dqTBD") + '</span>') + '</td></tr>'; }).join("");
     const scheduledCard = schRows ? '<div class="card"><h2 class="sub2">' + L("dqScheduled") + '</h2><p class="hint">' + L("dqScheduledHint") + '</p><div class="tblwrap"><table><thead><tr><th>' + L("dmPartner") + '</th><th class="right">' + unit + '</th><th>' + L("dqShipDate") + '</th></tr></thead><tbody>' + schRows +
