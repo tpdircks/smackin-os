@@ -706,7 +706,7 @@
     { key:"grpInventory", items:["dash","adjust","count","move","locations","facility","finbags"] },
     { key:"grpItems", items:["seasoning","recipes","seed","skus","analytics","labels"] },
     { key:"grpFulfillment", items:["produce","retailprod","ecomprod","prodlog","fulfilldaily","flavinv","stockbuild","orders","orderdocs"] },
-    { key:"grpDemand", items:["demand"] },
+    { key:"grpDemand", items:["demand","demandboard","demandsched","demandimport","ecomdemand","forecast"] },
     { key:"grpShipping", items:["shiplog"] },
     { key:"grpMixing", items:["prodorders","reordertracker","launch","mixing","pmac","pmacout","floor"] },
     { key:"grpPurchasing", items:["purchasing","expreceipts","reorder15"] },
