@@ -12,6 +12,13 @@
   #topbar h1{font-size:16.5px;font-weight:650;}
   #topbar .hint{font-size:12px;opacity:.7;}
   #legend{position:fixed;top:56px;left:18px;z-index:10;background:rgba(20,26,40,.85);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 14px;color:#e8eefc;min-width:230px;max-height:80vh;overflow:auto;}
+  #legend-head{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;margin-bottom:10px;}
+  #legend-head b{font-size:11px;text-transform:uppercase;letter-spacing:1px;opacity:.75;}
+  #legend-toggle{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);color:#e8eefc;min-width:26px;height:24px;border-radius:7px;cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;flex:none;}
+  #legend-toggle:hover{background:rgba(255,255,255,.18);}
+  #legend.collapsed{min-width:0;padding:8px 10px;overflow:visible;}
+  #legend.collapsed #legend-head{margin-bottom:0;}
+  #legend.collapsed #legend-body{display:none;}
   #legend h2{font-size:10.5px;text-transform:uppercase;letter-spacing:1px;opacity:.55;margin:10px 0 6px;}
   #legend h2:first-child{margin-top:0;}
   .leg-item{display:flex;align-items:center;gap:9px;padding:5px 6px;border-radius:7px;cursor:pointer;font-size:13px;transition:background .15s;}
@@ -45,6 +52,8 @@
 </div>
 
 <div id="legend">
+  <div id="legend-head"><b>Legend</b><button id="legend-toggle" title="Collapse / expand" aria-label="Collapse legend">&#9662;</button></div>
+  <div id="legend-body">
   <h2>Sections (racking)</h2><div id="leg-sec"></div>
   <h2>Zones</h2><div id="leg-zone"></div>
   <div class="note">
@@ -53,6 +62,7 @@
     <span class="b" style="background:#c7cede"></span>pallet position (section not tracked)<br>
     <span class="b" style="background:#e24b4a"></span>blocked position (AC / panel / pest)<br>
     <span class="b" style="background:rgba(255,77,77,.55)"></span>future unit — not installed yet (Sections I, J)
+  </div>
   </div>
 </div>
 
@@ -100,7 +110,16 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
     // Seções I e J removidas (racks não instalados) — a marcação vermelha no chão permanece
   ];
   // fila de bays na parede do fundo (horizontal) — seção/qtd provisórias
-  const BACKWALL = { id:'E', color:0xd9c48a, bays:26, z:-150, xStart:-150, pitch:9, levels:3, use:'Received seeds (raw material)', gapBays:[17,20] };
+  const BACKWALL = { id:'E', color:0xd9c48a, z:-150, use:'Received seeds (raw material)',
+    segments:[
+      { id:'E', xStart:-150, pitch:6.2, bays:22, levels:4, use:'Received seeds (raw material)',
+        label:'Section E - seeds - bays 01-22 - 4 levels (W of rear exit)',
+        special:{'01-L1':'Maintenance Room','01-L2':'Maintenance Room','01-L3':'Out of use','01-L4':'Out of use',
+                 '02-L1':'Maintenance Room','02-L2':'Maintenance Room','02-L3':'Out of use','02-L4':'Out of use',
+                 '06-L1':'Electrical'} },
+      { id:'E2', xStart:30, pitch:5.5, bays:9, levels:3, use:'Received seeds (raw material)',
+        label:'Seeds - 9 bays - 3 levels (E of rear exit)' }
+    ] };
   const BLOCK_REASON = code => {
     if(code==='A-23-L1') return 'Pest control traps';
     if(code==='F-06-L1') return 'Electrical panel';
@@ -231,10 +250,10 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
           z-=rp;}});
       const title=makeLabel('Floor storage · flavors S01–S26 · 8 pallets/row',0x0e7a35);title.position.set((x0+x1)/2,8,z0-6);scene.add(title);labelSprites.push(title);
     })();
-    // FLOOR STORAGE 2 — área demarcada: sabores de peso diferente (S01–S08), 2 linhas de 8 cada
+    // FLOOR STORAGE 2 — área demarcada: 1.5oz bulk bags (S27–S34), 2 linhas de 8 cada
     // HORIZONTAL: linhas lado a lado no eixo x, 8 pallets em profundidade (z) — libera a rota da empilhadeira
     (function(){
-      const FLAV2=[['S01','Original',2,0x1c3f8f],['S02','Churros',2,0x6a3d9a],['S03','BBQ',2,0xcc2027],['S04','Parmesan',2,0xf4c400],['S05','Dill',2,0x4ea62e],['S06','Cracked Pepper',2,0x4b515a],['S07','Cheddar Jalapeno',2,0xec7a1e],['S08','Ranch',2,0x2f7fd0]];
+      const FLAV2=[['S27','Original',2,0x1c3f8f],['S28','Churros',2,0x6a3d9a],['S29','BBQ',2,0xcc2027],['S30','Parmesan',2,0xf4c400],['S31','Dill',2,0x4ea62e],['S32','Cracked Pepper',2,0x4b515a],['S33','Cheddar Jalapeno',2,0xec7a1e],['S34','Ranch',2,0x2f7fd0]];
       const rp=3.9, cp=4.2, cols=8;      // rp = passo entre linhas (x); cp = passo entre pallets (z)
       const xStart=4, zFront=-98;        // início à esquerda; frente = lado das docas
       const totalRows=FLAV2.reduce((a,f)=>a+f[2],0);
@@ -247,10 +266,41 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
       let x=xStart; // cada linha ocupa uma posição em x; pallets seguem para o fundo (z)
       FLAV2.forEach((f)=>{const c=f[3];
         const matE=new THREE.MeshStandardMaterial({color:c,roughness:.6,transparent:true,opacity:0.2});
-        for(let r=0;r<f[2];r++){for(let cc=0;cc<cols;cc++){const occ=false; const p=new THREE.Mesh(pgeo,matE);p.position.set(x,0.85,zFront-cc*cp);p.castShadow=true;p.receiveShadow=true;p.userData={code:f[0]+' '+f[1]+' (2)',section:'STORAGE-2',bay:0,level:1,blocked:false,use:f[0]+' '+f[1]+' · peso diferente / heavier · EMPTY / vazio'};scene.add(p);pickables.push(p);}
+        for(let r=0;r<f[2];r++){for(let cc=0;cc<cols;cc++){const occ=false; const p=new THREE.Mesh(pgeo,matE);p.position.set(x,0.85,zFront-cc*cp);p.castShadow=true;p.receiveShadow=true;p.userData={code:f[0]+' '+f[1]+' (1.5oz)',section:'STORAGE-15',bay:0,level:1,blocked:false,use:f[0]+' '+f[1]+' · 1.5oz bulk bags · EMPTY / vazio'};scene.add(p);pickables.push(p);}
           if(r===0){const l=makeLabel(f[0],c);l.position.set(x,4,zFront+5);l.scale.multiplyScalar(.44);scene.add(l);labelSprites.push(l);}
           x+=rp;}});
-      const title=makeLabel('Floor storage · S01–S08 (peso diferente / heavier) · 8/row',0xd9a521);title.position.set((x0+x1)/2,8,z0-6);scene.add(title);labelSprites.push(title);
+      const title=makeLabel('Floor storage · S27–S34 · 1.5oz bulk bags · 8/row',0xd9a521);title.position.set((x0+x1)/2,8,z0-6);scene.add(title);labelSprites.push(title);
+    })();
+    // MASTER CASE — caixas prontas para envio, DIVIDIDAS POR SABOR (cores dos sabores, mesmos slots por sabor)
+    (function(){
+      const x0=-104,x1=-4,z0=-10,z1=58; // deslocado p/ oeste; lanes verticais por sabor (transposto p/ bater com a planilha)
+      const fl=new THREE.Mesh(new THREE.PlaneGeometry(x1-x0+6,z1-z0+6), new THREE.MeshStandardMaterial({color:0xc79a5b,roughness:.9,transparent:true,opacity:.12}));
+      fl.rotation.x=-Math.PI/2; fl.position.set((x0+x1)/2,0.07,(z0+z1)/2); scene.add(fl);
+      const edge=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(x1-x0+6,z1-z0+6)), new THREE.LineBasicMaterial({color:0xb5843c}));
+      edge.rotation.x=-Math.PI/2; edge.position.set((x0+x1)/2,0.11,(z0+z1)/2); scene.add(edge);
+      const nx=12, nz=13;                       // eixo x = 12 células (oeste->leste); eixo z = 13 células (profundidade)
+      const cw=(x1-x0)/nx, cd=(z1-z0)/nz;
+      const bgeo=new THREE.BoxGeometry(cw*0.82,2.2,cd*0.82);
+      // [code, nome, cor, xIni, xFim, zIni, zFim]  — xI (oeste->leste), z índice (sul->norte)
+      const BLOCKS=[
+        ['S35','Cinnamon Churro',0x6a3d9a, 0,1, 0,7],
+        ['S36','Backyard BBQ',0xcc2027, 2,3, 0,7],
+        ['S37','Garlic Parmesan',0xf4c400, 4,5, 0,7],
+        ['S38','Dill Pickle',0x4ea62e, 6,7, 0,7],
+        ['S39','Cheddar Jalapeno',0xec7a1e, 8,9, 0,7],
+        ['S40','Original',0x1c3f8f, 10,11, 0,7],
+        ['S41','Ranch',0x2f7fd0, 0,11, 8,8],
+        ['S42','Maple',0x8a5a2b, 0,4, 9,9],
+        ['S43','Sour Cream',0x3bb089, 0,4, 10,10],
+        ['S44','Cracked Pepper',0x4b515a, 0,4, 11,11],
+        ['S45','Lemon Pepper',0xd9d13a, 0,4, 12,12]
+      ];
+      const cellX=i=>x0+cw*(i+0.5), cellZ=j=>z1-cd*(j+0.5); // z invertido: índice 0 = sul (frente), cresce p/ norte
+      BLOCKS.forEach(b=>{const code=b[0],nome=b[1],cor=b[2],xi=b[3],xf=b[4],zi=b[5],zf=b[6];
+        const mat=new THREE.MeshStandardMaterial({color:cor,roughness:.6,transparent:true,opacity:0.24});
+        for(let ix=xi;ix<=xf;ix++)for(let jz=zi;jz<=zf;jz++){const p=new THREE.Mesh(bgeo,mat);p.position.set(cellX(ix),1.2,cellZ(jz));p.castShadow=true;p.receiveShadow=true;p.userData={code:code+' '+nome+' (MC)',section:'MASTER-CASE',bay:0,level:1,blocked:false,use:code+' '+nome+' · master case · pronto para envio / ready to ship · EMPTY / vazio'};scene.add(p);pickables.push(p);}
+        const l=makeLabel(code,cor);l.position.set(cellX((xi+xf)/2),4,cellZ((zi+zf)/2));l.scale.multiplyScalar(.4);scene.add(l);labelSprites.push(l);});
+      const title=makeLabel('Master Case · por sabor / by flavor · pronto para envio',0xb5843c);title.position.set((x0+x1)/2,9,z1+6);scene.add(title);labelSprites.push(title);
     })();
     buildLegend();
 
@@ -364,38 +414,33 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
   function buildBackWall(){
     const bw=BACKWALL, g=new THREE.Group();
     const beamHalf=DECK_D/2+0.3;
-    const xEnd=bw.xStart+(bw.bays-1)*bw.pitch;
     const postMat=new THREE.MeshStandardMaterial({color:0x8a7a4a,roughness:.5,metalness:.35});
-    const bwLev=bw.levels||3, postH_bw=bwLev*LEVEL_H+2, postGeoBw=new THREE.BoxGeometry(0.6,postH_bw,0.6);
-    for(let b=0;b<=bw.bays;b++){
-      if(bw.gapBays && b>bw.gapBays[0] && b<bw.gapBays[1]) continue; // vão da saída de emergência
-      const x=bw.xStart-bw.pitch/2+b*bw.pitch;
-      [-beamHalf,beamHalf].forEach(dz=>{const p=new THREE.Mesh(postGeoBw,postMat);p.position.set(x,postH_bw/2,bw.z+dz);p.castShadow=true;g.add(p);});
-    }
-    // longarinas — quebradas no vão da saída de emergência
-    let segs;
-    if(bw.gapBays){
-      const gx1=bw.xStart+(bw.gapBays[0]-1)*bw.pitch - bw.pitch/2;
-      const gx2=bw.xStart+(bw.gapBays[1]-1)*bw.pitch + bw.pitch/2;
-      segs=[[bw.xStart-bw.pitch/2,gx1],[gx2,xEnd+bw.pitch/2]];
-    } else { segs=[[bw.xStart-bw.pitch/2,xEnd+bw.pitch/2]]; }
-    for(let lv=1;lv<=bwLev;lv++){const y=lv*LEVEL_H; segs.forEach(seg=>{const len=seg[1]-seg[0],cx=(seg[0]+seg[1])/2;[-beamHalf,beamHalf].forEach(dz=>{const bm=new THREE.Mesh(new THREE.BoxGeometry(len,0.5,0.5),MAT_BEAM);bm.position.set(cx,y,bw.z+dz);g.add(bm);});});}
     const seedMat=new THREE.MeshStandardMaterial({color:0xd9c48a,roughness:.9});
-    for(let b=1;b<=bw.bays;b++){
-      if(bw.gapBays && b>=bw.gapBays[0] && b<=bw.gapBays[1]) continue; // vão da saída de emergência
-      const x=bw.xStart+(b-1)*bw.pitch;
-      for(let lv=1;lv<=bwLev;lv++){
-        const base=bw.id+'-'+String(b).padStart(2,'0')+'-L'+lv;
-        const y=(lv-1)*LEVEL_H+1.4;
-        for(let p=1;p<=2;p++){
-          const m=new THREE.Mesh(GEO_PAL_X,seedMat); m.position.set(x+(p===1?-1:1)*(PAL_FACE/2),y,bw.z); m.castShadow=true; m.receiveShadow=true;
-          m.userData={code:base+'-P'+p,section:bw.id,bay:b,level:lv,pallet:p,blocked:false,use:bw.use};
-          g.add(m); pickables.push(m);
+    const specMat=new THREE.MeshStandardMaterial({color:0x9aa0aa,roughness:.6}); // Maintenance / Out of use / Electrical
+    bw.segments.forEach(seg=>{
+      const lev=seg.levels||3, postH=lev*LEVEL_H+2, postGeo=new THREE.BoxGeometry(0.6,postH,0.6);
+      const xEnd=seg.xStart+(seg.bays-1)*seg.pitch;
+      // postes nas divisas
+      for(let b=0;b<=seg.bays;b++){const x=seg.xStart-seg.pitch/2+b*seg.pitch;[-beamHalf,beamHalf].forEach(dz=>{const p=new THREE.Mesh(postGeo,postMat);p.position.set(x,postH/2,bw.z+dz);p.castShadow=true;g.add(p);});}
+      // longarinas por nível
+      const x0=seg.xStart-seg.pitch/2, x1=xEnd+seg.pitch/2, len=x1-x0, cx=(x0+x1)/2;
+      for(let lv=1;lv<=lev;lv++){const y=lv*LEVEL_H;[-beamHalf,beamHalf].forEach(dz=>{const bm=new THREE.Mesh(new THREE.BoxGeometry(len,0.5,0.5),MAT_BEAM);bm.position.set(cx,y,bw.z+dz);g.add(bm);});}
+      // posições — 2 paletes por bay/nível; posições especiais em cinza
+      for(let b=1;b<=seg.bays;b++){const x=seg.xStart+(b-1)*seg.pitch, bb=String(b).padStart(2,'0');
+        for(let lv=1;lv<=lev;lv++){
+          const key=bb+'-L'+lv, spec=seg.special&&seg.special[key], isB=!!spec;
+          const base=seg.id+'-'+bb+'-L'+lv, y=(lv-1)*LEVEL_H+1.4;
+          for(let p=1;p<=2;p++){
+            const m=new THREE.Mesh(GEO_PAL_X, isB?specMat:seedMat);
+            m.position.set(x+(p===1?-1:1)*(PAL_FACE/2), isB?y+1.2:y, bw.z); m.castShadow=true; m.receiveShadow=true;
+            m.userData={code:base+'-P'+p,section:seg.id,bay:b,level:lv,pallet:p,blocked:isB,use: spec ? spec : seg.use};
+            g.add(m); pickables.push(m);
+          }
         }
+        const bl=makeLabel(seg.id+'-'+bb,bw.color); bl.position.set(x,postH+2.5,bw.z); bl.scale.multiplyScalar(.34); g.add(bl); labelSprites.push(bl);
       }
-      const bl=makeLabel(bw.id+'-'+String(b).padStart(2,'0'),bw.color); bl.position.set(x,postH_bw+2.5,bw.z); bl.scale.multiplyScalar(.34); g.add(bl); labelSprites.push(bl);
-    }
-    const sl=makeLabel('Section E · received seeds · 3 levels (back wall)',bw.color,false); sl.position.set((bw.xStart+xEnd)/2,postH_bw+5,bw.z-2); g.add(sl); labelSprites.push(sl);
+      const sl=makeLabel(seg.label,bw.color,false); sl.position.set((seg.xStart+xEnd)/2,postH+5,bw.z-2); g.add(sl); labelSprites.push(sl);
+    });
     scene.add(g); groupsById['bw']=g; bw._group=g;
   }
 
@@ -550,6 +595,7 @@ window.addEventListener('load',function(){ if(typeof THREE==='undefined'){docume
   document.getElementById('btn-iso').addEventListener('click',setIso);
   document.getElementById('btn-top').addEventListener('click',setTop);
   document.getElementById('btn-labels').addEventListener('click',()=>{labelsOn=!labelsOn;labelSprites.forEach(s=>s.visible=labelsOn);document.getElementById('btn-labels').textContent='Labels: '+(labelsOn?'ON':'OFF');});
+  document.getElementById('legend-head').addEventListener('click',()=>{const lg=document.getElementById('legend');lg.classList.toggle('collapsed');document.getElementById('legend-toggle').innerHTML=lg.classList.contains('collapsed')?'&#9656;':'&#9662;';});
 
   function onResize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);}
   function animate(){requestAnimationFrame(animate);renderer.render(scene,camera);}
