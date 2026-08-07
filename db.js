@@ -206,6 +206,7 @@ window.DB = (function () {
         cache.lineStatus = (lsr && lsr.data ? lsr.data : []).map(r => ({
           id: r.id, area: r.area || "", machine: r.machine || "", flavor: r.flavor || "",
           size: r.size || "", status: r.status || "idle", sort: Number(r.sort) || 0,
+          done: Number(r.done) || 0, goal: Number(r.goal) || 0,
           updated_by: r.updated_by || "", updated_at: r.updated_at
         }));
       } catch (e) { cache.lineStatus = cache.lineStatus || []; }
@@ -1610,7 +1611,7 @@ window.DB = (function () {
   async function addMachine(rec, op) {
     const list = cache.lineStatus || [];
     const maxSort = list.filter(r => r.area === rec.area).reduce((m, r) => Math.max(m, Number(r.sort) || 0), 0);
-    const row = { area: rec.area || "", machine: rec.machine || "", flavor: "", size: "", status: "idle", sort: maxSort + 1, updated_by: op || "" };
+    const row = { area: rec.area || "", machine: rec.machine || "", flavor: "", size: "", status: "idle", done: 0, goal: 0, sort: maxSort + 1, updated_by: op || "" };
     const logEntry = { a: "Machine added", d: row.area + " - " + row.machine, u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
       const r = await sb.from("line_status").insert(row).select();
@@ -1629,6 +1630,8 @@ window.DB = (function () {
     if (patch.flavor !== undefined) row.flavor = patch.flavor;
     if (patch.size !== undefined) row.size = patch.size;
     if (patch.status !== undefined) row.status = patch.status;
+    if (patch.done !== undefined) row.done = Math.max(0, Number(patch.done) || 0);
+    if (patch.goal !== undefined) row.goal = Math.max(0, Number(patch.goal) || 0);
     const logEntry = { a: "Line status", d: (existing ? existing.machine : String(id)) + ": " + (row.flavor !== undefined ? row.flavor : (existing ? existing.flavor : "") || "") + " " + (row.status || (existing ? existing.status : "")), u: op, t: row.updated_at };
     if (mode === "cloud") {
       const r = await sb.from("line_status").update(row).eq("id", id).select();

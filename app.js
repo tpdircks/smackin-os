@@ -4336,7 +4336,12 @@
       '<div class="muted sm floorsensor">&mdash; ' + L("flSensor") + '</div>' +
       '<div class="floorcontrols">' +
       '<select onchange="UI.flSetFlavor(\'' + m.id + '\',this.value)">' + flavOpts + '</select>' +
-      '<select onchange="UI.flSetSize(\'' + m.id + '\',this.value)"><option value="">' + L("flSize") + '</option>' + sizeOpts + '</select>' +
+      (m.area === "pmac" ? '<select onchange="UI.flSetSize(\'' + m.id + '\',this.value)"><option value="">' + L("flSize") + '</option>' + sizeOpts + '</select>' : '') +
+      '<div class="floorcount" style="display:flex;align-items:center;gap:8px;margin:2px 0 4px">' +
+        '<button onclick="UI.flBump(\'' + m.id + '\',-1)" style="width:38px;height:38px;border-radius:9px;border:1px solid #d0021b;background:#fdecee;color:#d0021b;font-size:22px;font-weight:700;cursor:pointer;flex:none">&minus;</button>' +
+        '<span style="flex:1;text-align:center;line-height:1.1"><b style="font-size:22px">' + (Number(m.done) || 0) + '</b> <span style="opacity:.6;font-size:14px">/ <input type="number" min="0" value="' + (Number(m.goal) || 0) + '" onchange="UI.flSetGoal(\'' + m.id + '\',this.value)" title="Goal (from PO)" style="width:44px;text-align:center;font-size:14px"> ' + (m.area === "pmac" ? "bags" : "bins") + '</span></span>' +
+        '<button onclick="UI.flBump(\'' + m.id + '\',1)" style="width:38px;height:38px;border-radius:9px;border:1px solid #2e7d32;background:#e8f5e9;color:#2e7d32;font-size:24px;font-weight:700;cursor:pointer;flex:none">+</button>' +
+      '</div>' +
       '<div class="floorstatusbtns">' + statusBtn("running", L("flRunning")) + statusBtn("changeover", L("flChangeover")) + statusBtn("idle", L("flIdle")) + '</div>' +
       '</div></div>';
   }
@@ -4626,12 +4631,32 @@
     async flSetFlavor(id, val) {
       const m = (DB.lineStatus ? DB.lineStatus() : []).find(r => String(r.id) === String(id));
       const op = opValFor("fl-op-" + (m ? m.area : "mixing"));
-      await DB.setLineStatus(id, { flavor: val }, op); toast("✓"); render();
+      const patch = { flavor: val, done: 0 };   // new run: reset the done count
+      // Goal comes from Allen's PO order quantity (bins) for this flavor
+      if (val && window.ALLEN_REORDER) {
+        let g = 0;
+        (window.ALLEN_REORDER.tiers || []).forEach(t => (t.flavors || []).forEach(f => {
+          if ((f.name || "").toLowerCase() === val.toLowerCase()) g = (Number(f.q4) || 0) + (Number(f.q15) || 0);
+        }));
+        patch.goal = g;   // 0 if Allen hasn't set a number for this flavor yet
+      }
+      await DB.setLineStatus(id, patch, op); toast("✓"); render();
     },
     async flSetSize(id, val) {
       const m = (DB.lineStatus ? DB.lineStatus() : []).find(r => String(r.id) === String(id));
       const op = opValFor("fl-op-" + (m ? m.area : "mixing"));
       await DB.setLineStatus(id, { size: val }, op); toast("✓"); render();
+    },
+    async flBump(id, delta) {
+      const m = (DB.lineStatus ? DB.lineStatus() : []).find(r => String(r.id) === String(id));
+      const op = opValFor("fl-op-" + (m ? m.area : "mixing"));
+      const cur = m ? (Number(m.done) || 0) : 0;
+      await DB.setLineStatus(id, { done: Math.max(0, cur + delta) }, op); render();
+    },
+    async flSetGoal(id, val) {
+      const m = (DB.lineStatus ? DB.lineStatus() : []).find(r => String(r.id) === String(id));
+      const op = opValFor("fl-op-" + (m ? m.area : "mixing"));
+      await DB.setLineStatus(id, { goal: val }, op); render();
     },
     async flSetStatus(id, val) {
       const m = (DB.lineStatus ? DB.lineStatus() : []).find(r => String(r.id) === String(id));
