@@ -3976,6 +3976,26 @@
       T.map(t => '<button class="' + (active === t[0] ? "active" : "") + '" onclick="UI_go(\'' + t[0] + '\')">' + t[1] + '</button>').join("") + '</div>';
   }
   function viewDemand() { return deptDemandBoard(dmdDept, true); }
+  function dsSourceCard(){
+    const dl=(DB.demandLines?DB.demandLines():[]).filter(r=>(r.status||"Open")==="Open");
+    const spsF={}; let spsB=0, spsC=0;
+    dl.forEach(r=>{ spsB+=Number(r.bags)||0; spsC+=Number(r.cases)||0; if(r.flavor) spsF[r.flavor]=1; });
+    const ed=(DB.ecomDemand?DB.ecomDemand():[]);
+    const ssF={}; let ssB=0;
+    ed.forEach(r=>{ ssB+=Number(r.bags)||0; if(r.flavor) ssF[r.flavor]=1; });
+    const ssC=Math.round(ssB/72);
+    const row=(name,bags,cases,flav,stat,live)=>'<tr><td><b>'+name+'</b></td><td class="right">'+(bags==null?'<span class="muted">&mdash;</span>':fmt(bags))+'</td><td class="right">'+(cases==null?'<span class="muted">&mdash;</span>':fmt(cases))+'</td><td class="right">'+(flav==null?'<span class="muted">&mdash;</span>':flav)+'</td><td class="sm '+(live?'':'muted')+'">'+stat+'</td></tr>';
+    const totB=spsB+ssB, totC=spsC+ssC;
+    return '<div class="card"><div class="suprow"><h2 style="margin:0;flex:1">Demand by Source</h2><span class="muted sm">run targets from Allen&#39;s POs</span></div>'+
+      '<p class="hint" style="margin:2px 0 8px">Where today&#39;s demand comes from. Build to the combined total per flavor, not per order.</p>'+
+      '<div class="tblwrap"><table><thead><tr><th>Source</th><th class="right">Bags</th><th class="right">Cases</th><th class="right">Flavors</th><th>Status</th></tr></thead><tbody>'+
+      row('SPS Commerce',spsB,spsC,Object.keys(spsF).length,'Live',true)+
+      row('PO-Tab',null,null,null,'Pending &mdash; order line detail not imported',false)+
+      row('ShipStation',ssB,ssC,Object.keys(ssF).length,'Live',true)+
+      row('TikTok',null,null,null,'Pending &mdash; confirming source with Salvador',false)+
+      '<tr style="background:#F0F0F0"><td><b>Total (live)</b></td><td class="right"><b>'+fmt(totB)+'</b></td><td class="right"><b>'+fmt(totC)+'</b></td><td></td><td></td></tr>'+
+      '</tbody></table></div></div>';
+  }
   function viewDemandSched() {
     const open = (DB.demandLines ? DB.demandLines() : []).filter(r => (r.status || "Open") === "Open");
     if (!open.length) return '<div class="card"><h2>' + L("demandsched") + '</h2><p class="muted">' + L("dsNone") + '</p>' +
@@ -4011,7 +4031,7 @@
       '<tr style="background:#E8E8E8"><td><b>' + L("dsGrand") + '</b></td><td class="right"><b>' + fmt(gDem) + '</b></td><td></td>' +
       '<td class="right"><b>' + fmt(gOn) + '</b></td><td class="right"><b>' + fmt(gProd) + '</b></td><td class="right"><b>' + fmt(gProd * 72) + '</b></td><td></td><td></td><td></td></tr>' +
       '</tbody></table></div></div>';
-    return head + table;
+    return dsSourceCard() + head + table;
   }
   function viewDemandImport() {
     const cur = (DB.demandLines ? DB.demandLines() : []);
