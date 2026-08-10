@@ -1660,7 +1660,7 @@
     const list = spoSortList(DB.supplierPos());
     let form;
     if (!spoParsed) {
-      form = '<div class="spodrop"><input type="file" id="spo-input" accept=".xlsx,.xls,.csv,.pdf" style="display:none" onchange="UI.spoFile(this)">' +
+      form = '<div class="spodrop" ondragover="event.preventDefault()" ondragenter="event.preventDefault()" ondrop="UI.dropFiles(event, this)"><input type="file" id="spo-input" style="display:none" onchange="UI.spoFile(this)">' +
         '<label for="spo-input" class="spodroplabel">&#128228; ' + L("spoDrop") + '</label></div>';
     } else {
       const p = spoParsed;
@@ -1998,7 +1998,7 @@
   function viewOrderDocs() {
     const list = DB.orderDocs().slice().sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
     const form = '<div class="ordform">' +
-      '<div class="spodrop"><input type="file" id="odoc-input" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.docx" style="display:none" onchange="UI.odocFile(this)">' +
+      '<div class="spodrop" ondragover="event.preventDefault()" ondragenter="event.preventDefault()" ondrop="UI.dropFiles(event, this)"><input type="file" id="odoc-input" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.docx" style="display:none" onchange="UI.odocFile(this)">' +
       '<label for="odoc-input" class="spodroplabel">&#128193; ' + L("odocDrop") + '</label></div>' +
       (odocFile ? '<p class="hint">&#128206; ' + esc(odocFile.name) + '</p>' : '') +
       '<div class="row"><div><label>' + L("odocCustomer") + '</label><input id="odoc-cust" list="dl-odoc-cust" autocomplete="off"></div>' +
@@ -2099,7 +2099,7 @@
     const qv = n => (n != null && n !== "" ? n : "");
     const form = '<div class="ordform">' +
       (editing ? '<p class="hint">&#9998; ' + L("editingRow") + (ed.file_name ? ' &middot; ' + L("rlKeepDoc") : '') + '</p>' : '') +
-      '<div class="spodrop"><input type="file" id="rl-input" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.docx" style="display:none" onchange="UI.rlFile(this)">' +
+      '<div class="spodrop" ondragover="event.preventDefault()" ondragenter="event.preventDefault()" ondrop="UI.dropFiles(event, this)"><input type="file" id="rl-input" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.docx" style="display:none" onchange="UI.rlFile(this)">' +
       '<label for="rl-input" class="spodroplabel">&#128193; ' + L("rlDrop") + '</label></div>' +
       (recvFile ? '<p class="hint">&#128206; ' + esc(recvFile.name) + ' <button class="ghost sm" onclick="UI.rlClear()">' + L("spoCancel") + '</button></p>' : '') +
       '<div class="row"><div><label>' + L("rlDate") + '</label><input id="rl-date" type="date" value="' + (editing && ed.recv_date ? (ed.recv_date + "").slice(0, 10) : today) + '"></div>' +
@@ -2176,7 +2176,7 @@
       '<div class="row"><div><label>' + L("rCondition") + '</label><select id="r-cond">' + selOpts(DB.conditions) + '</select></div>' +
       '<div><label>' + L("rStatus") + '</label><select id="r-stat">' + selOpts(DB.recvStatuses) + '</select></div></div>' +
       '<h3 class="sub2" style="margin-top:12px">' + L("rDeliveryHdr") + '</h3>' +
-      '<div class="spodrop"><input type="file" id="r-doc-input" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.docx" style="display:none" onchange="UI.rlFile(this)"><label for="r-doc-input" class="spodroplabel">&#128193; ' + L("rAttachDoc") + '</label></div>' +
+      '<div class="spodrop" ondragover="event.preventDefault()" ondragenter="event.preventDefault()" ondrop="UI.dropFiles(event, this)"><input type="file" id="r-doc-input" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.docx" style="display:none" onchange="UI.rlFile(this)"><label for="r-doc-input" class="spodroplabel">&#128193; ' + L("rAttachDoc") + '</label></div>' +
       (recvFile ? '<p class="hint">&#128206; ' + esc(recvFile.name) + ' <button class="ghost sm" onclick="UI.rlClear()">' + L("spoCancel") + '</button></p>' : '') +
       '<div class="row"><div><label>' + L("rCarrier") + ' <span class="muted">(opt.)</span></label><select id="r-carrier"><option value=""></option>' + selOpts(SHIP_CARRIERS) + '</select></div>' +
       '<div><label>' + L("rProNum") + ' <span class="muted">(opt.)</span></label><input id="r-tracking" autocomplete="off" placeholder="PRO / 1Z..."></div>' +
@@ -3675,7 +3675,7 @@
   function viewReference() {
     const docs = DB.referenceDocs ? DB.referenceDocs() : [];
     const form = '<div class="ordform">' +
-      '<div class="spodrop"><input type="file" id="ref-input" multiple style="display:none" onchange="UI.refPick(this)">' +
+      '<div class="spodrop" ondragover="event.preventDefault()" ondragenter="event.preventDefault()" ondrop="UI.dropFiles(event, this)"><input type="file" id="ref-input" multiple style="display:none" onchange="UI.refPick(this)">' +
       '<label for="ref-input" class="spodroplabel">&#128193; ' + L("refDrop") + '</label></div>' +
       (refFiles && refFiles.length ? '<p class="hint">&#128206; ' + refFiles.length + ' ' + L("refSelected") + '</p>' : '') +
       '<div class="row"><div><label>' + L("refCategory") + '</label><select id="ref-cat">' + REF_CATS.map(c => "<option>" + c + "</option>").join("") + '</select></div>' +
@@ -5819,6 +5819,13 @@
       set("po-vaddr", src.vendor_addr); set("po-vemail", src.vendor_email); set("po-vphone", src.vendor_phone); set("po-shipto", src.ship_to);
       const _sel = $("po-vendor-sel"), _inp = $("po-vendor");
       if (_sel && _inp) { const names = Array.prototype.map.call(_sel.options, o => o.value); if (names.indexOf(v) >= 0) { _sel.value = v; _inp.style.display = "none"; } else { _sel.value = "__new__"; _inp.style.display = ""; } }
+    },
+    dropFiles(e, div) {
+      e.preventDefault(); e.stopPropagation();
+      const inp = div && div.querySelector ? div.querySelector('input[type=file]') : null;
+      if (!inp || !e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return;
+      try { const dt = new DataTransfer(); for (let i = 0; i < e.dataTransfer.files.length; i++) dt.items.add(e.dataTransfer.files[i]); inp.files = dt.files; } catch (_) {}
+      inp.dispatchEvent(new Event("change", { bubbles: true }));
     },
     poVendorPick() {
       const sel = $("po-vendor-sel"); const inp = $("po-vendor"); if (!sel || !inp) return;
