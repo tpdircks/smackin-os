@@ -12,7 +12,7 @@ window.DB = (function () {
   const seed = window.SMACKIN_SEED;
   let mode = "local";
   let sb = null;                  // supabase client
-  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [], returnsLog: [], prodOut: [], lineStatus: [], forecast: [], ecomDemand: [], maintenance: [], fulfillmentDaily: [] };
+  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [], returnsLog: [], prodOut: [], lineStatus: [], forecast: [], ecomDemand: [], maintenance: [], fulfillmentDaily: [], machineLive: [] };
   let subscribers = [];
 
   function emit() { subscribers.forEach(fn => { try { fn(); } catch (e) {} }); }
@@ -35,6 +35,7 @@ window.DB = (function () {
   function demandLines() { return cache.demandLines || []; }
   function productionOutput() { return cache.prodOut || []; }
   function lineStatus() { return cache.lineStatus || []; }
+  function machineLive() { return cache.machineLive || []; }
   function forecast() { return cache.forecast || []; }
   function ecomDemand() { return cache.ecomDemand || []; }
   function returnsLog() { return cache.returnsLog || []; }
@@ -210,6 +211,15 @@ window.DB = (function () {
           updated_by: r.updated_by || "", updated_at: r.updated_at
         }));
       } catch (e) { cache.lineStatus = cache.lineStatus || []; }
+      // machine_live (live sensor bag counts mirrored from production.local via Todd's push) - resilient
+      try {
+        const ml = await sb.from("machine_live").select("*").order("machine_id", { ascending: true });
+        cache.machineLive = (ml && ml.data ? ml.data : []).map(r => ({
+          machine_id: r.machine_id, line: r.line || "", operator: r.operator || "", flavor: r.flavor || "",
+          session_bags: Number(r.session_bags) || 0, today_bags: Number(r.today_bags) || 0,
+          rate_per_min: Number(r.rate_per_min) || 0, status: r.status || "idle", last_seen: r.last_seen, updated_at: r.updated_at
+        }));
+      } catch (e) { cache.machineLive = cache.machineLive || []; }
       // demand_forecast (WIP FORECAST snapshot, compare-only) loaded separately + resiliently so a missing table never breaks the app shell
       try {
         const fc = await sb.from("demand_forecast").select("*");
@@ -302,6 +312,7 @@ window.DB = (function () {
       sb.channel("inv")
         .on("postgres_changes", { event: "*", schema: "public", table: "stock" }, async () => { await cloud.loadAll(); emit(); })
         .on("postgres_changes", { event: "*", schema: "public", table: "transactions" }, async () => { await cloud.loadAll(); emit(); })
+        .on("postgres_changes", { event: "*", schema: "public", table: "machine_live" }, async () => { try { const ml = await sb.from("machine_live").select("*").order("machine_id", { ascending: true }); cache.machineLive = (ml && ml.data ? ml.data : []).map(r => ({ machine_id: r.machine_id, line: r.line || "", operator: r.operator || "", flavor: r.flavor || "", session_bags: Number(r.session_bags) || 0, today_bags: Number(r.today_bags) || 0, rate_per_min: Number(r.rate_per_min) || 0, status: r.status || "idle", last_seen: r.last_seen, updated_at: r.updated_at })); } catch (e) {} emit(); })
         .subscribe();
     }
   };
@@ -1757,7 +1768,7 @@ window.DB = (function () {
     init, onChange, get mode() { return mode; },
     demandLines, importDemand, setDemandStatus, shipDemandPO, clearDemandBatch, clearAllDemand, remapDemandFlavors,
     productionOutput, addProdOutput, deleteProdOutput,
-    lineStatus, addMachine, setLineStatus, deleteMachine,
+    lineStatus, machineLive, addMachine, setLineStatus, deleteMachine,
     forecast,
     ecomDemand, addEcomDemand, clearEcomDemand,
     returnsLog, addReturn, deleteReturn, returnDupKey, findReturnDup,

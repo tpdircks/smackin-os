@@ -4370,8 +4370,29 @@
       tiles +
       '<button class="ghost sm" style="margin-top:10px" onclick="UI.flAdd(\'' + area + '\')">' + L("flAddMachine") + '</button></div>';
   }
+  function liveSensorCard(){
+    const ml = (DB.machineLive ? DB.machineLive() : []);
+    if(!ml.length) return '';
+    const rows = ml.map(m=>{
+      const dot = m.status==='running' ? '#2E7D32' : (m.status==='maintenance' ? '#E39412' : (m.status==='stale' ? '#B52024' : '#9AA0A6'));
+      const seen = m.last_seen ? floorAgo(m.last_seen) : '';
+      return '<tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:'+dot+'"></span></td>'+
+        '<td><b>'+esc(m.machine_id)+'</b><div class="muted sm">'+esc(m.line||'')+(m.operator?(' &middot; '+esc(m.operator)):'')+'</div></td>'+
+        '<td>'+esc(m.flavor||'')+'</td>'+
+        '<td class="right"><b style="font-size:18px">'+fmt(m.today_bags||0)+'</b><div class="muted sm">today</div></td>'+
+        '<td class="right">'+(m.rate_per_min?(fmt(Math.round(m.rate_per_min*10)/10)+'/min'):'&mdash;')+'</td>'+
+        '<td class="muted sm">'+seen+'</td></tr>';
+    }).join('');
+    const totBags = ml.reduce((s,m)=>s+(Number(m.today_bags)||0),0);
+    return '<div class="card"><div class="suprow"><h2 style="margin:0;flex:1">&#128225; Live Bag Counts</h2><span class="pill ok">sensors</span></div>'+
+      '<p class="hint" style="margin:6px 0 8px">Real-time counts from the line sensors (production.local). Auto-updates as bags run.</p>'+
+      '<div class="tblwrap"><table><thead><tr><th></th><th>Machine</th><th>Flavor</th><th class="right">Today</th><th class="right">Rate</th><th>Seen</th></tr></thead><tbody>'+rows+
+      '<tr style="background:#F0F0F0"><td></td><td><b>Total today</b></td><td></td><td class="right"><b>'+fmt(totBags)+'</b></td><td></td><td></td></tr>'+
+      '</tbody></table></div></div>';
+  }
   function viewFloor() {
     return '<div class="card"><h2>' + L("floor") + '</h2><p class="hint">' + L("floorHint") + '</p></div>' +
+      liveSensorCard() +
       floorSection("mixing", L("mixing"), "Leo Ontiveros") +
       floorSection("pmac", L("pmac"), "Wilson Delgado");
   }
