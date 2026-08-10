@@ -1790,7 +1790,7 @@
         const dl = doc.splitTextToSize(descTxt, cQty - cDesc - 44);
         doc.text(String(l.item || ""), cItem, y);
         doc.text(dl.length ? dl : [""], cDesc, y);
-        if (l.qty !== "") doc.text(String(l.qty), cQty, y, { align: "right" });
+        if (l.qty !== "") doc.text(String(l.qty) + " lbs", cQty, y, { align: "right" });
         if (l.price !== "") doc.text(money(l.price), cPrice, y, { align: "right" });
         if (l.tot !== "") doc.text(money(l.tot), cTot, y, { align: "right" });
         y += Math.max(dl.length * 12, 14);
