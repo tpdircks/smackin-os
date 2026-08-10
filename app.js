@@ -698,6 +698,7 @@
   // ---- left sidebar: tabs grouped by department (NetSuite-style) ----
   const NAV_GROUPS = [
     { key:"", items:["home","daily"] },
+    { key:"grpPurchasing", items:["purchasing","expreceipts","reorder15"] },
     { key:"grpReceiving", items:["receive","recvlog","returns","qa"] },
     { key:"grpInventory", items:["dash","adjust","count","move","locations","facility","finbags"] },
     { key:"grpItems", items:["seasoning","recipes","seed","skus","analytics","labels"] },
@@ -705,7 +706,6 @@
     { key:"grpDemand", items:["demand","demandboard","demandsched","demandimport","ecomdemand","forecast"] },
     { key:"grpShipping", items:["shiplog"] },
     { key:"grpMixing", items:["prodorders","reordertracker","launch","mixing","pmac","pmacout","floor"] },
-    { key:"grpPurchasing", items:["purchasing","expreceipts","reorder15"] },
     { key:"grpQuality", items:["compliance","quality","disposition"] },
     { key:"grpTeam", items:["people","maintenance","improve","rd","log"] },
     { key:"grpDocs", items:["reference"] },
@@ -1975,7 +1975,7 @@
     const today = new Date().toISOString().slice(0, 10);
     return dl + '<div class="card"><div class="spohead"><h2>' + (poEditId ? "Edit Purchase Order" : L("poNewTitle")) + '</h2>' +
       '<button class="ghost sm" onclick="UI.poCreateBack()">' + L("poBackList") + '</button></div>' +
-      '<div class="row"><div><label>' + L("spoVendor") + '</label><select id="po-vendor-sel" onchange="UI.poVendorPick()" style="margin-bottom:6px"><option value="">-- Select existing vendor --</option>' + vendors.map(v => '<option value="' + esc(v) + '">' + esc(v) + '</option>').join("") + '</select><input id="po-vendor" list="dl-po-vendor" autocomplete="off" placeholder="Vendor name (or pick above)" onchange="UI.poVendorFill()" onblur="UI.poVendorFill()"></div>' +
+      '<div class="row"><div><label>' + L("spoVendor") + '</label><select id="po-vendor-sel" onchange="UI.poVendorPick()"><option value="">-- Select vendor --</option>' + vendors.map(v => '<option value="' + esc(v) + '">' + esc(v) + '</option>').join("") + '<option value="__new__">+ New vendor...</option></select><input id="po-vendor" autocomplete="off" placeholder="New vendor name" style="display:none;margin-top:6px" onblur="UI.poVendorFill()"></div>' +
       '<div><label>' + L("spoPO") + '</label><input id="po-num" autocomplete="off"></div>' +
       '<div><label>' + L("spoDate") + '</label><input id="po-date" value="' + today + '"></div></div>' +
       '<div class="row"><div><label>' + L("poVendorAddr") + '</label><input id="po-vaddr" autocomplete="off"></div>' +
@@ -5817,11 +5817,15 @@
       if (!src) return;
       const set = (id, val) => { const el = $(id); if (el) el.value = (val || ""); };
       set("po-vaddr", src.vendor_addr); set("po-vemail", src.vendor_email); set("po-vphone", src.vendor_phone); set("po-shipto", src.ship_to);
+      const _sel = $("po-vendor-sel"), _inp = $("po-vendor");
+      if (_sel && _inp) { const names = Array.prototype.map.call(_sel.options, o => o.value); if (names.indexOf(v) >= 0) { _sel.value = v; _inp.style.display = "none"; } else { _sel.value = "__new__"; _inp.style.display = ""; } }
     },
     poVendorPick() {
-      const sel = $("po-vendor-sel"); if (!sel) return;
-      const inp = $("po-vendor"); if (inp) inp.value = sel.value;
-      if (sel.value) UI.poVendorFill();
+      const sel = $("po-vendor-sel"); const inp = $("po-vendor"); if (!sel || !inp) return;
+      const clearFields = () => ["po-vaddr", "po-vemail", "po-vphone", "po-shipto"].forEach(id => { const el = $(id); if (el) el.value = ""; });
+      if (sel.value === "__new__") { inp.style.display = ""; inp.value = ""; clearFields(); inp.focus(); }
+      else if (sel.value === "") { inp.style.display = "none"; inp.value = ""; clearFields(); }
+      else { inp.style.display = "none"; inp.value = sel.value; UI.poVendorFill(); }
     },
     oCustFill() {
       const e = $("o-cust"); const v = e ? (e.value || "").trim() : ""; if (!v) return;
