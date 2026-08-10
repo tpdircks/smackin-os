@@ -1439,7 +1439,7 @@
     const addForm = (orderAddOpen || oediting) ? (
       '<div class="ordform">' +
       (oediting ? '<p class="hint">&#9998; ' + L("editingRow") + '</p>' : '') +
-      '<div class="row"><div><label>' + L("oCustomer") + '</label><input id="o-cust" autocomplete="off" value="' + oav(eo.customer) + '"></div>' +
+      '<div class="row"><div><label>' + L("oCustomer") + '</label>' + '<datalist id="dl-o-cust">' + Array.from(new Set(DB.orders().map(o => o.customer).filter(Boolean))).sort().map(c => '<option value="' + esc(c) + '">').join("") + '</datalist>' + '<input id="o-cust" list="dl-o-cust" autocomplete="off" onchange="UI.oCustFill()" onblur="UI.oCustFill()" value="' + oav(eo.customer) + '"></div>' +
       '<div><label>' + L("oPO") + '</label><input id="o-po" autocomplete="off" value="' + oav(eo.customer_po) + '"></div>' +
       '<div><label>' + L("oOrderId") + '</label><input id="o-oid" autocomplete="off" value="' + oav(eo.order_id) + '"></div></div>' +
       '<div class="row"><div><label>' + L("oInvDate") + '</label><input id="o-inv" autocomplete="off" placeholder="mm/dd/yyyy" value="' + oav(eo.invoice_date) + '"></div>' +
@@ -1494,7 +1494,7 @@
     const addForm = rdAddOpen ? (
       '<div class="ordform">' +
       '<div class="row"><div><label>' + L("rdType") + '</label><select id="rd-type">' + RD_TYPES.map(t => '<option>' + t + '</option>').join("") + '</select></div>' +
-      '<div><label>' + L("rdCompany") + '</label><input id="rd-co" autocomplete="off"></div>' +
+      '<div><label>' + L("rdCompany") + '</label>' + '<datalist id="dl-rd-co">' + Array.from(new Set(DB.rdRequests().map(r => r.company).filter(Boolean))).sort().map(c => '<option value="' + esc(c) + '">').join("") + '</datalist>' + '<input id="rd-co" list="dl-rd-co" autocomplete="off" onchange="UI.rdCoFill()" onblur="UI.rdCoFill()"></div>' +
       '<div><label>' + L("rdContact") + ' <span class="muted">(opt.)</span></label><input id="rd-cn" autocomplete="off"></div></div>' +
       '<div class="row"><div><label>' + L("rdEmail") + '</label><input id="rd-em" type="email" autocomplete="off" placeholder="name@company.com"></div>' +
       '<div><label>' + L("rdQty") + '</label><input id="rd-qty" autocomplete="off" placeholder="2 lb / 3 samples"></div>' +
@@ -1975,7 +1975,7 @@
     const today = new Date().toISOString().slice(0, 10);
     return dl + '<div class="card"><div class="spohead"><h2>' + (poEditId ? "Edit Purchase Order" : L("poNewTitle")) + '</h2>' +
       '<button class="ghost sm" onclick="UI.poCreateBack()">' + L("poBackList") + '</button></div>' +
-      '<div class="row"><div><label>' + L("spoVendor") + '</label><input id="po-vendor" list="dl-po-vendor" autocomplete="off" onchange="UI.poVendorFill()" onblur="UI.poVendorFill()"></div>' +
+      '<div class="row"><div><label>' + L("spoVendor") + '</label><select id="po-vendor-sel" onchange="UI.poVendorPick()" style="margin-bottom:6px"><option value="">-- Select existing vendor --</option>' + vendors.map(v => '<option value="' + esc(v) + '">' + esc(v) + '</option>').join("") + '</select><input id="po-vendor" list="dl-po-vendor" autocomplete="off" placeholder="Vendor name (or pick above)" onchange="UI.poVendorFill()" onblur="UI.poVendorFill()"></div>' +
       '<div><label>' + L("spoPO") + '</label><input id="po-num" autocomplete="off"></div>' +
       '<div><label>' + L("spoDate") + '</label><input id="po-date" value="' + today + '"></div></div>' +
       '<div class="row"><div><label>' + L("poVendorAddr") + '</label><input id="po-vaddr" autocomplete="off"></div>' +
@@ -2103,7 +2103,7 @@
       '<label for="rl-input" class="spodroplabel">&#128193; ' + L("rlDrop") + '</label></div>' +
       (recvFile ? '<p class="hint">&#128206; ' + esc(recvFile.name) + ' <button class="ghost sm" onclick="UI.rlClear()">' + L("spoCancel") + '</button></p>' : '') +
       '<div class="row"><div><label>' + L("rlDate") + '</label><input id="rl-date" type="date" value="' + (editing && ed.recv_date ? (ed.recv_date + "").slice(0, 10) : today) + '"></div>' +
-      '<div><label>' + L("rlSupplier") + '</label><input id="rl-supplier" autocomplete="off" value="' + av(ed.supplier) + '"></div>' +
+      '<div><label>' + L("rlSupplier") + '</label>' + '<datalist id="dl-rl-supplier">' + Array.from(new Set(DB.receivingLog().map(s => s.supplier).filter(Boolean))).sort().map(c => '<option value="' + esc(c) + '">').join("") + '</datalist>' + '<input id="rl-supplier" list="dl-rl-supplier" autocomplete="off" onchange="UI.rlSupplierFill()" onblur="UI.rlSupplierFill()" value="' + av(ed.supplier) + '"></div>' +
       '<div><label>' + L("rlPO") + '</label><input id="rl-po" autocomplete="off" value="' + av(ed.po_num) + '"></div></div>' +
       '<div class="row"><div><label>' + L("rlCarrier") + '</label><select id="rl-carrier"><option value=""' + (!ed.carrier ? ' selected' : '') + '></option>' + selOpt(SHIP_CARRIERS, ed.carrier, "") + '</select></div>' +
       '<div><label>' + L("rlTracking") + ' <span class="muted">(PRO)</span></label><input id="rl-tracking" autocomplete="off" value="' + av(ed.tracking) + '"></div>' +
@@ -5815,8 +5815,35 @@
       const recs = DB.supplierPos().filter(s => (s.vendor || "").toLowerCase() === v.toLowerCase()).sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
       const src = recs.find(s => s.vendor_addr || s.vendor_email || s.vendor_phone || s.ship_to) || recs[0];
       if (!src) return;
-      const set = (id, val) => { const el = $(id); if (el && val) el.value = val; };
+      const set = (id, val) => { const el = $(id); if (el) el.value = (val || ""); };
       set("po-vaddr", src.vendor_addr); set("po-vemail", src.vendor_email); set("po-vphone", src.vendor_phone); set("po-shipto", src.ship_to);
+    },
+    poVendorPick() {
+      const sel = $("po-vendor-sel"); if (!sel) return;
+      const inp = $("po-vendor"); if (inp) inp.value = sel.value;
+      if (sel.value) UI.poVendorFill();
+    },
+    oCustFill() {
+      const e = $("o-cust"); const v = e ? (e.value || "").trim() : ""; if (!v) return;
+      const recs = DB.orders().filter(o => (o.customer || "").toLowerCase() === v.toLowerCase()).sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
+      const src = recs.find(o => o.carrier) || recs[0];
+      if (!src) return;
+      const el = $("o-carr"); if (el && src.carrier) el.value = src.carrier;
+    },
+    rlSupplierFill() {
+      const e = $("rl-supplier"); const v = e ? (e.value || "").trim() : ""; if (!v) return;
+      const recs = DB.receivingLog().filter(s => (s.supplier || "").toLowerCase() === v.toLowerCase()).sort((a, b) => String(b.created_at || b.recv_date || "").localeCompare(String(a.created_at || a.recv_date || "")));
+      const src = recs.find(s => s.carrier) || recs[0];
+      if (!src) return;
+      const el = $("rl-carrier"); if (el && src.carrier) el.value = src.carrier;
+    },
+    rdCoFill() {
+      const e = $("rd-co"); const v = e ? (e.value || "").trim() : ""; if (!v) return;
+      const recs = DB.rdRequests().filter(r => (r.company || "").toLowerCase() === v.toLowerCase()).sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
+      const src = recs.find(r => r.contact_name || r.contact_email) || recs[0];
+      if (!src) return;
+      const set = (id, val) => { const el = $(id); if (el && val) el.value = val; };
+      set("rd-cn", src.contact_name); set("rd-em", src.contact_email);
     },
     // Flavor lookup on a PO line: when a flavor/desc is picked, fill the matching item code
     // (and vice-versa) from the item catalog. Only fills the paired field if it's empty.
