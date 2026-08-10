@@ -5815,7 +5815,7 @@
       const recs = DB.supplierPos().filter(s => (s.vendor || "").toLowerCase() === v.toLowerCase()).sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
       const src = recs.find(s => s.vendor_addr || s.vendor_email || s.vendor_phone || s.ship_to) || recs[0];
       if (!src) return;
-      const set = (id, val) => { const el = $(id); if (el && !el.value && val) el.value = val; };
+      const set = (id, val) => { const el = $(id); if (el && val) el.value = val; };
       set("po-vaddr", src.vendor_addr); set("po-vemail", src.vendor_email); set("po-vphone", src.vendor_phone); set("po-shipto", src.ship_to);
     },
     // Flavor lookup on a PO line: when a flavor/desc is picked, fill the matching item code
