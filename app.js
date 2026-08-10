@@ -101,7 +101,7 @@
       mixing:"Mixing", pmac:"P-Mac", roleMixing:"Mixing (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Manufacturing", grpPmac:"P-Mac",
       deptSoon:"This area is being set up. Allen's team screens will live here - tell us what you'd like tracked and we'll build it in.",
       conHint:"Scan each material as it moves from the racking into this room. Records real-time usage and removes it from inventory. Lot # required on every scan.", conLot:"Lot # (required)", conBtn:"Log usage", conRecent:"Recent usage", conNone:"Nothing logged yet.", conWhen:"When", conMat:"Material", conBy:"By", conErr:"Scan an item, quantity, and lot #", conNotInList:"not in item list",
-      analytics:"Analytics", mnTitle:"Make Next — E-Com Queue", mnHint:"Flavors to make so inventory keeps up with the e-commerce order queue (all unshipped ShipStation orders, incl. weekend backlog). Short = queue demand minus on-hand.", mnNone:"No e-com queue loaded yet. The hourly ShipStation sync fills this in.", mnMake:"MAKE", mnOk:"OK", mnFlavorsShort:"Flavors short", mnToMake:"Bags to make", mnQueue:"Queue demand (bags)", mnUpdated:"Updated", mnOnHand:"On hand", mnDemand:"Queue demand", mnShort:"Short by", grpReceiving:"Receiving", grpInventory:"Inventory", grpItems:"Items & Reports", grpProduction:"Production", grpFulfillment:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpImprove:"Improvement", grpQuality:"Quality", compliance:"Compliance / SQF", cmpHint:"SQF food-safety program - certifications, the recurring activity schedule, and the controlled documents in the Operations shared drive.", cmpCerts:"Certifications & Audits", cmpCert:"Certification / Audit", cmpFreq:"Frequency", cmpWhen:"When / Notes", cmpBody:"Body", cmpDueThis:"Due this month", cmpAllMonthly:"Only the standard monthly reviews this month.", cmpSchedule:"SQF Activity Schedule", cmpScheduleHint:"Recurring SQF activities by frequency (from the 2026 SQF Calendar). Monthly items are also documented daily/weekly.", cmpDocs:"Document Register", cmpDocsHint:"Key SQF controlled documents - open in the Operations shared drive.", grpDocs:"Reference", reference:"Reference / SOPs", refHint:"SOPs, cheat sheets, and policies from the Smackin Docs library - one click for the floor. Upload a file and pick a category.", refDrop:"Upload document(s)", refSelected:"file(s) ready", refCategory:"Category", refNotes:"Notes (optional)", refSaveBtn:"Add to library", refNone:"No reference documents yet.", refLibrary:"Document Library", refNoFile:"Choose a file first", refSaved:"added", refConfirmDel:"Remove this document?", daily:"Daily Metrics", disposition:"Short-Dated", quality:"Quality Logs", recipes:"Recipes", prodorders:"Prod Orders", reordertracker:"Reorder Tracker", launch:"Launches", grpSystem:"System",
+      analytics:"Analytics", mnTitle:"Make Next — E-Com Queue", mnHint:"Flavors to make so inventory keeps up with the e-commerce order queue (all unshipped ShipStation orders, incl. weekend backlog). Short = queue demand minus on-hand.", mnNone:"No e-com queue loaded yet. The hourly ShipStation sync fills this in.", mnMake:"MAKE", mnOk:"OK", mnFlavorsShort:"Flavors short", mnToMake:"Bags to make", mnQueue:"Queue demand (bags)", mnUpdated:"Updated", mnOnHand:"On hand", mnDemand:"Queue demand", mnShort:"Short by", grpReceiving:"Receiving", grpInventory:"Inventory", grpItems:"Items & Reports", grpProduction:"Production", grpFulfillment:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpImprove:"Improvement", grpQuality:"Quality", compliance:"Compliance / SQF", cmpHint:"SQF food-safety program - certifications, the recurring activity schedule, and the controlled documents in the Operations shared drive.", cmpCerts:"Certifications & Audits", cmpCert:"Certification / Audit", cmpFreq:"Frequency", cmpWhen:"When / Notes", cmpBody:"Body", cmpDueThis:"Due this month", cmpAllMonthly:"Only the standard monthly reviews this month.", cmpSchedule:"SQF Activity Schedule", cmpScheduleHint:"Recurring SQF activities by frequency (from the 2026 SQF Calendar). Monthly items are also documented daily/weekly.", cmpDocs:"Document Register", cmpDocsHint:"Key SQF controlled documents - open in the Operations shared drive.", grpDocs:"Reference", reference:"Reference / SOPs", refHint:"SOPs, cheat sheets, and policies from the Smackin Docs library - one click for the floor. Upload a file and pick a category.", refDrop:"Upload document(s)", refSelected:"file(s) ready", refCategory:"Category", refNotes:"Notes (optional)", refSaveBtn:"Add to library", refNone:"No reference documents yet.", refLibrary:"Document Library", refNoFile:"Choose a file first", refSaved:"added", refConfirmDel:"Remove this document?", daily:"Daily Metrics", disposition:"Short-Dated", quality:"Quality Logs", recipes:"Recipes", prodorders:"Prod Orders", reordertracker:"Reorder Tracker", launch:"Launches", launchpipe:"Launch Pipeline", grpSystem:"System",
       people:"People", hrHint:"Team directory and org chart. Non-sensitive info only - no pay or personal data.", hrGate:"This section shows employee information. Enter the manager PIN to view.",
       hrDir:"Directory", hrOrg:"Org chart", hrRole:"Role", hrDept:"Department", hrStart:"Started", hrMgr:"Reports to", hrSearchP:"Search name or role...", hrCount:"people", hrNoMatch:"No matching people.", hrYr:"yr", hrMo:"mo",
       alerts:"Alerts", alertsHint:"What needs attention now: items to reorder and seasoning lots nearing expiration.",
@@ -504,7 +504,7 @@
     { key: "tote", label: "Tote - 1 bag x 1,200 lb", per: 1200 }
   ];
   const SEED_PACK_MAP = {}; SEED_PACKS.forEach(p => SEED_PACK_MAP[p.key] = p);
-  const TABS = ["home","daily","dash","analytics","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","fulfilldaily","flavinv","stockbuild","reorder15","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","recipes","prodorders","reordertracker","launch","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","expreceipts","supplierpos","people","improve","maintenance","compliance","quality","disposition","reference","labels","log","settings","board"];
+  const TABS = ["home","daily","dash","analytics","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","fulfilldaily","flavinv","stockbuild","reorder15","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","recipes","prodorders","reordertracker","launch","launchpipe","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","expreceipts","supplierpos","people","improve","maintenance","compliance","quality","disposition","reference","labels","log","settings","board"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -705,7 +705,7 @@
     { key:"grpFulfillment", items:["produce","retailprod","ecomprod","prodlog","fulfilldaily","flavinv","stockbuild","orders","orderdocs"] },
     { key:"grpDemand", items:["demand","demandboard","demandsched","demandimport","ecomdemand","forecast"] },
     { key:"grpShipping", items:["shiplog"] },
-    { key:"grpMixing", items:["prodorders","reordertracker","launch","mixing","pmac","pmacout","floor"] },
+    { key:"grpMixing", items:["prodorders","reordertracker","launch","launchpipe","mixing","pmac","pmacout","floor"] },
     { key:"grpQuality", items:["compliance","quality","disposition"] },
     { key:"grpTeam", items:["people","maintenance","improve","rd","log"] },
     { key:"grpDocs", items:["reference"] },
@@ -722,7 +722,7 @@
     purchasing:"shopping-cart", expreceipts:"container", supplierpos:"file-text", people:"users", labels:"tag",
     board:"tv", log:"history", settings:"settings", improve:"trending-up", maintenance:"hard-hat", compliance:"shield-check", disposition:"archive", reference:"book-open",
     demand:"calendar-clock", demandboard:"list-checks", demandsched:"gauge", demandimport:"file-up", ecomdemand:"globe", forecast:"scale", facility:"warehouse", floor:"activity",
-    daily:"calendar-days", recipes:"chef-hat", prodorders:"clipboard-pen", launch:"rocket", quality:"microscope" };
+    daily:"calendar-days", recipes:"chef-hat", prodorders:"clipboard-pen", launch:"rocket", launchpipe:"list-checks", quality:"microscope" };
   function drawIcons() { try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {} }
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
   let spoSort = { key: "created", dir: -1 };  // Supplier POs table sort (v25)
@@ -2397,6 +2397,60 @@
     return style + head + body;
   }
   // Launch Schedule — Allen's Horizon new-flavor launch calendar (read-only reference).
+
+  let LP_DATA=null, LP_LOADING=false, LP_LINE="all", LP_Q="";
+  const LP_STEPS=[["step_box","Box","Matt"],["step_dieline","Dieline","Matt"],["step_design","Design","Marc"],["step_flavor","Flavor","Max"],["step_seasoning","Seasoning","Michele"],["step_renders","Renders","Marc"],["step_nutrition","Nutrition","Brittney/Monica"],["step_belmark","Belmark","Marc"],["step_checkmark","Checkmark","Marc"],["step_po","PO","Matt"]];
+  function lpLoad(force){
+    if(LP_LOADING) return;
+    if(LP_DATA!==null && !force) return;
+    LP_LOADING=true;
+    var cfg=window.SMACKIN_CONFIG||{}; var base=cfg.SUPABASE_URL, key=cfg.SUPABASE_ANON_KEY;
+    fetch(base+"/rest/v1/launch_pipeline?select=*&order=sort_order.asc",{headers:{apikey:key,Authorization:"Bearer "+key}})
+      .then(function(r){return r.json();})
+      .then(function(d){ LP_DATA=Array.isArray(d)?d:[]; LP_LOADING=false; if(active==="launchpipe") render(); })
+      .catch(function(e){ LP_DATA=[]; LP_LOADING=false; if(active==="launchpipe") render(); });
+  }
+  function lpDot(v){
+    if(v==="yes") return '<span title="Done" style="color:#1a7f37;font-weight:700">&#10003;</span>';
+    if(v==="na") return '<span title="N/A" style="color:#c9c9c9">&ndash;</span>';
+    return '<span title="To do" style="color:#E39412;font-weight:700">&#9675;</span>';
+  }
+  function viewLaunchPipeline(){
+    if(LP_DATA===null){ lpLoad(); return '<div class="card"><h2>Launch Pipeline</h2><p class="muted">Loading launch pipeline&hellip;</p></div>'; }
+    var rows=LP_DATA.slice();
+    if(LP_LINE!=="all") rows=rows.filter(function(r){return (r.line||"").toLowerCase()===LP_LINE;});
+    var q=(LP_Q||"").toLowerCase();
+    if(q) rows=rows.filter(function(r){return (r.product||"").toLowerCase().indexOf(q)>=0;});
+    var groups=[], gmap={};
+    rows.forEach(function(r){ var w=r.launch_week||"(no week)"; if(!gmap[w]){gmap[w]={week:w,items:[]}; groups.push(gmap[w]);} gmap[w].items.push(r); });
+    var seg=["all","seeds","nuts"].map(function(k){ return '<button class="ghost sm'+(LP_LINE===k?' active':'')+'" onclick="UI.lpLine(\''+k+'\')">'+(k==="all"?"All lines":(k.charAt(0).toUpperCase()+k.slice(1)))+'</button>'; }).join("");
+    var head='<div class="card"><div class="spohead"><h2>Launch Pipeline</h2>'+
+      '<button class="ghost sm" onclick="UI.lpRefresh()">&#8635; Refresh</button></div>'+
+      '<p class="hint">'+LP_DATA.length+' products &middot; 10-step launch pipeline (owner shown under each column). Mirrored from Product Planning.</p>'+
+      '<div class="row" style="align-items:center;gap:10px;margin-bottom:10px">'+seg+
+      '<input id="lp-q" placeholder="Search product..." value="'+esc(LP_Q||"")+'" oninput="UI.lpSearch(this.value)" style="max-width:220px"></div>';
+    var stepH=LP_STEPS.map(function(s){ return '<th class="center" title="'+s[2]+'">'+s[1]+'<br><span class="muted" style="font-weight:400;font-size:10px">'+s[2]+'</span></th>'; }).join("");
+    var colspan=5+LP_STEPS.length;
+    var body="";
+    groups.forEach(function(g){
+      body+='<tr><td colspan="'+colspan+'" style="background:#f4f4f5;font-weight:700;padding:6px 8px">'+esc(g.week)+' <span class="muted" style="font-weight:400">('+g.items.length+')</span></td></tr>';
+      g.items.forEach(function(r){
+        var d=0,t=0; LP_STEPS.forEach(function(s){ var v=r[s[0]]; if(v==="yes"){d++;t++;} else if(v==="no"){t++;} });
+        var ready=(t>0 && d===t);
+        var chip=ready?'<span class="pill ok">Ready</span>':'<span class="pill low">'+d+'/'+t+'</span>';
+        body+='<tr>'+
+          '<td><strong>'+esc(r.product||"")+'</strong><br><span class="muted" style="font-size:10px">'+esc(r.line||"")+'</span></td>'+
+          '<td>'+esc(r.type||"")+'</td>'+
+          '<td style="font-size:11px">'+esc(r.bag_po||"")+'</td>'+
+          '<td style="font-size:11px">'+esc(r.bag_eta||r.launch_date||"")+'</td>'+
+          LP_STEPS.map(function(s){ return '<td class="center">'+lpDot(r[s[0]])+'</td>'; }).join("")+
+          '<td class="center">'+chip+'</td>'+
+        '</tr>';
+      });
+    });
+    return head+'<div style="overflow-x:auto"><table class="potable"><thead><tr><th>Product</th><th>Type</th><th>Bag PO #</th><th>ETA</th>'+stepH+'<th class="center">Status</th></tr></thead><tbody>'+body+'</tbody></table></div></div>';
+  }
+
   function viewLaunch() {
     const LS = (typeof window !== "undefined" && window.LAUNCH_SCHEDULE) ? window.LAUNCH_SCHEDULE : [];
     const tracked = nm => { const k = String(nm || "").toLowerCase(); return DB.items().some(i => String(i.flavor || "").toLowerCase() && k.indexOf(String(i.flavor || "").toLowerCase()) >= 0); };
@@ -5845,6 +5899,9 @@
       inp.dispatchEvent(new Event("change", { bubbles: true }));
     },
     async poAutoFill(input){ const f=input&&input.files&&input.files[0]; if(!f) return; toast("Reading "+f.name+"..."); let parsed=null; try{ parsed=await poExtractAndParse(f); }catch(e){ parsed=null; } if(!parsed || (!parsed.vendor && !parsed.po_num && !(parsed.lines&&parsed.lines.length))){ toast("Could not read that file - please fill the PO manually"); return; } const setv=(id,val)=>{ const el=$(id); if(el&&val) el.value=val; }; setv("po-num",parsed.po_num); setv("po-date",poNormDate(parsed.po_date)); setv("po-vaddr",parsed.vendor_addr); setv("po-shipto",parsed.ship_to); setv("po-notes",parsed.notes); const vinp=$("po-vendor"), vsel=$("po-vendor-sel"); if(vinp&&parsed.vendor){ vinp.value=parsed.vendor; if(vsel){ const names=Array.prototype.map.call(vsel.options,o=>o.value); if(names.indexOf(parsed.vendor)>=0){ vsel.value=parsed.vendor; vinp.style.display="none"; } else { vsel.value="__new__"; vinp.style.display=""; } } } const lines=parsed.lines||[]; while($("po-lines") && $("po-lines").querySelectorAll("tr").length<lines.length) UI.poAddLine(); lines.forEach((ln,i)=>{ const it=$("pl-item-"+i), de=$("pl-desc-"+i), qt=$("pl-qty-"+i), pr=$("pl-price-"+i); if(it) it.value=ln.item||""; if(de) de.value=ln.desc||""; if(qt) qt.value=ln.qty||""; if(pr&&ln.price) pr.value=ln.price; }); try{ UI.poRecalc(); }catch(e){} toast("PO auto-filled from "+f.name+" - review and save"); },
+    lpRefresh(){ LP_DATA=null; render(); },
+    lpLine(k){ LP_LINE=k; render(); },
+    lpSearch(v){ LP_Q=v; render(); var e=$("lp-q"); if(e){ e.focus(); try{ e.setSelectionRange(v.length,v.length); }catch(_){} } },
     poVendorPick() {
       const sel = $("po-vendor-sel"); const inp = $("po-vendor"); if (!sel || !inp) return;
       const clearFields = () => ["po-vaddr", "po-vemail", "po-vphone", "po-shipto"].forEach(id => { const el = $(id); if (el) el.value = ""; });
@@ -6201,7 +6258,7 @@
     _deadCache = null; // recompute dead-stock flags fresh each render
     renderNav(); refreshDatalists();
     const map = { home: viewHome, daily: viewDaily, dash: viewDash, analytics: viewAnalytics, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
-      move: viewMove, prodorders: viewProdOrders, reordertracker: viewReorderTracker, launch: viewLaunch, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, fulfilldaily: viewFulfillDaily, stockbuild: viewStockBuild, reorder15: viewReorder15, seasoning: viewSeasoning, recipes: viewRecipes, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
+      move: viewMove, prodorders: viewProdOrders, reordertracker: viewReorderTracker, launch: viewLaunch, launchpipe: viewLaunchPipeline, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, fulfilldaily: viewFulfillDaily, stockbuild: viewStockBuild, reorder15: viewReorder15, seasoning: viewSeasoning, recipes: viewRecipes, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, expreceipts: viewExpectedReceipts, flavinv: viewFlavorInventory, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, maintenance: viewMaintenance, compliance: viewCompliance, quality: viewQuality, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
       demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, ecomdemand: viewEcomDemand, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor, board: viewBoard, disposition: viewDisposition };
     const DEMAND_FAMILY = ["demand", "demandboard", "demandsched", "demandimport", "ecomdemand", "forecast"];
