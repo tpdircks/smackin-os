@@ -12,7 +12,7 @@ window.DB = (function () {
   const seed = window.SMACKIN_SEED;
   let mode = "local";
   let sb = null;                  // supabase client
-  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [], returnsLog: [], prodOut: [], lineStatus: [], forecast: [], ecomDemand: [], maintenance: [], fulfillmentDaily: [], machineLive: [] };
+  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [], returnsLog: [], prodOut: [], lineStatus: [], forecast: [], ecomDemand: [], maintenance: [], fulfillmentDaily: [], machineLive: [], rdTestLog: [] };
   let subscribers = [];
 
   function emit() { subscribers.forEach(fn => { try { fn(); } catch (e) {} }); }
@@ -36,6 +36,7 @@ window.DB = (function () {
   function productionOutput() { return cache.prodOut || []; }
   function lineStatus() { return cache.lineStatus || []; }
   function machineLive() { return cache.machineLive || []; }
+  function rdTestLog() { return cache.rdTestLog || []; }
   function forecast() { return cache.forecast || []; }
   function ecomDemand() { return cache.ecomDemand || []; }
   function returnsLog() { return cache.returnsLog || []; }
@@ -220,6 +221,14 @@ window.DB = (function () {
           rate_per_min: Number(r.rate_per_min) || 0, status: r.status || "idle", last_seen: r.last_seen, updated_at: r.updated_at
         }));
       } catch (e) { cache.machineLive = cache.machineLive || []; }
+      // rd_test_log (Max's R&D flavor test log) - resilient
+      try {
+        const rt = await sb.from("rd_test_log").select("*").order("test_date", { ascending: false }).limit(2000);
+        cache.rdTestLog = (rt && rt.data ? rt.data : []).map(r => ({
+          sample_no: r.sample_no, test_date: r.test_date || "", chef: r.chef || "", flavor: r.flavor || "", flavor_house: r.flavor_house || "",
+          seasoning: r.seasoning || "", approved: !!r.approved, approved_by: r.approved_by || "", approved_raw: r.approved_raw || "", notes: r.notes || ""
+        }));
+      } catch (e) { cache.rdTestLog = cache.rdTestLog || []; }
       // demand_forecast (WIP FORECAST snapshot, compare-only) loaded separately + resiliently so a missing table never breaks the app shell
       try {
         const fc = await sb.from("demand_forecast").select("*");
@@ -1768,7 +1777,7 @@ window.DB = (function () {
     init, onChange, get mode() { return mode; },
     demandLines, importDemand, setDemandStatus, shipDemandPO, clearDemandBatch, clearAllDemand, remapDemandFlavors,
     productionOutput, addProdOutput, deleteProdOutput,
-    lineStatus, machineLive, addMachine, setLineStatus, deleteMachine,
+    lineStatus, machineLive, rdTestLog, addMachine, setLineStatus, deleteMachine,
     forecast,
     ecomDemand, addEcomDemand, clearEcomDemand,
     returnsLog, addReturn, deleteReturn, returnDupKey, findReturnDup,

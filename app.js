@@ -1482,6 +1482,26 @@
   function rdIsReceived(r) { return (r.status || "Pending") === "Received"; }
   function rdIsOverdue(r) { const nb = (r.needed_by || "").slice(0, 10); return nb && nb < new Date().toISOString().slice(0, 10) && !rdIsReceived(r); }
   function rdOp() { const e = $("rd-op"); return e ? e.value : "Troy"; }
+  function rdTestLogCard(){
+    const log = (DB.rdTestLog ? DB.rdTestLog() : []);
+    if(!log.length) return '';
+    const appr = log.filter(x=>x.approved);
+    const sorted = log.slice().sort((a,b)=> ((b.approved?1:0)-(a.approved?1:0)) || String(b.test_date||'').localeCompare(String(a.test_date||'')));
+    const rows = sorted.map(x=>{
+      const txt = ((x.sample_no||'')+' '+(x.flavor||'')+' '+(x.chef||'')+' '+(x.flavor_house||'')+' '+(x.approved_raw||'')).toLowerCase().replace(/"/g,'');
+      const raw=(x.approved_raw||'').trim();
+      const pill = x.approved ? '<span class="pill ok">APPROVED</span>' : (/^n/i.test(raw) ? '<span class="pill out">Not approved</span>' : '<span class="pill low">Testing</span>');
+      return '<tr data-txt="'+txt+'"><td><b>'+esc(x.flavor||'&mdash;')+'</b><div class="muted sm">'+esc(x.sample_no||'')+(x.chef?(' &middot; '+esc(x.chef)):'')+'</div></td>'+
+        '<td class="sm">'+esc(x.flavor_house||'')+'</td>'+
+        '<td class="sm">'+esc(x.test_date||'')+'</td>'+
+        '<td>'+pill+(x.approved&&x.approved_by?(' <span class="muted sm">'+esc(x.approved_by)+'</span>'):'')+'</td>'+
+        '<td class="muted sm">'+esc((x.notes||'').slice(0,60))+'</td></tr>';
+    }).join('');
+    return '<div class="card" style="margin-top:14px"><div class="suprow"><h2 style="margin:0;flex:1">R&amp;D Test Log</h2><span class="pill ok">'+appr.length+' approved</span> <span class="muted sm">'+log.length+' samples</span></div>'+
+      '<p class="hint">Every R&amp;D flavor tested (from Max&#39;s R&amp;D Test Log). Approved ones are flagged &mdash; Michelle + Matt get a draft email to cut a PO when a new flavor is approved.</p>'+
+      '<input id="rdlogSearch" autocomplete="off" style="margin-top:8px" oninput="UI.rdlogSearch(this.value)" placeholder="Search flavor, sample #, chef, flavor house...">'+
+      '<div class="tblwrap" style="max-height:520px;overflow:auto;margin-top:8px"><table class="sortable"><thead><tr><th>Flavor</th><th>Flavor House</th><th>Date</th><th>Status</th><th>Notes</th></tr></thead><tbody id="rdlogBody">'+rows+'</tbody></table></div></div>';
+  }
   function viewRD() {
     const all = DB.rdRequests().slice().sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
     const pend = all.filter(r => !rdIsReceived(r));
@@ -1526,7 +1546,7 @@
       '<button class="primary sm" onclick="UI.rdAddToggle()">' + L("rdAdd") + '</button></div>' +
       '<p class="hint">' + L("rdHint") + '</p>' + toggle + addForm +
       '<input id="rdSearch" autocomplete="off" style="margin-top:10px" oninput="UI.rdSearch(this.value)" placeholder="' + L("rdSearchP") + '">' +
-      '<table class="sortable" style="margin-top:10px"><thead><tr><th>' + L("rdCompany") + '</th><th>' + L("rdItems") + '</th><th>' + L("rdNeed") + '</th><th>' + L("status") + '</th><th data-nosort></th></tr></thead><tbody id="rdBody">' + rows + '</tbody></table></div>';
+      '<table class="sortable" style="margin-top:10px"><thead><tr><th>' + L("rdCompany") + '</th><th>' + L("rdItems") + '</th><th>' + L("rdNeed") + '</th><th>' + L("status") + '</th><th data-nosort></th></tr></thead><tbody id="rdBody">' + rows + '</tbody></table></div>' + rdTestLogCard();
   }
   function rdDoc(r) {
     const jsPDFctor = window.jspdf && window.jspdf.jsPDF; if (!jsPDFctor) return null;
@@ -5536,6 +5556,7 @@
     },
     ordSearch(val) { const q = (val || "").toLowerCase().trim();
       document.querySelectorAll("#ordBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
+    rdlogSearch(val) { const q = (val || "").toLowerCase().trim(); document.querySelectorAll("#rdlogBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
     ordEdit(id) { orderEditId = id; orderAddOpen = false; render(); window.scrollTo(0, 0); },
     ordEditCancel() { orderEditId = null; render(); },
     async ordAdd() {
