@@ -728,6 +728,7 @@
   let spoSort = { key: "created", dir: -1 };  // Supplier POs table sort (v25)
   let spoView = "list";   // Supplier POs: "list" | "create" (Excel-style PO entry form)
   let spoDetailId = null; // Supplier POs: when set, show full-detail view for that PO (v56)
+  let poEditId = null;   // Supplier POs: Create-PO form is editing this existing PO
   let poRows = 4;         // number of line-item rows shown in the Create-PO form
   let poEmailOpen = false; // Supplier PO detail: Email PO compose panel open?
   // ---- Demand section state ----
@@ -853,7 +854,7 @@
     return DB.allLocations().indexOf(code) >= 0 || /^[A-E]-\d{2}-L[1-4]$/.test(code); }
 
   function setLang(l) { lang = l; ["en","es","pt"].forEach(x => { const b = $("lang-" + x); if (b) b.classList.toggle("active", l === x); }); render(); }
-  function go(t) { active = t; if (t !== "purchasing") { purchMode = "list"; receivingPOid = null; } else { spoDetailId = null; spoView = "list"; } if (t === "orders") markOrdersSeen(); closeDrawer(); render(); }
+  function go(t) { active = t; if (t !== "purchasing") { purchMode = "list"; receivingPOid = null; } else { spoDetailId = null; spoView = "list"; poEditId = null; } if (t === "orders") markOrdersSeen(); closeDrawer(); render(); }
   function opVal() { const e = $("op"); return e ? e.value : "Troy"; }
 
   // ---------- edit lock (PIN) — viewing is open, changes require the PIN ----------
@@ -1920,6 +1921,7 @@
       : '<span class="muted">' + L("poNoFile") + '</span>';
     return '<div class="card"><div class="spohead"><h2 style="margin:0">' + esc(s.vendor || L("supplierpos")) + (s.po_num ? ' &middot; ' + L("spoPO") + ' ' + esc(s.po_num) : "") + '</h2>' +
       '<div><button class="primary sm" onclick="UI.poEmailToggle()">&#9993; ' + L("poEmail") + '</button> ' +
+      '<button class="ghost sm" onclick="UI.poEdit(\'' + s.id + '\')">&#9998; Edit</button> ' +
       '<button class="ghost sm" onclick="UI.poPdf(\'' + s.id + '\')">&#128229; ' + L("rdDownload") + '</button> ' +
       '<button class="ghost sm" onclick="UI.spoCloseDetail()">&#8592; ' + L("poBackList") + '</button></div></div>' +
       '<div class="poinfo">' + info + '</div>' +
@@ -1971,7 +1973,7 @@
     let rows = "";
     for (let i = 0; i < poRows; i++) rows += '<tr>' + poRowInner(i) + '</tr>';
     const today = new Date().toISOString().slice(0, 10);
-    return dl + '<div class="card"><div class="spohead"><h2>' + L("poNewTitle") + '</h2>' +
+    return dl + '<div class="card"><div class="spohead"><h2>' + (poEditId ? "Edit Purchase Order" : L("poNewTitle")) + '</h2>' +
       '<button class="ghost sm" onclick="UI.poCreateBack()">' + L("poBackList") + '</button></div>' +
       '<div class="row"><div><label>' + L("spoVendor") + '</label><input id="po-vendor" list="dl-po-vendor" autocomplete="off" onchange="UI.poVendorFill()" onblur="UI.poVendorFill()"></div>' +
       '<div><label>' + L("spoPO") + '</label><input id="po-num" autocomplete="off"></div>' +
@@ -5677,7 +5679,7 @@
     refSearch(val) { const q = (val || "").toLowerCase().trim();
       document.querySelectorAll("#refBody .odcust").forEach(el => { const t = el.getAttribute("data-txt") || ""; el.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
     // ---- Create PO (Excel-style entry form) ----
-    poCreateOpen() { spoView = "create"; poRows = 4; render(); },
+    poCreateOpen() { poEditId = null; spoView = "create"; poRows = 4; render(); },
     prodToggleAll() { prodShowAll = !prodShowAll; render(); },
     prodAdvance(po) { const cur = PROD_STAGES.indexOf(prodStageGet(po)); const nx = PROD_STAGES[Math.min(cur + 1, PROD_STAGES.length - 1)]; prodStageSet(po, nx); toast(po + " → " + nx); render(); },
     prodReset(po) { prodStageSet(po, "Open"); render(); },
@@ -5762,7 +5764,17 @@
         '<p>Notes/Notas: ' + g("pn-notes") + '</p></body></html>';
       w.document.write(H); w.document.close(); w.focus(); setTimeout(() => { try { w.print(); } catch (e) {} }, 300);
     },
-    poCreateBack() { spoView = "list"; render(); },
+    poCreateBack() { poEditId = null; spoView = "list"; render(); },
+    poEdit(id) {
+      const s = (DB.supplierPos ? DB.supplierPos() : []).find(x => String(x.id) === String(id)); if (!s) return;
+      poEditId = id; let lines = []; try { lines = typeof s.lines === "string" ? JSON.parse(s.lines || "[]") : (s.lines || []); } catch (e) {}
+      poRows = Math.max(lines.length, 1); spoView = "create"; spoDetailId = null; render();
+      const set = (k, val) => { const e = $(k); if (e) e.value = (val == null ? "" : val); };
+      set("po-vendor", s.vendor); set("po-num", s.po_num); set("po-date", s.po_date); set("po-vaddr", s.vendor_addr); set("po-vemail", s.vendor_email); set("po-vphone", s.vendor_phone); set("po-shipto", s.ship_to); set("po-shipping", s.shipping); set("po-tax", s.tax); set("po-other", s.other); set("po-notes", s.notes);
+      const byEl = $("po-by"); if (byEl && s.prepared_by) byEl.value = s.prepared_by;
+      lines.forEach((l, i) => { set("pl-item-" + i, l.item); set("pl-desc-" + i, l.desc); set("pl-ship-" + i, l.ship); set("pl-qty-" + i, l.qty); set("pl-price-" + i, l.price); });
+      if (UI.poRecalc) UI.poRecalc();
+    },
     nonPoOpen() { spoView = "nonpo"; render(); },
     nonPoBack() { spoView = "list"; render(); },
     async nonPoSave() {
@@ -5840,9 +5852,9 @@
         lines: JSON.stringify(lines), item_count: lines.length,
         subtotal: String(Math.round(sub * 100) / 100), shipping: v("po-shipping"), tax: v("po-tax"), other: v("po-other"),
         total: String(Math.round(grand * 100) / 100), prepared_by: v("po-by"), notes: v("po-notes") };
-      const res = await DB.createSupplierPO(rec, null, rec.prepared_by);
+      const res = poEditId ? await DB.updateSupplierPO(poEditId, rec, rec.prepared_by) : await DB.createSupplierPO(rec, null, rec.prepared_by);
       if (res && res.ok === false) return toast(res.msg || "error");
-      spoView = "list"; toast(L("poSavedMsg")); render();
+      poEditId = null; spoView = "list"; toast(L("poSavedMsg")); render();
     },
     // ---- Order Docs (fulfilled-order paperwork) ----
     odocFile(input) { const f = input.files && input.files[0]; if (!f) return; odocFile = f; render(); },
