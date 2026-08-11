@@ -6348,35 +6348,30 @@
     if ("serviceWorker" in navigator) { try { navigator.serviceWorker.register("service-worker.js"); } catch (e) {} }
   });
 })();
-
-;(function __smkInv(){
-  var PLAIN={'Seasoning Lots':'Seasoning','Sazon (Lotes)':'Sazon','Tempero (Lotes)':'Tempero','Seed Lots':'Seed','Semilla (Lotes)':'Semilla','Semente (Lotes)':'Semente'};
+/*SMKENH*/;(function __smkInv(){
+  var HDR={'Seasoning Lots':'Seasoning','Sazon (Lotes)':'Sazon','Tempero (Lotes)':'Tempero','Seed Lots':'Seed','Semilla (Lotes)':'Semilla','Semente (Lotes)':'Semente'};
+  var CAT={'Seasoning':'Seasoning Lots','Seed/Base':'Seed Lots','Sazon':'Sazon (Lotes)','Semilla':'Semilla (Lotes)','Tempero':'Tempero (Lotes)','Semente':'Semente (Lotes)'};
   function navClick(lotText){
     var items=document.querySelectorAll('#nav a, #nav button, #nav [role=button], #nav li, #nav span, #nav div');
-    for(var i=0;i<items.length;i++){var e=items[i]; if(e.childElementCount===0){var tt=e.textContent.trim(); if(tt===lotText || tt.indexOf(lotText)===0){ e.click(); return true; }}}
+    for(var i=0;i<items.length;i++){var e=items[i]; if(e.childElementCount===0){var tt=e.textContent.trim(); if(tt===lotText||tt.indexOf(lotText)===0){ e.click(); return true; }}}
     return false;
   }
-  function enhance(){
-    var view=document.getElementById('view'); if(!view) return;
+  function wireHeaders(view){
     var ths=view.getElementsByTagName('th');
-    for(var i=0;i<ths.length;i++){
-      var th=ths[i];
-      if(th.getAttribute('data-smk-lot')) continue;
-      var t=th.textContent.trim();
-      if(PLAIN[t]){
-        th.setAttribute('data-smk-lot', t);
-        th.textContent=PLAIN[t];
-        th.style.cursor='pointer';
-        th.style.textDecoration='underline dotted';
-        th.title='Click to open '+t;
-        th.addEventListener('click', function(){ navClick(this.getAttribute('data-smk-lot')); });
-      }
+    for(var i=0;i<ths.length;i++){var th=ths[i]; if(th.getAttribute('data-smk-lot'))continue; var t=th.textContent.trim();
+      if(HDR[t]){ th.setAttribute('data-smk-lot',t); th.textContent=HDR[t]; th.style.cursor='pointer'; th.style.textDecoration='underline dotted'; th.title='Click to open '+t;
+        th.addEventListener('click',function(){navClick(this.getAttribute('data-smk-lot'));}); }
     }
   }
-  function boot(){
-    enhance();
-    var root=document.getElementById('view');
-    if(root && window.MutationObserver){ new MutationObserver(function(){ enhance(); }).observe(root,{childList:true,subtree:true}); }
+  function wireCats(view){
+    var tds=view.getElementsByTagName('td');
+    for(var j=0;j<tds.length;j++){var td=tds[j]; if(td.getAttribute('data-smk-cat'))continue; var txt=td.textContent.trim();
+      if(CAT[txt]){ td.setAttribute('data-smk-cat',CAT[txt]); td.style.cursor='pointer'; td.title='Open '+CAT[txt]+' →';
+        var inner=td.firstElementChild; if(inner){inner.style.textDecoration='underline dotted';} else {td.style.textDecoration='underline dotted';}
+        td.addEventListener('click',function(ev){ev.stopPropagation(); navClick(this.getAttribute('data-smk-cat'));}); }
+    }
   }
-  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', boot); } else { boot(); }
+  function enhance(){var view=document.getElementById('view'); if(!view)return; wireHeaders(view); wireCats(view);}
+  function boot(){ enhance(); var root=document.getElementById('view'); if(root&&window.MutationObserver){ new MutationObserver(function(){enhance();}).observe(root,{childList:true,subtree:true}); } }
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',boot);}else{boot();}
 })();
