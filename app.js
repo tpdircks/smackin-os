@@ -2783,6 +2783,64 @@
     return '<div class="card"><h2>&#128260; ' + L("reorder15") + '</h2><p class="hint">' + L("r15Hint") + '</p>' + kpis + '</div>' + groupHtml +
       '<div class="card"><p class="hint">&#9888;&#65039; ' + L("r15Note") + '</p></div>';
   }
+  function dailyResultsDoc(date){
+    var J = window.jspdf && window.jspdf.jsPDF; if(!J) return null;
+    var doc = new J({unit:"pt", format:"letter"});
+    var W = 612, M = 40, cw = W - 2*M;
+    var NAVY=[18,35,63], ORANGE=[242,101,34], GREY=[107,114,128], LT=[243,244,246], LINE=[229,231,235], OLT=[253,232,220], INK=[31,41,55], WHITE=[255,255,255];
+    function fnum(n){ try{ return fmt(n); }catch(e){ return String(n); } }
+    var day = (DB.prodDay? DB.prodDay(date,"retail"):null) || {};
+    var pallets = (DB.prodPallets? DB.prodPallets(date):[]).filter(function(p){return (p.channel||"retail")==="retail";});
+    var cs=Number(day.counter_start)||0, ce=Number(day.counter_end)||0, boxes=ce>cs?ce-cs:0;
+    var casesTotal=0; pallets.forEach(function(p){ casesTotal += Number(p.cases)||0; });
+    var pu=Number(day.pallets_used)||0, lot=day.lot||"", rnotes=day.notes||"";
+    var fd=(DB.fulfillmentDaily? DB.fulfillmentDaily():[]).filter(function(r){return r.fdate===date;})[0] || {};
+    var labels=(fd.ecom_labels&&fd.ecom_labels.length)? fd.ecom_labels.slice(): [];
+    labels.sort(function(a,b){ return (Number(b.labels)||0)-(Number(a.labels)||0); });
+    var ecomTotal=Number(fd.ecom_total)|| labels.reduce(function(a,e){return a+(Number(e.labels)||0);},0);
+    var amazonUnits=Number(fd.amazon_units)||0, fnotes=fd.notes||"";
+    var dl=date; try{ dl=new Date(date+"T00:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"}); }catch(e){}
+    function fill(c){ doc.setFillColor(c[0],c[1],c[2]); }
+    function stroke(c){ doc.setDrawColor(c[0],c[1],c[2]); }
+    function tcol(c){ doc.setTextColor(c[0],c[1],c[2]); }
+    function F(s,sz){ doc.setFont("helvetica",s); doc.setFontSize(sz); }
+    var y=40;
+    fill(NAVY); doc.rect(M,y,cw,56,"F"); fill(ORANGE); doc.rect(M,y+56,cw,3,"F");
+    tcol(ORANGE); F("bold",17); doc.text("SMACKIN'", M+14, y+26);
+    tcol(WHITE); F("normal",7.5); doc.text("SLC FULFILLMENT CENTER", M+14, y+40);
+    tcol(WHITE); F("bold",14); doc.text("Daily Production & Fulfillment Results", M+cw-14, y+24, {align:"right"});
+    tcol([175,192,218]); F("normal",9.5); doc.text(dl, M+cw-14, y+40, {align:"right"});
+    y += 75;
+    var kpis=[[fnum(boxes),"Boxes produced"],[fnum(casesTotal),"Cases logged"],[fnum(pu),"Pallets used"],[fnum(ecomTotal),"Labels processed"],[fnum(amazonUnits),"Amazon units"]];
+    var kw=(cw-4*8)/5, kh=42;
+    kpis.forEach(function(k,i){ var x=M+i*(kw+8); fill(WHITE); doc.rect(x,y,kw,kh,"F"); fill(ORANGE); doc.rect(x,y,kw,2.2,"F"); stroke(LINE); doc.setLineWidth(.6); doc.rect(x,y,kw,kh,"S"); tcol(NAVY); F("bold",15); doc.text(String(k[0]), x+kw/2, y+22, {align:"center"}); tcol(GREY); F("normal",7); doc.text(k[1], x+kw/2, y+34, {align:"center"}); });
+    y += kh+18;
+    function section(t){ fill(NAVY); doc.rect(M,y,cw,20,"F"); fill(ORANGE); doc.rect(M,y,4,20,"F"); tcol(WHITE); F("bold",11); doc.text(t, M+12, y+14); y += 26; }
+    function noteBox(label,text){ F("normal",8.5); var lines=doc.splitTextToSize((label?label+" ":"")+text, cw-16); var h=lines.length*11+10; fill(LT); doc.rect(M,y,cw,h,"F"); fill(ORANGE); doc.rect(M,y,3,h,"F"); tcol(INK); doc.text(lines, M+9, y+13); y += h+8; }
+    section("RETAIL PRODUCTION");
+    var rc=[M+8, M+250, M+330, M+400];
+    fill(NAVY); doc.rect(M,y,cw,18,"F"); tcol(WHITE); F("bold",9);
+    doc.text("Flavor",rc[0],y+12); doc.text("Code",rc[1],y+12); doc.text("Cases",rc[2],y+12,{align:"right"}); doc.text("Customer",rc[3],y+12); y+=18;
+    var rrows = pallets.slice().map(function(p){ var f=(typeof PROD_FMAP!=="undefined")?PROD_FMAP[p.flavor_code]:null; return [ (f?f.name:p.flavor_code), p.flavor_code, String(Number(p.cases)||0), (p.notes||"") ]; });
+    F("normal",9);
+    if(!rrows.length){ tcol(GREY); doc.text("No retail pallets logged.", rc[0], y+11); y+=16; }
+    rrows.forEach(function(r,i){ if(i%2){ fill(LT); doc.rect(M,y,cw,16,"F"); } tcol(INK); doc.text(String(r[0]).slice(0,40),rc[0],y+11); doc.text(String(r[1]),rc[1],y+11); doc.text(String(r[2]),rc[2],y+11,{align:"right"}); doc.text(String(r[3]).slice(0,26),rc[3],y+11); y+=16; });
+    fill(OLT); doc.rect(M,y,cw,16,"F"); tcol(NAVY); F("bold",9); doc.text("Total",rc[0],y+11); doc.text(fnum(casesTotal),rc[2],y+11,{align:"right"}); y+=20;
+    tcol(INK); F("normal",8.5); doc.text("Counter: "+fnum(cs)+" -> "+fnum(ce)+" ("+fnum(boxes)+" boxes)     Pallets used: "+fnum(pu)+(lot?("     Lots: "+lot):""), M, y+4); y+=14;
+    if(rnotes) noteBox("Notes:", rnotes);
+    y+=4;
+    section("E-COMMERCE FULFILLMENT");
+    fill(NAVY); doc.rect(M,y,cw,18,"F"); tcol(WHITE); F("bold",9); doc.text("Associate",M+8,y+12); doc.text("Labels",M+cw-8,y+12,{align:"right"}); y+=18;
+    var emax=1; labels.forEach(function(e){ emax=Math.max(emax, Number(e.labels)||0); });
+    F("normal",9);
+    if(!labels.length){ tcol(GREY); doc.text("No e-commerce labels logged.", M+8, y+11); y+=16; }
+    labels.forEach(function(e,i){ if(i%2){ fill(LT); doc.rect(M,y,cw,16,"F"); } tcol(INK); doc.text(String(e.employee||"").slice(0,40), M+8, y+11); var bx=M+250, bw=160; fill(LT); doc.rect(bx,y+4,bw,8,"F"); fill(ORANGE); doc.rect(bx,y+4,Math.max(3,bw*((Number(e.labels)||0)/emax)),8,"F"); tcol(INK); doc.text(fnum(Number(e.labels)||0), M+cw-8, y+11, {align:"right"}); y+=16; });
+    fill(OLT); doc.rect(M,y,cw,16,"F"); tcol(NAVY); F("bold",9); doc.text("Total processed",M+8,y+11); doc.text(fnum(ecomTotal),M+cw-8,y+11,{align:"right"}); y+=20;
+    tcol(INK); F("normal",8.5); doc.text("Amazon: "+fnum(amazonUnits)+" units", M, y+4); y+=14;
+    if(fnotes) noteBox("Notes:", fnotes);
+    y+=8; stroke(ORANGE); doc.setLineWidth(1); doc.line(M,y,M+cw,y); y+=12; tcol(GREY); F("normal",7.5); doc.text("Generated from Smackin' OS  -  Daily Production & Daily Fulfillment logs", M, y);
+    return doc;
+  }
   function viewProdLog() {
     const today = new Date().toISOString().slice(0, 10);
     const date = plDate || today;
@@ -2816,6 +2874,7 @@
       '<input type="date" value="' + date + '" onchange="UI.plDate(this.value)" style="width:auto">' +
       '<button class="ghost sm" title="Next day" onclick="UI.plDateShift(1)">&#9654;</button>' +
       (date === today ? '' : '<button class="ghost sm" onclick="UI.plDate(\'' + today + '\')">' + L("plToday") + '</button>') +
+      '<button class="ghost sm" onclick="UI.dailyResultsPdf()" title="Download the branded daily results report">&#11015; Daily Results PDF</button>' +
       '</div></div>' +
       '<div class="row"><div><label>' + L("plLot") + '</label><input value="' + esc(av(day.lot)) + '" placeholder="' + L("plLotPh") + '" onchange="UI.plDay(\'lot\',this.value)"><div class="muted sm" style="margin-top:3px">' + L("plLotHint") + '</div></div>' +
       '<div><label>' + L("plShiftLead") + '</label><input value="' + esc(day.shift_lead != null && day.shift_lead !== "" ? day.shift_lead : "Jesus Arias") + '" onchange="UI.plDay(\'shift_lead\',this.value)"></div></div>' +
@@ -5902,6 +5961,7 @@
     lpRefresh(){ LP_DATA=null; render(); },
     lpLine(k){ LP_LINE=k; render(); },
     lpSearch(v){ LP_Q=v; render(); var e=$("lp-q"); if(e){ e.focus(); try{ e.setSelectionRange(v.length,v.length); }catch(_){} } },
+    dailyResultsPdf(){ var t=new Date().toISOString().slice(0,10); var d=(typeof plDate!=="undefined"&&plDate)?plDate:t; var doc=dailyResultsDoc(d); if(!doc){ toast("PDF lib not loaded"); return; } doc.save("Smackin Daily Results "+d+".pdf"); toast("Daily Results PDF downloaded"); },
     poVendorPick() {
       const sel = $("po-vendor-sel"); const inp = $("po-vendor"); if (!sel || !inp) return;
       const clearFields = () => ["po-vaddr", "po-vemail", "po-vphone", "po-shipto"].forEach(id => { const el = $(id); if (el) el.value = ""; });
