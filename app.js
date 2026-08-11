@@ -6348,3 +6348,35 @@
     if ("serviceWorker" in navigator) { try { navigator.serviceWorker.register("service-worker.js"); } catch (e) {} }
   });
 })();
+
+;(function __smkInv(){
+  var PLAIN={'Seasoning Lots':'Seasoning','Sazon (Lotes)':'Sazon','Tempero (Lotes)':'Tempero','Seed Lots':'Seed','Semilla (Lotes)':'Semilla','Semente (Lotes)':'Semente'};
+  function navClick(lotText){
+    var items=document.querySelectorAll('#nav a, #nav button, #nav [role=button], #nav li, #nav span, #nav div');
+    for(var i=0;i<items.length;i++){var e=items[i]; if(e.childElementCount===0){var tt=e.textContent.trim(); if(tt===lotText || tt.indexOf(lotText)===0){ e.click(); return true; }}}
+    return false;
+  }
+  function enhance(){
+    var view=document.getElementById('view'); if(!view) return;
+    var ths=view.getElementsByTagName('th');
+    for(var i=0;i<ths.length;i++){
+      var th=ths[i];
+      if(th.getAttribute('data-smk-lot')) continue;
+      var t=th.textContent.trim();
+      if(PLAIN[t]){
+        th.setAttribute('data-smk-lot', t);
+        th.textContent=PLAIN[t];
+        th.style.cursor='pointer';
+        th.style.textDecoration='underline dotted';
+        th.title='Click to open '+t;
+        th.addEventListener('click', function(){ navClick(this.getAttribute('data-smk-lot')); });
+      }
+    }
+  }
+  function boot(){
+    enhance();
+    var root=document.getElementById('view');
+    if(root && window.MutationObserver){ new MutationObserver(function(){ enhance(); }).observe(root,{childList:true,subtree:true}); }
+  }
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', boot); } else { boot(); }
+})();
