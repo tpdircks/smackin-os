@@ -6430,3 +6430,38 @@
   if(v&&window.MutationObserver){ new MutationObserver(run).observe(v,{childList:true,subtree:true}); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run();
 })();
+/*LBL12*/;(function __lbl12(){
+  var DATA=[
+   ['OG "Original"','SS-OG-12','850047865403','UPC'],
+   ['Cinnamon Churro','SS-CC-12','850047865496','UPC'],
+   ['Backyard BBQ','SS-BB-12','850047865434','UPC'],
+   ['Garlic Parmesan','SS-GP-12','850047865465','UPC'],
+   ['Dill Pickle','SS-DP-12','850047865373','UPC'],
+   ['Cracked Pepper','SS-CP-12','850047865342','UPC'],
+   ['Cheddar Jalapeno','SS-CJ-12','850062557000','UPC'],
+   ['Ranch','SS-RN-12','850062557475','UPC'],
+   ['Maple Brown','SS-MB-12','00850062557680','ITF14'],
+   ['Lemon Pepper','SS-LP-12','20850062557394','ITF14'],
+   ['Sour Cream','SS-SC-12','10850062557816','ITF14'],
+   ['Variety','SS-VP-12','850047865526','UPC']
+  ];
+  function openLabels(){
+    var w=window.open('','_blank','width=900,height=700'); if(!w) return;
+    var cards=DATA.map(function(d,i){ return '<div class="lbl"><svg id="bc'+i+'"></svg><div class="nm">'+d[0]+' &ndash; 12 PACK</div><div class="sku">'+d[1]+'</div></div>'; }).join('');
+    var script='window.onload=function(){var D='+JSON.stringify(DATA)+';D.forEach(function(d,i){try{JsBarcode("#bc"+i,d[2],{format:d[3],width:2,height:55,fontSize:13,margin:4});}catch(e){document.getElementById("bc"+i).outerHTML="<div style=color:red>"+d[2]+" ("+d[3]+")</div>";}});};';
+    var html='<html><head><title>12-Pack Case Labels</title><style>@page{margin:8mm}body{font-family:Arial;margin:0;padding:10px}h2{margin:4px 0 10px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.lbl{border:1px solid #ccc;border-radius:8px;padding:10px;text-align:center;page-break-inside:avoid}.nm{font-weight:700;font-size:13px;margin-top:2px}.sku{font-size:11px;color:#555}.tb{margin:6px 0}@media print{.tb{display:none}}</style></head><body><div class="tb"><button onclick="window.print()">Print</button></div><h2>Smackin\' 12-Pack Case Labels</h2><div class="grid">'+cards+'</div><scr'+'ipt src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></scr'+'ipt><scr'+'ipt>'+script+'</scr'+'ipt></body></html>';
+    w.document.write(html); w.document.close();
+  }
+  function addBtn(){
+    var view=document.getElementById('view'); if(!view) return;
+    if(document.getElementById('lbl12-btn')) return;
+    var anchor=[...view.querySelectorAll('button')].find(function(b){return /Batch label|identifier labels|Avery/i.test(b.textContent||'');});
+    if(!anchor) return;
+    var b=document.createElement('button'); b.id='lbl12-btn'; b.textContent='🏷 12-Pack Case Labels'; b.className=anchor.className||'';
+    b.onclick=openLabels;
+    anchor.parentNode.insertBefore(b, anchor.nextSibling);
+  }
+  var v=document.getElementById('view');
+  if(v&&window.MutationObserver){ new MutationObserver(addBtn).observe(v,{childList:true,subtree:true}); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',addBtn); else addBtn();
+})();
