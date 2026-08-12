@@ -5765,7 +5765,7 @@
       // Graceful fallback: download the PO PDF (mailto can't carry attachments), then open a
       // prefilled mailto so the send is one click away and the PDF is ready to attach.
       try { const d = poDoc(s); if (d) d.save("PO " + (s.po_num || "draft") + (s.vendor ? " - " + s.vendor : "") + ".pdf"); } catch (e) {}
-      const mailto = "mailto:" + encodeURIComponent(to) + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+      const mailto = "mailto:" + encodeURIComponent(to) + '?'+((($('po-em-cc')||{}).value||'').trim()?('cc='+encodeURIComponent($('po-em-cc').value.trim())+'&'):'')+'subject=' + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
       window.location.href = mailto;
       toast(res.msg === "not-configured" ? L("poEmailNo") : L("poEmailFail"));
     },
@@ -6404,4 +6404,29 @@
   function activate(){ active=true; function go(){ render(); [150,400,900,1600].forEach(function(ms){ setTimeout(function(){ if(active&&!document.getElementById('lppro-root')) render(); },ms); }); } if(!loaded){ load(function(){ if(active) go(); }); } else go(); }
   function boot(){ var nav=document.getElementById('nav'); if(nav){ nav.addEventListener('click', function(e){ var leaf=e.target.closest('a,button,[role=button],li,span,div'); if(!leaf)return; var txt=(leaf.textContent||'').trim(); if(txt.indexOf('Launch Pipeline')===0){ setTimeout(activate,60); } else { active=false; } }, true); } document.addEventListener('click',onClick,false); document.addEventListener('change',onChange,false); document.addEventListener('input',onInput,false); var view=document.getElementById('view'); if(view&&window.MutationObserver){ new MutationObserver(function(){ if(active&&!document.getElementById('lppro-root')) render(); }).observe(view,{childList:true}); } }
   if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',boot); } else boot();
+})();
+/*POFIX*/;(function __poFix(){
+  function fixVendor(){
+    var sel=document.getElementById('po-vendor-sel'), inp=document.getElementById('po-vendor');
+    if(!sel||!inp) return;
+    if(sel.getAttribute('data-pofix')) return;
+    var saved=(inp.value||'').trim();
+    if(saved && sel.value===''){
+      var has=false,i; for(i=0;i<sel.options.length;i++){ if(sel.options[i].value===saved){has=true;break;} }
+      if(!has){ var o=document.createElement('option'); o.value=saved; o.textContent=saved; sel.appendChild(o); }
+      sel.value=saved;
+    }
+    sel.setAttribute('data-pofix','1');
+  }
+  function addCc(){
+    var to=document.getElementById('po-em-to'); if(!to) return;
+    if(document.getElementById('po-em-cc')) return;
+    var row=document.createElement('div'); row.style.margin='10px 0';
+    row.innerHTML='<div style="font-size:12px;color:#7a8291;margin-bottom:4px;font-weight:600">Cc</div><input id="po-em-cc" type="text" placeholder="cc@example.com (optional)" style="width:100%;padding:8px;border:1px solid #d5d9e0;border-radius:8px;box-sizing:border-box">';
+    (to.closest('div')||to).insertAdjacentElement('afterend', row);
+  }
+  function run(){ try{fixVendor();}catch(e){} try{addCc();}catch(e){} }
+  var v=document.getElementById('view');
+  if(v&&window.MutationObserver){ new MutationObserver(run).observe(v,{childList:true,subtree:true}); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run();
 })();
