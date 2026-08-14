@@ -6531,3 +6531,9 @@ if(!window.__roHook){document.addEventListener('click',function(e){var nav=docum
 window.addEventListener('resize',function(){if(window.__roActive)place(ov());});
 window.__roInt=setInterval(function(){if(window.__roActive){var o=ov();if(o&&o.style.display==='none')place(o);}},1000);
 })();
+
+;/*HIDEDEAD*/(function(){
+var DEAD=['Shipping Log','Continuous Improvement','Improvement','5S'];
+function hide(){var nav=document.getElementById('nav');if(!nav)return;[].slice.call(nav.querySelectorAll('.navitem')).forEach(function(it){var t=(it.textContent||'').replace(/\s+/g,' ');if(DEAD.some(function(d){return t.indexOf(d)!==-1;}))it.style.display='none';});}
+hide();if(!window.__hideDeadInt)window.__hideDeadInt=setInterval(hide,1200);
+})();
