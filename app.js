@@ -6498,3 +6498,36 @@ window.addEventListener('resize',function(){if(window.__qualActive)place(ov());}
 ensureNav();
 window.__qualInt=setInterval(function(){ensureNav();if(window.__qualActive){var o=ov();if(o.style.display==='none')o.style.display='block';place(o);}},1000);
 })();
+
+;/*REORDER2*/(function(){
+try{if(window.__roInt)clearInterval(window.__roInt);}catch(e){}
+var C=window.SMACKIN_CONFIG||{};
+async function loadRows(){
+var r=await fetch(C.SUPABASE_URL+'/rest/v1/stock?select=item_id,qty',{headers:{apikey:C.SUPABASE_ANON_KEY,Authorization:'Bearer '+C.SUPABASE_ANON_KEY}});
+var stock=await r.json();var oh={};stock.forEach(function(s){oh[s.item_id]=(oh[s.item_id]||0)+(Number(s.qty)||0);});
+var cv=window.ALLEN_REORDER.conv,CALC=window.ALLEN_CALC,tiers=window.ALLEN_REORDER.tiers,rows=[];
+tiers.forEach(function(t){t.flavors.forEach(function(f){var b4=oh['BAG4-'+f.code]||0,b15=oh['BAG15-'+f.code]||0;var p4=b4/cv['4oz'].perPallet,p15=b15/cv['15oz'].perPallet;var calc=CALC(f,p4,p15);var hasRule=(f.t4>0||f.t15>0);rows.push({tier:t.name,fl:f.name,hasRule:hasRule,b4:b4,p4:p4,s4:calc.status4,b15:b15,p15:p15,s15:calc.status15,triggered:calc.triggered,q4:f.q4,q15:f.q15});});});
+return rows;}
+function stb(s){var col=s==='REORDER'?'#d93025':(s==='OK'?'#217346':'#999');return '<span style="color:#fff;background:'+col+';border-radius:3px;padding:1px 6px;font-size:10px;font-weight:700">'+s+'</span>';}
+function tbl(rows,f){var s4=f!=='15',s15=f!=='4',h='<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="text-align:left;border-bottom:2px solid #eee;color:#555"><th style="padding:7px 6px">Flavor</th>';
+if(s4)h+='<th>4oz on-hand</th><th>4oz pallets</th><th>4oz</th>';
+if(s15)h+='<th>1.5oz on-hand</th><th>1.5oz pallets</th><th>1.5oz</th>';
+h+='<th>Build decision</th></tr></thead><tbody>';var ct='';
+rows.forEach(function(r){if(r.tier!==ct){ct=r.tier;var sp=2+(s4?3:0)+(s15?3:0);h+='<tr><td colspan="'+sp+'" style="padding:10px 6px 3px;font-weight:700;color:#e8622d;font-size:11px">'+ct+'</td></tr>';}
+h+='<tr style="border-bottom:1px solid #f3f3f3"><td style="padding:7px 6px;font-weight:600">'+r.fl+'</td>';
+if(s4)h+='<td>'+(r.hasRule?r.b4.toLocaleString():'&mdash;')+'</td><td>'+(r.hasRule?r.p4.toFixed(1):'&mdash;')+'</td><td>'+(r.hasRule?stb(r.s4):'&mdash;')+'</td>';
+if(s15)h+='<td>'+(r.hasRule?r.b15.toLocaleString():'&mdash;')+'</td><td>'+(r.hasRule?r.p15.toFixed(1):'&mdash;')+'</td><td>'+(r.hasRule?stb(r.s15):'&mdash;')+'</td>';
+h+='<td style="padding:7px 6px">'+(r.hasRule?(r.triggered?('<b style="color:#d93025">BUILD</b> &middot; '+r.q4+'&times;4oz + '+r.q15+'&times;1.5oz bins'):'<span style="color:#217346">OK</span>'):'<span style="color:#999">no rule set yet</span>')+'</td></tr>';});
+return h+'</tbody></table>';}
+function ov(){if(!document.getElementById('view'))return null;var o=document.getElementById('ro-overlay');if(!o){o=document.createElement('div');o.id='ro-overlay';o.style.display='none';document.body.appendChild(o);}return o;}
+function place(o){var nav=document.getElementById('nav');var r=nav?nav.getBoundingClientRect():{right:210,top:60};o.style.cssText='position:fixed;left:'+r.right+'px;top:'+r.top+'px;right:0;bottom:0;overflow:auto;background:#f4f5f7;z-index:40;padding:16px 20px;box-sizing:border-box;display:block';}
+async function render(){var o=ov();if(!o)return;o.innerHTML='<div class="card"><div class="suprow"><div><h2>\uD83D\uDD04 Reorder</h2><p class="hint">Allen&rsquo;s pallet-trigger rule for finished bags, both sizes. A flavor triggers a build when 4oz drops to 5 pallets or 1.5oz drops to 2 pallets (or below); the run makes both sizes.</p></div><div id="ro-filt"></div></div><div id="ro-body">Loading&hellip;</div></div>';
+var fb=o.querySelector('#ro-filt');[['All','all'],['4oz only','4'],['1.5oz only','15']].forEach(function(p){var act=(window.__roFilt||'all')===p[1];var b=document.createElement('button');b.textContent=p[0];b.style.cssText='margin-left:6px;padding:5px 11px;border-radius:6px;border:1px solid '+(act?'#e8622d':'#ddd')+';background:'+(act?'#e8622d':'#fff')+';color:'+(act?'#fff':'#333')+';font-size:12px;cursor:pointer';b.onclick=function(){window.__roFilt=p[1];render();};fb.appendChild(b);});
+try{var rows=await loadRows();o.querySelector('#ro-body').innerHTML=tbl(rows,window.__roFilt||'all');}catch(e){o.querySelector('#ro-body').innerHTML='<div style="color:#d93025">Load error: '+e+'</div>';}}
+function show(){var o=ov();if(!o)return;window.__roActive=true;place(o);render();}
+function hide(){var o=document.getElementById('ro-overlay');window.__roActive=false;if(o)o.style.display='none';}
+window.__roShow=show;window.__roHide=hide;
+if(!window.__roHook){document.addEventListener('click',function(e){var nav=document.getElementById('nav');if(!nav)return;var it=e.target.closest?e.target.closest('.navitem'):null;if(!it||!nav.contains(it))return;if((it.textContent||'').indexOf('Reorder')!==-1)show();else hide();},true);window.__roHook=true;}
+window.addEventListener('resize',function(){if(window.__roActive)place(ov());});
+window.__roInt=setInterval(function(){if(window.__roActive){var o=ov();if(o&&o.style.display==='none')place(o);}},1000);
+})();
