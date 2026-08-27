@@ -162,7 +162,7 @@
 
   function ensureNav(){
     var nav=document.getElementById('nav'); if(!nav) return; if(document.getElementById('to-nav-item')) return;
-    var b=document.createElement('button'); b.id='to-nav-item'; b.className='navitem'; b.innerHTML='<span>🌴 Time Off</span>';
+    var b=document.createElement('button'); b.id='to-nav-item'; b.className='navitem'; b.innerHTML='<i data-lucide="calendar-off"></i><span>Time Off</span>';
     b.onclick=function(){ [].slice.call(nav.querySelectorAll('.navitem')).forEach(function(n){n.classList.remove('active');}); b.classList.add('active'); show(); };
     // place right after the People nav item, in the same group; else append to last group
     var people=[].slice.call(nav.querySelectorAll('.navitem')).filter(function(n){return /people/i.test(n.textContent);})[0];
@@ -172,6 +172,7 @@
       grp.innerHTML='<button class="navlabel" style="pointer-events:none">TEAM & OPS</button>';
       grp.appendChild(b); nav.appendChild(grp);
     }
+    try{ if(window.lucide && window.lucide.createIcons) window.lucide.createIcons(); }catch(e){}
   }
 
   // hide overlay when another nav item is clicked
