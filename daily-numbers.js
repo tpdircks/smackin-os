@@ -73,7 +73,7 @@
     var dates=Object.keys(m).sort().reverse().slice(0,30);
     var rows=dates.map(function(d){ var x=m[d]; function c(v){return '<td class="n">'+(v>0?nf(v):'<s>—</s>')+'</td>';}
       return '<tr><td>'+esc(shortDate(d))+' '+d.slice(0,4)+'</td>'+c(x.mfg)+c(x.cases)+c(x.ecom)+c(x.amazon)+c(x.ship)+c(x.recv)+c(x.qual)+'</tr>'; }).join('');
-    return '<table class="dn-tbl"><thead><tr><th>Date</th><th class="n">MFG Bags</th><th class="n">Cases</th><th class="n">E-Com</th><th class="n">Amazon</th><th class="n">Ship</th><th class="n">Recv</th><th class="n">Quality</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    return '<table class="dn-tbl"><thead><tr><th>Date</th><th class="n">Retail Bags</th><th class="n">Cases</th><th class="n">E-Com</th><th class="n">Amazon</th><th class="n">Ship</th><th class="n">Recv</th><th class="n">Quality</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }
 
   function render(m){
@@ -81,16 +81,16 @@
     var td=todayStr(); var t=m[td]||{mfg:0,cases:0,ecom:0,amazon:0,ship:0,recv:0,qual:0};
     var wkBags=sum(m,daysAgo(7),function(r){return r.mfg+r.ecom+r.amazon;});
     var moBags=sum(m,daysAgo(30),function(r){return r.mfg+r.ecom+r.amazon;});
-    var head='<div class="dn-hd"><div><h2>Daily Numbers</h2><p>Every department’s daily output in one place — pulled automatically from each team’s own entries, archived over time. Trend shows total bag throughput (Manufacturing + E-Com + Amazon).</p></div><button id="dn-ref" class="dn-refb">↻ Refresh</button></div>';
+    var head='<div class="dn-hd"><div><h2>Daily Numbers</h2><p>What Fulfillment builds each day — the retail lines and e-commerce (the numbers Jesus enters daily) — plus shipping, receiving, and quality. Pulled automatically from each team’s entries and archived over time. Trend = total bag throughput (Retail + E-Com + Amazon).</p></div><button id="dn-ref" class="dn-refb">↻ Refresh</button></div>';
     var tiles='<div class="dn-tiles">'+
-      tile('🏭','Manufacturing',[['Bags produced',t.mfg],['Cases',t.cases]])+
-      tile('📦','Fulfillment',[['E-Com labels',t.ecom],['Amazon bags',t.amazon]])+
+      tile('🏭','Retail lines',[['Bags produced',t.mfg],['Cases',t.cases]])+
+      tile('🛒','E-Commerce',[['E-Com labels',t.ecom],['Amazon bags',t.amazon]])+
       tile('🚚','Shipping',[['Shipments out',t.ship]])+
       tile('📥','Receiving',[['Receipts in',t.recv]])+
       tile('🧪','Quality',[['Checks logged',t.qual]])+
       '</div>';
     var kpis='<div class="dn-kpis"><div class="dn-kpi"><b>'+nf(wkBags)+'</b><span>bags this week</span></div><div class="dn-kpi"><b>'+nf(moBags)+'</b><span>bags this month</span></div></div>';
-    var legend='<div class="dn-legend"><span><i style="background:'+NAVY+'"></i>Manufacturing</span><span><i style="background:'+ORANGE+'"></i>E-Com</span><span><i style="background:'+BLUE+'"></i>Amazon</span></div>';
+    var legend='<div class="dn-legend"><span><i style="background:'+NAVY+'"></i>Retail</span><span><i style="background:'+ORANGE+'"></i>E-Com</span><span><i style="background:'+BLUE+'"></i>Amazon</span></div>';
     o.innerHTML='<div class="dn-wrap">'+head+tiles+kpis+'<div class="dn-panel">'+legend+chart(m)+'</div><h3 class="dn-h3">Daily history</h3>'+table(m)+'</div>';
     var rb=o.querySelector('#dn-ref'); if(rb) rb.onclick=function(){ CACHE=null; load().then(render); };
   }

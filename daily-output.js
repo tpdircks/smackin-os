@@ -118,10 +118,11 @@
     nav.scrollTop=st;
   }
 
+  function setActive(it){ try{ [].slice.call(document.querySelectorAll('#nav .navitem')).forEach(function(n){n.classList.remove('active');}); it.classList.add('active'); }catch(e){} }
   if(!window.__doNavHook){
     document.addEventListener('click',function(e){
       var it=e.target.closest?e.target.closest('.navitem'):null; if(!it)return;
-      if(it.id==='do-navitem'){ e.stopPropagation(); e.preventDefault(); setTimeout(show,0); }
+      if(it.id==='do-navitem'){ e.stopPropagation(); e.preventDefault(); setActive(it); setTimeout(show,0); }
       else { hide(); }
     },true);
     window.__doNavHook=true;
