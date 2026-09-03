@@ -4,7 +4,9 @@
    (credentials from window.SMACKIN_CONFIG at runtime). Renders a fixed overlay off #nav,
    like the Quality (SQF) section. Nav item lives under TEAM & OPS, below People.
    NO setInterval — nav is kept alive by wrapping UI_go + a MutationObserver gated to
-   "my item missing" that preserves nav.scrollTop (honors the no-scroll-glitch rule). */
+   "my item missing" that preserves nav.scrollTop (honors the no-scroll-glitch rule).
+   2026-09-01: added self-contained css() — the .to-* styles were missing from styles.css,
+   which left the overlay position:static (fell to the bottom of the page). */
 (function(){
   if(window.__toInit) return; window.__toInit=true;
   function cfg(){var c=window.SMACKIN_CONFIG||{};return {url:c.SUPABASE_URL,key:c.SUPABASE_ANON_KEY};}
@@ -150,7 +152,7 @@
       '</div>';
     var stale = si.stale ? '<div class="to-warn"><b>Heads up:</b> the Gusto sync last ran '+(si.days>=999?'—':si.days+' day'+(si.days===1?'':'s')+' ago')+'. Numbers below may be behind until it runs again (weekdays 6:00 AM).</div>' : '';
     var groups=DATA.groups.map(groupBlock).join('');
-    o.innerHTML='<div>'+head+tiles+stale+groups+'</div>';
+    o.innerHTML='<div>'+head+tiles+stale+groups+holChips()+'</div>';
   }
 
   // ---- overlay plumbing (mirrors the Quality/SQF section) ----
@@ -187,6 +189,73 @@
   // 2) MutationObserver gated to "my item is missing" — preserve nav scroll to avoid any jump
   var navEl=document.getElementById('nav');
   if(navEl && !window.__toObs){ window.__toObs=new MutationObserver(function(){ if(!document.getElementById('to-nav-item')){ var st=navEl.scrollTop; ensureNav(); navEl.scrollTop=st; } }); window.__toObs.observe(navEl,{childList:true,subtree:true}); }
+
+  css();
+  function css(){ if(document.getElementById('to-css'))return; var s=document.createElement('style'); s.id='to-css';
+    s.textContent=
+    '#to-overlay{position:fixed;right:0;bottom:0;background:#f4f7fa;overflow:auto;z-index:50;padding:22px 26px}'+
+    '#to-overlay>div{max-width:1120px}'+
+    '.to-hd{display:flex;align-items:flex-start;gap:18px;justify-content:space-between;margin-bottom:14px}'+
+    '.to-hd h2{margin:0;font:800 26px system-ui;color:#04223B}'+
+    '.to-hd p{margin:4px 0 0;font:13px system-ui;color:#6E7C8A;max-width:560px}'+
+    '.to-sync{text-align:right;font:12px system-ui;color:#6E7C8A;white-space:nowrap}'+
+    '.to-sync b{display:block;font:700 12px system-ui;color:#1E7D46}'+
+    '.to-sync.stale b{color:#B7791F}'+
+    '.to-tiles{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap}'+
+    '.to-tile{background:#fff;border:1px solid #dbe3ec;border-radius:14px;padding:12px 16px;min-width:150px}'+
+    '.to-tile .k{font:800 28px system-ui;color:#006DB6;line-height:1}'+
+    '.to-tile.f .k{color:#F26B21}.to-tile.m .k{color:#04223B}'+
+    '.to-tile .l{font:700 13px system-ui;color:#04223B;margin-top:4px}'+
+    '.to-tile .s{font:11px system-ui;color:#6E7C8A}'+
+    '.to-warn{background:#fff3e6;border:1px solid #f3d8b0;color:#8a5417;border-radius:10px;padding:10px 14px;font:13px system-ui;margin-bottom:14px}'+
+    '.to-grp{background:#fff;border:1px solid #dbe3ec;border-radius:14px;margin-bottom:12px;overflow:hidden}'+
+    '.to-grph{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;user-select:none}'+
+    '.to-grph h3{margin:0;font:800 16px system-ui;color:#04223B}'+
+    '.to-car{margin-left:auto;color:#6E7C8A;transition:transform .15s;font-size:12px}'+
+    '.to-grp.open .to-car{transform:rotate(180deg)}'+
+    '.to-body{display:none;padding:0 16px 16px;border-top:1px solid #eef2f6}'+
+    '.to-grp.open .to-body{display:block}'+
+    '.to-chip{font:700 11px system-ui;background:#eef3f8;color:#40525f;border-radius:999px;padding:2px 10px;white-space:nowrap}'+
+    '.to-chip.out{background:#fdece9;color:#C0392B}.to-chip.ok{background:#e3f0e8;color:#1E7D46}'+
+    '.to-now{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0}'+
+    '.to-card{background:#f7fafd;border:1px solid #dbe3ec;border-left:4px solid #F26B21;border-radius:12px;padding:10px 14px;min-width:190px}'+
+    '.to-card h4{margin:0;font:800 15px system-ui;color:#04223B}'+
+    '.to-card .r{font:12px system-ui;color:#6E7C8A;margin:2px 0 6px}'+
+    '.to-card dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:0;font:12px system-ui}'+
+    '.to-card dt{color:#6E7C8A}.to-card dd{margin:0;color:#243642}.to-card dd.hi{font-weight:800;color:#1E7D46}'+
+    '.to-boardwrap{overflow-x:auto;margin:14px 0}'+
+    '.to-board{min-width:600px}'+
+    '.to-row{display:grid;align-items:stretch}'+
+    '.to-corner{font:700 11px system-ui;color:#6E7C8A;padding:6px 8px;align-self:end}'+
+    '.to-hc{font:700 10px system-ui;color:#6E7C8A;text-align:center;padding:3px 0;border-left:1px solid #f0f3f6}'+
+    '.to-hc.wk{background:#f4f7fa}.to-hc.td{background:#eaf2fb;color:#006DB6}'+
+    '.to-hc u{display:block;text-decoration:none}.to-hc s{display:block;text-decoration:none;font-weight:800;color:#04223B}'+
+    '.to-nm{padding:6px 8px;border-top:1px solid #f0f3f6;grid-column:1}'+
+    '.to-nm b{display:block;font:700 13px system-ui;color:#04223B}.to-nm i{font:11px system-ui;color:#6E7C8A;font-style:normal}'+
+    '.to-trk{grid-column:2 / -1;display:grid;position:relative;border-top:1px solid #f0f3f6}'+
+    '.to-cell{border-left:1px solid #f0f3f6;min-height:32px;grid-row:1}'+
+    '.to-cell.wk{background:#f7fafc}.to-cell.td{background:#eaf2fb}'+
+    '.to-bar{grid-row:1;align-self:center;background:#8aa9c4;color:#fff;border-radius:6px;font:700 10px system-ui;line-height:18px;padding:0 6px;margin:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;position:relative;z-index:1}'+
+    '.to-bar.live{background:#F26B21}.to-bar.tiny{padding:0 2px}'+
+    '.to-tblwrap{overflow-x:auto;margin-top:12px;border:1px solid #dbe3ec;border-radius:12px}'+
+    '.to-tblwrap table{width:100%;border-collapse:collapse;font:13px system-ui;background:#fff}'+
+    '.to-tblwrap th{text-align:left;background:#eef3f8;color:#04223B;font:700 11px system-ui;padding:8px 12px;border-bottom:1px solid #dbe3ec;white-space:nowrap}'+
+    '.to-tblwrap th.n{text-align:right}'+
+    '.to-tblwrap td{padding:8px 12px;border-bottom:1px solid #eef2f6;color:#243642}'+
+    '.to-tblwrap td.n{text-align:right}.to-tblwrap td.b{font-weight:700;color:#04223B}'+
+    '.to-tblwrap td.ret{color:#1E7D46;font-weight:600}.to-tblwrap td.note{color:#6E7C8A}'+
+    '.to-pill{font:700 10px system-ui;border-radius:6px;padding:2px 8px}'+
+    '.to-pill.a{background:#fdece9;color:#C0392B}.to-pill.b{background:#eaf2fb;color:#006DB6}.to-pill.c{background:#eef1f4;color:#6b7885}'+
+    '.to-foot{margin-top:16px;border-top:1px solid #eef2f6;padding-top:10px}'+
+    '.to-foot>b{font:700 13px system-ui;color:#04223B}'+
+    '.to-hols{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}'+
+    '.to-hol{background:#fff;border:1px solid #dbe3ec;border-radius:10px;padding:6px 12px;font:12px system-ui}'+
+    '.to-hol b{display:block;color:#04223B}.to-hol i{font-style:normal;color:#6E7C8A}'+
+    '.to-hol.flag{border-color:#f3d8b0;background:#fff8ef}'+
+    '.to-empty{padding:20px;text-align:center;color:#94a2b0;font:13px system-ui}'+
+    '.to-err{padding:20px;color:#C0392B;font:13px system-ui}';
+    document.head.appendChild(s);
+  }
 
   ensureNav();
 })();
