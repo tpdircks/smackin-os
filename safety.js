@@ -12,7 +12,7 @@
   var KEY='sb_publishable_KlPxfCQUmxbIAVc2p_M5Lw_ligy0COY';
   var H={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'};
   function api(path,opts){opts=opts||{};opts.headers=Object.assign({},H,opts.headers||{});opts.cache='no-store';return fetch(SB+'/rest/v1/'+path,opts);}
-  var SAFETY_PIN='7233'; // "SAFE" — records access only. Change here if desired.
+  var SAFETY_PIN='2210'; // shared app PIN — records access only.
 
   function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
   function BL(en,es){ return en+' <span class="sf-es">/ '+es+'</span>'; }        // bilingual label
