@@ -1,68 +1,69 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#1F3864">
-  <title>Smackin' OS</title>
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?b=60">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1F3864">
+<title>Smackin' OS</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?b=60">
 </head>
 <body>
-  <header>
-    <button id="navToggle" class="navtoggle" aria-label="Menu">&#9776;</button>
-    <div>
-      <div class="logo">SMACKIN' <span class="thin">OS</span> <span class="beta">BETA</span></div>
-      <div class="sub" id="orgline">SLC Fulfillment Center</div>
-    </div>
-    <div class="spacer"></div>
-    <span id="modeBadge" class="modebadge low">LOCAL</span>
-    <div class="lang"><button id="lang-en" class="active">EN</button><button id="lang-es">ES</button><button id="lang-pt">PT</button></div>
-  </header>
-  <div class="layout">
-    <nav id="nav"></nav>
-    <main id="view"></main>
-  </div>
-  <div id="navBackdrop" class="navbackdrop"></div>
+<header>
+<button id="navToggle" class="navtoggle" aria-label="Menu">&#9776;</button>
+<div>
+<div class="logo">SMACKIN' <span class="thin">OS</span> <span class="beta">BETA</span></div>
+<div class="sub" id="orgline">SLC Fulfillment Center</div>
+</div>
+<div class="spacer"></div>
+<span id="modeBadge" class="modebadge low">LOCAL</span>
+<div class="lang"><button id="lang-en" class="active">EN</button><button id="lang-es">ES</button><button id="lang-pt">PT</button></div>
+</header>
+<div class="layout">
+<nav id="nav"></nav>
+<main id="view"></main>
+</div>
+<div id="navBackdrop" class="navbackdrop"></div>
 
-  <datalist id="dl-items"></datalist>
-  <datalist id="dl-locs"></datalist>
-  <div class="toast" id="toast"></div>
+<datalist id="dl-items"></datalist>
+<datalist id="dl-locs"></datalist>
+<div class="toast" id="toast"></div>
 
-  <!-- third-party libs (loaded from CDN; cached by the service worker) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<!-- third-party libs (loaded from CDN; cached by the service worker) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 
-  <!-- app -->
-  <script src="config.js?b=34"></script>
-  <script src="seed-data.js?b=43"></script>
-  <script src="skus.js?b=34"></script>
-  <script src="demand.js?b=2"></script>
-  <script src="kits.js?b=1"></script>
-  <script src="ecom.js?b=1"></script>
-  <script src="recipes.js?b=1"></script>
-  <script src="production-orders.js?b=1"></script>
-  <script src="shortdated.js?b=1"></script>
-  <script src="launch-schedule.js?b=1"></script>
-  <script src="allen-reorder.js?b=1"></script>
-  <script src="db.js?b=65"></script>
-  <script src="app.js?b=84"></script>
-  <script src="slc-counts.js?b=6"></script>
-  <script src="timeoff.js?b=1"></script>
-  <script src="raw-materials.js?b=1"></script>
-  <script src="maintenance.js?b=2"></script>
-  <script src="flavor-inventory.js?b=1"></script>
-  <script src="daily-output.js?b=1"></script>
-  <script src="daily-numbers.js?b=1"></script>
-  <script src="order-numbers.js?b=1"></script>
-  <script src="safety.js?b=2"></script>
-  <script src="mfg-production.js?b=1"></script>
+<!-- app -->
+<script src="config.js?b=34"></script>
+<script src="seed-data.js?b=43"></script>
+<script src="skus.js?b=34"></script>
+<script src="demand.js?b=2"></script>
+<script src="kits.js?b=1"></script>
+<script src="ecom.js?b=1"></script>
+<script src="recipes.js?b=1"></script>
+<script src="production-orders.js?b=1"></script>
+<script src="shortdated.js?b=1"></script>
+<script src="launch-schedule.js?b=1"></script>
+<script src="allen-reorder.js?b=1"></script>
+<script src="db.js?b=65"></script>
+<script src="app.js?b=84"></script>
+<script src="slc-counts.js?b=6"></script>
+<script src="slc-onhand-fix.js?b=1"></script>
+<script src="timeoff.js?b=1"></script>
+<script src="raw-materials.js?b=1"></script>
+<script src="maintenance.js?b=2"></script>
+<script src="flavor-inventory.js?b=1"></script>
+<script src="daily-output.js?b=1"></script>
+<script src="daily-numbers.js?b=1"></script>
+<script src="order-numbers.js?b=1"></script>
+<script src="safety.js?b=2"></script>
+<script src="mfg-production.js?b=1"></script>
 </body>
 </html>
