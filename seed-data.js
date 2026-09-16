@@ -9,16 +9,16 @@
   // ---- Warehouse location model (Racking Location System SOP) -------------
   // Section-Bay-Level, e.g. A-05-L3. Bay 01 starts at the dock doors.
   // Real racking geometry per the 3D Facility Map (each section can differ):
-  //   from = first bay #, bays = last bay #, levels = shelf levels, skip = missing bays (openings).
+  // from = first bay #, bays = last bay #, levels = shelf levels, skip = missing bays (openings).
   const SECTION_GEOM = [
     { id: "A", from: 1, bays: 28, levels: 4 },
     { id: "B", from: 1, bays: 28, levels: 4 },
     { id: "C", from: 1, bays: 28, levels: 4 },
     { id: "D", from: 1, bays: 28, levels: 4 },
     { id: "E", from: 1, bays: 22, levels: 3, skip: [17, 18, 19, 20], use: "Raw seed (received)" }, // back wall, emergency-exit gap bays 17-20
-    { id: "F", from: 3, bays: 22, levels: 4 },  // bays 1-2 removed for the Mixing-room door
+    { id: "F", from: 3, bays: 22, levels: 4 }, // bays 1-2 removed for the Mixing-room door
     { id: "G", from: 1, bays: 12, levels: 4 },
-    { id: "H", from: 1, bays: 4,  levels: 4 }
+    { id: "H", from: 1, bays: 4, levels: 4 }
   ];
   // 4 oz floor storage — one entry per flavor LINE; high-demand flavors have 2 lines (from the map).
   const FLOOR_4OZ = [
@@ -35,14 +35,14 @@
     ["S31", "Dill Pickle", 2], ["S32", "Cracked Pepper", 2], ["S33", "Cheddar Jalapeno", 2], ["S34", "Ranch", 2]
   ];
   const CONFIG = {
-    sections: SECTION_GEOM.map(s => s.id),   // ["A".."H"] — real racking runs
+    sections: SECTION_GEOM.map(s => s.id), // ["A".."H"] — real racking runs
     sectionGeom: SECTION_GEOM,
-    baysPerSection: 28,               // legacy default (per-section geometry lives in sectionGeom)
+    baysPerSection: 28, // legacy default (per-section geometry lives in sectionGeom)
     levels: ["L1", "L2", "L3", "L4"], // L1 floor .. L4 top
     docks: [11, 12, 13, 14, 15, 16, 17, 18, 19], // 19 = office end, 11 = far end
     // ST-01..08 kept for existing bucket/packaging stock; finished bags now live on the S-floor slots.
     zones: ["RECEIVING", "STAGING", "RETURNS", "QUARANTINE", "WIP", "PACKOUT", "CAGE", "PROD-WEIGH", "PROD-PACK", "SHIPPING", "PACKAGING",
-            "ST-01", "ST-02", "ST-03", "ST-04", "ST-05", "ST-06", "ST-07", "ST-08"],
+      "ST-01", "ST-02", "ST-03", "ST-04", "ST-05", "ST-06", "ST-07", "ST-08"],
     floor4: FLOOR_4OZ,
     floor15: FLOOR_15OZ
   };
@@ -104,10 +104,10 @@
   // ---- Suppliers (order URLs are placeholders — replace with Matt's real URLs) ----
   const SUPPLIERS = [
     { id: "seed", name: "Sunrich / Seed Supplier", order_url: "https://www.example-seed-supplier.com/order" },
-    { id: "seas", name: "Seasoning Supplier",      order_url: "https://www.example-seasoning.com/order" },
-    { id: "film", name: "Printed Film Supplier",   order_url: "https://www.example-film.com/order" },
+    { id: "seas", name: "Seasoning Supplier", order_url: "https://www.example-seasoning.com/order" },
+    { id: "film", name: "Printed Film Supplier", order_url: "https://www.example-film.com/order" },
     { id: "pack", name: "Packaging / Box Supplier",order_url: "https://www.example-packaging.com/order" },
-    { id: "buck", name: "Bucket Supplier",         order_url: "https://www.example-buckets.com/order" }
+    { id: "buck", name: "Bucket Supplier", order_url: "https://www.example-buckets.com/order" }
   ];
 
   // ---- Flavors (standard S01-S11) -----------------------------------------
@@ -120,11 +120,11 @@
 
   // 2026-07-02 figures (from "Inventory 70226.xlsx" — last COMPLETE count block;
   // the 2026-07-06 4oz block was Adriana's in-progress count, so 4oz uses 07-02).
-  const FILM4  = { S01:171000,S02:66000,S03:63000,S04:159600,S05:151000,S06:63600,S07:237600,S08:91800,S09:0,S10:0,S11:79200 };
+  const FILM4 = { S01:171000,S02:66000,S03:63000,S04:159600,S05:151000,S06:63600,S07:237600,S08:91800,S09:0,S10:0,S11:79200 };
   const FILM15 = { S01:92300,S02:272000,S03:113400,S04:144000,S05:163800,S06:131272,S07:110500,S08:113600,S09:27700,S10:68200,S11:58500 };
-  const BAG4   = { S01:19200,S02:24100,S03:1800,S04:4100,S05:2000,S06:3600,S07:3600,S08:11800,S09:900,S10:7600,S11:10900 };
-  const BAG15  = { S01:19500,S02:13750,S03:8750,S04:7000,S05:4500,S06:13250,S07:16500,S08:21250,S09:6500,S10:6500,S11:6750 };
-  const SEAS   = { S01:0,S02:1100,S03:4400,S04:4450,S05:3100,S06:2400,S07:5350,S08:1250,S09:1765,S10:3600,S11:1075 };
+  const BAG4 = { S01:19200,S02:24100,S03:1800,S04:4100,S05:2000,S06:3600,S07:3600,S08:11800,S09:900,S10:7600,S11:10900 };
+  const BAG15 = { S01:19500,S02:13750,S03:8750,S04:7000,S05:4500,S06:13250,S07:16500,S08:21250,S09:6500,S10:6500,S11:6750 };
+  const SEAS = { S01:0,S02:1100,S03:4400,S04:4450,S05:3100,S06:2400,S07:5350,S08:1250,S09:1765,S10:3600,S11:1075 };
 
   // ---- LTO / co-brand flavors — 4oz finished bags only (no film/seasoning SKUs tracked yet).
   // On-hand from the 2026-07-16 inventory sheet. Codes: the WIP "SMACKIN' WIP" Google Sheet's
@@ -133,24 +133,24 @@
   // codes assigned here for tracking only, not a real SKU/UPC. Reorder left at 0 (no stock GOAL)
   // so these never inflate production targets or trip low/out-of-stock alerts.
   const LE = [
-    ["L01", "Cheeseburger"],                    // WIP RECIPE list: "LE Cheese Burger"
-    ["L02", "Deep Dish Pizza"],                  // WIP RECIPE list: "LE Pizza"
-    ["L03", "Good Good Salt & Vinegar"],         // co-brand; no WIP code found
-    ["L04", "Honey BBQ (A-Rod)"],                // co-brand; no WIP code found
-    ["L05", "Salsa"],                            // WIP RECIPE list: "LE SALSA"
-    ["L06", "Taco"],                             // WIP RECIPE list: "LE TACO"
-    ["L07", "Guacamole"],                        // WIP RECIPE list: "LE GUACAMOLE"
-    ["L08", "Chili Cheese Dog"],                 // no WIP code found
-    ["L09", "Blueberry Pie"],                    // no WIP code found
-    ["L10", "Birthday Cake"],                    // no WIP code found; 0 on hand
-    ["L11", "Mexican Street Corn"],              // no WIP code found; 0 on hand
-    ["L12", "Nashville Hot"],                    // no WIP code found; 0 on hand
-    ["L13", "Bacon Mac & Cheese"],               // no WIP code found; 0 on hand
-    ["L14", "Korean BBQ (King of Juco)"],        // no WIP code found; 0 on hand
-    ["L15", "S'mores"],                          // no WIP code found; 0 on hand
-    ["L16", "Teriyaki (Ana Bruni)"],             // WIP RECIPE list: "LE Ana Bruni Teriyaki"; 0 on hand
-    ["L17", "Sweet Thai Chili"],                 // no WIP code found; 0 on hand
-    ["L18", "Loaded Potato"]                     // WIP RECIPE list: "LE Loaded Baked Paotato"; 0 on hand
+    ["L01", "Cheeseburger"], // WIP RECIPE list: "LE Cheese Burger"
+    ["L02", "Deep Dish Pizza"], // WIP RECIPE list: "LE Pizza"
+    ["L03", "Good Good Salt & Vinegar"], // co-brand; no WIP code found
+    ["L04", "Honey BBQ (A-Rod)"], // co-brand; no WIP code found
+    ["L05", "Salsa"], // WIP RECIPE list: "LE SALSA"
+    ["L06", "Taco"], // WIP RECIPE list: "LE TACO"
+    ["L07", "Guacamole"], // WIP RECIPE list: "LE GUACAMOLE"
+    ["L08", "Chili Cheese Dog"], // no WIP code found
+    ["L09", "Blueberry Pie"], // no WIP code found
+    ["L10", "Birthday Cake"], // no WIP code found; 0 on hand
+    ["L11", "Mexican Street Corn"], // no WIP code found; 0 on hand
+    ["L12", "Nashville Hot"], // no WIP code found; 0 on hand
+    ["L13", "Bacon Mac & Cheese"], // no WIP code found; 0 on hand
+    ["L14", "Korean BBQ (King of Juco)"], // no WIP code found; 0 on hand
+    ["L15", "S'mores"], // no WIP code found; 0 on hand
+    ["L16", "Teriyaki (Ana Bruni)"], // WIP RECIPE list: "LE Ana Bruni Teriyaki"; 0 on hand
+    ["L17", "Sweet Thai Chili"], // no WIP code found; 0 on hand
+    ["L18", "Loaded Potato"] // WIP RECIPE list: "LE Loaded Baked Paotato"; 0 on hand
   ];
   const BAG4LE = { L01:5800, L02:1600, L03:6200, L04:6700, L05:2600, L06:3200, L07:5500, L08:1300, L09:5000,
     L10:0, L11:0, L12:0, L13:0, L14:0, L15:0, L16:0, L17:0, L18:0 };
@@ -162,8 +162,10 @@
     const put = (item_id, location, qty) => { if (qty > 0) stock.push({ item_id, location, qty, lot: null }); };
 
     // Base ingredients — quantities from 2026-07-02 count (Inventory 70226.xlsx)
-    items.push({ id:"SEED-WHITE", code:"SEED-WHITE", name:"Sunflower Seed - Low Salt / White (Sunrich)", flavor:"Raw seed", category:"seed", unit:"lbs", reorder:15000, supplier:"seed" });
-    items.push({ id:"SEED-BROWN", code:"SEED-BROWN", name:"Sunflower Seed - Processed (Brown)", flavor:"Raw seed", category:"seed", unit:"lbs", reorder:20000, supplier:"seed" });
+    // Seed labels match Adriana's Seed Inventory tab (Matt's request): White = Low Salt (#4523),
+    // Brown = Standard Salt / Processed (#4524). Extreme / 7% Salt / Tote stay distinct.
+    items.push({ id:"SEED-WHITE", code:"SEED-WHITE", name:"Sunflower Seed - White (Low Salt)", flavor:"Raw seed", category:"seed", unit:"lbs", reorder:15000, supplier:"seed" });
+    items.push({ id:"SEED-BROWN", code:"SEED-BROWN", name:"Sunflower Seed - Brown (Standard Salt)", flavor:"Raw seed", category:"seed", unit:"lbs", reorder:20000, supplier:"seed" });
     items.push({ id:"MALTO", code:"MALTO", name:"Maltodextrin (Clintose CR-10)", flavor:"Base", category:"seed", unit:"lbs", reorder:3000, supplier:"seas" });
     items.push({ id:"OIL", code:"OIL", name:"Oil", flavor:"Base", category:"seed", unit:"lbs", reorder:100, supplier:"seas" });
     items.push({ id:"STEVIA", code:"STEVIA", name:"Stevia", flavor:"Base", category:"seasoning", unit:"lbs", reorder:20, supplier:"seas" });
