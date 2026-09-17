@@ -1,36 +1,39 @@
 /*SLCONHANDFIX*/
-/* Smackin OS — makes the SLC on-hand override resolve by item ID too.
+/* Smackin OS — SLC display fixes layer. Two jobs, both display-only (no rack/stock rows touched):
 
-   THE BUG THIS FIXES:
-   slc-counts.js keys SLC_COUNTS by product CODE (e.g. "B4-S03") and overrides
-   DB.onHand so screens read Adriana's sheet numbers. But almost every screen in
-   the app calls DB.onHand(item.id) with the internal ID (e.g. "BAG4-S03"), NOT
-   the code. Those calls missed the override and fell through to the raw rack-row
-   sum — which is the stale number. Only the Finished Bags browser passed the code,
-   so it was the one place that looked correct. Everything else (Dashboard, Produce
-   Now, Essential-items table, on-hand snapshot, Reorder Tracker, Demand, Stock
-   Build...) showed stale on-hand.
+   1) ON-HAND ID RESOLUTION.
+      slc-counts.js keys SLC_COUNTS by product CODE (e.g. "B4-S03") and overrides DB.onHand.
+      But nearly every screen calls DB.onHand(item.id) using the internal ID ("BAG4-S03"),
+      which missed the override and fell back to the stale raw rack sum. This wraps DB.onHand
+      so a call with EITHER the id or the code resolves to the same SLC sheet number.
 
-   THE FIX:
-   Wrap DB.onHand once more. Build an id -> code map from DB.items(), so a call with
-   either the ID or the CODE resolves to the same SLC sheet number. Anything not in
-   the sheet still falls through to the app's own math, unchanged.
+   2) RETIRED SEEDS HIDDEN.
+      Per Matt/Troy (2026-09-17) we run only two seeds now: Low Salt / White (#4523) and
+      Standard / Brown (#4524). The legacy "7% Salt" (SEED-7SALT) and "Extreme" (SEED-EXTREME)
+      seeds are retired. They are NOT deleted from the database (data is preserved) — they are
+      just filtered out of DB.items() so they no longer appear anywhere in the app. To bring one
+      back, remove its code from RETIRED below and redeploy.
 
-   NO rack/stock rows are touched — this is display-layer only.
-   Load this AFTER slc-counts.js. Redeploy this one file if the mapping ever changes. */
+   Load AFTER slc-counts.js. Redeploy this one file if the mapping changes. */
 (function () {
   if (window.__slcIdFix) return;
+
+  // Item codes/ids to hide from the app entirely (retired seeds).
+  var RETIRED = { 'SEED-7SALT': 1, 'SEED-EXTREME': 1 };
 
   function build() {
     if (!window.DB || typeof DB.onHand !== 'function' || typeof DB.items !== 'function') return false;
     if (DB.onHand.__slcId) return true; // already wrapped
 
-    var idToCode = {};
-    try {
-      (DB.items() || []).forEach(function (it) { if (it && it.id != null) idToCode[it.id] = it.code; });
-    } catch (e) { return false; }
+    var baseItems = DB.items.bind(DB);
 
-    var base = DB.onHand.bind(DB); // current onHand (already SLC code-aware from slc-counts.js)
+    // id -> code map, built from the FULL (unfiltered) item list so onHand still resolves.
+    var idToCode = {};
+    try { (baseItems() || []).forEach(function (it) { if (it && it.id != null) idToCode[it.id] = it.code; }); }
+    catch (e) { return false; }
+
+    // ---- (1) on-hand id/code resolution ----
+    var baseOnHand = DB.onHand.bind(DB);
     var f = function (key) {
       var C = window.SLC_COUNTS;
       if (C) {
@@ -38,15 +41,22 @@
         var code = idToCode[key];                                          // called with an id
         if (code != null && Object.prototype.hasOwnProperty.call(C, code)) return C[code];
       }
-      return base(key);
+      return baseOnHand(key);
     };
-    f.__slcId = true; f.__slc = true; f.__base = base;
+    f.__slcId = true; f.__slc = true; f.__base = baseOnHand;
     DB.onHand = f;
     DB.__slcIdMap = idToCode;
 
-    // Repaint whatever view is already on screen (covers hot deploys / service-worker updates
-    // where the page rendered before this wrapper installed). Re-clicks the active nav item,
-    // which re-renders the current view in place — it does not move the user.
+    // ---- (2) hide retired seeds from every view (filter DB.items) ----
+    DB.items = function () {
+      var arr = baseItems() || [];
+      return arr.filter(function (it) { return !(it && (RETIRED[it.id] || RETIRED[it.code])); });
+    };
+    DB.items.__slcId = true;
+
+    // Repaint whatever view is already on screen (covers hot deploys / service-worker updates).
+    // Re-clicks the active nav item, which re-renders the current view in place — it does not
+    // move the user.
     try {
       if (document.readyState !== 'loading') {
         var a = document.querySelector('.navitem.active');
