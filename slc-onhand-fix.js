@@ -6,6 +6,10 @@
       But nearly every screen calls DB.onHand(item.id) using the internal ID ("BAG4-S03"),
       which missed the override and fell back to the stale raw rack sum. This wraps DB.onHand
       so a call with EITHER the id or the code resolves to the same SLC sheet number.
+      NOTE (fixed 2026-09-17): the id->code map is built from DB.items(). In cloud mode that
+      list loads asynchronously, so we must NOT wrap until it is populated — otherwise the map
+      is empty and every by-id lookup falls back to the stale number. build() now waits for a
+      non-empty item list before wrapping.
 
    2) RETIRED SEEDS HIDDEN.
       Per Matt/Troy (2026-09-17) we run only two seeds now: Low Salt / White (#4523) and
@@ -14,7 +18,8 @@
       just filtered out of DB.items() so they no longer appear anywhere in the app. To bring one
       back, remove its code from RETIRED below and redeploy.
 
-   Load AFTER slc-counts.js. Redeploy this one file if the mapping changes. */
+   Load AFTER slc-counts.js. Redeploy this one file (and bump its ?b= tag in index.html) if the
+   mapping changes. */
 (function () {
   if (window.__slcIdFix) return;
 
@@ -27,10 +32,15 @@
 
     var baseItems = DB.items.bind(DB);
 
+    // Wait until the (cloud) item list is actually loaded. Wrapping against an empty list would
+    // build an empty id->code map and make every by-id on-hand lookup return the stale number.
+    var items0;
+    try { items0 = baseItems() || []; } catch (e) { return false; }
+    if (!items0.length) return false; // retry later
+
     // id -> code map, built from the FULL (unfiltered) item list so onHand still resolves.
     var idToCode = {};
-    try { (baseItems() || []).forEach(function (it) { if (it && it.id != null) idToCode[it.id] = it.code; }); }
-    catch (e) { return false; }
+    items0.forEach(function (it) { if (it && it.id != null) idToCode[it.id] = it.code; });
 
     // ---- (1) on-hand id/code resolution ----
     var baseOnHand = DB.onHand.bind(DB);
@@ -68,6 +78,6 @@
 
   window.__slcIdFix = true;
   if (!build()) {
-    var n = 0, iv = setInterval(function () { if (build() || ++n > 60) clearInterval(iv); }, 100);
+    var n = 0, iv = setInterval(function () { if (build() || ++n > 150) clearInterval(iv); }, 100);
   }
 })();
