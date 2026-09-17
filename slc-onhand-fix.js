@@ -12,19 +12,19 @@
       non-empty item list before wrapping.
 
    2) RETIRED SEEDS HIDDEN.
-      Per Matt/Troy (2026-09-17) we run only two seeds now: Low Salt / White (#4523) and
-      Standard / Brown (#4524). The legacy "7% Salt" (SEED-7SALT) and "Extreme" (SEED-EXTREME)
-      seeds are retired. They are NOT deleted from the database (data is preserved) — they are
-      just filtered out of DB.items() so they no longer appear anywhere in the app. To bring one
-      back, remove its code from RETIRED below and redeploy.
+      We run only two seeds now, both from CHS in brown 50lb bags (Matt, 2026-09-17):
+      #4523 Low Salt (3-4%) and #4524 Standard (6%). The legacy "7% Salt" (SEED-7SALT),
+      "Extreme" (SEED-EXTREME), and the white "Tote" (SEED-TOTE) are retired — we hold none.
+      They are NOT deleted from the database (data is preserved) — they are just filtered out of
+      DB.items() so they no longer appear anywhere in the app. To bring one back, remove its code
+      from RETIRED below and redeploy (bump the ?b= tag in index.html).
 
-   Load AFTER slc-counts.js. Redeploy this one file (and bump its ?b= tag in index.html) if the
-   mapping changes. */
+   Load AFTER slc-counts.js. */
 (function () {
   if (window.__slcIdFix) return;
 
   // Item codes/ids to hide from the app entirely (retired seeds).
-  var RETIRED = { 'SEED-7SALT': 1, 'SEED-EXTREME': 1 };
+  var RETIRED = { 'SEED-7SALT': 1, 'SEED-EXTREME': 1, 'SEED-TOTE': 1 };
 
   function build() {
     if (!window.DB || typeof DB.onHand !== 'function' || typeof DB.items !== 'function') return false;
