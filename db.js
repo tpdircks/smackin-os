@@ -12,7 +12,7 @@ window.DB = (function () {
   const seed = window.SMACKIN_SEED;
   let mode = "local";
   let sb = null;                  // supabase client
-  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [], returnsLog: [], prodOut: [], lineStatus: [], forecast: [], ecomDemand: [], maintenance: [], fulfillmentDaily: [], machineLive: [], rdTestLog: [] };
+  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [], returnsLog: [], prodOut: [], lineStatus: [], forecast: [], ecomDemand: [], maintenance: [], fulfillmentDaily: [] };
   let subscribers = [];
 
   function emit() { subscribers.forEach(fn => { try { fn(); } catch (e) {} }); }
@@ -35,8 +35,6 @@ window.DB = (function () {
   function demandLines() { return cache.demandLines || []; }
   function productionOutput() { return cache.prodOut || []; }
   function lineStatus() { return cache.lineStatus || []; }
-  function machineLive() { return cache.machineLive || []; }
-  function rdTestLog() { return cache.rdTestLog || []; }
   function forecast() { return cache.forecast || []; }
   function ecomDemand() { return cache.ecomDemand || []; }
   function returnsLog() { return cache.returnsLog || []; }
@@ -212,23 +210,6 @@ window.DB = (function () {
           updated_by: r.updated_by || "", updated_at: r.updated_at
         }));
       } catch (e) { cache.lineStatus = cache.lineStatus || []; }
-      // machine_live (live sensor bag counts mirrored from production.local via Todd's push) - resilient
-      try {
-        const ml = await sb.from("machine_live").select("*").order("machine_id", { ascending: true });
-        cache.machineLive = (ml && ml.data ? ml.data : []).map(r => ({
-          machine_id: r.machine_id, line: r.line || "", operator: r.operator || "", flavor: r.flavor || "",
-          session_bags: Number(r.session_bags) || 0, today_bags: Number(r.today_bags) || 0,
-          rate_per_min: Number(r.rate_per_min) || 0, status: r.status || "idle", last_seen: r.last_seen, updated_at: r.updated_at
-        }));
-      } catch (e) { cache.machineLive = cache.machineLive || []; }
-      // rd_test_log (Max's R&D flavor test log) - resilient
-      try {
-        const rt = await sb.from("rd_test_log").select("*").order("test_date", { ascending: false }).limit(2000);
-        cache.rdTestLog = (rt && rt.data ? rt.data : []).map(r => ({
-          sample_no: r.sample_no, test_date: r.test_date || "", chef: r.chef || "", flavor: r.flavor || "", flavor_house: r.flavor_house || "",
-          seasoning: r.seasoning || "", approved: !!r.approved, approved_by: r.approved_by || "", approved_raw: r.approved_raw || "", notes: r.notes || ""
-        }));
-      } catch (e) { cache.rdTestLog = cache.rdTestLog || []; }
       // demand_forecast (WIP FORECAST snapshot, compare-only) loaded separately + resiliently so a missing table never breaks the app shell
       try {
         const fc = await sb.from("demand_forecast").select("*");
@@ -276,6 +257,15 @@ window.DB = (function () {
       } catch (e) {
         try { cache.qualityLogs = JSON.parse(localStorage.getItem("quality-logs") || "[]"); } catch (_) { cache.qualityLogs = []; }
       }
+      // sku_catalog: curated overlay for the SKU Lookup (image + Spanish contents/notes per SKU),
+      // plus brand-new SKUs not in the built-in list. Resilient: falls back to localStorage.
+      try {
+        const scr = await sb.from("sku_catalog").select("*");
+        if (scr && scr.error) throw scr.error;
+        cache.skuCatalog = {}; (scr && scr.data ? scr.data : []).forEach(r => { cache.skuCatalog[String(r.sku).toUpperCase()] = r; });
+      } catch (e) {
+        try { cache.skuCatalog = JSON.parse(localStorage.getItem("sku-catalog") || "{}"); } catch (_) { cache.skuCatalog = {}; }
+      }
       // maintenance_items (Maintenance request + project tracker) loaded separately + resiliently
       // so a missing table never breaks the app shell (same pattern as demand_forecast above).
       try {
@@ -321,7 +311,6 @@ window.DB = (function () {
       sb.channel("inv")
         .on("postgres_changes", { event: "*", schema: "public", table: "stock" }, async () => { await cloud.loadAll(); emit(); })
         .on("postgres_changes", { event: "*", schema: "public", table: "transactions" }, async () => { await cloud.loadAll(); emit(); })
-        .on("postgres_changes", { event: "*", schema: "public", table: "machine_live" }, async () => { try { const ml = await sb.from("machine_live").select("*").order("machine_id", { ascending: true }); cache.machineLive = (ml && ml.data ? ml.data : []).map(r => ({ machine_id: r.machine_id, line: r.line || "", operator: r.operator || "", flavor: r.flavor || "", session_bags: Number(r.session_bags) || 0, today_bags: Number(r.today_bags) || 0, rate_per_min: Number(r.rate_per_min) || 0, status: r.status || "idle", last_seen: r.last_seen, updated_at: r.updated_at })); } catch (e) {} emit(); })
         .subscribe();
     }
   };
@@ -1191,17 +1180,28 @@ window.DB = (function () {
 
   // ---------- Supplier POs (uploaded from external systems) ----------
   const SPO_BUCKET = "supplier-pos";
+  // A transient network drop surfaces from fetch as "Failed to fetch" / "Load failed" / NetworkError.
+  // Retry those once (a common cause of Michelle's PO-upload error) and always return a plain-English message.
+  const spoIsNetErr = e => /failed to fetch|load failed|networkerror|network error/i.test(String((e && e.message) || e || ""));
   async function createSupplierPO(rec, file, op) {
     let file_name = file ? file.name : "", file_path = "", file_url = "";
     if (mode === "cloud" && file) {
-      try {
+      const doUpload = async () => {
         const path = Date.now() + "_" + (file.name || "po").replace(/[^\w.\-]+/g, "_");
         const up = await sb.storage.from(SPO_BUCKET).upload(path, file, { upsert: false, contentType: file.type || undefined });
-        if (up.error) return { ok: false, msg: up.error.message || "upload failed" };
-        file_path = path;
-        const pub = sb.storage.from(SPO_BUCKET).getPublicUrl(path);
+        if (up.error) throw new Error(up.error.message || "upload failed");
+        return path;
+      };
+      try {
+        try { file_path = await doUpload(); }
+        catch (e) { if (spoIsNetErr(e)) { await new Promise(r => setTimeout(r, 1200)); file_path = await doUpload(); } else throw e; }
+        const pub = sb.storage.from(SPO_BUCKET).getPublicUrl(file_path);
         file_url = (pub && pub.data && pub.data.publicUrl) || "";
-      } catch (e) { return { ok: false, msg: String(e) }; }
+      } catch (e) {
+        return { ok: false, msg: spoIsNetErr(e)
+          ? "Upload failed — network issue reaching the server. Check your connection and try again. If it keeps failing, hard-refresh the app (Ctrl+Shift+R)."
+          : ("Upload failed: " + ((e && e.message) || e)) };
+      }
     }
     const row = { vendor: rec.vendor || "", po_num: rec.po_num || "", po_date: rec.po_date || "",
       total: rec.total || "", item_count: Number(rec.item_count) || 0, lines: rec.lines || "",
@@ -1210,8 +1210,19 @@ window.DB = (function () {
       ship_to: rec.ship_to || "", subtotal: rec.subtotal || "", shipping: rec.shipping || "", tax: rec.tax || "", other: rec.other || "", prepared_by: rec.prepared_by || "" };
     const logEntry = { a: "Supplier PO", d: (row.vendor || "") + " " + (row.po_num || "") + (file_name ? " [" + file_name + "]" : ""), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
-      await sb.from("supplier_pos").insert(row);
-      await cloud.addLog(logEntry); await cloud.loadAll();
+      const doInsert = async () => { const ins = await sb.from("supplier_pos").insert(row); if (ins && ins.error) throw new Error(ins.error.message || "insert failed"); };
+      try {
+        try { await doInsert(); }
+        catch (e) { if (spoIsNetErr(e)) { await new Promise(r => setTimeout(r, 1200)); await doInsert(); } else throw e; }
+      } catch (e) {
+        // Roll back the orphaned storage file so a retry doesn't leave an unreferenced upload behind.
+        if (file_path) { try { await sb.storage.from(SPO_BUCKET).remove([file_path]); } catch (_) {} }
+        return { ok: false, msg: spoIsNetErr(e)
+          ? "Save failed — network issue reaching the server. The PO was NOT recorded; please try again. If it keeps failing, hard-refresh the app (Ctrl+Shift+R)."
+          : ("Save failed: " + ((e && e.message) || e)) };
+      }
+      try { await cloud.addLog(logEntry); } catch (_) {}
+      try { await cloud.loadAll(); } catch (_) {}
     } else {
       row.id = "SPO-" + Date.now().toString(36); row.created_at = new Date().toISOString();
       if (file && !file_url) row.file_url = URL.createObjectURL(file);
@@ -1289,6 +1300,17 @@ window.DB = (function () {
     if (mode === "cloud") { try { await sb.from("kv_status").upsert({ key: key, value: val, updated_at: new Date().toISOString() }); } catch (e) {} }
   }
   function kvCloudOn() { return !!cache.kvCloud; }
+  // ---- SKU catalog overlay (curated image + Spanish contents/notes for the SKU Lookup) ----
+  function skuCatalog() { return cache.skuCatalog || {}; }
+  function skuCatalogGet(sku) { return (cache.skuCatalog || {})[String(sku || "").toUpperCase()] || null; }
+  async function saveSkuCatalog(o) {
+    const sku = String(o.sku || "").trim().toUpperCase(); if (!sku) return { ok: false };
+    o.sku = sku; o.updated_at = new Date().toISOString();
+    cache.skuCatalog = cache.skuCatalog || {}; cache.skuCatalog[sku] = Object.assign({}, cache.skuCatalog[sku], o);
+    try { localStorage.setItem("sku-catalog", JSON.stringify(cache.skuCatalog)); } catch (e) {}
+    if (mode === "cloud") { try { await sb.from("sku_catalog").upsert(cache.skuCatalog[sku]); } catch (e) {} }
+    return { ok: true };
+  }
   // ---- Quality CCP monitoring logs (allergen changeover / label check / metal detector) ----
   function qualityLogs() { return cache.qualityLogs || []; }
   async function addQualityLog(o) {
@@ -1777,7 +1799,7 @@ window.DB = (function () {
     init, onChange, get mode() { return mode; },
     demandLines, importDemand, setDemandStatus, shipDemandPO, clearDemandBatch, clearAllDemand, remapDemandFlavors,
     productionOutput, addProdOutput, deleteProdOutput,
-    lineStatus, machineLive, rdTestLog, addMachine, setLineStatus, deleteMachine,
+    lineStatus, addMachine, setLineStatus, deleteMachine,
     forecast,
     ecomDemand, addEcomDemand, clearEcomDemand,
     returnsLog, addReturn, deleteReturn, returnDupKey, findReturnDup,
@@ -1798,7 +1820,7 @@ window.DB = (function () {
     orders, createOrder, updateOrder, setOrderStatus, deleteOrder, notifyNewOrder, reconcileSpsOrders,
     rdRequests, createRdRequest, updateRdRequest, setRdStatus, deleteRdRequest, sendRdEmail,
     supplierPos, createSupplierPO, updateSupplierPO, deleteSupplierPO, emailPO, expectedReceipts, markLineReceived,
-    onOrderMap, onOrder, kvGet, kvSet, kvCloudOn, prodOrdersCustom, addProdOrder, qualityLogs, addQualityLog,
+    onOrderMap, onOrder, kvGet, kvSet, kvCloudOn, skuCatalog, skuCatalogGet, saveSkuCatalog, prodOrdersCustom, addProdOrder, qualityLogs, addQualityLog,
     recipeFor, seasLbPerBag, bagsPerBatch, flavorDemandBags, recommendedSeasReorder,
     ecomBagsFor, ecomWeeklyBags, unifiedWeeklyBags, unifiedDemand,
     orderDocs, createOrderDoc, deleteOrderDoc,
