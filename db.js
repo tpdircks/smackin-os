@@ -1695,7 +1695,10 @@ window.DB = (function () {
   const RTL_COLS = ["channel","marketplace","return_date","customer","shipment_id","ship_address","product","item_code","flavor","upc","add_upc","tracking","qty","is_kit","kit_sku","reason","condition","disposition","restocked","dup_key","order_ref","received_by","notes"];
   function cleanRtl(r) { const o = {}; RTL_COLS.forEach(k => { if (r[k] !== undefined) o[k] = r[k]; }); return o; }
   function returnDupKey(rec) {
-    const k = (rec.tracking || rec.shipment_id || ((rec.customer || "") + "|" + (rec.product || rec.item_code || "") + "|" + (rec.return_date || ""))).toString().trim().toLowerCase();
+    // one order/tracking can hold many returned items, so the dedup key is per (order-ref + item + date)
+    const ref = (rec.tracking || rec.shipment_id || rec.order_ref || rec.customer || "").toString().trim().toLowerCase();
+    const item = (rec.item_code || rec.kit_sku || rec.product || "").toString().trim().toLowerCase();
+    const k = (ref + "|" + item + "|" + (rec.return_date || "")).toString().trim().toLowerCase();
     return k;
   }
   function findReturnDup(dupKey) {

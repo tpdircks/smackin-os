@@ -44,7 +44,7 @@
       cancelPO:"Cancel PO", deletePO:"Delete", backList:"Back", orderedQ:"Ordered", received:"Received", outstanding:"Outstanding",
       noPOs:"No purchase orders yet.", poCreated:"PO created", poTotal:"Est. total", recvNow:"Receive now",
       st_draft:"Draft", st_ordered:"Ordered", st_partial:"Partial", st_received:"Received", st_cancelled:"Cancelled",
-      returns:"Returns", seasoning:"Seasoning Lots", qa:"Quarantine",
+      returns:"Returns", seasoning:"Seasoning", qa:"Quarantine",
       role:"View", roleAll:"Manager (all)", roleReceiving:"Receiving", roleProduction:"Fulfillment",
       returnsHint:"Log a customer or Amazon return. Restock goes to RETURNS; damaged goes to QA hold.",
       rChannel:"Channel", rReason:"Reason", rDisposition:"Disposition", rRMA:"Order / RMA #",
@@ -53,7 +53,7 @@
       slProduct:"Product / flavor",slNewFlavor:"+ Add new / LTO flavor",slNewFlavorPh:"Type the flavor name",slNewNeed:"Enter the new flavor name", slLot:"Lot #", slMfr:"Manufacturer", slExp:"Expiration", slWeight:"Weight (lbs)",slLoc:"Location",
       addLot:"Add lot", seasLotsTitle:"Seasoning lots (earliest expiration first)", quarantineExpired:"Quarantine expired lots",
       noLots:"No seasoning lots yet.", markQuar:"Quarantine", markGood:"Mark good", expiredTag:"EXPIRED", quarTag:"QUARANTINE", goodTag:"GOOD",
-      seed:"Seed Lots", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdOnHand:"On hand by type", sdReceived:"Received",sdIntCode:"Internal code",sdPackaging:"Packaging",sdPickPack:"Select packaging...",sdPallets:"# Pallets",sdPalletsShort:"pallet(s)",sdPackDate:"Packaging date", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
+      seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdOnHand:"On hand by type", sdReceived:"Received",sdIntCode:"Internal code",sdPackaging:"Packaging",sdPickPack:"Select packaging...",sdPallets:"# Pallets",sdPalletsShort:"pallet(s)",sdPackDate:"Packaging date", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
       skus:"SKUs", skusHint:"Finished-goods / retail SKU catalog - bundles, singles, and cases with bag count and flavor contents. Reference only.", skuCode:"SKU", skuTitle:"Product", skuBags:"Bags", skuComp:"Contents", skuSearchP:"Search SKU, product, or flavor...", skuCount:"SKUs",
       stockbuild:"Stock Build", reorder15:"1.5oz Reorder", r15Hint:"Trigger-based reorder for 1.5oz finished bags (Allen's rule): when a flavor drops to 2 pallets (12,500 bags) or less, build the tier quantity. Prime = 48 bins, Secondary = 24 bins. Coverage uses actual per-flavor ShipStation demand.", r15Prime:"Prime flavors", r15Secondary:"Secondary flavors", r15Bins:"bins", r15After:"after reorder", r15Reorder:"REORDER", r15Ok:"OK", r15NoItem:"no 1.5oz item", r15WksLeft:"Wks left", r15WksAfter:"Wks after", r15ToReorder:"Flavors to reorder now", r15BuildNow:"Build needed now (bags)", r15Trigger:"Trigger (2 pallets)", r15Note:"Coverage after reorder uses actual per-flavor 1.5oz ShipStation demand (FY), not an even split - fast movers like Dill, Maple, Cracked Pepper and BBQ run shorter. Pull recent per-flavor sales before locking targets.", sbHint:"Live build progress vs goals. Update On Hand as you go - the whole team sees it instantly. Yellow field = enter today's count.", sbGoal:"Goal", sbOnHand:"On hand", sbToBuild:"To build", sbPallets:"Pallets", sbDone:"Done", sbTotalGoal:"Total goal", sbComplete:"Complete", sbSaved:"Saved", sbRetail:"Retail", sbEcom:"E-Commerce", sb12pk:"12-Pack Boxes", sbCoverage:"Coverage by group", sbBuilt:"Built vs goal",
       board:"Board Mode / TV", boardPick:"Pick a department", boardPickHint:"Open this on the TV and pick a department, or bookmark the URL (example: ?board=pmac).", boardExit:"Exit", grpDemand:"Demand", demand:"By Department", demandboard:"Order Board", demandsched:"Production Schedule", demandimport:"Import Orders", ecomdemand:"E-Com Demand", forecast:"Forecast vs Target",
@@ -77,6 +77,7 @@
       returnsHint2:"Log every return in one place. Pick the channel, scan the item, and the app blocks duplicate returns (same tracking / shipment ID). Kits can be broken down into their flavors automatically.",
       rMajor:"Major Customer", rEcom:"E-Commerce / Amazon", rCustomer:"Customer name", rAddUpc:"Additional UPC", rMarketplace:"Marketplace", rShipment:"Shipment ID", rShipAddr:"Shipping address", rProdCode:"Product code", rUpc:"UPC", rTracking:"Tracking #", rReturnDate:"Return date",
       rIsKit:"This is a variety pack / kit", rExplode:"Break down into flavors", rKitHint:"Enter the kit SKU (e.g. SS-CLSC-4OZ-12PK). On restock it adds each component flavor back to finished-bag inventory.",
+      rItemsReturned:"Items returned", rAddItem:"+ Add item", rPickSku:"Choose SKU / product...", rShopifyGrp:"Shopify SKUs (packs)", rBagsGrp:"Single flavor bags", rNeedItems:"Add at least one item with a quantity", rNItems:"item(s) logged", rOrderNote:"Log the whole order at once: enter the order details once, then add every SKU that came back below.",
       returnsLogTitle:"Returns Log", rWho:"Customer / Marketplace", rRef:"Tracking / Shipment", rKitTag:"KIT", rDup:"DUP", rDupWarn:"This return looks already processed:", rDupOverride:"Log it again anyway?", rDupSkip:"Skipped duplicate", rNeedKitSku:"Enter the kit SKU", rFlavorsRestocked:"flavors restocked", rUnknownKit:"Kit SKU not recognized", rDelConfirm:"Delete this return record?",
       backupTitle:"Backup", backupHint:"Download a full snapshot of all app data (every table) as one JSON file. Save it to OneDrive for a safe offline copy. Tip: set your browser's download folder to your OneDrive so every backup lands there automatically.", backupBtn:"Download full backup", backupDone:"Backup downloaded",
       facility:"Facility Map", facHint:"Interactive 3D digital twin of the SLC plant — exact layout, rooms, systems, and every pallet rack. Drag to rotate, scroll to zoom, click a bay for details. Red-flagged bays are PROPOSED future racking (not yet installed). Rack colors update live: red = occupied, green = available (Sections A-D). Built by Salvador.", facOpen:"Open full screen",
@@ -101,7 +102,7 @@
       mixing:"Mixing", pmac:"P-Mac", roleMixing:"Mixing (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Manufacturing", grpPmac:"P-Mac",
       deptSoon:"This area is being set up. Allen's team screens will live here - tell us what you'd like tracked and we'll build it in.",
       conHint:"Scan each material as it moves from the racking into this room. Records real-time usage and removes it from inventory. Lot # required on every scan.", conLot:"Lot # (required)", conBtn:"Log usage", conRecent:"Recent usage", conNone:"Nothing logged yet.", conWhen:"When", conMat:"Material", conBy:"By", conErr:"Scan an item, quantity, and lot #", conNotInList:"not in item list",
-      analytics:"Analytics", mnTitle:"Make Next — E-Com Queue", mnHint:"Flavors to make so inventory keeps up with the e-commerce order queue (all unshipped ShipStation orders, incl. weekend backlog). Short = queue demand minus on-hand.", mnNone:"No e-com queue loaded yet. The hourly ShipStation sync fills this in.", mnMake:"MAKE", mnOk:"OK", mnFlavorsShort:"Flavors short", mnToMake:"Bags to make", mnQueue:"Queue demand (bags)", mnUpdated:"Updated", mnOnHand:"On hand", mnDemand:"Queue demand", mnShort:"Short by", grpReceiving:"Receiving", grpInventory:"Inventory", grpItems:"Catalog & Reports", grpProduction:"Production", grpFulfillment:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpImprove:"Improvement", grpQuality:"Quality", compliance:"Compliance / SQF", cmpHint:"SQF food-safety program - certifications, the recurring activity schedule, and the controlled documents in the Operations shared drive.", cmpCerts:"Certifications & Audits", cmpCert:"Certification / Audit", cmpFreq:"Frequency", cmpWhen:"When / Notes", cmpBody:"Body", cmpDueThis:"Due this month", cmpAllMonthly:"Only the standard monthly reviews this month.", cmpSchedule:"SQF Activity Schedule", cmpScheduleHint:"Recurring SQF activities by frequency (from the 2026 SQF Calendar). Monthly items are also documented daily/weekly.", cmpDocs:"Document Register", cmpDocsHint:"Key SQF controlled documents - open in the Operations shared drive.", grpDocs:"Reference", reference:"Reference / SOPs", refHint:"SOPs, cheat sheets, and policies from the Smackin Docs library - one click for the floor. Upload a file and pick a category.", refDrop:"Upload document(s)", refSelected:"file(s) ready", refCategory:"Category", refNotes:"Notes (optional)", refSaveBtn:"Add to library", refNone:"No reference documents yet.", refLibrary:"Document Library", refNoFile:"Choose a file first", refSaved:"added", refConfirmDel:"Remove this document?", daily:"Daily Metrics", disposition:"Short-Dated", quality:"Quality Logs", recipes:"Recipes", prodorders:"Prod Orders", reordertracker:"Reorder Tracker", launch:"Launches", launchpipe:"Launch Pipeline", grpSystem:"System",
+      analytics:"Analytics", mnTitle:"Make Next — E-Com Queue", mnHint:"Flavors to make so inventory keeps up with the e-commerce order queue (all unshipped ShipStation orders, incl. weekend backlog). Short = queue demand minus on-hand.", mnNone:"No e-com queue loaded yet. The hourly ShipStation sync fills this in.", mnMake:"MAKE", mnOk:"OK", mnFlavorsShort:"Flavors short", mnToMake:"Bags to make", mnQueue:"Queue demand (bags)", mnUpdated:"Updated", mnOnHand:"On hand", mnDemand:"Queue demand", mnShort:"Short by", grpReceiving:"Receiving", grpInventory:"Inventory", grpItems:"Items & Reports", grpProduction:"Production", grpFulfillment:"Fulfillment", grpShipping:"Shipping", grpPurchasing:"Purchasing", grpRnd:"R&D", grpHr:"HR", grpImprove:"Improvement", grpQuality:"Quality", compliance:"Compliance / SQF", cmpHint:"SQF food-safety program - certifications, the recurring activity schedule, and the controlled documents in the Operations shared drive.", cmpCerts:"Certifications & Audits", cmpCert:"Certification / Audit", cmpFreq:"Frequency", cmpWhen:"When / Notes", cmpBody:"Body", cmpDueThis:"Due this month", cmpAllMonthly:"Only the standard monthly reviews this month.", cmpSchedule:"SQF Activity Schedule", cmpScheduleHint:"Recurring SQF activities by frequency (from the 2026 SQF Calendar). Monthly items are also documented daily/weekly.", cmpDocs:"Document Register", cmpDocsHint:"Key SQF controlled documents - open in the Operations shared drive.", grpDocs:"Reference", reference:"Reference / SOPs", refHint:"SOPs, cheat sheets, and policies from the Smackin Docs library - one click for the floor. Upload a file and pick a category.", refDrop:"Upload document(s)", refSelected:"file(s) ready", refCategory:"Category", refNotes:"Notes (optional)", refSaveBtn:"Add to library", refNone:"No reference documents yet.", refLibrary:"Document Library", refNoFile:"Choose a file first", refSaved:"added", refConfirmDel:"Remove this document?", daily:"Daily Metrics", disposition:"Short-Dated", quality:"Quality Logs", recipes:"Recipes", prodorders:"Prod Orders", reordertracker:"Reorder Tracker", launch:"Launches", skulookup:"SKU Lookup", skHint:"Type or scan a SKU to see its picture and what is inside. New SKU? Add it once and it is saved for everyone.", skPlaceholder:"Type or scan the SKU...", skResults:"results", skNoImg:"No image yet", skContents:"Contents", skEditBtn:"Edit", skAddNew:"Add SKU", skName:"Name", skSize:"Bags", skImgUrl:"Image URL", skNotes:"Notes", skGuideTitle:"New SKU? How to find it in Shopify", skNone:"No SKU matches that. Try part of the code, or add it with + Add SKU.", skBack:"Back", skSaveBtn:"Save", skSaved:"Saved", grpSystem:"System",
       people:"People", hrHint:"Team directory and org chart. Non-sensitive info only - no pay or personal data.", hrGate:"This section shows employee information. Enter the manager PIN to view.",
       hrDir:"Directory", hrOrg:"Org chart", hrRole:"Role", hrDept:"Department", hrStart:"Started", hrMgr:"Reports to", hrSearchP:"Search name or role...", hrCount:"people", hrNoMatch:"No matching people.", hrYr:"yr", hrMo:"mo",
       alerts:"Alerts", alertsHint:"What needs attention now: items to reorder and seasoning lots nearing expiration.",
@@ -199,7 +200,7 @@
       cancelPO:"Cancelar orden", deletePO:"Eliminar", backList:"Volver", orderedQ:"Pedido", received:"Recibido", outstanding:"Pendiente",
       noPOs:"Aun no hay ordenes de compra.", poCreated:"Orden creada", poTotal:"Total est.", recvNow:"Recibir ahora",
       st_draft:"Borrador", st_ordered:"Ordenada", st_partial:"Parcial", st_received:"Recibida", st_cancelled:"Cancelada",
-      returns:"Devoluciones", seasoning:"Sazon (Lotes)", qa:"Cuarentena",
+      returns:"Devoluciones", seasoning:"Sazon", qa:"Cuarentena",
       role:"Vista", roleAll:"Gerente (todo)", roleReceiving:"Recibo", roleProduction:"Fulfillment",
       returnsHint:"Registre una devolucion de cliente o Amazon. Reingreso va a DEVOLUCIONES; danado va a retencion QA.",
       rChannel:"Canal", rReason:"Motivo", rDisposition:"Disposicion", rRMA:"Orden / RMA #",
@@ -208,7 +209,7 @@
       slProduct:"Producto / sabor",slNewFlavor:"+ Agregar sabor nuevo / LTO",slNewFlavorPh:"Escribe el nombre del sabor",slNewNeed:"Ingresa el nombre del nuevo sabor", slLot:"Lote #", slMfr:"Fabricante", slExp:"Vencimiento", slWeight:"Peso (lbs)",slLoc:"Ubicacion",
       addLot:"Agregar lote", seasLotsTitle:"Lotes de sazon (vencimiento mas proximo primero)", quarantineExpired:"Cuarentena de vencidos",
       noLots:"Sin lotes de sazon aun.", markQuar:"Cuarentena", markGood:"Marcar bueno", expiredTag:"VENCIDO", quarTag:"CUARENTENA", goodTag:"BUENO",
-      seed:"Semilla (Lotes)", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdOnHand:"En mano por tipo", sdReceived:"Recibido",sdIntCode:"Codigo interno",sdPackaging:"Empaque",sdPickPack:"Elegir empaque...",sdPallets:"# Paletas",sdPalletsShort:"paleta(s)",sdPackDate:"Fecha de empaque", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
+      seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdOnHand:"En mano por tipo", sdReceived:"Recibido",sdIntCode:"Codigo interno",sdPackaging:"Empaque",sdPickPack:"Elegir empaque...",sdPallets:"# Paletas",sdPalletsShort:"paleta(s)",sdPackDate:"Fecha de empaque", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
       skus:"SKUs", skusHint:"Catalogo de SKU de producto terminado / retail - paquetes, individuales y cajas con cantidad de bolsas y sabores. Solo referencia.", skuCode:"SKU", skuTitle:"Producto", skuBags:"Bolsas", skuComp:"Contenido", skuSearchP:"Buscar SKU, producto o sabor...", skuCount:"SKUs",
       stockbuild:"Construir Inventario", reorder15:"Reorden 1.5oz", r15Hint:"Reorden por disparador para bolsas 1.5oz (regla de Allen): cuando un sabor baja a 2 paletas (12,500 bolsas) o menos, produzca la cantidad del nivel. Prime = 48 bins, Secundario = 24 bins. La cobertura usa la demanda real por sabor de ShipStation.", r15Prime:"Sabores Prime", r15Secondary:"Sabores Secundarios", r15Bins:"bins", r15After:"tras reorden", r15Reorder:"REORDENAR", r15Ok:"OK", r15NoItem:"sin item 1.5oz", r15WksLeft:"Sem. rest.", r15WksAfter:"Sem. tras", r15ToReorder:"Sabores a reordenar ahora", r15BuildNow:"Produccion necesaria (bolsas)", r15Trigger:"Disparador (2 paletas)", r15Note:"La cobertura tras reorden usa la demanda real por sabor de 1.5oz de ShipStation (ano fiscal), no un promedio - los rapidos como Dill, Maple, Cracked Pepper y BBQ duran menos. Use ventas recientes por sabor antes de fijar metas.", sbHint:"Progreso de construccion vs metas en vivo. Actualice En Mano segun avanza - todo el equipo lo ve al instante. Campo amarillo = ingrese el conteo de hoy.", sbGoal:"Meta", sbOnHand:"En mano", sbToBuild:"Por hacer", sbPallets:"Paletas", sbDone:"Listo", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Guardado", sbRetail:"Minorista", sbEcom:"Comercio Electronico", sb12pk:"Cajas de 12", sbCoverage:"Cobertura por grupo", sbBuilt:"Hecho vs meta",
       board:"Modo Pizarra / TV", boardPick:"Elija un departamento", boardPickHint:"Abra esto en la TV y elija un departamento, o guarde el URL (ejemplo: ?board=pmac).", boardExit:"Salir", grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Tablero de Pedidos", demandsched:"Programa de Produccion", demandimport:"Importar Pedidos", ecomdemand:"Demanda E-Com", forecast:"Pronostico vs Objetivo",
@@ -232,6 +233,7 @@
       returnsHint2:"Registre cada devolucion en un solo lugar. Elija el canal, escanee el articulo y la app bloquea devoluciones duplicadas (mismo tracking / Shipment ID). Los kits se pueden desglosar en sus sabores automaticamente.",
       rMajor:"Cliente Mayor", rEcom:"E-Commerce / Amazon", rCustomer:"Nombre del cliente", rAddUpc:"UPC adicional", rMarketplace:"Marketplace", rShipment:"Shipment ID", rShipAddr:"Direccion de envio", rProdCode:"Codigo de producto", rUpc:"UPC", rTracking:"# de rastreo", rReturnDate:"Fecha de devolucion",
       rIsKit:"Es un paquete variado / kit", rExplode:"Desglosar en sabores", rKitHint:"Ingrese el SKU del kit (ej. SS-CLSC-4OZ-12PK). Al reingresar suma cada sabor componente al inventario de bolsas terminadas.",
+      rItemsReturned:"Articulos devueltos", rAddItem:"+ Agregar articulo", rPickSku:"Elegir SKU / producto...", rShopifyGrp:"SKUs de Shopify (packs)", rBagsGrp:"Bolsas por sabor", rNeedItems:"Agregue al menos un articulo con cantidad", rNItems:"articulo(s) registrados", rOrderNote:"Registre toda la orden a la vez: ingrese los datos de la orden una vez y luego agregue cada SKU devuelto abajo.",
       returnsLogTitle:"Registro de Devoluciones", rWho:"Cliente / Marketplace", rRef:"Rastreo / Envio", rKitTag:"KIT", rDup:"DUP", rDupWarn:"Esta devolucion parece ya procesada:", rDupOverride:"Registrarla de nuevo?", rDupSkip:"Duplicado omitido", rNeedKitSku:"Ingrese el SKU del kit", rFlavorsRestocked:"sabores reingresados", rUnknownKit:"SKU de kit no reconocido", rDelConfirm:"Eliminar este registro de devolucion?",
       backupTitle:"Respaldo", backupHint:"Descargue una copia completa de todos los datos de la app (cada tabla) en un archivo JSON. Guardelo en OneDrive como copia segura. Consejo: configure la carpeta de descargas de su navegador en su OneDrive para que cada respaldo llegue alli automaticamente.", backupBtn:"Descargar respaldo completo", backupDone:"Respaldo descargado",
       facility:"Mapa de Planta", facHint:"Gemelo digital 3D interactivo de la planta SLC — diseno exacto, salas, sistemas y cada rack de pallets. Arrastre para girar, desplace para zoom, clic en una bahia para detalles. Las bahias en rojo son racking PROPUESTO a futuro (aun no instalado). Los colores de los racks se actualizan en vivo: rojo = ocupado, verde = disponible (Secciones A-D). Creado por Salvador.", facOpen:"Abrir pantalla completa",
@@ -255,7 +257,7 @@
       mixing:"Mezcla", pmac:"P-Mac", roleMixing:"Mezcla (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Manufactura", grpPmac:"P-Mac",
       deptSoon:"Esta area se esta configurando. Aqui viviran las pantallas del equipo de Allen - diganos que desea controlar y lo agregamos.",
       conHint:"Escanee cada material al pasar del estante a esta sala. Registra el uso en tiempo real y lo descuenta del inventario. Numero de lote requerido en cada escaneo.", conLot:"Lote # (requerido)", conBtn:"Registrar uso", conRecent:"Uso reciente", conNone:"Nada registrado aun.", conWhen:"Cuando", conMat:"Material", conBy:"Por", conErr:"Escanee articulo, cantidad y lote #", conNotInList:"no esta en la lista",
-      analytics:"Analiticas", mnTitle:"Producir Ahora — Cola E-Com", mnHint:"Sabores a producir para que el inventario alcance la cola de pedidos e-commerce (todos los pedidos sin enviar de ShipStation, incl. acumulado del fin de semana). Faltante = demanda de cola menos en mano.", mnNone:"Aun no hay cola e-com cargada. La sincronizacion horaria de ShipStation la llenara.", mnMake:"PRODUCIR", mnOk:"OK", mnFlavorsShort:"Sabores faltantes", mnToMake:"Bolsas a producir", mnQueue:"Demanda de cola (bolsas)", mnUpdated:"Actualizado", mnOnHand:"En mano", mnDemand:"Demanda de cola", mnShort:"Faltante", grpReceiving:"Recibo", grpInventory:"Inventario", grpItems:"Catalogo y Reportes", grpProduction:"Produccion", grpFulfillment:"Fulfillment", grpShipping:"Envios", grpPurchasing:"Compras", grpRnd:"I+D", grpHr:"RH", grpImprove:"Mejora", grpQuality:"Calidad", compliance:"Cumplimiento / SQF", cmpHint:"Programa de inocuidad SQF - certificaciones, el calendario de actividades recurrentes y los documentos controlados en la unidad compartida de Operaciones.", cmpCerts:"Certificaciones y Auditorias", cmpCert:"Certificacion / Auditoria", cmpFreq:"Frecuencia", cmpWhen:"Cuando / Notas", cmpBody:"Organismo", cmpDueThis:"Vence este mes", cmpAllMonthly:"Solo las revisiones mensuales estandar este mes.", cmpSchedule:"Calendario de Actividades SQF", cmpScheduleHint:"Actividades SQF recurrentes por frecuencia (del Calendario SQF 2026). Los items mensuales tambien se documentan diario/semanal.", cmpDocs:"Registro de Documentos", cmpDocsHint:"Documentos controlados SQF clave - abrir en la unidad compartida de Operaciones.", grpDocs:"Referencia", reference:"Referencia / SOPs", refHint:"SOPs, hojas de referencia y politicas de la biblioteca Smackin Docs - un clic para el piso. Suba un archivo y elija una categoria.", refDrop:"Subir documento(s)", refSelected:"archivo(s) listos", refCategory:"Categoria", refNotes:"Notas (opcional)", refSaveBtn:"Agregar a la biblioteca", refNone:"Aun no hay documentos de referencia.", refLibrary:"Biblioteca de Documentos", refNoFile:"Elija un archivo primero", refSaved:"agregado(s)", refConfirmDel:"Quitar este documento?", disposition:"Retenido", grpSystem:"Sistema",
+      analytics:"Analiticas", mnTitle:"Producir Ahora — Cola E-Com", mnHint:"Sabores a producir para que el inventario alcance la cola de pedidos e-commerce (todos los pedidos sin enviar de ShipStation, incl. acumulado del fin de semana). Faltante = demanda de cola menos en mano.", mnNone:"Aun no hay cola e-com cargada. La sincronizacion horaria de ShipStation la llenara.", mnMake:"PRODUCIR", mnOk:"OK", mnFlavorsShort:"Sabores faltantes", mnToMake:"Bolsas a producir", mnQueue:"Demanda de cola (bolsas)", mnUpdated:"Actualizado", mnOnHand:"En mano", mnDemand:"Demanda de cola", mnShort:"Faltante", grpReceiving:"Recibo", grpInventory:"Inventario", grpItems:"Items y Reportes", grpProduction:"Produccion", grpFulfillment:"Fulfillment", grpShipping:"Envios", grpPurchasing:"Compras", grpRnd:"I+D", grpHr:"RH", grpImprove:"Mejora", grpQuality:"Calidad", compliance:"Cumplimiento / SQF", cmpHint:"Programa de inocuidad SQF - certificaciones, el calendario de actividades recurrentes y los documentos controlados en la unidad compartida de Operaciones.", cmpCerts:"Certificaciones y Auditorias", cmpCert:"Certificacion / Auditoria", cmpFreq:"Frecuencia", cmpWhen:"Cuando / Notas", cmpBody:"Organismo", cmpDueThis:"Vence este mes", cmpAllMonthly:"Solo las revisiones mensuales estandar este mes.", cmpSchedule:"Calendario de Actividades SQF", cmpScheduleHint:"Actividades SQF recurrentes por frecuencia (del Calendario SQF 2026). Los items mensuales tambien se documentan diario/semanal.", cmpDocs:"Registro de Documentos", cmpDocsHint:"Documentos controlados SQF clave - abrir en la unidad compartida de Operaciones.", grpDocs:"Referencia", reference:"Referencia / SOPs", refHint:"SOPs, hojas de referencia y politicas de la biblioteca Smackin Docs - un clic para el piso. Suba un archivo y elija una categoria.", refDrop:"Subir documento(s)", refSelected:"archivo(s) listos", refCategory:"Categoria", refNotes:"Notas (opcional)", refSaveBtn:"Agregar a la biblioteca", refNone:"Aun no hay documentos de referencia.", refLibrary:"Biblioteca de Documentos", refNoFile:"Elija un archivo primero", refSaved:"agregado(s)", refConfirmDel:"Quitar este documento?", disposition:"Retenido", skulookup:"Buscar SKU", skHint:"Escribe o escanea un SKU para ver su imagen y que contiene. SKU nuevo? Agregalo una vez y queda guardado para todos.", skPlaceholder:"Escribe o escanea el SKU...", skResults:"resultados", skNoImg:"Sin imagen aun", skContents:"Contenido", skEditBtn:"Editar", skAddNew:"Agregar SKU", skName:"Nombre", skSize:"Bolsas", skImgUrl:"URL de imagen", skNotes:"Notas", skGuideTitle:"SKU nuevo? Como buscarlo en Shopify", skNone:"Ningun SKU coincide. Prueba parte del codigo, o agregalo con + Agregar SKU.", skBack:"Atras", skSaveBtn:"Guardar", skSaved:"Guardado", grpSystem:"Sistema",
       people:"Personal", hrHint:"Directorio del equipo y organigrama. Solo informacion no sensible - sin pago ni datos personales.", hrGate:"Esta seccion muestra informacion de empleados. Ingrese el PIN de gerente para ver.",
       hrDir:"Directorio", hrOrg:"Organigrama", hrRole:"Puesto", hrDept:"Departamento", hrStart:"Ingreso", hrMgr:"Reporta a", hrSearchP:"Buscar nombre o puesto...", hrCount:"personas", hrNoMatch:"Sin coincidencias.", hrYr:"ano", hrMo:"mes",
       alerts:"Alertas", alertsHint:"Lo que necesita atencion ahora: articulos por reordenar y lotes de sazon por vencer.",
@@ -353,7 +355,7 @@
       cancelPO:"Cancelar ordem", deletePO:"Excluir", backList:"Voltar", orderedQ:"Pedido", received:"Recebido", outstanding:"Pendente",
       noPOs:"Ainda nao ha ordens de compra.", poCreated:"Ordem criada", poTotal:"Total est.", recvNow:"Receber agora",
       st_draft:"Rascunho", st_ordered:"Pedida", st_partial:"Parcial", st_received:"Recebida", st_cancelled:"Cancelada",
-      returns:"Devolucoes", seasoning:"Tempero (Lotes)", qa:"Quarentena",
+      returns:"Devolucoes", seasoning:"Tempero", qa:"Quarentena",
       role:"Visao", roleAll:"Gerente (tudo)", roleReceiving:"Recebimento", roleProduction:"Fulfillment",
       returnsHint:"Registre uma devolucao de cliente ou Amazon. Reposicao vai para DEVOLUCOES; danificado vai para retencao QA.",
       rChannel:"Canal", rReason:"Motivo", rDisposition:"Destino", rRMA:"Pedido / RMA #",
@@ -362,7 +364,7 @@
       slProduct:"Produto / sabor",slNewFlavor:"+ Adicionar sabor novo / LTO",slNewFlavorPh:"Digite o nome do sabor",slNewNeed:"Digite o nome do novo sabor", slLot:"Lote #", slMfr:"Fabricante", slExp:"Validade", slWeight:"Peso (lbs)",slLoc:"Localizacao",
       addLot:"Adicionar lote", seasLotsTitle:"Lotes de tempero (validade mais proxima primeiro)", quarantineExpired:"Quarentena de vencidos",
       noLots:"Nenhum lote de tempero ainda.", markQuar:"Quarentena", markGood:"Marcar bom", expiredTag:"VENCIDO", quarTag:"QUARENTENA", goodTag:"BOM",
-      seed:"Semente (Lotes)", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdOnHand:"Em estoque por tipo", sdReceived:"Recebido",sdIntCode:"Codigo interno",sdPackaging:"Embalagem",sdPickPack:"Selecionar embalagem...",sdPallets:"# Paletes",sdPalletsShort:"palete(s)",sdPackDate:"Data de embalagem", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
+      seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdOnHand:"Em estoque por tipo", sdReceived:"Recebido",sdIntCode:"Codigo interno",sdPackaging:"Embalagem",sdPickPack:"Selecionar embalagem...",sdPallets:"# Paletes",sdPalletsShort:"palete(s)",sdPackDate:"Data de embalagem", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
       skus:"SKUs", skusHint:"Catalogo de SKU de produto acabado / varejo - pacotes, individuais e caixas com contagem de sacos e sabores. Apenas referencia.", skuCode:"SKU", skuTitle:"Produto", skuBags:"Sacos", skuComp:"Conteudo", skuSearchP:"Buscar SKU, produto ou sabor...", skuCount:"SKUs",
       stockbuild:"Construir Estoque", reorder15:"Reposicao 1.5oz", r15Hint:"Reposicao por gatilho para bolsas 1.5oz (regra do Allen): quando um sabor cai para 2 paletes (12,500 bolsas) ou menos, produza a quantidade do nivel. Prime = 48 bins, Secundario = 24 bins. A cobertura usa a demanda real por sabor do ShipStation.", r15Prime:"Sabores Prime", r15Secondary:"Sabores Secundarios", r15Bins:"bins", r15After:"apos reposicao", r15Reorder:"REPOR", r15Ok:"OK", r15NoItem:"sem item 1.5oz", r15WksLeft:"Sem. rest.", r15WksAfter:"Sem. apos", r15ToReorder:"Sabores a repor agora", r15BuildNow:"Producao necessaria (bolsas)", r15Trigger:"Gatilho (2 paletes)", r15Note:"A cobertura apos reposicao usa a demanda real por sabor de 1.5oz do ShipStation (ano fiscal), nao uma media - rapidos como Dill, Maple, Cracked Pepper e BBQ duram menos. Use vendas recentes por sabor antes de fixar metas.", sbHint:"Progresso de construcao vs metas ao vivo. Atualize Em Estoque conforme avanca - toda a equipe ve na hora. Campo amarelo = insira a contagem de hoje.", sbGoal:"Meta", sbOnHand:"Em estoque", sbToBuild:"A fazer", sbPallets:"Paletes", sbDone:"Pronto", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Salvo", sbRetail:"Varejo", sbEcom:"E-Commerce", sb12pk:"Caixas de 12", sbCoverage:"Cobertura por grupo", sbBuilt:"Feito vs meta",
       board:"Modo Painel / TV", boardPick:"Escolha um departamento", boardPickHint:"Abra isto na TV e escolha um departamento, ou salve o URL (exemplo: ?board=pmac).", boardExit:"Sair", grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Painel de Pedidos", demandsched:"Programa de Producao", demandimport:"Importar Pedidos", ecomdemand:"Demanda E-Com", forecast:"Previsao vs Meta",
@@ -386,6 +388,7 @@
       returnsHint2:"Registre cada devolucao em um so lugar. Escolha o canal, escaneie o item, e o app bloqueia devolucoes duplicadas (mesmo tracking / Shipment ID). Kits podem ser desmembrados em seus sabores automaticamente.",
       rMajor:"Cliente Grande", rEcom:"E-Commerce / Amazon", rCustomer:"Nome do cliente", rAddUpc:"UPC adicional", rMarketplace:"Marketplace", rShipment:"Shipment ID", rShipAddr:"Endereco de envio", rProdCode:"Codigo do produto", rUpc:"UPC", rTracking:"# de rastreio", rReturnDate:"Data da devolucao",
       rIsKit:"E um pacote variado / kit", rExplode:"Desmembrar em sabores", rKitHint:"Insira o SKU do kit (ex. SS-CLSC-4OZ-12PK). Ao reabastecer, soma cada sabor componente ao estoque de bolsas prontas.",
+      rItemsReturned:"Itens devolvidos", rAddItem:"+ Adicionar item", rPickSku:"Escolher SKU / produto...", rShopifyGrp:"SKUs Shopify (packs)", rBagsGrp:"Sacos por sabor", rNeedItems:"Adicione ao menos um item com quantidade", rNItems:"item(ns) registrados", rOrderNote:"Registre o pedido inteiro de uma vez: insira os dados do pedido uma vez e adicione cada SKU devolvido abaixo.",
       returnsLogTitle:"Registro de Devolucoes", rWho:"Cliente / Marketplace", rRef:"Rastreio / Envio", rKitTag:"KIT", rDup:"DUP", rDupWarn:"Esta devolucao parece ja processada:", rDupOverride:"Registrar novamente?", rDupSkip:"Duplicado ignorado", rNeedKitSku:"Insira o SKU do kit", rFlavorsRestocked:"sabores reabastecidos", rUnknownKit:"SKU de kit nao reconhecido", rDelConfirm:"Excluir este registro de devolucao?",
       backupTitle:"Backup", backupHint:"Baixe uma copia completa de todos os dados do app (cada tabela) em um arquivo JSON. Salve no OneDrive como copia segura. Dica: configure a pasta de downloads do seu navegador para o seu OneDrive para que cada backup va para la automaticamente.", backupBtn:"Baixar backup completo", backupDone:"Backup baixado",
       facility:"Mapa da Planta", facHint:"Gemeo digital 3D interativo da planta SLC — layout exato, salas, sistemas e cada rack de paletes. Arraste para girar, role para zoom, clique numa baia para detalhes. Baias em vermelho sao racking PROPOSTO futuro (ainda nao instalado). As cores dos racks atualizam ao vivo: vermelho = ocupado, verde = disponivel (Secoes A-D). Feito pelo Salvador.", facOpen:"Abrir tela cheia",
@@ -409,7 +412,7 @@
       mixing:"Mistura", pmac:"P-Mac", roleMixing:"Mistura (Allen)", rolePmac:"P-Mac (Allen)", grpMixing:"Manufatura", grpPmac:"P-Mac",
       deptSoon:"Esta area esta sendo configurada. As telas da equipe do Allen ficarao aqui - diga o que deseja acompanhar e vamos incluir.",
       conHint:"Escaneie cada material ao passar da prateleira para esta sala. Registra o uso em tempo real e baixa do estoque. Numero de lote obrigatorio em cada leitura.", conLot:"Lote # (obrigatorio)", conBtn:"Registrar uso", conRecent:"Uso recente", conNone:"Nada registrado ainda.", conWhen:"Quando", conMat:"Material", conBy:"Por", conErr:"Escaneie item, quantidade e lote #", conNotInList:"nao esta na lista",
-      analytics:"Analises", mnTitle:"Produzir Agora — Fila E-Com", mnHint:"Sabores a produzir para o estoque acompanhar a fila de pedidos e-commerce (todos os pedidos nao enviados do ShipStation, incl. acumulo do fim de semana). Falta = demanda da fila menos em estoque.", mnNone:"Ainda nao ha fila e-com carregada. A sincronizacao horaria do ShipStation vai preencher.", mnMake:"PRODUZIR", mnOk:"OK", mnFlavorsShort:"Sabores em falta", mnToMake:"Bolsas a produzir", mnQueue:"Demanda da fila (bolsas)", mnUpdated:"Atualizado", mnOnHand:"Em estoque", mnDemand:"Demanda da fila", mnShort:"Falta", grpReceiving:"Recebimento", grpInventory:"Estoque", grpItems:"Catalogo e Relatorios", grpProduction:"Producao", grpFulfillment:"Fulfillment", grpShipping:"Envios", grpPurchasing:"Compras", grpRnd:"P&D", grpHr:"RH", grpImprove:"Melhoria", grpQuality:"Qualidade", compliance:"Conformidade / SQF", cmpHint:"Programa de seguranca de alimentos SQF - certificacoes, o calendario de atividades recorrentes e os documentos controlados no drive compartilhado de Operacoes.", cmpCerts:"Certificacoes e Auditorias", cmpCert:"Certificacao / Auditoria", cmpFreq:"Frequencia", cmpWhen:"Quando / Notas", cmpBody:"Orgao", cmpDueThis:"Vence este mes", cmpAllMonthly:"Apenas as revisoes mensais padrao este mes.", cmpSchedule:"Calendario de Atividades SQF", cmpScheduleHint:"Atividades SQF recorrentes por frequencia (do Calendario SQF 2026). Itens mensais tambem documentados diario/semanal.", cmpDocs:"Registro de Documentos", cmpDocsHint:"Documentos controlados SQF principais - abrir no drive compartilhado de Operacoes.", grpDocs:"Referencia", reference:"Referencia / SOPs", refHint:"SOPs, folhas de referencia e politicas da biblioteca Smackin Docs - um clique para o chao de fabrica. Envie um arquivo e escolha uma categoria.", refDrop:"Enviar documento(s)", refSelected:"arquivo(s) prontos", refCategory:"Categoria", refNotes:"Notas (opcional)", refSaveBtn:"Adicionar a biblioteca", refNone:"Ainda nao ha documentos de referencia.", refLibrary:"Biblioteca de Documentos", refNoFile:"Escolha um arquivo primeiro", refSaved:"adicionado(s)", refConfirmDel:"Remover este documento?", disposition:"Retido", grpSystem:"Sistema",
+      analytics:"Analises", mnTitle:"Produzir Agora — Fila E-Com", mnHint:"Sabores a produzir para o estoque acompanhar a fila de pedidos e-commerce (todos os pedidos nao enviados do ShipStation, incl. acumulo do fim de semana). Falta = demanda da fila menos em estoque.", mnNone:"Ainda nao ha fila e-com carregada. A sincronizacao horaria do ShipStation vai preencher.", mnMake:"PRODUZIR", mnOk:"OK", mnFlavorsShort:"Sabores em falta", mnToMake:"Bolsas a produzir", mnQueue:"Demanda da fila (bolsas)", mnUpdated:"Atualizado", mnOnHand:"Em estoque", mnDemand:"Demanda da fila", mnShort:"Falta", grpReceiving:"Recebimento", grpInventory:"Estoque", grpItems:"Itens e Relatorios", grpProduction:"Producao", grpFulfillment:"Fulfillment", grpShipping:"Envios", grpPurchasing:"Compras", grpRnd:"P&D", grpHr:"RH", grpImprove:"Melhoria", grpQuality:"Qualidade", compliance:"Conformidade / SQF", cmpHint:"Programa de seguranca de alimentos SQF - certificacoes, o calendario de atividades recorrentes e os documentos controlados no drive compartilhado de Operacoes.", cmpCerts:"Certificacoes e Auditorias", cmpCert:"Certificacao / Auditoria", cmpFreq:"Frequencia", cmpWhen:"Quando / Notas", cmpBody:"Orgao", cmpDueThis:"Vence este mes", cmpAllMonthly:"Apenas as revisoes mensais padrao este mes.", cmpSchedule:"Calendario de Atividades SQF", cmpScheduleHint:"Atividades SQF recorrentes por frequencia (do Calendario SQF 2026). Itens mensais tambem documentados diario/semanal.", cmpDocs:"Registro de Documentos", cmpDocsHint:"Documentos controlados SQF principais - abrir no drive compartilhado de Operacoes.", grpDocs:"Referencia", reference:"Referencia / SOPs", refHint:"SOPs, folhas de referencia e politicas da biblioteca Smackin Docs - um clique para o chao de fabrica. Envie um arquivo e escolha uma categoria.", refDrop:"Enviar documento(s)", refSelected:"arquivo(s) prontos", refCategory:"Categoria", refNotes:"Notas (opcional)", refSaveBtn:"Adicionar a biblioteca", refNone:"Ainda nao ha documentos de referencia.", refLibrary:"Biblioteca de Documentos", refNoFile:"Escolha um arquivo primeiro", refSaved:"adicionado(s)", refConfirmDel:"Remover este documento?", disposition:"Retido", grpSystem:"Sistema",
       people:"Pessoas", hrHint:"Diretorio da equipe e organograma. Apenas informacoes nao sensiveis - sem salario ou dados pessoais.", hrGate:"Esta secao mostra informacoes de funcionarios. Digite o PIN de gerente para ver.",
       hrDir:"Diretorio", hrOrg:"Organograma", hrRole:"Cargo", hrDept:"Departamento", hrStart:"Inicio", hrMgr:"Reporta a", hrSearchP:"Buscar nome ou cargo...", hrCount:"pessoas", hrNoMatch:"Nenhuma correspondencia.", hrYr:"ano", hrMo:"mes",
       alerts:"Alertas", alertsHint:"O que precisa de atencao agora: itens para repor e lotes de tempero perto do vencimento.",
@@ -493,8 +496,12 @@
   const PROD_FMAP = {}; PROD_FLAVORS.forEach(f => PROD_FMAP[f.code] = f);
   // Daily Fulfillment tracker: Amazon (FBA) SKU -> bags-per-unit map. Editable here as new packs are added;
   // any SKU not in this map (custom / free-text entry) defaults to a user-entered bags-per-unit, or 1.
-  const AMZ_SKU_BAGS = {"SS-SP-10-FBA": 10, "SS-SP-11-FBA": 11, "SS-VP-7-FBA": 6, "SS-VP-12-FBA": 12, "SS-VP-36-FBA": 36, "SS-DP-12-FBA": 12, "SS-CJ-12-FBA": 12, "SS-PCA-4OZ-6PK": 6, "SS-CC-12-FBA": 12, "SS-CR-4OZ-12PK-FBA": 12, "SS-CP-12-FBA": 12, "SS-OG-6-FBA": 6, "SS-CCBBCR-4OZ-12PK-FBA": 12, "SS-HBB-4OZ-6PK": 6, "SS-BB-6-FBA": 6, "SS-KBBQ-4OZ-3PK-FBA": 3, "SS-OGCPDP-4OZ-12PK-FBA": 12, "SS-CC-6-FBA": 6, "SS-GGSV-4OZ-6PK-FBA": 6, "SS-CJ-6-FBA": 6, "SS-BBDPGP-4OZ-12PK-FBA": 12, "SS-CJCRDP-4OZ-12PK-FBA": 12, "SS-MB-12-FBA": 12, "SS-GGSV-4OZ-24PK-FBA": 24, "SS-OG-12-FBA": 12, "SS-HBB-4OZ-24PK-FBA": 24, "SS-CJ-36-FBA": 36, "SS-DP-6-FBA": 6, "SS-VP-54-FBA": 54, "SS-BB-54-FBA": 54, "SS-CP-54-FBA": 54, "SS-CR-1.5OZ-54PK-FBA": 54, "SS-CC-54-FBA": 54, "SS-DP-54-FBA": 54, "SS-KBBQ-4OZ-6PK-FBA": 6, "SS-ATHLETE-4OZ-6PK-FBA": 6, "SS-BRUNI-4OZ-6PK": 6, "SS-ATHLETE-4OZ-3PK-FBA": 3, "SS-PCA-4OZ-3PK-FBA": 3, "SS-CJ-4OZ-3PK-FBA": 3, "SS-ATHLETE-4OZ-24PK-FBA": 24, "SS-GGSV-4OZ-3PK-FBA": 3, "SS-GP-6-FBA": 6, "SS-CP-6-FBA": 6, "SS-HBB-4OZ-3PK-FBA": 3, "SS-PCA-4OZ-12PK-FBA": 12, "SS-CC-4OZ-6PK-FBA": 6, "SS-CCBBCR-4OZ-6PK-FBA": 6, "SS-MB-36-FBA": 36, "SS-OG-4OZ-6PK-FBA": 6, "SS-OGCPDP-1.5OZ-6PK-FBA": 6, "SS-BBDPGP-4OZ-3PK-FBA": 3, "SS-KBBQ-4OZ-12PK-FBA": 12, "SS-CC-36-FBA": 36, "SS-GP-1.5OZ-12PK-FBA": 12, "SS-CJCRDP-1.5OZ-6PK-FBA": 6, "SS-BBDPGP-1.5OZ-6PK-FBA": 6, "SS-MB-6-FBA": 6, "SS-DP-36-FBA": 36, "SS-OG-4OZ-3PK-FBA": 3, "SS-OG-36-FBA": 36, "SS-GGSV-4OZ-12PK-FBA": 12, "SS-BB-4OZ-6PK-FBA": 6, "SS-BB-36-FBA": 36};
-  const AMZ_SKU_LABELS = {"SS-SP-10-FBA": "10-Flavor Variety 1.5oz (10 bags/unit)", "SS-SP-11-FBA": "11-Pack Variety 1.5oz (11 bags/unit)", "SS-VP-7-FBA": "6-Flavor Variety 1.5oz (6 bags/unit)", "SS-VP-12-FBA": "Variety Pack, 4oz bag (12 Bags)", "SS-VP-36-FBA": "8 Flavor Variety. 1.5oz bags (36 Pack)", "SS-DP-12-FBA": "Dill Pickle, 4oz bag (12 Bags)", "SS-CJ-12-FBA": "Cheddar Jalapeño, 4oz bag (12 Bags)", "SS-PCA-4OZ-6PK": "Limited Edition Pete Crow-Armstrong Deep Dish Pizza - 6 Resealable 4 oz. Bags", "SS-CC-12-FBA": "Cinnamon Churro, 4oz bag (12 Bags)", "SS-CR-4OZ-12PK-FBA": "Ranch, 4oz bag (12 Bags)", "SS-CP-12-FBA": "Cracked Pepper, 4oz bag (12 Bags)", "SS-OG-6-FBA": "Original. 1.5oz bags (6 Pack)", "SS-CCBBCR-4OZ-12PK-FBA": "Variety Pack (Cinnamon Churro, Backyard BBQ, and Ranch), 4oz bags (12 Bags)", "SS-HBB-4OZ-6PK": "Limited Edition Alex \"A-ROD\" Rodriguez Honey BBQ - 6 Resealable 4 oz. Bags", "SS-BB-6-FBA": "Backyard BBQ. 1.5oz bags (6 Pack)", "SS-KBBQ-4OZ-3PK-FBA": "King of Juco's Korean BBQ, 4oz bags (3 Bags)", "SS-OGCPDP-4OZ-12PK-FBA": "Variety Pack (Original, Cracked Pepper, Dill Pickle), 4oz bags (12 Bags)", "SS-CC-6-FBA": "Cinnamon Churro. 1.5oz bags (6 Pack)", "SS-GGSV-4OZ-6PK-FBA": "Good Good Salt & Vinegar 4oz bags (6 Bags)", "SS-CJ-6-FBA": "Cheddar Jalapeño. 1.5oz bags (6 Pack)", "SS-BBDPGP-4OZ-12PK-FBA": "Variety Pack (Backyard BBQ, Dill Pickle, and Garlic Parmesan), 4oz bags (12 Bags)", "SS-CJCRDP-4OZ-12PK-FBA": "Variety Pack (Cheddar Jalapeño, Ranch, Dill Pickle), 4oz bags (12 Bags)", "SS-MB-12-FBA": "Maple Brown Sugar, 4oz bag (12 Bags)", "SS-GGSV-4OZ-24PK-FBA": "Good Good Salt & Vinegar 4oz bags (24 Bags)", "SS-OG-12-FBA": "Original, 4oz bag (12 Bags)", "SS-HBB-4OZ-24PK-FBA": "Alex \"A-ROD\" Rodriguez Honey BBQ, 4oz bags (24 Bags)", "SS-CJ-36-FBA": "Cheddar Jalapeño. 1.5oz bags (36 Pack)", "SS-DP-6-FBA": "Dill Pickle. 1.5oz bags (6 Pack)", "SS-VP-54-FBA": "8 Flavor Variety. 1.5oz bags (54 Pack Bucket)", "SS-BB-54-FBA": "Backyard BBQ. 1.5oz bags (54 Pack Bucket)", "SS-CP-54-FBA": "Cracked Pepper. 1.5oz bags (54 Pack Bucket)", "SS-CR-1.5OZ-54PK-FBA": "Ranch. 1.5oz bags (54 Pack Bucket)", "SS-CC-54-FBA": "Cinnamon Churro. 1.5oz bags (54 Pack Bucket)", "SS-DP-54-FBA": "Dill Pickle. 1.5oz bags (54 Pack Bucket)", "SS-KBBQ-4OZ-6PK-FBA": "King of Juco's Korean BBQ, 4oz bags (6 Bags)", "SS-ATHLETE-4OZ-6PK-FBA": "(Good Good Salt & Vinegar, Alex \"A-ROD\" Rodriguez Honey BBQ, and Pete Crow-Armstrong Deep Dish Pizza) 4oz bags (6 Bags)", "SS-BRUNI-4OZ-6PK": "Ana Bruni Teriyaki, 4oz bags (6 Bags)", "SS-ATHLETE-4OZ-3PK-FBA": "(Good Good Salt & Vinegar, Alex \"A-ROD\" Rodriguez Honey BBQ, and Pete Crow-Armstrong Deep Dish Pizza) 4oz bags (3 Bags)", "SS-PCA-4OZ-3PK-FBA": "Pete Crow-Armstrong Deep Dish Pizza, 4oz bags (3 Bags)", "SS-CJ-4OZ-3PK-FBA": "Cheddar Jalapeño, 4oz bags (3 Bags)", "SS-ATHLETE-4OZ-24PK-FBA": "(Good Good Salt & Vinegar, Alex \"A-ROD\" Rodriguez Honey BBQ, and Pete Crow-Armstrong Deep Dish Pizza) 4oz bags (24 Bags)", "SS-GGSV-4OZ-3PK-FBA": "Good Good Salt & Vinegar 4oz bags (3 Bags)", "SS-GP-6-FBA": "| Roasted Jumbo | 6 Flavor Sampler Pack | 1.5 Ounce Flavored | Small-Batch, American Made | Keto Snacks (6 Bags, Garlic Parmesan)", "SS-CP-6-FBA": "Cracked Pepper. 1.5oz bags (6 Pack)", "SS-HBB-4OZ-3PK-FBA": "Alex \"A-ROD\" Rodriguez Honey BBQ, 4oz bags (3 Bags)", "SS-PCA-4OZ-12PK-FBA": "Pete Crow-Armstrong Deep Dish Pizza, 4oz bags (12 Bags)", "SS-CC-4OZ-6PK-FBA": "Cinnamon Churro, 4oz bags (6 Bags)", "SS-CCBBCR-4OZ-6PK-FBA": "Variety Pack (Cinnamon Churro, Backyard BBQ, and Ranch), 4oz bags (6 Bags)", "SS-MB-36-FBA": "Maple Brown Sugar. 1.5oz bags (36 Pack)", "SS-OG-4OZ-6PK-FBA": "Original, 4oz bags (6 Bags)", "SS-OGCPDP-1.5OZ-6PK-FBA": "Variety Pack (Original, Cracked Pepper, Dill Pickle), 1.5oz bags (6 Bags)", "SS-BBDPGP-4OZ-3PK-FBA": "Variety Pack (Backyard BBQ, Dill Pickle, and Garlic Parmesan), 4oz bags (3 Bags)", "SS-KBBQ-4OZ-12PK-FBA": "King of Juco's Korean BBQ, 4oz bags (12 Bags)", "SS-CC-36-FBA": "Cinnamon Churro. 1.5oz bags (36 Pack)", "SS-GP-1.5OZ-12PK-FBA": "Garlic Parmesan, 1.5oz bags (12 Bags)", "SS-CJCRDP-1.5OZ-6PK-FBA": "Variety Pack (Cheddar Jalapeño, Ranch, Dill Pickle), 1.5oz bags (6 Bags)", "SS-BBDPGP-1.5OZ-6PK-FBA": "Variety Pack (Backyard BBQ, Dill Pickle, and Garlic Parmesan), 1.5oz bags (6 Bags)", "SS-MB-6-FBA": "Maple Brown Sugar. 1.5oz bags (6 Pack)", "SS-DP-36-FBA": "Dill Pickle. 1.5oz bags (36 Pack)", "SS-OG-4OZ-3PK-FBA": "Original, 4oz bags (3 Bags)", "SS-OG-36-FBA": "Original. 1.5oz bags (36 Pack)", "SS-GGSV-4OZ-12PK-FBA": "Good Good Salt & Vinegar 4oz bags (12 Bags)", "SS-BB-4OZ-6PK-FBA": "Backyard BBQ, 4oz bags (6 Bags)", "SS-BB-36-FBA": "Backyard BBQ. 1.5oz bags (36 Pack)"};
+  const AMZ_SKU_BAGS = { "SS-SP-10-FBA": 10, "SS-SP-11-FBA": 11, "SS-VP-7-FBA": 6 };
+  const AMZ_SKU_LABELS = {
+    "SS-SP-10-FBA": "10-Flavor Variety 1.5oz (10 bags/unit)",
+    "SS-SP-11-FBA": "11-Pack Variety 1.5oz (11 bags/unit)",
+    "SS-VP-7-FBA": "6-Flavor Variety 1.5oz (6 bags/unit)"
+  };
   let fdDate = null;   // Daily Fulfillment: selected date (defaults to today)
   let fdDraft = null;  // Daily Fulfillment: in-progress draft { date, ecom:[{employee,labels}], amazon:[{sku,units,bagsPerUnit}], notes }
   // Seed packaging profiles (Adriana): per = total lbs per pallet -> auto weight = pallets x per
@@ -504,7 +511,7 @@
     { key: "tote", label: "Tote - 1 bag x 1,200 lb", per: 1200 }
   ];
   const SEED_PACK_MAP = {}; SEED_PACKS.forEach(p => SEED_PACK_MAP[p.key] = p);
-  const TABS = ["home","daily","dash","analytics","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","prodlog","fulfilldaily","flavinv","stockbuild","reorder15","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","recipes","prodorders","reordertracker","launch","launchpipe","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","expreceipts","supplierpos","people","improve","maintenance","compliance","quality","disposition","reference","labels","log","settings","board"];
+  const TABS = ["home","daily","dash","analytics","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","skulookup","prodlog","fulfilldaily","flavinv","stockbuild","reorder15","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","recipes","prodorders","reordertracker","launch","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","expreceipts","supplierpos","people","improve","maintenance","compliance","quality","disposition","reference","labels","log","settings","board"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -698,14 +705,14 @@
   // ---- left sidebar: tabs grouped by department (NetSuite-style) ----
   const NAV_GROUPS = [
     { key:"", items:["home","daily"] },
-    { key:"grpPurchasing", items:["purchasing","expreceipts","reorder15"] },
     { key:"grpReceiving", items:["receive","recvlog","returns","qa"] },
-    { key:"grpInventory", items:["dash","finbags","seed","seasoning","adjust","count","move","locations","facility"] },
-    { key:"grpItems", items:["recipes","skus","analytics","labels"] },
-    { key:"grpFulfillment", items:["produce","retailprod","ecomprod","prodlog","fulfilldaily","flavinv","stockbuild","orders","orderdocs"] },
+    { key:"grpInventory", items:["dash","adjust","count","move","locations","facility","finbags"] },
+    { key:"grpItems", items:["seasoning","recipes","seed","skus","analytics","labels"] },
+    { key:"grpFulfillment", items:["produce","retailprod","ecomprod","skulookup","prodlog","fulfilldaily","flavinv","stockbuild","orders","orderdocs"] },
     { key:"grpDemand", items:["demand","demandboard","demandsched","demandimport","ecomdemand","forecast"] },
     { key:"grpShipping", items:["shiplog"] },
-    { key:"grpMixing", items:["prodorders","reordertracker","launch","launchpipe","mixing","pmac","pmacout","floor"] },
+    { key:"grpMixing", items:["prodorders","reordertracker","launch","mixing","pmac","pmacout","floor"] },
+    { key:"grpPurchasing", items:["purchasing","expreceipts","reorder15"] },
     { key:"grpQuality", items:["compliance","quality","disposition"] },
     { key:"grpTeam", items:["people","maintenance","improve","rd","log"] },
     { key:"grpDocs", items:["reference"] },
@@ -722,13 +729,12 @@
     purchasing:"shopping-cart", expreceipts:"container", supplierpos:"file-text", people:"users", labels:"tag",
     board:"tv", log:"history", settings:"settings", improve:"trending-up", maintenance:"hard-hat", compliance:"shield-check", disposition:"archive", reference:"book-open",
     demand:"calendar-clock", demandboard:"list-checks", demandsched:"gauge", demandimport:"file-up", ecomdemand:"globe", forecast:"scale", facility:"warehouse", floor:"activity",
-    daily:"calendar-days", recipes:"chef-hat", prodorders:"clipboard-pen", launch:"rocket", launchpipe:"list-checks", quality:"microscope" };
+    daily:"calendar-days", recipes:"chef-hat", prodorders:"clipboard-pen", launch:"rocket", quality:"microscope", skulookup:"scan-search" };
   function drawIcons() { try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {} }
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
   let spoSort = { key: "created", dir: -1 };  // Supplier POs table sort (v25)
   let spoView = "list";   // Supplier POs: "list" | "create" (Excel-style PO entry form)
   let spoDetailId = null; // Supplier POs: when set, show full-detail view for that PO (v56)
-  let poEditId = null;   // Supplier POs: Create-PO form is editing this existing PO
   let poRows = 4;         // number of line-item rows shown in the Create-PO form
   let poEmailOpen = false; // Supplier PO detail: Email PO compose panel open?
   // ---- Demand section state ----
@@ -771,6 +777,7 @@
   function spoArrow(k) { return spoSort.key === k ? (spoSort.dir > 0 ? " ▲" : " ▼") : ""; }
   function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;"); }
   function money(v) { if (v == null || v === "") return ""; const n = parseFloat(String(v).replace(/[$,\s]/g, "")); if (isNaN(n)) return String(v); return "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function moneyP(v) { if (v == null || v === "") return ""; const n = parseFloat(String(v).replace(/[$,\s]/g, "")); if (isNaN(n)) return String(v); return "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 5 }); }
 
   // ---- persisted UI prefs (role + dashboard columns) ----
   const PREFS_KEY = "smackin_ui_prefs_v1";
@@ -854,7 +861,7 @@
     return DB.allLocations().indexOf(code) >= 0 || /^[A-E]-\d{2}-L[1-4]$/.test(code); }
 
   function setLang(l) { lang = l; ["en","es","pt"].forEach(x => { const b = $("lang-" + x); if (b) b.classList.toggle("active", l === x); }); render(); }
-  function go(t) { active = t; if (t !== "purchasing") { purchMode = "list"; receivingPOid = null; } else { spoDetailId = null; spoView = "list"; poEditId = null; } if (t === "orders") markOrdersSeen(); closeDrawer(); render(); }
+  function go(t) { active = t; if (t !== "purchasing") { purchMode = "list"; receivingPOid = null; } else { spoDetailId = null; spoView = "list"; } if (t === "orders") markOrdersSeen(); closeDrawer(); render(); }
   function opVal() { const e = $("op"); return e ? e.value : "Troy"; }
 
   // ---------- edit lock (PIN) — viewing is open, changes require the PIN ----------
@@ -906,7 +913,7 @@
   //  mixing = Mixing dept; pmac = Packaging (+ Manufacturing supervisor Wilson) crew.
   function areaOperators(area) {
     const list = area === "pmac"
-      ? PEOPLE.filter(p => p.d === "Packaging" || p.d === "Manufacturing" || p.n === "Leo Ontiveros").map(p => p.n)
+      ? PEOPLE.filter(p => p.d === "Packaging" || p.d === "Manufacturing").map(p => p.n)
       : PEOPLE.filter(p => p.d === "Mixing").map(p => p.n);
     return list;
   }
@@ -1439,7 +1446,7 @@
     const addForm = (orderAddOpen || oediting) ? (
       '<div class="ordform">' +
       (oediting ? '<p class="hint">&#9998; ' + L("editingRow") + '</p>' : '') +
-      '<div class="row"><div><label>' + L("oCustomer") + '</label>' + '<datalist id="dl-o-cust">' + Array.from(new Set(DB.orders().map(o => o.customer).filter(Boolean))).sort().map(c => '<option value="' + esc(c) + '">').join("") + '</datalist>' + '<input id="o-cust" list="dl-o-cust" autocomplete="off" onchange="UI.oCustFill()" onblur="UI.oCustFill()" value="' + oav(eo.customer) + '"></div>' +
+      '<div class="row"><div><label>' + L("oCustomer") + '</label><input id="o-cust" autocomplete="off" value="' + oav(eo.customer) + '"></div>' +
       '<div><label>' + L("oPO") + '</label><input id="o-po" autocomplete="off" value="' + oav(eo.customer_po) + '"></div>' +
       '<div><label>' + L("oOrderId") + '</label><input id="o-oid" autocomplete="off" value="' + oav(eo.order_id) + '"></div></div>' +
       '<div class="row"><div><label>' + L("oInvDate") + '</label><input id="o-inv" autocomplete="off" placeholder="mm/dd/yyyy" value="' + oav(eo.invoice_date) + '"></div>' +
@@ -1494,7 +1501,7 @@
     const addForm = rdAddOpen ? (
       '<div class="ordform">' +
       '<div class="row"><div><label>' + L("rdType") + '</label><select id="rd-type">' + RD_TYPES.map(t => '<option>' + t + '</option>').join("") + '</select></div>' +
-      '<div><label>' + L("rdCompany") + '</label>' + '<datalist id="dl-rd-co">' + Array.from(new Set(DB.rdRequests().map(r => r.company).filter(Boolean))).sort().map(c => '<option value="' + esc(c) + '">').join("") + '</datalist>' + '<input id="rd-co" list="dl-rd-co" autocomplete="off" onchange="UI.rdCoFill()" onblur="UI.rdCoFill()"></div>' +
+      '<div><label>' + L("rdCompany") + '</label><input id="rd-co" autocomplete="off"></div>' +
       '<div><label>' + L("rdContact") + ' <span class="muted">(opt.)</span></label><input id="rd-cn" autocomplete="off"></div></div>' +
       '<div class="row"><div><label>' + L("rdEmail") + '</label><input id="rd-em" type="email" autocomplete="off" placeholder="name@company.com"></div>' +
       '<div><label>' + L("rdQty") + '</label><input id="rd-qty" autocomplete="off" placeholder="2 lb / 3 samples"></div>' +
@@ -1540,7 +1547,7 @@
     doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(grey[0], grey[1], grey[2]);
     doc.text("SLC Fulfillment Center", M, y + 15);
     doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(180, 120, 10);
-    
+    doc.text("BETA - PROTOTYPE", RM, y - 6, { align: "right" });
     y += 30; rule(y); y += 26;
     doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(ink[0], ink[1], ink[2]);
     doc.text(L("rdPdfTitle"), M, y); y += 22;
@@ -1572,7 +1579,7 @@
     };
     block("rdPurpose", r.purpose); block("rdNotesF", r.notes);
     doc.setFontSize(8); doc.setTextColor(grey[0], grey[1], grey[2]);
-    doc.text("Generated by Smackin' OS  -  " + (r.req_no || ""), M, 762);
+    doc.text("Generated by Smackin' OS (BETA)  -  " + (r.req_no || ""), M, 762);
     return doc;
   }
   function rdEmailHtml(r) {
@@ -1588,22 +1595,6 @@
       '<p style="font-size:13px">Thank you,<br>Smackin\' Snacks</p></div>';
   }
   // ---------- Supplier POs (upload from external systems) ----------
-
-  const PO_CUST_STRINGS = ["Customer Information","Smackin’ Snacks LLC","Smackin' Snacks LLC","310 4th Ave S","Minneapolis, MN, 55415","Minneapolis, MN 55415","218-491-1239","740-877-1432","smackinsnacks.com"];
-  function poNormDate(s){ if(!s) return ""; s=String(s).trim(); var m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/); if(m){ var mo=("0"+m[1]).slice(-2), da=("0"+m[2]).slice(-2), y=m[3]; if(y.length===2) y="20"+y; return y+"-"+mo+"-"+da; } if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s; return ""; }
-  function poFindNum(text){ var m=text.match(/PO\s*#\s*([A-Za-z0-9][A-Za-z0-9\-]*)/i); return m?m[1].trim():""; }
-  function poFindDate(text){ var m=text.match(/Date:\s*([0-9]{1,2}[\/\-][0-9]{1,2}[\/\-][0-9]{2,4})/i); return m?m[1].trim():""; }
-  function poFindShipTo(lines){ for(var i=0;i<lines.length;i++){ var m=lines[i].match(/Ship\s*to:\s*(.+)$/i); if(m){ var a=m[1].trim(); var b=(lines[i+1]||"").trim(); if(b && !/subtotal|item\s*#|notes:/i.test(b)) return (a+", "+b).replace(/\s+,/g,",").trim(); return a; } } return ""; }
-  function poFindNotes(lines){ for(var i=0;i<lines.length;i++){ if(/^notes:/i.test(lines[i].trim())){ var rest=lines[i].replace(/^\s*notes:\s*/i,"").trim(); var more=lines.slice(i+1).map(function(x){return x.trim();}).filter(Boolean); return [rest].concat(more).join(" ").trim(); } } return ""; }
-  function poStripCust(line){ var s=line; PO_CUST_STRINGS.forEach(function(c){ s=s.split(c).join(" "); }); return s.replace(/\s{2,}/g," ").trim(); }
-  function poVendorFromLines(lines){ var start=-1,end=lines.length; for(var i=0;i<lines.length;i++){ if(/vendor\s*information/i.test(lines[i])){ start=i+1; break; } } if(start<0) return {vendor:"",addr:""}; for(var j=start;j<lines.length;j++){ if(/ship\s*to:|item\s*#|^\s*item\b/i.test(lines[j])){ end=j; break; } } var vlines=[]; for(var k=start;k<end;k++){ var t=poStripCust(lines[k]); if(t && !/^\s*customer information\s*$/i.test(t)) vlines.push(t); } if(!vlines.length) return {vendor:"",addr:""}; return { vendor:vlines[0], addr:vlines.slice(1).join(", ") }; }
-  function poParseItemLine(line){ var s=line.trim(); if(!s) return null; s=s.replace(/\s*\$\s*[\d.,\-]+\s*$/,"").trim(); var price=""; var mp=s.match(/\s([\d]+\.[\d]+)$/); if(mp){ price=mp[1]; s=s.slice(0,s.length-mp[0].length).trim(); } var qty=""; var mq=s.match(/\s([\d][\d,]*)$/); if(mq){ qty=mq[1].replace(/,/g,""); s=s.slice(0,s.length-mq[0].length).trim(); } var mi=s.match(/^(\S+)\s+(.+)$/); var item=mi?mi[1]:s, desc=mi?mi[2].trim():""; if(!item && !desc) return null; return { item:item, desc:desc, qty:qty, price:price }; }
-  function poLinesFromText(lines){ var out=[],inItems=false; for(var i=0;i<lines.length;i++){ var ln=lines[i]; if(/item\s*#/i.test(ln) && /quantity/i.test(ln)){ inItems=true; continue; } if(!inItems) continue; if(/subtotal/i.test(ln)) break; var t=ln.trim(); if(!t || /^[\$\-0.\s]+$/.test(t)) continue; var r=poParseItemLine(t); if(r && r.qty && Number(r.qty)>0 && (r.desc || /[a-zA-Z\-]/.test(r.item))) out.push(r); } return out; }
-  function poParseLines(lines){ var text=lines.join("\n"); var v=poVendorFromLines(lines); return { po_num:poFindNum(text), po_date:poFindDate(text), vendor:v.vendor, vendor_addr:v.addr, ship_to:poFindShipTo(lines), lines:poLinesFromText(lines), notes:poFindNotes(lines) }; }
-  function poParseGrid(grid){ var lines=grid.map(function(row){ return (row||[]).map(function(c){return c==null?"":String(c).trim();}).filter(Boolean).join(" "); }); var text=lines.join("\n"); var vstart=-1; for(var i=0;i<grid.length;i++){ var c0=(grid[i][0]==null?"":String(grid[i][0])).trim(); if(/vendor\s*information/i.test(c0)){ vstart=i+1; break; } } var vendor="",vaddr=[]; if(vstart>=0){ for(var j=vstart;j<grid.length;j++){ var v0=(grid[j][0]==null?"":String(grid[j][0])).trim(); if(!v0) break; if(/item\s*#/i.test(v0)) break; if(!vendor) vendor=v0; else vaddr.push(v0); } } var ship=poFindShipTo(lines); var items=[],inItems=false; for(var r=0;r<grid.length;r++){ var joined=(grid[r]||[]).map(function(c){return c==null?"":String(c);}).join(" "); if(/item\s*#/i.test(joined) && /quantity/i.test(joined)){ inItems=true; continue; } if(!inItems) continue; if(/subtotal/i.test(joined)) break; var it=(grid[r][0]==null?"":String(grid[r][0])).trim(); var de=(grid[r][1]==null?"":String(grid[r][1])).trim(); var qt=(grid[r][2]==null?"":String(grid[r][2])).replace(/,/g,"").trim(); var pr=(grid[r][3]==null?"":String(grid[r][3])).replace(/[^\d.]/g,"").trim(); if((it||de) && qt && Number(qt)>0) items.push({ item:it, desc:de, qty:qt, price:pr }); } return { po_num:poFindNum(text), po_date:poFindDate(text), vendor:vendor, vendor_addr:vaddr.join(", "), ship_to:ship, lines:items, notes:poFindNotes(lines) }; }
-  async function poPdfLines(file){ if(!window.pdfjsLib) throw new Error("pdf lib not loaded"); try{ if(!window.pdfjsLib.GlobalWorkerOptions.workerSrc) window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; }catch(e){} var buf=await file.arrayBuffer(); var pdf=await window.pdfjsLib.getDocument({data:buf}).promise; var all=[]; for(var p=1;p<=pdf.numPages;p++){ var page=await pdf.getPage(p); var tc=await page.getTextContent(); var byY={}; tc.items.forEach(function(it){ var y=Math.round(it.transform[5]); (byY[y]=byY[y]||[]).push({x:it.transform[4], s:it.str}); }); Object.keys(byY).map(Number).sort(function(a,b){return b-a;}).forEach(function(y){ var line=byY[y].sort(function(a,b){return a.x-b.x;}).map(function(o){return o.s;}).join(" ").replace(/\s{2,}/g," ").trim(); if(line) all.push(line); }); } return all; }
-  async function poExtractAndParse(file){ var name=(file.name||"").toLowerCase(); if(/\.pdf$/.test(name)){ var lines=await poPdfLines(file); return poParseLines(lines); } if(/\.(xlsx|xls|csv)$/.test(name)){ if(!window.XLSX) throw new Error("xlsx lib not loaded"); var buf=await file.arrayBuffer(); var wb=window.XLSX.read(new Uint8Array(buf),{type:"array"}); var ws=wb.Sheets[wb.SheetNames[0]]; var grid=window.XLSX.utils.sheet_to_json(ws,{header:1,defval:""}); return poParseGrid(grid); } throw new Error("unsupported type"); }
-
   function spoParseFile(file) {
     return new Promise(res => {
       const ext = (file.name.split(".").pop() || "").toLowerCase();
@@ -1676,7 +1667,7 @@
     const list = spoSortList(DB.supplierPos());
     let form;
     if (!spoParsed) {
-      form = '<div class="spodrop" ondragover="event.preventDefault()" ondragenter="event.preventDefault()" ondrop="UI.dropFiles(event, this)"><input type="file" id="spo-input" style="display:none" onchange="UI.spoFile(this)">' +
+      form = '<div class="spodrop"><input type="file" id="spo-input" accept=".xlsx,.xls,.csv,.pdf" style="display:none" onchange="UI.spoFile(this)">' +
         '<label for="spo-input" class="spodroplabel">&#128228; ' + L("spoDrop") + '</label></div>';
     } else {
       const p = spoParsed;
@@ -1730,6 +1721,7 @@
       desc: g(l, ["desc", "description", "name", "product"]),
       qty: g(l, ["qty", "quantity", "cases"]),
       price: g(l, ["price", "unit_price", "unitPrice", "cost"]),
+      unit: g(l, ["unit", "uom", "units", "u_o_m"]),
       tot: g(l, ["total", "line_total", "lineTotal", "amount", "ext"]),
       ship: String(g(l, ["ship", "ship_date", "shipdate", "expected", "eta"]) || "").slice(0, 10),
       recv: !!(l.recv || l.received === true)
@@ -1777,7 +1769,7 @@
     doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(grey[0], grey[1], grey[2]);
     doc.text("SLC Fulfillment Center", M, y + 15);
     doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(180, 120, 10);
-    
+    doc.text("BETA - PROTOTYPE", RM, y - 6, { align: "right" });
     y += 30; rule(y); y += 26;
     doc.setFont("helvetica", "bold"); doc.setFontSize(16); doc.setTextColor(ink[0], ink[1], ink[2]);
     doc.text("PURCHASE ORDER", M, y); y += 22;
@@ -1807,8 +1799,8 @@
         const dl = doc.splitTextToSize(descTxt, cQty - cDesc - 44);
         doc.text(String(l.item || ""), cItem, y);
         doc.text(dl.length ? dl : [""], cDesc, y);
-        if (l.qty !== "") doc.text(String(l.qty) + " lbs", cQty, y, { align: "right" });
-        if (l.price !== "") doc.text(money(l.price), cPrice, y, { align: "right" });
+        if (l.qty !== "") doc.text(String(l.qty) + (l.unit ? " " + l.unit : ""), cQty, y, { align: "right" });
+        if (l.price !== "") doc.text(moneyP(l.price), cPrice, y, { align: "right" });
         if (l.tot !== "") doc.text(money(l.tot), cTot, y, { align: "right" });
         y += Math.max(dl.length * 12, 14);
       });
@@ -1821,7 +1813,7 @@
     const nc = notesClean(s.notes);
     if (nc) { doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(grey[0], grey[1], grey[2]); doc.text("NOTES", M, y); y += 13; doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(ink[0], ink[1], ink[2]); const ns = doc.splitTextToSize(nc, RM - M); doc.text(ns, M, y); y += ns.length * 13; }
     doc.setFontSize(8); doc.setTextColor(grey[0], grey[1], grey[2]);
-    doc.text("Generated by Smackin' OS  -  PO " + (s.po_num || ""), M, 762);
+    doc.text("Generated by Smackin' OS (BETA)  -  PO " + (s.po_num || ""), M, 762);
     return doc;
   }
   // Inline compose panel for emailing a Supplier PO to the vendor (mirrors the ordform pattern).
@@ -1937,7 +1929,6 @@
       : '<span class="muted">' + L("poNoFile") + '</span>';
     return '<div class="card"><div class="spohead"><h2 style="margin:0">' + esc(s.vendor || L("supplierpos")) + (s.po_num ? ' &middot; ' + L("spoPO") + ' ' + esc(s.po_num) : "") + '</h2>' +
       '<div><button class="primary sm" onclick="UI.poEmailToggle()">&#9993; ' + L("poEmail") + '</button> ' +
-      '<button class="ghost sm" onclick="UI.poEdit(\'' + s.id + '\')">&#9998; Edit</button> ' +
       '<button class="ghost sm" onclick="UI.poPdf(\'' + s.id + '\')">&#128229; ' + L("rdDownload") + '</button> ' +
       '<button class="ghost sm" onclick="UI.spoCloseDetail()">&#8592; ' + L("poBackList") + '</button></div></div>' +
       '<div class="poinfo">' + info + '</div>' +
@@ -1989,10 +1980,9 @@
     let rows = "";
     for (let i = 0; i < poRows; i++) rows += '<tr>' + poRowInner(i) + '</tr>';
     const today = new Date().toISOString().slice(0, 10);
-    return dl + '<div class="card"><div class="spohead"><h2>' + (poEditId ? "Edit Purchase Order" : L("poNewTitle")) + '</h2>' +
+    return dl + '<div class="card"><div class="spohead"><h2>' + L("poNewTitle") + '</h2>' +
       '<button class="ghost sm" onclick="UI.poCreateBack()">' + L("poBackList") + '</button></div>' +
-      '<div class="spodrop" ondragover="event.preventDefault()" ondragenter="event.preventDefault()" ondrop="UI.dropFiles(event, this)" style="margin-bottom:12px"><input type="file" id="po-autofill-input" style="display:none" onchange="UI.poAutoFill(this)"><label for="po-autofill-input" class="spodroplabel">&#128228; Drop a PO file to auto-fill (Excel or PDF), or click to choose</label></div>' +
-      '<div class="row"><div><label>' + L("spoVendor") + '</label><select id="po-vendor-sel" onchange="UI.poVendorPick()"><option value="">-- Select vendor --</option>' + vendors.map(v => '<option value="' + esc(v) + '">' + esc(v) + '</option>').join("") + '<option value="__new__">+ New vendor...</option></select><input id="po-vendor" autocomplete="off" placeholder="New vendor name" style="display:none;margin-top:6px" onblur="UI.poVendorFill()"></div>' +
+      '<div class="row"><div><label>' + L("spoVendor") + '</label><input id="po-vendor" list="dl-po-vendor" autocomplete="off" onchange="UI.poVendorFill()" onblur="UI.poVendorFill()"></div>' +
       '<div><label>' + L("spoPO") + '</label><input id="po-num" autocomplete="off"></div>' +
       '<div><label>' + L("spoDate") + '</label><input id="po-date" value="' + today + '"></div></div>' +
       '<div class="row"><div><label>' + L("poVendorAddr") + '</label><input id="po-vaddr" autocomplete="off"></div>' +
@@ -2015,7 +2005,7 @@
   function viewOrderDocs() {
     const list = DB.orderDocs().slice().sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
     const form = '<div class="ordform">' +
-      '<div class="spodrop" ondragover="event.preventDefault()" ondragenter="event.preventDefault()" ondrop="UI.dropFiles(event, this)"><input type="file" id="odoc-input" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.docx" style="display:none" onchange="UI.odocFile(this)">' +
+      '<div class="spodrop"><input type="file" id="odoc-input" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.docx" style="display:none" onchange="UI.odocFile(this)">' +
       '<label for="odoc-input" class="spodroplabel">&#128193; ' + L("odocDrop") + '</label></div>' +
       (odocFile ? '<p class="hint">&#128206; ' + esc(odocFile.name) + '</p>' : '') +
       '<div class="row"><div><label>' + L("odocCustomer") + '</label><input id="odoc-cust" list="dl-odoc-cust" autocomplete="off"></div>' +
@@ -2116,11 +2106,11 @@
     const qv = n => (n != null && n !== "" ? n : "");
     const form = '<div class="ordform">' +
       (editing ? '<p class="hint">&#9998; ' + L("editingRow") + (ed.file_name ? ' &middot; ' + L("rlKeepDoc") : '') + '</p>' : '') +
-      '<div class="spodrop" ondragover="event.preventDefault()" ondragenter="event.preventDefault()" ondrop="UI.dropFiles(event, this)"><input type="file" id="rl-input" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.docx" style="display:none" onchange="UI.rlFile(this)">' +
+      '<div class="spodrop"><input type="file" id="rl-input" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.docx" style="display:none" onchange="UI.rlFile(this)">' +
       '<label for="rl-input" class="spodroplabel">&#128193; ' + L("rlDrop") + '</label></div>' +
       (recvFile ? '<p class="hint">&#128206; ' + esc(recvFile.name) + ' <button class="ghost sm" onclick="UI.rlClear()">' + L("spoCancel") + '</button></p>' : '') +
       '<div class="row"><div><label>' + L("rlDate") + '</label><input id="rl-date" type="date" value="' + (editing && ed.recv_date ? (ed.recv_date + "").slice(0, 10) : today) + '"></div>' +
-      '<div><label>' + L("rlSupplier") + '</label>' + '<datalist id="dl-rl-supplier">' + Array.from(new Set(DB.receivingLog().map(s => s.supplier).filter(Boolean))).sort().map(c => '<option value="' + esc(c) + '">').join("") + '</datalist>' + '<input id="rl-supplier" list="dl-rl-supplier" autocomplete="off" onchange="UI.rlSupplierFill()" onblur="UI.rlSupplierFill()" value="' + av(ed.supplier) + '"></div>' +
+      '<div><label>' + L("rlSupplier") + '</label><input id="rl-supplier" autocomplete="off" value="' + av(ed.supplier) + '"></div>' +
       '<div><label>' + L("rlPO") + '</label><input id="rl-po" autocomplete="off" value="' + av(ed.po_num) + '"></div></div>' +
       '<div class="row"><div><label>' + L("rlCarrier") + '</label><select id="rl-carrier"><option value=""' + (!ed.carrier ? ' selected' : '') + '></option>' + selOpt(SHIP_CARRIERS, ed.carrier, "") + '</select></div>' +
       '<div><label>' + L("rlTracking") + ' <span class="muted">(PRO)</span></label><input id="rl-tracking" autocomplete="off" value="' + av(ed.tracking) + '"></div>' +
@@ -2193,7 +2183,7 @@
       '<div class="row"><div><label>' + L("rCondition") + '</label><select id="r-cond">' + selOpts(DB.conditions) + '</select></div>' +
       '<div><label>' + L("rStatus") + '</label><select id="r-stat">' + selOpts(DB.recvStatuses) + '</select></div></div>' +
       '<h3 class="sub2" style="margin-top:12px">' + L("rDeliveryHdr") + '</h3>' +
-      '<div class="spodrop" ondragover="event.preventDefault()" ondragenter="event.preventDefault()" ondrop="UI.dropFiles(event, this)"><input type="file" id="r-doc-input" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.docx" style="display:none" onchange="UI.rlFile(this)"><label for="r-doc-input" class="spodroplabel">&#128193; ' + L("rAttachDoc") + '</label></div>' +
+      '<div class="spodrop"><input type="file" id="r-doc-input" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.docx" style="display:none" onchange="UI.rlFile(this)"><label for="r-doc-input" class="spodroplabel">&#128193; ' + L("rAttachDoc") + '</label></div>' +
       (recvFile ? '<p class="hint">&#128206; ' + esc(recvFile.name) + ' <button class="ghost sm" onclick="UI.rlClear()">' + L("spoCancel") + '</button></p>' : '') +
       '<div class="row"><div><label>' + L("rCarrier") + ' <span class="muted">(opt.)</span></label><select id="r-carrier"><option value=""></option>' + selOpts(SHIP_CARRIERS) + '</select></div>' +
       '<div><label>' + L("rProNum") + ' <span class="muted">(opt.)</span></label><input id="r-tracking" autocomplete="off" placeholder="PRO / 1Z..."></div>' +
@@ -2233,41 +2223,52 @@
       '<div class="row"><div>' + locInput("c-loc", "to") + '</div><div><label>' + L("newqty") + '</label><input id="c-qty" type="number" min="0" placeholder="' + L("newqty") + '"></div></div>' +
       opField("Adriana") + '<button class="primary" onclick="UI.count()">' + L("submitCount") + '</button></div>';
   }
+  // SKU dropdown for returns: every Shopify SKU (packs) + individual finished-bag items
+  function retSkuOptions() {
+    const packs = (window.SMACKIN_SKUS || []).map(x => { const t = x.t ? " - " + x.t : ""; return '<option value="' + esc(x.s) + '">' + esc(x.s + t) + '</option>'; }).join("");
+    const bags = DB.items().filter(i => i.category === "bag4" || i.category === "bag15")
+      .sort((a, b) => String(a.code || a.id).localeCompare(String(b.code || b.id)))
+      .map(i => '<option value="ITEM:' + esc(i.code || i.id) + '">' + esc(i.name || i.flavor || i.id) + '</option>').join("");
+    return '<optgroup label="' + esc(L("rShopifyGrp")) + '">' + packs + '</optgroup>' + (bags ? '<optgroup label="' + esc(L("rBagsGrp")) + '">' + bags + '</optgroup>' : '');
+  }
+  function retLineRow() {
+    return '<div class="row ret-line" style="gap:8px;align-items:flex-end;margin-bottom:6px">' +
+      '<div style="flex:3;min-width:200px"><label>SKU</label><select class="ret-line-sku"><option value="">' + esc(L("rPickSku")) + '</option>' + retSkuOptions() + '</select></div>' +
+      '<div style="flex:0 0 90px"><label>' + L("qty") + '</label><input class="ret-line-qty" type="number" min="0" placeholder="0"></div>' +
+      '<div style="flex:0 0 auto"><button class="ghost sm danger" onclick="UI.retDelLine(this)" title="remove">&#10005;</button></div>' +
+      '</div>';
+  }
   function viewReturns() {
     const isEcom = retMode === "ecom";
     const tab = (m, lbl) => '<button class="' + (retMode === m ? "primary" : "ghost") + ' sm" onclick="UI.retMode(\'' + m + '\')">' + lbl + '</button>';
     const today = new Date().toISOString().slice(0, 10);
-    // channel-specific fields
+    // channel-specific header fields (entered once per order)
     const majorFields =
       '<div class="row"><div><label>' + L("rCustomer") + '</label><input id="ret-cust" autocomplete="off" placeholder="Target, KeHE..."></div>' +
       '<div><label>' + L("rAddUpc") + ' <span class="muted">(opt.)</span></label><input id="ret-addupc" autocomplete="off"></div></div>';
     const ecomFields =
       '<div class="row"><div><label>' + L("rMarketplace") + '</label><select id="ret-mkt">' + selOpts(["Amazon", "TikTok Shop", "USPS", "Other"]) + '</select></div>' +
       '<div><label>' + L("rShipment") + '</label><input id="ret-ship" autocomplete="off" placeholder="Shipment ID"></div></div>' +
-      '<div class="row"><div><label>' + L("rShipAddr") + ' <span class="muted">(opt.)</span></label><input id="ret-addr" autocomplete="off"></div>' +
-      '<div><label>' + L("rProdCode") + ' <span class="muted">(opt.)</span></label><input id="ret-prod" autocomplete="off"></div>' +
-      '<div><label>' + L("rUpc") + ' <span class="muted">(opt.)</span></label><input id="ret-upc" autocomplete="off"></div></div>';
-    const form = '<div class="card"><h2>' + L("returns") + '</h2><p class="hint">' + L("returnsHint2") + '</p>' +
+      '<div class="row"><div><label>' + L("rShipAddr") + ' <span class="muted">(opt.)</span></label><input id="ret-addr" autocomplete="off"></div></div>';
+    const form = '<div class="card"><h2>' + L("returns") + '</h2><p class="hint">' + L("rOrderNote") + '</p>' +
       '<div class="row" style="gap:8px;margin-bottom:8px">' + tab("major", L("rMajor")) + tab("ecom", L("rEcom")) + '</div>' +
       (isEcom ? ecomFields : majorFields) +
-      itemScan("ret-code", "ret-qty") +
-      '<div class="row"><div><label>' + L("qty") + '</label><input id="ret-qty" type="number" min="0" placeholder="' + L("enter") + '"></div>' +
+      '<div class="row"><div><label>' + L("rRMA") + ' <span class="muted">(opt.)</span></label><input id="ret-order" autocomplete="off" placeholder="Order # / RMA"></div>' +
       '<div><label>' + L("rTracking") + ' <span class="muted">(opt.)</span></label><input id="ret-track" autocomplete="off" placeholder="1Z... / tracking #"></div>' +
       '<div><label>' + L("rReturnDate") + '</label><input id="ret-date" type="date" value="' + today + '"></div></div>' +
       '<div class="row"><div><label>' + L("rReason") + '</label><select id="ret-reason">' + selOpts(DB.returnReasons) + '</select></div>' +
       '<div><label>' + L("rDisposition") + '</label><select id="ret-disp">' + selOpts(DB.returnDispositions) + '</select></div></div>' +
-      '<div class="row"><div><label><input type="checkbox" id="ret-kit" onchange="UI.retKitToggle()"> ' + L("rIsKit") + '</label>' +
-      '<input id="ret-kitsku" autocomplete="off" placeholder="SS-CLSC-4OZ-12PK" style="display:none;margin-top:6px"></div>' +
-      '<div><label style="visibility:hidden">.</label><label id="ret-explode-wrap" style="display:none"><input type="checkbox" id="ret-explode" checked> ' + L("rExplode") + '</label></div></div>' +
-      '<p class="hint" id="ret-kithint" style="display:none">' + L("rKitHint") + '</p>' +
+      '<h3 class="sub2" style="margin:14px 0 6px">' + L("rItemsReturned") + '</h3>' +
+      '<div id="ret-lines">' + retLineRow() + '</div>' +
+      '<div style="margin:4px 0 10px"><button class="ghost sm" onclick="UI.retAddLine()">' + L("rAddItem") + '</button></div>' +
       opField() + '<button class="primary" onclick="UI.doReturn()">' + L("submitReturn") + '</button></div>';
     // returns log
     const log = DB.returnsLog ? DB.returnsLog() : [];
     const dupKeys = {}; log.forEach(r => { const k = (r.dup_key || ""); if (k) dupKeys[k] = (dupKeys[k] || 0) + 1; });
-    const rows = log.slice(0, 100).map(r => {
+    const rows = log.slice(0, 150).map(r => {
       const dup = r.dup_key && dupKeys[r.dup_key] > 1;
       const who = r.channel === "ecom" ? (r.marketplace || L("rEcom")) : (r.customer || L("rMajor"));
-      const ref = r.tracking || r.shipment_id || "";
+      const ref = r.order_ref || r.tracking || r.shipment_id || "";
       return '<tr' + (dup ? ' style="background:#FDECEA"' : '') + '><td class="sm">' + esc(r.return_date || (r.created_at ? r.created_at.slice(0, 10) : "")) + '</td>' +
         '<td>' + esc(who) + (r.channel === "ecom" ? ' <span class="muted sm">e-com</span>' : '') + '</td>' +
         '<td>' + esc(r.product || r.item_code || "") + (r.is_kit ? ' <span class="tag">' + L("rKitTag") + '</span>' : '') + '</td>' +
@@ -2397,60 +2398,6 @@
     return style + head + body;
   }
   // Launch Schedule — Allen's Horizon new-flavor launch calendar (read-only reference).
-
-  let LP_DATA=null, LP_LOADING=false, LP_LINE="all", LP_Q="";
-  const LP_STEPS=[["step_box","Box","Matt"],["step_dieline","Dieline","Matt"],["step_design","Design","Marc"],["step_flavor","Flavor","Max"],["step_seasoning","Seasoning","Michele"],["step_renders","Renders","Marc"],["step_nutrition","Nutrition","Brittney/Monica"],["step_belmark","Belmark","Marc"],["step_checkmark","Checkmark","Marc"],["step_po","PO","Matt"]];
-  function lpLoad(force){
-    if(LP_LOADING) return;
-    if(LP_DATA!==null && !force) return;
-    LP_LOADING=true;
-    var cfg=window.SMACKIN_CONFIG||{}; var base=cfg.SUPABASE_URL, key=cfg.SUPABASE_ANON_KEY;
-    fetch(base+"/rest/v1/launch_pipeline?select=*&order=sort_order.asc",{headers:{apikey:key,Authorization:"Bearer "+key}})
-      .then(function(r){return r.json();})
-      .then(function(d){ LP_DATA=Array.isArray(d)?d:[]; LP_LOADING=false; if(active==="launchpipe") render(); })
-      .catch(function(e){ LP_DATA=[]; LP_LOADING=false; if(active==="launchpipe") render(); });
-  }
-  function lpDot(v){
-    if(v==="yes") return '<span title="Done" style="color:#1a7f37;font-weight:700">&#10003;</span>';
-    if(v==="na") return '<span title="N/A" style="color:#c9c9c9">&ndash;</span>';
-    return '<span title="To do" style="color:#E39412;font-weight:700">&#9675;</span>';
-  }
-  function viewLaunchPipeline(){
-    if(LP_DATA===null){ lpLoad(); return '<div class="card"><h2>Launch Pipeline</h2><p class="muted">Loading launch pipeline&hellip;</p></div>'; }
-    var rows=LP_DATA.slice();
-    if(LP_LINE!=="all") rows=rows.filter(function(r){return (r.line||"").toLowerCase()===LP_LINE;});
-    var q=(LP_Q||"").toLowerCase();
-    if(q) rows=rows.filter(function(r){return (r.product||"").toLowerCase().indexOf(q)>=0;});
-    var groups=[], gmap={};
-    rows.forEach(function(r){ var w=r.launch_week||"(no week)"; if(!gmap[w]){gmap[w]={week:w,items:[]}; groups.push(gmap[w]);} gmap[w].items.push(r); });
-    var seg=["all","seeds","nuts"].map(function(k){ return '<button class="ghost sm'+(LP_LINE===k?' active':'')+'" onclick="UI.lpLine(\''+k+'\')">'+(k==="all"?"All lines":(k.charAt(0).toUpperCase()+k.slice(1)))+'</button>'; }).join("");
-    var head='<div class="card"><div class="spohead"><h2>Launch Pipeline</h2>'+
-      '<button class="ghost sm" onclick="UI.lpRefresh()">&#8635; Refresh</button></div>'+
-      '<p class="hint">'+LP_DATA.length+' products &middot; 10-step launch pipeline (owner shown under each column). Mirrored from Product Planning.</p>'+
-      '<div class="row" style="align-items:center;gap:10px;margin-bottom:10px">'+seg+
-      '<input id="lp-q" placeholder="Search product..." value="'+esc(LP_Q||"")+'" oninput="UI.lpSearch(this.value)" style="max-width:220px"></div>';
-    var stepH=LP_STEPS.map(function(s){ return '<th class="center" title="'+s[2]+'">'+s[1]+'<br><span class="muted" style="font-weight:400;font-size:10px">'+s[2]+'</span></th>'; }).join("");
-    var colspan=5+LP_STEPS.length;
-    var body="";
-    groups.forEach(function(g){
-      body+='<tr><td colspan="'+colspan+'" style="background:#f4f4f5;font-weight:700;padding:6px 8px">'+esc(g.week)+' <span class="muted" style="font-weight:400">('+g.items.length+')</span></td></tr>';
-      g.items.forEach(function(r){
-        var d=0,t=0; LP_STEPS.forEach(function(s){ var v=r[s[0]]; if(v==="yes"){d++;t++;} else if(v==="no"){t++;} });
-        var ready=(t>0 && d===t);
-        var chip=ready?'<span class="pill ok">Ready</span>':'<span class="pill low">'+d+'/'+t+'</span>';
-        body+='<tr>'+
-          '<td><strong>'+esc(r.product||"")+'</strong><br><span class="muted" style="font-size:10px">'+esc(r.line||"")+'</span></td>'+
-          '<td>'+esc(r.type||"")+'</td>'+
-          '<td style="font-size:11px">'+esc(r.bag_po||"")+'</td>'+
-          '<td style="font-size:11px">'+esc(r.bag_eta||r.launch_date||"")+'</td>'+
-          LP_STEPS.map(function(s){ return '<td class="center">'+lpDot(r[s[0]])+'</td>'; }).join("")+
-          '<td class="center">'+chip+'</td>'+
-        '</tr>';
-      });
-    });
-    return head+'<div style="overflow-x:auto"><table class="potable"><thead><tr><th>Product</th><th>Type</th><th>Bag PO #</th><th>ETA</th>'+stepH+'<th class="center">Status</th></tr></thead><tbody>'+body+'</tbody></table></div></div>';
-  }
-
   function viewLaunch() {
     const LS = (typeof window !== "undefined" && window.LAUNCH_SCHEDULE) ? window.LAUNCH_SCHEDULE : [];
     const tracked = nm => { const k = String(nm || "").toLowerCase(); return DB.items().some(i => String(i.flavor || "").toLowerCase() && k.indexOf(String(i.flavor || "").toLowerCase()) >= 0); };
@@ -2470,6 +2417,78 @@
     const t = new Date(), s = t.getFullYear() + "." + String(t.getMonth() + 1).padStart(2, "0") + "." + String(t.getDate()).padStart(2, "0");
     const n = (DB.prodOrdersCustom ? DB.prodOrdersCustom() : []).filter(o => String(o.po || "").indexOf(s) === 0).length + 1;
     return s + "-" + String(n).padStart(2, "0");
+  }
+  // ===== SKU Lookup ("Buscar SKU") — Lenny's e-commerce SKU reference: image + contents =====
+  let skuQuery = "", skuEditSku = null;
+  function skuComponentsText(sku) {
+    try { const comp = (window.KITS && KITS.explode) ? KITS.explode(sku) : null; if (comp && comp.length) return comp.map(c => c.qty + " x " + c.flavor).join(", "); } catch (e) {}
+    return "";
+  }
+  function skuBaseList() {
+    const base = (window.SMACKIN_SKUS || []).map(x => ({ sku: x.s, title: x.t, bag: x.b, contents: x.c }));
+    const cat = DB.skuCatalog ? DB.skuCatalog() : {}; const have = {}; base.forEach(b => have[String(b.sku).toUpperCase()] = 1);
+    Object.keys(cat).forEach(k => { if (!have[k]) { const c = cat[k]; base.push({ sku: c.sku, title: c.name || c.sku, bag: c.size || "", contents: c.contents || "" }); } });
+    return base;
+  }
+  function skuMatches(q) {
+    q = String(q || "").trim().toLowerCase(); const base = skuBaseList();
+    if (!q) return base;
+    return base.filter(b => (b.sku + " " + (b.title || "") + " " + (b.contents || "")).toLowerCase().indexOf(q) >= 0);
+  }
+  function skuCard(b) {
+    const cat = DB.skuCatalogGet ? DB.skuCatalogGet(b.sku) : null;
+    const img = cat && cat.image_url ? cat.image_url : "";
+    const contents = skuComponentsText(b.sku) || b.contents || (cat && cat.contents) || "";
+    const notes = cat && cat.notes ? cat.notes : "";
+    return '<div class="card" style="display:flex;gap:14px;align-items:flex-start">' +
+      '<div style="flex:none;width:120px;height:120px;border-radius:10px;background:rgba(128,128,128,.1);display:flex;align-items:center;justify-content:center;overflow:hidden">' +
+      (img ? '<img src="' + esc(img) + '" alt="" style="max-width:100%;max-height:100%;object-fit:contain">' : '<span class="muted sm" style="text-align:center;padding:6px">' + L("skNoImg") + '</span>') + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+      '<div style="font-weight:800;font-size:15px">' + esc(b.title || b.sku) + '</div>' +
+      '<div class="muted sm" style="margin:2px 0">' + esc(b.sku) + (b.bag ? ' &middot; ' + esc(b.bag) : '') + '</div>' +
+      '<div style="margin-top:6px"><b>' + L("skContents") + ':</b> ' + esc(contents || "—") + '</div>' +
+      (notes ? '<div style="margin-top:4px;color:#2E6FB5">' + esc(notes) + '</div>' : '') +
+      '<div style="margin-top:8px"><button class="ghost sm" onclick="UI.skuEdit(\'' + esc(b.sku) + '\')">' + L("skEditBtn") + '</button></div>' +
+      '</div></div>';
+  }
+  function skuShopifyGuideHTML() {
+    return '<div style="padding:4px 2px 2px">' +
+      '<p class="hint" style="margin:6px 0"><b>Espanol:</b> Como buscar un SKU en Shopify</p>' +
+      '<ol style="margin:0 0 10px 18px;line-height:1.5"><li>Entra a Shopify (admin.shopify.com) e inicia sesion.</li>' +
+      '<li>En el menu de la izquierda, haz clic en <b>Products</b> (Productos).</li>' +
+      '<li>Arriba, en <b>Search products</b> (Buscar productos), pega el SKU.</li>' +
+      '<li>Si no aparece, abre un producto y revisa la seccion <b>Variants</b> (Variantes) — el SKU esta en cada variante.</li>' +
+      '<li>Abre el producto para ver la <b>imagen</b> y el <b>contenido</b>.</li>' +
+      '<li>Si es un SKU nuevo que no esta en esta lista, avisa a Troy o agregalo aqui con <b>+ ' + L("skAddNew") + '</b> para guardarlo.</li></ol>' +
+      '<p class="hint" style="margin:6px 0"><b>English:</b> How to find a SKU in Shopify</p>' +
+      '<ol style="margin:0 0 4px 18px;line-height:1.5"><li>Sign in to Shopify (admin.shopify.com).</li>' +
+      '<li>Left menu &rarr; <b>Products</b>.</li><li>Use <b>Search products</b> at the top and paste the SKU.</li>' +
+      '<li>If it does not show, open a product and check <b>Variants</b> — the SKU is on each variant.</li>' +
+      '<li>Open the product to see its image and contents.</li></ol></div>';
+  }
+  function viewSkuLookup() {
+    if (skuEditSku !== null) return skuEditForm();
+    const results = skuMatches(skuQuery);
+    const head = '<div class="card"><div class="suprow"><h2 style="margin:0;flex:1">&#128269; ' + L("skulookup") + '<span class="deptt" style="background:rgba(46,111,181,.16)">E-COMMERCE</span></h2>' +
+      '<button class="primary sm" onclick="UI.skuEdit(\'__new__\')">+ ' + L("skAddNew") + '</button></div>' +
+      '<p class="hint" style="margin:6px 0 8px">' + L("skHint") + '</p>' +
+      '<input id="sk-q" autocomplete="off" placeholder="' + L("skPlaceholder") + '" value="' + esc(skuQuery) + '" oninput="UI.skuSearch(this.value)" style="font-size:16px;padding:10px 12px;width:100%">' +
+      '<div class="muted sm" style="margin-top:6px"><span id="sk-count">' + results.length + '</span> ' + L("skResults") + '</div></div>';
+    const guide = '<details class="card"><summary style="cursor:pointer;font-weight:700">&#128218; ' + L("skGuideTitle") + '</summary>' + skuShopifyGuideHTML() + '</details>';
+    const body = '<div id="sk-results">' + (results.length ? results.slice(0, 60).map(skuCard).join("") : '<div class="card"><p class="muted">' + L("skNone") + '</p></div>') + '</div>';
+    return head + guide + body;
+  }
+  function skuEditForm() {
+    const isNew = skuEditSku === "__new__";
+    const fromBase = (window.SMACKIN_SKUS || []).map(x => ({ sku: x.s, name: x.t, size: x.b, contents: x.c })).find(x => String(x.sku).toUpperCase() === String(skuEditSku).toUpperCase());
+    const cur = isNew ? {} : Object.assign({ sku: skuEditSku }, fromBase || {}, (DB.skuCatalogGet ? DB.skuCatalogGet(skuEditSku) : null) || {});
+    const f = (id, lbl, val) => '<div><label>' + lbl + '</label><input id="' + id + '" value="' + esc(val || "") + '"></div>';
+    return '<div class="card poform"><div class="suprow"><h2 style="margin:0;flex:1">' + (isNew ? L("skAddNew") : L("skEditBtn")) + '</h2><button class="ghost sm" onclick="UI.skuEditClose()">' + L("skBack") + '</button></div>' +
+      '<div class="row">' + f("sk-sku", "SKU", cur.sku) + f("sk-name", L("skName"), cur.name) + f("sk-size", L("skSize"), cur.size) + '</div>' +
+      '<div class="row">' + f("sk-img", L("skImgUrl"), cur.image_url) + '</div>' +
+      '<div class="row"><div style="grid-column:1/-1"><label>' + L("skContents") + '</label><textarea id="sk-contents" rows="2">' + esc(cur.contents || "") + '</textarea></div></div>' +
+      '<div class="row"><div style="grid-column:1/-1"><label>' + L("skNotes") + '</label><textarea id="sk-notes" rows="2">' + esc(cur.notes || "") + '</textarea></div></div>' +
+      '<button class="primary" onclick="UI.skuSave()">' + L("skSaveBtn") + '</button></div>';
   }
   // ===== Allen's Flavor Reorder Tracker (digital version of his PO-decision spreadsheet) =====
   // Pallets on hand default from LIVE finished-bag inventory (4oz /2500 per pallet, 1.5oz /6250);
@@ -2783,64 +2802,6 @@
     return '<div class="card"><h2>&#128260; ' + L("reorder15") + '</h2><p class="hint">' + L("r15Hint") + '</p>' + kpis + '</div>' + groupHtml +
       '<div class="card"><p class="hint">&#9888;&#65039; ' + L("r15Note") + '</p></div>';
   }
-  function dailyResultsDoc(date){
-    var J = window.jspdf && window.jspdf.jsPDF; if(!J) return null;
-    var doc = new J({unit:"pt", format:"letter"});
-    var W = 612, M = 40, cw = W - 2*M;
-    var NAVY=[18,35,63], ORANGE=[242,101,34], GREY=[107,114,128], LT=[243,244,246], LINE=[229,231,235], OLT=[253,232,220], INK=[31,41,55], WHITE=[255,255,255];
-    function fnum(n){ try{ return fmt(n); }catch(e){ return String(n); } }
-    var day = (DB.prodDay? DB.prodDay(date,"retail"):null) || {};
-    var pallets = (DB.prodPallets? DB.prodPallets(date):[]).filter(function(p){return (p.channel||"retail")==="retail";});
-    var cs=Number(day.counter_start)||0, ce=Number(day.counter_end)||0, boxes=ce>cs?ce-cs:0;
-    var casesTotal=0; pallets.forEach(function(p){ casesTotal += Number(p.cases)||0; });
-    var pu=Number(day.pallets_used)||0, lot=day.lot||"", rnotes=day.notes||"";
-    var fd=(DB.fulfillmentDaily? DB.fulfillmentDaily():[]).filter(function(r){return r.fdate===date;})[0] || {};
-    var labels=(fd.ecom_labels&&fd.ecom_labels.length)? fd.ecom_labels.slice(): [];
-    labels.sort(function(a,b){ return (Number(b.labels)||0)-(Number(a.labels)||0); });
-    var ecomTotal=Number(fd.ecom_total)|| labels.reduce(function(a,e){return a+(Number(e.labels)||0);},0);
-    var amazonUnits=Number(fd.amazon_units)||0, fnotes=fd.notes||"";
-    var dl=date; try{ dl=new Date(date+"T00:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"}); }catch(e){}
-    function fill(c){ doc.setFillColor(c[0],c[1],c[2]); }
-    function stroke(c){ doc.setDrawColor(c[0],c[1],c[2]); }
-    function tcol(c){ doc.setTextColor(c[0],c[1],c[2]); }
-    function F(s,sz){ doc.setFont("helvetica",s); doc.setFontSize(sz); }
-    var y=40;
-    fill(NAVY); doc.rect(M,y,cw,56,"F"); fill(ORANGE); doc.rect(M,y+56,cw,3,"F");
-    tcol(ORANGE); F("bold",17); doc.text("SMACKIN'", M+14, y+26);
-    tcol(WHITE); F("normal",7.5); doc.text("SLC FULFILLMENT CENTER", M+14, y+40);
-    tcol(WHITE); F("bold",14); doc.text("Daily Production & Fulfillment Results", M+cw-14, y+24, {align:"right"});
-    tcol([175,192,218]); F("normal",9.5); doc.text(dl, M+cw-14, y+40, {align:"right"});
-    y += 75;
-    var kpis=[[fnum(boxes),"Boxes produced"],[fnum(casesTotal),"Cases logged"],[fnum(pu),"Pallets used"],[fnum(ecomTotal),"Labels processed"],[fnum(amazonUnits),"Amazon units"]];
-    var kw=(cw-4*8)/5, kh=42;
-    kpis.forEach(function(k,i){ var x=M+i*(kw+8); fill(WHITE); doc.rect(x,y,kw,kh,"F"); fill(ORANGE); doc.rect(x,y,kw,2.2,"F"); stroke(LINE); doc.setLineWidth(.6); doc.rect(x,y,kw,kh,"S"); tcol(NAVY); F("bold",15); doc.text(String(k[0]), x+kw/2, y+22, {align:"center"}); tcol(GREY); F("normal",7); doc.text(k[1], x+kw/2, y+34, {align:"center"}); });
-    y += kh+18;
-    function section(t){ fill(NAVY); doc.rect(M,y,cw,20,"F"); fill(ORANGE); doc.rect(M,y,4,20,"F"); tcol(WHITE); F("bold",11); doc.text(t, M+12, y+14); y += 26; }
-    function noteBox(label,text){ F("normal",8.5); var lines=doc.splitTextToSize((label?label+" ":"")+text, cw-16); var h=lines.length*11+10; fill(LT); doc.rect(M,y,cw,h,"F"); fill(ORANGE); doc.rect(M,y,3,h,"F"); tcol(INK); doc.text(lines, M+9, y+13); y += h+8; }
-    section("RETAIL PRODUCTION");
-    var rc=[M+8, M+250, M+330, M+400];
-    fill(NAVY); doc.rect(M,y,cw,18,"F"); tcol(WHITE); F("bold",9);
-    doc.text("Flavor",rc[0],y+12); doc.text("Code",rc[1],y+12); doc.text("Cases",rc[2],y+12,{align:"right"}); doc.text("Customer",rc[3],y+12); y+=18;
-    var rrows = pallets.slice().map(function(p){ var f=(typeof PROD_FMAP!=="undefined")?PROD_FMAP[p.flavor_code]:null; return [ (f?f.name:p.flavor_code), p.flavor_code, String(Number(p.cases)||0), (p.notes||"") ]; });
-    F("normal",9);
-    if(!rrows.length){ tcol(GREY); doc.text("No retail pallets logged.", rc[0], y+11); y+=16; }
-    rrows.forEach(function(r,i){ if(i%2){ fill(LT); doc.rect(M,y,cw,16,"F"); } tcol(INK); doc.text(String(r[0]).slice(0,40),rc[0],y+11); doc.text(String(r[1]),rc[1],y+11); doc.text(String(r[2]),rc[2],y+11,{align:"right"}); doc.text(String(r[3]).slice(0,26),rc[3],y+11); y+=16; });
-    fill(OLT); doc.rect(M,y,cw,16,"F"); tcol(NAVY); F("bold",9); doc.text("Total",rc[0],y+11); doc.text(fnum(casesTotal),rc[2],y+11,{align:"right"}); y+=20;
-    tcol(INK); F("normal",8.5); doc.text("Counter: "+fnum(cs)+" -> "+fnum(ce)+" ("+fnum(boxes)+" boxes)     Pallets used: "+fnum(pu)+(lot?("     Lots: "+lot):""), M, y+4); y+=14;
-    if(rnotes) noteBox("Notes:", rnotes);
-    y+=4;
-    section("E-COMMERCE FULFILLMENT");
-    fill(NAVY); doc.rect(M,y,cw,18,"F"); tcol(WHITE); F("bold",9); doc.text("Associate",M+8,y+12); doc.text("Labels",M+cw-8,y+12,{align:"right"}); y+=18;
-    var emax=1; labels.forEach(function(e){ emax=Math.max(emax, Number(e.labels)||0); });
-    F("normal",9);
-    if(!labels.length){ tcol(GREY); doc.text("No e-commerce labels logged.", M+8, y+11); y+=16; }
-    labels.forEach(function(e,i){ if(i%2){ fill(LT); doc.rect(M,y,cw,16,"F"); } tcol(INK); doc.text(String(e.employee||"").slice(0,40), M+8, y+11); var bx=M+250, bw=160; fill(LT); doc.rect(bx,y+4,bw,8,"F"); fill(ORANGE); doc.rect(bx,y+4,Math.max(3,bw*((Number(e.labels)||0)/emax)),8,"F"); tcol(INK); doc.text(fnum(Number(e.labels)||0), M+cw-8, y+11, {align:"right"}); y+=16; });
-    fill(OLT); doc.rect(M,y,cw,16,"F"); tcol(NAVY); F("bold",9); doc.text("Total processed",M+8,y+11); doc.text(fnum(ecomTotal),M+cw-8,y+11,{align:"right"}); y+=20;
-    tcol(INK); F("normal",8.5); doc.text("Amazon: "+fnum(amazonUnits)+" units", M, y+4); y+=14;
-    if(fnotes) noteBox("Notes:", fnotes);
-    y+=8; stroke(ORANGE); doc.setLineWidth(1); doc.line(M,y,M+cw,y); y+=12; tcol(GREY); F("normal",7.5); doc.text("Generated from Smackin' OS  -  Daily Production & Daily Fulfillment logs", M, y);
-    return doc;
-  }
   function viewProdLog() {
     const today = new Date().toISOString().slice(0, 10);
     const date = plDate || today;
@@ -2874,7 +2835,6 @@
       '<input type="date" value="' + date + '" onchange="UI.plDate(this.value)" style="width:auto">' +
       '<button class="ghost sm" title="Next day" onclick="UI.plDateShift(1)">&#9654;</button>' +
       (date === today ? '' : '<button class="ghost sm" onclick="UI.plDate(\'' + today + '\')">' + L("plToday") + '</button>') +
-      '<button class="ghost sm" onclick="UI.dailyResultsPdf()" title="Download the branded daily results report">&#11015; Daily Results PDF</button>' +
       '</div></div>' +
       '<div class="row"><div><label>' + L("plLot") + '</label><input value="' + esc(av(day.lot)) + '" placeholder="' + L("plLotPh") + '" onchange="UI.plDay(\'lot\',this.value)"><div class="muted sm" style="margin-top:3px">' + L("plLotHint") + '</div></div>' +
       '<div><label>' + L("plShiftLead") + '</label><input value="' + esc(day.shift_lead != null && day.shift_lead !== "" ? day.shift_lead : "Jesus Arias") + '" onchange="UI.plDay(\'shift_lead\',this.value)"></div></div>' +
@@ -3805,7 +3765,7 @@
   function viewReference() {
     const docs = DB.referenceDocs ? DB.referenceDocs() : [];
     const form = '<div class="ordform">' +
-      '<div class="spodrop" ondragover="event.preventDefault()" ondragenter="event.preventDefault()" ondrop="UI.dropFiles(event, this)"><input type="file" id="ref-input" multiple style="display:none" onchange="UI.refPick(this)">' +
+      '<div class="spodrop"><input type="file" id="ref-input" multiple style="display:none" onchange="UI.refPick(this)">' +
       '<label for="ref-input" class="spodroplabel">&#128193; ' + L("refDrop") + '</label></div>' +
       (refFiles && refFiles.length ? '<p class="hint">&#128206; ' + refFiles.length + ' ' + L("refSelected") + '</p>' : '') +
       '<div class="row"><div><label>' + L("refCategory") + '</label><select id="ref-cat">' + REF_CATS.map(c => "<option>" + c + "</option>").join("") + '</select></div>' +
@@ -4108,27 +4068,6 @@
       T.map(t => '<button class="' + (active === t[0] ? "active" : "") + '" onclick="UI_go(\'' + t[0] + '\')">' + t[1] + '</button>').join("") + '</div>';
   }
   function viewDemand() { return deptDemandBoard(dmdDept, true); }
-  function dsSourceCard(){
-    const dl=(DB.demandLines?DB.demandLines():[]).filter(r=>(r.status||"Open")==="Open");
-    const spsF={}; let spsB=0, spsC=0;
-    dl.forEach(r=>{ spsB+=Number(r.bags)||0; spsC+=Number(r.cases)||0; if(r.flavor) spsF[r.flavor]=1; });
-    const ed=(DB.ecomDemand?DB.ecomDemand():[]);
-    const ssF={}; let ssB=0;
-    ed.forEach(r=>{ ssB+=Number(r.bags)||0; if(r.flavor) ssF[r.flavor]=1; });
-    const ssC=Math.round(ssB/72);
-    const poOpen=(DB.orders?DB.orders():[]).filter(r=>r.stripe_link&&String(r.stripe_link).trim()&&(r.status||"Open")==="Open"&&!(r.tracking&&String(r.tracking).trim())).length;
-    const row=(name,bags,cases,flav,stat,live)=>'<tr><td><b>'+name+'</b></td><td class="right">'+(bags==null?'<span class="muted">&mdash;</span>':fmt(bags))+'</td><td class="right">'+(cases==null?'<span class="muted">&mdash;</span>':fmt(cases))+'</td><td class="right">'+(flav==null?'<span class="muted">&mdash;</span>':flav)+'</td><td class="sm '+(live?'':'muted')+'">'+stat+'</td></tr>';
-    const totB=spsB+ssB, totC=spsC+ssC;
-    return '<div class="card"><div class="suprow"><h2 style="margin:0;flex:1">Demand by Source</h2><span class="muted sm">run targets from Allen&#39;s POs</span></div>'+
-      '<p class="hint" style="margin:2px 0 8px">Where today&#39;s demand comes from. Build to the combined total per flavor, not per order.</p>'+
-      '<div class="tblwrap"><table><thead><tr><th>Source</th><th class="right">Bags</th><th class="right">Cases</th><th class="right">Flavors</th><th>Status</th></tr></thead><tbody>'+
-      row('SPS Commerce',spsB,spsC,Object.keys(spsF).length,'Live',true)+
-      row('PO-Tab',null,null,null,'Live &mdash; '+poOpen+' open (manual/Stripe); flavor split via Stripe = phase 2',true)+
-      row('ShipStation',ssB,ssC,Object.keys(ssF).length,'Live',true)+
-      row('TikTok',null,null,null,'Pending &mdash; confirming source with Salvador',false)+
-      '<tr style="background:#F0F0F0"><td><b>Total (live)</b></td><td class="right"><b>'+fmt(totB)+'</b></td><td class="right"><b>'+fmt(totC)+'</b></td><td></td><td></td></tr>'+
-      '</tbody></table></div></div>';
-  }
   function viewDemandSched() {
     const open = (DB.demandLines ? DB.demandLines() : []).filter(r => (r.status || "Open") === "Open");
     if (!open.length) return '<div class="card"><h2>' + L("demandsched") + '</h2><p class="muted">' + L("dsNone") + '</p>' +
@@ -4164,7 +4103,7 @@
       '<tr style="background:#E8E8E8"><td><b>' + L("dsGrand") + '</b></td><td class="right"><b>' + fmt(gDem) + '</b></td><td></td>' +
       '<td class="right"><b>' + fmt(gOn) + '</b></td><td class="right"><b>' + fmt(gProd) + '</b></td><td class="right"><b>' + fmt(gProd * 72) + '</b></td><td></td><td></td><td></td></tr>' +
       '</tbody></table></div></div>';
-    return dsSourceCard() + head + table;
+    return head + table;
   }
   function viewDemandImport() {
     const cur = (DB.demandLines ? DB.demandLines() : []);
@@ -4502,29 +4441,8 @@
       tiles +
       '<button class="ghost sm" style="margin-top:10px" onclick="UI.flAdd(\'' + area + '\')">' + L("flAddMachine") + '</button></div>';
   }
-  function liveSensorCard(){
-    const ml = (DB.machineLive ? DB.machineLive() : []);
-    if(!ml.length) return '';
-    const rows = ml.map(m=>{
-      const dot = m.status==='running' ? '#2E7D32' : (m.status==='maintenance' ? '#E39412' : (m.status==='stale' ? '#B52024' : '#9AA0A6'));
-      const seen = m.last_seen ? floorAgo(m.last_seen) : '';
-      return '<tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:'+dot+'"></span></td>'+
-        '<td><b>'+esc(m.machine_id)+'</b><div class="muted sm">'+esc(m.line||'')+(m.operator?(' &middot; '+esc(m.operator)):'')+'</div></td>'+
-        '<td>'+esc(m.flavor||'')+'</td>'+
-        '<td class="right"><b style="font-size:18px">'+fmt(m.today_bags||0)+'</b><div class="muted sm">today</div></td>'+
-        '<td class="right">'+(m.rate_per_min?(fmt(Math.round(m.rate_per_min*10)/10)+'/min'):'&mdash;')+'</td>'+
-        '<td class="muted sm">'+seen+'</td></tr>';
-    }).join('');
-    const totBags = ml.reduce((s,m)=>s+(Number(m.today_bags)||0),0);
-    return '<div class="card"><div class="suprow"><h2 style="margin:0;flex:1">&#128225; Live Bag Counts</h2><span class="pill ok">sensors</span></div>'+
-      '<p class="hint" style="margin:6px 0 8px">Real-time counts from the line sensors (production.local). Auto-updates as bags run.</p>'+
-      '<div class="tblwrap"><table><thead><tr><th></th><th>Machine</th><th>Flavor</th><th class="right">Today</th><th class="right">Rate</th><th>Seen</th></tr></thead><tbody>'+rows+
-      '<tr style="background:#F0F0F0"><td></td><td><b>Total today</b></td><td></td><td class="right"><b>'+fmt(totBags)+'</b></td><td></td><td></td></tr>'+
-      '</tbody></table></div></div>';
-  }
   function viewFloor() {
     return '<div class="card"><h2>' + L("floor") + '</h2><p class="hint">' + L("floorHint") + '</p></div>' +
-      liveSensorCard() +
       floorSection("mixing", L("mixing"), "Leo Ontiveros") +
       floorSection("pmac", L("pmac"), "Wilson Delgado");
   }
@@ -5400,47 +5318,61 @@
       [["ret-kitsku", ""], ["ret-explode-wrap", ""], ["ret-kithint", ""]].forEach(([id]) => { const e = $(id); if (e) e.style.display = on ? "" : "none"; });
     },
     async delReturn(id) { if (!confirm(L("rDelConfirm"))) return; await DB.deleteReturn(id, opVal()); toast("✓"); render(); },
+    retAddLine() { const c = $("ret-lines"); if (c) c.insertAdjacentHTML("beforeend", retLineRow()); },
+    retDelLine(btn) {
+      const rows = document.querySelectorAll("#ret-lines .ret-line");
+      const row = btn.closest(".ret-line"); if (!row) return;
+      if (rows.length <= 1) { const s = row.querySelector(".ret-line-sku"); const q = row.querySelector(".ret-line-qty"); if (s) s.value = ""; if (q) q.value = ""; }
+      else row.remove();
+    },
     async doReturn() {
-      const it = DB.itemByCode(($("ret-code") || {}).value); const q = parseFloat(($("ret-qty") || {}).value);
-      const isKit = $("ret-kit") && $("ret-kit").checked;
-      const kitsku = isKit ? (($("ret-kitsku") || {}).value || "").trim() : "";
-      if (!isKit && !it) return toast(L("notfound"));
-      if (isKit && !kitsku) return toast(L("rNeedKitSku"));
-      if (!(q > 0)) return toast(L("enter"));
+      // gather every returned line (SKU + qty) — the whole order is logged at once
+      const lineEls = Array.prototype.slice.call(document.querySelectorAll("#ret-lines .ret-line"));
+      const lines = lineEls.map(r => ({
+        sku: ((r.querySelector(".ret-line-sku") || {}).value || "").trim(),
+        qty: parseFloat((r.querySelector(".ret-line-qty") || {}).value)
+      })).filter(l => l.sku && l.qty > 0);
+      if (!lines.length) return toast(L("rNeedItems"));
       const disp = ($("ret-disp") || {}).value; const restock = (disp === "Restock");
-      const rec = {
-        channel: retMode, return_date: ($("ret-date") || {}).value || new Date().toISOString().slice(0, 10),
-        item_code: it ? it.code : "", product: it ? it.name : kitsku, qty: q,
-        tracking: (($("ret-track") || {}).value || "").trim(), reason: ($("ret-reason") || {}).value,
-        disposition: disp, is_kit: isKit, kit_sku: kitsku, restocked: restock
-      };
+      const date = ($("ret-date") || {}).value || new Date().toISOString().slice(0, 10);
+      const reason = ($("ret-reason") || {}).value;
+      const track = (($("ret-track") || {}).value || "").trim();
+      const orderRef = (($("ret-order") || {}).value || "").trim();
+      // order-level header shared by every line
+      const hdr = { channel: retMode, return_date: date, reason: reason, disposition: disp, restocked: restock, tracking: track, order_ref: orderRef };
       if (retMode === "ecom") {
-        rec.marketplace = ($("ret-mkt") || {}).value; rec.shipment_id = (($("ret-ship") || {}).value || "").trim();
-        rec.ship_address = (($("ret-addr") || {}).value || "").trim(); rec.upc = (($("ret-upc") || {}).value || "").trim();
-        const pc = (($("ret-prod") || {}).value || "").trim(); if (!rec.product || rec.product === kitsku) rec.product = rec.product || pc; if (!rec.item_code) rec.item_code = pc;
+        hdr.marketplace = ($("ret-mkt") || {}).value; hdr.shipment_id = (($("ret-ship") || {}).value || "").trim();
+        hdr.ship_address = (($("ret-addr") || {}).value || "").trim();
       } else {
-        rec.customer = (($("ret-cust") || {}).value || "").trim(); rec.add_upc = (($("ret-addupc") || {}).value || "").trim();
+        hdr.customer = (($("ret-cust") || {}).value || "").trim(); hdr.add_upc = (($("ret-addupc") || {}).value || "").trim();
       }
-      // duplicate prevention
-      let res = await DB.addReturn(rec, opVal());
-      if (res && res.dup) {
-        const ex = res.existing || {};
-        if (!confirm(L("rDupWarn") + "\n\n" + (ex.return_date || "") + " · " + (ex.received_by || "") + " · " + (ex.product || ex.item_code || "") + "\n\n" + L("rDupOverride"))) return toast(L("rDupSkip"));
-        res = await DB.addReturn(rec, opVal(), true);
-      }
-      if (!res || !res.ok) return toast("error");
-      // restock inventory
-      let msg = "";
-      if (restock) {
-        if (isKit && $("ret-explode") && $("ret-explode").checked && window.KITS) {
-          const comps = KITS.explode(kitsku); const meta = KITS.meta(kitsku) || {};
-          const prefix = (String(meta.size || "").indexOf("1.5") >= 0) ? "B15-" : "B4-";
-          if (comps) { for (const c of comps) { const bi = DB.itemByCode(prefix + c.code); if (bi) await DB.returnStock(bi, c.qty * q, opVal(), { reason: "Kit return", disposition: "Restock" }); } msg = " · " + comps.length + " " + L("rFlavorsRestocked"); }
-          else return toast(L("rUnknownKit"));
-        } else if (it) {
-          await DB.returnStock(it, q, opVal(), { reason: rec.reason, disposition: "Restock" });
+      let logged = 0, dupSkip = 0;
+      for (const ln of lines) {
+        const isItem = ln.sku.indexOf("ITEM:") === 0;
+        let product, item_code, is_kit = false, kit_sku = "", appItem = null;
+        if (isItem) { const code = ln.sku.slice(5); appItem = DB.itemByCode(code); product = appItem ? appItem.name : code; item_code = code; }
+        else { const meta = (window.KITS ? KITS.meta(ln.sku) : null) || {}; product = meta.name || ln.sku; item_code = ln.sku; is_kit = window.KITS ? KITS.isKit(ln.sku) : false; kit_sku = ln.sku; }
+        const rec = Object.assign({}, hdr, { product: product, item_code: item_code, is_kit: is_kit, kit_sku: kit_sku, qty: ln.qty });
+        let res = await DB.addReturn(rec, opVal());
+        if (res && res.dup) {
+          const ex = res.existing || {};
+          if (!confirm((product || item_code) + "\n\n" + L("rDupWarn") + "\n" + (ex.return_date || "") + " · " + (ex.product || ex.item_code || "") + " x" + (ex.qty || "") + "\n\n" + L("rDupOverride"))) { dupSkip++; continue; }
+          res = await DB.addReturn(rec, opVal(), true);
+        }
+        if (!res || !res.ok) continue;
+        logged++;
+        // restock only when disposition = Restock
+        if (restock) {
+          if (isItem && appItem) {
+            await DB.returnStock(appItem, ln.qty, opVal(), { reason: reason, disposition: "Restock", channel: hdr.channel, rma: orderRef });
+          } else if (window.KITS) {
+            const comps = KITS.explode(ln.sku); const meta = KITS.meta(ln.sku) || {};
+            const prefix = (String(meta.size || "").indexOf("1.5") >= 0) ? "B15-" : "B4-";
+            if (comps) { for (const c of comps) { const bi = DB.itemByCode(prefix + c.code); if (bi) await DB.returnStock(bi, c.qty * ln.qty, opVal(), { reason: "Kit return", disposition: "Restock", channel: hdr.channel, rma: orderRef }); } }
+          }
         }
       }
+      let msg = " " + logged + " " + L("rNItems"); if (dupSkip) msg += " · " + dupSkip + " " + L("rDupSkip");
       toast(L("submitReturn") + " ✓" + msg); render();
     },
     // ---- Seasoning lots ----
@@ -5765,7 +5697,7 @@
       // Graceful fallback: download the PO PDF (mailto can't carry attachments), then open a
       // prefilled mailto so the send is one click away and the PDF is ready to attach.
       try { const d = poDoc(s); if (d) d.save("PO " + (s.po_num || "draft") + (s.vendor ? " - " + s.vendor : "") + ".pdf"); } catch (e) {}
-      const mailto = "mailto:" + encodeURIComponent(to) + '?'+((($('po-em-cc')||{}).value||'').trim()?('cc='+encodeURIComponent($('po-em-cc').value.trim())+'&'):'')+'subject=' + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+      const mailto = "mailto:" + encodeURIComponent(to) + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
       window.location.href = mailto;
       toast(res.msg === "not-configured" ? L("poEmailNo") : L("poEmailFail"));
     },
@@ -5809,7 +5741,7 @@
     refSearch(val) { const q = (val || "").toLowerCase().trim();
       document.querySelectorAll("#refBody .odcust").forEach(el => { const t = el.getAttribute("data-txt") || ""; el.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
     // ---- Create PO (Excel-style entry form) ----
-    poCreateOpen() { poEditId = null; spoView = "create"; poRows = 4; render(); },
+    poCreateOpen() { spoView = "create"; poRows = 4; render(); },
     prodToggleAll() { prodShowAll = !prodShowAll; render(); },
     prodAdvance(po) { const cur = PROD_STAGES.indexOf(prodStageGet(po)); const nx = PROD_STAGES[Math.min(cur + 1, PROD_STAGES.length - 1)]; prodStageSet(po, nx); toast(po + " → " + nx); render(); },
     prodReset(po) { prodStageSet(po, "Open"); render(); },
@@ -5848,6 +5780,21 @@
       toast("New PO started for " + (poPrefillFlavor || nm));
     },
     poNewClose() { poFormOpen = false; poPrefillFlavor = ""; render(); },
+    // SKU Lookup: live-filter without re-render (keeps the search box focused while typing).
+    skuSearch(v) {
+      skuQuery = v; const res = skuMatches(v); const box = document.getElementById("sk-results"); const cnt = document.getElementById("sk-count");
+      if (cnt) cnt.textContent = res.length;
+      if (box) box.innerHTML = res.length ? res.slice(0, 60).map(skuCard).join("") : '<div class="card"><p class="muted">' + L("skNone") + '</p></div>';
+      try { drawIcons(); } catch (e) {}
+    },
+    skuEdit(sku) { skuEditSku = sku; render(); },
+    skuEditClose() { skuEditSku = null; render(); },
+    async skuSave() {
+      const g = id => { const e = document.getElementById(id); return e ? String(e.value).trim() : ""; };
+      const sku = g("sk-sku"); if (!sku) { toast("SKU?"); return; }
+      await DB.saveSkuCatalog({ sku: sku, name: g("sk-name"), size: g("sk-size"), image_url: g("sk-img"), contents: g("sk-contents"), notes: g("sk-notes") });
+      skuEditSku = null; toast(L("skSaved")); render();
+    },
     poNewFlavor() {
       const nm = (document.getElementById("pn-flavor") || {}).value;
       const r = window.RECIPE_LOOKUP ? window.RECIPE_LOOKUP(nm) : null; if (!r) return;
@@ -5894,17 +5841,7 @@
         '<p>Notes/Notas: ' + g("pn-notes") + '</p></body></html>';
       w.document.write(H); w.document.close(); w.focus(); setTimeout(() => { try { w.print(); } catch (e) {} }, 300);
     },
-    poCreateBack() { poEditId = null; spoView = "list"; render(); },
-    poEdit(id) {
-      const s = (DB.supplierPos ? DB.supplierPos() : []).find(x => String(x.id) === String(id)); if (!s) return;
-      poEditId = id; let lines = []; try { lines = typeof s.lines === "string" ? JSON.parse(s.lines || "[]") : (s.lines || []); } catch (e) {}
-      poRows = Math.max(lines.length, 1); spoView = "create"; spoDetailId = null; render();
-      const set = (k, val) => { const e = $(k); if (e) e.value = (val == null ? "" : val); };
-      set("po-vendor", s.vendor); set("po-num", s.po_num); set("po-date", s.po_date); set("po-vaddr", s.vendor_addr); set("po-vemail", s.vendor_email); set("po-vphone", s.vendor_phone); set("po-shipto", s.ship_to); set("po-shipping", s.shipping); set("po-tax", s.tax); set("po-other", s.other); set("po-notes", s.notes);
-      const byEl = $("po-by"); if (byEl && s.prepared_by) byEl.value = s.prepared_by;
-      lines.forEach((l, i) => { set("pl-item-" + i, l.item); set("pl-desc-" + i, l.desc); set("pl-ship-" + i, l.ship); set("pl-qty-" + i, l.qty); set("pl-price-" + i, l.price); });
-      if (UI.poRecalc) UI.poRecalc();
-    },
+    poCreateBack() { spoView = "list"; render(); },
     nonPoOpen() { spoView = "nonpo"; render(); },
     nonPoBack() { spoView = "list"; render(); },
     async nonPoSave() {
@@ -5945,51 +5882,8 @@
       const recs = DB.supplierPos().filter(s => (s.vendor || "").toLowerCase() === v.toLowerCase()).sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
       const src = recs.find(s => s.vendor_addr || s.vendor_email || s.vendor_phone || s.ship_to) || recs[0];
       if (!src) return;
-      const set = (id, val) => { const el = $(id); if (el) el.value = (val || ""); };
+      const set = (id, val) => { const el = $(id); if (el && !el.value && val) el.value = val; };
       set("po-vaddr", src.vendor_addr); set("po-vemail", src.vendor_email); set("po-vphone", src.vendor_phone); set("po-shipto", src.ship_to);
-      const _sel = $("po-vendor-sel"), _inp = $("po-vendor");
-      if (_sel && _inp) { const names = Array.prototype.map.call(_sel.options, o => o.value); if (names.indexOf(v) >= 0) { _sel.value = v; _inp.style.display = "none"; } else { _sel.value = "__new__"; _inp.style.display = ""; } }
-    },
-    dropFiles(e, div) {
-      e.preventDefault(); e.stopPropagation();
-      const inp = div && div.querySelector ? div.querySelector('input[type=file]') : null;
-      if (!inp || !e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return;
-      try { const dt = new DataTransfer(); for (let i = 0; i < e.dataTransfer.files.length; i++) dt.items.add(e.dataTransfer.files[i]); inp.files = dt.files; } catch (_) {}
-      inp.dispatchEvent(new Event("change", { bubbles: true }));
-    },
-    async poAutoFill(input){ const f=input&&input.files&&input.files[0]; if(!f) return; toast("Reading "+f.name+"..."); let parsed=null; try{ parsed=await poExtractAndParse(f); }catch(e){ parsed=null; } if(!parsed || (!parsed.vendor && !parsed.po_num && !(parsed.lines&&parsed.lines.length))){ toast("Could not read that file - please fill the PO manually"); return; } const setv=(id,val)=>{ const el=$(id); if(el&&val) el.value=val; }; setv("po-num",parsed.po_num); setv("po-date",poNormDate(parsed.po_date)); setv("po-vaddr",parsed.vendor_addr); setv("po-shipto",parsed.ship_to); setv("po-notes",parsed.notes); const vinp=$("po-vendor"), vsel=$("po-vendor-sel"); if(vinp&&parsed.vendor){ vinp.value=parsed.vendor; if(vsel){ const names=Array.prototype.map.call(vsel.options,o=>o.value); if(names.indexOf(parsed.vendor)>=0){ vsel.value=parsed.vendor; vinp.style.display="none"; } else { vsel.value="__new__"; vinp.style.display=""; } } } const lines=parsed.lines||[]; while($("po-lines") && $("po-lines").querySelectorAll("tr").length<lines.length) UI.poAddLine(); lines.forEach((ln,i)=>{ const it=$("pl-item-"+i), de=$("pl-desc-"+i), qt=$("pl-qty-"+i), pr=$("pl-price-"+i); if(it) it.value=ln.item||""; if(de) de.value=ln.desc||""; if(qt) qt.value=ln.qty||""; if(pr&&ln.price) pr.value=ln.price; }); try{ UI.poRecalc(); }catch(e){} toast("PO auto-filled from "+f.name+" - review and save"); },
-    lpRefresh(){ LP_DATA=null; render(); },
-    lpLine(k){ LP_LINE=k; render(); },
-    lpSearch(v){ LP_Q=v; render(); var e=$("lp-q"); if(e){ e.focus(); try{ e.setSelectionRange(v.length,v.length); }catch(_){} } },
-    dailyResultsPdf(){ var t=new Date().toISOString().slice(0,10); var d=(typeof plDate!=="undefined"&&plDate)?plDate:t; var doc=dailyResultsDoc(d); if(!doc){ toast("PDF lib not loaded"); return; } doc.save("Smackin Daily Results "+d+".pdf"); toast("Daily Results PDF downloaded"); },
-    poVendorPick() {
-      const sel = $("po-vendor-sel"); const inp = $("po-vendor"); if (!sel || !inp) return;
-      const clearFields = () => ["po-vaddr", "po-vemail", "po-vphone", "po-shipto"].forEach(id => { const el = $(id); if (el) el.value = ""; });
-      if (sel.value === "__new__") { inp.style.display = ""; inp.value = ""; clearFields(); inp.focus(); }
-      else if (sel.value === "") { inp.style.display = "none"; inp.value = ""; clearFields(); }
-      else { inp.style.display = "none"; inp.value = sel.value; UI.poVendorFill(); }
-    },
-    oCustFill() {
-      const e = $("o-cust"); const v = e ? (e.value || "").trim() : ""; if (!v) return;
-      const recs = DB.orders().filter(o => (o.customer || "").toLowerCase() === v.toLowerCase()).sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
-      const src = recs.find(o => o.carrier) || recs[0];
-      if (!src) return;
-      const el = $("o-carr"); if (el && src.carrier) el.value = src.carrier;
-    },
-    rlSupplierFill() {
-      const e = $("rl-supplier"); const v = e ? (e.value || "").trim() : ""; if (!v) return;
-      const recs = DB.receivingLog().filter(s => (s.supplier || "").toLowerCase() === v.toLowerCase()).sort((a, b) => String(b.created_at || b.recv_date || "").localeCompare(String(a.created_at || a.recv_date || "")));
-      const src = recs.find(s => s.carrier) || recs[0];
-      if (!src) return;
-      const el = $("rl-carrier"); if (el && src.carrier) el.value = src.carrier;
-    },
-    rdCoFill() {
-      const e = $("rd-co"); const v = e ? (e.value || "").trim() : ""; if (!v) return;
-      const recs = DB.rdRequests().filter(r => (r.company || "").toLowerCase() === v.toLowerCase()).sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
-      const src = recs.find(r => r.contact_name || r.contact_email) || recs[0];
-      if (!src) return;
-      const set = (id, val) => { const el = $(id); if (el && val) el.value = val; };
-      set("rd-cn", src.contact_name); set("rd-em", src.contact_email);
     },
     // Flavor lookup on a PO line: when a flavor/desc is picked, fill the matching item code
     // (and vice-versa) from the item catalog. Only fills the paired field if it's empty.
@@ -6025,9 +5919,9 @@
         lines: JSON.stringify(lines), item_count: lines.length,
         subtotal: String(Math.round(sub * 100) / 100), shipping: v("po-shipping"), tax: v("po-tax"), other: v("po-other"),
         total: String(Math.round(grand * 100) / 100), prepared_by: v("po-by"), notes: v("po-notes") };
-      const res = poEditId ? await DB.updateSupplierPO(poEditId, rec, rec.prepared_by) : await DB.createSupplierPO(rec, null, rec.prepared_by);
+      const res = await DB.createSupplierPO(rec, null, rec.prepared_by);
       if (res && res.ok === false) return toast(res.msg || "error");
-      poEditId = null; spoView = "list"; toast(L("poSavedMsg")); render();
+      spoView = "list"; toast(L("poSavedMsg")); render();
     },
     // ---- Order Docs (fulfilled-order paperwork) ----
     odocFile(input) { const f = input.files && input.files[0]; if (!f) return; odocFile = f; render(); },
@@ -6318,7 +6212,7 @@
     _deadCache = null; // recompute dead-stock flags fresh each render
     renderNav(); refreshDatalists();
     const map = { home: viewHome, daily: viewDaily, dash: viewDash, analytics: viewAnalytics, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
-      move: viewMove, prodorders: viewProdOrders, reordertracker: viewReorderTracker, launch: viewLaunch, launchpipe: viewLaunchPipeline, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, prodlog: viewProdLog, fulfilldaily: viewFulfillDaily, stockbuild: viewStockBuild, reorder15: viewReorder15, seasoning: viewSeasoning, recipes: viewRecipes, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
+      move: viewMove, prodorders: viewProdOrders, reordertracker: viewReorderTracker, launch: viewLaunch, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, skulookup: viewSkuLookup, prodlog: viewProdLog, fulfilldaily: viewFulfillDaily, stockbuild: viewStockBuild, reorder15: viewReorder15, seasoning: viewSeasoning, recipes: viewRecipes, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, expreceipts: viewExpectedReceipts, flavinv: viewFlavorInventory, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, maintenance: viewMaintenance, compliance: viewCompliance, quality: viewQuality, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
       demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, ecomdemand: viewEcomDemand, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor, board: viewBoard, disposition: viewDisposition };
     const DEMAND_FAMILY = ["demand", "demandboard", "demandsched", "demandimport", "ecomdemand", "forecast"];
@@ -6348,208 +6242,3 @@
     if ("serviceWorker" in navigator) { try { navigator.serviceWorker.register("service-worker.js"); } catch (e) {} }
   });
 })();
-/*SMKENH*/;(function __smkInv(){
-  var HDR={'Seasoning Lots':'Seasoning','Sazon (Lotes)':'Sazon','Tempero (Lotes)':'Tempero','Seed Lots':'Seed','Semilla (Lotes)':'Semilla','Semente (Lotes)':'Semente'};
-  var CAT={'Seasoning':'Seasoning Lots','Seed/Base':'Seed Lots','Sazon':'Sazon (Lotes)','Semilla':'Semilla (Lotes)','Tempero':'Tempero (Lotes)','Semente':'Semente (Lotes)'};
-  function navClick(lotText){
-    var items=document.querySelectorAll('#nav a, #nav button, #nav [role=button], #nav li, #nav span, #nav div');
-    for(var i=0;i<items.length;i++){var e=items[i]; if(e.childElementCount===0){var tt=e.textContent.trim(); if(tt===lotText||tt.indexOf(lotText)===0){ e.click(); return true; }}}
-    return false;
-  }
-  function wireHeaders(view){
-    var ths=view.getElementsByTagName('th');
-    for(var i=0;i<ths.length;i++){var th=ths[i]; if(th.getAttribute('data-smk-lot'))continue; var t=th.textContent.trim();
-      if(HDR[t]){ th.setAttribute('data-smk-lot',t); th.textContent=HDR[t]; th.style.cursor='pointer'; th.style.textDecoration='underline dotted'; th.title='Click to open '+t;
-        th.addEventListener('click',function(){navClick(this.getAttribute('data-smk-lot'));}); }
-    }
-  }
-  function wireCats(view){
-    var tds=view.getElementsByTagName('td');
-    for(var j=0;j<tds.length;j++){var td=tds[j]; if(td.getAttribute('data-smk-cat'))continue; var txt=td.textContent.trim();
-      if(CAT[txt]){ td.setAttribute('data-smk-cat',CAT[txt]); td.style.cursor='pointer'; td.title='Open '+CAT[txt]+' →';
-        var inner=td.firstElementChild; if(inner){inner.style.textDecoration='underline dotted';} else {td.style.textDecoration='underline dotted';}
-        td.addEventListener('click',function(ev){ev.stopPropagation(); navClick(this.getAttribute('data-smk-cat'));}); }
-    }
-  }
-  function enhance(){var view=document.getElementById('view'); if(!view)return; wireHeaders(view); wireCats(view);}
-  function boot(){ enhance(); var root=document.getElementById('view'); if(root&&window.MutationObserver){ new MutationObserver(function(){enhance();}).observe(root,{childList:true,subtree:true}); } }
-  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',boot);}else{boot();}
-})();
-/*LPPRO*/;(function __lpPro(){
-  var cfg=window.SMACKIN_CONFIG||{};
-  var NAVY='#1F3864', ORANGE='#F26522';
-  var STEPS=[['step_box','Box'],['step_dieline','Dieline'],['step_design','Design'],['step_flavor','Flavor'],['step_seasoning','Seasoning'],['step_renders','Renders'],['step_nutrition','Nutrition'],['step_belmark','Belmark'],['step_checkmark','Check'],['step_po','PO']];
-  var DATA=[], mode='board', lineF='all', q='', hidePast=false, active=false, loaded=false;
-  function api(path,opts){ opts=opts||{}; opts.headers=Object.assign({apikey:cfg.SUPABASE_ANON_KEY,Authorization:'Bearer '+cfg.SUPABASE_ANON_KEY,'Content-Type':'application/json'},opts.headers||{}); return fetch(cfg.SUPABASE_URL+'/rest/v1/'+path,opts); }
-  function load(cb){ api('launch_pipeline?select=*&order=launch_week.asc,sort_order.asc').then(function(r){return r.json();}).then(function(rows){DATA=rows||[];loaded=true;cb&&cb();}).catch(function(){DATA=[];loaded=true;cb&&cb();}); }
-  function esc(s){ s=(s==null?'':''+s); return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function pct(row){ var y=0,i; for(i=0;i<STEPS.length;i++){ if((row[STEPS[i][0]]||'')==='yes') y++; } return Math.round(y/STEPS.length*100); }
-  function wkDate(row){ var t=row.launch_date||''; if(t){ var d=new Date(t); if(!isNaN(d)) return d; } var m=(row.launch_week||'').match(/([A-Za-z]{3,9})\s+(\d{1,2})[^0-9]*?(\d{4})/); if(m){ var d2=new Date(m[1]+' '+m[2]+', '+m[3]); if(!isNaN(d2)) return d2; } return null; }
-  function isPast(row){ var d=wkDate(row); if(!d) return false; var t=new Date(); t.setHours(0,0,0,0); return d<t; }
-  function lines(){ var s={}; DATA.forEach(function(r){ if(r.line) s[r.line]=1; }); return Object.keys(s).sort(); }
-  function filtered(){ var qq=q.trim().toLowerCase(); return DATA.filter(function(r){ if(lineF!=='all'&&r.line!==lineF)return false; if(hidePast&&isPast(r))return false; if(qq){ var hay=((r.product||'')+' '+(r.line||'')+' '+(r.group_label||'')+' '+(r.launch_week||'')).toLowerCase(); if(hay.indexOf(qq)<0)return false; } return true; }); }
-  function stepStrip(row){ var h='',i; for(i=0;i<STEPS.length;i++){ var k=STEPS[i][0], v=row[k]||'na'; var c=v==='yes'?'#2e9e5b':(v==='no'?'#d64545':'#c9ced6'); h+='<span class="lp-step" data-act="step" data-id="'+row.id+'" data-step="'+k+'" data-v="'+v+'" style="background:'+c+'">'+STEPS[i][1].slice(0,2)+'</span>'; } return h; }
-  function card(row){ var p=pct(row); return '<div class="lp-card"><div class="lp-cardtop"><b>'+esc(row.product)+'</b><span class="lp-pct">'+p+'%</span></div><div class="lp-meta">'+esc(row.line||'')+(row.bag_size?(' &middot; '+esc(row.bag_size)):'')+'</div><div class="lp-strip">'+stepStrip(row)+'</div>'+(row.notes?('<div class="lp-notes">'+esc(row.notes)+'</div>'):'')+'</div>'; }
-  function boardView(rows){ var groups={},order=[]; rows.forEach(function(r){ var g=r.launch_week||'Unscheduled'; if(!groups[g]){groups[g]=[];order.push(g);} groups[g].push(r); }); var h=''; order.forEach(function(g){ var gr=groups[g]; var avg=Math.round(gr.reduce(function(a,r){return a+pct(r);},0)/gr.length); h+='<div class="lp-group"><div class="lp-ghead">'+esc(g)+' <span class="lp-gcount">'+gr.length+' &middot; '+avg+'%</span></div><div class="lp-cards">'+gr.map(card).join('')+'</div></div>'; }); return h||'<div class="lp-empty">No launches match.</div>'; }
-  function timelineView(rows){ var wd=rows.map(function(r){return {r:r,d:wkDate(r)};}); wd.sort(function(a,b){ if(!a.d)return 1; if(!b.d)return -1; return a.d-b.d; }); var groups={},order=[]; wd.forEach(function(o){ var g=o.r.launch_week||'Unscheduled'; if(!groups[g]){groups[g]=[];order.push(g);} groups[g].push(o.r); }); var h='<div class="lp-tl">'; order.forEach(function(g){ var gr=groups[g]; var avg=Math.round(gr.reduce(function(a,r){return a+pct(r);},0)/gr.length); h+='<div class="lp-tlrow"><div class="lp-tldot"></div><div class="lp-tlbody"><div class="lp-tlhead">'+esc(g)+' <span class="lp-gcount">'+gr.length+' items</span></div><div class="lp-bar"><div class="lp-barfill" style="width:'+avg+'%"></div><span class="lp-barlbl">'+avg+'% complete</span></div><div class="lp-tllist">'+gr.map(function(r){return '<span class="lp-pill">'+esc(r.product)+' ('+pct(r)+'%)</span>';}).join('')+'</div></div></div>'; }); return h+'</div>'; }
-  function atRiskView(rows){ var risk=rows.filter(function(r){return pct(r)<100;}).map(function(r){return {r:r,d:wkDate(r)};}); risk.sort(function(a,b){ if(!a.d)return 1; if(!b.d)return -1; return a.d-b.d; }); if(!risk.length)return '<div class="lp-empty">Nothing at risk.</div>'; var h='<table class="lp-table"><thead><tr><th>Product</th><th>Launch</th><th>Done</th><th>Not yet done</th></tr></thead><tbody>'; risk.forEach(function(o){ var r=o.r; var miss=STEPS.filter(function(s){return (r[s[0]]||'na')!=='yes';}).map(function(s){ var v=r[s[0]]||'na'; return s[1]+(v==='no'?'(no)':''); }); var soon=o.d&&((o.d-new Date())/864e5<14&&(o.d-new Date())>-864e5); h+='<tr'+(soon?' style="background:#fff3f0"':'')+'><td><b>'+esc(r.product)+'</b><div class="lp-meta">'+esc(r.line||'')+'</div></td><td>'+esc(r.launch_week||'-')+(soon?' <span class="lp-soon">SOON</span>':'')+'</td><td>'+pct(r)+'%</td><td>'+esc(miss.join(', '))+'</td></tr>'; }); return h+'</tbody></table>'; }
-  function punchView(rows){ var inc=rows.filter(function(r){return pct(r)<100;}); if(!inc.length)return '<div class="lp-empty">All clear.</div>'; var h=''; inc.forEach(function(r){ var todo=STEPS.filter(function(s){return (r[s[0]]||'na')!=='yes';}); h+='<div class="lp-punch"><div class="lp-punchhead"><b>'+esc(r.product)+'</b> <span class="lp-meta">'+esc(r.line||'')+' &middot; '+esc(r.launch_week||'')+' &middot; '+pct(r)+'%</span></div><div class="lp-punchitems">'+todo.map(function(s){ var v=r[s[0]]||'na'; return '<span class="lp-todo" data-act="step" data-id="'+r.id+'" data-step="'+s[0]+'" data-v="'+v+'"><span class="lp-dot" style="background:'+(v==='no'?'#d64545':'#c9ced6')+'"></span>'+s[1]+'</span>'; }).join('')+'</div></div>'; }); return h; }
-  function css(){ return '<style id="lp-css">.lp-wrap{padding:4px 2px 40px}.lp-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}.lp-tab{padding:6px 12px;border-radius:8px;border:1px solid #d5d9e0;background:#fff;cursor:pointer;font-weight:600;font-size:13px}.lp-tab.on{background:'+NAVY+';color:#fff;border-color:'+NAVY+'}.lp-ctrls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}.lp-ctrls select,.lp-ctrls input[type=text]{padding:6px 8px;border:1px solid #d5d9e0;border-radius:8px;font-size:13px}.lp-ctrls label{font-size:13px;display:flex;align-items:center;gap:4px}.lp-group{margin-bottom:18px}.lp-ghead{font-weight:700;color:'+NAVY+';border-bottom:2px solid '+ORANGE+';padding-bottom:4px;margin-bottom:8px}.lp-gcount{font-weight:500;color:#7a8291;font-size:12px}.lp-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}.lp-card{border:1px solid #e2e6ec;border-radius:10px;padding:10px 12px;background:#fff}.lp-cardtop{display:flex;justify-content:space-between;align-items:center}.lp-pct{font-weight:700;color:'+NAVY+'}.lp-meta{font-size:11px;color:#7a8291;margin:2px 0 6px}.lp-strip{display:flex;gap:3px;flex-wrap:wrap}.lp-step{width:26px;height:22px;border-radius:4px;color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}.lp-notes{font-size:11px;color:#555;margin-top:6px;font-style:italic}.lp-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:4px}.lp-tl{padding-left:6px}.lp-tlrow{display:flex;gap:10px;margin-bottom:14px}.lp-tldot{width:12px;height:12px;border-radius:50%;background:'+ORANGE+';margin-top:4px;flex:none}.lp-tlbody{flex:1;border-left:2px solid #e2e6ec;padding-left:12px;margin-left:-6px}.lp-tlhead{font-weight:700;color:'+NAVY+'}.lp-bar{position:relative;background:#eef0f4;border-radius:6px;height:16px;margin:4px 0 6px;overflow:hidden}.lp-barfill{position:absolute;left:0;top:0;bottom:0;background:'+ORANGE+'}.lp-barlbl{position:relative;font-size:11px;color:#333;padding-left:6px;line-height:16px}.lp-pill{display:inline-block;background:#f1f3f7;border-radius:12px;padding:2px 8px;font-size:11px;margin:2px 4px 2px 0}.lp-table{width:100%;border-collapse:collapse;font-size:13px}.lp-table th{text-align:left;background:'+NAVY+';color:#fff;padding:6px 8px}.lp-table td{border-bottom:1px solid #eef0f4;padding:6px 8px;vertical-align:top}.lp-soon{background:'+ORANGE+';color:#fff;border-radius:4px;font-size:10px;padding:1px 5px}.lp-punch{border:1px solid #e2e6ec;border-radius:10px;padding:10px 12px;margin-bottom:8px;background:#fff}.lp-punchitems{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.lp-todo{display:inline-flex;align-items:center;border:1px solid #e2e6ec;border-radius:14px;padding:3px 10px;font-size:12px;cursor:pointer}.lp-empty{padding:20px;text-align:center;color:#7a8291}</style>'; }
-  function bodyHTML(rows){ return mode==='board'?boardView(rows):mode==='timeline'?timelineView(rows):mode==='atrisk'?atRiskView(rows):punchView(rows); }
-  function render(){ var view=document.getElementById('view'); if(!view)return; var rows=filtered(); var opts='<option value="all">All lines</option>'+lines().map(function(l){return '<option value="'+esc(l)+'"'+(l===lineF?' selected':'')+'>'+esc(l)+'</option>';}).join(''); var tabs=[['board','Board'],['timeline','Timeline'],['atrisk','At-Risk'],['punch','Punch Lists']].map(function(t){return '<button class="lp-tab'+(mode===t[0]?' on':'')+'" data-act="mode" data-mode="'+t[0]+'">'+t[1]+'</button>';}).join(''); view.innerHTML=css()+'<div id="lppro-root" class="lp-wrap"><div class="lp-tabs">'+tabs+'</div><div class="lp-ctrls"><select data-act="line">'+opts+'</select><input type="text" data-act="q" placeholder="Search product, line, week..." value="'+esc(q)+'"><label><input type="checkbox" data-act="hidepast"'+(hidePast?' checked':'')+'> Hide past</label><span class="lp-gcount">'+rows.length+' of '+DATA.length+' shown</span></div><div id="lppro-body">'+bodyHTML(rows)+'</div></div>'; }
-  function inMine(t){ return t&&t.closest&&t.closest('#lppro-root'); }
-  function onClick(e){ var t=e.target.closest('[data-act]'); if(!inMine(t))return; var act=t.getAttribute('data-act'); if(act==='mode'){ mode=t.getAttribute('data-mode'); render(); } else if(act==='step'){ e.stopPropagation(); var id=t.getAttribute('data-id'),step=t.getAttribute('data-step'),v=t.getAttribute('data-v')||'na'; var nv=v==='yes'?'no':(v==='no'?'na':'yes'); var b={}; b[step]=nv; b.updated_at=new Date().toISOString(); var row=DATA.filter(function(r){return ''+r.id===''+id;})[0]; if(row)row[step]=nv; render(); api('launch_pipeline?id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify(b)}).catch(function(){}); } }
-  function onChange(e){ var t=e.target.closest('[data-act]'); if(!inMine(t))return; var act=t.getAttribute('data-act'); if(act==='line'){ lineF=t.value; render(); } else if(act==='hidepast'){ hidePast=t.checked; render(); } }
-  function onInput(e){ var t=e.target.closest('[data-act]'); if(!inMine(t))return; if(t.getAttribute('data-act')==='q'){ q=t.value; var body=document.getElementById('lppro-body'); if(body) body.innerHTML=bodyHTML(filtered()); } }
-  function activate(){ active=true; function go(){ render(); [150,400,900,1600].forEach(function(ms){ setTimeout(function(){ if(active&&!document.getElementById('lppro-root')) render(); },ms); }); } if(!loaded){ load(function(){ if(active) go(); }); } else go(); }
-  function boot(){ var nav=document.getElementById('nav'); if(nav){ nav.addEventListener('click', function(e){ var leaf=e.target.closest('a,button,[role=button],li,span,div'); if(!leaf)return; var txt=(leaf.textContent||'').trim(); if(txt.indexOf('Launch Pipeline')===0){ setTimeout(activate,60); } else { active=false; } }, true); } document.addEventListener('click',onClick,false); document.addEventListener('change',onChange,false); document.addEventListener('input',onInput,false); var view=document.getElementById('view'); if(view&&window.MutationObserver){ new MutationObserver(function(){ if(active&&!document.getElementById('lppro-root')) render(); }).observe(view,{childList:true}); } }
-  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',boot); } else boot();
-})();
-/*POFIX*/;(function __poFix(){
-  function fixVendor(){
-    var sel=document.getElementById('po-vendor-sel'), inp=document.getElementById('po-vendor');
-    if(!sel||!inp) return;
-    if(sel.getAttribute('data-pofix')) return;
-    var saved=(inp.value||'').trim();
-    if(saved && sel.value===''){
-      var has=false,i; for(i=0;i<sel.options.length;i++){ if(sel.options[i].value===saved){has=true;break;} }
-      if(!has){ var o=document.createElement('option'); o.value=saved; o.textContent=saved; sel.appendChild(o); }
-      sel.value=saved;
-    }
-    sel.setAttribute('data-pofix','1');
-  }
-  function addCc(){
-    var to=document.getElementById('po-em-to'); if(!to) return;
-    if(document.getElementById('po-em-cc')) return;
-    var row=document.createElement('div'); row.style.margin='10px 0';
-    row.innerHTML='<div style="font-size:12px;color:#7a8291;margin-bottom:4px;font-weight:600">Cc</div><input id="po-em-cc" type="text" placeholder="cc@example.com (optional)" style="width:100%;padding:8px;border:1px solid #d5d9e0;border-radius:8px;box-sizing:border-box">';
-    (to.closest('div')||to).insertAdjacentElement('afterend', row);
-  }
-  function run(){ try{fixVendor();}catch(e){} try{addCc();}catch(e){} }
-  var v=document.getElementById('view');
-  if(v&&window.MutationObserver){ new MutationObserver(run).observe(v,{childList:true,subtree:true}); }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run();
-})();
-/*LBL12*/;(function __lbl12(){
-  var DATA=[
-   ['OG "Original"','SS-OG-12','850047865403','UPC'],
-   ['Cinnamon Churro','SS-CC-12','850047865496','UPC'],
-   ['Backyard BBQ','SS-BB-12','850047865434','UPC'],
-   ['Garlic Parmesan','SS-GP-12','850047865465','UPC'],
-   ['Dill Pickle','SS-DP-12','850047865373','UPC'],
-   ['Cracked Pepper','SS-CP-12','850047865342','UPC'],
-   ['Cheddar Jalapeno','SS-CJ-12','850062557000','UPC'],
-   ['Ranch','SS-RN-12','850062557475','UPC'],
-   ['Maple Brown','SS-MB-12','00850062557680','ITF14'],
-   ['Lemon Pepper','SS-LP-12','20850062557394','ITF14'],
-   ['Sour Cream','SS-SC-12','10850062557816','ITF14'],
-   ['Variety','SS-VP-12','850047865526','UPC']
-  ];
-  function openLabels(){
-    var w=window.open('','_blank','width=900,height=700'); if(!w) return;
-    var cards=DATA.map(function(d,i){ return '<div class="lbl"><svg id="bc'+i+'"></svg><div class="nm">'+d[0]+' &ndash; 12 PACK</div><div class="sku">'+d[1]+'</div></div>'; }).join('');
-    var script='window.onload=function(){var D='+JSON.stringify(DATA)+';D.forEach(function(d,i){try{JsBarcode("#bc"+i,d[2],{format:d[3],width:2,height:55,fontSize:13,margin:4});}catch(e){document.getElementById("bc"+i).outerHTML="<div style=color:red>"+d[2]+" ("+d[3]+")</div>";}});};';
-    var html='<html><head><title>12-Pack Case Labels</title><style>@page{margin:8mm}body{font-family:Arial;margin:0;padding:10px}h2{margin:4px 0 10px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.lbl{border:1px solid #ccc;border-radius:8px;padding:10px;text-align:center;page-break-inside:avoid}.nm{font-weight:700;font-size:13px;margin-top:2px}.sku{font-size:11px;color:#555}.tb{margin:6px 0}@media print{.tb{display:none}}</style></head><body><div class="tb"><button onclick="window.print()">Print</button></div><h2>Smackin\' 12-Pack Case Labels</h2><div class="grid">'+cards+'</div><scr'+'ipt src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></scr'+'ipt><scr'+'ipt>'+script+'</scr'+'ipt></body></html>';
-    w.document.write(html); w.document.close();
-  }
-  function addBtn(){
-    var view=document.getElementById('view'); if(!view) return;
-    if(document.getElementById('lbl12-btn')) return;
-    var anchor=[...view.querySelectorAll('button')].find(function(b){return /Batch label|identifier labels|Avery/i.test(b.textContent||'');});
-    if(!anchor) return;
-    var b=document.createElement('button'); b.id='lbl12-btn'; b.textContent='🏷 12-Pack Case Labels'; b.className=anchor.className||'';
-    b.onclick=openLabels;
-    anchor.parentNode.insertBefore(b, anchor.nextSibling);
-  }
-  var v=document.getElementById('view');
-  if(v&&window.MutationObserver){ new MutationObserver(addBtn).observe(v,{childList:true,subtree:true}); }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',addBtn); else addBtn();
-})();
-
-;/*DMDSPLIT*/(function(){
-function dmd(){try{var view=document.getElementById('view');if(!view)return;var h2=null,hs=view.querySelectorAll('h2');for(var i=0;i<hs.length;i++){if(hs[i].textContent.indexOf('1.5oz Demand')!==-1||hs[i].textContent.indexOf('E-Com Bag Demand')!==-1){h2=hs[i];break;}}if(!h2)return;if(document.getElementById('dmdsplit-box')&&h2.textContent.indexOf('1.5oz Demand')===-1)return;if(h2.textContent.indexOf('1.5oz Demand')!==-1)h2.textContent='E-Com Bag Demand — Last 12 Months';var card=h2.closest('.card')||h2.parentElement.parentElement;var hint=card.querySelector('p.hint');if(hint&&hint.textContent.indexOf('1.5oz')!==-1)hint.textContent='Every e-com bag shipped, split by size. The line is all sizes combined; the bars below break out 4oz vs 1.5oz per flavor.';var tbl=card.querySelector('table')||view.querySelector('table');if(!tbl)return;var rows=[],t4=0,t15=0;[].slice.call(tbl.querySelectorAll('tbody tr')).forEach(function(tr){var c=[].slice.call(tr.children).map(function(td){return td.textContent.trim();});if(c.length>=3){var a=parseInt((c[1]||'').replace(/[^0-9-]/g,''))||0,b=parseInt((c[2]||'').replace(/[^0-9-]/g,''))||0;rows.push({f:c[0],a:a,b:b});t4+=a;t15+=b;}});if(!rows.length)return;var top=rows.slice().sort(function(x,y){return (y.a+y.b)-(x.a+x.b);}).slice(0,12),max=1;top.forEach(function(r){if(r.a>max)max=r.a;if(r.b>max)max=r.b;});var old=document.getElementById('dmdsplit-box');if(old)old.remove();var box=document.createElement('div');box.id='dmdsplit-box';box.style.margin='12px 0 4px';var c4='#e8622d',c15='#f2b705',h='';h+='<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:8px"><strong style="font-size:13px">4oz vs 1.5oz — top flavors (12 mo)</strong><span style="font-size:12px"><span style="display:inline-block;width:10px;height:10px;background:'+c4+';border-radius:2px;margin-right:4px"></span>4oz: '+t4.toLocaleString()+'</span><span style="font-size:12px"><span style="display:inline-block;width:10px;height:10px;background:'+c15+';border-radius:2px;margin-right:4px"></span>1.5oz: '+t15.toLocaleString()+'</span></div>';top.forEach(function(r){var w4=Math.round(r.a/max*100),w15=Math.round(r.b/max*100);h+='<div style="display:flex;align-items:center;gap:8px;margin:3px 0;font-size:11px"><div style="width:135px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+r.f+'</div><div style="flex:1"><div style="display:flex;align-items:center;gap:6px"><div style="height:9px;width:'+w4+'%;min-width:1px;background:'+c4+';border-radius:2px"></div><span style="color:#888">'+r.a.toLocaleString()+'</span></div><div style="display:flex;align-items:center;gap:6px;margin-top:2px"><div style="height:9px;width:'+w15+'%;min-width:1px;background:'+c15+';border-radius:2px"></div><span style="color:#888">'+r.b.toLocaleString()+'</span></div></div></div>';});box.innerHTML=h;var svg=card.querySelector('svg');if(svg&&svg.parentElement){svg.parentElement.insertBefore(box,svg.nextSibling);}else if(hint){hint.parentElement.insertBefore(box,hint.nextSibling);}else card.appendChild(box);}catch(e){}}
-window.__dmdSplit=dmd;function boot(){if(!document.getElementById('view')){return setTimeout(boot,400);}dmd();if(!window.__dmdInt){window.__dmdInt=setInterval(dmd,900);}}boot();
-})();
-;/*QUALSQF*/(function(){
-try{if(window.__qualInt){clearInterval(window.__qualInt);window.__qualInt=null;}}catch(e){}
-var F='https://drive.google.com/file/d/',D='https://drive.google.com/drive/folders/';
-var ROOT='https://drive.google.com/drive/folders/1Sqslb7psiXbcRSoga_pR5zly673KjLPl';
-var CATS=[
-{c:'SQF Program & Control',d:[['SQF Code 9.0','PDF',F+'1JMi2gIZzdHvuNW-6p69UPmZMmEKMWzGS/view'],['Master Document Control Registry (ALL_REG 1.1)','XLSX',F+'13OXSmv5E6n-WptffY5ozOubTDEYmB5PR/view'],['Color Coding Chart (QUAL_REF_7.0)','XLSX',F+'1676IyW7aHBfPL9yKefFCUt1rXfI2Ojao/view']]},
-{c:'Quality Forms',d:[['Vendor Approval Form (QUAL_FORM_1.0)','XLSX',F+'10DVOlXiv9_Ve_16JfOJbZ6DsXtlkxBoZ/view'],['Customer Complaint Tracking Log (QUAL_FORM_2.0)','XLSX',F+'17LACouXoEAmQD3vLXS_mKq1Ff1HL5MwC/view'],['Monthly Self-Inspection (QUAL_FORM_7.0)','XLSX',F+'1csRTA83WCQtx6LlpdQcgLCd4W2zdMdpN/view'],['Batch Tracking Record - All Flavors (QUAL_FORM_10.0)','XLSX',F+'1RqXrHo0qB6zoBBKI2NKyetmlaLWZvEeF/view'],['Metal Detector Monitoring (QUAL_FORM_21.0)','XLSX',F+'1WdLwjaB-asNH1TidqbHHmL0PvK5bekeF/view']]},
-{c:'Warehouse Forms',d:[['Warehouse Receiving Log (WHSE_FORM_1.0)','SHEET','https://docs.google.com/spreadsheets/d/1QMKNAspsVDpU69uiBvo8lX6rfnesifRu/edit?gid=361300214#gid=361300214'],['Trailer Inspection - Inbound Receiving (WHSE_FORM_1.0)','SHEET','https://docs.google.com/spreadsheets/d/1QMKNAspsVDpU69uiBvo8lX6rfnesifRu/edit?gid=361300214#gid=361300214'],['Warehouse Shipping Log (WHSE_FORM_2.0)','XLSX',F+'1LvrNt2YMtGS6PRL0T8sB01k9TMJGDT8F/view'],['Warehouse HOLD Log (WHSE_FORM_3.0)','XLSX',F+'143i2PH43HFInUIL5Yo29P8nGVfUKB8C4/view']]},
-{c:'Maintenance & Admin Forms',d:[['Master Maintenance Sign Off (MAINT_FORM_1.0)','XLSX',F+'1CPEDu3Nm2NGcLM0EMjR1znSBDhE63MTq/view'],['Post-Maintenance Sanitation Sign Off (MAINT_FORM_2.0)','XLSX',F+'1N-0MSlSV2zRW49oHuIC138xCuABO7iKH/view'],['Visitor Sign In Log (ADMIN_FORM_1.0)','XLSX',F+'13fVsFPD1lAodSn8XpSSWMMWSL7q__Bk1/view'],['Cleaning Log Book (FRM_004_1.0)','PDF',F+'1J-za9g3wI9PioGc38xZPS2Dt-6s2fbY1/view']]},
-{c:'SOPs & References',d:[['SOPs (folder)','FOLDER',D+'1UEnd-qwSH4lVejnAD6pZfj0iy8Xj3TS0'],['Ingredient & Vendor Request Tracking (QUAL_REF_5.0)','XLSX',F+'1Wspo959vMIKWhnNatJ2NE6VTFCn-a-U9/view'],['PO Tracking - Approved Flavors','SHEET','https://docs.google.com/spreadsheets/d/1dIvX11GiAbjHo7KaE5_C4xoczkZR2Imb-Gb3Bi5XEc0/edit']]},
-{c:'Completed Records',d:[['Pre-Operational Checklist','FOLDER',D+'1rZJbl36MODersTF0Ax7QO7aWtaGslVMd'],['Post-Operational Checklist','FOLDER',D+'1sKi45QyGA08sOKF7pKQohp5n0MvvyIa3'],['GMP Checklist','FOLDER',D+'1-Jo9IBlDLkIKHXs8SxbKLu4kMw2qiN3q'],['Hourly Pouch Checks','FOLDER',D+'1Xa9sCKHRnvg4nV6EEVnCV9dbIskTFieN'],['Metal Detection Verification','FOLDER',D+'1RRJZoA2xoSm33bcMhBEZbUiyg68l6wqy'],['Cleaning Logbook','FOLDER',D+'1hShp60HRgki_VXs7v1ir-yRW-pGcuC3j'],['Production Orders','FOLDER',D+'19RmUd_xiKd7DLy3XyS5bBchdHu7zMEj2'],['Receiving Paperwork','FOLDER',D+'1Obb_45dhSL5CRFRDeWRAbNbU8wbeIcAm'],['Lab Results','FOLDER',D+'1Q1bDsyPA12QjkAUtK2pCkTqBZKxebaDA'],['Vendor COAs','FOLDER',D+'1NMn-y7dNCVqbs9nvkWxhK1zhG8aGsMEB']]},
-{c:'Team Folders',d:[["Allen's Food Safety & Compliance",'FOLDER',D+'1B39y9NEMz54-y3kFR5ryzkeB1uWtqhSw'],['Brittney','FOLDER',D+'1Dr9X099kor4d2r1IU38BUgzhEpo4Q48e'],['Odallis/Michelle Notes','DOC','https://docs.google.com/document/d/1dXvh059ZpbhzXhavaP2jVYp5giHyKdx59XQePh6H5Kk/edit']]}
-];
-function badge(t){var m={XLSX:'#217346',PDF:'#d93025',FOLDER:'#f2b705',SHEET:'#0f9d58',DOC:'#4285f4'};return '<span style="display:inline-block;font-size:9px;font-weight:700;color:#fff;background:'+(m[t]||'#888')+';border-radius:3px;padding:1px 5px;margin-right:8px;min-width:38px;text-align:center">'+t+'</span>';}
-function content(q){var h='';h+='<div class="card"><div class="suprow"><div><h2>Quality &amp; Food Safety (SQF)</h2><p class="hint">Monica &amp; Brittney\'s SQF library — links open the live file in Google Drive (always current, never a stale copy).</p></div><div><a href="'+ROOT+'" target="_blank" style="display:inline-block;background:#e8622d;color:#fff;text-decoration:none;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600">Open Drive folder \u2197</a></div></div><input id="qual-search" placeholder="Search documents..." style="width:100%;box-sizing:border-box;margin:10px 0 4px;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px" value="'+(window.__qualQ||'')+'"></div>';CATS.forEach(function(cat){var rows=cat.d.filter(function(x){return !q||x[0].toLowerCase().indexOf(q)!==-1||cat.c.toLowerCase().indexOf(q)!==-1;});if(!rows.length)return;h+='<div class="card" style="margin-top:10px"><h3 style="margin:0 0 8px;font-size:14px">'+cat.c+' <span style="color:#aaa;font-weight:400">('+rows.length+')</span></h3>';rows.forEach(function(x){h+='<div style="display:flex;align-items:center;padding:6px 0;border-top:1px solid #f0f0f0">'+badge(x[1])+'<a href="'+x[2]+'" target="_blank" style="color:#1a5fb4;text-decoration:none;font-size:13px;flex:1">'+x[0]+'</a><span style="color:#ccc;font-size:12px">\u2197</span></div>';});h+='</div>';});return h;}
-function ov(){var o=document.getElementById('qual-overlay');if(!o){o=document.createElement('div');o.id='qual-overlay';o.style.display='none';document.body.appendChild(o);}return o;}
-function place(o){var nav=document.getElementById('nav');var r=nav?nav.getBoundingClientRect():{right:210,top:60};o.style.position='fixed';o.style.left=r.right+'px';o.style.top=r.top+'px';o.style.right='0';o.style.bottom='0';o.style.overflow='auto';o.style.background='#f4f5f7';o.style.zIndex='40';o.style.padding='16px 20px';o.style.boxSizing='border-box';}
-function wire(o){var s=o.querySelector('#qual-search');if(s)s.oninput=function(){window.__qualQ=s.value;var p=s.selectionStart;render();var s2=document.getElementById('qual-overlay').querySelector('#qual-search');if(s2){s2.focus();try{s2.setSelectionRange(p,p);}catch(e){}}};}
-function render(){var o=ov();o.innerHTML=content((window.__qualQ||'').toLowerCase());wire(o);}
-function show(){var o=ov();window.__qualActive=true;place(o);o.style.display='block';render();}
-function hide(){var o=document.getElementById('qual-overlay');window.__qualActive=false;if(o)o.style.display='none';}
-window.__qualShow=show;window.__qualHide=hide;
-function ensureNav(){var nav=document.getElementById('nav');if(!nav)return;if(document.getElementById('qual-nav-item'))return;var grp=document.createElement('div');grp.className='navgroup';grp.innerHTML='<button class="navlabel" style="pointer-events:none">QUALITY</button>';var b=document.createElement('button');b.id='qual-nav-item';b.className='navitem';b.innerHTML='<span>\uD83D\uDEE1 Quality (SQF)</span>';b.onclick=function(){[].slice.call(nav.querySelectorAll('.navitem')).forEach(function(n){n.classList.remove('active');});b.classList.add('active');show();};grp.appendChild(b);nav.appendChild(grp);}
-if(!window.__qualNavHook){var nv=document.getElementById('nav');if(nv)nv.addEventListener('click',function(e){var t=e.target.closest?e.target.closest('.navitem'):null;if(t&&t.id!=='qual-nav-item')hide();},true);window.__qualNavHook=true;}
-window.addEventListener('resize',function(){if(window.__qualActive)place(ov());});
-ensureNav();
-window.__qualInt=setInterval(function(){ensureNav();if(window.__qualActive){var o=ov();if(o.style.display==='none')o.style.display='block';place(o);}},1000);
-})();
-
-;/*REORDER2*/(function(){
-try{if(window.__roInt)clearInterval(window.__roInt);}catch(e){}
-var C=window.SMACKIN_CONFIG||{};
-async function loadRows(){
-var r=await fetch(C.SUPABASE_URL+'/rest/v1/stock?select=item_id,qty',{headers:{apikey:C.SUPABASE_ANON_KEY,Authorization:'Bearer '+C.SUPABASE_ANON_KEY}});
-var stock=await r.json();var oh={};stock.forEach(function(s){oh[s.item_id]=(oh[s.item_id]||0)+(Number(s.qty)||0);});
-var cv=window.ALLEN_REORDER.conv,CALC=window.ALLEN_CALC,tiers=window.ALLEN_REORDER.tiers,rows=[];
-tiers.forEach(function(t){t.flavors.forEach(function(f){var b4=oh['BAG4-'+f.code]||0,b15=oh['BAG15-'+f.code]||0;var p4=b4/cv['4oz'].perPallet,p15=b15/cv['15oz'].perPallet;var calc=CALC(f,p4,p15);var hasRule=(f.t4>0||f.t15>0);rows.push({tier:t.name,fl:f.name,hasRule:hasRule,b4:b4,p4:p4,s4:calc.status4,b15:b15,p15:p15,s15:calc.status15,triggered:calc.triggered,q4:f.q4,q15:f.q15});});});
-return rows;}
-function stb(s){var col=s==='REORDER'?'#d93025':(s==='OK'?'#217346':'#999');return '<span style="color:#fff;background:'+col+';border-radius:3px;padding:1px 6px;font-size:10px;font-weight:700">'+s+'</span>';}
-function tbl(rows,f){var s4=f!=='15',s15=f!=='4',h='<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="text-align:left;border-bottom:2px solid #eee;color:#555"><th style="padding:7px 6px">Flavor</th>';
-if(s4)h+='<th>4oz on-hand</th><th>4oz pallets</th><th>4oz</th>';
-if(s15)h+='<th>1.5oz on-hand</th><th>1.5oz pallets</th><th>1.5oz</th>';
-h+='<th>Build decision</th></tr></thead><tbody>';var ct='';
-rows.forEach(function(r){if(r.tier!==ct){ct=r.tier;var sp=2+(s4?3:0)+(s15?3:0);h+='<tr><td colspan="'+sp+'" style="padding:10px 6px 3px;font-weight:700;color:#e8622d;font-size:11px">'+ct+'</td></tr>';}
-h+='<tr style="border-bottom:1px solid #f3f3f3"><td style="padding:7px 6px;font-weight:600">'+r.fl+'</td>';
-if(s4)h+='<td>'+(r.hasRule?r.b4.toLocaleString():'&mdash;')+'</td><td>'+(r.hasRule?r.p4.toFixed(1):'&mdash;')+'</td><td>'+(r.hasRule?stb(r.s4):'&mdash;')+'</td>';
-if(s15)h+='<td>'+(r.hasRule?r.b15.toLocaleString():'&mdash;')+'</td><td>'+(r.hasRule?r.p15.toFixed(1):'&mdash;')+'</td><td>'+(r.hasRule?stb(r.s15):'&mdash;')+'</td>';
-h+='<td style="padding:7px 6px">'+(r.hasRule?(r.triggered?('<b style="color:#d93025">BUILD</b> &middot; '+r.q4+'&times;4oz + '+r.q15+'&times;1.5oz bins'):'<span style="color:#217346">OK</span>'):'<span style="color:#999">no rule set yet</span>')+'</td></tr>';});
-return h+'</tbody></table>';}
-function ov(){if(!document.getElementById('view'))return null;var o=document.getElementById('ro-overlay');if(!o){o=document.createElement('div');o.id='ro-overlay';o.style.display='none';document.body.appendChild(o);}return o;}
-function place(o){var nav=document.getElementById('nav');var r=nav?nav.getBoundingClientRect():{right:210,top:60};o.style.cssText='position:fixed;left:'+r.right+'px;top:'+r.top+'px;right:0;bottom:0;overflow:auto;background:#f4f5f7;z-index:40;padding:16px 20px;box-sizing:border-box;display:block';}
-async function render(){var o=ov();if(!o)return;o.innerHTML='<div class="card"><div class="suprow"><div><h2>\uD83D\uDD04 Reorder</h2><p class="hint">Allen&rsquo;s pallet-trigger rule for finished bags, both sizes. A flavor triggers a build when 4oz drops to 5 pallets or 1.5oz drops to 2 pallets (or below); the run makes both sizes.</p></div><div id="ro-filt"></div></div><div id="ro-body">Loading&hellip;</div></div>';
-var fb=o.querySelector('#ro-filt');[['All','all'],['4oz only','4'],['1.5oz only','15']].forEach(function(p){var act=(window.__roFilt||'all')===p[1];var b=document.createElement('button');b.textContent=p[0];b.style.cssText='margin-left:6px;padding:5px 11px;border-radius:6px;border:1px solid '+(act?'#e8622d':'#ddd')+';background:'+(act?'#e8622d':'#fff')+';color:'+(act?'#fff':'#333')+';font-size:12px;cursor:pointer';b.onclick=function(){window.__roFilt=p[1];render();};fb.appendChild(b);});
-try{var rows=await loadRows();o.querySelector('#ro-body').innerHTML=tbl(rows,window.__roFilt||'all');}catch(e){o.querySelector('#ro-body').innerHTML='<div style="color:#d93025">Load error: '+e+'</div>';}}
-function show(){var o=ov();if(!o)return;window.__roActive=true;place(o);render();}
-function hide(){var o=document.getElementById('ro-overlay');window.__roActive=false;if(o)o.style.display='none';}
-window.__roShow=show;window.__roHide=hide;
-if(!window.__roHook){document.addEventListener('click',function(e){var nav=document.getElementById('nav');if(!nav)return;var it=e.target.closest?e.target.closest('.navitem'):null;if(!it||!nav.contains(it))return;if((it.textContent||'').indexOf('Reorder')!==-1)show();else hide();},true);window.__roHook=true;}
-window.addEventListener('resize',function(){if(window.__roActive)place(ov());});
-window.__roInt=setInterval(function(){if(window.__roActive){var o=ov();if(o&&o.style.display==='none')place(o);}},1000);
-})();
-
-;/*HIDEDEAD*/(function(){
-var DEAD=['Shipping Log','Continuous Improvement','Improvement','5S'];
-function hide(){var nav=document.getElementById('nav');if(!nav)return;[].slice.call(nav.querySelectorAll('.navitem')).forEach(function(it){var t=(it.textContent||'').replace(/\s+/g,' ');if(DEAD.some(function(d){return t.indexOf(d)!==-1;}))it.style.display='none';});}
-hide();if(!window.__hideDeadInt)window.__hideDeadInt=setInterval(hide,1200);
-})();
-
-;/*NAVFIX*/(function(){
-try{if(window.__qualInt){clearInterval(window.__qualInt);window.__qualInt=null;}}catch(e){}
-try{if(window.__hideDeadInt){clearInterval(window.__hideDeadInt);window.__hideDeadInt=null;}}catch(e){}
-var DEAD=['Shipping Log','Continuous Improvement','Improvement','5S'];
-function apply(){var nav=document.getElementById('nav');if(!nav)return;
-if(!document.getElementById('qual-nav-item')&&typeof window.__qualShow==='function'){var grp=document.createElement('div');grp.className='navgroup';grp.innerHTML='<button class="navlabel" style="pointer-events:none">QUALITY</button>';var b=document.createElement('button');b.id='qual-nav-item';b.className='navitem';b.innerHTML='<span>\uD83D\uDEE1 Quality (SQF)</span>';b.onclick=function(){[].slice.call(nav.querySelectorAll('.navitem')).forEach(function(n){n.classList.remove('active');});b.classList.add('active');window.__qualShow();};grp.appendChild(b);nav.appendChild(grp);}
-[].slice.call(nav.querySelectorAll('.navitem')).forEach(function(it){if(it.id==='qual-nav-item')return;var t=(it.textContent||'').replace(/\s+/g,' ');if(DEAD.some(function(d){return t.indexOf(d)!==-1;})){if(it.style.display!=='none')it.style.display='none';}});}
-var nav=document.getElementById('nav');
-if(nav&&!window.__navObs){window.__navObs=new MutationObserver(function(){apply();});window.__navObs.observe(nav,{childList:true,subtree:true});}
-apply();
-})();
-
-;/*SDSEED*/(function(){try{var S=window.SHORTDATED_SEED;if(!S||!S.push)return;var N=[{"type":"Short-dated","flavor":"Backyard BBQ","size":"1.5oz camo","exp":"10/2026","bags":"21750","notes":"Camo bag (Adriana 8/17 count)","id":"sd1"},{"type":"Short-dated","flavor":"OG Original","size":"1.5oz camo","exp":"10/2026","bags":"16250","notes":"Camo bag (Adriana 8/17 count)","id":"sd2"},{"type":"Short-dated","flavor":"Dill Pickle","size":"1.5oz camo","exp":"10/2026","bags":"16500","notes":"Camo bag (Adriana 8/17 count)","id":"sd3"},{"type":"Active","flavor":"Lemon Pepper","size":"1.5oz","exp":"08/2027","bags":"14000","notes":"Still selling - NOT discontinued. 4,500 @08/2027, 9,500 @09/2027 (Adriana 8/17)","id":"sd4"},{"type":"Active","flavor":"Maple Brown Sugar","size":"1.5oz","exp":"08/2027","bags":"14000","notes":"Still selling - NOT discontinued. 1,750 @08/2027, 12,250 @09/2027 (Adriana 8/17)","id":"sd5"},{"type":"Discontinued (pending)","flavor":"Sour Cream & Onion","size":"1.5oz","exp":"09/2027","bags":"19250","notes":"Cole to confirm. All @09/2027 (Adriana 8/17)","id":"sd6"},{"type":"Active","flavor":"Lemon Pepper","size":"4oz","exp":"08/2027","bags":"10400","notes":"Still selling - NOT discontinued. All @08/2027 (Adriana 8/17)","id":"sd7"},{"type":"Active","flavor":"Maple Brown Sugar","size":"4oz","exp":"08/2027","bags":"5800","notes":"Still selling - NOT discontinued. 5,200 @08/2027, 600 @09/2027 (Adriana 8/17)","id":"sd8"},{"type":"Discontinued (pending)","flavor":"Sour Cream & Onion","size":"4oz","exp":"05/2027","bags":"18200","notes":"Cole to confirm. 100 @05/2027, 1,400 @06/2027, 16,700 @09/2027 (Adriana 8/17)","id":"sd9"},{"type":"Off-flavor","flavor":"Lemon Pepper","size":"4oz","exp":"08/2026","bags":"21000","notes":"Off-flavor red-plastic batch - NOT saleable. 10,900 @08/2026 EXPIRED, 5,000 @09/2026, 5,100 @11/2026. Dispose or donate. (Adriana 8/17)","id":"sd10"}];S.length=0;N.forEach(function(x){S.push(x);});if(typeof render==='function'){try{render();}catch(e){}}}catch(e){}})();
-
-;/*DT275*/(function(){try{var DT=[{"code":"DT-GP","name":"Garlic Parmesan","upc":"850087363532"},{"code":"DT-BBQ","name":"BBQ","upc":"TEMP-DT275BBQ"},{"code":"DT-LP","name":"Lemon Pepper","upc":"850087363518"},{"code":"DT-CN","name":"Cinnamon Churro","upc":"850087363082"}];window.DOLLARTREE_275=DT;function isFlavorSel(s){if(!s||s.tagName!=='SELECT')return false;var t=s.textContent||'';return /Garlic Parmesan/.test(t)&&/(Backyard BBQ|Cinnamon Churro|Dill Pickle)/.test(t);}function inject(){document.querySelectorAll('select').forEach(function(s){if(!isFlavorSel(s))return;if(s.querySelector('option[data-dt="1"]'))return;DT.forEach(function(d){var o=document.createElement('option');o.value=d.code;o.setAttribute('data-dt','1');o.textContent=d.code+' \u2014 '+d.name+' 2.75oz (Dollar Tree)';s.appendChild(o);});});try{if(window.SMACKIN_SKUS&&window.SMACKIN_SKUS.push&&!window.__dtSku){window.__dtSku=1;DT.forEach(function(d){window.SMACKIN_SKUS.push({s:d.code+'-2.75',t:'Dollar Tree '+d.name+' 2.75oz',b:'1 (2.75oz) \u00b7 UPC '+d.upc,c:'Dollar Tree value channel \u00b7 120/case \u00b7 25 cases/pallet'});});}}catch(e){}}inject();var mo=new MutationObserver(function(){inject();});try{mo.observe(document.body,{childList:true,subtree:true});}catch(e){}}catch(e){}})();
