@@ -5345,6 +5345,14 @@
       } else {
         hdr.customer = (($("ret-cust") || {}).value || "").trim(); hdr.add_upc = (($("ret-addupc") || {}).value || "").trim();
       }
+      // dup-guard should only block a return already saved in a PRIOR session —
+      // never a line within the order being entered now. Snapshot existing keys up front.
+      const dupKeyOf = rec => {
+        const ref = (rec.tracking || rec.shipment_id || rec.order_ref || rec.customer || "").toString().trim().toLowerCase();
+        const item = (rec.item_code || rec.kit_sku || rec.product || "").toString().trim().toLowerCase();
+        return (ref + "|" + item + "|" + (rec.return_date || "")).trim().toLowerCase();
+      };
+      const preKeys = new Set((DB.returnsLog ? DB.returnsLog() : []).map(r => (r.dup_key || "")).filter(Boolean));
       let logged = 0, dupSkip = 0;
       for (const ln of lines) {
         const isItem = ln.sku.indexOf("ITEM:") === 0;
@@ -5352,7 +5360,9 @@
         if (isItem) { const code = ln.sku.slice(5); appItem = DB.itemByCode(code); product = appItem ? appItem.name : code; item_code = code; }
         else { const meta = (window.KITS ? KITS.meta(ln.sku) : null) || {}; product = meta.name || ln.sku; item_code = ln.sku; is_kit = window.KITS ? KITS.isKit(ln.sku) : false; kit_sku = ln.sku; }
         const rec = Object.assign({}, hdr, { product: product, item_code: item_code, is_kit: is_kit, kit_sku: kit_sku, qty: ln.qty });
-        let res = await DB.addReturn(rec, opVal());
+        // force-insert lines that don't match a previously-saved return (new item or an intentional repeat within this order)
+        const isNew = !preKeys.has(dupKeyOf(rec));
+        let res = await DB.addReturn(rec, opVal(), isNew);
         if (res && res.dup) {
           const ex = res.existing || {};
           if (!confirm((product || item_code) + "\n\n" + L("rDupWarn") + "\n" + (ex.return_date || "") + " · " + (ex.product || ex.item_code || "") + " x" + (ex.qty || "") + "\n\n" + L("rDupOverride"))) { dupSkip++; continue; }
