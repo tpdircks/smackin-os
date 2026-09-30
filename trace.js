@@ -1,5 +1,5 @@
 /* ============================================================================
-   Lot Trace & Scan  (trace.js)  b=3
+   Lot Trace & Scan  (trace.js)  b=4
    One scan chain from the dock to the customer, built for SQF traceability.
 
      RECEIVE   raw material in -> our own RM label per pallet/box/roll (supplier lot, exp)
@@ -294,7 +294,7 @@
     try { document.body.classList.remove("nav-open"); } catch (e) {}
     load().then(render);
   }
-  function markActive() { try { var nav = $("nav"); if (!nav) return; nav.querySelectorAll(".navitem.active").forEach(function (b) { b.classList.remove("active"); }); var m = $("trc-nav"); if (m) m.classList.add("active"); } catch (e) {} }
+  function markActive() { try { var nav = $("nav"); if (!nav) return; nav.querySelectorAll(".navitem.active").forEach(function (b) { b.classList.remove("active"); }); if (!ACTIVE) return; var m = $("trc-nav-" + ST.tab); if (m) m.classList.add("active"); } catch (e) {} }
 
   function render() {
     if (!ACTIVE) return;
@@ -985,7 +985,9 @@
   // ---- public API ---------------------------------------------------------------
   window.TRACE = {
     open: open, render: render,
-    tab: function (t) { ST.tab = t; saveST(); W.msg = null; if (t !== "trace") {} load().then(render); },
+    tab: function (t) { ST.tab = t; saveST(); W.msg = null; markActive(); load().then(render); },
+    go: function (t, ev) { if (ev && ev.preventDefault) ev.preventDefault(); ST.tab = t; saveST(); W.msg = null; open(); },
+    toggleGroup: function () { ST.navOpen = ST.navOpen === false ? true : false; saveST(); var g = $("trc-navgroup"); if (g) { g.parentNode.removeChild(g); } injectNav(); },
     setOp: function (v) { rememberOp(v); render(); },
     recvType: recvType, recvExisting: recvExisting, recvSave: recvSave,
     qa: qaSet, qaScan: qaScan, qaIssue: qaIssue,
@@ -1002,7 +1004,7 @@
     moveScan: moveScan, useDest: useDest, useScan: useScan,
     shipField: shipField, shipScan: shipScan, shipRemove: shipRemove, shipFinish: shipFinish,
     traceQ: traceQ, drill: drill, printEvidence: printEvidence,
-    traceOf: function (lpn) { ST.tab = "trace"; W.trace.q = lpn; render(); },
+    traceOf: function (lpn) { ST.tab = "trace"; W.trace.q = lpn; markActive(); render(); },
     reprint: function (lpn) { var l = S.labels[lpn]; if (l) printLabels([l]); },
     lf: function (k, v) { W.labels[k] = v; render(); },
     // for testing / other modules
@@ -1024,24 +1026,40 @@
     for (var i = 0; i < labs.length; i++) { var t = labs[i].textContent || ""; for (var j = 0; j < want.length; j++) if (t.indexOf(want[j]) >= 0) return labs[i]; }
     return null;
   }
+  // "Lot Tracing" is its own sub-section inside Quality, right under "Compliance / SQF":
+  // a small heading (click to collapse) with one menu item per station screen.
+  var NAV_TABS = [["recv", "tRecv", "package-plus"], ["qa", "tQa", "shield-alert"], ["mix", "tMix", "cooking-pot"], ["pmac", "tPmac", "package-open"], ["move", "tMove", "arrow-left-right"], ["use", "tUse", "log-out"], ["ship", "tShip", "truck"], ["trace", "tTrace", "git-branch"], ["labels", "tLabels", "tags"]];
+  function navStyleOnce() {
+    if ($("trc-navstyle")) return;
+    var s = document.createElement("style"); s.id = "trc-navstyle";
+    s.textContent = "#trc-navgroup{margin:2px 0 4px}" +
+      "#trc-navgroup .trc-subhdr{display:flex;align-items:center;gap:8px;width:100%;background:none;border:0;border-left:3px solid transparent;cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;color:var(--navy);padding:9px 11px;text-align:left}" +
+      "#trc-navgroup .trc-subhdr:hover{background:var(--light)}#trc-navgroup .trc-subhdr .trc-car{margin-left:auto;font-size:10px;color:#aab4c2}" +
+      "nav#nav #trc-navgroup button.navitem{padding:6px 11px 6px 34px;font-size:13px;font-weight:600}" +
+      "nav#nav #trc-navgroup button.navitem .navico svg{width:15px;height:15px}";
+    document.head.appendChild(s);
+  }
   function injectNav() {
-    var nav = $("nav"); if (!nav || $("trc-nav")) return;
+    var nav = $("nav"); if (!nav || $("trc-navgroup")) return;
     var anc = qualityAnchor(nav);
     if (!anc && qualityLabel(nav)) return;   // Quality group is collapsed: stay hidden with it
-    var btn = document.createElement("button");
-    btn.className = "navitem"; btn.id = "trc-nav";
-    btn.setAttribute("onclick", "TRACE.open(event)");
-    btn.innerHTML = '<i class="navico" data-lucide="scan-barcode"></i><span>' + esc(L("navLbl")) + '</span>';
-    if (anc && anc.key === "compliance") anc.btn.parentNode.insertBefore(btn, anc.btn.nextSibling);
-    else if (anc) anc.btn.parentNode.insertBefore(btn, anc.btn);
-    else nav.insertBefore(btn, nav.firstChild);
-    if (ACTIVE) btn.classList.add("active");
+    navStyleOnce();
+    var open = ST.navOpen !== false;
+    var g = document.createElement("div"); g.id = "trc-navgroup";
+    var h = '<button class="trc-subhdr" id="trc-nav" onclick="TRACE.toggleGroup()"><i class="navico" data-lucide="scan-barcode"></i><span>' + esc(L("navLbl")) + '</span><span class="trc-car">' + (open ? "&#9662;" : "&#9656;") + '</span></button>';
+    if (open) h += NAV_TABS.map(function (t) {
+      return '<button class="navitem' + (ACTIVE && ST.tab === t[0] ? " active" : "") + '" id="trc-nav-' + t[0] + '" onclick="TRACE.go(\'' + t[0] + '\',event)"><i class="navico" data-lucide="' + t[2] + '"></i><span>' + esc(L(t[1])) + '</span></button>';
+    }).join("");
+    g.innerHTML = h;
+    if (anc && anc.key === "compliance") anc.btn.parentNode.insertBefore(g, anc.btn.nextSibling);
+    else if (anc) anc.btn.parentNode.insertBefore(g, anc.btn);
+    else nav.insertBefore(g, nav.firstChild);
     try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
   }
   // Leaving: any other nav click ends our view before the app renders its own.
   document.addEventListener("click", function (e) {
     var t = e.target && e.target.closest ? e.target.closest("#nav .navitem") : null;
-    if (t && t.id !== "trc-nav" && ACTIVE) { ACTIVE = false; }
+    if (t && !(t.closest && t.closest("#trc-navgroup")) && ACTIVE) { ACTIVE = false; }
   }, true);
   // Language switch re-renders the app; bring our view back in the new language.
   ["lang-en", "lang-es", "lang-pt"].forEach(function (id) {
