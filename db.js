@@ -151,12 +151,12 @@ window.DB = (function () {
       cache.shippingLog = (slog && slog.data ? slog.data : []).map(r => ({
         id: r.id, ship_date: r.ship_date, ship_type: r.ship_type, recipient: r.recipient,
         address: r.address, carrier: r.carrier, tracking: r.tracking, requested_by: r.requested_by,
-        contents: r.contents, status: r.status || "Shipped", cost: Number(r.cost) || 0,
+        contents: r.contents, lot: r.lot, status: r.status || "Shipped", cost: Number(r.cost) || 0,
         notes: r.notes, entered_by: r.entered_by, created_at: r.created_at
       }));
       cache.receivingLog = (rlog && rlog.data ? rlog.data : []).map(r => ({
         id: r.id, recv_date: r.recv_date, supplier: r.supplier, po_num: r.po_num,
-        carrier: r.carrier, tracking: r.tracking, contents: r.contents,
+        carrier: r.carrier, tracking: r.tracking, contents: r.contents, lot: r.lot,
         qty_ordered: r.qty_ordered, qty_received: r.qty_received, condition: r.condition || "Good",
         received_by: r.received_by, notes: r.notes, file_name: r.file_name, file_url: r.file_url,
         file_path: r.file_path, entered_by: r.entered_by, created_at: r.created_at
@@ -539,7 +539,7 @@ window.DB = (function () {
       ship_date: rec.ship_date || new Date().toISOString().slice(0, 10),
       ship_type: rec.ship_type || "", recipient: rec.recipient || "", address: rec.address || "",
       carrier: rec.carrier || "", tracking: rec.tracking || "", requested_by: rec.requested_by || "",
-      contents: rec.contents || "", status: rec.status || "Shipped", cost: Number(rec.cost) || 0,
+      contents: rec.contents || "", lot: rec.lot || "", status: rec.status || "Shipped", cost: Number(rec.cost) || 0,
       notes: rec.notes || "", entered_by: op || "", created_at: new Date().toISOString()
     };
     const logEntry = { a: "Shipment logged", d: (row.ship_type ? row.ship_type + " - " : "") + row.recipient + (row.tracking ? " (" + row.tracking + ")" : ""), u: op, t: row.created_at };
@@ -573,7 +573,7 @@ window.DB = (function () {
     const patch = {
       ship_date: rec.ship_date || null, ship_type: rec.ship_type || "", recipient: rec.recipient || "",
       address: rec.address || "", carrier: rec.carrier || "", tracking: rec.tracking || "",
-      requested_by: rec.requested_by || "", contents: rec.contents || "", status: rec.status || "Shipped",
+      requested_by: rec.requested_by || "", contents: rec.contents || "", lot: rec.lot || "", status: rec.status || "Shipped",
       cost: Number(rec.cost) || 0, notes: rec.notes || ""
     };
     const logEntry = { a: "Shipment edited", d: (patch.recipient || "") + (patch.tracking ? " (" + patch.tracking + ")" : ""), u: op, t: new Date().toISOString() };
@@ -618,7 +618,7 @@ window.DB = (function () {
     const row = {
       recv_date: rec.recv_date || new Date().toISOString().slice(0, 10),
       supplier: rec.supplier || "", po_num: rec.po_num || "", carrier: rec.carrier || "",
-      tracking: rec.tracking || "", contents: rec.contents || "",
+      tracking: rec.tracking || "", contents: rec.contents || "", lot: rec.lot || "",
       qty_ordered: rec.qty_ordered === "" || rec.qty_ordered == null ? null : Number(rec.qty_ordered),
       qty_received: rec.qty_received === "" || rec.qty_received == null ? null : Number(rec.qty_received),
       condition: rec.condition || "Good", received_by: rec.received_by || "",
@@ -652,7 +652,7 @@ window.DB = (function () {
     }
     const patch = Object.assign({
       recv_date: rec.recv_date || null, supplier: rec.supplier || "", po_num: rec.po_num || "",
-      carrier: rec.carrier || "", tracking: rec.tracking || "", contents: rec.contents || "",
+      carrier: rec.carrier || "", tracking: rec.tracking || "", contents: rec.contents || "", lot: rec.lot || "",
       qty_ordered: rec.qty_ordered === "" || rec.qty_ordered == null ? null : Number(rec.qty_ordered),
       qty_received: rec.qty_received === "" || rec.qty_received == null ? null : Number(rec.qty_received),
       condition: rec.condition || "Good", received_by: rec.received_by || "", notes: rec.notes || ""

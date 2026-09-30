@@ -120,9 +120,9 @@
       orderdocs:"Order Docs", odocHint:"Store the paperwork for fulfilled orders (BOL, packing list, pull sheet, labels, invoice) by customer and PO - like SPS. Searchable so CS can pull any order's docs fast.",
       odocDrop:"Choose a file to store  (PDF, Excel, image, Word)", odocCustomer:"Customer", odocPO:"PO / Order #", odocType:"Document type", odocSave:"Store document", odocArchive:"Document archive", odocNone:"No documents stored yet. Add one above.", odocSearchP:"Search customer, PO, doc type...", odocSaved:"Document stored", odocConfirmDel:"Delete this document?", odocNoFile:"Choose a file first",
       shiplog:"Shipping Log", shlHint:"Log every outbound shipment - samples, replacements, one-off customer sends. Pick the carrier and the tracking # becomes a clickable link.",
-      shlDate:"Date", shlType:"Type", shlRecipient:"Recipient", shlAddress:"Address", shlCarrier:"Carrier", shlTracking:"Tracking #", shlReqBy:"Requested by", shlCost:"Cost", shlContents:"What was sent", shlStatus:"Status", shlNotes:"Notes", shlSave:"Log shipment", shlArchive:"Shipment log", shlNone:"No shipments logged yet. Add one above.", shlSearchP:"Search recipient, tracking, type...", shlLogged:"Shipment logged", shlConfirmDel:"Delete this shipment entry?",
+      shlDate:"Date", shlType:"Type", shlRecipient:"Recipient", shlAddress:"Address", shlCarrier:"Carrier", shlTracking:"Tracking #", shlReqBy:"Requested by", shlCost:"Cost", shlContents:"What was sent", shlLot:"Lot / batch #", shlStatus:"Status", shlNotes:"Notes", shlSave:"Log shipment", shlArchive:"Shipment log", shlNone:"No shipments logged yet. Add one above.", shlSearchP:"Search recipient, tracking, type...", shlLogged:"Shipment logged", shlConfirmDel:"Delete this shipment entry?",
       recvlog:"Receiving Log", rlHint:"Log every inbound shipment and attach the paperwork (packing slip, BOL, invoice). Pick the carrier and the PRO/tracking # becomes a clickable link.",
-      rlDrop:"Attach paperwork  (PDF, Excel, image, Word)", rlDate:"Date", rlSupplier:"Supplier", rlPO:"PO #", rlCarrier:"Carrier", rlTracking:"Tracking / PRO #", rlContents:"What was received", rlQtyOrd:"Qty ordered", rlQtyRec:"Qty received", rlShortOver:"Short/Over", rlCondition:"Condition", rlReceivedBy:"Received by", rlNotes:"Notes", rlDoc:"Doc", rlSave:"Log receipt", rlArchive:"Receiving log", rlNone:"No receipts logged yet. Add one above.", rlSearchP:"Search supplier, PO, carrier...", rlLogged:"Receipt logged", rlConfirmDel:"Delete this receiving entry?",
+      rlDrop:"Attach paperwork  (PDF, Excel, image, Word)", rlDate:"Date", rlSupplier:"Supplier", rlPO:"PO #", rlCarrier:"Carrier", rlTracking:"Tracking / PRO #", rlContents:"What was received", rlLot:"Lot / batch #", rlQtyOrd:"Qty ordered", rlQtyRec:"Qty received", rlShortOver:"Short/Over", rlCondition:"Condition", rlReceivedBy:"Received by", rlNotes:"Notes", rlDoc:"Doc", rlSave:"Log receipt", rlArchive:"Receiving log", rlNone:"No receipts logged yet. Add one above.", rlSearchP:"Search supplier, PO, carrier...", rlLogged:"Receipt logged", rlConfirmDel:"Delete this receiving entry?",
       editRow:"Edit", editingRow:"Editing this entry - change what you need, then Save.", saveChanges:"Save changes", saved:"Saved", rlKeepDoc:"current file kept unless you attach a new one", sortHint:"Click to sort", dlPdf:"Download PDF", dlExcel:"Download Excel",
       finbags:"Finished Bags", fbHint:"Bags that have come off P-Mac and are staged in storage. Inventory counts these; Fulfillment counts the master-case output.", fb4oz:"4oz bags", fb15oz:"1.5oz bags", fbTotal:"All bags",
       pmacout:"Bag Output", pmoHint:"Log finished bags as they come off P-Mac into storage. Pick what's running + the count (a sensor will automate this later).", pmoRunning:"Now running (flavor + size)", pmoQty:"Bags", pmoAdd:"Log bags out", pmoNone:"No bags logged yet this session.",
@@ -275,9 +275,9 @@
       orderdocs:"Docs de Orden", odocHint:"Guarde el papeleo de ordenes cumplidas (BOL, lista de empaque, hoja de picking, etiquetas, factura) por cliente y OC - como SPS. Buscable para que servicio al cliente encuentre los documentos rapido.",
       odocDrop:"Elija un archivo para guardar  (PDF, Excel, imagen, Word)", odocCustomer:"Cliente", odocPO:"OC / # de Orden", odocType:"Tipo de documento", odocSave:"Guardar documento", odocArchive:"Archivo de documentos", odocNone:"Aun no hay documentos. Agregue uno arriba.", odocSearchP:"Buscar cliente, OC, tipo...", odocSaved:"Documento guardado", odocConfirmDel:"Eliminar este documento?", odocNoFile:"Elija un archivo primero",
       shiplog:"Registro de Envios", shlHint:"Registre cada envio saliente - muestras, reemplazos, envios puntuales a clientes. Elija el transportista y el # de rastreo se vuelve un enlace.",
-      shlDate:"Fecha", shlType:"Tipo", shlRecipient:"Destinatario", shlAddress:"Direccion", shlCarrier:"Transportista", shlTracking:"# de Rastreo", shlReqBy:"Solicitado por", shlCost:"Costo", shlContents:"Que se envio", shlStatus:"Estado", shlNotes:"Notas", shlSave:"Registrar envio", shlArchive:"Registro de envios", shlNone:"Aun no hay envios. Agregue uno arriba.", shlSearchP:"Buscar destinatario, rastreo, tipo...", shlLogged:"Envio registrado", shlConfirmDel:"Eliminar este registro de envio?",
+      shlDate:"Fecha", shlType:"Tipo", shlRecipient:"Destinatario", shlAddress:"Direccion", shlCarrier:"Transportista", shlTracking:"# de Rastreo", shlReqBy:"Solicitado por", shlCost:"Costo", shlContents:"Que se envio", shlLot:"Lote / # de lote", shlStatus:"Estado", shlNotes:"Notas", shlSave:"Registrar envio", shlArchive:"Registro de envios", shlNone:"Aun no hay envios. Agregue uno arriba.", shlSearchP:"Buscar destinatario, rastreo, tipo...", shlLogged:"Envio registrado", shlConfirmDel:"Eliminar este registro de envio?",
       recvlog:"Registro de Recibo", rlHint:"Registre cada envio entrante y adjunte el papeleo (remito, BOL, factura). Elija el transportista y el # PRO/rastreo se vuelve un enlace.",
-      rlDrop:"Adjuntar papeleo  (PDF, Excel, imagen, Word)", rlDate:"Fecha", rlSupplier:"Proveedor", rlPO:"# OC", rlCarrier:"Transportista", rlTracking:"# Rastreo / PRO", rlContents:"Que se recibio", rlQtyOrd:"Cant. pedida", rlQtyRec:"Cant. recibida", rlShortOver:"Faltante/Sobrante", rlCondition:"Condicion", rlReceivedBy:"Recibido por", rlNotes:"Notas", rlDoc:"Doc", rlSave:"Registrar recibo", rlArchive:"Registro de recibo", rlNone:"Aun no hay recibos. Agregue uno arriba.", rlSearchP:"Buscar proveedor, OC, transportista...", rlLogged:"Recibo registrado", rlConfirmDel:"Eliminar este registro de recibo?",
+      rlDrop:"Adjuntar papeleo  (PDF, Excel, imagen, Word)", rlDate:"Fecha", rlSupplier:"Proveedor", rlPO:"# OC", rlCarrier:"Transportista", rlTracking:"# Rastreo / PRO", rlContents:"Que se recibio", rlLot:"Lote / # de lote", rlQtyOrd:"Cant. pedida", rlQtyRec:"Cant. recibida", rlShortOver:"Faltante/Sobrante", rlCondition:"Condicion", rlReceivedBy:"Recibido por", rlNotes:"Notas", rlDoc:"Doc", rlSave:"Registrar recibo", rlArchive:"Registro de recibo", rlNone:"Aun no hay recibos. Agregue uno arriba.", rlSearchP:"Buscar proveedor, OC, transportista...", rlLogged:"Recibo registrado", rlConfirmDel:"Eliminar este registro de recibo?",
       editRow:"Editar", editingRow:"Editando esta entrada - cambie lo necesario y guarde.", saveChanges:"Guardar cambios", saved:"Guardado", rlKeepDoc:"se conserva el archivo actual salvo que adjunte uno nuevo", sortHint:"Clic para ordenar", dlPdf:"Descargar PDF", dlExcel:"Descargar Excel",
       finbags:"Bolsas Terminadas", fbHint:"Bolsas que salieron de P-Mac y estan en almacenamiento. Inventario las cuenta; Fulfillment cuenta la salida de cajas maestras.", fb4oz:"Bolsas 4oz", fb15oz:"Bolsas 1.5oz", fbTotal:"Todas las bolsas",
       pmacout:"Salida de Bolsas", pmoHint:"Registre las bolsas terminadas al salir de P-Mac a almacenamiento. Elija lo que corre + la cantidad (un sensor lo automatizara luego).", pmoRunning:"Corriendo ahora (sabor + tamano)", pmoQty:"Bolsas", pmoAdd:"Registrar bolsas", pmoNone:"Aun no hay bolsas esta sesion.",
@@ -430,9 +430,9 @@
       orderdocs:"Docs de Pedido", odocHint:"Armazene a papelada de pedidos concluidos (BOL, lista de embalagem, folha de separacao, etiquetas, fatura) por cliente e OC - como o SPS. Pesquisavel para o SAC encontrar os documentos rapido.",
       odocDrop:"Escolha um arquivo para armazenar  (PDF, Excel, imagem, Word)", odocCustomer:"Cliente", odocPO:"OC / No do Pedido", odocType:"Tipo de documento", odocSave:"Armazenar documento", odocArchive:"Arquivo de documentos", odocNone:"Nenhum documento ainda. Adicione um acima.", odocSearchP:"Buscar cliente, OC, tipo...", odocSaved:"Documento armazenado", odocConfirmDel:"Excluir este documento?", odocNoFile:"Escolha um arquivo primeiro",
       shiplog:"Registro de Envios", shlHint:"Registre cada envio de saida - amostras, reposicoes, envios avulsos a clientes. Escolha a transportadora e o no de rastreio vira um link.",
-      shlDate:"Data", shlType:"Tipo", shlRecipient:"Destinatario", shlAddress:"Endereco", shlCarrier:"Transportadora", shlTracking:"No de Rastreio", shlReqBy:"Solicitado por", shlCost:"Custo", shlContents:"O que foi enviado", shlStatus:"Status", shlNotes:"Notas", shlSave:"Registrar envio", shlArchive:"Registro de envios", shlNone:"Nenhum envio ainda. Adicione um acima.", shlSearchP:"Buscar destinatario, rastreio, tipo...", shlLogged:"Envio registrado", shlConfirmDel:"Excluir este registro de envio?",
+      shlDate:"Data", shlType:"Tipo", shlRecipient:"Destinatario", shlAddress:"Endereco", shlCarrier:"Transportadora", shlTracking:"No de Rastreio", shlReqBy:"Solicitado por", shlCost:"Custo", shlContents:"O que foi enviado", shlLot:"Lote / no do lote", shlStatus:"Status", shlNotes:"Notas", shlSave:"Registrar envio", shlArchive:"Registro de envios", shlNone:"Nenhum envio ainda. Adicione um acima.", shlSearchP:"Buscar destinatario, rastreio, tipo...", shlLogged:"Envio registrado", shlConfirmDel:"Excluir este registro de envio?",
       recvlog:"Registro de Recebimento", rlHint:"Registre cada envio recebido e anexe a papelada (romaneio, BOL, fatura). Escolha a transportadora e o no PRO/rastreio vira um link.",
-      rlDrop:"Anexar papelada  (PDF, Excel, imagem, Word)", rlDate:"Data", rlSupplier:"Fornecedor", rlPO:"No OC", rlCarrier:"Transportadora", rlTracking:"Rastreio / PRO", rlContents:"O que foi recebido", rlQtyOrd:"Qtd pedida", rlQtyRec:"Qtd recebida", rlShortOver:"Falta/Sobra", rlCondition:"Condicao", rlReceivedBy:"Recebido por", rlNotes:"Notas", rlDoc:"Doc", rlSave:"Registrar recebimento", rlArchive:"Registro de recebimento", rlNone:"Nenhum recebimento ainda. Adicione um acima.", rlSearchP:"Buscar fornecedor, OC, transportadora...", rlLogged:"Recebimento registrado", rlConfirmDel:"Excluir este registro de recebimento?",
+      rlDrop:"Anexar papelada  (PDF, Excel, imagem, Word)", rlDate:"Data", rlSupplier:"Fornecedor", rlPO:"No OC", rlCarrier:"Transportadora", rlTracking:"Rastreio / PRO", rlContents:"O que foi recebido", rlLot:"Lote / no do lote", rlQtyOrd:"Qtd pedida", rlQtyRec:"Qtd recebida", rlShortOver:"Falta/Sobra", rlCondition:"Condicao", rlReceivedBy:"Recebido por", rlNotes:"Notas", rlDoc:"Doc", rlSave:"Registrar recebimento", rlArchive:"Registro de recebimento", rlNone:"Nenhum recebimento ainda. Adicione um acima.", rlSearchP:"Buscar fornecedor, OC, transportadora...", rlLogged:"Recebimento registrado", rlConfirmDel:"Excluir este registro de recebimento?",
       editRow:"Editar", editingRow:"Editando esta entrada - altere o necessario e salve.", saveChanges:"Salvar alteracoes", saved:"Salvo", rlKeepDoc:"o arquivo atual e mantido a menos que anexe um novo", sortHint:"Clique para ordenar", dlPdf:"Baixar PDF", dlExcel:"Baixar Excel",
       finbags:"Sacos Terminados", fbHint:"Sacos que sairam do P-Mac e estao no armazenamento. O Estoque os conta; o Fulfillment conta a saida de caixas master.", fb4oz:"Sacos 4oz", fb15oz:"Sacos 1.5oz", fbTotal:"Todos os sacos",
       pmacout:"Saida de Sacos", pmoHint:"Registre os sacos terminados ao sair do P-Mac para o armazenamento. Escolha o que esta rodando + a quantidade (um sensor automatizara depois).", pmoRunning:"Rodando agora (sabor + tamanho)", pmoQty:"Sacos", pmoAdd:"Registrar sacos", pmoNone:"Nenhum saco registrado nesta sessao.",
@@ -2059,7 +2059,8 @@
       '<div class="row"><div><label>' + L("shlCarrier") + '</label><select id="shl-carrier">' + selOpt(SHIP_CARRIERS, ed.carrier, "UPS") + '</select></div>' +
       '<div><label>' + L("shlTracking") + '</label><input id="shl-tracking" autocomplete="off" value="' + av(ed.tracking) + '"></div>' +
       '<div><label>' + L("shlCost") + ' <span class="muted">(opt.)</span></label><input id="shl-cost" type="number" min="0" step="0.01" placeholder="0.00" value="' + (editing && Number(ed.cost) ? Number(ed.cost) : "") + '"></div></div>' +
-      '<div><label>' + L("shlContents") + '</label><input id="shl-contents" autocomplete="off" value="' + av(ed.contents) + '"></div>' +
+      '<div class="row"><div style="flex:2"><label>' + L("shlContents") + '</label><input id="shl-contents" autocomplete="off" value="' + av(ed.contents) + '"></div>' +
+      '<div><label>' + L("shlLot") + ' <span class="muted">(opt.)</span></label><input id="shl-lot" autocomplete="off" placeholder="Lot / batch" value="' + av(ed.lot) + '"></div></div>' +
       '<div><label>' + L("shlNotes") + ' <span class="muted">(opt.)</span></label><input id="shl-notes" autocomplete="off" value="' + av(ed.notes) + '"></div>' +
       opField("Troy") +
       '<button class="primary" onclick="UI.shlSave()">' + (editing ? L("saveChanges") : L("shlSave")) + '</button>' +
@@ -2076,11 +2077,12 @@
       const trk = s.tracking ? (url ? '<a href="' + url + '" target="_blank" rel="noopener">' + esc(s.tracking) + ' &#8599;</a>' : esc(s.tracking)) : '&mdash;';
       const next = { Pending: "Shipped", Shipped: "Delivered" }[s.status];
       const adv = next ? '<button class="ghost sm" onclick="UI.shlStatus(\'' + s.id + '\',\'' + next + '\')">' + next + '</button>' : '';
-      const txt = ((s.ship_date || "") + " " + (s.ship_type || "") + " " + (s.recipient || "") + " " + (s.carrier || "") + " " + (s.tracking || "") + " " + (s.requested_by || "") + " " + (s.contents || "") + " " + (s.address || "") + " " + (s.status || "")).toLowerCase().replace(/"/g, "");
+      const txt = ((s.ship_date || "") + " " + (s.ship_type || "") + " " + (s.recipient || "") + " " + (s.carrier || "") + " " + (s.tracking || "") + " " + (s.requested_by || "") + " " + (s.contents || "") + " " + (s.lot || "") + " " + (s.address || "") + " " + (s.status || "")).toLowerCase().replace(/"/g, "");
       return '<tr data-txt="' + txt + '"><td>' + esc((s.ship_date || "").slice(0, 10)) + '</td><td>' + esc(s.ship_type || "") + '</td>' +
         '<td><b>' + esc(s.recipient || "") + '</b>' + (s.address ? '<div class="muted sm">' + esc(s.address) + '</div>' : '') + '</td>' +
         '<td>' + esc(s.carrier || "") + '</td><td>' + trk + '</td><td class="muted">' + esc(s.requested_by || "") + '</td>' +
         '<td>' + esc(s.contents || "") + '</td>' +
+        '<td>' + esc(s.lot || "") + '</td>' +
         '<td><span class="pill ' + stColor(s.status) + '">' + esc(s.status || "") + '</span></td>' +
         '<td class="right">' + (Number(s.cost) ? '$' + Number(s.cost).toFixed(2) : '&mdash;') + '</td>' +
         '<td>' + adv + ' <button class="ghost sm" title="' + L("editRow") + '" onclick="UI.shlEdit(\'' + s.id + '\')">&#9998;</button>' +
@@ -2090,7 +2092,7 @@
     const table = list.length ? '<table><thead><tr>' +
       th("ship_date", L("shlDate")) + th("ship_type", L("shlType")) + th("recipient", L("shlRecipient")) +
       th("carrier", L("shlCarrier")) + '<th>' + L("shlTracking") + '</th>' + th("requested_by", L("shlReqBy")) +
-      '<th>' + L("shlContents") + '</th>' + th("status", L("shlStatus")) + th("cost", L("shlCost"), "right") + '<th></th>' +
+      '<th>' + L("shlContents") + '</th>' + '<th>' + L("shlLot") + '</th>' + th("status", L("shlStatus")) + th("cost", L("shlCost"), "right") + '<th></th>' +
       '</tr></thead><tbody id="shlBody">' + rows + '</tbody></table>' : '<p class="muted">' + L("shlNone") + '</p>';
     return reqDl + '<div class="card"><h2>' + L("shiplog") + '</h2><p class="hint">' + L("shlHint") + '</p>' + form + '</div>' +
       '<div class="card"><h2 class="sub2">' + L("shlArchive") + ' (' + list.length + ')' + (totalCost ? ' &middot; $' + totalCost.toFixed(2) : '') + '</h2>' +
@@ -2115,7 +2117,8 @@
       '<div class="row"><div><label>' + L("rlCarrier") + '</label><select id="rl-carrier"><option value=""' + (!ed.carrier ? ' selected' : '') + '></option>' + selOpt(SHIP_CARRIERS, ed.carrier, "") + '</select></div>' +
       '<div><label>' + L("rlTracking") + ' <span class="muted">(PRO)</span></label><input id="rl-tracking" autocomplete="off" value="' + av(ed.tracking) + '"></div>' +
       '<div><label>' + L("rlCondition") + '</label><select id="rl-condition">' + selOpt(RECV_LOG_CONDITIONS, ed.condition, "Good") + '</select></div></div>' +
-      '<div><label>' + L("rlContents") + '</label><input id="rl-contents" autocomplete="off" value="' + av(ed.contents) + '"></div>' +
+      '<div class="row"><div style="flex:2"><label>' + L("rlContents") + '</label><input id="rl-contents" autocomplete="off" value="' + av(ed.contents) + '"></div>' +
+      '<div><label>' + L("rlLot") + ' <span class="muted">(opt.)</span></label><input id="rl-lot" autocomplete="off" placeholder="Lot / batch" value="' + av(ed.lot) + '"></div></div>' +
       '<div class="row"><div><label>' + L("rlQtyOrd") + ' <span class="muted">(opt.)</span></label><input id="rl-qord" type="number" min="0" placeholder="0" value="' + qv(ed.qty_ordered) + '"></div>' +
       '<div><label>' + L("rlQtyRec") + ' <span class="muted">(opt.)</span></label><input id="rl-qrec" type="number" min="0" placeholder="0" value="' + qv(ed.qty_received) + '"></div>' +
       '<div><label>' + L("rlReceivedBy") + '</label><input id="rl-by" list="dl-rl-by" autocomplete="off" value="' + av(ed.received_by) + '"></div></div>' +
@@ -2136,11 +2139,12 @@
       const ov = (s.qty_ordered != null && s.qty_received != null) ? (Number(s.qty_ordered) - Number(s.qty_received)) : null;
       const ovTxt = ov === null ? '&mdash;' : (ov === 0 ? '0' : (ov > 0 ? '-' + ov : '+' + Math.abs(ov)));
       const doc = s.file_url ? '<a href="' + s.file_url + '" target="_blank" rel="noopener" title="' + esc(s.file_name || '') + '">&#128206;</a>' : '';
-      const txt = ((s.recv_date || "") + " " + (s.supplier || "") + " " + (s.po_num || "") + " " + (s.carrier || "") + " " + (s.tracking || "") + " " + (s.contents || "") + " " + (s.condition || "") + " " + (s.received_by || "")).toLowerCase().replace(/"/g, "");
+      const txt = ((s.recv_date || "") + " " + (s.supplier || "") + " " + (s.po_num || "") + " " + (s.carrier || "") + " " + (s.tracking || "") + " " + (s.contents || "") + " " + (s.lot || "") + " " + (s.condition || "") + " " + (s.received_by || "")).toLowerCase().replace(/"/g, "");
       return '<tr data-txt="' + txt + '"><td>' + esc((s.recv_date || "").slice(0, 10)) + '</td>' +
         '<td><b>' + esc(s.supplier || "") + '</b></td><td>' + esc(s.po_num || "") + '</td>' +
         '<td>' + esc(s.carrier || "") + '</td><td>' + trk + '</td>' +
         '<td>' + esc(s.contents || "") + '</td>' +
+        '<td>' + esc(s.lot || "") + '</td>' +
         '<td class="right">' + (s.qty_received != null ? fmt(s.qty_received) : '&mdash;') + '</td>' +
         '<td class="right">' + ovTxt + '</td>' +
         '<td><span class="pill ' + cColor(s.condition) + '">' + esc(s.condition || "") + '</span></td>' +
@@ -2152,6 +2156,7 @@
     const table = list.length ? '<table><thead><tr>' +
       th("recv_date", L("rlDate")) + th("supplier", L("rlSupplier")) + th("po_num", L("rlPO")) +
       th("carrier", L("rlCarrier")) + '<th>' + L("rlTracking") + '</th>' + '<th>' + L("rlContents") + '</th>' +
+      '<th>' + L("rlLot") + '</th>' +
       '<th class="right">' + L("rlQtyRec") + '</th>' + '<th class="right">' + L("rlShortOver") + '</th>' +
       th("condition", L("rlCondition")) + th("received_by", L("rlReceivedBy")) + '<th>' + L("rlDoc") + '</th>' + '<th></th>' +
       '</tr></thead><tbody id="rlBody">' + rows + '</tbody></table>' : '<p class="muted">' + L("rlNone") + '</p>';
@@ -5038,7 +5043,7 @@
       // (supplier picked) or carrier/PRO/paperwork was provided - no separate Receiving Log entry.
       const rlCarrier = v("r-carrier"), rlTrack = v("r-tracking").trim(), rlQord = v("r-qord").trim();
       if (meta.supplier || rlCarrier || rlTrack || recvFile) {
-        try { await DB.addReceivingLog({ recv_date: new Date().toISOString().slice(0, 10), supplier: meta.supplier || "", po_num: meta.invoice || "", carrier: rlCarrier, tracking: rlTrack, contents: it.name, qty_ordered: rlQord, qty_received: q, condition: meta.condition || "Good", received_by: op, notes: v("r-notes").trim() }, recvFile, op); } catch (e) {}
+        try { await DB.addReceivingLog({ recv_date: new Date().toISOString().slice(0, 10), supplier: meta.supplier || "", po_num: meta.invoice || "", carrier: rlCarrier, tracking: rlTrack, contents: it.name, lot: lot || "", qty_ordered: rlQord, qty_received: q, condition: meta.condition || "Good", received_by: op, notes: v("r-notes").trim() }, recvFile, op); } catch (e) {}
         recvFile = null;
       }
       puSec = ""; puBay = ""; puLevel = ""; recvNewItem = false;
@@ -5519,7 +5524,7 @@
       const by = opVal();
       const rec = { ship_date: v("shl-date"), ship_type: v("shl-type"), recipient: recipient,
         address: v("shl-address"), carrier: v("shl-carrier"), tracking: v("shl-tracking"),
-        requested_by: v("shl-reqby"), contents: v("shl-contents"), status: v("shl-status"),
+        requested_by: v("shl-reqby"), contents: v("shl-contents"), lot: v("shl-lot"), status: v("shl-status"),
         cost: v("shl-cost"), notes: v("shl-notes") };
       if (shipEditId) { await DB.updateShipping(shipEditId, rec, by); shipEditId = null; toast(L("saved") + " ✓"); }
       else { await DB.addShipping(rec, by); toast(L("shlLogged") + " ✓"); }
@@ -5540,7 +5545,7 @@
       const supplier = v("rl-supplier"); if (!supplier) return toast(L("rlSupplier"));
       const by = opVal();
       const rec = { recv_date: v("rl-date"), supplier: supplier, po_num: v("rl-po"),
-        carrier: v("rl-carrier"), tracking: v("rl-tracking"), contents: v("rl-contents"),
+        carrier: v("rl-carrier"), tracking: v("rl-tracking"), contents: v("rl-contents"), lot: v("rl-lot"),
         qty_ordered: v("rl-qord"), qty_received: v("rl-qrec"), condition: v("rl-condition"),
         received_by: v("rl-by"), notes: v("rl-notes") };
       let res;
