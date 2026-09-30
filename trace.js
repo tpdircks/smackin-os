@@ -1,5 +1,5 @@
 /* ============================================================================
-   Lot Trace & Scan  (trace.js)  b=4
+   Lot Trace & Scan  (trace.js)  b=6
    One scan chain from the dock to the customer, built for SQF traceability.
 
      RECEIVE   raw material in -> our own RM label per pallet/box/roll (supplier lot, exp)
@@ -155,6 +155,10 @@
   function num(v) { var n = Number(String(v == null ? "" : v).replace(/,/g, "")); return isFinite(n) ? n : 0; }
   function fmt(n) { return Number(n || 0).toLocaleString("en-US", { maximumFractionDigits: 2 }); }
   function nowISO() { return new Date().toISOString(); }
+  // Show stored UTC timestamps in local (Utah) time
+  function pad2(n) { return String(n).padStart(2, "0"); }
+  function tsLocal(ts) { var d = new Date(ts); if (isNaN(d)) return String(ts || "").slice(0, 16).replace("T", " "); return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) + " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes()); }
+  function dLocal(ts) { return ts ? tsLocal(ts).slice(0, 10) : ""; }
   function today() { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
   function isoWeek(d) {
     d = d ? new Date(d) : new Date();
@@ -291,7 +295,7 @@
     if (ev && ev.preventDefault) ev.preventDefault();
     ACTIVE = true; markActive(); styleOnce();
     var host = $("view"); if (host) host.innerHTML = '<div id="trc-root"><div class="card"><h2>' + esc(L("title")) + '</h2><p class="muted">Loading...</p></div></div>';
-    try { document.body.classList.remove("nav-open"); } catch (e) {}
+    try { var n = $("nav"), bd = $("navBackdrop"); if (n) n.classList.remove("open"); if (bd) bd.classList.remove("show"); } catch (e) {}
     load().then(render);
   }
   function markActive() { try { var nav = $("nav"); if (!nav) return; nav.querySelectorAll(".navitem.active").forEach(function (b) { b.classList.remove("active"); }); if (!ACTIVE) return; var m = $("trc-nav-" + ST.tab); if (m) m.classList.add("active"); } catch (e) {} }
@@ -312,14 +316,15 @@
     h += '<div class="trc-grid"><div><label>' + esc(L("op")) + '</label><input id="trc-op" list="trc-ops" value="' + esc(ST.op || "") + '" onchange="TRACE.setOp(this.value)" autocomplete="off"><datalist id="trc-ops">' + (ST.ops || []).map(function (o) { return '<option value="' + esc(o) + '">'; }).join("") + '</datalist></div></div>';
     h += '</div>';
     if (W.msg && Date.now() - W.msg.t < 20000) h += '<div class="trc-msg ' + W.msg.kind + ' trc-noprint">' + esc(W.msg.txt) + '</div>';
+    if (W.pendingPrint && W.pendingPrint.length) h += '<div class="trc-msg warn trc-noprint">' + W.pendingPrint.length + ' label(s) ready. <button class="primary sm" onclick="TRACE.printPending()">' + esc(L("print")) + '</button></div>';
     var fn = { recv: vRecv, qa: vQa, mix: vMix, pmac: vPmac, move: vMove, use: vUse, ship: vShip, trace: vTrace, labels: vLabels }[ST.tab] || vRecv;
     h += fn();
     h += '</div>';
     var sc = host.scrollTop;
     host.innerHTML = h;
     host.scrollTop = sc;
-    var f = (focusId && $(focusId)) || $("trc-scan");
-    if (f && f.id !== "trc-op") { try { f.focus(); } catch (e) {} }
+    var f = (focusId && focusId !== "trc-op" && $(focusId)) || $("trc-scan");
+    if (f) { try { f.focus(); } catch (e) {} }
     try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
   }
   function scanBox(handler, ph) {
@@ -399,6 +404,7 @@
     if (!(qty > 0)) { flash(L("qtyEach") + "?", "err"); render(); return; }
     if ((r.type === "SEAS" || r.type === "FILM" || r.type === "FG") && !r.flavor) { flash(L("flavor") + "?", "err"); render(); return; }
     var fl = flavorBy(r.flavor);
+    var pw = openPrintWin();
     var rows = [], evs = [], lpns = [], stamp = nowISO();
     for (var i = 0; i < units; i++) {
       var isFG = r.type === "FG";
@@ -419,7 +425,7 @@
       lpns.push(lpn);
     }
     insLabels(rows).then(function (res) {
-      if (!res.ok) { flash("Save failed: " + res.msg, "err"); render(); return; }
+      if (!res.ok) { closeWin(pw); flash("Save failed: " + res.msg, "err"); render(); return; }
       return addEvents(evs).then(function () {
         var tasks = [];
         if (!r.existing && r.type !== "FG" && window.DB) {
@@ -429,7 +435,7 @@
           if (r.reg && r.type === "MALTO" && DB.addSeasLot) tasks.push(DB.addSeasLot({ flavor_code: "MALTO", product: r.item || "Maltodextrin", lot: lot, manufacturer: r.supplier, exp: r.exp || null, weight: qty * units, location: "RECEIVING" }, opName()).catch(function () {}));
         }
         return Promise.all(tasks).then(function () {
-          printLabels(rows);
+          printLabels(rows, pw);
           flash(L("saved") + ": " + units + " " + L("labelsMade") + " (" + lot + ")", "ok");
           W.recv = { type: r.type, existing: r.existing, rel: false, reg: r.reg, units: 1, uom: r.uom, supplier: r.supplier, item: r.item, flavor: r.flavor };
           render();
@@ -446,7 +452,7 @@
     if (!list.length) h += '<p class="muted" style="margin-top:12px">' + esc(L("noHold")) + '</p>';
     else h += '<table class="trc" style="margin-top:12px"><thead><tr><th>Label</th><th>Item</th><th>Supplier / lot</th><th>Exp</th><th>Qty</th><th>' + esc(L("issueCol")) + '</th><th></th></tr></thead><tbody>' + list.map(function (l) {
       var iss = (l.data && l.data.issues) || [];
-      return '<tr><td><b>' + esc(l.lpn) + '</b><br><span class="muted sm">' + esc((l.created_at || "").slice(0, 10)) + '</span></td><td>' + esc(l.item) + (l.flavor ? '<br><span class="muted sm">' + esc(l.flavor) + '</span>' : "") + '</td><td>' + esc(l.supplier) + '<br><b>' + esc(l.supplier_lot) + '</b></td><td>' + esc(l.exp || "") + '</td><td>' + fmt(l.qty) + ' ' + esc(l.uom) + '</td><td>' + (iss.length ? '<b style="color:#a11">' + esc(iss[iss.length - 1].txt) + '</b>' + (iss.length > 1 ? ' <span class="muted sm">(+' + (iss.length - 1) + ')</span>' : '') : '') + '</td><td class="trc-row"><button class="ghost sm" onclick="TRACE.qaIssue(\'' + esc(l.lpn) + '\')">' + esc(L("noteIssue")) + '</button><button class="primary sm" onclick="TRACE.qa(\'' + esc(l.lpn) + '\',\'RELEASED\')">' + esc(L("release")) + '</button><button class="ghost danger sm" onclick="TRACE.qa(\'' + esc(l.lpn) + '\',\'REJECTED\')">' + esc(L("reject")) + '</button></td></tr>';
+      return '<tr><td><b>' + esc(l.lpn) + '</b><br><span class="muted sm">' + esc(dLocal(l.created_at)) + '</span></td><td>' + esc(l.item) + (l.flavor ? '<br><span class="muted sm">' + esc(l.flavor) + '</span>' : "") + '</td><td>' + esc(l.supplier) + '<br><b>' + esc(l.supplier_lot) + '</b></td><td>' + esc(l.exp || "") + '</td><td>' + fmt(l.qty) + ' ' + esc(l.uom) + '</td><td>' + (iss.length ? '<b style="color:#a11">' + esc(iss[iss.length - 1].txt) + '</b>' + (iss.length > 1 ? ' <span class="muted sm">(+' + (iss.length - 1) + ')</span>' : '') : '') + '</td><td class="trc-row"><button class="ghost sm" onclick="TRACE.qaIssue(\'' + esc(l.lpn) + '\')">' + esc(L("noteIssue")) + '</button><button class="primary sm" onclick="TRACE.qa(\'' + esc(l.lpn) + '\',\'RELEASED\')">' + esc(L("release")) + '</button><button class="ghost danger sm" onclick="TRACE.qa(\'' + esc(l.lpn) + '\',\'REJECTED\')">' + esc(L("reject")) + '</button></td></tr>';
     }).join("") + '</tbody></table>';
     h += '</div>';
     return h;
@@ -458,10 +464,12 @@
     var pre = S.labels[lpn];
     if (status === "RELEASED" && pre && pre.data && pre.data.issues && pre.data.issues.length && !window.confirm(lpn + ": " + pre.data.issues[pre.data.issues.length - 1].txt + "\n\nRelease anyway? (issue fixed / approved)")) return;
     var l = S.labels[lpn]; if (!l) return;
+    // the sticker on the item still says HOLD: print a replacement when the status changes
+    var pw = openPrintWin();
     var data = l.data || {}; data.qa = { status: status, by: opName(), at: nowISO(), reason: reason };
     updLabel(lpn, { status: status, data: data }).then(function () {
       return addEvents([{ type: "QA_" + status, lpn: lpn, lot: l.lot, data: { reason: reason } }]);
-    }).then(function () { flash(lpn + " -> " + status, status === "RELEASED" ? "ok" : "warn"); render(); });
+    }).then(function () { printLabels([S.labels[lpn] || l], pw); flash(lpn + " -> " + status + " (new label printed, put it over the old one)", status === "RELEASED" ? "ok" : "warn"); render(); });
   }
   function qaIssue(lpn) {
     if (needOp()) return;
@@ -471,7 +479,7 @@
     var was = l.status;
     updLabel(lpn, { status: "HOLD", data: data }).then(function () {
       return addEvents([{ type: "QA_ISSUE", lpn: lpn, lot: l.lot, data: { issue: String(txt).trim(), was: was } }]);
-    }).then(function () { flash(lpn + " ON HOLD: " + txt, "warn"); render(); });
+    }).then(function () { printLabels([S.labels[lpn] || l]); flash(lpn + " ON HOLD: " + txt + " (new HOLD label printed)", "warn"); render(); });
   }
   function qaScan(code) {
     code = cleanScan(code).toUpperCase(); if (!code) return;
@@ -531,6 +539,7 @@
       var bad = labelUsable(l);
       if (bad) { flash(code + ": " + bad, "err"); render(); return; }
       if (W.mix.inputs.some(function (x) { return x.lpn === code; })) { flash(code + " already scanned", "warn"); render(); return; }
+      if (l.status === "EMPTY" && !window.confirm(code + " was marked USED UP. Use it anyway?")) { flash(code + ": used up", "err"); render(); return; }
       var warn = "";
       if (l.mtype === "SEAS" && W.mix.flavor && l.flavor_code && l.flavor_code !== W.mix.flavor) warn = L("wrongFlavor") + ": " + l.flavor_code + " vs " + W.mix.flavor;
       if (warn && !window.confirm(warn + "\n\nOK = use anyway (Allen / QA approved)")) { flash(warn, "err"); render(); return; }
@@ -549,6 +558,7 @@
     if (!m.inputs.some(function (x) { return x.mtype === "SEAS"; }) && !window.confirm("No seasoning scanned. Continue anyway?")) return;
     if (!seeds[0].seed_code) { var sc = window.prompt(L("seedCode") + "?"); if (!sc) return; seeds[0].seed_code = sc.toUpperCase().trim(); updLabel(seeds[0].lpn, { seed_code: seeds[0].seed_code }); }
     var bc = mixBatchCode(); if (!bc) { flash(L("prefix") + "?", "err"); render(); return; }
+    var pw = openPrintWin();
     var parents = m.inputs.map(function (x) { return x.lpn; }), stamp = nowISO(), rows = [], evs = [];
     var prior = allLabels().filter(function (l) { return l.kind === "BN" && l.lot === bc; }).length;
     for (var i = 0; i < m.bins; i++) {
@@ -567,8 +577,8 @@
     });
     m.inputs = m.inputs.filter(function (x) { return !x.gone; });
     insLabels(rows).then(function (res) {
-      if (!res.ok) { flash("Save failed: " + res.msg, "err"); render(); return; }
-      return addEvents(evs).then(function () { printLabels(rows); flash(m.bins + " bin tags: " + bc, "ok"); render(); });
+      if (!res.ok) { closeWin(pw); flash("Save failed: " + res.msg, "err"); render(); return; }
+      return addEvents(evs).then(function () { printLabels(rows, pw); flash(m.bins + " bin tags: " + bc, "ok"); render(); });
     });
   }
 
@@ -584,9 +594,9 @@
     var bcode = bagCode(p, m);
     h += '<label>' + esc(L("setPrinter")) + '</label><div class="trc-big">' + esc(bcode || "-") + '</div>';
     if (fl) h += '<p><b>Allergen:</b> ' + esc(fl.alg) + ' ' + esc(fl.algTxt) + ' &middot; <b>' + esc(L("size")) + ':</b> ' + esc(size) + '</p>';
-    h += '<div class="trc-grid"><div><label>' + esc(L("bags")) + '</label><input id="trc-p-bags" type="number" min="1" placeholder="e.g. 2500"></div></div>';
+    h += '<div class="trc-grid"><div><label>' + esc(L("bags")) + '</label><input id="trc-p-bags" type="number" min="1" placeholder="e.g. 2500" value="' + esc(W.pmBags || "") + '"></div></div>';
     h += '<div class="trc-row"><button class="primary" onclick="TRACE.pmFinish()">' + esc(L("finishPallet")) + '</button><button class="ghost" style="margin-top:14px" onclick="TRACE.pmChange()">' + esc(L("codeChange")) + '</button><button class="ghost" style="margin-top:14px" onclick="TRACE.pmScrap()">' + esc(L("scrapBags")) + '</button></div>';
-    if (p.changes && p.changes.length) h += '<p class="muted sm">Code changes today: ' + p.changes.filter(function (c) { return String(c.at).slice(0, 10) === today(); }).map(function (c) { return esc(c.from + " -> " + c.to + " @ " + new Date(c.at).toLocaleTimeString()); }).join(" &middot; ") + '</p>';
+    if (p.changes && p.changes.length) h += '<p class="muted sm">Code changes today: ' + p.changes.filter(function (c) { return dLocal(c.at) === today(); }).map(function (c) { return esc(c.from + " -> " + c.to + " @ " + new Date(c.at).toLocaleTimeString()); }).join(" &middot; ") + '</p>';
     h += '</div>';
     var recent = allLabels().filter(function (l) { return l.kind === "FG" && !(l.data && l.data.legacy); }).sort(byNewest).slice(0, 12);
     h += '<div class="card"><h2 class="sub2">Recent finished pallets</h2>' + labelTable(recent) + '</div>';
@@ -646,17 +656,17 @@
     addEvents([{ type: "CODE_CHANGE", ref: "PMAC " + m, lot: from, data: { to: nb, machine: m, manual: true } }]);
     savePm(m); flash("Code change recorded " + from + " -> " + bagCode(p, m), "warn"); render();
   }
-  function finishPallet(m, bags) {
+  function finishPallet(m, bags, pw) {
     var p = pmState(m), fl = flavorBy(p.flavor), lot = bagCode(p, m);
     var parents = (p.openBins || []).concat(p.openFilms && p.openFilms.length ? p.openFilms : (p.film ? [p.film] : []));
     parents = parents.filter(function (x, i, a) { return x && a.indexOf(x) === i; });
     var row = { lpn: newLpn("FG"), kind: "FG", mtype: "FG", item: (fl ? fl.name : p.flavor) + " " + sizeForMachine(m), flavor_code: p.flavor, flavor: fl ? fl.name : "", size: sizeForMachine(m), lot: lot, supplier: "", supplier_lot: "", seed_code: "", exp: null, qty: bags, qty_left: bags, uom: "bags", status: "ACTIVE", location: "STAGING", parents: parents, po: "", station: "PMAC " + m, data: { machine: m, week: isoWeek(), date: today(), alg: fl ? fl.alg : "", algTxt: fl ? fl.algTxt : "", batch: p.batch }, created_by: opName(), created_at: nowISO() };
     return insLabels([row]).then(function (res) {
-      if (!res.ok) { flash("Save failed: " + res.msg, "err"); return null; }
+      if (!res.ok) { closeWin(pw); flash("Save failed: " + res.msg, "err"); return null; }
       return addEvents([{ type: "PACK", lpn: row.lpn, qty: bags, uom: "bags", ref: "PMAC " + m, lot: lot, to_loc: "STAGING", data: { parents: parents } }]).then(function () {
         // the bin in the hopper and the film on the machine keep feeding the next pallet
         p.openBins = (p.openBins || []).slice(-1); p.openFilms = p.film ? [p.film] : [];
-        savePm(m); printLabels([row]); flash("Pallet " + row.lpn + ": " + bags + " bags " + lot + " -> STAGING", "ok");
+        savePm(m); printLabels([row], pw); flash("Pallet " + row.lpn + ": " + bags + " bags " + lot + " -> STAGING", "ok");
         return row;
       });
     });
@@ -667,7 +677,7 @@
     if (!p.batch) { flash("Scan a bin tag first.", "err"); render(); return; }
     if (!(bags > 0)) { flash(L("bags") + "?", "err"); render(); return; }
     if (!p.film && !window.confirm("No film roll scanned on this machine. Finish anyway? (SQF needs the film linked)")) return;
-    finishPallet(m, bags).then(render);
+    finishPallet(m, bags, openPrintWin()).then(function (row) { if (row) W.pmBags = ""; render(); });
   }
   function pmScrap() {
     if (needOp()) return;
@@ -685,7 +695,7 @@
     if (l) h += '<p style="margin-top:12px;font-size:18px"><b>' + esc(l.lpn) + '</b> ' + esc(l.item) + ' &middot; ' + esc(l.lot) + ' &middot; ' + fmt(l.qty_left) + ' ' + esc(l.uom) + ' &middot; now at <b>' + esc(l.location) + '</b></p><p class="trc-big" style="font-size:22px">' + esc(L("scanLoc")) + ' &rarr;</p>';
     h += '</div>';
     var recent = S.events.filter(function (e) { return e.type === "MOVE"; }).slice(-15).reverse();
-    h += '<div class="card"><h2 class="sub2">Recent moves</h2><table class="trc"><tbody>' + recent.map(function (e) { return '<tr><td>' + esc(String(e.ts).slice(5, 16).replace("T", " ")) + '</td><td>' + esc(e.lpn) + '</td><td>' + esc(e.from_loc) + ' &rarr; <b>' + esc(e.to_loc) + '</b></td><td>' + esc(e.operator) + '</td></tr>'; }).join("") + '</tbody></table></div>';
+    h += '<div class="card"><h2 class="sub2">Recent moves</h2><table class="trc"><tbody>' + recent.map(function (e) { return '<tr><td>' + esc(tsLocal(e.ts).slice(5)) + '</td><td>' + esc(e.lpn) + '</td><td>' + esc(e.from_loc) + ' &rarr; <b>' + esc(e.to_loc) + '</b></td><td>' + esc(e.operator) + '</td></tr>'; }).join("") + '</tbody></table></div>';
     return h;
   }
   function moveScan(code) {
@@ -714,7 +724,7 @@
     h += scanBox("useScan");
     h += '</div>';
     var recent = S.events.filter(function (e) { return e.type === "USE"; }).slice(-20).reverse();
-    h += '<div class="card"><h2 class="sub2">Recent</h2><table class="trc"><thead><tr><th>When</th><th>Label</th><th>Lot</th><th>Bags</th><th>To</th><th>By</th></tr></thead><tbody>' + recent.map(function (e) { return '<tr><td>' + esc(String(e.ts).slice(5, 16).replace("T", " ")) + '</td><td>' + esc(e.lpn) + '</td><td>' + esc(e.lot) + '</td><td>' + fmt(e.qty) + '</td><td>' + esc(e.to_loc) + (e.ref ? " &middot; " + esc(e.ref) : "") + '</td><td>' + esc(e.operator) + '</td></tr>'; }).join("") + '</tbody></table></div>';
+    h += '<div class="card"><h2 class="sub2">Recent</h2><table class="trc"><thead><tr><th>When</th><th>Label</th><th>Lot</th><th>Bags</th><th>To</th><th>By</th></tr></thead><tbody>' + recent.map(function (e) { return '<tr><td>' + esc(tsLocal(e.ts).slice(5)) + '</td><td>' + esc(e.lpn) + '</td><td>' + esc(e.lot) + '</td><td>' + fmt(e.qty) + '</td><td>' + esc(e.to_loc) + (e.ref ? " &middot; " + esc(e.ref) : "") + '</td><td>' + esc(e.operator) + '</td></tr>'; }).join("") + '</tbody></table></div>';
     return h;
   }
   function useDest(v) { W.use.dest = v; W.use.qty = val("trc-u-qty"); W.use.ref = val("trc-u-ref"); render(); }
@@ -741,7 +751,7 @@
     var h = '<div class="card"><h2 class="sub2">' + esc(L("tShip")) + '</h2><p class="hint">' + esc(L("shipHint")) + '</p><div class="trc-grid">';
     h += '<div><label>' + esc(L("po")) + '</label><input id="trc-s-po" value="' + esc(s.po) + '" onchange="TRACE.shipField(\'po\',this.value)"></div>';
     h += '<div><label>' + esc(L("customer")) + '</label><input id="trc-s-cust" value="' + esc(s.customer) + '" onchange="TRACE.shipField(\'customer\',this.value)"></div>';
-    h += '<div><label>' + esc(L("qtyTake")) + '</label><input id="trc-s-qty" type="number" min="1"></div></div>';
+    h += '<div><label>' + esc(L("qtyTake")) + '</label><input id="trc-s-qty" type="number" min="1" value="' + esc(W.ship.qty || "") + '"></div></div>';
     h += scanBox("shipScan");
     if (s.lines.length) {
       h += '<table class="trc" style="margin-top:12px"><thead><tr><th>Pallet</th><th>Flavor</th><th>Lot</th><th>Bags</th><th></th></tr></thead><tbody>' + s.lines.map(function (x, i) { return '<tr><td>' + esc(x.lpn) + '</td><td>' + esc(x.flavor) + ' ' + esc(x.size) + '</td><td><b>' + esc(x.lot) + '</b></td><td>' + fmt(x.bags) + '</td><td><button class="ghost sm" onclick="TRACE.shipRemove(' + i + ')">x</button></td></tr>'; }).join("") + '</tbody></table>';
@@ -780,6 +790,7 @@
     var total = s.lines.reduce(function (a, x) { return a + x.bags; }, 0);
     var nOnPo = allLabels().filter(function (l) { return l.kind === "OB" && l.po === s.po; }).length;
     var row = { lpn: newLpn("OB"), kind: "OB", mtype: "OB", item: "Outbound pallet", flavor_code: "", flavor: "", size: "", lot: s.lines.map(function (x) { return x.lot; }).filter(function (x, i, a) { return a.indexOf(x) === i; }).join(" | "), supplier: "", supplier_lot: "", seed_code: "", exp: null, qty: total, qty_left: total, uom: "bags", status: "SHIPPED", location: "DOCK", parents: parents, po: s.po, station: "SHIPPING", data: { customer: s.customer, lines: s.lines, pallet_no: nOnPo + 1 }, created_by: opName(), created_at: nowISO() };
+    var pw = openPrintWin();
     var evs = [], ups = [];
     s.lines.forEach(function (x) {
       var l = S.labels[x.lpn]; var left = Math.max(0, num(l.qty_left) - x.bags);
@@ -788,7 +799,7 @@
       evs.push({ type: "SHIP", lpn: x.lpn, qty: x.bags, uom: "bags", from_loc: l.location, to_loc: "PO " + s.po, ref: s.po, lot: x.lot, data: { customer: s.customer, ob: row.lpn, flavor: x.flavor_code, size: x.size } });
     });
     Promise.all(ups).then(function () { return insLabels([row]); }).then(function () { return addEvents(evs); }).then(function () {
-      printLabels([row]); flash("Outbound pallet " + row.lpn + " for PO " + s.po + ": " + total + " bags, lots " + row.lot, "ok");
+      printLabels([row], pw); flash("Outbound pallet " + row.lpn + " for PO " + s.po + ": " + total + " bags, lots " + row.lot, "ok");
       W.ship.lines = []; render();
     });
   }
@@ -802,16 +813,16 @@
         (l.kind === "OB" && String(l.lot || "").toUpperCase().split(" | ").indexOf(q) >= 0);
     });
     if (!labs.length) labs = allLabels().filter(function (l) { return String(l.lot || "").toUpperCase().indexOf(q) >= 0 || String(l.supplier_lot || "").toUpperCase().indexOf(q) >= 0; }).slice(0, 50);
-    var evs = S.events.filter(function (e) { return String(e.ref || "").toUpperCase() === q; });
+    var evs = S.events.filter(function (e) { return String(e.ref || "").toUpperCase() === q && !/^(TRACE_QUERY|MOCK_RECALL)/.test(e.type); });
     return { labels: labs, events: evs };
   }
   function describe(l) {
     if (!l) return "?";
     var t = l.lpn + "  [" + l.kind + (l.mtype && l.mtype !== l.kind ? " " + l.mtype : "") + "]  ";
-    if (l.kind === "RM") t += (l.item || "") + (l.flavor ? " (" + l.flavor + ")" : "") + "  supplier " + (l.supplier || "?") + "  lot " + (l.supplier_lot || "?") + (l.seed_code ? "  seed " + l.seed_code : "") + (l.exp ? "  exp " + l.exp : "") + "  " + fmt(l.qty) + " " + l.uom + (l.po ? "  PO " + l.po : "") + "  rcvd " + String(l.created_at || "").slice(0, 10) + (l.data && l.data.issues && l.data.issues.length ? "  ISSUE: " + l.data.issues.map(function (x) { return x.txt; }).join("; ") : "");
-    else if (l.kind === "BN") t += "bin " + (l.data && l.data.bin_no || "") + "  batch " + l.lot + "  " + (l.flavor || "") + "  mixer " + (l.data && l.data.mixer || "") + "  " + String(l.created_at || "").slice(0, 10) + "  by " + (l.created_by || "");
-    else if (l.kind === "FG") t += (l.flavor || l.item) + " " + (l.size || "") + "  LOT " + l.lot + "  " + fmt(l.qty) + " bags (" + fmt(l.qty_left) + " left @ " + l.location + ")  " + (l.station || "") + "  " + String(l.created_at || "").slice(0, 10) + (l.data && l.data.legacy ? "  [labeled from existing stock]" : "");
-    else if (l.kind === "OB") t += "PO " + l.po + "  " + ((l.data && l.data.customer) || "") + "  " + fmt(l.qty) + " bags  lots " + l.lot + "  " + String(l.created_at || "").slice(0, 10);
+    if (l.kind === "RM") t += (l.item || "") + (l.flavor ? " (" + l.flavor + ")" : "") + "  supplier " + (l.supplier || "?") + "  lot " + (l.supplier_lot || "?") + (l.seed_code ? "  seed " + l.seed_code : "") + (l.exp ? "  exp " + l.exp : "") + "  " + fmt(l.qty) + " " + l.uom + (l.po ? "  PO " + l.po : "") + "  rcvd " + dLocal(l.created_at) + (l.data && l.data.issues && l.data.issues.length ? "  ISSUE: " + l.data.issues.map(function (x) { return x.txt; }).join("; ") : "");
+    else if (l.kind === "BN") t += "bin " + (l.data && l.data.bin_no || "") + "  batch " + l.lot + "  " + (l.flavor || "") + "  mixer " + (l.data && l.data.mixer || "") + "  " + dLocal(l.created_at) + "  by " + (l.created_by || "");
+    else if (l.kind === "FG") t += (l.flavor || l.item) + " " + (l.size || "") + "  LOT " + l.lot + "  " + fmt(l.qty) + " bags (" + fmt(l.qty_left) + " left @ " + l.location + ")  " + (l.station || "") + "  " + dLocal(l.created_at) + (l.data && l.data.legacy ? "  [labeled from existing stock]" : "");
+    else if (l.kind === "OB") t += "PO " + l.po + "  " + ((l.data && l.data.customer) || "") + "  " + fmt(l.qty) + " bags  lots " + l.lot + "  " + dLocal(l.created_at);
     return t + "  " + l.status;
   }
   function backTree(lpn, depth, seen) {
@@ -826,7 +837,7 @@
     var l = S.labels[lpn]; var pad = new Array(depth + 1).join("    ");
     var out = pad + (depth ? "-> " : "") + describe(l) + "\n";
     S.events.filter(function (e) { return e.lpn === lpn && (e.type === "USE" || e.type === "SHIP"); }).forEach(function (e) {
-      out += pad + "    => " + e.type + " " + fmt(e.qty) + " bags to " + (e.to_loc || "") + (e.ref ? " (" + e.ref + ")" : "") + (e.data && e.data.customer ? " " + e.data.customer : "") + "  " + String(e.ts).slice(0, 16).replace("T", " ") + "  by " + (e.operator || "") + "\n";
+      out += pad + "    => " + e.type + " " + fmt(e.qty) + " bags to " + (e.to_loc || "") + (e.ref ? " (" + e.ref + ")" : "") + (e.data && e.data.customer ? " " + e.data.customer : "") + "  " + tsLocal(e.ts) + "  by " + (e.operator || "") + "\n";
     });
     childrenOf(lpn).forEach(function (c) { if (c.kind !== "OB") out += fwdTree(c.lpn, depth + 1, seen); });
     return out;
@@ -875,8 +886,8 @@
     h += '<h3>' + esc(L("back")) + '</h3><div class="trc-tree">' + esc(shown.map(function (l) { return backTree(l.lpn); }).join("\n")) + '</div>';
     h += '<h3>' + esc(L("fwd")) + '</h3><div class="trc-tree">' + esc(shown.map(function (l) { return fwdTree(l.lpn); }).join("\n")) + '</div>';
     var ecom = S.events.filter(function (e) { return e.type === "USE" && e.to_loc === "ECOM" && (lots[e.lot] || shown.some(function (l) { return l.lot === e.lot; })); });
-    if (ecom.length) h += '<h3>E-commerce window</h3><p class="hint">Bags from these lots went to the e-com line on the dates below. Orders shipped from that line from the first date until the lot was used up are in scope (match in ShipStation by ship date).</p><table class="trc"><tbody>' + ecom.map(function (e) { return '<tr><td>' + esc(String(e.ts).slice(0, 16).replace("T", " ")) + '</td><td>' + esc(e.lot) + '</td><td>' + fmt(e.qty) + ' bags</td><td>' + esc(e.operator) + '</td></tr>'; }).join("") + '</tbody></table>';
-    if (res.events.length) h += '<h3>Events referencing ' + esc(t.q) + '</h3><table class="trc"><tbody>' + res.events.slice(-60).map(function (e) { return '<tr><td>' + esc(String(e.ts).slice(0, 16).replace("T", " ")) + '</td><td>' + esc(e.type) + '</td><td>' + esc(e.lpn || "") + '</td><td>' + esc(e.lot || "") + '</td><td>' + fmt(e.qty) + ' ' + esc(e.uom || "") + '</td><td>' + esc(e.operator || "") + '</td></tr>'; }).join("") + '</tbody></table>';
+    if (ecom.length) h += '<h3>E-commerce window</h3><p class="hint">Bags from these lots went to the e-com line on the dates below. Orders shipped from that line from the first date until the lot was used up are in scope (match in ShipStation by ship date).</p><table class="trc"><tbody>' + ecom.map(function (e) { return '<tr><td>' + esc(tsLocal(e.ts)) + '</td><td>' + esc(e.lot) + '</td><td>' + fmt(e.qty) + ' bags</td><td>' + esc(e.operator) + '</td></tr>'; }).join("") + '</tbody></table>';
+    if (res.events.length) h += '<h3>Events referencing ' + esc(t.q) + '</h3><table class="trc"><tbody>' + res.events.slice(-60).map(function (e) { return '<tr><td>' + esc(tsLocal(e.ts)) + '</td><td>' + esc(e.type) + '</td><td>' + esc(e.lpn || "") + '</td><td>' + esc(e.lot || "") + '</td><td>' + (e.qty == null ? "" : fmt(e.qty) + ' ' + esc(e.uom || "")) + '</td><td>' + esc(e.operator || "") + '</td></tr>'; }).join("") + '</tbody></table>';
     h += '</div>';
     return h;
   }
@@ -903,7 +914,7 @@
   function labelTable(list) {
     if (!list.length) return '<p class="muted">-</p>';
     return '<div class="tblwrap"><table class="trc"><thead><tr><th>Label</th><th>Item</th><th>Lot</th><th>Qty left</th><th>Where</th><th>Status</th><th></th></tr></thead><tbody>' + list.map(function (l) {
-      return '<tr><td><b>' + esc(l.lpn) + '</b><br><span class="muted sm">' + esc(String(l.created_at || "").slice(0, 16).replace("T", " ")) + ' ' + esc(l.created_by || "") + '</span></td><td>' + esc(l.flavor ? l.flavor + (l.size ? " " + l.size : "") : l.item) + (l.kind === "RM" ? '<br><span class="muted sm">' + esc(l.supplier || "") + '</span>' : "") + '</td><td><b>' + esc(l.lot || "") + '</b>' + (l.exp ? '<br><span class="muted sm">exp ' + esc(l.exp) + '</span>' : "") + '</td><td>' + fmt(l.qty_left) + ' ' + esc(l.uom) + '</td><td>' + esc(l.location || "") + '</td><td>' + pill(l.status) + '</td><td class="trc-row"><button class="ghost sm" onclick="TRACE.reprint(\'' + esc(l.lpn) + '\')">' + esc(L("reprint")) + '</button><button class="ghost sm" onclick="TRACE.traceOf(\'' + esc(l.lpn) + '\')">' + esc(L("tTrace")) + '</button></td></tr>';
+      return '<tr><td><b>' + esc(l.lpn) + '</b><br><span class="muted sm">' + esc(tsLocal(l.created_at)) + ' ' + esc(l.created_by || "") + '</span></td><td>' + esc(l.flavor ? l.flavor + (l.size ? " " + l.size : "") : l.item) + (l.kind === "RM" ? '<br><span class="muted sm">' + esc(l.supplier || "") + '</span>' : "") + '</td><td><b>' + esc(l.lot || "") + '</b>' + (l.exp ? '<br><span class="muted sm">exp ' + esc(l.exp) + '</span>' : "") + '</td><td>' + fmt(l.qty_left) + ' ' + esc(l.uom) + '</td><td>' + esc(l.location || "") + '</td><td>' + pill(l.status) + '</td><td class="trc-row"><button class="ghost sm" onclick="TRACE.reprint(\'' + esc(l.lpn) + '\')">' + esc(L("reprint")) + '</button><button class="ghost sm" onclick="TRACE.traceOf(\'' + esc(l.lpn) + '\')">' + esc(L("tTrace")) + '</button></td></tr>';
     }).join("") + '</tbody></table></div>';
   }
   function vLabels() {
@@ -943,7 +954,9 @@
         '<div class="kv"><b>Supplier / Proveedor:</b> ' + esc(l.supplier || "") + '</div>' +
         '<div class="lot">LOT ' + esc(l.supplier_lot || "") + '</div>' +
         '<div class="kv"><b>Exp / Vence:</b> ' + esc(l.exp || "-") + ' &nbsp; <b>Qty:</b> ' + fmt(l.qty) + ' ' + esc(l.uom) + (l.seed_code ? ' &nbsp; <b>Seed code:</b> ' + esc(l.seed_code) : "") + '</div>' +
-        '<div class="kv"><b>Received / Recibido:</b> ' + esc(String(l.created_at || "").slice(0, 10)) + (l.po ? ' &nbsp; <b>PO</b> ' + esc(l.po) : "") + ' &nbsp; ' + esc(d.unit || "") + '</div>' +
+        '<div class="kv"><b>Received / Recibido:</b> ' + esc(dLocal(l.created_at)) + (l.po ? ' &nbsp; <b>PO</b> ' + esc(l.po) : "") + ' &nbsp; ' + esc(d.unit || "") + '</div>' +
+        (l.status === "RELEASED" && d.qa && d.qa.status === "RELEASED" ? '<div class="kv"><b>QA RELEASED / LIBERADO:</b> ' + esc(dLocal(d.qa.at)) + ' ' + esc(d.qa.by || "") + '</div>' : "") +
+        (l.status === "REJECTED" ? '<div class="hold">REJECTED - RECHAZADO<br><span style="font-size:14px">Do not use / No usar</span>' + (d.qa && d.qa.reason ? '<br><span style="font-size:15px">' + esc(d.qa.reason) + '</span>' : '') + '</div>' : "") +
         (l.status === "HOLD" ? '<div class="hold">QA HOLD - RETENIDO<br><span style="font-size:14px">Do not use until released / No usar hasta liberar</span>' + (d.issues && d.issues.length ? '<br><span style="font-size:15px">' + esc(d.issues[d.issues.length - 1].txt) + '</span>' : '') + '</div>' : "");
     } else if (l.kind === "BN") {
       top = "MIXED BIN / CONTENEDOR";
@@ -955,18 +968,23 @@
       body = '<div class="big">' + esc(l.flavor || l.item) + ' &middot; ' + esc(l.size || "") + '</div><div class="lot">LOT ' + esc(l.lot) + '</div>' +
         '<div class="qty">' + fmt(l.qty) + ' BAGS / BOLSAS</div>' +
         (d.alg ? '<div class="alg">Allergen ' + esc(d.alg) + (d.algTxt ? ": " + esc(d.algTxt) : "") + '</div>' : "") +
-        '<div class="kv"><b>Packed:</b> ' + esc(d.date || String(l.created_at || "").slice(0, 10)) + (d.machine ? ' &nbsp; <b>P-Mac</b> ' + esc(d.machine) : "") + ' &nbsp; <b>By:</b> ' + esc(l.created_by || "") + '</div>';
+        '<div class="kv"><b>Packed:</b> ' + esc(d.date || dLocal(l.created_at)) + (d.machine ? ' &nbsp; <b>P-Mac</b> ' + esc(d.machine) : "") + ' &nbsp; <b>By:</b> ' + esc(l.created_by || "") + '</div>';
     } else if (l.kind === "OB") {
       top = "OUTBOUND / SALIDA";
       var lines = (d.lines || []).reduce(function (m, x) { var k = x.flavor + " " + x.size + "|" + x.lot; m[k] = (m[k] || 0) + x.bags; return m; }, {});
       body = '<div class="big">PO ' + esc(l.po) + '</div><div class="kv" style="font-size:18px">' + esc(d.customer || "") + ' &nbsp; Pallet ' + esc(d.pallet_no || "") + '</div>' +
         '<table>' + Object.keys(lines).map(function (k) { var p = k.split("|"); return '<tr><td>' + esc(p[0]) + '</td><td><b>' + esc(p[1]) + '</b></td><td style="text-align:right">' + fmt(lines[k]) + '</td></tr>'; }).join("") + '</table>' +
-        '<div class="kv"><b>Total bags:</b> ' + fmt(l.qty) + ' &nbsp; <b>Built:</b> ' + esc(String(l.created_at || "").slice(0, 10)) + ' ' + esc(l.created_by || "") + '</div>';
+        '<div class="kv"><b>Total bags:</b> ' + fmt(l.qty) + ' &nbsp; <b>Built:</b> ' + esc(dLocal(l.created_at)) + ' ' + esc(l.created_by || "") + '</div>';
     }
     return '<div class="lbl4x6"><div class="top">' + top + '</div>' + body + '<div class="bc">' + barcodeSvg(l.lpn) + '</div></div>';
   }
   function typeLabel(k) { var t = typeBy(k); return (t.en + " / " + t.es).toUpperCase(); }
-  function printLabels(rows) {
+  // Open the print window during the click (browsers block pop-ups opened later, after saving).
+  function openPrintWin() {
+    try { var w = window.open("", "_blank"); if (w) { w.document.write('<p style="font:16px Arial;padding:24px">Preparing labels...</p>'); } return w || null; } catch (e) { return null; }
+  }
+  function closeWin(w) { try { if (w && !w.closed) w.close(); } catch (e) {} }
+  function printLabels(rows, pre) {
     if (!rows || !rows.length) return;
     var css = '@page{size:4in 6in;margin:0}body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#000}' +
       '.lbl4x6{width:4in;height:6in;box-sizing:border-box;padding:.18in;page-break-after:always;display:flex;flex-direction:column;gap:6px;overflow:hidden}' +
@@ -976,11 +994,27 @@
       '.hold{font-size:24px;font-weight:900;text-align:center;border:4px solid #000;padding:6px}table{width:100%;border-collapse:collapse;font-size:14px}td{border-bottom:1px solid #000;padding:2px 3px}' +
       '.bc{margin-top:auto;text-align:center}.bc svg{max-width:100%;height:auto}';
     var html = '<!doctype html><html><head><meta charset="utf-8"><title>Labels</title><style>' + css + '</style></head><body>' + rows.map(labelHtml).join("") + '</body></html>';
-    var w = window.open("", "_blank");
-    if (!w) { toast("Allow pop-ups to print labels"); return; }
+    var w = (pre && !pre.closed) ? pre : null;
+    if (!w) { try { w = window.open("", "_blank"); } catch (e) { w = null; } }
+    if (!w) { W.pendingPrint = rows; toast("Pop-up blocked: press Print labels now"); return; }
+    W.pendingPrint = null;
+    try { w.document.open(); } catch (e) {}
     w.document.write(html); w.document.close();
     setTimeout(function () { try { w.focus(); w.print(); } catch (e) {} }, 350);
   }
+
+  // Keep typed values in memory as they are typed, so a background app refresh
+  // (another station saving something) can never wipe a half-filled form.
+  function captureAll() {
+    if (!ACTIVE) return;
+    if ($("trc-r-type")) recvCapture();
+    if ($("trc-m-bins")) W.mix.bins = val("trc-m-bins");
+    if ($("trc-p-bags")) W.pmBags = val("trc-p-bags");
+    if ($("trc-u-qty")) { W.use.qty = val("trc-u-qty"); W.use.ref = val("trc-u-ref"); }
+    if ($("trc-s-po")) { W.ship.po = val("trc-s-po"); W.ship.customer = val("trc-s-cust"); W.ship.qty = val("trc-s-qty"); }
+  }
+  document.addEventListener("input", captureAll, true);
+  document.addEventListener("change", captureAll, true);
 
   // ---- public API ---------------------------------------------------------------
   window.TRACE = {
@@ -1006,6 +1040,7 @@
     traceQ: traceQ, drill: drill, printEvidence: printEvidence,
     traceOf: function (lpn) { ST.tab = "trace"; W.trace.q = lpn; markActive(); render(); },
     reprint: function (lpn) { var l = S.labels[lpn]; if (l) printLabels([l]); },
+    printPending: function () { var r = W.pendingPrint; W.pendingPrint = null; if (r) printLabels(r); render(); },
     lf: function (k, v) { W.labels[k] = v; render(); },
     // for testing / other modules
     _state: function () { return { mode: mode, labels: S.labels, events: S.events, W: W, ST: ST }; },
@@ -1069,7 +1104,7 @@
     var mo = new MutationObserver(function () {
       injectNav();
       // A background app render wiped our view while it is active: redraw from memory once.
-      if (ACTIVE) { var v = $("view"); if (v && !v.querySelector("#trc-root")) { markActive(); render(); } }
+      if (ACTIVE) { var v = $("view"); if (v && !v.querySelector("#trc-root")) { markActive(); render(); } else { var a = $("trc-nav-" + ST.tab); if (a && !a.classList.contains("active")) markActive(); } }
     });
     mo.observe(document.documentElement, { childList: true, subtree: true });
   } catch (e) {}
