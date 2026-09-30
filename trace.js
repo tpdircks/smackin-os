@@ -1,5 +1,5 @@
 /* ============================================================================
-   Lot Trace & Scan  (trace.js)  b=1
+   Lot Trace & Scan  (trace.js)  b=3
    One scan chain from the dock to the customer, built for SQF traceability.
 
      RECEIVE   raw material in -> our own RM label per pallet/box/roll (supplier lot, exp)
@@ -79,7 +79,7 @@
   // ---- i18n -----------------------------------------------------------------
   var T = {
     en: {
-      title: "Lot Trace & Scan", navLbl: "Lot Trace & Scan",
+      title: "Lot Trace & Scan (SQF)", navLbl: "Lot Trace & Scan", grpQ: "Quality",
       tRecv: "Receive", tQa: "QA Hold", tMix: "Mixing", tPmac: "P-Mac", tMove: "Move", tUse: "Use", tShip: "Ship", tTrace: "Trace", tLabels: "Labels",
       op: "Operator (your name)", scan: "Scan here", scanPh: "Scan a label (or type it and press Enter)",
       local: "LOCAL MODE: the trace tables are not set up yet, so scans save on this device only.",
@@ -107,10 +107,12 @@
       back: "Backward (where it came from)", fwd: "Forward (where it went)", balance: "Mass balance",
       startDrill: "Start mock recall timer", stopDrill: "Stop timer", printEv: "Print evidence",
       notFound: "Not found", onHold: "ON HOLD - cannot use", expired: "EXPIRED - cannot use", wrongFlavor: "Flavor does not match",
-      all: "All", kind: "Kind", status: "Status", search: "Search"
+      all: "All", kind: "Kind", status: "Status", search: "Search",
+      issue: "Issue found (blank if none). Anything here keeps it ON HOLD", noteIssue: "Note issue (stay on hold)", issueCol: "Issue",
+      issuePrompt: "Describe the issue. Examples: No CA warning / Wrong ingredient statement / Spec issue / Shiny film / Swirl design", holdQ: "is released. Put it ON HOLD?"
     },
     es: {
-      title: "Rastreo de Lotes y Escaneo", navLbl: "Rastreo de Lotes",
+      title: "Rastreo de Lotes y Escaneo (SQF)", navLbl: "Rastreo de Lotes", grpQ: "Calidad",
       tRecv: "Recibir", tQa: "Retención QA", tMix: "Mezcla", tPmac: "P-Mac", tMove: "Mover", tUse: "Usar", tShip: "Enviar", tTrace: "Rastrear", tLabels: "Etiquetas",
       op: "Operador (su nombre)", scan: "Escanee aquí", scanPh: "Escanee una etiqueta (o escriba y presione Enter)",
       local: "MODO LOCAL: las tablas no están listas; los escaneos se guardan solo en este equipo.",
@@ -138,7 +140,9 @@
       back: "Hacia atrás (de dónde vino)", fwd: "Hacia adelante (a dónde fue)", balance: "Balance de masa",
       startDrill: "Iniciar cronómetro de simulacro", stopDrill: "Detener", printEv: "Imprimir evidencia",
       notFound: "No encontrado", onHold: "RETENIDO - no usar", expired: "VENCIDO - no usar", wrongFlavor: "El sabor no coincide",
-      all: "Todos", kind: "Tipo", status: "Estado", search: "Buscar"
+      all: "Todos", kind: "Tipo", status: "Estado", search: "Buscar",
+      issue: "Problema encontrado (vacío si no hay). Si escribe algo queda RETENIDO", noteIssue: "Anotar problema (sigue retenido)", issueCol: "Problema",
+      issuePrompt: "Describa el problema. Ejemplos: Sin advertencia de California / Ingredientes incorrectos / Problema de especificación / Película brillante / Diseño de remolino", holdQ: "está liberado. ¿Retenerlo?"
     }
   };
   function lang() { var b = document.getElementById("lang-es"); return b && b.classList.contains("active") ? "es" : "en"; }
@@ -356,6 +360,7 @@
       h += '<div><label>' + esc(L("slot")) + '</label><input id="trc-r-lot" class="trc-scan" style="font-size:18px;padding:10px" value="' + esc(r.lot || "") + '" onkeydown="if(event.key===\'Enter\'){event.preventDefault();var n=document.getElementById(\'trc-r-exp\');if(n)n.focus();}"></div>';
       h += '<div><label>' + esc(L("exp")) + '</label><input id="trc-r-exp" type="date" value="' + esc(r.exp || "") + '"></div>';
       if (r.type === "SEED") h += '<div><label>' + esc(L("seedCode")) + '</label><input id="trc-r-seed" value="' + esc(r.seedCode || "") + '" placeholder="3X"></div>';
+      if (ty.food || r.type === "PKG") h += '<div style="grid-column:1/-1"><label>' + esc(L("issue")) + '</label><input id="trc-r-issue" value="' + esc(r.issue || "") + '"></div>';
     }
     h += '<div><label>' + esc(L("units")) + '</label><input id="trc-r-units" type="number" min="1" value="' + esc(r.units || 1) + '"></div>';
     h += '<div><label>' + esc(L("qtyEach")) + '</label><input id="trc-r-qty" type="number" step="any" value="' + esc(r.qty || "") + '"></div>';
@@ -375,7 +380,7 @@
   function byNewest(a, b) { return String(b.created_at || "").localeCompare(String(a.created_at || "")); }
   function recvCapture() {
     var r = W.recv;
-    ["item", "sup", "po", "lot", "exp", "seed", "units", "qty", "uom", "flav", "size", "loc"].forEach(function (k) {
+    ["item", "sup", "po", "lot", "exp", "seed", "units", "qty", "uom", "flav", "size", "loc", "issue"].forEach(function (k) {
       var e = $("trc-r-" + k); if (!e) return;
       var map = { sup: "supplier", seed: "seedCode", flav: "flavor" };
       r[map[k] || k] = e.value;
@@ -398,7 +403,8 @@
     for (var i = 0; i < units; i++) {
       var isFG = r.type === "FG";
       var lpn = newLpn(isFG ? "FG" : "RM");
-      var status = isFG ? "ACTIVE" : (ty.food && !r.rel ? "HOLD" : "RELEASED");
+      var issue = String(r.issue || "").trim();
+      var status = isFG ? "ACTIVE" : (issue ? "HOLD" : (ty.food && !r.rel ? "HOLD" : "RELEASED"));
       rows.push({
         lpn: lpn, kind: isFG ? "FG" : "RM", mtype: r.type,
         item: r.item || (isFG && fl ? fl.name : "") || LT(ty), flavor_code: fl ? fl.code : "", flavor: fl ? fl.name : "",
@@ -406,7 +412,7 @@
         seed_code: r.type === "SEED" ? String(r.seedCode || "").toUpperCase().trim() : "", exp: isFG ? null : (r.exp || null),
         qty: qty, qty_left: qty, uom: r.uom || ty.uom, status: status, location: isFG ? (r.loc || "STAGING").toUpperCase() : "RECEIVING",
         parents: [], po: r.existing || isFG ? "" : (r.po || ""), station: "RECEIVING",
-        data: { unit: (i + 1) + " of " + units, legacy: !!(r.existing || isFG), alg: fl ? fl.alg : "", algTxt: fl ? fl.algTxt : "", released_by: status === "RELEASED" && ty.food ? opName() : "" },
+        data: { issues: issue ? [{ txt: issue, by: opName(), at: stamp }] : [], unit: (i + 1) + " of " + units, legacy: !!(r.existing || isFG), alg: fl ? fl.alg : "", algTxt: fl ? fl.algTxt : "", released_by: status === "RELEASED" && ty.food ? opName() : "" },
         created_by: opName(), created_at: stamp
       });
       evs.push({ type: isFG ? "LEGACY_FG" : (r.existing ? "LEGACY_RM" : "RECEIVE"), lpn: lpn, qty: qty, uom: r.uom || ty.uom, to_loc: rows[i].location, ref: rows[i].po, lot: lot, data: { supplier: r.supplier || "", mtype: r.type } });
@@ -425,7 +431,7 @@
         return Promise.all(tasks).then(function () {
           printLabels(rows);
           flash(L("saved") + ": " + units + " " + L("labelsMade") + " (" + lot + ")", "ok");
-          W.recv = { type: r.type, existing: r.existing, rel: false, reg: r.reg, units: 1, uom: r.uom, supplier: r.supplier, item: r.item };
+          W.recv = { type: r.type, existing: r.existing, rel: false, reg: r.reg, units: 1, uom: r.uom, supplier: r.supplier, item: r.item, flavor: r.flavor };
           render();
         });
       });
@@ -438,8 +444,9 @@
     var h = '<div class="card"><h2 class="sub2">' + esc(L("tQa")) + '</h2><p class="hint">' + esc(L("qaHint")) + '</p>';
     h += scanBox("qaScan", L("scanPh") + " (" + L("release") + ")");
     if (!list.length) h += '<p class="muted" style="margin-top:12px">' + esc(L("noHold")) + '</p>';
-    else h += '<table class="trc" style="margin-top:12px"><thead><tr><th>Label</th><th>Item</th><th>Supplier / lot</th><th>Exp</th><th>Qty</th><th></th></tr></thead><tbody>' + list.map(function (l) {
-      return '<tr><td><b>' + esc(l.lpn) + '</b><br><span class="muted sm">' + esc((l.created_at || "").slice(0, 10)) + '</span></td><td>' + esc(l.item) + (l.flavor ? '<br><span class="muted sm">' + esc(l.flavor) + '</span>' : "") + '</td><td>' + esc(l.supplier) + '<br><b>' + esc(l.supplier_lot) + '</b></td><td>' + esc(l.exp || "") + '</td><td>' + fmt(l.qty) + ' ' + esc(l.uom) + '</td><td class="trc-row"><button class="primary sm" onclick="TRACE.qa(\'' + esc(l.lpn) + '\',\'RELEASED\')">' + esc(L("release")) + '</button><button class="ghost danger sm" onclick="TRACE.qa(\'' + esc(l.lpn) + '\',\'REJECTED\')">' + esc(L("reject")) + '</button></td></tr>';
+    else h += '<table class="trc" style="margin-top:12px"><thead><tr><th>Label</th><th>Item</th><th>Supplier / lot</th><th>Exp</th><th>Qty</th><th>' + esc(L("issueCol")) + '</th><th></th></tr></thead><tbody>' + list.map(function (l) {
+      var iss = (l.data && l.data.issues) || [];
+      return '<tr><td><b>' + esc(l.lpn) + '</b><br><span class="muted sm">' + esc((l.created_at || "").slice(0, 10)) + '</span></td><td>' + esc(l.item) + (l.flavor ? '<br><span class="muted sm">' + esc(l.flavor) + '</span>' : "") + '</td><td>' + esc(l.supplier) + '<br><b>' + esc(l.supplier_lot) + '</b></td><td>' + esc(l.exp || "") + '</td><td>' + fmt(l.qty) + ' ' + esc(l.uom) + '</td><td>' + (iss.length ? '<b style="color:#a11">' + esc(iss[iss.length - 1].txt) + '</b>' + (iss.length > 1 ? ' <span class="muted sm">(+' + (iss.length - 1) + ')</span>' : '') : '') + '</td><td class="trc-row"><button class="ghost sm" onclick="TRACE.qaIssue(\'' + esc(l.lpn) + '\')">' + esc(L("noteIssue")) + '</button><button class="primary sm" onclick="TRACE.qa(\'' + esc(l.lpn) + '\',\'RELEASED\')">' + esc(L("release")) + '</button><button class="ghost danger sm" onclick="TRACE.qa(\'' + esc(l.lpn) + '\',\'REJECTED\')">' + esc(L("reject")) + '</button></td></tr>';
     }).join("") + '</tbody></table>';
     h += '</div>';
     return h;
@@ -448,17 +455,31 @@
     if (needOp()) return;
     var reason = "";
     if (status === "REJECTED" || status === "HOLD") { reason = window.prompt(L("reason") + "?") || ""; if (!reason) return; }
+    var pre = S.labels[lpn];
+    if (status === "RELEASED" && pre && pre.data && pre.data.issues && pre.data.issues.length && !window.confirm(lpn + ": " + pre.data.issues[pre.data.issues.length - 1].txt + "\n\nRelease anyway? (issue fixed / approved)")) return;
     var l = S.labels[lpn]; if (!l) return;
     var data = l.data || {}; data.qa = { status: status, by: opName(), at: nowISO(), reason: reason };
     updLabel(lpn, { status: status, data: data }).then(function () {
       return addEvents([{ type: "QA_" + status, lpn: lpn, lot: l.lot, data: { reason: reason } }]);
     }).then(function () { flash(lpn + " -> " + status, status === "RELEASED" ? "ok" : "warn"); render(); });
   }
+  function qaIssue(lpn) {
+    if (needOp()) return;
+    var l = S.labels[lpn]; if (!l) return;
+    var txt = window.prompt(L("issuePrompt")); if (!txt || !String(txt).trim()) return;
+    var data = l.data || {}; data.issues = (data.issues || []).concat([{ txt: String(txt).trim(), by: opName(), at: nowISO() }]);
+    var was = l.status;
+    updLabel(lpn, { status: "HOLD", data: data }).then(function () {
+      return addEvents([{ type: "QA_ISSUE", lpn: lpn, lot: l.lot, data: { issue: String(txt).trim(), was: was } }]);
+    }).then(function () { flash(lpn + " ON HOLD: " + txt, "warn"); render(); });
+  }
   function qaScan(code) {
     code = cleanScan(code).toUpperCase(); if (!code) return;
     fetchOne(code).then(function (l) {
       if (!l) { flash(L("notFound") + ": " + code, "err"); render(); return; }
-      if (l.status === "HOLD") qaSet(code, "RELEASED"); else { flash(code + ": " + l.status, "warn"); render(); }
+      if (l.status === "HOLD") qaSet(code, "RELEASED");
+      else if ((l.status === "RELEASED" || l.status === "ACTIVE") && window.confirm(code + " " + L("holdQ"))) qaIssue(code);
+      else { flash(code + ": " + l.status, "warn"); render(); }
     });
   }
 
@@ -787,7 +808,7 @@
   function describe(l) {
     if (!l) return "?";
     var t = l.lpn + "  [" + l.kind + (l.mtype && l.mtype !== l.kind ? " " + l.mtype : "") + "]  ";
-    if (l.kind === "RM") t += (l.item || "") + (l.flavor ? " (" + l.flavor + ")" : "") + "  supplier " + (l.supplier || "?") + "  lot " + (l.supplier_lot || "?") + (l.seed_code ? "  seed " + l.seed_code : "") + (l.exp ? "  exp " + l.exp : "") + "  " + fmt(l.qty) + " " + l.uom + (l.po ? "  PO " + l.po : "") + "  rcvd " + String(l.created_at || "").slice(0, 10);
+    if (l.kind === "RM") t += (l.item || "") + (l.flavor ? " (" + l.flavor + ")" : "") + "  supplier " + (l.supplier || "?") + "  lot " + (l.supplier_lot || "?") + (l.seed_code ? "  seed " + l.seed_code : "") + (l.exp ? "  exp " + l.exp : "") + "  " + fmt(l.qty) + " " + l.uom + (l.po ? "  PO " + l.po : "") + "  rcvd " + String(l.created_at || "").slice(0, 10) + (l.data && l.data.issues && l.data.issues.length ? "  ISSUE: " + l.data.issues.map(function (x) { return x.txt; }).join("; ") : "");
     else if (l.kind === "BN") t += "bin " + (l.data && l.data.bin_no || "") + "  batch " + l.lot + "  " + (l.flavor || "") + "  mixer " + (l.data && l.data.mixer || "") + "  " + String(l.created_at || "").slice(0, 10) + "  by " + (l.created_by || "");
     else if (l.kind === "FG") t += (l.flavor || l.item) + " " + (l.size || "") + "  LOT " + l.lot + "  " + fmt(l.qty) + " bags (" + fmt(l.qty_left) + " left @ " + l.location + ")  " + (l.station || "") + "  " + String(l.created_at || "").slice(0, 10) + (l.data && l.data.legacy ? "  [labeled from existing stock]" : "");
     else if (l.kind === "OB") t += "PO " + l.po + "  " + ((l.data && l.data.customer) || "") + "  " + fmt(l.qty) + " bags  lots " + l.lot + "  " + String(l.created_at || "").slice(0, 10);
@@ -923,7 +944,7 @@
         '<div class="lot">LOT ' + esc(l.supplier_lot || "") + '</div>' +
         '<div class="kv"><b>Exp / Vence:</b> ' + esc(l.exp || "-") + ' &nbsp; <b>Qty:</b> ' + fmt(l.qty) + ' ' + esc(l.uom) + (l.seed_code ? ' &nbsp; <b>Seed code:</b> ' + esc(l.seed_code) : "") + '</div>' +
         '<div class="kv"><b>Received / Recibido:</b> ' + esc(String(l.created_at || "").slice(0, 10)) + (l.po ? ' &nbsp; <b>PO</b> ' + esc(l.po) : "") + ' &nbsp; ' + esc(d.unit || "") + '</div>' +
-        (l.status === "HOLD" ? '<div class="hold">QA HOLD - RETENIDO<br><span style="font-size:14px">Do not use until released / No usar hasta liberar</span></div>' : "");
+        (l.status === "HOLD" ? '<div class="hold">QA HOLD - RETENIDO<br><span style="font-size:14px">Do not use until released / No usar hasta liberar</span>' + (d.issues && d.issues.length ? '<br><span style="font-size:15px">' + esc(d.issues[d.issues.length - 1].txt) + '</span>' : '') + '</div>' : "");
     } else if (l.kind === "BN") {
       top = "MIXED BIN / CONTENEDOR";
       body = '<div class="big">' + esc(l.flavor) + '</div><div class="lot">BATCH ' + esc(l.lot) + '</div>' +
@@ -967,7 +988,7 @@
     tab: function (t) { ST.tab = t; saveST(); W.msg = null; if (t !== "trace") {} load().then(render); },
     setOp: function (v) { rememberOp(v); render(); },
     recvType: recvType, recvExisting: recvExisting, recvSave: recvSave,
-    qa: qaSet, qaScan: qaScan,
+    qa: qaSet, qaScan: qaScan, qaIssue: qaIssue,
     setMixer: function (v) { ST.mixer = v; saveST(); render(); },
     mixFlavor: function (v) { W.mix.flavor = v; W.mix.prefix = v ? lastPrefixFor(v) : ""; render(); },
     mixPrefix: function (v) { W.mix.prefix = String(v || "").toUpperCase().trim(); render(); },
@@ -990,13 +1011,30 @@
   };
 
   // ---- nav + re-render protection (observer only, no timers) -------------------
+  // Lives in the Quality (SQF) group, right under "Compliance / SQF". If the Quality group
+  // is collapsed it hides with the group. If a role view hides Quality entirely (floor
+  // stations: receiving, mixing, P-Mac), it goes at the top so every station can reach it.
+  function qualityAnchor(nav) {
+    var keys = ["compliance", "quality", "disposition"];
+    for (var i = 0; i < keys.length; i++) { var b = nav.querySelector('.navitem[onclick*="UI_go(\'' + keys[i] + '\')"]'); if (b) return { btn: b, key: keys[i] }; }
+    return null;
+  }
+  function qualityLabel(nav) {
+    var labs = nav.querySelectorAll(".navlabel"), want = [T.en.grpQ, T.es.grpQ, "Qualidade"];
+    for (var i = 0; i < labs.length; i++) { var t = labs[i].textContent || ""; for (var j = 0; j < want.length; j++) if (t.indexOf(want[j]) >= 0) return labs[i]; }
+    return null;
+  }
   function injectNav() {
     var nav = $("nav"); if (!nav || $("trc-nav")) return;
+    var anc = qualityAnchor(nav);
+    if (!anc && qualityLabel(nav)) return;   // Quality group is collapsed: stay hidden with it
     var btn = document.createElement("button");
     btn.className = "navitem"; btn.id = "trc-nav";
     btn.setAttribute("onclick", "TRACE.open(event)");
     btn.innerHTML = '<i class="navico" data-lucide="scan-barcode"></i><span>' + esc(L("navLbl")) + '</span>';
-    nav.insertBefore(btn, nav.firstChild);
+    if (anc && anc.key === "compliance") anc.btn.parentNode.insertBefore(btn, anc.btn.nextSibling);
+    else if (anc) anc.btn.parentNode.insertBefore(btn, anc.btn);
+    else nav.insertBefore(btn, nav.firstChild);
     if (ACTIVE) btn.classList.add("active");
     try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
   }
