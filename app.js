@@ -77,7 +77,7 @@
       returnsHint2:"Log every return in one place. Pick the channel, scan the item, and the app blocks duplicate returns (same tracking / shipment ID). Kits can be broken down into their flavors automatically.",
       rMajor:"Retail Customer", rEcom:"E-Commerce", rCustomer:"Customer name", rAddUpc:"Additional UPC", rMarketplace:"Marketplace", rShipment:"Shipment ID", rShipAddr:"Shipping address", rProdCode:"Product code", rUpc:"UPC", rTracking:"Tracking #", rReturnDate:"Return date",
       rIsKit:"This is a variety pack / kit", rExplode:"Break down into flavors", rKitHint:"Enter the kit SKU (e.g. SS-CLSC-4OZ-12PK). On restock it adds each component flavor back to finished-bag inventory.",
-      rItemsReturned:"Items returned", rAddItem:"+ Add item", rPickSku:"Choose SKU / product...", rShopifyGrp:"Shopify SKUs (packs)", rBagsGrp:"Single flavor bags", rNeedItems:"Add at least one item with a quantity", rNItems:"item(s) logged", rOrderNote:"Log the whole order at once: enter the order details once, then add every SKU that came back below.",
+      rItemsReturned:"Items returned", rAddItem:"+ Add item", rPickSku:"Type name or SKU (e.g. OG)...", rShopifyGrp:"Shopify SKUs (packs)", rBagsGrp:"Single flavor bags", rNeedItems:"Add at least one item with a quantity", rNItems:"item(s) logged", rOrderNote:"Log the whole order at once: enter the order details once, then add every SKU that came back below.",
       returnsLogTitle:"Returns Log", rWho:"Customer / Marketplace", rRef:"Tracking / Shipment", rKitTag:"KIT", rDup:"DUP", rDupWarn:"This return looks already processed:", rDupOverride:"Log it again anyway?", rDupSkip:"Skipped duplicate", rNeedKitSku:"Enter the kit SKU", rFlavorsRestocked:"flavors restocked", rUnknownKit:"Kit SKU not recognized", rDelConfirm:"Delete this return record?",
       backupTitle:"Backup", backupHint:"Download a full snapshot of all app data (every table) as one JSON file. Save it to OneDrive for a safe offline copy. Tip: set your browser's download folder to your OneDrive so every backup lands there automatically.", backupBtn:"Download full backup", backupDone:"Backup downloaded",
       facility:"Facility Map", facHint:"Interactive 3D digital twin of the SLC plant — exact layout, rooms, systems, and every pallet rack. Drag to rotate, scroll to zoom, click a bay for details. Red-flagged bays are PROPOSED future racking (not yet installed). Rack colors update live: red = occupied, green = available (Sections A-D). Built by Salvador.", facOpen:"Open full screen",
@@ -233,7 +233,7 @@
       returnsHint2:"Registre cada devolucion en un solo lugar. Elija el canal, escanee el articulo y la app bloquea devoluciones duplicadas (mismo tracking / Shipment ID). Los kits se pueden desglosar en sus sabores automaticamente.",
       rMajor:"Cliente Retail", rEcom:"E-Commerce", rCustomer:"Nombre del cliente", rAddUpc:"UPC adicional", rMarketplace:"Marketplace", rShipment:"Shipment ID", rShipAddr:"Direccion de envio", rProdCode:"Codigo de producto", rUpc:"UPC", rTracking:"# de rastreo", rReturnDate:"Fecha de devolucion",
       rIsKit:"Es un paquete variado / kit", rExplode:"Desglosar en sabores", rKitHint:"Ingrese el SKU del kit (ej. SS-CLSC-4OZ-12PK). Al reingresar suma cada sabor componente al inventario de bolsas terminadas.",
-      rItemsReturned:"Articulos devueltos", rAddItem:"+ Agregar articulo", rPickSku:"Elegir SKU / producto...", rShopifyGrp:"SKUs de Shopify (packs)", rBagsGrp:"Bolsas por sabor", rNeedItems:"Agregue al menos un articulo con cantidad", rNItems:"articulo(s) registrados", rOrderNote:"Registre toda la orden a la vez: ingrese los datos de la orden una vez y luego agregue cada SKU devuelto abajo.",
+      rItemsReturned:"Articulos devueltos", rAddItem:"+ Agregar articulo", rPickSku:"Escriba nombre o SKU (ej. OG)...", rShopifyGrp:"SKUs de Shopify (packs)", rBagsGrp:"Bolsas por sabor", rNeedItems:"Agregue al menos un articulo con cantidad", rNItems:"articulo(s) registrados", rOrderNote:"Registre toda la orden a la vez: ingrese los datos de la orden una vez y luego agregue cada SKU devuelto abajo.",
       returnsLogTitle:"Registro de Devoluciones", rWho:"Cliente / Marketplace", rRef:"Rastreo / Envio", rKitTag:"KIT", rDup:"DUP", rDupWarn:"Esta devolucion parece ya procesada:", rDupOverride:"Registrarla de nuevo?", rDupSkip:"Duplicado omitido", rNeedKitSku:"Ingrese el SKU del kit", rFlavorsRestocked:"sabores reingresados", rUnknownKit:"SKU de kit no reconocido", rDelConfirm:"Eliminar este registro de devolucion?",
       backupTitle:"Respaldo", backupHint:"Descargue una copia completa de todos los datos de la app (cada tabla) en un archivo JSON. Guardelo en OneDrive como copia segura. Consejo: configure la carpeta de descargas de su navegador en su OneDrive para que cada respaldo llegue alli automaticamente.", backupBtn:"Descargar respaldo completo", backupDone:"Respaldo descargado",
       facility:"Mapa de Planta", facHint:"Gemelo digital 3D interactivo de la planta SLC — diseno exacto, salas, sistemas y cada rack de pallets. Arrastre para girar, desplace para zoom, clic en una bahia para detalles. Las bahias en rojo son racking PROPUESTO a futuro (aun no instalado). Los colores de los racks se actualizan en vivo: rojo = ocupado, verde = disponible (Secciones A-D). Creado por Salvador.", facOpen:"Abrir pantalla completa",
@@ -388,7 +388,7 @@
       returnsHint2:"Registre cada devolucao em um so lugar. Escolha o canal, escaneie o item, e o app bloqueia devolucoes duplicadas (mesmo tracking / Shipment ID). Kits podem ser desmembrados em seus sabores automaticamente.",
       rMajor:"Cliente Varejo", rEcom:"E-Commerce", rCustomer:"Nome do cliente", rAddUpc:"UPC adicional", rMarketplace:"Marketplace", rShipment:"Shipment ID", rShipAddr:"Endereco de envio", rProdCode:"Codigo do produto", rUpc:"UPC", rTracking:"# de rastreio", rReturnDate:"Data da devolucao",
       rIsKit:"E um pacote variado / kit", rExplode:"Desmembrar em sabores", rKitHint:"Insira o SKU do kit (ex. SS-CLSC-4OZ-12PK). Ao reabastecer, soma cada sabor componente ao estoque de bolsas prontas.",
-      rItemsReturned:"Itens devolvidos", rAddItem:"+ Adicionar item", rPickSku:"Escolher SKU / produto...", rShopifyGrp:"SKUs Shopify (packs)", rBagsGrp:"Sacos por sabor", rNeedItems:"Adicione ao menos um item com quantidade", rNItems:"item(ns) registrados", rOrderNote:"Registre o pedido inteiro de uma vez: insira os dados do pedido uma vez e adicione cada SKU devolvido abaixo.",
+      rItemsReturned:"Itens devolvidos", rAddItem:"+ Adicionar item", rPickSku:"Digite nome ou SKU (ex. OG)...", rShopifyGrp:"SKUs Shopify (packs)", rBagsGrp:"Sacos por sabor", rNeedItems:"Adicione ao menos um item com quantidade", rNItems:"item(ns) registrados", rOrderNote:"Registre o pedido inteiro de uma vez: insira os dados do pedido uma vez e adicione cada SKU devolvido abaixo.",
       returnsLogTitle:"Registro de Devolucoes", rWho:"Cliente / Marketplace", rRef:"Rastreio / Envio", rKitTag:"KIT", rDup:"DUP", rDupWarn:"Esta devolucao parece ja processada:", rDupOverride:"Registrar novamente?", rDupSkip:"Duplicado ignorado", rNeedKitSku:"Insira o SKU do kit", rFlavorsRestocked:"sabores reabastecidos", rUnknownKit:"SKU de kit nao reconhecido", rDelConfirm:"Excluir este registro de devolucao?",
       backupTitle:"Backup", backupHint:"Baixe uma copia completa de todos os dados do app (cada tabela) em um arquivo JSON. Salve no OneDrive como copia segura. Dica: configure a pasta de downloads do seu navegador para o seu OneDrive para que cada backup va para la automaticamente.", backupBtn:"Baixar backup completo", backupDone:"Backup baixado",
       facility:"Mapa da Planta", facHint:"Gemeo digital 3D interativo da planta SLC — layout exato, salas, sistemas e cada rack de paletes. Arraste para girar, role para zoom, clique numa baia para detalhes. Baias em vermelho sao racking PROPOSTO futuro (ainda nao instalado). As cores dos racks atualizam ao vivo: vermelho = ocupado, verde = disponivel (Secoes A-D). Feito pelo Salvador.", facOpen:"Abrir tela cheia",
@@ -2228,17 +2228,21 @@
       '<div class="row"><div>' + locInput("c-loc", "to") + '</div><div><label>' + L("newqty") + '</label><input id="c-qty" type="number" min="0" placeholder="' + L("newqty") + '"></div></div>' +
       opField("Adriana") + '<button class="primary" onclick="UI.count()">' + L("submitCount") + '</button></div>';
   }
-  // SKU dropdown for returns: every Shopify SKU (packs) + individual finished-bag items
+  // Type-ahead SKU search for returns: every Shopify SKU (packs) + individual finished-bag items.
+  // Datalist options carry a readable name plus the SKU in parens, so typing any part of the
+  // name (e.g. "OG" -> Original) filters the list; doReturn parses the SKU back out of the value.
   function retSkuOptions() {
-    const packs = (window.SMACKIN_SKUS || []).map(x => { const t = x.t ? " - " + x.t : ""; return '<option value="' + esc(x.s) + '">' + esc(x.s + t) + '</option>'; }).join("");
+    const packs = (window.SMACKIN_SKUS || []).map(x => { const nm = (x.t && x.t.trim()) ? x.t.trim() : x.s; return '<option value="' + esc(nm + ' (' + x.s + ')') + '"></option>'; }).join("");
     const bags = DB.items().filter(i => i.category === "bag4" || i.category === "bag15")
       .sort((a, b) => String(a.code || a.id).localeCompare(String(b.code || b.id)))
-      .map(i => '<option value="ITEM:' + esc(i.code || i.id) + '">' + esc(i.name || i.flavor || i.id) + '</option>').join("");
-    return '<optgroup label="' + esc(L("rShopifyGrp")) + '">' + packs + '</optgroup>' + (bags ? '<optgroup label="' + esc(L("rBagsGrp")) + '">' + bags + '</optgroup>' : '');
+      .map(i => '<option value="' + esc((i.name || i.flavor || i.id) + ' (ITEM:' + (i.code || i.id) + ')') + '"></option>').join("");
+    return packs + bags;
   }
+  // pull the SKU / ITEM:code out of a picked or typed value ("Name (SKU)" -> "SKU"; freehand -> as typed)
+  function retParseSku(val) { const s = (val || "").trim(); const m = s.match(/\(([^)]+)\)\s*$/); return m ? m[1].trim() : s; }
   function retLineRow() {
     return '<div class="row ret-line" style="gap:8px;align-items:flex-end;margin-bottom:6px">' +
-      '<div style="flex:3;min-width:200px"><label>SKU</label><select class="ret-line-sku"><option value="">' + esc(L("rPickSku")) + '</option>' + retSkuOptions() + '</select></div>' +
+      '<div style="flex:3;min-width:200px"><label>' + L("item") + '</label><input class="ret-line-sku" list="dl-ret-skus" autocomplete="off" placeholder="' + esc(L("rPickSku")) + '"></div>' +
       '<div style="flex:0 0 90px"><label>' + L("qty") + '</label><input class="ret-line-qty" type="number" min="0" placeholder="0"></div>' +
       '<div style="flex:0 0 auto"><button class="ghost sm danger" onclick="UI.retDelLine(this)" title="remove">&#10005;</button></div>' +
       '</div>';
@@ -2263,6 +2267,7 @@
       '<div class="row"><div><label>' + L("rReason") + '</label><select id="ret-reason">' + selOpts(DB.returnReasons) + '</select></div>' +
       '<div><label>' + L("rDisposition") + '</label><select id="ret-disp">' + selOpts(DB.returnDispositions) + '</select></div></div>' +
       '<h3 class="sub2" style="margin:14px 0 6px">' + L("rItemsReturned") + '</h3>' +
+      '<datalist id="dl-ret-skus">' + retSkuOptions() + '</datalist>' +
       '<div id="ret-lines">' + retLineRow() + '</div>' +
       '<div style="margin:4px 0 10px"><button class="ghost sm" onclick="UI.retAddLine()">' + L("rAddItem") + '</button></div>' +
       opField() + '<button class="primary" onclick="UI.doReturn()">' + L("submitReturn") + '</button></div>';
@@ -5333,7 +5338,7 @@
       // gather every returned line (SKU + qty) — the whole order is logged at once
       const lineEls = Array.prototype.slice.call(document.querySelectorAll("#ret-lines .ret-line"));
       const lines = lineEls.map(r => ({
-        sku: ((r.querySelector(".ret-line-sku") || {}).value || "").trim(),
+        sku: retParseSku((r.querySelector(".ret-line-sku") || {}).value),
         qty: parseFloat((r.querySelector(".ret-line-qty") || {}).value)
       })).filter(l => l.sku && l.qty > 0);
       if (!lines.length) return toast(L("rNeedItems"));
