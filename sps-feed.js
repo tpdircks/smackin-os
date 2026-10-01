@@ -45,26 +45,41 @@
     }
     return null;
   }
+  // find the ship-to (AddressTypeCode "ST") name anywhere in the doc, for a human-readable partner
+  function shipToName(obj, depth) {
+    depth = depth || 0; if (obj == null || depth > 8) return null;
+    if (Array.isArray(obj)) { for (var i = 0; i < obj.length; i++) { var r = shipToName(obj[i], depth + 1); if (r) return r; } return null; }
+    if (typeof obj === "object") {
+      if (obj.AddressTypeCode === "ST" && obj.AddressName) return obj.AddressName;
+      for (var k in obj) { if (Object.prototype.hasOwnProperty.call(obj, k)) { var v = shipToName(obj[k], depth + 1); if (v) return v; } }
+    }
+    return null;
+  }
   function parseDoc(json) {
+    var h = json.Header || {};
     var invoice = deepFind(json, /invoicenumber/i);
-    var po = deepFind(json, /purchaseordernumber|customerordernumber|ponumber|ordernumber/i);
-    var asn = deepFind(json, /shipmentidentification|asnnumber|bolnumber|shipnoticenumber/i);
+    var po = deepFind(json, /purchaseordernumber/i) || deepFind(json, /customerordernumber|^ponumber$/i);
+    var shipId = deepFind(json, /shipmentidentification|bentonvilleasnnumber|shipnoticenumber/i);
+    var bol = deepFind(json, /billofladingnumber/i);
     var explicit = deepFind(json, /documenttype|transactionset|transactiontype/i);
     var docType = "Unknown";
     if (explicit) docType = String(explicit);
     else if (invoice != null) docType = "810 Invoice";
-    else if (asn != null) docType = "856 Ship Notice";
-    else if (po != null) docType = "850 Purchase Order";
-    var partner = deepFind(json, /tradingpartner|partnername|retailer|customername|vendorname|buyername/i);
-    var lines = deepArray(json, /lineitem|^items$|^lines$|orderline|invoiceline/i);
+    else if (h.ShipmentHeader || shipId != null || bol != null) docType = "856 Ship Notice";
+    else if (h.OrderHeader || po != null) docType = "850 Purchase Order";
+    var tpid = deepFind(json, /tradingpartnerid/i);
+    var partner = shipToName(json) || (tpid != null ? String(tpid) : "");
+    var lines = deepArray(json, /^lineitem$|^orderline$|^itemlevel$|invoiceline/i);
+    var lineCount = lines ? lines.length : (deepFind(json, /totallineitemnumber/i) || 0);
     return {
       docType: docType,
       po: po != null ? String(po) : (invoice != null ? String(invoice) : ""),
       invoice: invoice != null ? String(invoice) : "",
-      partner: partner != null ? String(partner) : "",
-      lineCount: lines ? lines.length : 0,
+      partner: partner,
+      partnerId: tpid != null ? String(tpid) : "",
+      lineCount: lineCount,
       poDate: deepFind(json, /purchaseorderdate|orderdate/i) || "",
-      shipDate: deepFind(json, /shipdate|shippeddate|deliverydate/i) || "",
+      shipDate: deepFind(json, /^shipdate$|shippeddate|deliverydate/i) || "",
       invDate: deepFind(json, /invoicedate/i) || ""
     };
   }
@@ -121,7 +136,7 @@
       '<b>Document type</b><div>' + badge(p.docType) + '</div>' +
       '<b>PO / reference</b><div>' + (esc(p.po) || '<span class="muted">not found</span>') + '</div>' +
       (p.invoice ? '<b>Invoice #</b><div>' + esc(p.invoice) + '</div>' : '') +
-      '<b>Trading partner</b><div>' + (esc(p.partner) || '<span class="muted">not found</span>') + '</div>' +
+      '<b>Trading partner</b><div>' + (esc(p.partner) || '<span class="muted">not found</span>') + (p.partnerId ? ' <span class="muted sm">(' + esc(p.partnerId) + ')</span>' : '') + '</div>' +
       '<b>Line items</b><div>' + p.lineCount + '</div>' +
       (p.poDate ? '<b>PO date</b><div>' + esc(p.poDate) + '</div>' : '') +
       (p.shipDate ? '<b>Ship date</b><div>' + esc(p.shipDate) + '</div>' : '') +
