@@ -1,5 +1,6 @@
--- Apply Adriana 10/01 finished-bag counts to cloud stock (mirrors DB.adjustTotal:
--- set each item's TOTAL on-hand to target by adjusting its largest-qty location row).
+-- Apply Adriana 10/01 finished-bag counts to cloud stock.
+-- Sets each item's TOTAL on-hand to target by adjusting its largest-qty location row.
+-- (stock has no id column; keyed by item_id + location + lot)
 with tgt(item_id, total) as (values
 ('BAG15-S01',21250),
 ('BAG15-S02',18750),
@@ -43,7 +44,7 @@ with tgt(item_id, total) as (values
 ('BAG4-L16',7700)
 ),
 pri as (
-  select distinct on (item_id) id, item_id, qty
+  select distinct on (item_id) item_id, location, lot, qty
   from stock where item_id in (select item_id from tgt)
   order by item_id, qty desc
 ),
@@ -53,14 +54,18 @@ oth as (
   group by item_id
 )
 update stock s
-set qty = greatest(t.total - (o.total_all - p.qty), 0)
+set qty = greatest(t.total - (o.total_all - p.qty), 0),
+    updated_at = now()
 from tgt t
 join pri p on p.item_id = t.item_id
 join oth o on o.item_id = t.item_id
-where s.id = p.id;
+where s.item_id = p.item_id
+  and s.location = p.location
+  and coalesce(s.lot,'') = coalesce(p.lot,'');
 
--- verify
+-- verify a few
 select i.id, coalesce(sum(s.qty),0)::int as on_hand
 from items i left join stock s on s.item_id=i.id
-where i.id in ('BAG15-S01','BAG15-S05','BAG4-S02','BAG4-S03','BAG4-S11','BAG4-L01')
+where i.id in ('BAG15-S01','BAG15-S05','BAG4-S02','BAG4-S03','BAG4-S05','BAG4-S11','BAG4-L01')
 group by i.id order by i.id;
+-- expected: BAG15-S01=21250, BAG15-S05=3500, BAG4-S02=42700, BAG4-S03=42600, BAG4-S05=1700, BAG4-S11=5700, BAG4-L01=24100
