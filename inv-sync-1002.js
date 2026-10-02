@@ -1,22 +1,23 @@
 /* ============================================================================
    Smackin' OS - one-time inventory sync (inv-sync-1002.js)
    Applies Adriana's Inventory 2026 update (as of 2026-10-01) to the finished
-   BAG on-hand totals: 11 standard flavors x 1.5oz + 11 standard x 4oz + 18
-   limited (LTO) 4oz flavors = 40 items. Source: "Inventory SLC 2026" Google
-   Sheet, latest (10/01) count block of each Bags tab, "Current Total" column.
-   Runs once per device (localStorage flag), idempotent (sets each item to its
-   target total via DB.adjustTotal, so re-running is harmless). Resolves the
-   app item by code with DB.itemByCode, then sets its total.
-   Safe to delete from index.html after everyone has opened the app once.
-   NOTE (not synced here - need your call): 2.75oz bags (app has no 2.75oz
-   category yet), 9 NEW 4oz LTO flavors with no app item (Cotton Candy,
-   Chipotle Ranch, Cheddar Sour Cream, Strawberry Cheesecake Sports, Loaded
-   Nacho Sports, Bacon Jalapeno Sports, Funnel Cake, Dill Ranch, Honey
-   Mustard), and raw materials (seed / seasoning / roll film).
+   BAG on-hand totals: 11 standard x 1.5oz + 11 standard x 4oz + 18 limited
+   (LTO) 4oz flavors = 40 items. Source: "Inventory SLC 2026" sheet, latest
+   (10/01) count block, "Current Total" column.
+
+   IMPORTANT: the app boots in LOCAL mode and only switches to CLOUD once
+   Supabase connects. This module WAITS for cloud mode before applying, so the
+   totals are written to the shared database (not just this device's cache).
+   It applies once per device per dataset (localStorage flag) and is idempotent
+   (sets each item to its target via DB.adjustTotal). Safe to delete from
+   index.html after every device has opened the app once in cloud mode.
    ==========================================================================*/
 (function () {
   "use strict";
-  var FLAG = "inv-sync-2026-10-01";
+  var FLAG = "inv-sync-2026-10-01-cloud";   // new flag so it re-runs even where the old local-mode run set a flag
+  function done() { try { return localStorage.getItem(FLAG) === "1"; } catch (e) { return false; } }
+  function mark() { try { localStorage.setItem(FLAG, "1"); } catch (e) {} }
+
   var TARGET = {
     "B15-S01": 21250,
     "B15-S02": 18750,
@@ -59,15 +60,18 @@
     "B4-L17": 0,
     "B4-L18": 900
   };
-  function alreadyDone() { try { return localStorage.getItem(FLAG) === "1"; } catch (e) { return false; } }
-  function markDone() { try { localStorage.setItem(FLAG, "1"); } catch (e) {} }
 
-  function run() {
-    if (alreadyDone()) return true;
-    if (!(window.DB && typeof DB.adjustTotal === "function" && typeof DB.itemByCode === "function" && DB.items && DB.items().length)) return false;
+  function ready() {
+    return !!(window.DB && DB.mode === "cloud"
+      && typeof DB.adjustTotal === "function"
+      && typeof DB.itemByCode === "function"
+      && DB.items && DB.items().length);
+  }
+
+  function apply() {
     var codes = Object.keys(TARGET), i = 0;
     (function next() {
-      if (i >= codes.length) { markDone(); return; }
+      if (i >= codes.length) { mark(); return; }
       var code = codes[i++];
       try {
         var it = DB.itemByCode(code);
@@ -75,8 +79,17 @@
         else { next(); }
       } catch (e) { next(); }
     })();
-    return true;
   }
 
-  if (!run()) { var n = 0; var iv = setInterval(function () { if (run() || ++n > 60) clearInterval(iv); }, 300); }
+  function tick() {
+    if (done()) return true;      // already applied in cloud
+    if (ready()) { apply(); return true; }   // cloud is up -> apply now
+    return false;                 // not cloud yet -> keep waiting
+  }
+
+  // Poll until the app reaches cloud mode (up to ~2 min), then apply once.
+  if (!tick()) {
+    var n = 0;
+    var iv = setInterval(function () { if (tick() || ++n > 240) clearInterval(iv); }, 500);
+  }
 })();
