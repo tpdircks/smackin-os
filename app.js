@@ -1160,7 +1160,45 @@
       '<div class="kpi"><div class="n">' + fmt(bag4) + '</div><div class="l">' + L("bag4") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(bag15) + '</div><div class="l">' + L("bag15") + '</div></div></div>' +
       '<h2 class="sub2" style="margin:16px 0 8px">' + L("hBase") + '</h2><div class="btiles">' + baseTiles + '</div></div>';
-    return '<div class="card"><h2>' + L("homeTitle") + '</h2><p class="hint">' + L("homeHint") + '</p><div class="htiles">' + tiles + '</div></div>' + statusStrip + buyCard + produceCard + allenCard + inboundCard + incomingCard + gapCard + attention + essTable + snapshot;
+    // ---- Daily KPI strip (cost/bag scaffolded until inputs; produced/shipped live) ----
+    const _today = new Date().toISOString().slice(0, 10);
+    const _yd = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+    const dmT = (typeof dayMetrics === "function") ? dayMetrics(_today) : { mfgBags: 0, ecomLabels: 0, amazonBags: 0, shipments: 0, receipts: 0 };
+    const dmY = (typeof dayMetrics === "function") ? dayMetrics(_yd) : { mfgBags: 0, ecomLabels: 0, amazonBags: 0, shipments: 0, receipts: 0 };
+    const prodToday = dmT.mfgBags, prodYest = dmY.mfgBags;
+    const shipToday = (dmT.ecomLabels || 0) + (dmT.amazonBags || 0), shipYest = (dmY.ecomLabels || 0) + (dmY.amazonBags || 0);
+    const kStyle = '<style>' +
+      '.kstrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 14px}' +
+      '.kcard{background:rgba(128,128,128,.06);border:1px solid rgba(128,128,128,.18);border-radius:12px;padding:12px 14px}' +
+      '.kcard .kl{font-size:12px;font-weight:600;opacity:.72}.kcard .kn{font-size:24px;font-weight:800;line-height:1.15;margin-top:3px}' +
+      '.kcard .ks{font-size:11px;opacity:.6;margin-top:2px}.kcard .ks.up{color:#2E9E5B}.kcard .ks.dn{color:#B52024}' +
+      '.kcard .ksetup{font-size:11px;opacity:.55;margin-top:2px}' +
+      '</style>';
+    const cmp = (a, b) => b ? ('<div class="ks ' + (a >= b ? 'up' : 'dn') + '">' + (a >= b ? '&#9650; ' : '&#9660; ') + 'vs ' + fmt(b) + ' yesterday</div>') : ('<div class="ks">yesterday ' + fmt(b) + '</div>');
+    const kpiStrip = kStyle + '<div class="kstrip">' +
+      '<div class="kcard"><div class="kl">Cost / bag &mdash; labor</div><div class="kn" style="opacity:.45">&mdash;</div><div class="ksetup">Add labor + daily bags to enable</div></div>' +
+      '<div class="kcard"><div class="kl">Cost / bag &mdash; full (COGS)</div><div class="kn" style="opacity:.45">&mdash;</div><div class="ksetup">Add unit costs to enable</div></div>' +
+      '<div class="kcard"><div class="kl">Bags produced today</div><div class="kn">' + fmt(prodToday) + '</div>' + cmp(prodToday, prodYest) + '</div>' +
+      '<div class="kcard"><div class="kl">Bags shipped today</div><div class="kn">' + fmt(shipToday) + '</div>' + cmp(shipToday, shipYest) + '</div>' +
+      '</div>';
+    // ---- Demand summary (top open flavors to produce) ----
+    const _dl = (DB.demandLines ? DB.demandLines() : []).filter(d => String(d.status || "Open").toLowerCase() === "open" && !/^UNMAPPED/i.test(String(d.flavor || "")));
+    const _dagg = {};
+    _dl.forEach(d => { const k = d.flavor || d.flavor_code || "?"; _dagg[k] = (_dagg[k] || 0) + (Number(d.bags) || 0); });
+    const _dtop = Object.keys(_dagg).map(k => ({ f: k, b: _dagg[k] })).sort((a, b) => b.b - a.b).slice(0, 4);
+    const _dtot = Object.values(_dagg).reduce((s, v) => s + v, 0);
+    const demandCard = '<div class="card"><div class="suprow"><h2 class="sub2" style="margin:0;flex:1">&#128202; Demand &mdash; to produce</h2><a class="order sm" style="cursor:pointer" onclick="UI_go(\'demand\')">Demand board &rarr;</a></div>' +
+      (_dtop.length
+        ? '<div class="tblwrap"><table><tbody>' + _dtop.map(x => '<tr><td>' + esc(x.f) + '</td><td class="right"><b>' + fmt(x.b) + '</b> bags</td></tr>').join("") +
+          '<tr style="border-top:2px solid rgba(128,128,128,.25)"><td><b>Total open demand</b></td><td class="right"><b>' + fmt(_dtot) + '</b> bags</td></tr></tbody></table></div>'
+        : '<p class="muted sm">No open demand on the board.</p>') +
+      '</div>';
+    // ---- Today: shipped / received ----
+    const shipRecvCard = '<div class="card"><h2 class="sub2" style="margin:0 0 8px">&#128260; Today &mdash; shipped / received</h2>' +
+      '<div class="kpis"><div class="kpi"><div class="n">' + fmt(shipToday) + '</div><div class="l">bags shipped (e-com + Amazon)</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(dmT.shipments) + '</div><div class="l">shipment records</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(dmT.receipts) + '</div><div class="l">receipts logged</div></div></div></div>';
+    return '<div class="card"><h2>' + L("homeTitle") + '</h2><p class="hint">' + L("homeHint") + '</p><div class="htiles">' + tiles + '</div></div>' + kpiStrip + statusStrip + buyCard + produceCard + allenCard + demandCard + shipRecvCard + inboundCard + incomingCard + gapCard + attention + essTable + snapshot;
   }
   // ===== Data freshness / health: show how current each feed is, so nobody trusts stale data =====
   function daysAgo(iso) { if (!iso) return null; return Math.floor((Date.now() - new Date(iso).getTime()) / 864e5); }
