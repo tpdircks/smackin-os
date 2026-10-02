@@ -1175,9 +1175,19 @@
       '.kcard .ksetup{font-size:11px;opacity:.55;margin-top:2px}' +
       '</style>';
     const cmp = (a, b) => b ? ('<div class="ks ' + (a >= b ? 'up' : 'dn') + '">' + (a >= b ? '&#9650; ' : '&#9660; ') + 'vs ' + fmt(b) + ' yesterday</div>') : ('<div class="ks">yesterday ' + fmt(b) + '</div>');
+    // ---- Standard cost per bag (Aug 2026 cost model). Labor = Aug 17-30 study (real). Materials = estimates pending real PO unit costs. Blended with standard Aug volume mix. ----
+    const COST_STD = {
+      full:  { ret4: 0.3313, dt275: 0.2681, ecom4: 0.3548, ecom15: 0.2324 },
+      labor: { ret4: 0.094,  dt275: 0.094,  ecom4: 0.13,   ecom15: 0.13 },
+      mix:   { ret4: 326520, dt275: 98170,  ecom4: 246324, ecom15: 39898 }
+    };
+    const _mixTot = COST_STD.mix.ret4 + COST_STD.mix.dt275 + COST_STD.mix.ecom4 + COST_STD.mix.ecom15;
+    const _blend = t => (t.ret4 * COST_STD.mix.ret4 + t.dt275 * COST_STD.mix.dt275 + t.ecom4 * COST_STD.mix.ecom4 + t.ecom15 * COST_STD.mix.ecom15) / _mixTot;
+    const _cents = x => (x * 100).toFixed(1) + '&cent;';
+    const cbLabor = _blend(COST_STD.labor), cbFull = _blend(COST_STD.full);
     const kpiStrip = kStyle + '<div class="kstrip">' +
-      '<div class="kcard"><div class="kl">Cost / bag &mdash; labor</div><div class="kn" style="opacity:.45">&mdash;</div><div class="ksetup">Add labor + daily bags to enable</div></div>' +
-      '<div class="kcard"><div class="kl">Cost / bag &mdash; full (COGS)</div><div class="kn" style="opacity:.45">&mdash;</div><div class="ksetup">Add unit costs to enable</div></div>' +
+      '<div class="kcard"><div class="kl">Cost / bag &mdash; labor</div><div class="kn">' + _cents(cbLabor) + '</div><div class="ksetup">standard &middot; retail ' + _cents(COST_STD.labor.ret4) + ' &middot; e-com ' + _cents(COST_STD.labor.ecom4) + '</div></div>' +
+      '<div class="kcard"><div class="kl">Cost / bag &mdash; full (COGS)</div><div class="kn">' + _cents(cbFull) + '</div><div class="ksetup">standard &middot; materials est. (pending PO costs)</div></div>' +
       '<div class="kcard"><div class="kl">Bags produced today</div><div class="kn">' + fmt(prodToday) + '</div>' + cmp(prodToday, prodYest) + '</div>' +
       '<div class="kcard"><div class="kl">Bags shipped today</div><div class="kn">' + fmt(shipToday) + '</div>' + cmp(shipToday, shipYest) + '</div>' +
       '</div>';
