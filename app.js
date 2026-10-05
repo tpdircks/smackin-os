@@ -2125,7 +2125,15 @@
       '<button class="primary" onclick="UI.shlSave()">' + (editing ? L("saveChanges") : L("shlSave")) + '</button>' +
       (editing ? ' <button class="ghost" style="margin-top:14px" onclick="UI.shlEditCancel()">' + L("ordCancel") + '</button>' : '') + '</div>';
     const reqDl = '<datalist id="dl-shl-reqby">' + SHIP_REQUESTERS.map(n => '<option value="' + n + '"></option>').join("") + '</datalist>';
-    let list = DB.shippingLog().slice();
+    // Manual sample/one-off entries PLUS every filed customer order that carries tracking —
+    // so the Shipping Log stays fresh straight from the order paperwork, no re-entry.
+    const toISO = d => { if (!d) return ""; d = String(d); if (/^\d{4}-\d{2}-\d{2}/.test(d)) return d.slice(0, 10); const m = d.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/); if (m) { let y = m[3]; if (y.length === 2) y = "20" + y; return y + "-" + ("0" + m[1]).slice(-2) + "-" + ("0" + m[2]).slice(-2); } return d; };
+    let manual = DB.shippingLog().slice();
+    const seenTrk = new Set(manual.map(s => String(s.tracking || "").trim()).filter(Boolean));
+    const fromOrders = (DB.orders ? DB.orders() : [])
+      .filter(o => String(o.tracking || "").trim() && String(o.ship_date || "").trim() && !seenTrk.has(String(o.tracking).trim()))
+      .map(o => ({ id: "ord-" + o.id, _fromOrder: true, ship_date: toISO(o.ship_date), ship_type: "Customer Order", recipient: o.customer || "", address: "", carrier: o.carrier || "", tracking: o.tracking || "", requested_by: o.entered_by || "", contents: (o.customer_po || o.order_id || ""), lot: "", status: (o.status === "Complete" ? "Delivered" : (o.status || "Shipped")), cost: 0 }));
+    let list = manual.map(s => Object.assign({}, s, { ship_date: toISO(s.ship_date) })).concat(fromOrders);
     const vf = { ship_date: s => s.ship_date || "", ship_type: s => s.ship_type || "", recipient: s => (s.recipient || "").toLowerCase(), carrier: s => s.carrier || "", requested_by: s => (s.requested_by || "").toLowerCase(), status: s => s.status || "", cost: s => Number(s.cost) || 0 };
     const kf = vf[shipSortKey] || vf.ship_date;
     list.sort((a, b) => { const x = kf(a), y = kf(b); return (x < y ? -1 : x > y ? 1 : 0) * shipSortDir; });
@@ -2134,7 +2142,7 @@
     const rows = list.map(s => {
       const url = trackingUrl(s.carrier, s.tracking);
       const trk = s.tracking ? (url ? '<a href="' + url + '" target="_blank" rel="noopener">' + esc(s.tracking) + ' &#8599;</a>' : esc(s.tracking)) : '&mdash;';
-      const next = { Pending: "Shipped", Shipped: "Delivered" }[s.status];
+      const next = s._fromOrder ? null : { Pending: "Shipped", Shipped: "Delivered" }[s.status];
       const adv = next ? '<button class="ghost sm" onclick="UI.shlStatus(\'' + s.id + '\',\'' + next + '\')">' + next + '</button>' : '';
       const txt = ((s.ship_date || "") + " " + (s.ship_type || "") + " " + (s.recipient || "") + " " + (s.carrier || "") + " " + (s.tracking || "") + " " + (s.requested_by || "") + " " + (s.contents || "") + " " + (s.lot || "") + " " + (s.address || "") + " " + (s.status || "")).toLowerCase().replace(/"/g, "");
       return '<tr data-txt="' + txt + '"><td>' + esc((s.ship_date || "").slice(0, 10)) + '</td><td>' + esc(s.ship_type || "") + '</td>' +
@@ -2144,8 +2152,10 @@
         '<td>' + esc(s.lot || "") + '</td>' +
         '<td><span class="pill ' + stColor(s.status) + '">' + esc(s.status || "") + '</span></td>' +
         '<td class="right">' + (Number(s.cost) ? '$' + Number(s.cost).toFixed(2) : '&mdash;') + '</td>' +
-        '<td>' + adv + ' <button class="ghost sm" title="' + L("editRow") + '" onclick="UI.shlEdit(\'' + s.id + '\')">&#9998;</button>' +
-        ' <button class="ghost sm danger" onclick="UI.shlDelete(\'' + s.id + '\')">&#10005;</button></td></tr>';
+        '<td>' + (s._fromOrder
+          ? '<span class="pill" title="Auto from Orders paperwork" style="cursor:pointer" onclick="UI_go(\'orders\')">&#128230; Order</span>'
+          : (adv + ' <button class="ghost sm" title="' + L("editRow") + '" onclick="UI.shlEdit(\'' + s.id + '\')">&#9998;</button>' +
+            ' <button class="ghost sm danger" onclick="UI.shlDelete(\'' + s.id + '\')">&#10005;</button>')) + '</td></tr>';
     }).join("");
     const totalCost = list.reduce((a, s) => a + (Number(s.cost) || 0), 0);
     const table = list.length ? '<table><thead><tr>' +
@@ -2155,6 +2165,7 @@
       '</tr></thead><tbody id="shlBody">' + rows + '</tbody></table>' : '<p class="muted">' + L("shlNone") + '</p>';
     return reqDl + '<div class="card"><h2>' + L("shiplog") + '</h2><p class="hint">' + L("shlHint") + '</p>' + form + '</div>' +
       '<div class="card"><h2 class="sub2">' + L("shlArchive") + ' (' + list.length + ')' + (totalCost ? ' &middot; $' + totalCost.toFixed(2) : '') + '</h2>' +
+      '<p class="hint" style="margin:2px 0 8px">Includes <b>' + fromOrders.length + '</b> customer order' + (fromOrders.length === 1 ? '' : 's') + ' pulled automatically from filed paperwork (tracking + carrier) &mdash; marked &#128230; Order. Manual rows are samples &amp; one-offs.</p>' +
       '<input id="shlSearch" autocomplete="off" oninput="UI.shlSearch(this.value)" placeholder="' + L("shlSearchP") + '" style="margin-bottom:10px">' +
       table + '</div>';
   }

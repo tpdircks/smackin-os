@@ -23,7 +23,7 @@
     { t: "pmac_history", col: "run_date", label: "P-Mac production", warn: 5, bad: 12 },
     { t: "mixing_history", col: "run_date", label: "Mixing production", warn: 5, bad: 12 },
     { t: "production_output", col: "created_at", label: "Daily production entry", warn: 6, bad: 14 },
-    { t: "shipping_log", col: "created_at", label: "Shipping log", warn: 14, bad: 30 },
+    { t: "shipping_log", col: "created_at", label: "Shipping log (samples/one-offs)", warn: 60, bad: 120 },
     { t: "receiving_log", col: "created_at", label: "Receiving log", warn: 14, bad: 30 },
     { t: "supplier_pos", col: "created_at", label: "Supplier POs", warn: 30, bad: 60 },
     { t: "launch_pipeline", col: "updated_at", label: "Launch pipeline", warn: 45, bad: 90 },
