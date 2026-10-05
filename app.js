@@ -1175,25 +1175,28 @@
       '.kcard .ksetup{font-size:11px;opacity:.55;margin-top:2px}' +
       '</style>';
     const cmp = (a, b) => b ? ('<div class="ks ' + (a >= b ? 'up' : 'dn') + '">' + (a >= b ? '&#9650; ' : '&#9660; ') + 'vs ' + fmt(b) + ' yesterday</div>') : ('<div class="ks">yesterday ' + fmt(b) + '</div>');
-    // ---- Cost per bag: DIRECT vs FULLY-LOADED (Aug 2026 model). Packing labor = Aug 17-30 study (real). Everything else = best estimates, clearly flagged, refine with real figures. Blended by standard Aug volume mix. ----
+    // ---- Cost per bag: DIRECT vs FULLY-LOADED. REAL from Aug 2026 data: labor (mfg+fulfillment+indirect) from Gusto payroll Aug 3-30; seasoning + film from supplier POs. EST (flagged): seed/malto/case-pack unit costs, non-labor overhead, burden %, freight, scrap, e-com packaging. Blended by Aug volume mix. ----
     const COST_STD = {
-      // direct $/bag by stream = materials + direct packing labor (materials estimated; packing labor real)
-      direct:  { ret4: 0.3313, dt275: 0.2681, ecom4: 0.3548, ecom15: 0.2324 },
-      // direct packing-labor portion of the above (used for payroll-burden calc)
-      dlabor:  { ret4: 0.094,  dt275: 0.094,  ecom4: 0.13,   ecom15: 0.13 },
-      // fully-loaded ADDERS ($/bag) — ESTIMATES
-      add: { mfgLabor: 0.03, overhead: 0.06, inFreight: 0.012, scrap: 0.010, ecomPack: 0.20 },
-      burden: 0.20,  // payroll taxes + workers' comp + benefits, on (packing + mfg labor)
+      materials: { ret4: 0.3031, dt275: 0.2294, ecom4: 0.2906, ecom15: 0.1442 }, // seasoning+film PO-real; seed/malto/case-pack est
+      flabor:    { ret4: 0.0641, dt275: 0.0641, ecom4: 0.0887, ecom15: 0.0887 }, // fulfillment pack/ship labor — REAL (payroll, channel-split)
+      mfgLabor:  0.0984,  // REAL manufacturing labor/bag (Mixing+Packaging+supervisors / all bags)
+      indirect:  0.0388,  // REAL indirect labor/bag (QA+maintenance+operations)
+      overhead:  0.06,    // EST non-labor overhead (rent/utilities/equipment/insurance) — needs accounting figure
+      burden:    0.20,    // EST payroll burden (taxes+WC+benefits) on all labor
+      inFreight: 0.012,   // EST inbound material freight
+      scrap:     0.010,   // EST yield loss
+      ecomPack:  { ret4: 0, dt275: 0, ecom4: 0.20, ecom15: 0.20 }, // EST e-com mailer/box/label
       mix:  { ret4: 326520, dt275: 98170, ecom4: 246324, ecom15: 39898 }
     };
     const _m = COST_STD.mix, _mt = _m.ret4 + _m.dt275 + _m.ecom4 + _m.ecom15;
-    const _loaded = k => { const a = COST_STD.add, isE = (k === 'ecom4' || k === 'ecom15'); return COST_STD.direct[k] + a.mfgLabor + a.overhead + a.inFreight + a.scrap + COST_STD.burden * (COST_STD.dlabor[k] + a.mfgLabor) + (isE ? a.ecomPack : 0); };
+    const _direct = k => COST_STD.materials[k] + COST_STD.mfgLabor + COST_STD.flabor[k];
+    const _loaded = k => _direct(k) + COST_STD.indirect + COST_STD.overhead + COST_STD.inFreight + COST_STD.scrap + COST_STD.ecomPack[k] + COST_STD.burden * (COST_STD.mfgLabor + COST_STD.flabor[k] + COST_STD.indirect);
     const _blendK = fn => (fn('ret4') * _m.ret4 + fn('dt275') * _m.dt275 + fn('ecom4') * _m.ecom4 + fn('ecom15') * _m.ecom15) / _mt;
     const _cents = x => (x * 100).toFixed(1) + '&cent;';
-    const cbDirect = _blendK(k => COST_STD.direct[k]), cbLoaded = _blendK(_loaded);
+    const cbDirect = _blendK(_direct), cbLoaded = _blendK(_loaded);
     const kpiStrip = kStyle + '<div class="kstrip">' +
-      '<div class="kcard"><div class="kl">Cost / bag &mdash; direct</div><div class="kn">' + _cents(cbDirect) + '</div><div class="ksetup">materials + packing labor</div></div>' +
-      '<div class="kcard"><div class="kl">Cost / bag &mdash; fully loaded</div><div class="kn">' + _cents(cbLoaded) + '</div><div class="ksetup">+ overhead, mfg labor, burden, freight (est.)</div></div>' +
+      '<div class="kcard"><div class="kl">Cost / bag &mdash; direct</div><div class="kn">' + _cents(cbDirect) + '</div><div class="ksetup">materials + all labor &middot; labor real</div></div>' +
+      '<div class="kcard"><div class="kl">Cost / bag &mdash; fully loaded</div><div class="kn">' + _cents(cbLoaded) + '</div><div class="ksetup">+ indirect, burden, overhead, freight</div></div>' +
       '<div class="kcard"><div class="kl">Bags produced today</div><div class="kn">' + fmt(prodToday) + '</div>' + cmp(prodToday, prodYest) + '</div>' +
       '<div class="kcard"><div class="kl">Bags shipped today</div><div class="kn">' + fmt(shipToday) + '</div>' + cmp(shipToday, shipYest) + '</div>' +
       '</div>';
