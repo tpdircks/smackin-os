@@ -1003,10 +1003,12 @@
     const rdOver = rdPend.filter(r => rdIsOverdue(r));
     const bag4 = items.filter(i => i.category === "bag4").reduce((s, i) => s + DB.onHand(i.id), 0);
     const bag15 = items.filter(i => i.category === "bag15").reduce((s, i) => s + DB.onHand(i.id), 0);
-    const tile = (n, label, tab, alert) => '<div class="htile' + (alert ? " alert" : "") + '" onclick="UI_go(\'' + tab + '\')"><div class="n">' + n + '</div><div class="l">' + label + '</div></div>';
+    const tile = (n, label, tab, alert, rawClick) => '<div class="htile' + (alert ? " alert" : "") + '" onclick="' + (rawClick || ("UI_go('" + tab + "')")) + '"><div class="n">' + n + '</div><div class="l">' + label + '</div></div>';
+    // Out-of-stock + Low/reorder jump straight to the Order Now buy list (what to order); Produce items have their own strip button.
+    const goOrderNow = "var e=document.getElementById('ordnow');if(e)e.scrollIntoView({behavior:'smooth',block:'start'});";
     const tiles =
-      tile(out.length, L("hOut"), "dash", out.length > 0) +
-      tile(low.length, L("hLow"), "dash", false) +
+      tile(out.length, L("hOut"), "dash", out.length > 0, goOrderNow) +
+      tile(low.length, L("hLow"), "dash", false, goOrderNow) +
       tile(lots.length, L("hExp"), "seasoning", expiredLots.length > 0) +
       tile(openO.length, L("hOpen"), "orders", false) +
       tile(issues.length, L("hIssues"), "orders", issues.length > 0) +
