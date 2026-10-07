@@ -3136,8 +3136,23 @@
       '<td><button class="ghost sm" onclick="UI.qaConvert(\'' + x.i.id + '\',\'' + x.z + '\')">' + L("convertGood") + '</button>' +
       '<button class="ghost sm danger" onclick="UI.qaScrap(\'' + x.i.id + '\',\'' + x.z + '\')">' + L("scrapIt") + '</button></td></tr>').join("")
       : '<tr><td colspan="4" class="muted">' + L("qaEmpty") + '</td></tr>';
+    // Front door: send product FROM inventory INTO quarantine (Adriana's request so the full flow works).
+    const qaItemOpts = DB.items().filter(i => DB.onHand(i.id) > 0 || ["bag4", "bag15", "bag275"].indexOf(i.category) >= 0)
+      .sort((a, b) => String(a.name || a.id).localeCompare(String(b.name || b.id)))
+      .map(i => '<option value="' + esc((i.name || i.id) + ' (ITEM:' + (i.code || i.id) + ')') + '"></option>').join("");
+    const qaReasons = ["Expired", "Damaged", "Incorrect info / label", "Recall", "Other"];
+    const sendForm = '<datalist id="dl-qa-items">' + qaItemOpts + '</datalist>' +
+      '<div class="ordform"><div class="row">' +
+      '<div style="flex:3;min-width:200px"><label>' + L("item") + '</label><input id="qa-item" list="dl-qa-items" autocomplete="off" placeholder="Type flavor or scan…"></div>' +
+      '<div style="flex:0 0 100px"><label>' + L("qty") + '</label><input id="qa-qty" type="number" min="0" placeholder="0"></div>' +
+      '<div><label>Reason</label><select id="qa-reason">' + qaReasons.map(r => '<option>' + r + '</option>').join("") + '</select></div></div>' +
+      opField() +
+      '<button class="primary" onclick="UI.qaSend()">&#128681; Send to Quarantine</button></div>';
     return '<div class="card"><h2>' + L("qa") + '</h2><p class="hint">' + L("qaHint") + '</p>' +
-      '<h2 class="sub2">' + L("qaTitle") + '</h2><table><thead><tr><th>' + L("item") + '</th><th>' + L("status") +
+      '<h2 class="sub2">Send product to Quarantine <span class="muted" style="font-weight:400">(removes it from on-hand inventory)</span></h2>' + sendForm + '</div>' +
+      '<div class="card"><h2 class="sub2">' + L("qaTitle") + '</h2>' +
+      '<p class="hint">Then decide: <b>Release to good stock</b> (back into inventory) or <b>Scrap</b> (final disposal).</p>' +
+      '<table><thead><tr><th>' + L("item") + '</th><th>' + L("status") +
       '</th><th class="right">' + L("onhand") + '</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>';
   }
   // Build { location: {qty, items:[{name,code,qty,unit}]} } from raw stock rows in ONE pass.
@@ -5567,6 +5582,20 @@
       const it = DB.items().find(i => i.id === itemId); if (!it) return;
       if (!confirm(L("scrapIt") + "?")) return;
       await DB.adjust(it, zone, 0, opVal()); toast(L("scrapIt") + " ✓"); render();
+    },
+    async qaSend() {
+      const raw = (($("qa-item") || {}).value || "");
+      const m = raw.match(/\(ITEM:([^)]+)\)\s*$/); const code = m ? m[1].trim() : "";
+      const it = code ? DB.itemByCode(code) : null;
+      if (!it) return toast(L("notfound"));
+      const qty = parseFloat(($("qa-qty") || {}).value); if (!(qty > 0)) return toast(L("enter"));
+      const reason = ($("qa-reason") || {}).value || "";
+      const op = opVal() + (reason ? (" — " + reason) : "");
+      const rows = (DB.stock() || []).filter(r => r.item_id === it.id && r.location !== "QUARANTINE" && r.location !== "QA-HOLD" && Number(r.qty) > 0).sort((a, b) => Number(b.qty) - Number(a.qty));
+      let remaining = qty, moved = 0;
+      for (const r of rows) { if (remaining <= 0) break; const take = Math.min(remaining, Number(r.qty)); const res = await DB.move(it, r.location, "QUARANTINE", take, op); if (res && res.ok) { moved += take; remaining -= take; } }
+      if (moved <= 0) return toast("No on-hand stock to quarantine for " + it.name);
+      toast(fmt(moved) + " " + it.unit + " → Quarantine" + (remaining > 0 ? (" (short " + fmt(remaining) + ")") : "")); render();
     },
     // ---- role + dashboard columns ----
     setRole(r) { prefs.role = r; savePrefs(); if (visibleTabs().indexOf(active) < 0) active = "home"; render(); },
