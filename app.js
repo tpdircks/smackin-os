@@ -52,7 +52,7 @@
       seasHint:"Track seasoning by lot with expiration (FEFO). Flag expired lots to quarantine.",
       slProduct:"Product / flavor",slNewFlavor:"+ Add new / LTO flavor",slNewFlavorPh:"Type the flavor name",slNewNeed:"Enter the new flavor name", slLot:"Lot #", slMfr:"Manufacturer", slExp:"Expiration", slWeight:"Weight (lbs)",slLoc:"Location",
       addLot:"Add lot", seasLotsTitle:"Seasoning lots (earliest expiration first)", quarantineExpired:"Quarantine expired lots",
-      noLots:"No seasoning lots yet.", markQuar:"Quarantine", markGood:"Mark good", expiredTag:"EXPIRED", quarTag:"QUARANTINE", goodTag:"GOOD",
+      noLots:"No seasoning lots yet.", markQuar:"Quarantine", markGood:"Mark good", expiredTag:"EXPIRED", quarTag:"QUARANTINE", goodTag:"GOOD", adjQuarWord:"in quarantine", adjQuarTip:"This quantity is recorded in the system but held in quarantine — not available for use or movement until released or scrapped.",
       seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdOnHand:"On hand by type", sdReceived:"Received",sdIntCode:"Internal code",sdPackaging:"Packaging",sdPickPack:"Select packaging...",sdPallets:"# Pallets",sdPalletsShort:"pallet(s)",sdPackDate:"Packaging date", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
       skus:"SKUs", skusHint:"Finished-goods / retail SKU catalog - bundles, singles, and cases with bag count and flavor contents. Reference only.", skuCode:"SKU", skuTitle:"Product", skuBags:"Bags", skuComp:"Contents", skuSearchP:"Search SKU, product, or flavor...", skuCount:"SKUs",
       stockbuild:"Stock Build", reorder15:"1.5oz Reorder", r15Hint:"Trigger-based reorder for 1.5oz finished bags (Allen's rule): when a flavor drops to 2 pallets (12,500 bags) or less, build the tier quantity. Prime = 48 bins, Secondary = 24 bins. Coverage uses actual per-flavor ShipStation demand.", r15Prime:"Prime flavors", r15Secondary:"Secondary flavors", r15Bins:"bins", r15After:"after reorder", r15Reorder:"REORDER", r15Ok:"OK", r15NoItem:"no 1.5oz item", r15WksLeft:"Wks left", r15WksAfter:"Wks after", r15ToReorder:"Flavors to reorder now", r15BuildNow:"Build needed now (bags)", r15Trigger:"Trigger (2 pallets)", r15Note:"Coverage after reorder uses actual per-flavor 1.5oz ShipStation demand (FY), not an even split - fast movers like Dill, Maple, Cracked Pepper and BBQ run shorter. Pull recent per-flavor sales before locking targets.", sbHint:"Live build progress vs goals. Update On Hand as you go - the whole team sees it instantly. Yellow field = enter today's count.", sbGoal:"Goal", sbOnHand:"On hand", sbToBuild:"To build", sbPallets:"Pallets", sbDone:"Done", sbTotalGoal:"Total goal", sbComplete:"Complete", sbSaved:"Saved", sbRetail:"Retail", sbEcom:"E-Commerce", sb12pk:"12-Pack Boxes", sbCoverage:"Coverage by group", sbBuilt:"Built vs goal",
@@ -208,7 +208,7 @@
       seasHint:"Controle la sazon por lote con vencimiento (FEFO). Marque lotes vencidos a cuarentena.",
       slProduct:"Producto / sabor",slNewFlavor:"+ Agregar sabor nuevo / LTO",slNewFlavorPh:"Escribe el nombre del sabor",slNewNeed:"Ingresa el nombre del nuevo sabor", slLot:"Lote #", slMfr:"Fabricante", slExp:"Vencimiento", slWeight:"Peso (lbs)",slLoc:"Ubicacion",
       addLot:"Agregar lote", seasLotsTitle:"Lotes de sazon (vencimiento mas proximo primero)", quarantineExpired:"Cuarentena de vencidos",
-      noLots:"Sin lotes de sazon aun.", markQuar:"Cuarentena", markGood:"Marcar bueno", expiredTag:"VENCIDO", quarTag:"CUARENTENA", goodTag:"BUENO",
+      noLots:"Sin lotes de sazon aun.", markQuar:"Cuarentena", markGood:"Marcar bueno", expiredTag:"VENCIDO", quarTag:"CUARENTENA", goodTag:"BUENO", adjQuarWord:"en cuarentena", adjQuarTip:"Esta cantidad está registrada en el sistema pero retenida en cuarentena — no disponible para uso ni movimiento hasta que se libere o deseche.",
       seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdOnHand:"En mano por tipo", sdReceived:"Recibido",sdIntCode:"Codigo interno",sdPackaging:"Empaque",sdPickPack:"Elegir empaque...",sdPallets:"# Paletas",sdPalletsShort:"paleta(s)",sdPackDate:"Fecha de empaque", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
       skus:"SKUs", skusHint:"Catalogo de SKU de producto terminado / retail - paquetes, individuales y cajas con cantidad de bolsas y sabores. Solo referencia.", skuCode:"SKU", skuTitle:"Producto", skuBags:"Bolsas", skuComp:"Contenido", skuSearchP:"Buscar SKU, producto o sabor...", skuCount:"SKUs",
       stockbuild:"Construir Inventario", reorder15:"Reorden 1.5oz", r15Hint:"Reorden por disparador para bolsas 1.5oz (regla de Allen): cuando un sabor baja a 2 paletas (12,500 bolsas) o menos, produzca la cantidad del nivel. Prime = 48 bins, Secundario = 24 bins. La cobertura usa la demanda real por sabor de ShipStation.", r15Prime:"Sabores Prime", r15Secondary:"Sabores Secundarios", r15Bins:"bins", r15After:"tras reorden", r15Reorder:"REORDENAR", r15Ok:"OK", r15NoItem:"sin item 1.5oz", r15WksLeft:"Sem. rest.", r15WksAfter:"Sem. tras", r15ToReorder:"Sabores a reordenar ahora", r15BuildNow:"Produccion necesaria (bolsas)", r15Trigger:"Disparador (2 paletas)", r15Note:"La cobertura tras reorden usa la demanda real por sabor de 1.5oz de ShipStation (ano fiscal), no un promedio - los rapidos como Dill, Maple, Cracked Pepper y BBQ duran menos. Use ventas recientes por sabor antes de fijar metas.", sbHint:"Progreso de construccion vs metas en vivo. Actualice En Mano segun avanza - todo el equipo lo ve al instante. Campo amarillo = ingrese el conteo de hoy.", sbGoal:"Meta", sbOnHand:"En mano", sbToBuild:"Por hacer", sbPallets:"Paletas", sbDone:"Listo", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Guardado", sbRetail:"Minorista", sbEcom:"Comercio Electronico", sb12pk:"Cajas de 12", sbCoverage:"Cobertura por grupo", sbBuilt:"Hecho vs meta",
@@ -363,7 +363,7 @@
       seasHint:"Controle o tempero por lote com validade (FEFO). Marque lotes vencidos para quarentena.",
       slProduct:"Produto / sabor",slNewFlavor:"+ Adicionar sabor novo / LTO",slNewFlavorPh:"Digite o nome do sabor",slNewNeed:"Digite o nome do novo sabor", slLot:"Lote #", slMfr:"Fabricante", slExp:"Validade", slWeight:"Peso (lbs)",slLoc:"Localizacao",
       addLot:"Adicionar lote", seasLotsTitle:"Lotes de tempero (validade mais proxima primeiro)", quarantineExpired:"Quarentena de vencidos",
-      noLots:"Nenhum lote de tempero ainda.", markQuar:"Quarentena", markGood:"Marcar bom", expiredTag:"VENCIDO", quarTag:"QUARENTENA", goodTag:"BOM",
+      noLots:"Nenhum lote de tempero ainda.", markQuar:"Quarentena", markGood:"Marcar bom", expiredTag:"VENCIDO", quarTag:"QUARENTENA", goodTag:"BOM", adjQuarWord:"em quarentena", adjQuarTip:"Esta quantidade está registrada no sistema mas retida em quarentena — não disponível para uso ou movimentação até ser liberada ou descartada.",
       seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdOnHand:"Em estoque por tipo", sdReceived:"Recebido",sdIntCode:"Codigo interno",sdPackaging:"Embalagem",sdPickPack:"Selecionar embalagem...",sdPallets:"# Paletes",sdPalletsShort:"palete(s)",sdPackDate:"Data de embalagem", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
       skus:"SKUs", skusHint:"Catalogo de SKU de produto acabado / varejo - pacotes, individuais e caixas com contagem de sacos e sabores. Apenas referencia.", skuCode:"SKU", skuTitle:"Produto", skuBags:"Sacos", skuComp:"Conteudo", skuSearchP:"Buscar SKU, produto ou sabor...", skuCount:"SKUs",
       stockbuild:"Construir Estoque", reorder15:"Reposicao 1.5oz", r15Hint:"Reposicao por gatilho para bolsas 1.5oz (regra do Allen): quando um sabor cai para 2 paletes (12,500 bolsas) ou menos, produza a quantidade do nivel. Prime = 48 bins, Secundario = 24 bins. A cobertura usa a demanda real por sabor do ShipStation.", r15Prime:"Sabores Prime", r15Secondary:"Sabores Secundarios", r15Bins:"bins", r15After:"apos reposicao", r15Reorder:"REPOR", r15Ok:"OK", r15NoItem:"sem item 1.5oz", r15WksLeft:"Sem. rest.", r15WksAfter:"Sem. apos", r15ToReorder:"Sabores a repor agora", r15BuildNow:"Producao necessaria (bolsas)", r15Trigger:"Gatilho (2 paletes)", r15Note:"A cobertura apos reposicao usa a demanda real por sabor de 1.5oz do ShipStation (ano fiscal), nao uma media - rapidos como Dill, Maple, Cracked Pepper e BBQ duram menos. Use vendas recentes por sabor antes de fixar metas.", sbHint:"Progresso de construcao vs metas ao vivo. Atualize Em Estoque conforme avanca - toda a equipe ve na hora. Campo amarelo = insira a contagem de hoje.", sbGoal:"Meta", sbOnHand:"Em estoque", sbToBuild:"A fazer", sbPallets:"Paletes", sbDone:"Pronto", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Salvo", sbRetail:"Varejo", sbEcom:"E-Commerce", sb12pk:"Caixas de 12", sbCoverage:"Cobertura por grupo", sbBuilt:"Feito vs meta",
@@ -1471,10 +1471,12 @@
     const its = DB.items().slice().sort((a, b) => (CATLBL[a.category] || a.category).localeCompare(CATLBL[b.category] || b.category) || a.name.localeCompare(b.name));
     const rows = its.map(i => {
       const oh = DB.onHand(i.id);
-      const txt = (i.name + " " + i.code + " " + (CATLBL[i.category] || i.category)).toLowerCase();
+      const qHold = (DB.atLoc(i.id, "QUARANTINE") || 0) + (DB.atLoc(i.id, "QA-HOLD") || 0);
+      const quarBadge = qHold > 0 ? ' <span class="pill low" title="' + L("adjQuarTip") + '">&#128274; ' + fmt(qHold) + ' ' + L("adjQuarWord") + '</span>' : '';
+      const txt = (i.name + " " + i.code + " " + (CATLBL[i.category] || i.category) + (qHold > 0 ? " quarantine" : "")).toLowerCase();
       return '<tr data-txt="' + txt.replace(/"/g, "") + '"><td><span class="tag">' + (CATLBL[i.category] || i.category) + '</span></td>' +
-        '<td><b>' + i.name + '</b><div class="muted sm">' + i.code + '</div></td>' +
-        '<td class="right muted">' + fmt(oh) + ' ' + i.unit + '</td>' +
+        '<td><b>' + i.name + '</b>' + quarBadge + '<div class="muted sm">' + i.code + '</div></td>' +
+        '<td class="right muted">' + fmt(oh) + ' ' + i.unit + (qHold > 0 ? '<div class="sm" style="color:#B25C00">' + fmt(qHold) + ' ' + L("adjQuarWord") + '</div>' : '') + '</td>' +
         '<td><input class="adjq" id="adj-' + i.id + '" type="number" min="0" inputmode="numeric" placeholder="' + fmt(oh) + '" data-cur="' + oh + '"></td></tr>';
     }).join("");
     return '<div class="card"><h2>' + L("adjust") + '</h2><p class="hint">' + L("adjustHint") + '</p>' +
@@ -2328,13 +2330,27 @@
     // Labeled "Master Case — <flavor>" so typing "Master Case" OR the flavor finds them. Shippers/empty boxes excluded.
     const masters = DB.items().filter(i => { const c = String(i.category || "").toLowerCase(); if (c !== "mastercase" && c !== "master case") return false; return !/shipper|box rsc/i.test(String(i.name || "")); })
       .sort((a, b) => String(a.name || a.id).localeCompare(String(b.name || b.id)))
-      .map(i => { let fl = (i.flavor && !/^box/i.test(i.flavor)) ? i.flavor : String(i.name || i.id).replace(/^Target Sleeve\s*-\s*/i, "").replace(/^Box - Master Case\s*/i, "").replace(/^Box - /i, ""); return '<option value="' + esc("Master Case — " + fl + " (ITEM:" + (i.code || i.id) + ")") + '"></option>'; }).join("");
-    return packs + bags + masters;
+      .map(i => { let fl = (i.flavor && !/^box/i.test(i.flavor)) ? i.flavor : String(i.name || i.id).replace(/^Target Sleeve\s*-\s*/i, "").replace(/^Box - Master Case\s*/i, "").replace(/^Box - /i, ""); return '<option value="' + esc("Master Case (Target) — " + fl + " (ITEM:" + (i.code || i.id) + ")") + '"></option>'; }).join("");
+    // Standard master case (MCS-S##): 6 cases x 12 packs = 72 x 4oz bags. Virtual return unit per core flavor
+    // (S01-S11) — derived from the 4oz bag items, so it never needs its own stock row. Restocks B4-S## x 72.
+    const stdMC = DB.items().filter(i => i.category === "bag4" && /^B4-S\d{2}$/i.test(String(i.code || "")))
+      .sort((a, b) => String(a.code).localeCompare(String(b.code)))
+      .map(i => { const s = String(i.code).replace(/^B4-/i, ""); const fl = i.flavor || String(i.name || "").replace(/^Bags 4oz\s*-\s*/i, ""); return '<option value="' + esc("Master Case (Standard) — " + fl + " (ITEM:MCS-" + s + ")") + '"></option>'; }).join("");
+    return packs + bags + masters + stdMC;
   }
-  // Target standard master-case sleeve (SLV-S##) restocks the flavor's 1.5oz BAGS (the real finished-goods count),
-  // not the sleeve item. Returns the bag code or null (null = restock the picked item as-is).
-  function masterCaseBag(code) { const m = String(code || "").match(/^SLV-S0?(\d{1,2})$/i); return m ? "B15-S" + ("0" + m[1]).slice(-2) : null;
+  // A returned master case restocks the flavor's finished BAGS, not the case item itself.
+  //   SLV-S## = Target master case (sleeve) -> 1.5oz bags (B15-S##)
+  //   MCS-S## = Standard master case        -> 4oz bags  (B4-S##)
+  // Returns the bag code or null (null = restock the picked item as-is).
+  function masterCaseBag(code) {
+    code = String(code || "");
+    let m = code.match(/^MCS-S0?(\d{1,2})$/i); if (m) return "B4-S" + ("0" + m[1]).slice(-2);
+    m = code.match(/^SLV-S0?(\d{1,2})$/i);     if (m) return "B15-S" + ("0" + m[1]).slice(-2);
+    return null;
   }
+  // Bags contained in one master case. Standard master case (MCS) = 6 cases x 12 packs = 72 bags.
+  // Target sleeve (SLV) and everything else stay 1:1 (qty entered is already the bag/unit count).
+  function masterCasePacks(code) { return /^MCS-S/i.test(String(code || "")) ? 72 : 1; }
   // pull the SKU / ITEM:code out of a picked or typed value ("Name (SKU)" -> "SKU"; freehand -> as typed)
   function retParseSku(val) { const s = (val || "").trim(); const m = s.match(/\(([^)]+)\)\s*$/); return m ? m[1].trim() : s; }
   function retLineRow() {
@@ -5479,7 +5495,10 @@
       for (const ln of lines) {
         const isItem = ln.sku.indexOf("ITEM:") === 0;
         let product, item_code, is_kit = false, kit_sku = "", appItem = null;
-        if (isItem) { const code = ln.sku.slice(5); appItem = DB.itemByCode(code); product = appItem ? appItem.name : code; item_code = code; }
+        if (isItem) { const code = ln.sku.slice(5); appItem = DB.itemByCode(code); item_code = code;
+          if (appItem) product = appItem.name;
+          else if (/^MCS-S\d{1,2}$/i.test(code)) { const bc = masterCaseBag(code); const bi = bc ? DB.itemByCode(bc) : null; product = "Master Case (Standard) - " + ((bi && (bi.flavor || bi.name)) || code); }
+          else product = code; }
         else { const meta = (window.KITS ? KITS.meta(ln.sku) : null) || {}; product = meta.name || ln.sku; item_code = ln.sku; is_kit = window.KITS ? KITS.isKit(ln.sku) : false; kit_sku = ln.sku; }
         const rec = Object.assign({}, hdr, { product: product, item_code: item_code, is_kit: is_kit, kit_sku: kit_sku, qty: ln.qty });
         // force-insert lines that don't match a previously-saved return (new item or an intentional repeat within this order)
@@ -5494,9 +5513,12 @@
         logged++;
         // restock only when disposition = Restock
         if (restock) {
-          if (isItem && appItem) {
-            const mcBag = masterCaseBag(item_code); const mcItem = mcBag ? DB.itemByCode(mcBag) : null;
-            await DB.returnStock(mcItem || appItem, ln.qty, opVal(), { reason: reason || (mcItem ? "Master case return" : ""), disposition: "Restock", channel: hdr.channel, rma: orderRef });
+          const mcBag = isItem ? masterCaseBag(item_code) : null;
+          const mcItem = mcBag ? DB.itemByCode(mcBag) : null;
+          const target = mcItem || appItem;
+          if (isItem && target) {
+            const mult = masterCasePacks(item_code);   // standard master case = 72 bags; sleeve/plain = 1
+            await DB.returnStock(target, ln.qty * mult, opVal(), { reason: reason || (mcItem ? "Master case return (x" + mult + ")" : ""), disposition: "Restock", channel: hdr.channel, rma: orderRef });
           } else if (window.KITS) {
             const comps = KITS.explode(ln.sku); const meta = KITS.meta(ln.sku) || {};
             const prefix = (String(meta.size || "").indexOf("1.5") >= 0) ? "B15-" : "B4-";
