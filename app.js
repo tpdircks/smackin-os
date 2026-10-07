@@ -2306,7 +2306,11 @@
     const bags = DB.items().filter(i => i.category === "bag4" || i.category === "bag15")
       .sort((a, b) => String(a.code || a.id).localeCompare(String(b.code || b.id)))
       .map(i => '<option value="' + esc((i.name || i.flavor || i.id) + ' (ITEM:' + (i.code || i.id) + ')') + '"></option>').join("");
-    return packs + bags;
+    // Master cases — Adriana's request so full cases can be logged on returns, not just individual bags.
+    const masters = DB.items().filter(i => { const c = String(i.category || "").toLowerCase(); return c === "mastercase" || c === "master case"; })
+      .sort((a, b) => String(a.name || a.id).localeCompare(String(b.name || b.id)))
+      .map(i => '<option value="' + esc((i.name || i.id) + ' (ITEM:' + (i.code || i.id) + ')') + '"></option>').join("");
+    return packs + bags + masters;
   }
   // pull the SKU / ITEM:code out of a picked or typed value ("Name (SKU)" -> "SKU"; freehand -> as typed)
   function retParseSku(val) { const s = (val || "").trim(); const m = s.match(/\(([^)]+)\)\s*$/); return m ? m[1].trim() : s; }
