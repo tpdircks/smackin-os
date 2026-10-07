@@ -2307,10 +2307,15 @@
       .sort((a, b) => String(a.code || a.id).localeCompare(String(b.code || b.id)))
       .map(i => '<option value="' + esc((i.name || i.flavor || i.id) + ' (ITEM:' + (i.code || i.id) + ')') + '"></option>').join("");
     // Master cases — Adriana's request so full cases can be logged on returns, not just individual bags.
-    const masters = DB.items().filter(i => { const c = String(i.category || "").toLowerCase(); return c === "mastercase" || c === "master case"; })
+    // Labeled "Master Case — <flavor>" so typing "Master Case" OR the flavor finds them. Shippers/empty boxes excluded.
+    const masters = DB.items().filter(i => { const c = String(i.category || "").toLowerCase(); if (c !== "mastercase" && c !== "master case") return false; return !/shipper|box rsc/i.test(String(i.name || "")); })
       .sort((a, b) => String(a.name || a.id).localeCompare(String(b.name || b.id)))
-      .map(i => '<option value="' + esc((i.name || i.id) + ' (ITEM:' + (i.code || i.id) + ')') + '"></option>').join("");
+      .map(i => { let fl = (i.flavor && !/^box/i.test(i.flavor)) ? i.flavor : String(i.name || i.id).replace(/^Target Sleeve\s*-\s*/i, "").replace(/^Box - Master Case\s*/i, "").replace(/^Box - /i, ""); return '<option value="' + esc("Master Case — " + fl + " (ITEM:" + (i.code || i.id) + ")") + '"></option>'; }).join("");
     return packs + bags + masters;
+  }
+  // Target standard master-case sleeve (SLV-S##) restocks the flavor's 1.5oz BAGS (the real finished-goods count),
+  // not the sleeve item. Returns the bag code or null (null = restock the picked item as-is).
+  function masterCaseBag(code) { const m = String(code || "").match(/^SLV-S0?(\d{1,2})$/i); return m ? "B15-S" + ("0" + m[1]).slice(-2) : null;
   }
   // pull the SKU / ITEM:code out of a picked or typed value ("Name (SKU)" -> "SKU"; freehand -> as typed)
   function retParseSku(val) { const s = (val || "").trim(); const m = s.match(/\(([^)]+)\)\s*$/); return m ? m[1].trim() : s; }
@@ -5457,7 +5462,8 @@
         // restock only when disposition = Restock
         if (restock) {
           if (isItem && appItem) {
-            await DB.returnStock(appItem, ln.qty, opVal(), { reason: reason, disposition: "Restock", channel: hdr.channel, rma: orderRef });
+            const mcBag = masterCaseBag(item_code); const mcItem = mcBag ? DB.itemByCode(mcBag) : null;
+            await DB.returnStock(mcItem || appItem, ln.qty, opVal(), { reason: reason || (mcItem ? "Master case return" : ""), disposition: "Restock", channel: hdr.channel, rma: orderRef });
           } else if (window.KITS) {
             const comps = KITS.explode(ln.sku); const meta = KITS.meta(ln.sku) || {};
             const prefix = (String(meta.size || "").indexOf("1.5") >= 0) ? "B15-" : "B4-";
