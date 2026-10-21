@@ -70,7 +70,7 @@
     const ship = doc.splitTextToSize(s.ship_to || "-", RM - colR);
     doc.text(vlines, M, y); doc.text(ship, colR, y);
     y += Math.max(vlines.length, ship.length) * 13 + 14; rule(y); y += 16;
-    const cItem = M, cDesc = M + 44, cQty = 396, cPrice = 456, cTot = RM;
+    const cItem = M, cDesc = M + 96, cQty = 396, cPrice = 456, cTot = RM;
     doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(grey[0], grey[1], grey[2]);
     doc.text("ITEM", cItem, y); doc.text("DESCRIPTION", cDesc, y); doc.text("QTY", cQty, y, { align: "right" });
     doc.text("PRICE", cPrice, y, { align: "right" }); doc.text("TOTAL", cTot, y, { align: "right" });
@@ -81,8 +81,12 @@
       lines.forEach(l => {
         if (y > 720) { doc.addPage(); y = 58; }
         const descTxt = String(l.desc || "") + (l.ship ? "   (ships " + l.ship + ")" : "");
-        const dl = doc.splitTextToSize(descTxt, cQty - cDesc - 44);
-        doc.text(String(l.item || ""), cItem, y);
+        const dl = doc.splitTextToSize(descTxt, cQty - cDesc - 10);
+        // ITEM: never let a long code spill into the DESCRIPTION column — shrink to fit the item column.
+        const itemStr = String(l.item || ""); const itemColW = cDesc - cItem - 8;
+        const iw = itemStr ? doc.getTextWidth(itemStr) : 0;
+        const ifs = (iw > itemColW && iw > 0) ? Math.max(6.5, 9.5 * itemColW / iw) : 9.5;
+        doc.setFontSize(ifs); doc.text(itemStr, cItem, y); doc.setFontSize(9.5);
         doc.text(dl.length ? dl : [""], cDesc, y);
         if (l.qty !== "") doc.text(String(l.qty) + (l.unit ? " " + l.unit : ""), cQty, y, { align: "right" });
         if (l.price !== "") doc.text(moneyP(l.price), cPrice, y, { align: "right" });
