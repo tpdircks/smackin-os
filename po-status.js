@@ -17,6 +17,12 @@
    out of the open list) and DB.onOrderMap (On Order tile now reads open
    supplier_pos lines, unioned with the legacy purchase_orders result).
    Exposes window.POSTATUS for the Purchasing list filter. Read-only.
+   Nav badges on Purchasing and Expected Receipts are rewritten here too:
+   app.js sums reorder alerts into those badges (out + low + overdue lines),
+   which is not a PO count. Both badges are set to the number of POs the On
+   Order tile treats as already covering a low/out item. Received, closed,
+   cancelled, completed, and archived POs never count. A MutationObserver on
+   #nav applies the number after each nav render (no timers).
    ==========================================================================*/
 (function () {
   "use strict";
@@ -85,10 +91,126 @@
   function allPos() { try { return (window.DB && DB.supplierPos) ? DB.supplierPos() : []; } catch (e) { return []; } }
   function statusOf(po) { return derive(po, rlog()); }
 
+  // Statuses that are not "on order". Legacy purchase_orders use ordered/partial;
+  // anything in this list (and drafts) is excluded, same as DB.onOrderMap.
+  var TERMINAL_STATUS = /\b(received|closed|cancelled|canceled|completed|complete|archived)\b/i;
+  function isTerminalStatus(s) { return TERMINAL_STATUS.test(String(s || "")); }
+  function poKey(po) {
+    var k = norm((po && (po.po_num || po.id)) || "");
+    return k || ("ID" + norm(po && po.id));
+  }
+  function itemIdFor(l) {
+    try {
+      var items = DB.items ? DB.items() : [];
+      var code = norm(l.item || l.item_no || ""), desc = String(l.desc || l.description || "").trim().toLowerCase();
+      for (var k = 0; k < items.length; k++) {
+        var it = items[k];
+        if (code && (norm(it.id) === code || norm(it.code) === code)) return it.id;
+      }
+      if (desc) for (var j = 0; j < items.length; j++) { if (String(items[j].name || "").trim().toLowerCase() === desc) return items[j].id; }
+    } catch (e) {}
+    return null;
+  }
+  function addQty(into, id, q, key) {
+    if (!id || !(q > 0)) return;
+    var rec = into[id] || (into[id] = { qty: 0, pos: {} });
+    rec.qty += q;
+    if (key) rec.pos[key] = true;
+  }
+  // Same population as the On Order tile's DB.onOrderMap: open supplier lines
+  // that are not received, plus legacy purchase_orders in ordered/partial with
+  // outstanding qty. Terminal statuses never contribute.
+  function collectOnOrder() {
+    var into = {};
+    try {
+      var legacy = (window.DB && DB.purchaseOrders) ? DB.purchaseOrders() : [];
+      legacy.forEach(function (po) {
+        var st = String(po.status || "").toLowerCase();
+        if (st !== "ordered" && st !== "partial") return;
+        if (isTerminalStatus(st)) return;
+        (po.lines || []).forEach(function (l) {
+          var open = (Number(l.qty) || 0) - (Number(l.received) || 0);
+          addQty(into, l.item_id, open, poKey(po));
+        });
+      });
+    } catch (e) {}
+    var rl = rlog();
+    allPos().forEach(function (po) {
+      if (isTerminalStatus(po.status) || isTerminalStatus(po.po_status) || isTerminalStatus(po.state)) return;
+      var stt = derive(po, rl);
+      if (stt.status !== "open") return;
+      linesOf(po).forEach(function (l, i) {
+        if ((stt.lines[i] || {}).recv) return;
+        var id = itemIdFor(l); if (!id) return;
+        var q = parseFloat(String(l.qty || l.quantity || "").replace(/,/g, "")) || 0;
+        addQty(into, id, q, poKey(po));
+      });
+    });
+    return into;
+  }
+  // POs the home On Order tile is counting: a low/out item whose open qty
+  // already covers the suggested reorder. Distinct POs only.
+  function openOnOrderCount() {
+    var col;
+    try { col = collectOnOrder(); } catch (e) { return 0; }
+    var items = [];
+    try { items = (window.DB && DB.items) ? DB.items() : []; } catch (e) { return 0; }
+    var pos = {};
+    items.forEach(function (i) {
+      var re = Number(i.reorder) || 0;
+      if (!(re > 0) || !i || i.id == null) return;
+      var oh = 0;
+      try { oh = Number(DB.onHand ? DB.onHand(i.id) : 0) || 0; } catch (e2) { oh = 0; }
+      if (!(oh <= 0 || oh < re)) return;
+      var rec = col[i.id];
+      if (!rec || !(rec.qty > 0)) return;
+      var need = Math.max(re - oh, Math.round(re * 0.5));
+      if (rec.qty < need) return;
+      Object.keys(rec.pos).forEach(function (k) { if (k) pos[k] = true; });
+    });
+    return Object.keys(pos).length;
+  }
+  function paintNavBadges() {
+    var nav = document.getElementById("nav");
+    if (!nav) return;
+    var n = 0;
+    try { n = openOnOrderCount(); } catch (e) { n = 0; }
+    var text = n > 0 ? String(n) : "";
+    var buttons = nav.querySelectorAll ? nav.querySelectorAll(".navitem") : [];
+    for (var i = 0; i < buttons.length; i++) {
+      var btn = buttons[i];
+      var oc = btn.getAttribute("onclick") || "";
+      if (oc.indexOf("purchasing") < 0 && oc.indexOf("expreceipts") < 0) continue;
+      // reorder15 and other items must not match; require the tab id token.
+      if (!/UI_go\(['"]purchasing['"]\)/.test(oc) && !/UI_go\(['"]expreceipts['"]\)/.test(oc)) continue;
+      var badge = btn.querySelector(".navbadge");
+      if (!text) {
+        if (badge) badge.parentNode.removeChild(badge);
+        continue;
+      }
+      if (badge && badge.getAttribute("data-po-open") === "1" && badge.textContent === text) continue;
+      if (badge) badge.parentNode.removeChild(badge);
+      var span = document.createElement("span");
+      span.className = "navbadge";
+      span.setAttribute("data-po-open", "1");
+      span.title = n === 1 ? "1 open PO" : (n + " open POs");
+      span.textContent = text;
+      btn.appendChild(span);
+    }
+  }
+  function watchNav() {
+    if (typeof MutationObserver !== "function" || !document.getElementById) return;
+    var nav = document.getElementById("nav");
+    if (!nav || nav.__poBadgeObs) return;
+    var obs = new MutationObserver(function () { paintNavBadges(); });
+    nav.__poBadgeObs = obs;
+    obs.observe(nav, { childList: true });
+    paintNavBadges();
+  }
+
   function install() {
     if (!window.DB || DB.__poStatus) return !!(window.DB && DB.__poStatus);
     DB.__poStatus = true;
-    var legacyOnOrder = DB.onOrderMap;
 
     // Expected Receipts: same shape as db.js, but received/closed uses derived status
     DB.expectedReceipts = function () {
@@ -112,32 +234,11 @@
       return out;
     };
 
-    // On Order: open (unreceived) lines on OPEN supplier POs, mapped to app item ids
-    function itemIdFor(l) {
-      try {
-        var items = DB.items ? DB.items() : [];
-        var code = norm(l.item || l.item_no || ""), desc = String(l.desc || l.description || "").trim().toLowerCase();
-        for (var k = 0; k < items.length; k++) {
-          var it = items[k];
-          if (code && (norm(it.id) === code || norm(it.code) === code)) return it.id;
-        }
-        if (desc) for (var j = 0; j < items.length; j++) { if (String(items[j].name || "").trim().toLowerCase() === desc) return items[j].id; }
-      } catch (e) {}
-      return null;
-    }
+    // On Order: open (unreceived) lines on OPEN supplier POs, mapped to app item ids,
+    // unioned with legacy purchase_orders that are ordered/partial (not received).
     DB.onOrderMap = function () {
-      var m = {};
-      try { var lg = legacyOnOrder ? legacyOnOrder() : {}; Object.keys(lg).forEach(function (k) { m[k] = (m[k] || 0) + lg[k]; }); } catch (e) {}
-      var rl = rlog();
-      allPos().forEach(function (po) {
-        var st = derive(po, rl); if (st.status !== "open") return;
-        linesOf(po).forEach(function (l, i) {
-          if ((st.lines[i] || {}).recv) return;
-          var id = itemIdFor(l); if (!id) return;
-          var q = parseFloat(String(l.qty || l.quantity || "").replace(/,/g, "")) || 0;
-          if (q > 0) m[id] = (m[id] || 0) + q;
-        });
-      });
+      var m = {}, col = collectOnOrder();
+      Object.keys(col).forEach(function (id) { m[id] = col[id].qty; });
       return m;
     };
     DB.onOrder = function (itemId) { return DB.onOrderMap()[itemId] || 0; };
@@ -160,6 +261,7 @@
       list.forEach(function (po) { c[derive(po, rl).status]++; });
       return c;
     },
+    openOnOrderCount: openOnOrderCount,
     pill: function (po) {
       var st = statusOf(po);
       return st.status === "closed"
@@ -176,4 +278,6 @@
 
   // db.js loads before this file, so install immediately (re-check on DOM ready).
   if (!install()) document.addEventListener("DOMContentLoaded", install);
+  if (document.getElementById && document.getElementById("nav")) watchNav();
+  else document.addEventListener("DOMContentLoaded", watchNav);
 })();
