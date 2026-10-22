@@ -1,203 +1,326 @@
 /* ============================================================================
    Smackin' OS - SPS Feed  (sps-feed.js)
-   Viewer + parser for the SPS Commerce Transaction API documents (850 PO,
-   856 ASN, 810 invoice) that flow into the app as JSON.
-
-   Architecture: the live pull is server-to-server (the SPS Transaction API
-   uses token auth and does not allow browser CORS), so a Supabase Edge
-   Function authenticates to SPS, pulls the /testout (then live) documents, and
-   writes them to the `sps_transactions` table. THIS screen reads that table,
-   shows each document, and - until the live feed is wired - lets you paste a
-   sample JSON document to validate the parser end to end.
-
-   Adds an "SPS Feed" nav item. Self-contained, no app.js edit.
-   ==========================================================================*/
+   Live view of SPS Commerce documents written by the sps-sync Edge Function.
+   The browser only reads Supabase. The client secret stays on the function.
+   ========================================================================== */
 (function () {
   "use strict";
   var cfg = window.SMACKIN_CONFIG || {};
   var sb = null;
-  function client() { if (!sb && window.supabase && cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY) { try { sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY); } catch (e) {} } return sb; }
+  function client() {
+    if (!sb && window.supabase && cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY) {
+      try { sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY); } catch (e) {}
+    }
+    return sb;
+  }
   function $(id) { return document.getElementById(id); }
-  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
-
-  // ---- best-effort field extraction from an SPS JSON document ----------------
-  // Deep-search helpers: the exact SPS JSON shape is confirmed once we see a real
-  // /testout sample; these find fields wherever they sit so the viewer works now.
-  function deepFind(obj, re, depth) {
-    depth = depth || 0; if (obj == null || depth > 8) return null;
-    if (Array.isArray(obj)) { for (var i = 0; i < obj.length; i++) { var v = deepFind(obj[i], re, depth + 1); if (v != null) return v; } return null; }
-    if (typeof obj === "object") {
-      for (var k in obj) { if (!Object.prototype.hasOwnProperty.call(obj, k)) continue;
-        if (re.test(k) && (typeof obj[k] === "string" || typeof obj[k] === "number")) return obj[k];
-      }
-      for (var k2 in obj) { if (!Object.prototype.hasOwnProperty.call(obj, k2)) continue; var v2 = deepFind(obj[k2], re, depth + 1); if (v2 != null) return v2; }
-    }
-    return null;
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
   }
-  function deepArray(obj, re, depth) {
-    depth = depth || 0; if (obj == null || depth > 8) return null;
-    if (typeof obj === "object") {
-      for (var k in obj) { if (!Object.prototype.hasOwnProperty.call(obj, k)) continue;
-        if (re.test(k) && Array.isArray(obj[k])) return obj[k];
-      }
-      var vals = Array.isArray(obj) ? obj : Object.keys(obj).map(function (k) { return obj[k]; });
-      for (var i = 0; i < vals.length; i++) { var a = deepArray(vals[i], re, depth + 1); if (a) return a; }
-    }
-    return null;
-  }
-  // find the ship-to (AddressTypeCode "ST") name anywhere in the doc, for a human-readable partner
-  function shipToName(obj, depth) {
-    depth = depth || 0; if (obj == null || depth > 8) return null;
-    if (Array.isArray(obj)) { for (var i = 0; i < obj.length; i++) { var r = shipToName(obj[i], depth + 1); if (r) return r; } return null; }
-    if (typeof obj === "object") {
-      if (obj.AddressTypeCode === "ST" && obj.AddressName) return obj.AddressName;
-      for (var k in obj) { if (Object.prototype.hasOwnProperty.call(obj, k)) { var v = shipToName(obj[k], depth + 1); if (v) return v; } }
-    }
-    return null;
-  }
-  function parseDoc(json) {
-    var h = json.Header || {};
-    var invoice = deepFind(json, /invoicenumber/i);
-    var po = deepFind(json, /purchaseordernumber/i) || deepFind(json, /customerordernumber|^ponumber$/i);
-    var shipId = deepFind(json, /shipmentidentification|bentonvilleasnnumber|shipnoticenumber/i);
-    var bol = deepFind(json, /billofladingnumber/i);
-    var explicit = deepFind(json, /documenttype|transactionset|transactiontype/i);
-    var docType = "Unknown";
-    if (explicit) docType = String(explicit);
-    else if (invoice != null) docType = "810 Invoice";
-    else if (h.ShipmentHeader || shipId != null || bol != null) docType = "856 Ship Notice";
-    else if (h.OrderHeader || po != null) docType = "850 Purchase Order";
-    var tpid = deepFind(json, /tradingpartnerid/i);
-    var partner = shipToName(json) || (tpid != null ? String(tpid) : "");
-    var lines = deepArray(json, /^lineitem$|^orderline$|^itemlevel$|invoiceline/i);
-    var lineCount = lines ? lines.length : (deepFind(json, /totallineitemnumber/i) || 0);
-    return {
-      docType: docType,
-      po: po != null ? String(po) : (invoice != null ? String(invoice) : ""),
-      invoice: invoice != null ? String(invoice) : "",
-      partner: partner,
-      partnerId: tpid != null ? String(tpid) : "",
-      lineCount: lineCount,
-      poDate: deepFind(json, /purchaseorderdate|orderdate/i) || "",
-      shipDate: deepFind(json, /^shipdate$|shippeddate|deliverydate/i) || "",
-      invDate: deepFind(json, /invoicedate/i) || ""
-    };
-  }
+  function mapApi() { return window.SPSMap || null; }
 
   function styleOnce() {
     if ($("sf-style")) return;
-    var s = document.createElement("style"); s.id = "sf-style";
+    var s = document.createElement("style");
+    s.id = "sf-style";
     s.textContent = [
-      ".sf-pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;background:#e5edff;color:#1e3a8a}",
       ".sf-badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700}",
       ".sf-850{background:#dbeafe;color:#1e40af}.sf-856{background:#dcfce7;color:#166534}.sf-810{background:#fef3c7;color:#92400e}.sf-unk{background:#f1f5f9;color:#64748b}",
+      ".sf-flag{display:inline-block;margin:0 6px 6px 0;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;background:#fbe3e0;color:#b52024}",
+      ".sf-banner{padding:10px 12px;border-radius:8px;font-size:13px}",
+      ".sf-ok{background:#e0f4e8;color:#1d5631;border:1px solid #b7e4c7}",
+      ".sf-wait{background:#fff6e9;color:#7a4d05;border:1px solid #f3d7a1}",
+      ".sf-bad{background:#fbe3e0;color:#b52024;border:1px solid #f3c0bc}",
+      ".sf-kv{display:grid;grid-template-columns:minmax(120px,150px) 1fr;gap:4px 12px;font-size:13px;margin:8px 0}",
+      ".sf-kv b{color:#475569;font-weight:600}",
+      "@media(max-width:700px){.sf-kv{grid-template-columns:1fr}}",
+      "#sf-preview,#sf-flags,#sf-detail,#sf-list{overflow-wrap:anywhere}",
       "#sf-raw{white-space:pre-wrap;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:#0f172a;color:#e2e8f0;padding:12px;border-radius:8px;max-height:300px;overflow:auto}",
-      ".sf-kv{display:grid;grid-template-columns:150px 1fr;gap:4px 12px;font-size:13px;margin:8px 0}",
-      ".sf-kv b{color:#475569;font-weight:600}"
+      "tr.sf-row{cursor:pointer}"
     ].join("");
     (document.head || document.documentElement).appendChild(s);
   }
-  function badge(dt) { var c = /^850/.test(dt) ? "sf-850" : /^856/.test(dt) ? "sf-856" : /^810/.test(dt) ? "sf-810" : "sf-unk"; return '<span class="sf-badge ' + c + '">' + esc(dt) + '</span>'; }
+  function badge(dt) {
+    var c = /^850/.test(dt || "") ? "sf-850" : /^856/.test(dt || "") ? "sf-856" : /^810/.test(dt || "") ? "sf-810" : "sf-unk";
+    return '<span class="sf-badge ' + c + '">' + esc(dt || "Unknown") + '</span>';
+  }
+  function when(iso) {
+    if (!iso) return "";
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return String(iso).slice(0, 16).replace("T", " ");
+    return d.toLocaleString();
+  }
+  function moneyOf(n) {
+    var api = mapApi();
+    if (api && n != null && n !== "") return api.money(n);
+    return n == null || n === "" ? "" : String(n);
+  }
+
+  var docs = [];
+  var openId = null;
+
+  function banner(sync) {
+    if (!sync) {
+      return '<div class="sf-banner sf-wait">No sync yet. The server pulls SPS every 5 minutes once the sps-sync function is deployed and its SPS credentials are set. Open this screen again to refresh.</div>';
+    }
+    if (sync.ok === false) {
+      return '<div class="sf-banner sf-bad">Last attempt ' + esc(when(sync.at)) + (sync.folder ? " · folder " + esc(sync.folder) : "") + "<br>" + esc(sync.message || "The last pull did not finish.") + "</div>";
+    }
+    var age = sync.at ? (Date.now() - new Date(sync.at).getTime()) : 0;
+    var stale = age > 20 * 60 * 1000;
+    var cls = stale ? "sf-wait" : "sf-ok";
+    var line = "Last sync " + esc(when(sync.at)) +
+      " · folder " + esc(sync.folder || "") +
+      " · " + esc(sync.listed == null ? "?" : sync.listed) + " files on SPS" +
+      " · " + esc(sync.processed == null ? 0 : sync.processed) + " new this run" +
+      " · " + esc(sync.flagged || 0) + " flagged";
+    if (sync.pending > sync.processed) line += " · " + esc(sync.pending - sync.processed) + " still waiting";
+    if (sync.errors && sync.errors.length) line += "<br>" + esc(sync.errors[0]);
+    if (stale) line += "<br>The last success is more than 20 minutes old.";
+    return '<div class="sf-banner ' + cls + '">' + line + "</div>";
+  }
 
   function render() {
     styleOnce();
-    var host = $("view"); if (!host) return;
-    var baseUrl = "", ep = "";
-    try { baseUrl = localStorage.getItem("sps_base_url") || ""; ep = localStorage.getItem("sps_endpoint") || ""; } catch (e) {}
+    var host = $("view");
+    if (!host) return;
     host.innerHTML =
       '<div class="card"><h2>SPS Feed</h2>' +
-      '<p class="hint">Documents from the SPS Commerce Transaction API - purchase orders (850), ship notices (856) and invoices (810) - as they flow into the app. The live pull runs server-side (Supabase Edge Function) because the SPS API is token-based and not browser-accessible. Until that is switched on, paste a sample document below to confirm the parser reads it correctly.</p>' +
-      '<div style="background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;padding:10px 12px;border-radius:8px;font-size:13px">Status: <b>waiting on SPS credentials + /testout endpoint</b> from Raul (SPS). Once those land, the Edge Function fills this feed automatically.</div>' +
-      '</div>' +
-
-      '<div class="card"><h2 class="sub2">Test the parser with a sample document</h2>' +
-      '<p class="hint">Paste one SPS JSON document (from /testout, e.g. McLane PO MO10106510-01) and click Parse. If it looks right, Save it to the feed.</p>' +
-      '<textarea id="sf-input" rows="7" placeholder=\'{ "purchaseOrder": { "purchaseOrderNumber": "MO10106510-01", ... } }\' style="width:100%;font-family:ui-monospace,monospace;font-size:12px"></textarea>' +
+      '<p class="hint">Purchase orders (850), ship notices (856), and invoices (810) from SPS Commerce. The server reads the Transaction API every 5 minutes and writes them here. This screen only reads Supabase.</p>' +
+      '<div id="sf-sync"><p class="muted">Loading sync status…</p></div></div>' +
+      '<div class="card"><h2 class="sub2">Flagged</h2><div id="sf-flags"><p class="muted">Loading…</p></div></div>' +
+      '<div class="card"><h2 class="sub2">Documents</h2><div id="sf-list"><p class="muted">Loading…</p></div><div id="sf-detail"></div></div>' +
+      '<div class="card"><h2 class="sub2">Check a sample document</h2>' +
+      '<p class="hint">Paste one SPS JSON file to see how it maps. Saving stores a test row on this feed only.</p>' +
+      '<textarea id="sf-input" rows="6" placeholder=\'{ "Header": { "OrderHeader": { "PurchaseOrderNumber": "..." } } }\' style="width:100%;font-family:ui-monospace,monospace;font-size:12px"></textarea>' +
       '<div style="margin-top:8px"><button class="primary" onclick="SPSFEED.parse()">Parse</button> ' +
       '<button class="ghost" onclick="SPSFEED.saveSample()" id="sf-savebtn" style="display:none">Save to feed</button></div>' +
-      '<div id="sf-preview" style="margin-top:12px"></div>' +
-      '</div>' +
-
-      '<div class="card"><h2 class="sub2">Connection (fill in when SPS sends it)</h2>' +
-      '<div class="row"><div><label>API base URL</label><input id="sf-base" autocomplete="off" placeholder="https://api.spscommerce.com/..." value="' + esc(baseUrl) + '"></div>' +
-      '<div><label>/testout endpoint or path</label><input id="sf-ep" autocomplete="off" placeholder="e.g. /testout or /documents?folder=testout" value="' + esc(ep) + '"></div></div>' +
-      '<p class="hint">Stored only in this browser, never in the app files. Credentials/token are held by the Edge Function on the server, not here.</p>' +
-      '<button class="ghost sm" onclick="SPSFEED.saveCfg()">Save connection</button></div>' +
-
-      '<div class="card"><h2 class="sub2">Received documents</h2><div id="sf-list"><p class="muted">Loading…</p></div></div>';
+      '<div id="sf-preview" style="margin-top:12px"></div></div>';
     loadFeed();
   }
 
-  var lastParsed = null, lastRaw = null;
-  function showPreview(p, raw) {
-    var el = $("sf-preview"); if (!el) return;
-    el.innerHTML =
-      '<div class="sf-kv">' +
-      '<b>Document type</b><div>' + badge(p.docType) + '</div>' +
-      '<b>PO / reference</b><div>' + (esc(p.po) || '<span class="muted">not found</span>') + '</div>' +
-      (p.invoice ? '<b>Invoice #</b><div>' + esc(p.invoice) + '</div>' : '') +
-      '<b>Trading partner</b><div>' + (esc(p.partner) || '<span class="muted">not found</span>') + (p.partnerId ? ' <span class="muted sm">(' + esc(p.partnerId) + ')</span>' : '') + '</div>' +
-      '<b>Line items</b><div>' + p.lineCount + '</div>' +
-      (p.poDate ? '<b>PO date</b><div>' + esc(p.poDate) + '</div>' : '') +
-      (p.shipDate ? '<b>Ship date</b><div>' + esc(p.shipDate) + '</div>' : '') +
-      (p.invDate ? '<b>Invoice date</b><div>' + esc(p.invDate) + '</div>' : '') +
-      '</div>' +
-      '<details style="margin-top:6px"><summary class="muted sm" style="cursor:pointer">Raw JSON</summary><pre id="sf-raw">' + esc(JSON.stringify(raw, null, 2)) + '</pre></details>';
-    var b = $("sf-savebtn"); if (b) b.style.display = "";
+  function flagPills(flags) {
+    return (flags || []).map(function (f) {
+      var api = mapApi();
+      var label = api ? api.flagLabel(f) : f;
+      return '<span class="sf-flag">' + esc(label) + "</span>";
+    }).join("");
+  }
+
+  function draw(sync, rows) {
+    var syncEl = $("sf-sync");
+    var flagEl = $("sf-flags");
+    var listEl = $("sf-list");
+    if (!syncEl || !listEl) return;
+    syncEl.innerHTML = banner(sync);
+    docs = rows || [];
+    var flagged = docs.filter(function (r) {
+      var p = r.payload || {};
+      return (p.flags && p.flags.length) || r.status === "flagged" || r.status === "rejected";
+    });
+    if (!flagged.length) flagEl.innerHTML = '<p class="muted">No flagged documents.</p>';
+    else {
+      flagEl.innerHTML = flagged.map(function (r) {
+        var p = r.payload || {};
+        var detail = (p.flag_detail || []).slice(0, 3).map(function (d) { return "<div>" + esc(d) + "</div>"; }).join("");
+        return '<div style="margin-bottom:10px">' + badge(r.doc_type) + " <b>" + esc(r.po_number || "") + "</b> · " + esc(r.partner || "") +
+          '<div style="margin-top:4px">' + flagPills(p.flags || []) + "</div>" + detail + "</div>";
+      }).join("");
+    }
+    if (!docs.length) {
+      listEl.innerHTML = '<p class="muted">No documents yet.</p>';
+      return;
+    }
+    var body = docs.map(function (r) {
+      var p = r.payload || {};
+      var sum = p.summary || {};
+      var totals = "";
+      if (sum.computedTotal != null) totals = moneyOf(sum.computedTotal);
+      if (sum.statedTotal != null && sum.statedTotal !== sum.computedTotal) totals += (totals ? " file " : "") + moneyOf(sum.statedTotal);
+      return '<tr class="sf-row" onclick="SPSFEED.show(\'' + esc(r.id) + '\')"><td>' + badge(r.doc_type) + "</td><td><b>" +
+        esc(r.po_number || (sum.invoice || "")) + "</b></td><td>" + esc(r.partner || "") + "</td><td>" +
+        (p.flags && p.flags.length ? flagPills(p.flags) : esc(r.status || "")) + "</td><td class=\"sm\">" + esc(totals) +
+        '</td><td class="sm muted">' + esc(when(r.received_at)) + "</td></tr>";
+    }).join("");
+    listEl.innerHTML = '<div class="tblwrap"><table class="sortable"><thead><tr><th>Type</th><th>PO</th><th>Partner</th><th>Status</th><th>Total</th><th>Received</th></tr></thead><tbody>' +
+      body + "</tbody></table></div>";
+    if (openId) showDetail(openId);
+  }
+
+  function showDetail(id) {
+    var el = $("sf-detail");
+    if (!el) return;
+    var row = null;
+    for (var i = 0; i < docs.length; i++) if (String(docs[i].id) === String(id)) row = docs[i];
+    if (!row) { el.innerHTML = ""; return; }
+    var p = row.payload || {};
+    var sum = p.summary || {};
+    var ship = sum.shipTo ? ((sum.shipTo.name || "") + (sum.shipTo.location ? " (" + sum.shipTo.location + ")" : "")) : "";
+    el.innerHTML = '<div class="sf-kv" style="margin-top:12px">' +
+      "<b>Document</b><div>" + badge(row.doc_type) + "</div>" +
+      "<b>PO</b><div>" + esc((sum.pos || [row.po_number]).filter(Boolean).join(", ")) + "</div>" +
+      "<b>Partner</b><div>" + esc(row.partner || "") + (sum.partnerId ? ' <span class="muted sm">' + esc(sum.partnerId) + "</span>" : "") + "</div>" +
+      (sum.vendor ? "<b>Vendor</b><div>" + esc(sum.vendor) + "</div>" : "") +
+      (ship ? "<b>Ship to</b><div>" + esc(ship) + "</div>" : "") +
+      (sum.invoice ? "<b>Invoice</b><div>" + esc(sum.invoice) + "</div>" : "") +
+      (sum.bol ? "<b>BOL</b><div>" + esc(sum.bol) + "</div>" : "") +
+      (sum.computedTotal != null ? "<b>Line sum</b><div>" + esc(moneyOf(sum.computedTotal)) + "</div>" : "") +
+      (sum.statedTotal != null ? "<b>File total</b><div>" + esc(moneyOf(sum.statedTotal)) + "</div>" : "") +
+      "<b>Folder</b><div>" + esc(p.folder || "") + "</div>" +
+      "</div>" + flagPills(p.flags) +
+      ((p.flag_detail || []).map(function (d) { return '<div class="sm">' + esc(d) + "</div>"; }).join("")) +
+      (p.document ? '<details style="margin-top:8px"><summary class="muted sm" style="cursor:pointer">Raw JSON</summary><pre id="sf-raw">' +
+        esc(JSON.stringify(p.document, null, 2)) + "</pre></details>" : "");
   }
 
   function loadFeed() {
-    var el = $("sf-list"); if (!el) return;
-    var c = client(); if (!c) { el.innerHTML = '<p class="muted">Not connected.</p>'; return; }
-    c.from("sps_transactions").select("id,doc_type,partner,po_number,status,received_at").order("received_at", { ascending: false }).limit(200)
-      .then(function (r) {
-        if (r.error) { el.innerHTML = '<p class="muted">No feed yet. (Table `sps_transactions` not created - run the setup SQL, or this fills once SPS is connected.)</p>'; return; }
-        var d = (r.data) || [];
-        if (!d.length) { el.innerHTML = '<p class="muted">No documents received yet. Paste a sample above to test, or wait for the SPS feed.</p>'; return; }
-        var rows = d.map(function (x) {
-          return '<tr><td>' + badge(x.doc_type || "Unknown") + '</td><td><b>' + esc(x.po_number || "") + '</b></td>' +
-            '<td>' + esc(x.partner || "") + '</td><td class="sm">' + esc(x.status || "") + '</td>' +
-            '<td class="sm muted">' + esc(String(x.received_at || "").slice(0, 16).replace("T", " ")) + '</td></tr>';
-        }).join("");
-        el.innerHTML = '<div class="tblwrap"><table class="sortable"><thead><tr><th>Type</th><th>PO / ref</th><th>Partner</th><th>Status</th><th>Received</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
-      });
+    var c = client();
+    var listEl = $("sf-list");
+    if (!c) {
+      if (listEl) listEl.innerHTML = '<p class="muted">Not connected.</p>';
+      var syncEl = $("sf-sync");
+      if (syncEl) syncEl.innerHTML = banner(null);
+      return;
+    }
+    Promise.all([
+      c.from("kv_status").select("key,value").eq("key", "sps:last_sync").limit(1),
+      c.from("sps_transactions").select("id,doc_type,partner,po_number,status,received_at,payload").order("received_at", { ascending: false }).limit(150)
+    ]).then(function (res) {
+      var sync = null;
+      if (res[0] && res[0].data && res[0].data[0] && res[0].data[0].value) {
+        try { sync = JSON.parse(res[0].data[0].value); } catch (e) { sync = null; }
+      }
+      if (res[1] && res[1].error) {
+        var el = $("sf-list");
+        if (el) el.innerHTML = '<p class="muted">Could not read the feed: ' + esc(res[1].error.message) + "</p>";
+        var s = $("sf-sync");
+        if (s) s.innerHTML = banner(sync);
+        return;
+      }
+      draw(sync, (res[1] && res[1].data) || []);
+    });
+  }
+
+  var lastParsed = null;
+  var lastRaw = null;
+  function showPreview(mapped, flagInfo) {
+    var el = $("sf-preview");
+    if (!el) return;
+    var lines = (mapped.lines || []).slice(0, 12).map(function (l) {
+      return "<div>" + esc(l.upc || l.buyerItem || "line") + " · qty " + esc(l.qty) + " " + esc(l.uom || "") +
+        (l.unitPrice != null ? " · " + esc(moneyOf(l.unitPrice)) : "") +
+        (l.description ? " · " + esc(l.description) : "") + "</div>";
+    }).join("");
+    el.innerHTML = '<div class="sf-kv">' +
+      "<b>Document</b><div>" + badge(mapped.label) + "</div>" +
+      "<b>Partner</b><div>" + esc(mapped.partner || "") + (mapped.partnerId ? " (" + esc(mapped.partnerId) + ")" : "") + "</div>" +
+      "<b>PO</b><div>" + esc((mapped.pos || []).join(", ") || "") + "</div>" +
+      (mapped.computedTotal != null ? "<b>Line sum</b><div>" + esc(moneyOf(mapped.computedTotal)) + "</div>" : "") +
+      (mapped.statedTotal != null ? "<b>File total</b><div>" + esc(moneyOf(mapped.statedTotal)) + "</div>" : "") +
+      "</div>" + lines + '<div style="margin-top:6px">' + flagPills(flagInfo.flags) + "</div>" +
+      (flagInfo.details || []).map(function (d) { return '<div class="sm">' + esc(d) + "</div>"; }).join("");
+    var b = $("sf-savebtn");
+    if (b) b.style.display = "";
   }
 
   window.SPSFEED = {
-    open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); markActive(); render(); },
+    open: function (ev) {
+      if (ev && ev.preventDefault) ev.preventDefault();
+      markActive();
+      render();
+    },
+    show: function (id) { openId = id; showDetail(id); },
     parse: function () {
-      var t = $("sf-input"); var el = $("sf-preview");
-      var raw; try { raw = JSON.parse(t.value); } catch (e) { el.innerHTML = '<div style="color:#b52024">Not valid JSON: ' + esc(e.message) + '</div>'; var b = $("sf-savebtn"); if (b) b.style.display = "none"; return; }
-      lastParsed = parseDoc(raw); lastRaw = raw; showPreview(lastParsed, raw);
+      var t = $("sf-input");
+      var el = $("sf-preview");
+      var api = mapApi();
+      var raw;
+      try { raw = JSON.parse(t.value); } catch (e) {
+        el.innerHTML = '<div style="color:#b52024">Not valid JSON: ' + esc(e.message) + "</div>";
+        var b = $("sf-savebtn");
+        if (b) b.style.display = "none";
+        return;
+      }
+      if (!api) { el.innerHTML = '<div style="color:#b52024">Mapper is not loaded.</div>'; return; }
+      lastRaw = raw;
+      lastParsed = api.mapDocument(raw);
+      var folded = api.interpret([{ json: raw }]);
+      var flags = { flags: [], details: [] };
+      Object.keys(folded.states).forEach(function (k) {
+        var one = api.flagsOf(folded.states[k]);
+        flags.flags = flags.flags.concat(one.flags);
+        flags.details = flags.details.concat(one.details);
+      });
+      showPreview(lastParsed, flags);
     },
     saveSample: function () {
-      if (!lastParsed) return; var c = client(); if (!c) return;
-      c.from("sps_transactions").insert({
-        doc_type: lastParsed.docType, partner: lastParsed.partner, po_number: lastParsed.po || lastParsed.invoice,
-        direction: "in", status: "test", received_at: new Date().toISOString(), payload: lastRaw
-      }).then(function (r) {
-        var el = $("sf-preview");
-        if (r.error) { el.insertAdjacentHTML("beforeend", '<div style="color:#b52024;margin-top:8px">Could not save: ' + esc(r.error.message) + ' (create the sps_transactions table first.)</div>'); }
-        else { loadFeed(); el.insertAdjacentHTML("beforeend", '<div style="color:#166534;margin-top:8px">Saved to feed as a test document.</div>'); }
+      if (!lastParsed || !lastRaw) return;
+      var c = client();
+      var el = $("sf-preview");
+      if (!c) { if (el) el.insertAdjacentHTML("beforeend", '<div style="color:#b52024;margin-top:8px">Not connected.</div>'); return; }
+      var api = mapApi();
+      var folded = api.interpret([{ json: lastRaw }]);
+      var flags = [];
+      var details = [];
+      Object.keys(folded.states).forEach(function (k) {
+        var one = api.flagsOf(folded.states[k]);
+        flags = flags.concat(one.flags);
+        details = details.concat(one.details);
       });
-    },
-    saveCfg: function () {
-      try { localStorage.setItem("sps_base_url", ($("sf-base") || {}).value || ""); localStorage.setItem("sps_endpoint", ($("sf-ep") || {}).value || ""); } catch (e) {}
-      var el = $("sf-preview"); // reuse area not ideal; just toast via alert-free note
+      c.from("sps_transactions").insert({
+        doc_type: lastParsed.label,
+        partner: lastParsed.partner,
+        po_number: (lastParsed.pos && lastParsed.pos[0]) || "",
+        direction: "in",
+        status: "test",
+        received_at: new Date().toISOString(),
+        payload: {
+          file_path: "paste:" + Date.now(),
+          folder: "paste",
+          flags: flags,
+          flag_detail: details,
+          po_numbers: lastParsed.pos || [],
+          summary: {
+            docType: lastParsed.label, partner: lastParsed.partner, partnerId: lastParsed.partnerId,
+            pos: lastParsed.pos, vendor: lastParsed.vendor, shipTo: lastParsed.shipTo,
+            lineCount: lastParsed.lineCount, statedTotal: lastParsed.statedTotal, computedTotal: lastParsed.computedTotal,
+            invoice: lastParsed.invoice ? lastParsed.invoice.number : ""
+          },
+          document: lastRaw
+        }
+      }).then(function (r) {
+        if (r.error) el.insertAdjacentHTML("beforeend", '<div style="color:#b52024;margin-top:8px">Could not save: ' + esc(r.error.message) + "</div>");
+        else { el.insertAdjacentHTML("beforeend", '<div style="color:#166534;margin-top:8px">Saved as a test document.</div>'); loadFeed(); }
+      });
     }
   };
 
-  function markActive() { try { var nav = $("nav"); if (!nav) return; nav.querySelectorAll(".navitem.active").forEach(function (b) { b.classList.remove("active"); }); var m = $("sf-nav"); if (m) m.classList.add("active"); } catch (e) {} }
+  function markActive() {
+    try {
+      var nav = $("nav");
+      if (!nav) return;
+      nav.querySelectorAll(".navitem.active").forEach(function (b) { b.classList.remove("active"); });
+      var m = $("sf-nav");
+      if (m) m.classList.add("active");
+    } catch (e) {}
+  }
   function injectNav() {
-    var nav = $("nav"); if (!nav || $("sf-nav")) return;
+    var nav = $("nav");
+    if (!nav || $("sf-nav")) return;
     var btn = document.createElement("button");
-    btn.className = "navitem"; btn.id = "sf-nav";
+    btn.className = "navitem";
+    btn.id = "sf-nav";
     btn.setAttribute("onclick", "SPSFEED.open(event)");
     btn.innerHTML = '<i class="navico" data-lucide="plug"></i><span>SPS Feed</span>';
     nav.appendChild(btn);
     try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
   }
-  try { var mo = new MutationObserver(function () { injectNav(); }); mo.observe(document.documentElement, { childList: true, subtree: true }); } catch (e) {}
+  try {
+    var mo = new MutationObserver(function () { injectNav(); });
+    mo.observe(document.documentElement, { childList: true, subtree: true });
+  } catch (e) {}
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setTimeout(injectNav, 500); });
   else setTimeout(injectNav, 500);
 })();
