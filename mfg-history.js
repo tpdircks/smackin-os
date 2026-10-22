@@ -38,13 +38,44 @@
     }
     return page(0).catch(function () { return all; });
   }
+  // Digital P-Mac log (pmac-log.js writes table pmac_log). Map to pmac_history's shape
+  // and union it in so new runs show up without a tracker upload. Read-only.
+  var PER_BOX = { "1.5": 250, "2.75": 120, "4.0": 100, "4": 100 };
+  function sizeKey(s) { var m = String(s || "").match(/[\d.]+/); if (!m) return ""; var n = parseFloat(m[0]); return isNaN(n) ? "" : String(n); }
+  function mapPmacLog(r) {
+    var sz = sizeKey(r.bag_size), pkgs = num(r.total_packages);
+    var per = PER_BOX[sz] || PER_BOX[String(r.bag_size || "")] || 0;
+    return { run_date: String(r.log_date || "").slice(0, 10), bag_size: r.bag_size ? (String(r.bag_size).replace(/\s*oz$/i, "") + " oz") : "",
+      flavor_code: r.flavor_code || "", flavor_name: r.flavor_name || "", operator: r.operator || "", shift: r.shift || "",
+      box_count: per ? Math.round(pkgs / per * 100) / 100 : 0, total_pkgs: pkgs, src: "pmac_log" };
+  }
+  function dedupeKey(r) {
+    return [String(r.run_date || "").slice(0, 10), sizeKey(r.bag_size), String(r.flavor_code || r.flavor_name || "").toUpperCase().replace(/[^A-Z0-9]/g, ""),
+      String(r.shift || "").replace(/\D/g, ""), Math.round(num(r.total_pkgs))].join("|");
+  }
+  function fetchPmacLog() {
+    var c = client(); if (!c) return Promise.resolve([]);
+    var all = [], step = 1000;
+    function page(from) {
+      return c.from("pmac_log").select("*").order("log_date", { ascending: true }).range(from, from + step - 1)
+        .then(function (r) { var d = (r && r.data) ? r.data : []; all = all.concat(d); if (d.length === step) return page(from + step); return all; });
+    }
+    return page(0).catch(function () { return all; });
+  }
+  function unionPmac(hist, logRows) {
+    var seen = {}; hist.forEach(function (r) { seen[dedupeKey(r)] = 1; });
+    var add = [];
+    (logRows || []).forEach(function (raw) { var r = mapPmacLog(raw); if (!r.run_date) return; var k = dedupeKey(r); if (seen[k]) return; seen[k] = 1; add.push(r); });
+    return hist.concat(add).sort(function (a, b) { return a.run_date < b.run_date ? -1 : a.run_date > b.run_date ? 1 : 0; });
+  }
   function load() {
     if (loaded || loading) return Promise.resolve();
     loading = true;
     return Promise.all([
-      fetchAll("pmac_history", "run_date,bag_size,flavor_code,flavor_name,operator,box_count,total_pkgs"),
-      fetchAll("mixing_history", "run_date,flavor_code,flavor_name,operator,machine,total_bins")
-    ]).then(function (res) { PM = res[0] || []; MX = res[1] || []; loaded = true; loading = false; });
+      fetchAll("pmac_history", "run_date,bag_size,flavor_code,flavor_name,operator,shift,box_count,total_pkgs"),
+      fetchAll("mixing_history", "run_date,flavor_code,flavor_name,operator,machine,total_bins"),
+      fetchPmacLog()
+    ]).then(function (res) { PM = unionPmac(res[0] || [], res[2] || []); MX = res[1] || []; loaded = true; loading = false; });
   }
 
   // ---- aggregation -------------------------------------------------------
@@ -175,7 +206,8 @@
   }
 
   window.MFGHIST = {
-    open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); markActiveNav(); render(); },
+    open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); loaded = false; markActiveNav(); render(); },
+    _unionPmac: unionPmac, _mapPmacLog: mapPmacLog,
     setDept: function (d) { dept = d; render(); }
   };
 

@@ -1726,7 +1726,8 @@
     if (spoDetailId) return viewPoDetail(spoDetailId);
     if (spoView === "create") return viewPoCreate();
     if (spoView === "nonpo") return viewNonPo();
-    const list = spoSortList(DB.supplierPos());
+    const _spoAll = DB.supplierPos();
+    const list = spoSortList(window.POSTATUS ? POSTATUS.filter(_spoAll) : _spoAll);
     let form;
     if (!spoParsed) {
       form = '<div class="spodrop"><input type="file" id="spo-input" accept=".xlsx,.xls,.csv,.pdf" style="display:none" onchange="UI.spoFile(this)">' +
@@ -1750,7 +1751,7 @@
       const poCell = '<a class="polink" onclick="UI.spoOpen(\'' + s.id + '\')" title="' + L("spoOpenDetails") + '">' + (s.po_num || L("spoView2")) + '</a>';
       const _np = /^NP-/.test(s.po_num || ""); const _eta = etaOfNotes(s.notes);
       const _tags = (_np ? ' <span class="pill">' + L("nonPoTag") + '</span>' : "") + (_eta ? ' <span class="pill low">ETA ' + _eta.slice(5).replace("-", "/") + '</span>' : "");
-      return '<tr data-txt="' + txt + '"><td><b>' + (s.vendor || "&mdash;") + '</b>' + _tags + (s.uploaded_by ? '<div class="muted sm">' + L("oByPrefix") + " " + s.uploaded_by + '</div>' : "") + '</td>' +
+      return '<tr data-txt="' + txt + '"><td><b>' + (s.vendor || "&mdash;") + '</b>' + _tags + (window.POSTATUS ? POSTATUS.pill(s) : "") + (s.uploaded_by ? '<div class="muted sm">' + L("oByPrefix") + " " + s.uploaded_by + '</div>' : "") + '</td>' +
         '<td>' + poCell + '</td><td class="sm">' + (s.po_date || "") + '</td>' +
         '<td class="right">' + money(s.total) + '</td><td class="right muted">' + (s.item_count || 0) + '</td>' +
         '<td>' + dl + '</td><td><button class="ghost sm" title="' + L("poEmail") + '" onclick="UI.poEmailFromList(\'' + s.id + '\')">&#9993;</button> <button class="ghost sm danger" onclick="UI.spoDelete(\'' + s.id + '\')">&#10005;</button></td></tr>';
@@ -1758,7 +1759,7 @@
     return '<div class="card"><div class="spohead"><h2>' + L("purchPOs") + '</h2>' +
       '<span><button class="primary sm" onclick="UI.poCreateOpen()">' + L("poCreate") + '</button> <button class="ghost sm" onclick="UI.nonPoOpen()">' + L("nonPoBtn") + '</button></span></div>' +
       '<p class="hint">' + L("spoHint") + '</p>' + form + '</div>' +
-      '<div class="card"><h2 class="sub2">' + L("spoList") + ' (' + list.length + ')</h2>' +
+      '<div class="card"><h2 class="sub2">' + L("spoList") + ' (' + list.length + ')</h2>' + (window.POSTATUS ? POSTATUS.toggleHtml(_spoAll) : "") +
       '<input id="spoSearch" autocomplete="off" oninput="UI.spoSearch(this.value)" placeholder="' + L("spoSearchP") + '" style="margin-bottom:10px">' +
       '<table><thead><tr>' +
       '<th class="sortable" onclick="UI.spoSortBy(\'vendor\')">' + L("spoVendor") + spoArrow("vendor") + '</th>' +
@@ -1902,7 +1903,7 @@
     const open = rows.filter(r => !r.recv).sort((a, b) => (a.ship < b.ship ? -1 : a.ship > b.ship ? 1 : 0));
     const done = rows.filter(r => r.recv).sort((a, b) => (a.recv_date < b.recv_date ? 1 : -1));
     const chip = s => { const d = daysT(s); if (d === null) return ""; const c = d < 0 ? "#B52024" : (d <= 5 ? "#F2A93B" : "#2E9E5B"); const t = d < 0 ? Math.abs(d) + "d late" : (d === 0 ? "today" : "in " + d + "d"); return '<span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;color:#fff;background:' + c + '">' + t + "</span>"; };
-    const row = r => '<tr><td class="sm">' + esc(r.ship) + " " + chip(r.ship) + "</td>" +
+    const row = r => '<tr><td class="sm">' + esc(r.ship) + " " + (r.recv ? "" : chip(r.ship)) + "</td>" +
       "<td><b>" + esc(r.desc || r.item || "") + "</b>" + (r.item && r.desc ? '<div class="muted sm">' + esc(r.item) + "</div>" : "") + "</td>" +
       '<td class="right">' + esc(r.qty) + " " + esc(r.uom || "") + "</td>" +
       "<td>" + esc(r.vendor || "") + '<div class="muted sm">PO ' + esc(r.po_num || "") + "</div></td>" +
@@ -5839,6 +5840,7 @@
     async spoDelete(id) { if (!confirm(L("spoConfirmDel"))) return; await DB.deleteSupplierPO(id, opVal()); toast(L("spoDelete") + " ✓"); },
     spoSearch(val) { const q = (val || "").toLowerCase().trim();
       document.querySelectorAll("#spoBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
+    poStatusFilter(f) { if (window.POSTATUS) POSTATUS.setFilter(f); render(); },
     spoSortBy(k) { if (spoSort.key === k) spoSort.dir *= -1; else spoSort = { key: k, dir: (k === "total" || k === "item_count" || k === "po_date") ? -1 : 1 }; render(); },
     spoOpen(id) { spoDetailId = id; render(); window.scrollTo(0, 0); },
     spoCloseDetail() { spoDetailId = null; poEmailOpen = false; render(); },
