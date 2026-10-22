@@ -643,6 +643,27 @@
 
   function flagLabel(code) { return FLAG_LABEL[code] || code; }
 
+  // PostgREST matches eq values that are percent-encoded as-is. Wrapping them in
+  // quotes makes the quotes part of the value, so the lookup misses and every
+  // SPS file inserts another order.
+  function pgEq(column, value) {
+    if (typeof value === "number" || (typeof value === "string" && /^-?\d+$/.test(value))) {
+      return column + "=eq." + String(value);
+    }
+    return column + "=eq." + encodeURIComponent(String(value == null ? "" : value));
+  }
+  // Among duplicate SPS Feed rows for one partner+PO, keep the 850. That row's
+  // notes include "vendor <number>". Later 856/810 copies can repeat that line
+  // once the 850 is already stored, so the earliest of those rows is the 850.
+  function pickSpsOrderKeeper(rows) {
+    var list = (rows || []).filter(function (r) { return r && r.id != null && r.id !== ""; });
+    if (!list.length) return null;
+    var withVendor = list.filter(function (r) { return /vendor\s+\S/i.test(String(r.notes || "")); });
+    var pool = (withVendor.length ? withVendor : list).slice();
+    pool.sort(function (a, b) { return Number(a.id) - Number(b.id); });
+    return pool[0];
+  }
+
   var api = {
     mapDocument: mapDocument,
     interpret: interpret,
@@ -655,6 +676,8 @@
     flagLabel: flagLabel,
     money: money,
     stateKey: stateKey,
+    pgEq: pgEq,
+    pickSpsOrderKeeper: pickSpsOrderKeeper,
     DOC_LABEL: DOC_LABEL
   };
   root.SPSMap = api;
