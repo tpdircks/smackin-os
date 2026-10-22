@@ -20,7 +20,7 @@
     { t: "stock", col: "updated_at", label: "Inventory (stock counts)", warn: 4, bad: 9 },
     { t: "demand_lines", col: "created_at", label: "Demand imports", warn: 12, bad: 25 },
     { t: "orders", col: "created_at", label: "Orders", warn: 4, bad: 9 },
-    { t: "pmac_history", col: "run_date", label: "P-Mac production", warn: 5, bad: 12 },
+    { t: "pmac_history", col: "run_date", label: "P-Mac production", warn: 5, bad: 12, alt: { t: "pmac_log", col: "log_date" } },
     { t: "mixing_history", col: "run_date", label: "Mixing production", warn: 5, bad: 12 },
     { t: "production_output", col: "created_at", label: "Daily production entry", warn: 6, bad: 14 },
     { t: "shipping_log", col: "created_at", label: "Shipping log (samples/one-offs)", warn: 60, bad: 120 },
@@ -67,13 +67,20 @@
     host.innerHTML = '<div class="card"><h2>Data Health</h2><p class="muted" id="dh-loading">Checking every data source…</p></div>';
     var c = client(); if (!c) { $("dh-loading").textContent = "Not connected."; return; }
 
-    var jobs = SOURCES.map(function (src) {
+    function probe(t, col) {
       return Promise.all([
-        c.from(src.t).select(src.col).order(src.col, { ascending: false }).limit(1),
-        c.from(src.t).select("*", { count: "exact", head: true })
+        c.from(t).select(col).order(col, { ascending: false }).limit(1),
+        c.from(t).select("*", { count: "exact", head: true })
       ]).then(function (r) {
-        var latest = (r[0] && r[0].data && r[0].data[0]) ? r[0].data[0][src.col] : null;
-        var count = (r[1] && r[1].count) || 0;
+        return { latest: (r[0] && r[0].data && r[0].data[0]) ? r[0].data[0][col] : null, count: (r[1] && r[1].count) || 0 };
+      }).catch(function () { return { latest: null, count: 0 }; });
+    }
+    // A source with `alt` (e.g. P-Mac: uploaded pmac_history + digital pmac_log) is the union:
+    // newest date of either, combined record count (log rows may overlap uploads; count is approximate).
+    var jobs = SOURCES.map(function (src) {
+      return Promise.all([probe(src.t, src.col), src.alt ? probe(src.alt.t, src.alt.col) : Promise.resolve(null)]).then(function (p) {
+        var a = p[0], b = p[1], latest = a.latest, count = a.count;
+        if (b) { count += b.count; var bl = b.latest ? String(b.latest).slice(0, 10) : null; if (bl && (!latest || bl > String(latest).slice(0, 10))) latest = bl; }
         return { src: src, latest: latest, count: count, days: daysAgo(latest) };
       }).catch(function () { return { src: src, latest: null, count: 0, days: null }; });
     });
