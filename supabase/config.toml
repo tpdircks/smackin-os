@@ -1,0 +1,4 @@
+project_id = "otwjxqhhwljwfyqbfuxz"
+
+[functions.sps-sync]
+verify_jwt = false
