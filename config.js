@@ -7,5 +7,7 @@
 window.SMACKIN_CONFIG = {
   SUPABASE_URL: "https://otwjxqhhwljwfyqbfuxz.supabase.co",
   SUPABASE_ANON_KEY: "sb_publishable_KlPxfCQUmxbIAVc2p_M5Lw_ligy0COY",
-  ORG_NAME: "Smackin' Snacks — SLC Fulfillment"
+  ORG_NAME: "Smackin' Snacks — SLC Fulfillment",
+  // Which shipping adapter shipping-sync.js uses. Credentials are not stored here.
+  shippingProvider: "shipstation"
 };
