@@ -40,10 +40,7 @@ function folderOf() {
   if (f !== "testout" && f !== "out") throw new Error("SPS_FOLDER must be testout or out");
   return f;
 }
-function pgEq(column, value) {
-  var s = String(value == null ? "" : value).replace(/"/g, '""');
-  return column + "=eq." + encodeURIComponent('"' + s + '"');
-}
+function pgEq(column, value) { return SPS.pgEq(column, value); }
 function safeSpsUrl(url) {
   try {
     var u = new URL(url);
@@ -217,17 +214,20 @@ function unionFlags(states, keys) {
 }
 async function upsertOrder(state, folder, flagInfo) {
   if (!state.po) return { wrote: false };
-  var found = await rest("orders?select=id,notes&" + pgEq("customer_po", state.po) + "&" + pgEq("entered_by", "SPS Feed") + "&" + pgEq("customer", state.partner || "") + "&limit=1");
+  var found = await rest("orders?select=id,notes,customer,customer_po&" + pgEq("customer_po", state.po) + "&" + pgEq("entered_by", "SPS Feed") + "&" + pgEq("customer", state.partner || "") + "&order=id.asc&limit=50");
   if (found && found.length) {
-    var row = SPS.buildOrder(state, folder, found[0].notes, flagInfo);
-    await rest("orders?" + pgEq("id", found[0].id), {
+    var keeper = SPS.pickSpsOrderKeeper(found);
+    var row = SPS.buildOrder(state, folder, keeper.notes, flagInfo);
+    await rest("orders?" + pgEq("id", keeper.id), {
       method: "PATCH",
       headers: { Prefer: "return=minimal" },
       body: row
     });
-    return { wrote: true, id: found[0].id };
+    var drop = found.filter(function (r) { return String(r.id) !== String(keeper.id); }).map(function (r) { return r.id; });
+    if (drop.length) await deleteFeedOrders(drop);
+    return { wrote: true, id: keeper.id };
   }
-  var other = await rest("orders?select=id&" + pgEq("customer_po", state.po) + "&entered_by=neq." + encodeURIComponent('"SPS Feed"') + "&limit=1");
+  var other = await rest("orders?select=id&" + pgEq("customer_po", state.po) + "&entered_by=neq." + encodeURIComponent("SPS Feed") + "&limit=1");
   if (other && other.length) return { wrote: false, skipped: "already_on_board" };
   var created = SPS.buildOrder(state, folder, "", flagInfo);
   await rest("orders", { method: "POST", headers: { Prefer: "return=minimal" }, body: created });
@@ -260,7 +260,75 @@ async function replaceDemand(state, folder) {
   }
 }
 function txPathFilter(path) {
-  return "payload->>file_path=eq." + encodeURIComponent('"' + String(path).replace(/"/g, '""') + '"');
+  return "payload->>file_path=eq." + encodeURIComponent(String(path));
+}
+async function deleteFeedOrders(ids) {
+  var clean = (ids || []).map(function (id) { return String(id); }).filter(function (id) { return /^\d+$/.test(id); });
+  if (!clean.length) return 0;
+  await rest("orders?id=in.(" + clean.join(",") + ")&entered_by=eq." + encodeURIComponent("SPS Feed"), {
+    method: "DELETE",
+    headers: { Prefer: "return=minimal" }
+  });
+  return clean.length;
+}
+function stateFor(interpreted, partner, po) {
+  var hits = [];
+  Object.keys(interpreted.states || {}).forEach(function (key) {
+    var st = interpreted.states[key];
+    if (st && st.po === po && st.partner === partner) hits.push(st);
+  });
+  hits.sort(function (a, b) { return (b.orderLines || []).length - (a.orderLines || []).length; });
+  return hits[0] || null;
+}
+async function listFeedOrders() {
+  var rows = [];
+  var offset = 0;
+  while (offset < 5000) {
+    var page = await rest("orders?select=id,customer,customer_po,notes&" + pgEq("entered_by", "SPS Feed") + "&order=id.asc&limit=1000&offset=" + offset);
+    if (!Array.isArray(page) || !page.length) break;
+    rows = rows.concat(page);
+    if (page.length < 1000) break;
+    offset += page.length;
+  }
+  return rows;
+}
+// Collapse duplicate SPS Feed orders for the same partner + PO. The surviving
+// row is the 850. Its fields are rebuilt from every stored document, then the
+// extra SPS Feed rows are deleted.
+async function mergeDuplicateOrders(folder) {
+  var rows = await listFeedOrders();
+  var groups = {};
+  rows.forEach(function (row) {
+    if (!row.customer_po) return;
+    var key = String(row.customer || "") + "\u001f" + String(row.customer_po);
+    (groups[key] = groups[key] || []).push(row);
+  });
+  var removed = 0;
+  var groupsMerged = 0;
+  var keys = Object.keys(groups);
+  for (var i = 0; i < keys.length; i++) {
+    var group = groups[keys[i]];
+    if (group.length < 2) continue;
+    var keeper = SPS.pickSpsOrderKeeper(group);
+    if (!keeper) continue;
+    var partner = keeper.customer || "";
+    var po = keeper.customer_po;
+    var prior = await priorEntries([po]);
+    if (prior.length) {
+      var state = stateFor(SPS.interpret(prior), partner, po);
+      if (!state) continue;
+      var row = SPS.buildOrder(state, folder, keeper.notes, SPS.flagsOf(state));
+      await rest("orders?" + pgEq("id", keeper.id), {
+        method: "PATCH",
+        headers: { Prefer: "return=minimal" },
+        body: row
+      });
+    }
+    var drop = group.filter(function (r) { return String(r.id) !== String(keeper.id); }).map(function (r) { return r.id; });
+    removed += await deleteFeedOrders(drop);
+    groupsMerged++;
+  }
+  return { groups: groupsMerged, removed: removed };
 }
 async function processFile(token, file, folder) {
   var existingTx = await rest("sps_transactions?select=id&" + txPathFilter(file.path) + "&limit=1");
@@ -354,6 +422,7 @@ Deno.serve(async function (req) {
     if (lock && lock.at && Date.now() - Date.parse(lock.at) < 4 * 60 * 1000) return json({ ok: true, skipped: "busy" });
     await setKv("sps:lock", { at: new Date().toISOString() });
     locked = true;
+    var merged = await mergeDuplicateOrders(folder);
     var started = Date.now();
     var token = await getToken(clientId, clientSecret);
     var files = await listFiles(token, folder);
@@ -381,10 +450,11 @@ Deno.serve(async function (req) {
       pending: fresh.length,
       processed: processed,
       flagged: flagged,
+      mergedOrders: merged.removed,
       errors: errors
     };
     await setKv("sps:last_sync", summary);
-    console.log("sps-sync folder=" + folder + " processed=" + processed + " pending=" + fresh.length);
+    console.log("sps-sync folder=" + folder + " processed=" + processed + " pending=" + fresh.length + " merged=" + merged.removed);
     return json(Object.assign({ ok: errors.length === 0 }, summary));
   } catch (err) {
     var message = redact(err && err.message);
