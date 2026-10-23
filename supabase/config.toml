@@ -3,3 +3,7 @@ project_id = "otwjxqhhwljwfyqbfuxz"
 [functions.sps-sync]
 verify_jwt = false
 entrypoint = "./functions/sps-sync/index.js"
+
+[functions.shipping-sync]
+verify_jwt = false
+entrypoint = "./functions/shipping-sync/index.js"
