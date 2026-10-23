@@ -8,6 +8,8 @@
    An item leaves the bar only when on-hand rises above its reorder point.
    The bar stays visible while any item is low or out. It can collapse to a
    compact header that still shows OUT n / LOW n and View items.
+   A click or tap outside the bar, or Escape, collapses the list only.
+   Choosing an item opens it in Inventory and then collapses the list.
    Mounted beside #view so app render() cannot destroy it mid-tap.
    Open state is the sa-open class. Self-contained. Does not edit app.js.
    ========================================================================== */
@@ -374,7 +376,27 @@
     pending = { code: String(it.code || it.name || "").toLowerCase(), id: String(it.id) };
     try { if (typeof window.UI_go === "function") window.UI_go("dash"); } catch (e) {}
     try { if (window.UI && typeof UI.cat === "function") UI.cat("all"); } catch (e) {}
+    expanded = false;
     paint();
+  }
+
+  function collapseList() {
+    if (!expanded) return;
+    expanded = false;
+    applyVisibility(lastSplit);
+  }
+  function onOutsideClick(e) {
+    if (!expanded || !bar) return;
+    var t = e.target;
+    if (!t) return;
+    if (t.nodeType !== 1) t = t.parentElement;
+    if (t && (t === bar || bar.contains(t))) return;
+    collapseList();
+  }
+  function onEscape(e) {
+    if (!expanded) return;
+    if (e.key !== "Escape" && e.key !== "Esc") return;
+    collapseList();
   }
 
   function onBarClick(e) {
@@ -384,6 +406,7 @@
     if (item) {
       e.preventDefault();
       openItem(item.getAttribute("data-id"));
+      collapseList();
       return;
     }
     expanded = !expanded;
@@ -422,6 +445,8 @@
       document.addEventListener("input", function (e) {
         if (e.target && e.target.id === "dashSearch") applyFilter();
       });
+      document.addEventListener("click", onOutsideClick, true);
+      document.addEventListener("keydown", onEscape, true);
     }
     paint();
   }
