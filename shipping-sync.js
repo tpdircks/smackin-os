@@ -432,7 +432,7 @@
     var cls = "low";
     if (s === "shipped" || s === "complete" || s === "completed") cls = "ok";
     else if (s === "voided" || s === "cancelled" || s === "canceled") cls = "out";
-    return '<span class="pill ' + cls + '">' + esc(status || "—") + "</span>";
+    return '<span class="pill ' + cls + '">' + esc(status || "n/a") + "</span>";
   }
 
   function renderView() {
@@ -445,14 +445,8 @@
       return;
     }
     if (!state.connected) {
-      var why = state.reason === "stub"
-        ? esc(label) + " is the selected provider. That adapter is a stub until Smackin's shipping server is ready."
-        : state.reason === "local"
-          ? "Shipping sync runs when this screen is connected to the cloud."
-          : esc(label) + " is selected, but no credentials are configured, so sync stays off.";
       host.innerHTML = '<div class="card"><h2>Shipping</h2>' +
-        '<p class="pill low" style="font-size:15px;padding:8px 12px">Not connected yet</p>' +
-        '<p class="hint" style="margin-top:10px">' + why + "</p></div>";
+        '<p class="hint">Shipping data is not connected yet. It will appear here once ShipStation credentials are added.</p></div>';
       return;
     }
     host.innerHTML = '<div class="card"><h2>Shipping</h2><p class="hint">Recent ' + esc(label) +
