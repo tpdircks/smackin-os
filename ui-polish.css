@@ -1,0 +1,214 @@
+/* Visual polish loaded after styles.css. Data and render() stay in app.js.
+   !important is used where views inject a <style> block or an inline color. */
+
+:root {
+  --caption: #3d4c5e;
+  --line-calm: #d5dde6;
+}
+
+body { font-size: 14px; }
+.sub { font-size: 13px; }
+.beta { font-size: 11px; }
+.hint { font-size: 13px; color: var(--caption); }
+.muted, .footnote { color: var(--caption); }
+.sm { font-size: 12px; }
+.footnote { font-size: 12px; }
+label { font-size: 13px; }
+table { font-size: 14px; }
+th { font-size: 12px; }
+td .muted, td.muted, .muted.sm, .sm.muted { color: var(--caption); }
+.tag { font-size: 12px; }
+.pill { font-size: 12px; }
+.pill.big { font-size: 15px; }
+.modebadge { font-size: 12px; }
+
+/* Sidebar: one line per label, badges sit beside the text, groups stay clickable. */
+nav#nav {
+  flex: 0 0 300px;
+  width: 300px;
+}
+.navlabel {
+  font-size: 12px;
+  letter-spacing: .04em;
+  color: var(--caption);
+  padding: 8px 8px 6px;
+  white-space: nowrap;
+}
+.navlabel:hover { color: #1c2e42; background: #eef3f8; border-radius: 8px; }
+.navcaret { font-size: 12px; color: var(--caption); width: 14px; flex: 0 0 14px; }
+.navgroup.collapsed > .navitem { display: none !important; }
+nav#nav button.navitem {
+  gap: 8px;
+  padding: 8px 8px 8px 10px;
+  font-size: 14px;
+}
+nav#nav button.navitem > span {
+  white-space: nowrap;
+  flex: 1 1 auto;
+  min-width: min-content;
+}
+.navitem.ui-nav-dup { display: none !important; }
+.navbadge {
+  background: #6b7280 !important;
+  color: #fff !important;
+  font-size: 11px !important;
+  font-weight: 800;
+  min-width: 18px;
+  height: auto !important;
+  min-height: 18px;
+  line-height: 16px !important;
+  padding: 1px 6px !important;
+  margin-left: 8px;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.navbadge.ui-action,
+.navbadge[data-ui-kind="action"] {
+  background: #B52024 !important;
+  color: #fff !important;
+}
+.navbadge.ui-badge-folded { display: none !important; }
+.navlabel .navbadge { margin-left: auto; }
+
+/* Header: Sign out sits in the bar instead of covering PT. */
+header { padding-right: 124px; }
+header:has(#smk-signout) { padding-right: 16px; }
+.lang { display: inline-flex; flex-wrap: nowrap; align-items: center; flex: 0 0 auto; }
+header #smk-signout {
+  position: static !important;
+  margin: 0 0 0 10px !important;
+  flex: 0 0 auto !important;
+  align-self: center !important;
+  white-space: nowrap !important;
+  z-index: 2 !important;
+  top: auto !important;
+  right: auto !important;
+}
+
+/* Primary actions share one orange. A button painted red on purpose stays red. */
+button.primary, button.primary.sm {
+  background: var(--orange) !important;
+  color: #fff !important;
+}
+button.primary:hover, button.primary.sm:hover { background: var(--orange-d) !important; }
+button.primary[style*="B52024"],
+button.primary[style*="b52024"] { background: #B52024 !important; }
+.ordtile .ot-order, .pocard .ot-order {
+  background: var(--orange) !important;
+  color: #fff !important;
+  border: 0 !important;
+}
+
+/* Dashboard grids: same border, color only on out-of-stock, top 8 until Show all. */
+#ordnow, #ordproduce {
+  border: 1px solid var(--line-calm) !important;
+  background: #fff !important;
+}
+.ordgrid {
+  align-items: stretch;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+}
+.ordtile {
+  border: 1px solid var(--line-calm) !important;
+  background: #fff !important;
+  height: 100%;
+  box-shadow: none !important;
+}
+.ordtile.s-low, .ordtile.s-gap, .ordtile.ot-prod {
+  border-left: 1px solid var(--line-calm) !important;
+  background: #fff !important;
+}
+.ordtile.s-out {
+  border: 1px solid var(--line-calm) !important;
+  box-shadow: inset 4px 0 0 #B52024 !important;
+  background: #fff !important;
+}
+.ordgrid.ui-capped .ordtile:nth-child(n+9) { display: none !important; }
+.ot-pill, .deptt, .poprio, .postep, .posize { font-size: 11px !important; }
+.ot-pill { background: #5e6b7a !important; }
+.ordtile.s-out .ot-pill { background: #B52024 !important; }
+.ot-bar i, .s-low .ot-bar i, .ot-prod .ot-bar i { background: #c5ced8 !important; }
+.ordtile.s-out .ot-bar i { background: #B52024 !important; }
+.ot-sub, .ot-stats, .ot-need, .ot-oo, .ds-l, .pometa {
+  font-size: 13px !important;
+  color: var(--caption) !important;
+  opacity: 1 !important;
+}
+.ot-nm { font-size: 14px !important; }
+button.ui-showall {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  background: #fff;
+  border: 1px solid var(--line-calm);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--navy);
+  cursor: pointer;
+}
+button.ui-showall:hover { background: #f4f7fb; }
+
+/* Orders: issue rows keep a tint. In process does not. */
+#ordBody tr.o-ip td { background: transparent; }
+#ordBody tr.o-ip:nth-child(even) td { background: #fafbfd; }
+#ordBody tr.o-issue td { background: var(--redbg); }
+.ordlegend { font-size: 14px; color: var(--caption); margin: 8px 0; }
+.ordlegend .lg { width: 16px; height: 16px; }
+.lg-ip { background: #fff; border-color: #c5ced6; }
+#ordBody a.order, #ordBody a.order.sm {
+  font-size: 13px;
+  padding: 5px 12px;
+  border-radius: 8px;
+}
+table.ui-hide-cust th:nth-child(1),
+table.ui-hide-cust td:nth-child(1),
+table.ui-hide-notes th:nth-child(5),
+table.ui-hide-notes td:nth-child(5) { display: none; }
+
+/* Production order cards. */
+.pocard {
+  border: 1px solid var(--line-calm) !important;
+  border-left: 1px solid var(--line-calm) !important;
+  background: #fff !important;
+}
+.pocard.ui-p1 { box-shadow: inset 3px 0 0 #B52024 !important; }
+.pocard .postages { width: 100%; }
+.pocard .poact {
+  margin-top: 8px !important;
+  padding-top: 8px !important;
+  border-top: 1px solid #e3e9f0;
+  justify-content: flex-end;
+}
+.pocard .ot-order {
+  font-size: 12px !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+}
+.poinstr { font-size: 13px !important; color: #243140; }
+.ui-instr-btn {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--blue);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+.ui-instr-body { margin-top: 4px; display: flex; flex-direction: column; gap: 6px; }
+.ui-instr-body[hidden] { display: none; }
+
+/* Captions that were under 11px. Floor-plan map type stays as drawn. */
+.btile .l, .btile .n .u, .ess-key, .plab, .podl, .pfull, .odfn, .racklegend .rl {
+  font-size: 12px;
+  color: var(--caption);
+}
+.kcard .kl { font-size: 13px !important; opacity: 1 !important; color: var(--caption) !important; }
+.kcard .ks, .kcard .ksetup { font-size: 12px !important; }
+
+@media (max-width: 820px) {
+  nav#nav { width: 280px; }
+}
