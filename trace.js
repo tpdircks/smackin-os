@@ -1,5 +1,5 @@
 /* ============================================================================
-   Lot Trace & Scan  (trace.js)  b=13
+   Lot Trace & Scan  (trace.js)  b=14
    One scan chain from the dock to the customer, built for SQF traceability.
 
      RECEIVE   raw material in -> our own RM label per pallet/box/roll (supplier lot, exp)
@@ -18,6 +18,9 @@
                tree, mass balance, mock recall timer, printable evidence.
                Hold / Release / Reject a finished lot from here. Hold and
                Rejected cannot be pulled or shipped until Release.
+               Recall PDF / Excel exports that chain for a mock recall. SPS and
+               ShipStation are attached only when a customer PO or an e-com
+               pull window already in the data can link them.
 
    Data: Supabase tables trace_labels + trace_events (open RLS like the rest of the
    app). If the tables are missing it runs in LOCAL mode (this device only) and says so.
@@ -112,6 +115,11 @@
       traceHint: "Scan or type any label, lot code, supplier lot, PO or seed code.",
       back: "Backward (where it came from)", fwd: "Forward (where it went)", balance: "Mass balance",
       startDrill: "Start mock recall timer", stopDrill: "Stop timer", printEv: "Print evidence",
+      recallPdf: "Recall PDF", recallXlsx: "Recall Excel",
+      recallHint: "One packet for the lot on screen: supplier lots, pallets and Hold or Rejected, pulls and ships, plus SPS or ShipStation when a PO or an e-com window can link them.",
+      recallNeed: "Look up a lot first.", recallBusy: "Building the recall packet...", recallSaved: "Recall packet saved",
+      recallFail: "Recall export failed", recallMissing: "Recall export is not loaded. Refresh the page.",
+      recallEventFail: "The file downloaded. The export was not written to the event log.",
       notFound: "Not found", onHold: "ON HOLD - cannot use or ship", onReject: "REJECTED - cannot use or ship", expired: "EXPIRED - cannot use", wrongFlavor: "Flavor does not match",
       all: "All", kind: "Kind", status: "Status", search: "Search",
       manTitle: "Log bags pulled", manHint: "One save for the whole pull of one lot. If that lot is in several boxes, add the bags together and enter the total. Do not save a row for each box. Type the lot code printed on the bags (example L2031/3X9.35).", manSave: "Save pull", lotPh: "Type lot on bags", lotEmpty: "Empty. Type the lot printed on the bags.", flavorBlank: "Follows the lot", bagTotal: "Bags (total, all boxes)", pullDate: "Date", pullFuture: "Date cannot be in the future.", scanFold: "Scan a pallet label instead", note: "Note / reference", byHand: "by hand", manOddLot: "This does not look like a normal bag code (example L2031/3X9.35). Save it anyway?",
@@ -167,6 +175,11 @@
       traceHint: "Escanee o escriba cualquier etiqueta, lote, lote de proveedor, orden o código de semilla.",
       back: "Hacia atrás (de dónde vino)", fwd: "Hacia adelante (a dónde fue)", balance: "Balance de masa",
       startDrill: "Iniciar cronómetro de simulacro", stopDrill: "Detener", printEv: "Imprimir evidencia",
+      recallPdf: "PDF de retiro", recallXlsx: "Excel de retiro",
+      recallHint: "Un paquete de este lote: lotes de proveedor, tarimas y Retenido o Rechazado, salidas y envíos, más SPS o ShipStation cuando una orden o una ventana de salida los puede ligar.",
+      recallNeed: "Primero busque un lote.", recallBusy: "Armando el paquete de retiro...", recallSaved: "Paquete de retiro guardado",
+      recallFail: "No se pudo exportar el retiro", recallMissing: "El export de retiro no cargó. Actualice la página.",
+      recallEventFail: "El archivo se descargó. El evento no quedó en el registro.",
       notFound: "No encontrado", onHold: "RETENIDO - no usar ni enviar", onReject: "RECHAZADO - no usar ni enviar", expired: "VENCIDO - no usar", wrongFlavor: "El sabor no coincide",
       all: "Todos", kind: "Tipo", status: "Estado", search: "Buscar",
       manTitle: "Registrar bolsas tomadas", manHint: "Un solo guardado para toda la salida de un lote. Si ese lote viene en varias cajas, sume las bolsas y escriba el total. No guarde una fila por caja. Escriba el código de lote impreso en las bolsas (ejemplo L2031/3X9.35).", manSave: "Guardar salida", lotPh: "Escriba el lote", lotEmpty: "Vacío. Escriba el lote impreso en las bolsas.", flavorBlank: "Sigue el lote", bagTotal: "Bolsas (total, todas las cajas)", pullDate: "Fecha", pullFuture: "La fecha no puede ser futura.", scanFold: "Escanear una etiqueta de tarima", note: "Nota / referencia", byHand: "a mano", manOddLot: "Esto no parece un código de bolsa normal (ejemplo L2031/3X9.35). ¿Guardar de todos modos?",
@@ -1881,11 +1894,274 @@
     S.events.forEach(function (e) { if (e.type === "SCRAP" && lots[e.lot]) lots[e.lot].scrap += num(e.qty); });
     return lots;
   }
+  function recallPush(list, v) {
+    v = String(v == null ? "" : v).trim();
+    if (!v) return;
+    var u = v.toUpperCase();
+    for (var i = 0; i < list.length; i++) if (String(list[i]).toUpperCase() === u) return;
+    list.push(v);
+  }
+  function destName(k) {
+    for (var i = 0; i < DESTS.length; i++) if (DESTS[i].k === k) return DESTS[i].en;
+    return k || "";
+  }
+  function displayLot(key) {
+    var fg = fgForLot(key);
+    return fg.length ? fg[0].lot : key;
+  }
+  function recallPacket(q) {
+    q = cleanScan(q);
+    var qKey = normLot(q);
+    var res = findMatches(q);
+    var lotSet = {};
+    function addLot(lot) { var n = normLot(lot); if (n) lotSet[n] = 1; }
+    Object.keys(balance(res.labels)).forEach(addLot);
+    res.labels.forEach(function (l) {
+      if (!l) return;
+      if (l.kind === "FG") addLot(l.lot);
+      if (l.kind === "OB") String(l.lot || "").split("|").forEach(addLot);
+    });
+    if (fgForLot(qKey).length) addLot(qKey);
+    S.events.forEach(function (e) {
+      if (normLot(e.lot) === qKey && /^(USE|SHIP|SCRAP|PACK)$/.test(e.type)) addLot(qKey);
+    });
+    res.events.forEach(function (e) {
+      if (/^(USE|SHIP|SCRAP)$/.test(e.type)) addLot(e.lot);
+    });
+    var fg = [], fgSeen = {}, fgLpns = {};
+    Object.keys(lotSet).forEach(function (key) {
+      fgForLot(key).forEach(function (l) {
+        if (!l || fgSeen[l.lpn]) return;
+        fgSeen[l.lpn] = 1;
+        fgLpns[l.lpn] = key;
+        fg.push(l);
+      });
+    });
+    var anc = {};
+    function walkDown(lpn, lot, depth, seen) {
+      if (!lpn || depth > 8 || seen[lpn]) return;
+      seen[lpn] = 1;
+      var l = S.labels[lpn];
+      if (!l) return;
+      if (depth > 0 && l.kind !== "FG" && l.kind !== "OB") {
+        if (!anc[l.lpn]) anc[l.lpn] = { label: l, lots: {} };
+        if (lot) anc[l.lpn].lots[lot] = 1;
+      }
+      (l.parents || []).forEach(function (p) { walkDown(p, lot, depth + 1, seen); });
+    }
+    fg.forEach(function (l) { walkDown(l.lpn, normLot(l.lot), 0, {}); });
+    res.labels.forEach(function (l) {
+      if (!l || anc[l.lpn]) return;
+      if (l.kind === "RM" || l.kind === "BN") anc[l.lpn] = { label: l, lots: {} };
+    });
+    function lotList(map) {
+      return Object.keys(map || {}).map(displayLot).filter(Boolean).join(", ");
+    }
+    var inbound = [], bins = [];
+    Object.keys(anc).forEach(function (lpn) {
+      var l = anc[lpn].label, d = l.data || {};
+      var finished = lotList(anc[lpn].lots);
+      if (l.kind === "BN") {
+        bins.push({ lpn: l.lpn, batch: l.lot || "", flavor: l.flavor || "", mixer: d.mixer || "", date: d.date || dLocal(l.created_at), status: l.status || "", finishedLots: finished });
+        return;
+      }
+      inbound.push({
+        lpn: l.lpn, type: l.mtype || l.kind || "", item: l.item || "", flavor: l.flavor || "",
+        supplier: l.supplier || "", supplierLot: l.supplier_lot || l.lot || "", seedCode: l.seed_code || "",
+        po: l.po || "", exp: l.exp || "", qty: num(l.qty), uom: l.uom || "", status: l.status || "",
+        location: l.location || "", received: dLocal(l.created_at), finishedLots: finished
+      });
+    });
+    inbound.sort(function (a, b) { return String(a.supplierLot).localeCompare(String(b.supplierLot)); });
+    bins.sort(function (a, b) { return String(a.batch).localeCompare(String(b.batch)); });
+    var moves = [], qa = [];
+    S.events.forEach(function (e) {
+      if (!e) return;
+      var lot = normLot(e.lot);
+      var via = e.lpn && fgLpns[e.lpn];
+      if (!lotSet[lot] && !via) return;
+      var d = e.data || {};
+      if (/^(USE|SHIP|SCRAP)$/.test(e.type)) {
+        moves.push({
+          iso: e.ts || "", when: tsLocal(e.type === "USE" ? pullInstant(e) : e.ts), type: e.type,
+          lpn: e.lpn || "", lot: e.lot || (via ? displayLot(via) : ""), qty: e.qty == null ? "" : num(e.qty),
+          uom: e.uom || "", from: e.from_loc || "", to: e.to_loc || "", ref: e.ref || "",
+          customer: d.customer || "", operator: e.operator || "", byHand: e.type === "USE" && !e.lpn,
+          note: d.reason || d.note || d.issue || "", ob: d.ob || ""
+        });
+      } else if (/^QA_/.test(e.type)) {
+        var action = e.type === "QA_HOLD" ? "HOLD" : e.type === "QA_REJECTED" ? "REJECTED" : e.type === "QA_RELEASED" ? "RELEASED" : e.type === "QA_ISSUE" ? "ISSUE" : e.type;
+        qa.push({ when: tsLocal(e.ts), type: action, lpn: e.lpn || "", lot: e.lot || (via ? displayLot(via) : ""), operator: e.operator || "", reason: d.reason || d.issue || "" });
+      }
+    });
+    moves.sort(function (a, b) { return String(a.iso).localeCompare(String(b.iso)); });
+    qa.sort(function (a, b) { return String(a.when).localeCompare(String(b.when)); });
+    var obs = allLabels().filter(function (l) {
+      if (!l || l.kind !== "OB") return false;
+      if ((l.parents || []).some(function (p) { return !!fgLpns[p]; })) return true;
+      var parts = String(l.lot || "").split("|");
+      for (var i = 0; i < parts.length; i++) if (lotSet[normLot(parts[i])]) return true;
+      return !!(qKey && normLot(l.po) === qKey);
+    });
+    var outbound = obs.map(function (l) {
+      var d = l.data || {};
+      return { lpn: l.lpn, po: l.po || "", customer: d.customer || "", qty: num(l.qty), lots: l.lot || "", status: l.status || "", date: dLocal(l.created_at) };
+    });
+    var shippedOb = {};
+    moves.forEach(function (m) { if (m.type === "SHIP" && m.ob) shippedOb[m.ob] = 1; });
+    var bag = {};
+    function addCust(dest, po, qty, source) {
+      dest = String(dest || "").trim();
+      po = String(po || "").trim();
+      if (!dest && !po) return;
+      var key = source + "\n" + dest.toUpperCase() + "\n" + po.toUpperCase();
+      if (!bag[key]) bag[key] = { destination: dest || po, po: po, qty: 0, source: source };
+      bag[key].qty += num(qty);
+    }
+    moves.forEach(function (m) {
+      if (m.type === "SHIP") addCust(m.customer, m.ref, m.qty, "Ship");
+      else if (m.type === "USE") addCust(destName(m.to), "", m.qty, "Use");
+      else if (m.type === "SCRAP") addCust("Scrap", "", m.qty, "Scrap");
+    });
+    outbound.forEach(function (l) {
+      if (shippedOb[l.lpn]) return;
+      addCust(l.customer, l.po, l.qty, "Outbound pallet");
+    });
+    var customerPos = [], supplierLots = [], supplierPos = [];
+    moves.forEach(function (m) { if (m.type === "SHIP") recallPush(customerPos, m.ref); });
+    outbound.forEach(function (l) { recallPush(customerPos, l.po); });
+    inbound.forEach(function (r) {
+      if (r.supplierLot) recallPush(supplierLots, r.supplierLot);
+      if (r.po) recallPush(supplierPos, r.po);
+    });
+    var lots = Object.keys(lotSet).sort().map(function (key) {
+      var labels = fgForLot(key);
+      var info = lotHoldInfo(key);
+      var state = info.state;
+      if (!state) {
+        if (!labels.length) state = "NO PALLET";
+        else if (labels.some(function (l) { return upStatus(l.status) === "SHIPPED"; })) state = "SHIPPED";
+        else if (labels.some(function (l) { return upStatus(l.status) === "EMPTY"; })) state = "EMPTY";
+        else state = "RELEASED";
+      }
+      var packed = 0, left = 0, shipped = 0, line = 0, ecom = 0, ecomHand = 0, other = 0, scrap = 0, pos = {};
+      var fc = "", flav = "", size = "";
+      labels.forEach(function (f) {
+        packed += num(f.qty); left += num(f.qty_left);
+        if (!fc && f.flavor_code) fc = f.flavor_code;
+        if (!flav && f.flavor) flav = f.flavor;
+        if (!size && f.size) size = f.size;
+        eventsFor(f.lpn).forEach(function (e) {
+          if (e.type === "SHIP") { shipped += num(e.qty); if (e.ref) pos[e.ref] = (pos[e.ref] || 0) + num(e.qty); }
+          else if (e.type === "USE") {
+            if (e.to_loc === "LINE") line += num(e.qty);
+            else if (e.to_loc === "ECOM") ecom += num(e.qty);
+            else if (e.to_loc === "SCRAP") scrap += num(e.qty);
+            else other += num(e.qty);
+          }
+        });
+      });
+      S.events.forEach(function (e) {
+        if (normLot(e.lot) !== key) return;
+        var d = e.data || {};
+        if (!fc && d.flavor_code) fc = d.flavor_code;
+        if (!flav && d.flavor) flav = d.flavor;
+        if (!size && d.size) size = d.size;
+        if (e.type === "SCRAP") scrap += num(e.qty);
+        else if (e.type === "USE" && !e.lpn && e.to_loc === "ECOM") ecomHand += num(e.qty);
+      });
+      var known = flavorBy(fc);
+      if (known) flav = known.name;
+      var posText = Object.keys(pos).map(function (p) { return p + ": " + pos[p]; }).join(", ");
+      return {
+        lot: displayLot(key), flavor: flav, flavorCode: fc, size: size, state: state, reason: state === "HOLD" || state === "REJECTED" ? (info.reason || "") : "",
+        packed: packed, shipped: shipped, line: line, ecom: ecom, ecomHand: ecomHand, other: other, scrap: scrap, left: left,
+        unaccounted: packed - shipped - line - ecom - other - scrap - left, posText: posText
+      };
+    });
+    function evFlav(e) {
+      var d = e.data || {}, fc = d.flavor_code || "", size = d.size || "", name = d.flavor || "";
+      var l = e.lpn && S.labels[e.lpn];
+      if (l) { if (!fc) fc = l.flavor_code || ""; if (!size) size = l.size || ""; if (!name) name = l.flavor || ""; }
+      var sample = fgForLot(e.lot)[0];
+      if (sample) { if (!fc) fc = sample.flavor_code || ""; if (!size) size = sample.size || ""; if (!name) name = sample.flavor || ""; }
+      var known = flavorBy(fc);
+      if (known) name = known.name;
+      return { fc: fc, size: size, name: name };
+    }
+    var ecomAll = S.events.filter(function (e) { return e.type === "USE" && e.to_loc === "ECOM"; }).sort(function (a, b) { return pullInstant(a).localeCompare(pullInstant(b)); });
+    var windows = ecomAll.filter(function (e) { return lotSet[normLot(e.lot)]; }).map(function (e) {
+      var f = evFlav(e);
+      var nxt = ecomAll.filter(function (x) {
+        var g = evFlav(x);
+        return pullInstant(x) > pullInstant(e) && normLot(x.lot) !== normLot(e.lot) && g.fc === f.fc && (!f.size || !g.size || g.size === f.size);
+      })[0];
+      var pulled = tsLocal(pullInstant(e));
+      var ends = nxt ? tsLocal(pullInstant(nxt)) : "";
+      return {
+        lot: e.lot || "", flavor: f.name, flavorCode: f.fc, size: f.size, pulled: pulled, pulledDay: pulled.slice(0, 10),
+        bags: num(e.qty), by: e.operator || "", ends: ends, endsDay: ends.slice(0, 10), nextLot: nxt ? (nxt.lot || "") : "", open: !nxt
+      };
+    });
+    var pallets = fg.map(function (l) {
+      var d = l.data || {};
+      var hold = "";
+      if (isRejectStatus(l.status)) hold = "REJECTED";
+      else if (labelHeld(l)) hold = "HOLD";
+      return {
+        lpn: l.lpn, lot: l.lot || "", flavor: l.flavor || "", size: l.size || "", qty: num(l.qty), left: num(l.qty_left),
+        uom: l.uom || "", status: l.status || "", hold: hold, reason: holdReasonOf(l), location: l.location || "",
+        packed: (d.date || dLocal(l.created_at)), exp: l.exp || d.exp || "", station: l.station || "", by: l.created_by || ""
+      };
+    });
+    pallets.sort(function (a, b) { return String(a.lot).localeCompare(String(b.lot)) || String(a.packed).localeCompare(String(b.packed)); });
+    return {
+      query: q, traceMode: mode, loadError: S.err || "",
+      lots: lots, inbound: inbound, bins: bins, pallets: pallets, moves: moves, qa: qa, outbound: outbound,
+      customers: Object.keys(bag).map(function (k) { return bag[k]; }),
+      windows: windows, customerPos: customerPos, supplierLots: supplierLots, supplierPos: supplierPos,
+      lotCodes: lots.map(function (r) { return r.lot; }),
+      catalog: FLAVORS.map(function (f) { return { code: f.code, name: f.name }; })
+    };
+  }
+  function recallExport(fmt) {
+    var q = cleanScan(val("trc-scan")) || cleanScan(W.trace.q || "");
+    if (!q) { flash(L("recallNeed"), "err"); render(); return; }
+    var api = window.TRACE_RECALL;
+    if (!api || typeof api.exportPacket !== "function") { flash(L("recallMissing"), "err"); render(); return; }
+    if (W.trace.recallBusy) return;
+    W.trace.q = q;
+    W.trace.recallBusy = true;
+    var packet;
+    try { packet = recallPacket(q); }
+    catch (e) { W.trace.recallBusy = false; flash(L("recallFail"), "err"); render(); return; }
+    packet.operator = opName() || "";
+    packet.drill = W.trace.drillDone || (W.trace.drillStart ? drillTxt() : "");
+    packet.runAt = nowISO();
+    flash(L("recallBusy"), "ok");
+    render();
+    api.exportPacket(fmt, packet).then(function (res) {
+      W.trace.recallBusy = false;
+      if (!res || !res.ok) { flash((res && res.msg) || L("recallFail"), "err"); render(); return; }
+      addEvents([{ type: "RECALL_EXPORT", ref: q, data: { format: fmt, file: res.file || "" } }]).then(function (res2) {
+        var msg = L("recallSaved") + ": " + (res.file || "");
+        if (!savedOk(res2)) msg += ". " + L("recallEventFail");
+        flash(msg, savedOk(res2) ? "ok" : "warn");
+        render();
+      });
+    }, function () {
+      W.trace.recallBusy = false;
+      flash(L("recallFail"), "err");
+      render();
+    });
+  }
   function vTrace() {
     var t = W.trace, res = findMatches(t.q);
     var h = '<div class="card"><h2 class="sub2">' + esc(L("tTrace")) + '</h2><p class="hint">' + esc(L("traceHint")) + '</p>';
     h += '<div class="trc-noprint">' + scanBox("traceQ") + '</div>';
     h += '<div class="trc-row trc-noprint" style="margin-top:10px">' + (t.drillStart ? '<span class="trc-timer">Started ' + esc(new Date(t.drillStart).toLocaleTimeString()) + ' (' + drillTxt() + ' so far)</span><button class="ghost" onclick="TRACE.drill(false)">' + esc(L("stopDrill")) + '</button>' : '<button class="ghost" onclick="TRACE.drill(true)">' + esc(L("startDrill")) + '</button>') + (t.q ? '<button class="ghost" onclick="TRACE.printEvidence()">' + esc(L("printEv")) + '</button>' : "") + '</div>';
+    h += '<div class="trc-row trc-noprint" style="margin-top:8px"><button type="button" class="primary" onclick="TRACE.recallExport(\'pdf\')">' + esc(L("recallPdf")) + '</button><button type="button" class="ghost" onclick="TRACE.recallExport(\'xlsx\')">' + esc(L("recallXlsx")) + '</button></div>';
+    h += '<p class="hint trc-noprint">' + esc(L("recallHint")) + '</p>';
     if (t.drillDone) h += '<p><b>Mock recall time:</b> ' + esc(t.drillDone) + '</p>';
     h += '</div>';
     if (!t.q) return h;
@@ -2083,7 +2359,7 @@
     pmScan: pmScan, pmChange: pmChange, pmFinish: pmFinish, pmScrap: pmScrap,
     moveScan: moveScan, useDest: useDest, useScan: useScan, useManual: useManual, useSize: useSize, useKey: useKey, useLotInput: useLotInput, useFlavorPick: useFlavorPick, usePickLot: usePickLot,
     shipField: shipField, shipScan: shipScan, shipRemove: shipRemove, shipFinish: shipFinish,
-    traceQ: traceQ, drill: drill, printEvidence: printEvidence, lotAct: lotAct,
+    traceQ: traceQ, drill: drill, printEvidence: printEvidence, recallExport: recallExport, lotAct: lotAct,
     traceOf: function (lpn) { ST.tab = "trace"; W.trace.q = lpn; markActive(); render(); },
     reprint: function (lpn) { var l = S.labels[lpn]; if (l) printLabels([l]); },
     printPending: function () { var r = W.pendingPrint; W.pendingPrint = null; if (r) printLabels(r); render(); },
@@ -2092,6 +2368,7 @@
     _state: function () { return { mode: mode, labels: S.labels, events: S.events, W: W, ST: ST }; },
     _load: load, isoWeek: isoWeek, flavors: FLAVORS,
     _fefo: { onHand: fefoOnHand, ask: fefoAsk, best: fefoBest, monday: isoMonday, week: bagWeek, packDay: inferPackDay, earlier: fefoEarlier },
+    _recall: { packet: recallPacket },
     _hold: { info: lotHoldInfo, block: lotPullBlock, pallet: palletPullBlock, inherit: inheritFgStatus, patch: qaPatch, banner: heldBannerHtml }
   };
 
