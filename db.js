@@ -7,6 +7,20 @@
    ============================================================================ */
 window.DB = (function () {
   "use strict";
+  // Supabase reads are GET. Force a network re-read so a confirm after save
+  // cannot come back from the browser cache. The service worker also ignores
+  // supabase.co. Never cache those responses here either.
+  if (!window.__smkNoStoreFetch && typeof window.fetch === "function") {
+    const origFetch = window.fetch.bind(window);
+    window.fetch = function (input, init) {
+      const url = typeof input === "string" ? input : (input && input.url) || "";
+      if (String(url).indexOf("supabase.co") >= 0) {
+        init = Object.assign({}, init || {}, { cache: "no-store" });
+      }
+      return origFetch(input, init);
+    };
+    window.__smkNoStoreFetch = true;
+  }
   const KEY = "smackin_inv_app_v1";
   const cfg = window.SMACKIN_CONFIG || {};
   const seed = window.SMACKIN_SEED;
@@ -17,6 +31,47 @@ window.DB = (function () {
 
   function emit() { subscribers.forEach(fn => { try { fn(); } catch (e) {} }); }
   function onChange(fn) { subscribers.push(fn); }
+  function toastErr(msg) {
+    console.warn(msg);
+    try { if (window.UI && typeof window.UI.toast === "function") window.UI.toast(msg); } catch (e) {}
+  }
+  // Supabase does not throw when a write is rejected. Await this and it throws
+  // (and tells the operator) instead of letting the caller toast "Saved".
+  async function must(q, label) {
+    const r = await q;
+    if (r && r.error) {
+      const msg = (label || "Save") + " failed: " + (r.error.message || "not saved");
+      toastErr(msg);
+      throw new Error(msg);
+    }
+    return r;
+  }
+  let lastLoadAt = 0;
+  let refreshTimer = null;
+  function noteLoaded() { lastLoadAt = Date.now(); }
+  async function refreshFromCloud(force) {
+    if (mode !== "cloud" || !sb) return;
+    if (!force && Date.now() - lastLoadAt < 1500) return;
+    lastLoadAt = Date.now();
+    try { await cloud.loadAll(); noteLoaded(); emit(); }
+    catch (e) { console.warn("refresh failed", e); }
+  }
+  // One reload for a burst of realtime events. Polling is not used.
+  function scheduleRefresh() {
+    if (mode !== "cloud") return;
+    if (refreshTimer) return;
+    refreshTimer = setTimeout(function () { refreshTimer = null; refreshFromCloud(false); }, 600);
+  }
+  function bindFocusRefresh() {
+    if (bindFocusRefresh.done) return;
+    bindFocusRefresh.done = true;
+    const kick = function () {
+      if (document.visibilityState === "hidden") return;
+      scheduleRefresh();
+    };
+    window.addEventListener("focus", kick);
+    document.addEventListener("visibilitychange", kick);
+  }
 
   // ---------- derived reads (work the same in both modes) ----------
   function items() { return (cache.items || []).filter(i => String(i.id) !== "DEADSTOCK"); } // hide the dead-stock sentinel from all UI lists
@@ -50,8 +105,50 @@ window.DB = (function () {
       (i.id || "").toLowerCase() === code ||
       (i.name || "").toLowerCase() === code) || null;
   }
-  function onHand(id) { return cache.stock.filter(r => r.item_id === id).reduce((s, r) => s + Number(r.qty), 0); }
-  function atLoc(id, loc) { return cache.stock.filter(r => r.item_id === id && r.location === loc).reduce((s, r) => s + Number(r.qty), 0); }
+  // Stock rows are keyed by items.id (BAG4-S01). Some callers pass the short code
+  // (B4-S01). Resolve to whichever key the stock table actually uses.
+  function resolveItemId(itemOrId) {
+    const id = itemOrId && typeof itemOrId === "object" ? itemOrId.id : itemOrId;
+    const code = itemOrId && typeof itemOrId === "object" ? itemOrId.code : null;
+    const stockHas = (k) => !!(k && cache.stock.some(r => r.item_id === k));
+    if (stockHas(id)) return id;
+    if (stockHas(code)) return code;
+    const it = (cache.items || []).find(i => i && (i.id === id || i.code === id || (code && (i.id === code || i.code === code))));
+    if (it && stockHas(it.id)) return it.id;
+    if (it && stockHas(it.code)) return it.code;
+    return (it && it.id) || id;
+  }
+  function onHand(id) {
+    const itemId = resolveItemId(id);
+    return cache.stock.filter(r => r.item_id === itemId).reduce((s, r) => s + Number(r.qty), 0);
+  }
+  function atLoc(id, loc) {
+    const itemId = resolveItemId(id);
+    return cache.stock.filter(r => r.item_id === itemId && r.location === loc).reduce((s, r) => s + Number(r.qty), 0);
+  }
+  // Positive qty lands on the largest lot already at that location so a count
+  // does not create a second blank RECEIVING row beside the real lot rows.
+  // Negative qty peels those lot rows, largest first.
+  function planQtyDelta(itemId, loc, delta) {
+    delta = Number(delta) || 0;
+    if (!delta) return [];
+    const rows = cache.stock.filter(r => r.item_id === itemId && r.location === loc && Number(r.qty) > 0)
+      .slice().sort((a, b) => Number(b.qty) - Number(a.qty));
+    if (delta > 0) {
+      return [{ item_id: itemId, location: loc, delta: delta, lot: rows.length ? (rows[0].lot || null) : null }];
+    }
+    let left = -delta;
+    const out = [];
+    rows.forEach(r => {
+      if (left <= 0) return;
+      const take = Math.min(Number(r.qty), left);
+      if (!(take > 0)) return;
+      out.push({ item_id: itemId, location: loc, delta: -take, lot: r.lot || null });
+      left -= take;
+    });
+    if (left > 0.0001) out.push({ item_id: itemId, location: loc, delta: -left, lot: rows.length ? (rows[0].lot || null) : null });
+    return out;
+  }
 
   // ---------- LOCAL backend ----------
   const local = {
@@ -290,28 +387,36 @@ window.DB = (function () {
           notes: r.notes || "", entered_by: r.entered_by || "", created_at: r.created_at
         }));
       } catch (e) { cache.fulfillmentDaily = cache.fulfillmentDaily || []; }
+      noteLoaded();
     },
     // One-time bootstrap: load the item master + opening stock into an empty cloud DB.
     async seedAll() {
       const s = seed.build();
       const chunk = (arr, n) => { const o = []; for (let i = 0; i < arr.length; i += n) o.push(arr.slice(i, i + n)); return o; };
-      if (s.suppliers && s.suppliers.length) await sb.from("suppliers").insert(s.suppliers);
-      for (const c of chunk(s.items, 100)) await sb.from("items").insert(c);
+      if (s.suppliers && s.suppliers.length) await must(sb.from("suppliers").insert(s.suppliers), "suppliers");
+      for (const c of chunk(s.items, 100)) await must(sb.from("items").insert(c), "items");
       const stockRows = s.stock.map(r => ({ item_id: r.item_id, location: r.location, lot: r.lot || "", qty: r.qty }));
-      for (const c of chunk(stockRows, 100)) await sb.from("stock").insert(c);
+      for (const c of chunk(stockRows, 100)) await must(sb.from("stock").insert(c), "stock");
     },
     async delta(item_id, location, d, lot) {
       // atomic per-row upsert via Postgres function fn_apply_delta (see schema.sql)
-      await sb.rpc("fn_apply_delta", { p_item: item_id, p_loc: location, p_delta: d, p_lot: lot || null });
+      if (!Number(d)) return;
+      await must(sb.rpc("fn_apply_delta", { p_item: item_id, p_loc: location, p_delta: d, p_lot: lot || null }), "Stock");
     },
     async addLog(entry) {
-      await sb.from("transactions").insert({ action: entry.a, detail: entry.d, operator: entry.u });
+      // Audit row. A failed log must not undo a stock write or invite a second adjust.
+      const r = await sb.from("transactions").insert({ action: entry.a, detail: entry.d, operator: entry.u });
+      if (r && r.error) console.warn("audit log failed:", r.error.message || r.error);
     },
     subscribeRealtime() {
-      sb.channel("inv")
-        .on("postgres_changes", { event: "*", schema: "public", table: "stock" }, async () => { await cloud.loadAll(); emit(); })
-        .on("postgres_changes", { event: "*", schema: "public", table: "transactions" }, async () => { await cloud.loadAll(); emit(); })
-        .subscribe();
+      // One channel, debounced full reload. transactions used to be the only
+      // broadcast; screens whose write did not also insert a log stayed stale.
+      const tables = ["stock", "transactions", "orders", "demand_lines", "receiving_log", "shipping_log", "production_output", "line_status", "ecom_demand", "supplier_pos", "purchase_orders", "po_lines", "seasoning_lots", "seed_lots", "improvements", "maintenance_items", "quality_logs", "production_orders", "kv_status", "fulfillment_daily", "returns_log", "items", "production_days", "production_pallets", "consumption", "order_docs", "rd_requests", "stock_build", "sku_catalog"];
+      let ch = sb.channel("inv");
+      tables.forEach(function (t) {
+        ch = ch.on("postgres_changes", { event: "*", schema: "public", table: t }, function () { scheduleRefresh(); });
+      });
+      ch.subscribe();
     }
   };
 
@@ -335,6 +440,7 @@ window.DB = (function () {
   // meta: { supplier, invoice, category, pallets, condition, status }
   async function receive(item, qty, lot, op, meta) {
     meta = meta || {};
+    const itemId = resolveItemId(item);
     const loc = meta.condition === "Quarantine" ? "QUARANTINE" : (meta.location || "RECEIVING");
     const parts = [];
     if (meta.supplier) parts.push("from " + meta.supplier);
@@ -345,17 +451,24 @@ window.DB = (function () {
     if (meta.status && meta.status !== "Received") parts.push(meta.status);
     const extra = parts.length ? " (" + parts.join(", ") + ")" : "";
     await applyDeltas(
-      [{ item_id: item.id, location: loc, delta: qty, lot: lot || null }],
+      [{ item_id: itemId, location: loc, delta: qty, lot: lot || null }],
       { a: "Receive", d: fmt(qty) + " " + item.unit + " " + item.flavor + extra + " -> " + loc, u: op, t: new Date().toISOString() }
     );
     return { ok: true, location: loc };
   }
   async function move(item, from, to, qty, op) {
-    const avail = atLoc(item.id, from);
+    const itemId = resolveItemId(item);
+    const avail = atLoc(itemId, from);
     const mv = Math.min(qty, avail);
     if (mv <= 0) return { ok: false, msg: "Nothing at " + from };
+    const take = planQtyDelta(itemId, from, -mv);
+    const deltas = [];
+    take.forEach(d => {
+      deltas.push(d);
+      deltas.push({ item_id: itemId, location: to, delta: -d.delta, lot: d.lot });
+    });
     await applyDeltas(
-      [{ item_id: item.id, location: from, delta: -mv }, { item_id: item.id, location: to, delta: mv }],
+      deltas,
       { a: (from === "RECEIVING" ? "Put-Away" : "Move"), d: fmt(mv) + " " + item.unit + " " + item.flavor + " " + from + " -> " + to, u: op, t: new Date().toISOString() }
     );
     return { ok: true };
@@ -365,19 +478,24 @@ window.DB = (function () {
     // Dedupe double-submits (double-click or a re-render re-firing the save). These were double-applying
     // the delta and corrupting counts (e.g. a 20,800->1,500 count fired twice drove the row negative and
     // wiped it). Skip an identical item+location+newQty adjust within 1.5s.
-    const _k = String(item.id) + "|" + loc + "|" + newQty, _now = Date.now();
+    const itemId = resolveItemId(item);
+    const _k = String(itemId) + "|" + loc + "|" + newQty, _now = Date.now();
     if (_lastAdjust[_k] && _now - _lastAdjust[_k] < 1500) return { ok: true, deduped: true };
     _lastAdjust[_k] = _now;
-    const cur = atLoc(item.id, loc);
+    const cur = atLoc(itemId, loc);
+    const deltas = planQtyDelta(itemId, loc, Number(newQty) - cur);
+    if (!deltas.length) return { ok: true, unchanged: true };
     await applyDeltas(
-      [{ item_id: item.id, location: loc, delta: newQty - cur }],
+      deltas,
       { a: "Count/Adjust", d: item.flavor + " @ " + loc + ": " + fmt(cur) + " -> " + fmt(newQty), u: op, t: new Date().toISOString() }
     );
+    return { ok: true };
   }
   // Set an item's TOTAL on-hand (location handled automatically) — spreadsheet-style counting.
   async function adjustTotal(item, newTotal, op) {
     newTotal = Number(newTotal);
-    const rows = cache.stock.filter(r => r.item_id === item.id);
+    const itemId = resolveItemId(item);
+    const rows = cache.stock.filter(r => r.item_id === itemId);
     const cur = rows.reduce((s, r) => s + Number(r.qty), 0);
     if (newTotal === cur) return { ok: true, unchanged: true };
     let loc;
@@ -439,21 +557,25 @@ window.DB = (function () {
   // Produce finished 4oz bags: +bags, consume 1 film (4oz) impression/bag + seasoning.
   async function produce(flavorCode, qty, loc, op) {
     const bagItem = itemByCode("B4-" + flavorCode) || cache.items.find(i => i.id === "BAG4-" + flavorCode);
-    const deltas = [{ item_id: "BAG4-" + flavorCode, location: loc, delta: qty }];
+    const bagId = resolveItemId(bagItem || ("BAG4-" + flavorCode));
+    const deltas = planQtyDelta(bagId, loc, qty);
+    if (!deltas.length) deltas.push({ item_id: bagId, location: loc, delta: qty, lot: null });
     let detail = "+" + fmt(qty) + " bags " + (bagItem ? bagItem.flavor : flavorCode) + " -> " + loc;
-    // consume film from wherever it sits
+    // consume film and seasoning from the lot rows that actually hold them
     let filmNeed = qty, filmUsed = 0;
-    cache.stock.filter(r => r.item_id === "FILM4-" + flavorCode).forEach(r => {
+    const filmId = resolveItemId("FILM4-" + flavorCode);
+    cache.stock.filter(r => r.item_id === filmId).forEach(r => {
       if (filmNeed <= 0) return;
       const take = Math.min(r.qty, filmNeed);
-      deltas.push({ item_id: "FILM4-" + flavorCode, location: r.location, delta: -take });
+      deltas.push({ item_id: filmId, location: r.location, delta: -take, lot: r.lot || null });
       filmNeed -= take; filmUsed += take;
     });
     let seasNeed = qty * seasLbPerBag(bagItem ? bagItem.flavor : flavorCode, "4oz"), seasUsed = 0;
-    cache.stock.filter(r => r.item_id === "SEAS-" + flavorCode).forEach(r => {
+    const seasId = resolveItemId("SEAS-" + flavorCode);
+    cache.stock.filter(r => r.item_id === seasId).forEach(r => {
       if (seasNeed <= 0) return;
       const take = Math.min(r.qty, seasNeed);
-      deltas.push({ item_id: "SEAS-" + flavorCode, location: r.location, delta: -take });
+      deltas.push({ item_id: seasId, location: r.location, delta: -take, lot: r.lot || null });
       seasNeed -= take; seasUsed += take;
     });
     detail += " | -" + fmt(filmUsed) + " film, -" + fmt(seasUsed) + " lb seasoning";
@@ -472,7 +594,7 @@ window.DB = (function () {
     if (meta.reason) parts.push(meta.reason);
     parts.push("[" + disp + "]");
     const detail = fmt(qty) + " " + item.unit + " " + item.flavor + " (" + parts.join(", ") + ")" + (loc ? " -> " + loc : " (scrapped)");
-    const deltas = loc ? [{ item_id: item.id, location: loc, delta: qty, lot: null }] : [];
+    const deltas = loc ? [{ item_id: resolveItemId(item), location: loc, delta: qty, lot: null }] : [];
     await applyDeltas(deltas, { a: "Return", d: detail, u: op, t: new Date().toISOString() });
     return { ok: true, location: loc };
   }
@@ -487,7 +609,7 @@ window.DB = (function () {
     };
     const logEntry = { a: "Seasoning lot", d: (row.product || row.flavor_code) + " lot " + row.lot + " " + fmt(row.weight) + " lb (exp " + (row.exp || "n/a") + ")", u: op, t: row.received_at };
     if (mode === "cloud") {
-      await sb.from("seasoning_lots").insert(row);
+      await must(sb.from("seasoning_lots").insert(row), "seasoning_lots");
       await cloud.addLog(logEntry);
       await cloud.loadAll();
     } else {
@@ -502,7 +624,7 @@ window.DB = (function () {
     const lot = (cache.seasLots || []).find(l => String(l.id) === String(id));
     const logEntry = { a: "Seasoning " + status, d: lot ? ((lot.product || lot.flavor_code) + " lot " + lot.lot) : String(id), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
-      await sb.from("seasoning_lots").update({ status }).eq("id", id);
+      await must(sb.from("seasoning_lots").update({ status }).eq("id", id), "seasoning_lots");
       await cloud.addLog(logEntry);
       await cloud.loadAll();
     } else {
@@ -516,7 +638,7 @@ window.DB = (function () {
       manufacturer: patch.manufacturer || "", exp: patch.exp || null, weight: Number(patch.weight) || 0, location: patch.location || "" };
     const logEntry = { a: "Seasoning edited", d: (p.product || p.flavor_code) + " lot " + p.lot, u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
-      await sb.from("seasoning_lots").update(p).eq("id", id);
+      await must(sb.from("seasoning_lots").update(p).eq("id", id), "seasoning_lots");
       await cloud.addLog(logEntry); await cloud.loadAll();
     } else {
       const l = (cache.seasLots || []).find(x => String(x.id) === String(id)); if (l) Object.assign(l, p);
@@ -544,7 +666,7 @@ window.DB = (function () {
     };
     const logEntry = { a: "Shipment logged", d: (row.ship_type ? row.ship_type + " - " : "") + row.recipient + (row.tracking ? " (" + row.tracking + ")" : ""), u: op, t: row.created_at };
     if (mode === "cloud") {
-      await sb.from("shipping_log").insert(row);
+      await must(sb.from("shipping_log").insert(row), "shipping_log");
       await cloud.addLog(logEntry);
       await cloud.loadAll();
     } else {
@@ -559,7 +681,7 @@ window.DB = (function () {
     const s = (cache.shippingLog || []).find(x => String(x.id) === String(id));
     const logEntry = { a: "Shipment " + status, d: s ? (s.recipient + (s.tracking ? " (" + s.tracking + ")" : "")) : String(id), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
-      await sb.from("shipping_log").update({ status }).eq("id", id);
+      await must(sb.from("shipping_log").update({ status }).eq("id", id), "shipping_log");
       await cloud.addLog(logEntry);
       await cloud.loadAll();
     } else {
@@ -578,7 +700,7 @@ window.DB = (function () {
     };
     const logEntry = { a: "Shipment edited", d: (patch.recipient || "") + (patch.tracking ? " (" + patch.tracking + ")" : ""), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
-      await sb.from("shipping_log").update(patch).eq("id", id);
+      await must(sb.from("shipping_log").update(patch).eq("id", id), "shipping_log");
       await cloud.addLog(logEntry);
       await cloud.loadAll();
     } else {
@@ -591,7 +713,7 @@ window.DB = (function () {
   }
   async function deleteShipping(id, op) {
     if (mode === "cloud") {
-      await sb.from("shipping_log").delete().eq("id", id);
+      await must(sb.from("shipping_log").delete().eq("id", id), "shipping_log");
       await cloud.loadAll();
     } else {
       cache.shippingLog = (cache.shippingLog || []).filter(x => String(x.id) !== String(id));
@@ -627,7 +749,7 @@ window.DB = (function () {
     };
     const logEntry = { a: "Receiving logged", d: (row.supplier || "") + (row.po_num ? " PO " + row.po_num : "") + (file_name ? " [" + file_name + "]" : ""), u: op, t: row.created_at };
     if (mode === "cloud") {
-      await sb.from("receiving_log").insert(row);
+      await must(sb.from("receiving_log").insert(row), "receiving_log");
       await cloud.addLog(logEntry);
       await cloud.loadAll();
     } else {
@@ -659,7 +781,7 @@ window.DB = (function () {
     }, filePatch);
     const logEntry = { a: "Receiving edited", d: (patch.supplier || "") + (patch.po_num ? " PO " + patch.po_num : ""), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
-      await sb.from("receiving_log").update(patch).eq("id", id);
+      await must(sb.from("receiving_log").update(patch).eq("id", id), "receiving_log");
       await cloud.addLog(logEntry);
       await cloud.loadAll();
     } else {
@@ -672,7 +794,7 @@ window.DB = (function () {
   }
   async function deleteReceivingLog(id, op) {
     if (mode === "cloud") {
-      await sb.from("receiving_log").delete().eq("id", id);
+      await must(sb.from("receiving_log").delete().eq("id", id), "receiving_log");
       await cloud.loadAll();
     } else {
       cache.receivingLog = (cache.receivingLog || []).filter(x => String(x.id) !== String(id));
@@ -765,7 +887,7 @@ window.DB = (function () {
     return { ok: true };
   }
   async function deleteProdPallet(id, op) {
-    if (mode === "cloud") { await sb.from("production_pallets").delete().eq("id", id); }
+    if (mode === "cloud") { await must(sb.from("production_pallets").delete().eq("id", id), "production_pallets"); }
     cache.prodPallets = (cache.prodPallets || []).filter(p => String(p.id) !== String(id));
     if (mode !== "cloud") local.save();
     emit();
@@ -780,7 +902,7 @@ window.DB = (function () {
     row.title = row.title || ""; row.entered_by = op || ""; row.created_at = new Date().toISOString();
     const logEntry = { a: "Improvement added", d: (row.ci_type ? row.ci_type + ": " : "") + row.title, u: op, t: row.created_at };
     if (mode === "cloud") {
-      await sb.from("improvements").insert(row);
+      await must(sb.from("improvements").insert(row), "improvements");
       await cloud.addLog(logEntry); await cloud.loadAll();
     } else {
       row.id = "IMP-" + Date.now().toString(36); cache.improvements.unshift(row);
@@ -793,7 +915,7 @@ window.DB = (function () {
     const cur = (cache.improvements || []).find(x => String(x.id) === String(id));
     const logEntry = { a: "Improvement updated", d: (cur ? cur.title : String(id)), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
-      await sb.from("improvements").update(p).eq("id", id);
+      await must(sb.from("improvements").update(p).eq("id", id), "improvements");
       await cloud.addLog(logEntry); await cloud.loadAll();
     } else {
       if (cur) Object.assign(cur, p); local.addLog(logEntry); local.save();
@@ -806,7 +928,7 @@ window.DB = (function () {
     if (status === "Done") patch.completed_date = new Date().toISOString().slice(0, 10);
     const logEntry = { a: "Improvement " + status, d: (cur ? cur.title : String(id)), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
-      await sb.from("improvements").update(patch).eq("id", id);
+      await must(sb.from("improvements").update(patch).eq("id", id), "improvements");
       await cloud.addLog(logEntry); await cloud.loadAll();
     } else {
       if (cur) Object.assign(cur, patch); local.addLog(logEntry); local.save();
@@ -814,7 +936,7 @@ window.DB = (function () {
     emit(); return { ok: true };
   }
   async function deleteImprovement(id, op) {
-    if (mode === "cloud") { await sb.from("improvements").delete().eq("id", id); await cloud.loadAll(); }
+    if (mode === "cloud") { await must(sb.from("improvements").delete().eq("id", id), "improvements"); await cloud.loadAll(); }
     else { cache.improvements = (cache.improvements || []).filter(x => String(x.id) !== String(id)); local.save(); }
     emit(); return { ok: true };
   }
@@ -827,7 +949,7 @@ window.DB = (function () {
     row.title = row.title || ""; row.entered_by = op || ""; row.created_at = new Date().toISOString();
     const logEntry = { a: "Maintenance item added", d: (row.mtype ? row.mtype + ": " : "") + row.title, u: op, t: row.created_at };
     if (mode === "cloud") {
-      await sb.from("maintenance_items").insert(row).select();
+      await must(sb.from("maintenance_items").insert(row).select(), "maintenance_items");
       await cloud.addLog(logEntry); await cloud.loadAll();
     } else {
       cache.maintenance = cache.maintenance || [];
@@ -841,7 +963,7 @@ window.DB = (function () {
     const cur = (cache.maintenance || []).find(x => String(x.id) === String(id));
     const logEntry = { a: "Maintenance item updated", d: (cur ? cur.title : String(id)), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
-      await sb.from("maintenance_items").update(p).eq("id", id);
+      await must(sb.from("maintenance_items").update(p).eq("id", id), "maintenance_items");
       await cloud.addLog(logEntry); await cloud.loadAll();
     } else {
       if (cur) Object.assign(cur, p); local.addLog(logEntry); local.save();
@@ -854,7 +976,7 @@ window.DB = (function () {
     if (status === "Done") patch.completed_date = new Date().toISOString().slice(0, 10);
     const logEntry = { a: "Maintenance " + status, d: (cur ? cur.title : String(id)), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
-      await sb.from("maintenance_items").update(patch).eq("id", id);
+      await must(sb.from("maintenance_items").update(patch).eq("id", id), "maintenance_items");
       await cloud.addLog(logEntry); await cloud.loadAll();
     } else {
       if (cur) Object.assign(cur, patch); local.addLog(logEntry); local.save();
@@ -862,7 +984,7 @@ window.DB = (function () {
     emit(); return { ok: true };
   }
   async function deleteMaintenance(id, op) {
-    if (mode === "cloud") { await sb.from("maintenance_items").delete().eq("id", id); await cloud.loadAll(); }
+    if (mode === "cloud") { await must(sb.from("maintenance_items").delete().eq("id", id), "maintenance_items"); await cloud.loadAll(); }
     else { cache.maintenance = (cache.maintenance || []).filter(x => String(x.id) !== String(id)); local.save(); }
     emit(); return { ok: true };
   }
@@ -879,7 +1001,7 @@ window.DB = (function () {
     };
     const logEntry = { a: "Seed lot", d: (row.product || row.seed_code) + " lot " + row.lot + " " + fmt(row.weight) + " lb (" + (row.supplier || "n/a") + ")", u: op, t: row.created_at };
     if (mode === "cloud") {
-      await sb.from("seed_lots").insert(row);
+      await must(sb.from("seed_lots").insert(row), "seed_lots");
       await cloud.addLog(logEntry);
       await cloud.loadAll();
     } else {
@@ -894,7 +1016,7 @@ window.DB = (function () {
     const lot = (cache.seedLots || []).find(l => String(l.id) === String(id));
     const logEntry = { a: "Seed " + status, d: lot ? ((lot.product || lot.seed_code) + " lot " + lot.lot) : String(id), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
-      await sb.from("seed_lots").update({ status }).eq("id", id);
+      await must(sb.from("seed_lots").update({ status }).eq("id", id), "seed_lots");
       await cloud.addLog(logEntry);
       await cloud.loadAll();
     } else {
@@ -910,7 +1032,7 @@ window.DB = (function () {
       pallets: Number(patch.pallets) || 0, packaging: patch.packaging || "" };
     const logEntry = { a: "Seed edited", d: (p.product || p.seed_code) + " lot " + p.lot, u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
-      await sb.from("seed_lots").update(p).eq("id", id);
+      await must(sb.from("seed_lots").update(p).eq("id", id), "seed_lots");
       await cloud.addLog(logEntry); await cloud.loadAll();
     } else {
       const l = (cache.seedLots || []).find(x => String(x.id) === String(id)); if (l) Object.assign(l, p);
@@ -923,7 +1045,7 @@ window.DB = (function () {
   async function setStockBuildOnHand(itemKey, onHand, op) {
     const row = { item_key: itemKey, on_hand: Number(onHand) || 0, updated_by: op || "", updated_at: new Date().toISOString() };
     if (mode === "cloud") {
-      await sb.from("stock_build").upsert(row, { onConflict: "item_key" });
+      await must(sb.from("stock_build").upsert(row, { onConflict: "item_key" }), "stock_build");
       await cloud.loadAll();
     } else {
       cache.stockBuild[itemKey] = { on_hand: row.on_hand, updated_by: row.updated_by, updated_at: row.updated_at };
@@ -943,14 +1065,14 @@ window.DB = (function () {
     const loc = String(location);
     const row = { item_id: "DEADSTOCK", location: loc, qty: Number(pallets) || 0, lot: String(reason || "").slice(0, 140) };
     const logEntry = { a: "Dead stock flagged", d: loc + " - " + (reason || "") + " (" + (Number(pallets) || 0) + " pallets)", u: op || "", t: new Date().toISOString() };
-    if (mode === "cloud") { await sb.from("stock").delete().eq("item_id", "DEADSTOCK").eq("location", loc); await sb.from("stock").insert([row]); await cloud.addLog(logEntry); await cloud.loadAll(); }
+    if (mode === "cloud") { await must(sb.from("stock").delete().eq("item_id", "DEADSTOCK").eq("location", loc), "stock"); await must(sb.from("stock").insert([row]), "stock"); await cloud.addLog(logEntry); await cloud.loadAll(); }
     else { cache.stock = (cache.stock || []).filter(r => !(String(r.item_id) === "DEADSTOCK" && r.location === loc)); cache.stock.push(row); local.addLog(logEntry); local.save(); }
     emit(); return { ok: true };
   }
   async function clearDeadStock(location, op) {
     const loc = String(location);
     const logEntry = { a: "Dead stock cleared", d: loc, u: op || "", t: new Date().toISOString() };
-    if (mode === "cloud") { await sb.from("stock").delete().eq("item_id", "DEADSTOCK").eq("location", loc); await cloud.addLog(logEntry); await cloud.loadAll(); }
+    if (mode === "cloud") { await must(sb.from("stock").delete().eq("item_id", "DEADSTOCK").eq("location", loc), "stock"); await cloud.addLog(logEntry); await cloud.loadAll(); }
     else { cache.stock = (cache.stock || []).filter(r => !(String(r.item_id) === "DEADSTOCK" && r.location === loc)); local.addLog(logEntry); local.save(); }
     emit(); return { ok: true };
   }
@@ -1000,7 +1122,7 @@ window.DB = (function () {
       const hit = rules.find(r => r[0].test(desc));
       if (!hit) continue;
       const patch = { flavor: hit[1], flavor_code: codeFor(hit[1]) };
-      if (mode === "cloud") { if (d.id != null) await sb.from("demand_lines").update(patch).eq("id", d.id); }
+      if (mode === "cloud") { if (d.id != null) await must(sb.from("demand_lines").update(patch).eq("id", d.id), "demand_lines"); }
       else { d.flavor = hit[1]; d.flavor_code = patch.flavor_code; }
       fixed++;
     }
@@ -1017,7 +1139,7 @@ window.DB = (function () {
     const row = cleanOrder(rec);
     const logEntry = { a: "Order added", d: (row.customer || "") + " " + (row.customer_po || row.order_id || ""), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
-      await sb.from("orders").insert(row);
+      await must(sb.from("orders").insert(row), "orders");
       await cloud.addLog(logEntry); await cloud.loadAll();
     } else {
       row.id = orderLocalId(); row.created_at = new Date().toISOString();
@@ -1030,7 +1152,7 @@ window.DB = (function () {
     const cur = (cache.orders || []).find(o => String(o.id) === String(id));
     const logEntry = { a: "Order updated", d: (cur ? (cur.customer + " " + (cur.customer_po || cur.order_id || "")) : String(id)), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
-      await sb.from("orders").update(p).eq("id", id);
+      await must(sb.from("orders").update(p).eq("id", id), "orders");
       await cloud.addLog(logEntry); await cloud.loadAll();
     } else {
       if (cur) Object.assign(cur, p); local.addLog(logEntry); local.save();
@@ -1041,7 +1163,7 @@ window.DB = (function () {
     const cur = (cache.orders || []).find(o => String(o.id) === String(id));
     const logEntry = { a: "Order " + status, d: (cur ? (cur.customer + " " + (cur.customer_po || cur.order_id || "")) : String(id)), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
-      await sb.from("orders").update({ status }).eq("id", id);
+      await must(sb.from("orders").update({ status }).eq("id", id), "orders");
       await cloud.addLog(logEntry); await cloud.loadAll();
     } else {
       if (cur) cur.status = status; local.addLog(logEntry); local.save();
@@ -1049,7 +1171,7 @@ window.DB = (function () {
     emit();
   }
   async function deleteOrder(id, op) {
-    if (mode === "cloud") { await sb.from("orders").delete().eq("id", id); await cloud.loadAll(); }
+    if (mode === "cloud") { await must(sb.from("orders").delete().eq("id", id), "orders"); await cloud.loadAll(); }
     else { cache.orders = cache.orders.filter(o => String(o.id) !== String(id)); local.addLog({ a: "Order deleted", d: String(id), u: op, t: new Date().toISOString() }); local.save(); }
     emit();
   }
@@ -1067,8 +1189,8 @@ window.DB = (function () {
     }));
     const toArchive = existing.filter(o => (o.status || "Open") !== "Complete" && !openKeys[String(o.order_id)]).map(o => o.id);
     if (mode === "cloud") {
-      if (toInsert.length) await sb.from("orders").insert(toInsert);
-      if (toArchive.length) await sb.from("orders").update({ status: "Complete" }).in("id", toArchive);
+      if (toInsert.length) await must(sb.from("orders").insert(toInsert), "orders");
+      if (toArchive.length) await must(sb.from("orders").update({ status: "Complete" }).in("id", toArchive), "orders");
       await cloud.addLog({ a: "SPS orders synced", d: "open " + list.length + " (+" + toInsert.length + " new / " + toArchive.length + " shipped)", u: op || "SPS Sync", t: new Date().toISOString() });
       await cloud.loadAll();
     } else {
@@ -1095,9 +1217,11 @@ window.DB = (function () {
     if (!row.req_no) row.req_no = nextRdNumber();
     const logEntry = { a: "R&D request", d: row.req_no + " " + (row.company || "") + " - " + (row.items || ""), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
-      const { data } = await sb.from("rd_requests").insert(row).select();
+      const ins = await must(sb.from("rd_requests").insert(row).select(), "rd_requests");
+      const data = ins && ins.data;
+      if (!data || !data.length) { toastErr("R&D request failed: not confirmed"); return { ok: false, msg: "not confirmed" }; }
       await cloud.addLog(logEntry); await cloud.loadAll();
-      emit(); return { ok: true, id: data && data[0] ? data[0].id : null, req_no: row.req_no };
+      emit(); return { ok: true, id: data[0].id, req_no: row.req_no };
     } else {
       row.id = rdLocalId(); row.created_at = new Date().toISOString();
       cache.rdRequests.unshift(row); local.addLog(logEntry); local.save();
@@ -1109,7 +1233,7 @@ window.DB = (function () {
     const cur = (cache.rdRequests || []).find(r => String(r.id) === String(id));
     const logEntry = { a: "R&D updated", d: (cur ? cur.req_no : String(id)), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
-      await sb.from("rd_requests").update(p).eq("id", id);
+      await must(sb.from("rd_requests").update(p).eq("id", id), "rd_requests");
       await cloud.addLog(logEntry); await cloud.loadAll();
     } else {
       if (cur) Object.assign(cur, p); local.addLog(logEntry); local.save();
@@ -1121,7 +1245,7 @@ window.DB = (function () {
     const patch = { status }; if (status === "Received") patch.received_at = new Date().toISOString();
     const logEntry = { a: "R&D " + status, d: (cur ? cur.req_no + " " + (cur.company || "") : String(id)), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
-      await sb.from("rd_requests").update(patch).eq("id", id);
+      await must(sb.from("rd_requests").update(patch).eq("id", id), "rd_requests");
       await cloud.addLog(logEntry); await cloud.loadAll();
     } else {
       if (cur) Object.assign(cur, patch); local.addLog(logEntry); local.save();
@@ -1129,7 +1253,7 @@ window.DB = (function () {
     emit();
   }
   async function deleteRdRequest(id, op) {
-    if (mode === "cloud") { await sb.from("rd_requests").delete().eq("id", id); await cloud.loadAll(); }
+    if (mode === "cloud") { await must(sb.from("rd_requests").delete().eq("id", id), "rd_requests"); await cloud.loadAll(); }
     else { cache.rdRequests = cache.rdRequests.filter(r => String(r.id) !== String(id)); local.addLog({ a: "R&D deleted", d: String(id), u: op, t: new Date().toISOString() }); local.save(); }
     emit();
   }
@@ -1234,7 +1358,7 @@ window.DB = (function () {
     const cur = (cache.supplierPos || []).find(s => String(s.id) === String(id));
     if (mode === "cloud") {
       if (cur && cur.file_path) { try { await sb.storage.from(SPO_BUCKET).remove([cur.file_path]); } catch (e) {} }
-      await sb.from("supplier_pos").delete().eq("id", id); await cloud.loadAll();
+      await must(sb.from("supplier_pos").delete().eq("id", id), "supplier_pos"); await cloud.loadAll();
     } else {
       cache.supplierPos = cache.supplierPos.filter(s => String(s.id) !== String(id));
       local.addLog({ a: "Supplier PO deleted", d: cur ? (cur.vendor + " " + cur.po_num) : String(id), u: op, t: new Date().toISOString() }); local.save();
@@ -1295,38 +1419,106 @@ window.DB = (function () {
     return null;
   }
   async function kvSet(key, val) {
-    cache.kv = cache.kv || {}; cache.kv[key] = val;
+    cache.kv = cache.kv || {};
+    const prev = cache.kv[key];
+    cache.kv[key] = val;
     try { localStorage.setItem("kv-" + key, val); } catch (e) {}
-    if (mode === "cloud") { try { await sb.from("kv_status").upsert({ key: key, value: val, updated_at: new Date().toISOString() }); } catch (e) {} }
+    if (mode !== "cloud") { emit(); return { ok: true, where: "local" }; }
+    try {
+      const up = await sb.from("kv_status").upsert({ key: key, value: String(val), updated_at: new Date().toISOString() }).select();
+      if (up && up.error) throw new Error(up.error.message || "not saved");
+      const got = await sb.from("kv_status").select("value").eq("key", key).limit(1);
+      if (got && got.error) throw new Error(got.error.message || "could not confirm");
+      if (!got.data || !got.data.length || String(got.data[0].value) !== String(val)) throw new Error("saved value did not read back");
+      emit();
+      return { ok: true };
+    } catch (e) {
+      if (prev === undefined) delete cache.kv[key]; else cache.kv[key] = prev;
+      try { if (prev === undefined) localStorage.removeItem("kv-" + key); else localStorage.setItem("kv-" + key, prev); } catch (e2) {}
+      const msg = "Save failed: " + ((e && e.message) || e);
+      toastErr(msg);
+      return { ok: false, msg: msg };
+    }
   }
   function kvCloudOn() { return !!cache.kvCloud; }
   // ---- SKU catalog overlay (curated image + Spanish contents/notes for the SKU Lookup) ----
   function skuCatalog() { return cache.skuCatalog || {}; }
   function skuCatalogGet(sku) { return (cache.skuCatalog || {})[String(sku || "").toUpperCase()] || null; }
   async function saveSkuCatalog(o) {
-    const sku = String(o.sku || "").trim().toUpperCase(); if (!sku) return { ok: false };
+    const sku = String(o.sku || "").trim().toUpperCase(); if (!sku) return { ok: false, msg: "SKU required" };
     o.sku = sku; o.updated_at = new Date().toISOString();
-    cache.skuCatalog = cache.skuCatalog || {}; cache.skuCatalog[sku] = Object.assign({}, cache.skuCatalog[sku], o);
-    try { localStorage.setItem("sku-catalog", JSON.stringify(cache.skuCatalog)); } catch (e) {}
-    if (mode === "cloud") { try { await sb.from("sku_catalog").upsert(cache.skuCatalog[sku]); } catch (e) {} }
+    cache.skuCatalog = cache.skuCatalog || {};
+    const prev = cache.skuCatalog[sku];
+    const next = Object.assign({}, prev, o);
+    if (mode !== "cloud") {
+      cache.skuCatalog[sku] = next;
+      try { localStorage.setItem("sku-catalog", JSON.stringify(cache.skuCatalog)); } catch (e) {}
+      emit();
+      return { ok: true, where: "local" };
+    }
+    const up = await sb.from("sku_catalog").upsert(next).select();
+    if (up && up.error) {
+      const msg = "SKU save failed: " + (up.error.message || "not saved");
+      toastErr(msg);
+      return { ok: false, msg: msg };
+    }
+    if (!up.data || !up.data.length) {
+      const msg = "SKU save failed: not confirmed";
+      toastErr(msg);
+      return { ok: false, msg: msg };
+    }
+    cache.skuCatalog[sku] = up.data[0];
+    emit();
     return { ok: true };
   }
   // ---- Quality CCP monitoring logs (allergen changeover / label check / metal detector) ----
   function qualityLogs() { return cache.qualityLogs || []; }
   async function addQualityLog(o) {
     o.id = "QL-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); o.created_at = new Date().toISOString();
+    if (mode !== "cloud") {
+      cache.qualityLogs = cache.qualityLogs || []; cache.qualityLogs.unshift(o);
+      try { localStorage.setItem("quality-logs", JSON.stringify(cache.qualityLogs.slice(0, 500))); } catch (e) {}
+      emit();
+      return { ok: true, where: "local" };
+    }
+    const ins = await sb.from("quality_logs").insert({ id: o.id, data: o, created_at: o.created_at }).select();
+    if (ins && ins.error) {
+      const msg = "Quality log failed: " + (ins.error.message || "not saved");
+      toastErr(msg);
+      return { ok: false, msg: msg };
+    }
+    if (!ins.data || !ins.data.length) {
+      const msg = "Quality log failed: not confirmed";
+      toastErr(msg);
+      return { ok: false, msg: msg };
+    }
     cache.qualityLogs = cache.qualityLogs || []; cache.qualityLogs.unshift(o);
-    try { localStorage.setItem("quality-logs", JSON.stringify(cache.qualityLogs.slice(0, 500))); } catch (e) {}
-    if (mode === "cloud") { try { await sb.from("quality_logs").insert({ id: o.id, data: o, created_at: o.created_at }); } catch (e) {} }
+    emit();
     return { ok: true };
   }
   // ---- Production orders created in-app (Allen's digital PO) ----
   function prodOrdersCustom() { return cache.prodOrders || []; }
   async function addProdOrder(o) {
     o.id = o.po; o.created_at = new Date().toISOString();
+    if (mode !== "cloud") {
+      cache.prodOrders = cache.prodOrders || []; cache.prodOrders.unshift(o);
+      try { localStorage.setItem("prodorders-custom", JSON.stringify(cache.prodOrders)); } catch (e) {}
+      emit();
+      return { ok: true, where: "local" };
+    }
+    const ins = await sb.from("production_orders").insert({ id: o.po, data: o, created_at: o.created_at }).select();
+    if (ins && ins.error) {
+      const msg = "Production order failed: " + (ins.error.message || "not saved");
+      toastErr(msg);
+      return { ok: false, msg: msg };
+    }
+    if (!ins.data || !ins.data.length) {
+      const msg = "Production order failed: not confirmed";
+      toastErr(msg);
+      return { ok: false, msg: msg };
+    }
     cache.prodOrders = cache.prodOrders || []; cache.prodOrders.unshift(o);
-    try { localStorage.setItem("prodorders-custom", JSON.stringify(cache.prodOrders)); } catch (e) {}
-    if (mode === "cloud") { try { await sb.from("production_orders").insert({ id: o.po, data: o, created_at: o.created_at }); } catch (e) {} }
+    emit();
     return { ok: true };
   }
   // Mark one PO line received (persists recv flag onto the line JSON) + logs it. Returns line info for notify.
@@ -1336,7 +1528,7 @@ window.DB = (function () {
     lines[idx].recv = true; lines[idx].recv_date = new Date().toISOString().slice(0, 10);
     const desc = lines[idx].desc || lines[idx].item || "";
     const logEntry = { a: "PO item received", d: (po.vendor || "") + " " + (po.po_num || "") + " - " + desc + " (" + (lines[idx].qty || "") + " " + (lines[idx].uom || "") + ")", u: op || "", t: new Date().toISOString() };
-    if (mode === "cloud") { await sb.from("supplier_pos").update({ lines: JSON.stringify(lines) }).eq("id", poId); await cloud.addLog(logEntry); await cloud.loadAll(); }
+    if (mode === "cloud") { await must(sb.from("supplier_pos").update({ lines: JSON.stringify(lines) }).eq("id", poId), "supplier_pos"); await cloud.addLog(logEntry); await cloud.loadAll(); }
     else { po.lines = JSON.stringify(lines); local.addLog(logEntry); local.save(); }
     emit();
     return { ok: true, vendor: po.vendor || "", po_num: po.po_num || "", desc: desc, qty: lines[idx].qty || "", uom: lines[idx].uom || "" };
@@ -1381,7 +1573,7 @@ window.DB = (function () {
       notes: rec.notes || "", file_name: file_name, file_path: file_path, file_url: file_url, uploaded_by: op || "" };
     const logEntry = { a: "Order doc", d: (row.customer || "") + " " + (row.po_num || "") + " " + (row.doc_type || "") + (file_name ? " [" + file_name + "]" : ""), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
-      await sb.from("order_docs").insert(row);
+      await must(sb.from("order_docs").insert(row), "order_docs");
       await cloud.addLog(logEntry); await cloud.loadAll();
     } else {
       row.id = "ODC-" + Date.now().toString(36); row.created_at = new Date().toISOString();
@@ -1394,7 +1586,7 @@ window.DB = (function () {
     const cur = (cache.orderDocs || []).find(s => String(s.id) === String(id));
     if (mode === "cloud") {
       if (cur && cur.file_path) { try { await sb.storage.from(ODOC_BUCKET).remove([cur.file_path]); } catch (e) {} }
-      await sb.from("order_docs").delete().eq("id", id); await cloud.loadAll();
+      await must(sb.from("order_docs").delete().eq("id", id), "order_docs"); await cloud.loadAll();
     } else {
       cache.orderDocs = cache.orderDocs.filter(s => String(s.id) !== String(id));
       local.addLog({ a: "Order doc deleted", d: cur ? (cur.customer + " " + cur.po_num) : String(id), u: op, t: new Date().toISOString() }); local.save();
@@ -1436,7 +1628,7 @@ window.DB = (function () {
     const cur = (cache.refDocs || []).find(s => String(s.id) === String(id));
     if (mode === "cloud") {
       if (cur && cur.file_path) { try { await sb.storage.from(ODOC_BUCKET).remove([cur.file_path]); } catch (e) {} }
-      await sb.from("reference_docs").delete().eq("id", id);
+      await must(sb.from("reference_docs").delete().eq("id", id), "reference_docs");
     }
     cache.refDocs = (cache.refDocs || []).filter(s => String(s.id) !== String(id));
     if (mode !== "cloud") local.save();
@@ -1454,7 +1646,7 @@ window.DB = (function () {
       lot: lot || "", department: dept || "", operator: op || "" };
     const logEntry = { a: "Consumed (" + dept + ")", d: itemCode + " x" + q + (lot ? "  lot " + lot : ""), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
-      await sb.from("consumption").insert(row);
+      await must(sb.from("consumption").insert(row), "consumption");
       await cloud.addLog(logEntry); await cloud.loadAll();
     } else {
       row.id = "CON-" + Date.now().toString(36); row.created_at = new Date().toISOString();
@@ -1481,8 +1673,8 @@ window.DB = (function () {
     };
     const logEntry = { a: "PO created", d: po.id + " " + supplierName(supplierId) + " (" + po.lines.length + " lines)", u: op, t: po.created };
     if (mode === "cloud") {
-      await sb.from("purchase_orders").insert({ id: po.id, supplier: po.supplier, status: po.status, expected: po.expected, operator: op });
-      for (const l of po.lines) await sb.from("po_lines").insert({ po_id: po.id, item_id: l.item_id, qty: l.qty, cost: l.cost, received: 0 });
+      await must(sb.from("purchase_orders").insert({ id: po.id, supplier: po.supplier, status: po.status, expected: po.expected, operator: op }), "purchase_orders");
+      for (const l of po.lines) await must(sb.from("po_lines").insert({ po_id: po.id, item_id: l.item_id, qty: l.qty, cost: l.cost, received: 0 }), "po_lines");
       await cloud.addLog(logEntry);
       await cloud.loadAll();
     } else {
@@ -1499,7 +1691,7 @@ window.DB = (function () {
     const logEntry = { a: "PO " + status, d: poId + " " + supplierName(po.supplier), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
       const patch = { status }; if (status === "ordered") patch.ordered = new Date().toISOString();
-      await sb.from("purchase_orders").update(patch).eq("id", poId);
+      await must(sb.from("purchase_orders").update(patch).eq("id", poId), "purchase_orders");
       await cloud.addLog(logEntry);
       await cloud.loadAll();
     } else {
@@ -1511,8 +1703,8 @@ window.DB = (function () {
   }
   async function deletePO(poId, op) {
     if (mode === "cloud") {
-      await sb.from("po_lines").delete().eq("po_id", poId);
-      await sb.from("purchase_orders").delete().eq("id", poId);
+      await must(sb.from("po_lines").delete().eq("po_id", poId), "po_lines");
+      await must(sb.from("purchase_orders").delete().eq("id", poId), "purchase_orders");
       await cloud.loadAll();
     } else {
       cache.pos = cache.pos.filter(p => p.id !== poId);
@@ -1531,7 +1723,7 @@ window.DB = (function () {
       const outstanding = l.qty - l.received;
       if (q > outstanding) q = outstanding;
       if (!(q > 0)) return;
-      deltas.push({ item_id: l.item_id, location: "RECEIVING", delta: q, lot: null });
+      planQtyDelta(resolveItemId(l.item_id), "RECEIVING", q).forEach(d => deltas.push(d));
       l.received += q; any += q;
       const it = cache.items.find(i => i.id === l.item_id);
       detail.push((it ? it.code : l.item_id) + " +" + fmt(q));
@@ -1541,8 +1733,8 @@ window.DB = (function () {
     const logEntry = { a: "PO receive", d: poId + ": " + detail.join(", ") + " -> RECEIVING (" + po.status + ")", u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
       for (const d of deltas) await cloud.delta(d.item_id, d.location, d.delta, d.lot);
-      for (const l of po.lines) await sb.from("po_lines").update({ received: l.received }).eq("po_id", poId).eq("item_id", l.item_id);
-      await sb.from("purchase_orders").update({ status: po.status }).eq("id", poId);
+      for (const l of po.lines) await must(sb.from("po_lines").update({ received: l.received }).eq("po_id", poId).eq("item_id", l.item_id), "po_lines");
+      await must(sb.from("purchase_orders").update({ status: po.status }).eq("id", poId), "purchase_orders");
       await cloud.addLog(logEntry);
       await cloud.loadAll();
     } else {
@@ -1565,8 +1757,9 @@ window.DB = (function () {
         sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
         await cloud.loadAll();
         if (!cache.items.length) { await cloud.seedAll(); await cloud.loadAll(); }  // first-run bootstrap
-        cloud.subscribeRealtime();
         mode = "cloud";
+        cloud.subscribeRealtime();
+        bindFocusRefresh();
         return;
       } catch (e) { console.warn("Cloud init failed, falling back to local:", e); }
     }
@@ -1590,8 +1783,8 @@ window.DB = (function () {
     if (mode === "cloud") {
       // remove prior Open lines for the same source|po (replace semantics)
       const keys = Object.keys(poKeys);
-      for (const k of keys) { const [src, po] = k.split("|"); await sb.from("demand_lines").delete().eq("source", src).eq("po", po).eq("status", "Open"); }
-      for (let i = 0; i < clean.length; i += 100) await sb.from("demand_lines").insert(clean.slice(i, i + 100));
+      for (const k of keys) { const [src, po] = k.split("|"); await must(sb.from("demand_lines").delete().eq("source", src).eq("po", po).eq("status", "Open"), "demand_lines"); }
+      for (let i = 0; i < clean.length; i += 100) await must(sb.from("demand_lines").insert(clean.slice(i, i + 100)), "demand_lines");
       await cloud.addLog(logEntry); await cloud.loadAll();
     } else {
       cache.demandLines = (cache.demandLines || []).filter(r => !(r.status === "Open" && poKeys[(r.source || "") + "|" + (r.po || "")]));
@@ -1603,23 +1796,23 @@ window.DB = (function () {
   async function setDemandStatus(id, status, op) {
     const cur = (cache.demandLines || []).find(x => String(x.id) === String(id));
     const logEntry = { a: "Demand " + status, d: cur ? (cur.partner + " " + cur.po + " " + cur.flavor) : String(id), u: op, t: new Date().toISOString() };
-    if (mode === "cloud") { await sb.from("demand_lines").update({ status }).eq("id", id); await cloud.addLog(logEntry); await cloud.loadAll(); }
+    if (mode === "cloud") { await must(sb.from("demand_lines").update({ status }).eq("id", id), "demand_lines"); await cloud.addLog(logEntry); await cloud.loadAll(); }
     else { if (cur) cur.status = status; local.addLog(logEntry); local.save(); }
     emit(); return { ok: true };
   }
   async function shipDemandPO(source, po, op) {
     const rows = (cache.demandLines || []).filter(r => r.source === source && r.po === po && r.status === "Open");
-    if (mode === "cloud") { await sb.from("demand_lines").update({ status: "Shipped" }).eq("source", source).eq("po", po).eq("status", "Open"); await cloud.addLog({ a: "Demand PO shipped", d: source + " " + po + " (" + rows.length + " lines)", u: op, t: new Date().toISOString() }); await cloud.loadAll(); }
+    if (mode === "cloud") { await must(sb.from("demand_lines").update({ status: "Shipped" }).eq("source", source).eq("po", po).eq("status", "Open"), "demand_lines"); await cloud.addLog({ a: "Demand PO shipped", d: source + " " + po + " (" + rows.length + " lines)", u: op, t: new Date().toISOString() }); await cloud.loadAll(); }
     else { rows.forEach(r => r.status = "Shipped"); local.addLog({ a: "Demand PO shipped", d: source + " " + po, u: op, t: new Date().toISOString() }); local.save(); }
     emit(); return { ok: true, count: rows.length };
   }
   async function clearDemandBatch(batch_id, op) {
-    if (mode === "cloud") { await sb.from("demand_lines").delete().eq("batch_id", batch_id); await cloud.loadAll(); }
+    if (mode === "cloud") { await must(sb.from("demand_lines").delete().eq("batch_id", batch_id), "demand_lines"); await cloud.loadAll(); }
     else { cache.demandLines = (cache.demandLines || []).filter(r => r.batch_id !== batch_id); local.save(); }
     emit(); return { ok: true };
   }
   async function clearAllDemand(op) {
-    if (mode === "cloud") { await sb.from("demand_lines").delete().neq("id", "00000000-0000-0000-0000-000000000000"); await cloud.loadAll(); }
+    if (mode === "cloud") { await must(sb.from("demand_lines").delete().neq("id", "00000000-0000-0000-0000-000000000000"), "demand_lines"); await cloud.loadAll(); }
     else { cache.demandLines = []; local.save(); }
     emit(); return { ok: true };
   }
@@ -1643,7 +1836,7 @@ window.DB = (function () {
     emit(); return { ok: true };
   }
   async function deleteProdOutput(id, op) {
-    if (mode === "cloud") { await sb.from("production_output").delete().eq("id", id); await cloud.loadAll(); }
+    if (mode === "cloud") { await must(sb.from("production_output").delete().eq("id", id), "production_output"); await cloud.loadAll(); }
     else { cache.prodOut = (cache.prodOut || []).filter(r => String(r.id) !== String(id)); local.save(); }
     emit(); return { ok: true };
   }
@@ -1686,7 +1879,7 @@ window.DB = (function () {
     emit(); return { ok: true };
   }
   async function deleteMachine(id, op) {
-    if (mode === "cloud") { await sb.from("line_status").delete().eq("id", id); await cloud.loadAll(); }
+    if (mode === "cloud") { await must(sb.from("line_status").delete().eq("id", id), "line_status"); await cloud.loadAll(); }
     else { cache.lineStatus = (cache.lineStatus || []).filter(r => String(r.id) !== String(id)); local.save(); }
     emit(); return { ok: true };
   }
@@ -1713,12 +1906,12 @@ window.DB = (function () {
     row.received_by = op || ""; row.qty = Number(row.qty) || 0; row.is_kit = !!row.is_kit; row.restocked = !!row.restocked;
     const now = new Date().toISOString();
     const logEntry = { a: "Return logged", d: (row.channel === "ecom" ? "E-Com " : "") + (row.product || row.item_code || "") + " x" + row.qty + (row.tracking ? " [" + row.tracking + "]" : ""), u: op, t: now };
-    if (mode === "cloud") { await sb.from("returns_log").insert(row); await cloud.addLog(logEntry); await cloud.loadAll(); }
+    if (mode === "cloud") { await must(sb.from("returns_log").insert(row), "returns_log"); await cloud.addLog(logEntry); await cloud.loadAll(); }
     else { row.id = "RTN-" + Date.now().toString(36); row.created_at = now; cache.returnsLog.unshift(row); local.addLog(logEntry); local.save(); }
     emit(); return { ok: true };
   }
   async function deleteReturn(id, op) {
-    if (mode === "cloud") { await sb.from("returns_log").delete().eq("id", id); await cloud.loadAll(); }
+    if (mode === "cloud") { await must(sb.from("returns_log").delete().eq("id", id), "returns_log"); await cloud.loadAll(); }
     else { cache.returnsLog = (cache.returnsLog || []).filter(r => String(r.id) !== String(id)); local.save(); }
     emit(); return { ok: true };
   }
@@ -1738,7 +1931,7 @@ window.DB = (function () {
     }));
     const logEntry = { a: "E-Com demand loaded", d: (sourceLabel || "") + " — " + clean.length + " lines (" + periodDays + "d)", u: op, t: now };
     if (mode === "cloud") {
-      await sb.from("ecom_demand").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      await must(sb.from("ecom_demand").delete().neq("id", "00000000-0000-0000-0000-000000000000"), "ecom_demand");
       for (let i = 0; i < clean.length; i += 100) {
         const r = await sb.from("ecom_demand").insert(clean.slice(i, i + 100));
         if (r && r.error) return { ok: false, msg: r.error.message || "save failed (is the ecom_demand table created?)" };
@@ -1751,7 +1944,7 @@ window.DB = (function () {
     emit(); return { ok: true, count: clean.length };
   }
   async function clearEcomDemand(op) {
-    if (mode === "cloud") { await sb.from("ecom_demand").delete().neq("id", "00000000-0000-0000-0000-000000000000"); await cloud.loadAll(); }
+    if (mode === "cloud") { await must(sb.from("ecom_demand").delete().neq("id", "00000000-0000-0000-0000-000000000000"), "ecom_demand"); await cloud.loadAll(); }
     else { cache.ecomDemand = []; local.save(); }
     emit(); return { ok: true };
   }
@@ -1777,7 +1970,7 @@ window.DB = (function () {
       if (r && r.error) {
         // Fallback for a table without a unique constraint on fdate yet: delete any existing row for
         // this date, then insert fresh, so re-saving a day still updates it instead of erroring out.
-        await sb.from("fulfillment_daily").delete().eq("fdate", row.fdate);
+        await must(sb.from("fulfillment_daily").delete().eq("fdate", row.fdate), "fulfillment_daily");
         const r2 = await sb.from("fulfillment_daily").insert(row).select();
         if (r2 && r2.error) return { ok: false, msg: r2.error.message || "save failed (is the fulfillment_daily table created?)" };
       }
@@ -1793,13 +1986,13 @@ window.DB = (function () {
   }
   function L_ecomLabel(n) { return n + " e-com labels"; }
   async function deleteFulfillmentDaily(id, op) {
-    if (mode === "cloud") { await sb.from("fulfillment_daily").delete().eq("id", id); await cloud.loadAll(); }
+    if (mode === "cloud") { await must(sb.from("fulfillment_daily").delete().eq("id", id), "fulfillment_daily"); await cloud.loadAll(); }
     else { cache.fulfillmentDaily = (cache.fulfillmentDaily || []).filter(x => String(x.id) !== String(id)); local.save(); }
     emit(); return { ok: true };
   }
 
   return {
-    init, onChange, get mode() { return mode; },
+    init, onChange, refresh: function () { return refreshFromCloud(true); }, get mode() { return mode; },
     demandLines, importDemand, setDemandStatus, shipDemandPO, clearDemandBatch, clearAllDemand, remapDemandFlavors,
     productionOutput, addProdOutput, deleteProdOutput,
     lineStatus, addMachine, setLineStatus, deleteMachine,

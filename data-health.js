@@ -54,6 +54,7 @@
   }
 
   function statusOf(days, src, count) {
+    if (count == null) return { cls: "red", txt: "could not read" };
     if (count === 0) return { cls: "grey", txt: "no data yet" };
     if (days == null) return { cls: "grey", txt: "unknown" };
     if (days >= src.bad) return { cls: "red", txt: days + "d ago" };
@@ -72,15 +73,19 @@
         c.from(t).select(col).order(col, { ascending: false }).limit(1),
         c.from(t).select("*", { count: "exact", head: true })
       ]).then(function (r) {
+        var err = (r[0] && r[0].error) || (r[1] && r[1].error);
+        if (err) return { latest: null, count: null, err: err.message || "read failed" };
         return { latest: (r[0] && r[0].data && r[0].data[0]) ? r[0].data[0][col] : null, count: (r[1] && r[1].count) || 0 };
-      }).catch(function () { return { latest: null, count: 0 }; });
+      }).catch(function (e) { return { latest: null, count: null, err: (e && e.message) || "read failed" }; });
     }
     // A source with `alt` (e.g. P-Mac: uploaded pmac_history + digital pmac_log) is the union:
     // newest date of either, combined record count (log rows may overlap uploads; count is approximate).
     var jobs = SOURCES.map(function (src) {
       return Promise.all([probe(src.t, src.col), src.alt ? probe(src.alt.t, src.alt.col) : Promise.resolve(null)]).then(function (p) {
-        var a = p[0], b = p[1], latest = a.latest, count = a.count;
-        if (b) { count += b.count; var bl = b.latest ? String(b.latest).slice(0, 10) : null; if (bl && (!latest || bl > String(latest).slice(0, 10))) latest = bl; }
+        var a = p[0], b = p[1], latest = a.latest;
+        if (a.count == null && (!b || b.count == null)) return { src: src, latest: null, count: null, days: null };
+        var count = (a.count || 0) + ((b && b.count) || 0);
+        if (b) { var bl = b.latest ? String(b.latest).slice(0, 10) : null; if (bl && (!latest || bl > String(latest).slice(0, 10))) latest = bl; }
         return { src: src, latest: latest, count: count, days: daysAgo(latest) };
       }).catch(function () { return { src: src, latest: null, count: 0, days: null }; });
     });
@@ -125,7 +130,8 @@
     });
   }
 
-  window.DATAHEALTH = { open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); markActive(); render(); } };
+  var dhOpen = false;
+  window.DATAHEALTH = { open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); dhOpen = true; markActive(); render(); } };
 
   function markActive() { try { var nav = $("nav"); if (!nav) return; nav.querySelectorAll(".navitem.active").forEach(function (b) { b.classList.remove("active"); }); var m = $("dh-nav"); if (m) m.classList.add("active"); } catch (e) {} }
   function injectNav() {
@@ -137,6 +143,15 @@
     nav.appendChild(btn);
     try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
   }
+  document.addEventListener("click", function (e) {
+    var t = e.target && e.target.closest ? e.target.closest("#nav .navitem") : null;
+    if (t && t.id !== "dh-nav") dhOpen = false;
+  }, true);
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible" && dhOpen) render();
+  });
+  window.SMK_VIEW_LOCKS = window.SMK_VIEW_LOCKS || [];
+  window.SMK_VIEW_LOCKS.push(function () { return dhOpen; });
   try { var mo = new MutationObserver(function () { injectNav(); }); mo.observe(document.documentElement, { childList: true, subtree: true }); } catch (e) {}
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setTimeout(injectNav, 500); });
   else setTimeout(injectNav, 500);

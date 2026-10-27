@@ -15,7 +15,7 @@
   var cfg = window.SMACKIN_CONFIG || {};
   var BUCKET = "supplier-pos";
   var LS = "services-local";
-  var sb = null, cache = null, loading = false, pendFile = null, editId = null, search = "";
+  var sb = null, cache = null, loading = false, pendFile = null, editId = null, search = "", svcOpen = false;
   var TYPES = ["Uniform Cleaning", "Pest Control", "Waste / Recycling", "Equipment Service", "Cleaning / Janitorial", "Calibration", "Landscaping", "Other"];
 
   function isCloud() { return !!(window.DB && window.DB.mode === "cloud" && window.supabase && cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY); }
@@ -33,10 +33,16 @@
   function load() {
     if (cache) return Promise.resolve(cache);
     var c = client();
-    if (!c) { cache = lsGet(); return Promise.resolve(cache); }
+    if (!c) {
+      if (window.DB && window.DB.mode === "cloud") return Promise.reject(new Error("Services is not connected to cloud"));
+      cache = lsGet(); return Promise.resolve(cache);
+    }
     return c.from("services_log").select("*").order("svc_date", { ascending: false }).limit(3000)
-      .then(function (r) { cache = (r && r.data) ? r.data : []; return cache; })
-      .catch(function () { cache = lsGet(); return cache; });
+      .then(function (r) {
+        if (r && r.error) throw new Error(r.error.message || "could not read services");
+        cache = (r && r.data) ? r.data : [];
+        return cache;
+      });
   }
 
   function styleOnce() {
@@ -51,7 +57,9 @@
     var host = $("view"); if (!host) return;
     if (!cache) {
       host.innerHTML = '<div class="card"><h2>Services Provided</h2><p class="muted">Loading…</p></div>';
-      load().then(function () { if (host.getAttribute("data-svc") === "1") render(); });
+      load().then(function () { if (host.getAttribute("data-svc") === "1") render(); }).catch(function (e) {
+        host.innerHTML = '<div class="card"><h2>Services Provided</h2><p class="muted">' + esc((e && e.message) || "Could not load") + '</p></div>';
+      });
       host.setAttribute("data-svc", "1"); return;
     }
     var ed = editId ? (cache.find(function (x) { return String(x.id) === String(editId); }) || {}) : {};
@@ -118,7 +126,8 @@
     };
     rec.unit_cost = rec.num_services > 0 ? Math.round((rec.total_cost / rec.num_services) * 100) / 100 : 0;
     var c = client();
-    if (!c) { // local fallback
+    if (!c) {
+      if (window.DB && window.DB.mode === "cloud") { toast("Not connected to cloud. Not saved."); return; }
       var arr = lsGet();
       if (editId) { var i = arr.findIndex(function (x) { return String(x.id) === String(editId); }); if (i >= 0) arr[i] = Object.assign(arr[i], rec); }
       else { rec.id = uid(); rec.created_at = new Date().toISOString(); arr.unshift(rec); }
@@ -149,7 +158,7 @@
   }
 
   window.SERVICES = {
-    open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); markActiveNav(); editId = null; pendFile = null; render(); },
+    open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); svcOpen = true; cache = null; markActiveNav(); editId = null; pendFile = null; ensureRt(); render(); },
     save: save, calc: calc,
     file: function (inp) { pendFile = inp.files && inp.files[0] ? inp.files[0] : null; render(); },
     clearFile: function () { pendFile = null; render(); },
@@ -159,7 +168,11 @@
       if (!confirm("Remove this service entry?")) return;
       var c = client();
       if (!c) { var arr = lsGet().filter(function (x) { return String(x.id) !== String(id); }); lsSet(arr); cache = arr; render(); return; }
-      c.from("services_log").delete().eq("id", id).then(function () { cache = null; return load().then(render); });
+      c.from("services_log").delete().eq("id", id).select().then(function (r) {
+        if (r && r.error) { toast("Delete failed: " + r.error.message); return; }
+        if (!r || !r.data || !r.data.length) { toast("Delete failed: not confirmed"); return; }
+        cache = null; return load().then(render);
+      });
     },
     search: function (v) { search = v; var host = $("view"); if (!host) return; render(); var el = $("svc-search"); if (el) { el.focus(); el.value = v; } }
   };
@@ -180,7 +193,35 @@
     else nav.appendChild(btn);
     try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
   }
-  try { var mo = new MutationObserver(function () { injectNav(); }); mo.observe(document.documentElement, { childList: true, subtree: true }); } catch (e) {}
+  function ensureRt() {
+    var c = client();
+    if (!c || ensureRt.done) return;
+    ensureRt.done = true;
+    try {
+      c.channel("services-live").on("postgres_changes", { event: "*", schema: "public", table: "services_log" }, function () {
+        if (!svcOpen) return;
+        var ae = document.activeElement;
+        if (ae && ae.closest && ae.closest("#view") && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) && ae.id !== "svc-search") return;
+        cache = null; load().then(function () { if (svcOpen) render(); }).catch(function (e) { toast((e && e.message) || "Could not refresh"); });
+      }).subscribe();
+    } catch (e) {}
+  }
+  document.addEventListener("click", function (e) {
+    var t = e.target && e.target.closest ? e.target.closest("#nav .navitem") : null;
+    if (t && t.id !== "svc-nav") svcOpen = false;
+  }, true);
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState !== "visible" || !svcOpen) return;
+    cache = null; load().then(function () { if (svcOpen) render(); }).catch(function () {});
+  });
+  window.SMK_VIEW_LOCKS = window.SMK_VIEW_LOCKS || [];
+  window.SMK_VIEW_LOCKS.push(function () { return svcOpen; });
+  try { var mo = new MutationObserver(function () {
+    injectNav();
+    if (!svcOpen) return;
+    var host = $("view");
+    if (host && !host.querySelector("#svc-date") && !host.querySelector("#svc-search") && host.getAttribute("data-svc") !== "1") render();
+  }); mo.observe(document.documentElement, { childList: true, subtree: true }); } catch (e) {}
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setTimeout(injectNav, 400); });
   else setTimeout(injectNav, 400);
 })();

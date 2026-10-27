@@ -11,7 +11,12 @@
   var cfg = window.SMACKIN_CONFIG || {};
   var sb = null, parsed = null;   // parsed = {type, rows, fileName}
 
-  function client() { if (!sb && window.supabase && cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY) { try { sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY); } catch (e) {} } return sb; }
+  function cloudReady() { return !!(window.DB && window.DB.mode === "cloud"); }
+  function client() {
+    if (!cloudReady()) return null;
+    if (!sb && window.supabase && cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY) { try { sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY); } catch (e) {} }
+    return sb;
+  }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function $(id) { return document.getElementById(id); }
   function num(v) { if (v == null || v === "") return null; var n = parseFloat(String(v).replace(/[, ]/g, "")); return isNaN(n) ? null : n; }
@@ -170,7 +175,7 @@
 
   function doImport() {
     if (!parsed) return;
-    var c = client(); if (!c) { msg("err", "Not connected."); return; }
+    var c = client(); if (!c) { msg("err", "Cloud is not connected yet. Wait until the badge says CLOUD, then import."); return; }
     var table = parsed.type === "pmac" ? "pmac_history" : "mixing_history";
     var cols = parsed.type === "pmac"
       ? "run_date,operator,flavor_code,machine,total_pkgs,box_count"
@@ -181,6 +186,7 @@
     var existing = {}, step = 1000;
     function pull(from) {
       return c.from(table).select(cols).range(from, from + step - 1).then(function (r) {
+        if (r && r.error) throw new Error(r.error.message || "could not read existing rows");
         var d = (r && r.data) || []; d.forEach(function (row) { existing[keyOf(parsed.type, row)] = 1; });
         if (d.length === step) return pull(from + step);
       });
@@ -193,8 +199,9 @@
       function batch(i) {
         if (i >= fresh.length) { msg("ok", "Done. Added <b>" + fmt(ins) + "</b> new " + (parsed.type === "pmac" ? "P-Mac" : "Mixing") + " rows (" + fmt(parsed.rows.length - fresh.length) + " were already on record)."); $("mfg-up-actions").style.display = "none"; parsed = null; $("mfg-import-btn").disabled = false; showCounts(); return; }
         var chunk = fresh.slice(i, i + 100);
-        c.from(table).insert(chunk).then(function (r) {
+        c.from(table).insert(chunk).select("run_date").then(function (r) {
           if (r && r.error) { msg("err", "Import stopped: " + esc(r.error.message) + " (" + fmt(ins) + " added before the error)."); $("mfg-import-btn").disabled = false; return; }
+          if (!r || !r.data || r.data.length !== chunk.length) { msg("err", "Import stopped: a batch was not confirmed (" + fmt(ins) + " added before that)."); $("mfg-import-btn").disabled = false; return; }
           ins += chunk.length; msg("info", "Adding rows… " + fmt(ins) + " / " + fmt(fresh.length)); batch(i + 100);
         }).catch(function (e) { msg("err", "Import stopped: " + esc((e && e.message) || e)); $("mfg-import-btn").disabled = false; });
       }
@@ -217,6 +224,8 @@
     if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(btn, anchor.nextSibling); else nav.appendChild(btn);
     try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
   }
+  window.SMK_VIEW_LOCKS = window.SMK_VIEW_LOCKS || [];
+  window.SMK_VIEW_LOCKS.push(function () { return !!document.getElementById("mfg-drop"); });
   try { var mo = new MutationObserver(function () { injectNav(); }); mo.observe(document.documentElement, { childList: true, subtree: true }); } catch (e) {}
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setTimeout(injectNav, 450); });
   else setTimeout(injectNav, 450);

@@ -30,13 +30,14 @@
     function page(from) {
       return c.from(table).select(cols).order("run_date", { ascending: true }).range(from, from + step - 1)
         .then(function (r) {
+          if (r && r.error) throw new Error(r.error.message || "could not read " + table);
           var d = (r && r.data) ? r.data : [];
           all = all.concat(d);
           if (d.length === step) return page(from + step);
           return all;
         });
     }
-    return page(0).catch(function () { return all; });
+    return page(0);
   }
   // Digital P-Mac log (pmac-log.js writes table pmac_log). Map to pmac_history's shape
   // and union it in so new runs show up without a tracker upload. Read-only.
@@ -58,9 +59,12 @@
     var all = [], step = 1000;
     function page(from) {
       return c.from("pmac_log").select("*").order("log_date", { ascending: true }).range(from, from + step - 1)
-        .then(function (r) { var d = (r && r.data) ? r.data : []; all = all.concat(d); if (d.length === step) return page(from + step); return all; });
+        .then(function (r) {
+          if (r && r.error) throw new Error(r.error.message || "could not read pmac_log");
+          var d = (r && r.data) ? r.data : []; all = all.concat(d); if (d.length === step) return page(from + step); return all;
+        });
     }
-    return page(0).catch(function () { return all; });
+    return page(0);
   }
   function unionPmac(hist, logRows) {
     var seen = {}; hist.forEach(function (r) { seen[dedupeKey(r)] = 1; });
@@ -68,14 +72,17 @@
     (logRows || []).forEach(function (raw) { var r = mapPmacLog(raw); if (!r.run_date) return; var k = dedupeKey(r); if (seen[k]) return; seen[k] = 1; add.push(r); });
     return hist.concat(add).sort(function (a, b) { return a.run_date < b.run_date ? -1 : a.run_date > b.run_date ? 1 : 0; });
   }
+  var loadErr = "";
   function load() {
     if (loaded || loading) return Promise.resolve();
     loading = true;
+    loadErr = "";
     return Promise.all([
       fetchAll("pmac_history", "run_date,bag_size,flavor_code,flavor_name,operator,shift,box_count,total_pkgs"),
       fetchAll("mixing_history", "run_date,flavor_code,flavor_name,operator,machine,total_bins"),
       fetchPmacLog()
-    ]).then(function (res) { PM = unionPmac(res[0] || [], res[2] || []); MX = res[1] || []; loaded = true; loading = false; });
+    ]).then(function (res) { PM = unionPmac(res[0] || [], res[2] || []); MX = res[1] || []; loaded = true; loading = false; })
+      .catch(function (e) { loading = false; loaded = false; loadErr = (e && e.message) || "Could not load history"; });
   }
 
   // ---- aggregation -------------------------------------------------------
@@ -163,8 +170,8 @@
     styleOnce();
     var host = $("view"); if (!host) return;
     if (!loaded) {
-      host.innerHTML = '<div class="card"><h2>Production History</h2><p class="muted">Loading 15 months of Mixing &amp; P-Mac history…</p></div>';
-      load().then(function () { if ($("mfg-hist-active")) render(); });
+      host.innerHTML = '<div class="card"><h2>Production History</h2><p class="muted">' + (loadErr ? esc(loadErr) : "Loading 15 months of Mixing &amp; P-Mac history…") + '</p></div>';
+      if (!loadErr) load().then(function () { if ($("mfg-hist-active") || (host.getAttribute("data-mfg") === "1")) render(); });
       // mark active so the load callback knows this view is still showing
       host.setAttribute("data-mfg", "1");
       var flag = document.createElement("span"); flag.id = "mfg-hist-active"; flag.style.display = "none"; host.appendChild(flag);
@@ -234,6 +241,15 @@
     try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
   }
 
+  function histOpen() { return !!document.getElementById("mfg-hist-active"); }
+  document.addEventListener("visibilitychange", function () {
+    // History is a large read-only pull. Refresh when the operator comes back
+    // to the tab instead of subscribing to every imported run row.
+    if (document.visibilityState !== "visible" || !histOpen()) return;
+    loaded = false; loading = false; loadErr = ""; render();
+  });
+  window.SMK_VIEW_LOCKS = window.SMK_VIEW_LOCKS || [];
+  window.SMK_VIEW_LOCKS.push(histOpen);
   try {
     var mo = new MutationObserver(function () { injectNav(); });
     mo.observe(document.documentElement, { childList: true, subtree: true });

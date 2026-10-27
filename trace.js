@@ -234,7 +234,14 @@
       (r[0].data || []).forEach(function (x) { S.labels[x.lpn] = normLabel(x); });
       S.events = (r[1].data || []).map(function (e) { if (typeof e.data === "string") { try { e.data = JSON.parse(e.data); } catch (x) { e.data = {}; } } e.data = e.data || {}; return e; }).reverse();
       S.loaded = true; S.err = "";
-    }).catch(function (e) { mode = "local"; S.err = (e && (e.message || e.code)) || String(e); localLoad(); S.loaded = true; });
+      ensureRt();
+    }).catch(function (e) {
+      S.err = (e && (e.message || e.code)) || String(e);
+      // DB is already cloud. Do not downgrade this station to localStorage or the
+      // next Use / Mix / Ship stays on this device only.
+      if (window.DB && window.DB.mode === "cloud") { mode = "cloud"; S.loaded = true; return; }
+      mode = "local"; localLoad(); S.loaded = true;
+    });
   }
   function fetchOne(lpn) {
     lpn = String(lpn || "").toUpperCase();
@@ -244,24 +251,75 @@
       var x = r && r.data && r.data[0]; if (x) S.labels[x.lpn] = normLabel(x); return x ? S.labels[x.lpn] : null;
     }).catch(function () { return null; });
   }
+  function normEvent(e) {
+    if (!e) return e;
+    if (typeof e.data === "string") { try { e.data = JSON.parse(e.data); } catch (x) { e.data = {}; } }
+    e.data = e.data || {};
+    return e;
+  }
   function insLabels(rows) {
-    rows.forEach(function (r) { r.updated_at = nowISO(); if (!r.created_at) r.created_at = nowISO(); S.labels[r.lpn] = normLabel(r); });
-    if (mode !== "cloud") { localSave(); return Promise.resolve({ ok: true }); }
+    rows.forEach(function (r) { r.updated_at = nowISO(); if (!r.created_at) r.created_at = nowISO(); });
+    if (mode !== "cloud") { rows.forEach(function (r) { S.labels[r.lpn] = normLabel(r); }); localSave(); return Promise.resolve({ ok: true }); }
     var out = rows.map(function (r) { var o = {}; for (var k in r) o[k] = r[k]; return o; });
-    return client().from("trace_labels").insert(out).then(function (r) { return r && r.error ? { ok: false, msg: r.error.message } : { ok: true }; });
+    return client().from("trace_labels").insert(out).select().then(function (r) {
+      if (!r || r.error || !r.data || r.data.length !== out.length) return { ok: false, msg: (r && r.error && r.error.message) || "not confirmed" };
+      r.data.forEach(function (x) { S.labels[x.lpn] = normLabel(x); });
+      return { ok: true };
+    }).catch(function (e) { return { ok: false, msg: (e && e.message) || "not saved" }; });
   }
   function updLabel(lpn, patch) {
-    var l = S.labels[lpn]; if (l) { for (var k in patch) l[k] = patch[k]; l.updated_at = nowISO(); }
-    patch.updated_at = nowISO();
-    if (mode !== "cloud") { localSave(); return Promise.resolve({ ok: true }); }
-    return client().from("trace_labels").update(patch).eq("lpn", lpn).then(function (r) { return r && r.error ? { ok: false, msg: r.error.message } : { ok: true }; });
+    patch = Object.assign({}, patch, { updated_at: nowISO() });
+    if (mode !== "cloud") {
+      var l = S.labels[lpn]; if (l) { for (var k in patch) l[k] = patch[k]; l.updated_at = patch.updated_at; }
+      localSave(); return Promise.resolve({ ok: true });
+    }
+    return client().from("trace_labels").update(patch).eq("lpn", lpn).select().then(function (r) {
+      if (!r || r.error || !r.data || !r.data.length) return { ok: false, msg: (r && r.error && r.error.message) || "not confirmed" };
+      S.labels[lpn] = normLabel(r.data[0]);
+      return { ok: true };
+    }).catch(function (e) { return { ok: false, msg: (e && e.message) || "not saved" }; });
   }
   function addEvents(evs) {
-    evs.forEach(function (e) { e.ts = e.ts || nowISO(); e.data = e.data || {}; e.operator = e.operator || opName(); S.events.push(e); });
-    if (mode !== "cloud") { localSave(); return Promise.resolve({ ok: true }); }
+    evs.forEach(function (e) { e.ts = e.ts || nowISO(); e.data = e.data || {}; e.operator = e.operator || opName(); });
+    if (mode !== "cloud") { evs.forEach(function (e) { S.events.push(e); }); localSave(); return Promise.resolve({ ok: true }); }
     var out = evs.map(function (e) { return { ts: e.ts, type: e.type, lpn: e.lpn || null, qty: e.qty == null ? null : Number(e.qty), uom: e.uom || null, from_loc: e.from_loc || null, to_loc: e.to_loc || null, ref: e.ref || null, lot: e.lot || null, operator: e.operator || null, data: e.data || {} }; });
-    return client().from("trace_events").insert(out).then(function (r) { return r && r.error ? { ok: false, msg: r.error.message } : { ok: true }; });
+    return client().from("trace_events").insert(out).select().then(function (r) {
+      if (!r || r.error || !r.data || r.data.length !== out.length) return { ok: false, msg: (r && r.error && r.error.message) || "not confirmed" };
+      r.data.forEach(function (e) { S.events.push(normEvent(e)); });
+      return { ok: true };
+    }).catch(function (e) { return { ok: false, msg: (e && e.message) || "not saved" }; });
   }
+  function savedOk(res) { return !!(res && res.ok !== false); }
+  var rtTimer = null;
+  function typingTrace() {
+    var ae = document.activeElement;
+    var root = $("trc-root");
+    if (!ae || !root || !root.contains(ae)) return false;
+    return /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName);
+  }
+  function scheduleTrace() {
+    if (rtTimer) return;
+    rtTimer = setTimeout(function () {
+      rtTimer = null;
+      if (!ACTIVE || typingTrace()) return;
+      var tab = ST.tab;
+      load().then(function () { if (!ACTIVE || ST.tab !== tab) return; render(); });
+    }, 500);
+  }
+  function ensureRt() {
+    var c = client();
+    if (!c || ensureRt.done) return;
+    ensureRt.done = true;
+    try {
+      c.channel("trace-live")
+        .on("postgres_changes", { event: "*", schema: "public", table: "trace_labels" }, scheduleTrace)
+        .on("postgres_changes", { event: "*", schema: "public", table: "trace_events" }, scheduleTrace)
+        .subscribe();
+    } catch (e) {}
+  }
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible" && ACTIVE) scheduleTrace();
+  });
   function allLabels() { return Object.keys(S.labels).map(function (k) { return S.labels[k]; }); }
   function childrenOf(lpn) { return allLabels().filter(function (l) { return (l.parents || []).indexOf(lpn) >= 0; }); }
   function eventsFor(lpn) { return S.events.filter(function (e) { return e.lpn === lpn; }); }
@@ -361,7 +419,8 @@
     var holdN = allLabels().filter(function (l) { return l.status === "HOLD"; }).length;
     var h = '<div id="trc-root">';
     h += '<div class="card trc-noprint"><h2 style="margin-top:0">' + esc(L("title")) + '</h2>';
-    if (mode !== "cloud") h += '<div class="trc-local">' + esc(L("local")) + (S.err ? ' <span class="muted">(' + esc(S.err) + ')</span>' : "") + '</div>';
+    if (S.err) h += '<div class="trc-local">' + esc(S.err) + '</div>';
+    else if (mode !== "cloud") h += '<div class="trc-local">' + esc(L("local")) + '</div>';
     h += '<div class="trc-tabs">' + tabs.map(function (t) {
       var extra = t[0] === "qa" && holdN ? ' (' + holdN + ')' : "";
       return '<button class="' + (ST.tab === t[0] ? "on" : "") + '" onclick="TRACE.tab(\'' + t[0] + '\')">' + esc(L(t[1])) + extra + '</button>';
@@ -535,9 +594,13 @@
     // the sticker on the item still says HOLD: print a replacement when the status changes
     var pw = openPrintWin();
     var data = l.data || {}; data.qa = { status: status, by: opName(), at: nowISO(), reason: reason };
-    updLabel(lpn, { status: status, data: data }).then(function () {
-      return addEvents([{ type: "QA_" + status, lpn: lpn, lot: l.lot, data: { reason: reason } }]);
-    }).then(function () { printLabels([S.labels[lpn] || l], pw); flash(lpn + " -> " + status + " (new label printed, put it over the old one)", status === "RELEASED" ? "ok" : "warn"); render(); });
+    updLabel(lpn, { status: status, data: data }).then(function (res) {
+      if (!savedOk(res)) { closeWin(pw); flash("Save failed: " + ((res && res.msg) || ""), "err"); render(); return; }
+      return addEvents([{ type: "QA_" + status, lpn: lpn, lot: l.lot, data: { reason: reason } }]).then(function (res2) {
+        if (!savedOk(res2)) { flash("Label saved, event failed: " + ((res2 && res2.msg) || ""), "warn"); render(); return; }
+        printLabels([S.labels[lpn] || l], pw); flash(lpn + " -> " + status + " (new label printed, put it over the old one)", status === "RELEASED" ? "ok" : "warn"); render();
+      });
+    });
   }
   function qaIssue(lpn) {
     if (needOp()) return;
@@ -545,9 +608,13 @@
     var txt = window.prompt(L("issuePrompt")); if (!txt || !String(txt).trim()) return;
     var data = l.data || {}; data.issues = (data.issues || []).concat([{ txt: String(txt).trim(), by: opName(), at: nowISO() }]);
     var was = l.status;
-    updLabel(lpn, { status: "HOLD", data: data }).then(function () {
-      return addEvents([{ type: "QA_ISSUE", lpn: lpn, lot: l.lot, data: { issue: String(txt).trim(), was: was } }]);
-    }).then(function () { printLabels([S.labels[lpn] || l]); flash(lpn + " ON HOLD: " + txt + " (new HOLD label printed)", "warn"); render(); });
+    updLabel(lpn, { status: "HOLD", data: data }).then(function (res) {
+      if (!savedOk(res)) { flash("Save failed: " + ((res && res.msg) || ""), "err"); render(); return; }
+      return addEvents([{ type: "QA_ISSUE", lpn: lpn, lot: l.lot, data: { issue: String(txt).trim(), was: was } }]).then(function (res2) {
+        if (!savedOk(res2)) { flash("Label saved, event failed: " + ((res2 && res2.msg) || ""), "warn"); render(); return; }
+        printLabels([S.labels[lpn] || l]); flash(lpn + " ON HOLD: " + txt + " (new HOLD label printed)", "warn"); render();
+      });
+    });
   }
   function qaScan(code) {
     code = cleanScan(code).toUpperCase(); if (!code) return;
@@ -634,19 +701,27 @@
       rows.push({ lpn: lpn, kind: "BN", mtype: "BIN", item: "Mixed bin", flavor_code: fl.code, flavor: fl.name, size: "", lot: bc, supplier: "", supplier_lot: "", seed_code: seeds[0].seed_code, exp: null, qty: 1, qty_left: 1, uom: "bin", status: "ACTIVE", location: "MIXING", parents: parents, po: "", station: "MIXER " + ST.mixer, data: { prefix: String(m.prefix).toUpperCase().trim(), mixer: ST.mixer, bin_no: prior + i + 1, alg: fl.alg, algTxt: fl.algTxt, date: today() }, created_by: opName(), created_at: stamp });
       evs.push({ type: "MIX", lpn: lpn, qty: 1, uom: "bin", ref: "MIXER " + ST.mixer, lot: bc, data: { inputs: parents } });
     }
+    var ups = [];
     m.inputs.forEach(function (x) {
       var used = num(x.used);
       if (used > 0 || x.empty) {
         var l = S.labels[x.lpn]; var left = l ? Math.max(0, (x.empty ? 0 : num(l.qty_left) - used)) : 0;
-        updLabel(x.lpn, { qty_left: left, status: left <= 0 ? "EMPTY" : (l ? l.status : "RELEASED") });
+        ups.push(updLabel(x.lpn, { qty_left: left, status: left <= 0 ? "EMPTY" : (l ? l.status : "RELEASED") }));
       }
       evs.push({ type: "CONSUME", lpn: x.lpn, qty: num(x.used) || null, uom: "lb", ref: bc, lot: x.supplier_lot, data: { mixer: ST.mixer, bins: m.bins, empty: !!x.empty } });
       x.used = ""; if (x.empty) x.gone = true;
     });
     m.inputs = m.inputs.filter(function (x) { return !x.gone; });
-    insLabels(rows).then(function (res) {
+    Promise.all(ups).then(function (rs) {
+      if (rs.some(function (r) { return r && r.ok === false; })) { closeWin(pw); flash("Save failed: input not updated", "err"); render(); return; }
+      return insLabels(rows);
+    }).then(function (res) {
+      if (!res) return;
       if (!res.ok) { closeWin(pw); flash("Save failed: " + res.msg, "err"); render(); return; }
-      return addEvents(evs).then(function () { printLabels(rows, pw); flash(m.bins + " bin tags: " + bc, "ok"); render(); });
+      return addEvents(evs).then(function (res2) {
+        if (!savedOk(res2)) { flash("Bins saved, consume log failed: " + ((res2 && res2.msg) || ""), "warn"); render(); return; }
+        printLabels(rows, pw); flash(m.bins + " bin tags: " + bc, "ok"); render();
+      });
     });
   }
 
@@ -686,19 +761,28 @@
           go.then(function () {
             var from = bagCode(p, m);
             p.changes = (p.changes || []).concat([{ from: from, to: l.lot + String(m).slice(-1) + "." + isoWeek(), at: nowISO() }]).slice(-40);
-            addEvents([{ type: "CODE_CHANGE", ref: "PMAC " + m, lot: from, data: { to: l.lot, machine: m } }]);
-            p.openBins = []; p.batch = "";
-            savePm(m); pmScan(code);
+            addEvents([{ type: "CODE_CHANGE", ref: "PMAC " + m, lot: from, data: { to: l.lot, machine: m } }]).then(function (res) {
+              if (!savedOk(res)) { flash("Save failed: " + ((res && res.msg) || ""), "err"); render(); return; }
+              p.openBins = []; p.batch = "";
+              savePm(m); pmScan(code);
+            });
           });
           return;
         }
         p.batch = l.lot; p.flavor = l.flavor_code;
         if (p.openBins.indexOf(l.lpn) < 0) p.openBins.push(l.lpn);
-        if (p.filmFlavor && l.flavor_code && p.filmFlavor !== l.flavor_code) flash("Bin loaded, but FILM is " + p.filmFlavor + " and bin is " + l.flavor_code + ". Check the film!", "warn");
-        else flash("Bin " + code + " loaded (" + l.lot + ")", "ok");
-        updLabel(l.lpn, { location: "PMAC " + m, qty_left: 0, status: "EMPTY" });
-        addEvents([{ type: "LOAD_BIN", lpn: l.lpn, ref: "PMAC " + m, lot: l.lot, to_loc: "PMAC " + m }]);
-        savePm(m); render(); return;
+        var warnFilm = p.filmFlavor && l.flavor_code && p.filmFlavor !== l.flavor_code;
+        updLabel(l.lpn, { location: "PMAC " + m, qty_left: 0, status: "EMPTY" }).then(function (res) {
+          if (!savedOk(res)) { flash("Save failed: " + ((res && res.msg) || ""), "err"); render(); return; }
+          return addEvents([{ type: "LOAD_BIN", lpn: l.lpn, ref: "PMAC " + m, lot: l.lot, to_loc: "PMAC " + m }]);
+        }).then(function (res2) {
+          if (!res2) return;
+          if (!savedOk(res2)) { flash("Bin updated, event failed: " + ((res2 && res2.msg) || ""), "warn"); }
+          else if (warnFilm) flash("Bin loaded, but FILM is " + p.filmFlavor + " and bin is " + l.flavor_code + ". Check the film!", "warn");
+          else flash("Bin " + code + " loaded (" + l.lot + ")", "ok");
+          savePm(m); render();
+        });
+        return;
       }
       if (l.kind === "RM" && l.mtype === "FILM") {
         if (p.flavor && l.flavor_code && l.flavor_code !== p.flavor && !window.confirm(L("wrongFlavor") + ": film " + l.flavor_code + " vs bins " + p.flavor + "\nOK = load anyway")) { flash(L("wrongFlavor"), "err"); render(); return; }
@@ -707,8 +791,16 @@
         evs.push({ type: "FILM_ON", lpn: l.lpn, ref: "PMAC " + m, lot: l.supplier_lot, to_loc: "PMAC " + m });
         p.film = l.lpn; p.filmLot = l.supplier_lot; p.filmFlavor = l.flavor_code;
         p.openFilms = p.openFilms || []; if (p.openFilms.indexOf(l.lpn) < 0) p.openFilms.push(l.lpn);
-        updLabel(l.lpn, { location: "PMAC " + m });
-        addEvents(evs); savePm(m); flash("Film roll " + code + " on P-Mac " + m, "ok"); render(); return;
+        updLabel(l.lpn, { location: "PMAC " + m }).then(function (res) {
+          if (!savedOk(res)) { flash("Save failed: " + ((res && res.msg) || ""), "err"); render(); return; }
+          return addEvents(evs);
+        }).then(function (res2) {
+          if (!res2) return;
+          if (!savedOk(res2)) flash("Film updated, event failed: " + ((res2 && res2.msg) || ""), "warn");
+          else flash("Film roll " + code + " on P-Mac " + m, "ok");
+          savePm(m); render();
+        });
+        return;
       }
       flash(code + ": scan a bin tag (BN) or film roll (RM film)", "err"); render();
     });
@@ -721,8 +813,10 @@
     var from = bagCode(p, m);
     p.changes = (p.changes || []).concat([{ from: from, to: nb, at: nowISO() }]).slice(-40);
     p.batch = nb; p.openBins = [];
-    addEvents([{ type: "CODE_CHANGE", ref: "PMAC " + m, lot: from, data: { to: nb, machine: m, manual: true } }]);
-    savePm(m); flash("Code change recorded " + from + " -> " + bagCode(p, m), "warn"); render();
+    addEvents([{ type: "CODE_CHANGE", ref: "PMAC " + m, lot: from, data: { to: nb, machine: m, manual: true } }]).then(function (res) {
+      if (!savedOk(res)) { flash("Save failed: " + ((res && res.msg) || ""), "err"); render(); return; }
+      savePm(m); flash("Code change recorded " + from + " -> " + bagCode(p, m), "warn"); render();
+    });
   }
   function finishPallet(m, bags, pw) {
     var p = pmState(m), fl = flavorBy(p.flavor), lot = bagCode(p, m);
@@ -731,7 +825,8 @@
     var row = { lpn: newLpn("FG"), kind: "FG", mtype: "FG", item: (fl ? fl.name : p.flavor) + " " + sizeForMachine(m), flavor_code: p.flavor, flavor: fl ? fl.name : "", size: sizeForMachine(m), lot: lot, supplier: "", supplier_lot: "", seed_code: "", exp: null, qty: bags, qty_left: bags, uom: "bags", status: "ACTIVE", location: "STAGING", parents: parents, po: "", station: "PMAC " + m, data: { machine: m, week: isoWeek(), date: today(), alg: fl ? fl.alg : "", algTxt: fl ? fl.algTxt : "", batch: p.batch }, created_by: opName(), created_at: nowISO() };
     return insLabels([row]).then(function (res) {
       if (!res.ok) { closeWin(pw); flash("Save failed: " + res.msg, "err"); return null; }
-      return addEvents([{ type: "PACK", lpn: row.lpn, qty: bags, uom: "bags", ref: "PMAC " + m, lot: lot, to_loc: "STAGING", data: { parents: parents } }]).then(function () {
+      return addEvents([{ type: "PACK", lpn: row.lpn, qty: bags, uom: "bags", ref: "PMAC " + m, lot: lot, to_loc: "STAGING", data: { parents: parents } }]).then(function (res2) {
+        if (!savedOk(res2)) { flash("Pallet saved, pack event failed: " + ((res2 && res2.msg) || ""), "warn"); return row; }
         // the bin in the hopper and the film on the machine keep feeding the next pallet
         p.openBins = (p.openBins || []).slice(-1); p.openFilms = p.film ? [p.film] : [];
         savePm(m); printLabels([row], pw); flash("Pallet " + row.lpn + ": " + bags + " bags " + lot + " -> STAGING", "ok");
@@ -752,7 +847,10 @@
     var m = ST.machine, p = pmState(m);
     var n = num(window.prompt(L("scrapBags") + " (P-Mac " + m + ")?")); if (!(n > 0)) return;
     var why = window.prompt(L("reason") + "?") || "";
-    addEvents([{ type: "SCRAP", qty: n, uom: "bags", ref: "PMAC " + m, lot: bagCode(p, m), data: { reason: why } }]).then(function () { flash("Scrap " + n + " bags logged", "warn"); render(); });
+    addEvents([{ type: "SCRAP", qty: n, uom: "bags", ref: "PMAC " + m, lot: bagCode(p, m), data: { reason: why } }]).then(function (res) {
+      if (!savedOk(res)) { flash("Save failed: " + ((res && res.msg) || ""), "err"); render(); return; }
+      flash("Scrap " + n + " bags logged", "warn"); render();
+    });
   }
 
   // =========================== MOVE ===========================
@@ -778,8 +876,13 @@
     }
     if (!W.move.lpn) { flash("Scan the pallet / box label first.", "err"); render(); return; }
     var l = S.labels[W.move.lpn], from = l.location;
-    updLabel(l.lpn, { location: code }).then(function () { return addEvents([{ type: "MOVE", lpn: l.lpn, qty: l.qty_left, uom: l.uom, from_loc: from, to_loc: code, lot: l.lot }]); })
-      .then(function () { flash(l.lpn + ": " + from + " -> " + code, "ok"); W.move.lpn = ""; render(); });
+    updLabel(l.lpn, { location: code }).then(function (res) {
+      if (!savedOk(res)) { flash("Save failed: " + ((res && res.msg) || ""), "err"); render(); return; }
+      return addEvents([{ type: "MOVE", lpn: l.lpn, qty: l.qty_left, uom: l.uom, from_loc: from, to_loc: code, lot: l.lot }]).then(function (res2) {
+        if (!savedOk(res2)) { flash("Move saved, event failed: " + ((res2 && res2.msg) || ""), "warn"); render(); return; }
+        flash(l.lpn + ": " + from + " -> " + code, "ok"); W.move.lpn = ""; render();
+      });
+    });
   }
 
   // =========================== USE (e-com hand log first; scan stays secondary) ===========================
@@ -914,9 +1017,14 @@
       var take = num(W.use.qty) > 0 ? Math.min(num(W.use.qty), l.qty_left) : l.qty_left;
       if (!(take > 0)) { flash(code + " is empty", "err"); render(); return; }
       var left = l.qty_left - take;
-      updLabel(l.lpn, { qty_left: left, status: left <= 0 ? "EMPTY" : l.status }).then(function () {
+      updLabel(l.lpn, { qty_left: left, status: left <= 0 ? "EMPTY" : l.status }).then(function (res) {
+        if (!savedOk(res)) { flash("Save failed: " + ((res && res.msg) || ""), "err"); render(); return; }
         return addEvents([{ type: "USE", lpn: l.lpn, qty: take, uom: "bags", from_loc: l.location, to_loc: W.use.dest, ref: W.use.ref || "", lot: l.lot, data: { flavor: l.flavor_code, flavor_code: l.flavor_code, size: l.size, pull_date: today() } }]);
-      }).then(function () { flash(take + " bags " + l.lot + " -> " + W.use.dest + (left > 0 ? " (" + left + " left on pallet)" : " (pallet empty)"), "ok"); W.use.qty = ""; render(); });
+      }).then(function (res2) {
+        if (!res2) return;
+        if (!savedOk(res2)) { flash("Pallet updated, pull log failed: " + ((res2 && res2.msg) || ""), "warn"); render(); return; }
+        flash(take + " bags " + l.lot + " -> " + W.use.dest + (left > 0 ? " (" + left + " left on pallet)" : " (pallet empty)"), "ok"); W.use.qty = ""; render();
+      });
     });
   }
 
@@ -970,10 +1078,18 @@
     s.lines.forEach(function (x) {
       var l = S.labels[x.lpn]; var left = Math.max(0, num(l.qty_left) - x.bags);
       ups.push(updLabel(x.lpn, { qty_left: left, status: left <= 0 ? "EMPTY" : l.status }));
-      l.qty_left = left;
       evs.push({ type: "SHIP", lpn: x.lpn, qty: x.bags, uom: "bags", from_loc: l.location, to_loc: "PO " + s.po, ref: s.po, lot: x.lot, data: { customer: s.customer, ob: row.lpn, flavor: x.flavor_code, size: x.size } });
     });
-    Promise.all(ups).then(function () { return insLabels([row]); }).then(function () { return addEvents(evs); }).then(function () {
+    Promise.all(ups).then(function (rs) {
+      if (rs.some(function (r) { return r && r.ok === false; })) { closeWin(pw); flash("Save failed: pallet not updated", "err"); render(); return null; }
+      return insLabels([row]);
+    }).then(function (res) {
+      if (!res) return null;
+      if (!savedOk(res)) { closeWin(pw); flash("Save failed: " + (res.msg || ""), "err"); render(); return null; }
+      return addEvents(evs);
+    }).then(function (res2) {
+      if (!res2) return;
+      if (!savedOk(res2)) { flash("Pallet saved, ship event failed: " + (res2.msg || ""), "warn"); render(); return; }
       printLabels([row], pw); flash("Outbound pallet " + row.lpn + " for PO " + s.po + ": " + total + " bags, lots " + row.lot, "ok");
       W.ship.lines = []; render();
     });
@@ -1355,6 +1471,10 @@
     var t = e.target && e.target.closest ? e.target.closest("#nav .navitem") : null;
     if (t && t.getAttribute("data-trc") !== "1" && ACTIVE) { ACTIVE = false; }
   }, true);
+  window.SMK_VIEW_LOCKS = window.SMK_VIEW_LOCKS || [];
+  window.SMK_VIEW_LOCKS.push(function () { return ACTIVE; });
+  window.SMK_BUSY = window.SMK_BUSY || [];
+  window.SMK_BUSY.push(function () { return ACTIVE && typingTrace(); });
   // Language switch re-renders the app; bring our view back in the new language.
   ["lang-en", "lang-es", "lang-pt"].forEach(function (id) {
     document.addEventListener("click", function (e) { if (e.target && e.target.id === id && ACTIVE) { setTimeout(render, 0); } }, false);
