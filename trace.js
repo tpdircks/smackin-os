@@ -1,5 +1,5 @@
 /* ============================================================================
-   Lot Trace & Scan  (trace.js)  b=10
+   Lot Trace & Scan  (trace.js)  b=12
    One scan chain from the dock to the customer, built for SQF traceability.
 
      RECEIVE   raw material in -> our own RM label per pallet/box/roll (supplier lot, exp)
@@ -10,8 +10,10 @@
      MOVE      scan any label, scan a location (put-away / moves)
      USE       hand-log a pull (e-commerce is the default) or scan a finished pallet
                to the line, e-commerce, samples or scrap. One save = one lot,
-               total bags across every box in that pull.
-     SHIP      build an outbound pallet for a PO: scan pallets, bags -> OB label w/ lots
+               total bags across every box in that pull. Lot picks follow FEFO:
+               the oldest dated on-hand lot is filled in, and a later lot asks first.
+     SHIP      build an outbound pallet for a PO: scan pallets, bags -> OB label w/ lots.
+               Scanning a later-dated lot asks before that pallet is added.
      TRACE     type/scan any LPN, lot, supplier lot, PO or seed code -> back + forward
                tree, mass balance, mock recall timer, printable evidence
 
@@ -111,6 +113,7 @@
       notFound: "Not found", onHold: "ON HOLD - cannot use", expired: "EXPIRED - cannot use", wrongFlavor: "Flavor does not match",
       all: "All", kind: "Kind", status: "Status", search: "Search",
       manTitle: "Log bags pulled", manHint: "One save for the whole pull of one lot. If that lot is in several boxes, add the bags together and enter the total. Do not save a row for each box. Type the lot code printed on the bags (example L2031/3X9.35).", manSave: "Save pull", lotPh: "Type lot on bags", lotEmpty: "Empty. Type the lot printed on the bags.", flavorBlank: "Follows the lot", bagTotal: "Bags (total, all boxes)", pullDate: "Date", pullFuture: "Date cannot be in the future.", scanFold: "Scan a pallet label instead", note: "Note / reference", byHand: "by hand", manOddLot: "This does not look like a normal bag code (example L2031/3X9.35). Save it anyway?",
+      fefoHint: "Tap the oldest lot, or type the code on the bags.", fefoUse: "Use this", fefoNone: "No on-hand lots for this flavor yet. Type the code on the bags.", fefoNoDate: "No expiration on these lots. Type the code on the bags.", fefoOldest: "Oldest lot on hand.", fefoUnknown: "date unknown", fefoExp: "exp", fefoPacked: "packed", fefoWeek: "packed week", fefoExpired: "EXPIRED", fefoBags: "bags", fefoLater: "Earlier lot", fefoStill: "still has", fefoPicked: "You picked", fefoSaveAsk: "Save this later lot anyway?", fefoAddAsk: "Add this later lot anyway?", fefoAlso: "more earlier lots also have bags.", fefoShipTitle: "Pull the oldest lot first", fefoCancel: "Not saved. Pull the older lot first.",
       navUse: "E-com lot pull", ecomLink: "Log e-com lot pull", ecomLinkHint: "Opens the pull log. Add every box of that lot into one bag total.",
       issue: "Issue found (blank if none). Anything here keeps it ON HOLD", noteIssue: "Note issue (stay on hold)", issueCol: "Issue",
       issuePrompt: "Describe the issue. Examples: No CA warning / Wrong ingredient statement / Spec issue / Shiny film / Swirl design", holdQ: "is released. Put it ON HOLD?"
@@ -146,6 +149,7 @@
       notFound: "No encontrado", onHold: "RETENIDO - no usar", expired: "VENCIDO - no usar", wrongFlavor: "El sabor no coincide",
       all: "Todos", kind: "Tipo", status: "Estado", search: "Buscar",
       manTitle: "Registrar bolsas tomadas", manHint: "Un solo guardado para toda la salida de un lote. Si ese lote viene en varias cajas, sume las bolsas y escriba el total. No guarde una fila por caja. Escriba el código de lote impreso en las bolsas (ejemplo L2031/3X9.35).", manSave: "Guardar salida", lotPh: "Escriba el lote", lotEmpty: "Vacío. Escriba el lote impreso en las bolsas.", flavorBlank: "Sigue el lote", bagTotal: "Bolsas (total, todas las cajas)", pullDate: "Fecha", pullFuture: "La fecha no puede ser futura.", scanFold: "Escanear una etiqueta de tarima", note: "Nota / referencia", byHand: "a mano", manOddLot: "Esto no parece un código de bolsa normal (ejemplo L2031/3X9.35). ¿Guardar de todos modos?",
+      fefoHint: "Toque el lote más viejo, o escriba el código de las bolsas.", fefoUse: "Usar este", fefoNone: "No hay lotes disponibles de este sabor. Escriba el código de las bolsas.", fefoNoDate: "Estos lotes no tienen vencimiento. Escriba el código de las bolsas.", fefoOldest: "Lote más viejo disponible.", fefoUnknown: "fecha desconocida", fefoExp: "vence", fefoPacked: "empacado", fefoWeek: "semana emp", fefoExpired: "VENCIDO", fefoBags: "bolsas", fefoLater: "Lote más viejo", fefoStill: "todavía tiene", fefoPicked: "Usted eligió", fefoSaveAsk: "¿Guardar este lote más nuevo de todos modos?", fefoAddAsk: "¿Agregar este lote más nuevo de todos modos?", fefoAlso: "lotes más viejos también tienen bolsas.", fefoShipTitle: "Tome primero el lote más viejo", fefoCancel: "No se guardó. Tome primero el lote más viejo.",
       navUse: "Salida e-com", ecomLink: "Registrar salida e-com", ecomLinkHint: "Abre el registro. Sume todas las cajas de ese lote en un total.",
       issue: "Problema encontrado (vacío si no hay). Si escribe algo queda RETENIDO", noteIssue: "Anotar problema (sigue retenido)", issueCol: "Problema",
       issuePrompt: "Describa el problema. Ejemplos: Sin advertencia de California / Ingredientes incorrectos / Problema de especificación / Película brillante / Diseño de remolino", holdQ: "está liberado. ¿Retenerlo?"
@@ -390,6 +394,16 @@
       "#trc-root button.primary.trc-save{display:block;width:100%;min-height:68px;font-size:22px;padding:18px;margin-top:16px}",
       "#trc-root details.trc-scanfold summary{cursor:pointer;font-weight:700;color:#1F3864;font-size:15px}",
       "#trc-root details.trc-scanfold summary::-webkit-details-marker{margin-right:6px}",
+      "#trc-root .trc-fefo{margin-top:8px}",
+      "#trc-root .trc-fefo-row{display:flex;flex-direction:column;gap:8px}",
+      "#trc-root .trc-fefo-lot{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;text-align:left;width:100%;min-height:56px;border:2px solid #c3ccd8;background:#fff;border-radius:12px;padding:10px 12px;font-family:inherit;cursor:pointer;color:#1F3864}",
+      "#trc-root .trc-fefo-lot b{font-size:18px;font-family:monospace}",
+      "#trc-root .trc-fefo-lot.on{border-color:var(--orange);background:#fff8e8}",
+      "#trc-root .trc-fefo-tag{margin-left:auto;font-size:12px;font-weight:800;background:#1F3864;color:#fff;border-radius:999px;padding:3px 8px}",
+      "#trc-root .trc-fefo-note{margin:8px 0 0;font-size:15px;font-weight:700;color:#445}",
+      "#trc-root .trc-fefo-note.ok{color:#17692f}",
+      "#trc-root .trc-fefo-note.warn{color:#8a5a00}",
+      "#trc-root .trc-fefo-ship{margin:4px 0;font-size:16px;font-weight:700;color:#1F3864}",
       "@media print{body.trc-printing header,body.trc-printing nav,body.trc-printing .trc-noprint{display:none!important}}"
     ].join("\n");
     document.head.appendChild(s);
@@ -885,6 +899,357 @@
     });
   }
 
+  // =========================== FEFO (first expiry, first out) ===========================
+  // Finished-bag stock rows are flavor totals (lot is usually blank). On-hand lots come
+  // from Lot Trace FG pallets with qty left, and only when that lot has no pallet, from
+  // a stock row whose lot is a real bag code.
+  //
+  // Date key, oldest first:
+  //   1. Real expiration (label.exp or data.exp) beats every guess. Earliest exp wins.
+  //   2. Pack date (data.date, else the day the pallet label was created), only when
+  //      that lot has no expiration. Earliest pack date wins inside this group.
+  //   3. Bag-code week, only when the lot has no expiration and no pack date.
+  //      L2031/3X9.35 is flavor L20 + malto/season 31 + seed 3X + machine 9 +
+  //      ISO week 35 (the digits after the dot). The year is the latest ISO year
+  //      whose Monday of that week is not more than 14 days ahead.
+  //   4. No date: shown by lot code, never treated as older than a dated lot.
+  // Skipping a real expiration for a pack-week guess still warns.
+  //
+  // Use subtracts hand-logged pulls (USE with no pallet) because that form does not
+  // change qty_left. Ship trusts pallet qty_left. A later dated lot asks before save.
+  var BAGCODE_RE = /^[SLA]\d{4}\/\d[A-Z]\d\.\d{1,2}$/;
+  function ymd(s) { s = String(s || "").slice(0, 10); return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : ""; }
+  function dateNum(day) { var p = String(day || "").split("-"); if (p.length !== 3) return 0; return Date.UTC(Number(p[0]), Number(p[1]) - 1, Number(p[2])); }
+  function isoWeekOf(d) {
+    var t = new Date(d.getTime());
+    var day = t.getUTCDay() || 7;
+    t.setUTCDate(t.getUTCDate() + 4 - day);
+    var year = t.getUTCFullYear();
+    var y0 = new Date(Date.UTC(year, 0, 1));
+    return { year: year, week: Math.ceil(((t - y0) / 86400000 + 1) / 7) };
+  }
+  function isoMonday(year, week) {
+    week = Number(week);
+    if (!(week >= 1 && week <= 53)) return "";
+    var jan4 = new Date(Date.UTC(year, 0, 4));
+    var dow = jan4.getUTCDay() || 7;
+    var mon = new Date(jan4);
+    mon.setUTCDate(jan4.getUTCDate() - dow + 1 + (week - 1) * 7);
+    var got = isoWeekOf(mon);
+    if (got.year !== year || got.week !== week) return "";
+    return mon.toISOString().slice(0, 10);
+  }
+  function bagWeek(lot) {
+    var m = String(lot || "").toUpperCase().match(/^[SLA]\d{4}\/\d[A-Z]\d\.(\d{1,2})$/);
+    if (!m) return 0;
+    var w = Number(m[1]);
+    return w >= 1 && w <= 53 ? w : 0;
+  }
+  function lotFlavorPrefix(lot) { var m = String(lot || "").toUpperCase().match(/^([SLA]\d{2})/); return m ? m[1] : ""; }
+  function inferPackDay(week, refDay) {
+    if (!(week >= 1 && week <= 53)) return "";
+    var yy, mon, best, bestDist;
+    if (ymd(refDay)) {
+      var y = Number(String(refDay).slice(0, 4));
+      best = ""; bestDist = 1e15;
+      for (yy = y - 1; yy <= y + 1; yy++) {
+        mon = isoMonday(yy, week);
+        if (!mon) continue;
+        var dist = Math.abs(dateNum(mon) - dateNum(refDay));
+        if (dist < bestDist) { bestDist = dist; best = mon; }
+      }
+      return best;
+    }
+    var cy = Number(today().slice(0, 4));
+    var limit = dateNum(today()) + 14 * 86400000;
+    best = "";
+    for (yy = cy - 1; yy <= cy + 1; yy++) {
+      mon = isoMonday(yy, week);
+      if (!mon || dateNum(mon) > limit) continue;
+      if (!best || dateNum(mon) > dateNum(best)) best = mon;
+    }
+    return best;
+  }
+  function normSize(s) {
+    s = String(s || "").toLowerCase().replace(/\s+/g, "");
+    if (s.indexOf("2.75") >= 0) return "2.75oz";
+    if (s.indexOf("1.5") >= 0) return "1.5oz";
+    if (s.indexOf("4oz") >= 0) return "4oz";
+    return s;
+  }
+  function sameLot(a, b) { return String(a || "").toUpperCase().replace(/\s+/g, "") === String(b || "").toUpperCase().replace(/\s+/g, ""); }
+  function fgBlocked(l) {
+    if (!l || l.kind !== "FG") return true;
+    var st = String(l.status || "").toUpperCase();
+    if (st === "HOLD" || st === "REJECTED" || st === "EMPTY" || st === "SHIPPED") return true;
+    var loc = String(l.location || "").toUpperCase();
+    if (loc === "QUARANTINE" || loc === "QA-HOLD") return true;
+    return !(num(l.qty_left) > 0);
+  }
+  function labelExpDay(l) { var d = l.data || {}; return ymd(l.exp) || ymd(d.exp); }
+  function labelPackDay(l) { var d = l.data || {}; return ymd(d.date) || ymd(l.created_at); }
+  function whenLabel(row) {
+    if (!row || row.source === "unknown" || !row.day) return L("fefoUnknown");
+    if (row.source === "exp") return L("fefoExp") + " " + row.day + (row.day < today() ? " " + L("fefoExpired") : "");
+    if (row.source === "week") return L("fefoWeek") + " " + row.week + " (" + row.day + ")";
+    return L("fefoPacked") + " " + row.day;
+  }
+  function fefoTier(row) {
+    if (!row || row.source === "unknown" || !row.day) return 2;
+    if (row.source === "exp") return 0;
+    return 1;
+  }
+  function cmpFefo(a, b) {
+    var ta = fefoTier(a), tb = fefoTier(b);
+    if (ta !== tb) return ta - tb;
+    if (a.day !== b.day) return a.day < b.day ? -1 : 1;
+    return a.lot < b.lot ? -1 : 1;
+  }
+  function fefoBest(rows) { for (var i = 0; i < rows.length; i++) if (fefoTier(rows[i]) < 2) return rows[i]; return null; }
+  function isEarlier(other, chosen) {
+    var to = fefoTier(other), tc = fefoTier(chosen);
+    if (to === 2) return false;
+    if (tc === 2) return true;
+    if (to !== tc) return to < tc;
+    return other.day < chosen.day;
+  }
+  function manualUseQty(lot, fc, size) {
+    var n = 0;
+    S.events.forEach(function (e) {
+      if (!e || e.type !== "USE" || e.lpn) return;
+      if (!sameLot(e.lot, lot)) return;
+      var d = e.data || {};
+      if (fc && d.flavor_code && String(d.flavor_code).toUpperCase() !== fc) return;
+      if (size && d.size && normSize(d.size) !== normSize(size)) return;
+      n += num(e.qty);
+    });
+    return n;
+  }
+  function itemMatchesFlavorSize(it, fc, size) {
+    var fl = flavorBy(fc);
+    if (!fl || !it) return false;
+    var cat = String(it.category || "");
+    var sz = normSize(size);
+    var sizeOk = (sz === "4oz" && cat === "bag4") || (sz === "1.5oz" && cat === "bag15") || (sz === "2.75oz" && /2\.75/.test(String(it.name || "")));
+    if (!sizeOk) return false;
+    var want = String(fl.name || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+    var have = String(it.flavor || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+    if (!want || !have) return false;
+    if (have === want) return true;
+    var short = have.length < want.length ? have : want;
+    var long = have.length < want.length ? want : have;
+    return short.length >= 8 && long.indexOf(short) >= 0;
+  }
+  function lotDateKey(lot, expDay, packDay) {
+    lot = String(lot || "").toUpperCase().replace(/\s+/g, "");
+    if (expDay) return { lot: lot, source: "exp", day: expDay, week: bagWeek(lot) || 0 };
+    if (packDay) return { lot: lot, source: "packed", day: packDay, week: bagWeek(lot) || 0 };
+    var week = bagWeek(lot);
+    var day = week ? inferPackDay(week, "") : "";
+    if (day) return { lot: lot, source: "week", day: day, week: week };
+    return { lot: lot, source: "unknown", day: "", week: 0 };
+  }
+  function fefoOnHand(fc, size, opts) {
+    opts = opts || {};
+    fc = String(fc || "").toUpperCase();
+    size = normSize(size || "");
+    if (!fc || !size) return [];
+    var adjust = opts.adjustManual !== false;
+    var byLot = {};
+    allLabels().forEach(function (l) {
+      if (fgBlocked(l)) return;
+      if (String(l.flavor_code || "").toUpperCase() !== fc) return;
+      if (normSize(l.size) !== size) return;
+      var lot = String(l.lot || "").toUpperCase().replace(/\s+/g, "");
+      if (!lot) return;
+      var prefix = lotFlavorPrefix(lot);
+      if (prefix && prefix !== fc) return;
+      var row = byLot[lot];
+      if (!row) row = byLot[lot] = { lot: lot, fc: fc, size: size, qty: 0, exp: "", pack: "", from: "pallet" };
+      row.qty += num(l.qty_left);
+      var exp = labelExpDay(l), pack = labelPackDay(l);
+      if (exp && (!row.exp || exp < row.exp)) row.exp = exp;
+      if (pack && (!row.pack || pack < row.pack)) row.pack = pack;
+    });
+    if (window.DB && DB.stock && DB.items) {
+      try {
+        var ids = {};
+        DB.items().forEach(function (it) {
+          if (!itemMatchesFlavorSize(it, fc, size)) return;
+          if (it.id) ids[it.id] = 1;
+          if (it.code) ids[it.code] = 1;
+        });
+        DB.stock().forEach(function (r) {
+          if (!r || !ids[r.item_id] || !(num(r.qty) > 0)) return;
+          var loc = String(r.location || "").toUpperCase();
+          if (loc === "QUARANTINE" || loc === "QA-HOLD") return;
+          var lot = String(r.lot || "").toUpperCase().replace(/\s+/g, "");
+          if (!BAGCODE_RE.test(lot) || lotFlavorPrefix(lot) !== fc || byLot[lot]) return;
+          byLot[lot] = { lot: lot, fc: fc, size: size, qty: num(r.qty), exp: "", pack: "", from: "stock" };
+        });
+      } catch (e) {}
+    }
+    var out = [];
+    Object.keys(byLot).forEach(function (lot) {
+      var row = byLot[lot];
+      var left = row.qty - (adjust ? manualUseQty(lot, fc, size) : 0);
+      if (!(left > 0)) return;
+      var key = lotDateKey(lot, row.exp, row.pack);
+      out.push({ lot: lot, fc: fc, size: size, qty: left, source: key.source, day: key.day, week: key.week, from: row.from });
+    });
+    out.sort(cmpFefo);
+    return out;
+  }
+  function keyForLot(lot, fc, size, rows) {
+    lot = String(lot || "").toUpperCase().replace(/\s+/g, "");
+    rows = rows || [];
+    for (var i = 0; i < rows.length; i++) if (rows[i].lot === lot) return rows[i];
+    var exp = "", pack = "";
+    allLabels().forEach(function (l) {
+      if (!l || l.kind !== "FG" || !sameLot(l.lot, lot)) return;
+      if (fc && l.flavor_code && String(l.flavor_code).toUpperCase() !== fc) return;
+      if (size && l.size && normSize(l.size) !== normSize(size)) return;
+      var e = labelExpDay(l), p = labelPackDay(l);
+      if (e && (!exp || e < exp)) exp = e;
+      if (p && (!pack || p < pack)) pack = p;
+    });
+    var key = lotDateKey(lot, exp, pack);
+    key.fc = fc; key.size = size; key.qty = 0;
+    return key;
+  }
+  function fefoEarlier(lot, fc, size, kind) {
+    var opts = kind === "ship" ? { adjustManual: false } : { adjustManual: true };
+    var rows = fefoOnHand(fc, size, opts);
+    var chosen = keyForLot(lot, fc, size, rows);
+    var earlier = rows.filter(function (r) { return r.lot !== chosen.lot && isEarlier(r, chosen); });
+    return { rows: rows, chosen: chosen, earlier: earlier, best: fefoBest(rows) };
+  }
+  function fefoAsk(lot, fc, size, kind) {
+    var hit = fefoEarlier(lot, fc, size, kind);
+    if (!hit.earlier.length) return null;
+    var top = hit.earlier[0];
+    var lines = ["FEFO: " + top.lot + " " + L("fefoStill") + " " + fmt(Math.round(top.qty)) + " " + L("fefoBags") + " (" + whenLabel(top) + ")."];
+    if (hit.earlier.length > 1) lines.push((hit.earlier.length - 1) + " " + L("fefoAlso"));
+    lines.push(L("fefoPicked") + " " + lot + " (" + whenLabel(hit.chosen) + ").");
+    lines.push("");
+    lines.push(kind === "ship" ? L("fefoAddAsk") : L("fefoSaveAsk"));
+    return { text: lines.join("\n"), top: top, chosen: hit.chosen };
+  }
+  function fefoOverride(ask) {
+    if (!ask || !ask.top) return {};
+    return { fefo_override: true, fefo_older: ask.top.lot, fefo_older_when: ask.top.day || "" };
+  }
+  function fefoNote(lot, fc, size) {
+    if (!fc) return { text: "", kind: "" };
+    var hit = fefoEarlier(lot, fc, size, "use");
+    if (!hit.rows.length) return { text: L("fefoNone"), kind: "" };
+    if (!lot) return { text: hit.best ? L("fefoHint") : L("fefoNoDate"), kind: "" };
+    if (!hit.earlier.length && hit.best && lot === hit.best.lot) return { text: L("fefoOldest") + " " + whenLabel(hit.best) + ".", kind: "ok" };
+    if (!hit.earlier.length) return { text: "", kind: "" };
+    var top = hit.earlier[0];
+    return { text: L("fefoLater") + " " + top.lot + " " + L("fefoStill") + " " + fmt(Math.round(top.qty)) + " " + L("fefoBags") + " (" + whenLabel(top) + ").", kind: "warn" };
+  }
+  function fefoGroups(kind) {
+    var opts = kind === "ship" ? { adjustManual: false } : { adjustManual: true };
+    var seen = {}, groups = [];
+    allLabels().forEach(function (l) {
+      if (fgBlocked(l)) return;
+      var fc = String(l.flavor_code || "").toUpperCase();
+      var size = normSize(l.size);
+      if (!fc || !size) return;
+      var k = fc + "|" + size;
+      if (seen[k]) return;
+      seen[k] = 1;
+      var rows = fefoOnHand(fc, size, opts);
+      var best = fefoBest(rows);
+      if (!best || rows.length < 2) return;
+      var fl = flavorBy(fc);
+      groups.push({ fc: fc, size: size, name: fl ? fl.name : fc, best: best, n: rows.length });
+    });
+    groups.sort(function (a, b) {
+      if (a.best.day !== b.best.day) return a.best.day < b.best.day ? -1 : 1;
+      return (a.name + a.size) < (b.name + b.size) ? -1 : 1;
+    });
+    return groups.slice(0, 16);
+  }
+  function syncFefoDefault() {
+    var u = W.use;
+    var fc = String(u.mflav || "").toUpperCase();
+    var size = normSize(u.msize || "4oz");
+    var rows = fc ? fefoOnHand(fc, size, { adjustManual: true }) : [];
+    u._fefoLots = rows;
+    var best = fefoBest(rows);
+    var cur = cleanScan(u.mlot).toUpperCase().replace(/\s+/g, "");
+    if (!fc) {
+      if (u._fefoAuto) { u.mlot = ""; u._fefoAuto = false; }
+      return;
+    }
+    if (!best) {
+      if (u._fefoAuto) { u.mlot = ""; u._fefoAuto = false; }
+      return;
+    }
+    if (!cur || u._fefoAuto) {
+      u.mlot = best.lot;
+      u._fefoAuto = true;
+      u._flavFromLot = fc;
+    }
+  }
+  function paintFefoNote() {
+    var note = $("trc-u-fefo-note");
+    if (!note) return;
+    var lot = cleanScan(val("trc-u-mlot")).toUpperCase().replace(/\s+/g, "");
+    var fc = String(W.use.mflav || "").toUpperCase();
+    if (!fc && lot.length >= 3) fc = lot.slice(0, 3);
+    if (!flavorBy(fc)) fc = "";
+    var msg = fefoNote(lot, fc, W.use.msize || "4oz");
+    note.textContent = msg.text;
+    note.className = "trc-fefo-note" + (msg.kind ? " " + msg.kind : "");
+    note.hidden = !msg.text;
+    var chips = document.querySelectorAll("#trc-u-fefo .trc-fefo-lot");
+    for (var i = 0; i < chips.length; i++) chips[i].classList.toggle("on", chips[i].getAttribute("data-lot") === lot);
+  }
+  function fefoPickerHtml() {
+    var rows = W.use._fefoLots || [];
+    if (!rows.length) return "";
+    var best = fefoBest(rows);
+    var cur = cleanScan(W.use.mlot).toUpperCase().replace(/\s+/g, "");
+    var h = '<div id="trc-u-fefo" class="trc-fefo"><div class="trc-fefo-row">';
+    rows.slice(0, 8).forEach(function (r, i) {
+      var on = cur === r.lot;
+      h += '<button type="button" class="trc-fefo-lot' + (on ? " on" : "") + '" data-lot="' + esc(r.lot) + '" onclick="TRACE.usePickLot(' + i + ')">';
+      h += '<b>' + esc(r.lot) + '</b><span>' + esc(whenLabel(r)) + " &middot; " + esc(fmt(Math.round(r.qty))) + " " + esc(L("fefoBags")) + "</span>";
+      if (best && r.lot === best.lot) h += '<span class="trc-fefo-tag">' + esc(L("fefoUse")) + "</span>";
+      h += "</button>";
+    });
+    h += "</div></div>";
+    return h;
+  }
+  function usePickLot(i) {
+    captureUse();
+    var row = (W.use._fefoLots || [])[i];
+    if (!row) return;
+    W.use.mlot = row.lot;
+    W.use._fefoAuto = false;
+    if (row.fc && flavorBy(row.fc)) {
+      W.use.mflav = row.fc;
+      W.use._flavFromLot = row.fc;
+      W.use._flavManual = false;
+      W.use._flavPick = row.fc;
+    }
+    W.use.focusId = "trc-u-mbags";
+    render();
+  }
+  function fefoShipHtml() {
+    var groups = fefoGroups("ship");
+    if (!groups.length) return "";
+    var h = '<div class="trc-fefo"><p class="trc-fefo-note">' + esc(L("fefoShipTitle")) + "</p>";
+    groups.forEach(function (g) {
+      h += '<p class="trc-fefo-ship"><b>' + esc(g.name) + " " + esc(g.size) + "</b> &middot; " + esc(g.best.lot) + " &middot; " + esc(whenLabel(g.best)) + " &middot; " + esc(fmt(Math.round(g.best.qty))) + " " + esc(L("fefoBags")) + "</p>";
+    });
+    h += "</div>";
+    return h;
+  }
+
   // =========================== USE (e-com hand log first; scan stays secondary) ===========================
   function captureUse() {
     if ($("trc-u-qty")) W.use.qty = val("trc-u-qty");
@@ -899,6 +1264,7 @@
     var u = W.use;
     if (!u.dest) u.dest = "ECOM";
     if (!u.msize) u.msize = "4oz";
+    syncFefoDefault();
     var dateVal = u.mdate || today();
     var h = '<div class="card trc-use-primary"><h2 class="sub2">' + esc(L("manTitle")) + '</h2><p class="hint">' + esc(L("manHint")) + '</p>';
     h += '<div class="trc-dests" role="group" aria-label="' + esc(L("dest")) + '">';
@@ -909,7 +1275,10 @@
     h += '</div><div class="trc-grid trc-use-grid">';
     var lotEmpty = !cleanScan(u.mlot);
     h += '<div class="trc-lot-field"><label>' + esc(L("lotCode")) + '</label><input id="trc-u-mlot" class="trc-scan' + (lotEmpty ? " trc-empty" : "") + '" name="trc-lot-code" placeholder="' + esc(L("lotPh")) + '" value="' + esc(u.mlot || "") + '" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" oninput="TRACE.useLotInput()" onkeydown="TRACE.useKey(event,\'lot\')">';
-    h += '<p id="trc-u-mempty" class="trc-lot-empty"' + (lotEmpty ? "" : " hidden") + '>' + esc(L("lotEmpty")) + '</p></div>';
+    h += '<p id="trc-u-mempty" class="trc-lot-empty"' + (lotEmpty ? "" : " hidden") + '>' + esc(L("lotEmpty")) + '</p>';
+    h += fefoPickerHtml();
+    var fefoMsg = fefoNote(cleanScan(u.mlot).toUpperCase().replace(/\s+/g, ""), String(u.mflav || "").toUpperCase(), u.msize || "4oz");
+    h += '<p id="trc-u-fefo-note" class="trc-fefo-note' + (fefoMsg.kind ? " " + fefoMsg.kind : "") + '"' + (fefoMsg.text ? "" : " hidden") + '>' + esc(fefoMsg.text) + '</p></div>';
     var flavs = flavorOpts(true);
     if (flavs[0]) flavs[0] = { v: "", t: L("flavorBlank") };
     h += '<div><label>' + esc(L("flavor")) + '</label>' + sel("trc-u-mflav", flavs, u.mflav || "", "TRACE.useFlavorPick()") + '</div>';
@@ -933,7 +1302,6 @@
     }).join("") + '</tbody></table></div>';
     return h;
   }
-  var BAGCODE_RE = /^[SLA]\d{4}\/\d[A-Z]\d\.\d{1,2}$/;
   function syncLotEmpty() {
     var lot = cleanScan(val("trc-u-mlot"));
     var inp = $("trc-u-mlot");
@@ -943,20 +1311,29 @@
   }
   function useFlavorPick() {
     captureUse();
-    var picked = W.use.mflav || "";
+    var picked = String(W.use.mflav || "").toUpperCase();
+    var cur = cleanScan(W.use.mlot).toUpperCase().replace(/\s+/g, "");
     // A real pick sticks. Clearing the dropdown lets the next lot fill flavor again.
     W.use._flavManual = !!(picked && picked !== W.use._flavFromLot);
+    // A different flavor replaces a blank or mismatched lot with that flavor's oldest lot.
+    if (picked && (!cur || cur.slice(0, 3) !== picked)) W.use._fefoAuto = true;
+    if (!picked) W.use._fefoAuto = false;
+    W.use._flavPick = picked;
+    render();
   }
   function useLotInput() {
     captureUse();
     syncLotEmpty();
+    W.use._fefoAuto = false;
     var lot = cleanScan(W.use.mlot).toUpperCase();
-    if (!lot) { W.use._flavManual = false; return; }
+    if (!lot) { W.use._flavManual = false; paintFefoNote(); return; }
     var fl = lot.length >= 3 ? flavorBy(lot.slice(0, 3)) : null;
-    if (!fl || W.use._flavManual) return;
-    W.use.mflav = fl.code;
-    W.use._flavFromLot = fl.code;
-    var s = $("trc-u-mflav"); if (s && s.value !== fl.code) s.value = fl.code;
+    if (fl && !W.use._flavManual) {
+      W.use.mflav = fl.code;
+      W.use._flavFromLot = fl.code;
+      var s = $("trc-u-mflav"); if (s && s.value !== fl.code) s.value = fl.code;
+    }
+    paintFefoNote();
   }
   function useKey(ev, from) {
     if (!ev || ev.key !== "Enter") return;
@@ -989,8 +1366,13 @@
     // Normal bag codes (L2031/3X9.35) save with no extra confirm. Odd codes still ask.
     if (!BAGCODE_RE.test(lot) && !window.confirm(lot + "\n\n" + L("manOddLot"))) return;
     if (picked && lot.slice(0, 3) !== picked && !window.confirm(L("wrongFlavor") + ": " + lot.slice(0, 3) + " vs " + picked + "\nOK = save anyway")) return;
+    var fefoFc = fl ? fl.code : fc;
+    var ask = fefoAsk(lot, fefoFc, size, "use");
+    if (ask && !window.confirm(ask.text)) { flash(L("fefoCancel"), "warn"); u.focusId = "trc-u-mlot"; render(); return; }
     var ts = tsForPullDate(pullDate);
-    addEvents([{ type: "USE", ts: ts, lpn: null, qty: bags, uom: "bags", to_loc: u.dest, ref: u.ref || "", lot: lot, data: { flavor_code: fl ? fl.code : fc, flavor: fl ? fl.name : "", size: size, manual: true, pull_date: pullDate } }]).then(function (res) {
+    var useData = { flavor_code: fefoFc, flavor: fl ? fl.name : "", size: size, manual: true, pull_date: pullDate };
+    Object.assign(useData, fefoOverride(ask));
+    addEvents([{ type: "USE", ts: ts, lpn: null, qty: bags, uom: "bags", to_loc: u.dest, ref: u.ref || "", lot: lot, data: useData }]).then(function (res) {
       if (res && res.ok === false) { flash("Save failed: " + res.msg, "err"); render(); return; }
       flash(bags + " bags " + lot + " -> " + u.dest + " (" + L("byHand") + ")", "ok");
       u.mflav = fl ? fl.code : (picked || fc);
@@ -1016,10 +1398,14 @@
       if (l.status === "HOLD" || l.status === "REJECTED") { flash(code + ": " + L("onHold"), "err"); render(); return; }
       var take = num(W.use.qty) > 0 ? Math.min(num(W.use.qty), l.qty_left) : l.qty_left;
       if (!(take > 0)) { flash(code + " is empty", "err"); render(); return; }
+      var ask = fefoAsk(l.lot, l.flavor_code, l.size, "use");
+      if (ask && !window.confirm(ask.text)) { flash(L("fefoCancel"), "warn"); render(); return; }
+      var scanData = { flavor: l.flavor_code, flavor_code: l.flavor_code, size: l.size, pull_date: today() };
+      Object.assign(scanData, fefoOverride(ask));
       var left = l.qty_left - take;
       updLabel(l.lpn, { qty_left: left, status: left <= 0 ? "EMPTY" : l.status }).then(function (res) {
         if (!savedOk(res)) { flash("Save failed: " + ((res && res.msg) || ""), "err"); render(); return; }
-        return addEvents([{ type: "USE", lpn: l.lpn, qty: take, uom: "bags", from_loc: l.location, to_loc: W.use.dest, ref: W.use.ref || "", lot: l.lot, data: { flavor: l.flavor_code, flavor_code: l.flavor_code, size: l.size, pull_date: today() } }]);
+        return addEvents([{ type: "USE", lpn: l.lpn, qty: take, uom: "bags", from_loc: l.location, to_loc: W.use.dest, ref: W.use.ref || "", lot: l.lot, data: scanData }]);
       }).then(function (res2) {
         if (!res2) return;
         if (!savedOk(res2)) { flash("Pallet updated, pull log failed: " + ((res2 && res2.msg) || ""), "warn"); render(); return; }
@@ -1036,8 +1422,9 @@
     h += '<div><label>' + esc(L("customer")) + '</label><input id="trc-s-cust" value="' + esc(s.customer) + '" onchange="TRACE.shipField(\'customer\',this.value)"></div>';
     h += '<div><label>' + esc(L("qtyTake")) + '</label><input id="trc-s-qty" type="number" min="1" value="' + esc(W.ship.qty || "") + '"></div></div>';
     h += scanBox("shipScan");
+    h += fefoShipHtml();
     if (s.lines.length) {
-      h += '<table class="trc" style="margin-top:12px"><thead><tr><th>Pallet</th><th>Flavor</th><th>Lot</th><th>Bags</th><th></th></tr></thead><tbody>' + s.lines.map(function (x, i) { return '<tr><td>' + esc(x.lpn) + '</td><td>' + esc(x.flavor) + ' ' + esc(x.size) + '</td><td><b>' + esc(x.lot) + '</b></td><td>' + fmt(x.bags) + '</td><td><button class="ghost sm" onclick="TRACE.shipRemove(' + i + ')">x</button></td></tr>'; }).join("") + '</tbody></table>';
+      h += '<table class="trc" style="margin-top:12px"><thead><tr><th>Pallet</th><th>Flavor</th><th>Lot</th><th>Bags</th><th></th></tr></thead><tbody>' + s.lines.map(function (x, i) { return '<tr><td>' + esc(x.lpn) + '</td><td>' + esc(x.flavor) + ' ' + esc(x.size) + '</td><td><b>' + esc(x.lot) + '</b>' + (x.fefo ? '<br><span class="trc-fefo-note warn">' + esc(L("fefoLater")) + ' ' + esc(x.fefo.fefo_older) + '</span>' : '') + '</td><td>' + fmt(x.bags) + '</td><td><button class="ghost sm" onclick="TRACE.shipRemove(' + i + ')">x</button></td></tr>'; }).join("") + '</tbody></table>';
       h += '<button class="primary" onclick="TRACE.shipFinish()">' + esc(L("finishShip")) + '</button>';
     }
     h += '</div>';
@@ -1059,7 +1446,9 @@
       var avail = l.qty_left - already;
       var bags = q > 0 ? Math.min(q, avail) : avail;
       if (!(bags > 0)) { flash(code + " is empty", "err"); render(); return; }
-      W.ship.lines.push({ lpn: l.lpn, flavor: l.flavor, flavor_code: l.flavor_code, size: l.size, lot: l.lot, bags: bags });
+      var ask = fefoAsk(l.lot, l.flavor_code, l.size, "ship");
+      if (ask && !window.confirm(ask.text)) { flash(L("fefoCancel"), "warn"); render(); return; }
+      W.ship.lines.push({ lpn: l.lpn, flavor: l.flavor, flavor_code: l.flavor_code, size: l.size, lot: l.lot, bags: bags, fefo: ask ? fefoOverride(ask) : null });
       flash(bags + " bags " + l.flavor + " " + l.lot, "ok"); render();
     });
   }
@@ -1078,7 +1467,9 @@
     s.lines.forEach(function (x) {
       var l = S.labels[x.lpn]; var left = Math.max(0, num(l.qty_left) - x.bags);
       ups.push(updLabel(x.lpn, { qty_left: left, status: left <= 0 ? "EMPTY" : l.status }));
-      evs.push({ type: "SHIP", lpn: x.lpn, qty: x.bags, uom: "bags", from_loc: l.location, to_loc: "PO " + s.po, ref: s.po, lot: x.lot, data: { customer: s.customer, ob: row.lpn, flavor: x.flavor_code, size: x.size } });
+      var shipData = { customer: s.customer, ob: row.lpn, flavor: x.flavor_code, size: x.size };
+      if (x.fefo) Object.assign(shipData, x.fefo);
+      evs.push({ type: "SHIP", lpn: x.lpn, qty: x.bags, uom: "bags", from_loc: l.location, to_loc: "PO " + s.po, ref: s.po, lot: x.lot, data: shipData });
     });
     Promise.all(ups).then(function (rs) {
       if (rs.some(function (r) { return r && r.ok === false; })) { closeWin(pw); flash("Save failed: pallet not updated", "err"); render(); return null; }
@@ -1347,7 +1738,7 @@
     mixNew: function () { W.mix = { flavor: "", prefix: "", inputs: [], bins: 1 }; render(); },
     setMachine: function (v) { ST.machine = v; saveST(); render(); },
     pmScan: pmScan, pmChange: pmChange, pmFinish: pmFinish, pmScrap: pmScrap,
-    moveScan: moveScan, useDest: useDest, useScan: useScan, useManual: useManual, useSize: useSize, useKey: useKey, useLotInput: useLotInput, useFlavorPick: useFlavorPick,
+    moveScan: moveScan, useDest: useDest, useScan: useScan, useManual: useManual, useSize: useSize, useKey: useKey, useLotInput: useLotInput, useFlavorPick: useFlavorPick, usePickLot: usePickLot,
     shipField: shipField, shipScan: shipScan, shipRemove: shipRemove, shipFinish: shipFinish,
     traceQ: traceQ, drill: drill, printEvidence: printEvidence,
     traceOf: function (lpn) { ST.tab = "trace"; W.trace.q = lpn; markActive(); render(); },
@@ -1356,7 +1747,8 @@
     lf: function (k, v) { W.labels[k] = v; render(); },
     // for testing / other modules
     _state: function () { return { mode: mode, labels: S.labels, events: S.events, W: W, ST: ST }; },
-    _load: load, isoWeek: isoWeek, flavors: FLAVORS
+    _load: load, isoWeek: isoWeek, flavors: FLAVORS,
+    _fefo: { onHand: fefoOnHand, ask: fefoAsk, best: fefoBest, monday: isoMonday, week: bagWeek, packDay: inferPackDay, earlier: fefoEarlier }
   };
 
   // ---- nav: one module, a button in the department that uses it ----------------
