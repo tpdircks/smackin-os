@@ -1,5 +1,5 @@
 /* ============================================================================
-   Lot Trace & Scan  (trace.js)  b=7
+   Lot Trace & Scan  (trace.js)  b=8
    One scan chain from the dock to the customer, built for SQF traceability.
 
      RECEIVE   raw material in -> our own RM label per pallet/box/roll (supplier lot, exp)
@@ -8,7 +8,9 @@
      P-MAC     scan bin tag + film roll -> bag code (batch + machine + week)
                -> finished pallet label FG (lot, flavor, size, bags) -> STAGING
      MOVE      scan any label, scan a location (put-away / moves)
-     USE       scan a finished pallet out to the line, e-commerce, samples or scrap
+     USE       hand-log a pull (e-commerce is the default) or scan a finished pallet
+               to the line, e-commerce, samples or scrap. One save = one lot,
+               total bags across every box in that pull.
      SHIP      build an outbound pallet for a PO: scan pallets, bags -> OB label w/ lots
      TRACE     type/scan any LPN, lot, supplier lot, PO or seed code -> back + forward
                tree, mass balance, mock recall timer, printable evidence
@@ -70,8 +72,8 @@
   function typeBy(k) { for (var i = 0; i < TYPES.length; i++) if (TYPES[i].k === k) return TYPES[i]; return TYPES[0]; }
 
   var DESTS = [
-    { k: "LINE", en: "Fulfillment line (case / display build)", es: "Línea de cumplimiento (armar cajas)" },
     { k: "ECOM", en: "E-commerce line", es: "Línea de e-commerce" },
+    { k: "LINE", en: "Fulfillment line (case / display build)", es: "Línea de cumplimiento (armar cajas)" },
     { k: "SAMPLE", en: "Samples / R&D", es: "Muestras / I+D" },
     { k: "SCRAP", en: "Scrap / damaged", es: "Desecho / dañado" }
   ];
@@ -108,7 +110,7 @@
       startDrill: "Start mock recall timer", stopDrill: "Stop timer", printEv: "Print evidence",
       notFound: "Not found", onHold: "ON HOLD - cannot use", expired: "EXPIRED - cannot use", wrongFlavor: "Flavor does not match",
       all: "All", kind: "Kind", status: "Status", search: "Search",
-      manTitle: "No pallet label yet? Log the pull by hand", manHint: "Type the lot code printed on the bags (example L2031/3X9.35), the flavor, size and how many bags you pulled. Use this for every e-com pull until the pallets have labels.", manSave: "Save pull", byHand: "by hand", manOddLot: "This does not look like a normal bag code (example L2031/3X9.35). Save it anyway?",
+      manTitle: "Log bags pulled", manHint: "One save for the whole pull of one lot. If that lot is in several boxes, add the bags together and enter the total. Do not save a row for each box. Type the lot code printed on the bags (example L2031/3X9.35).", manSave: "Save pull", bagTotal: "Bags (total, all boxes)", pullDate: "Date", pullFuture: "Date cannot be in the future.", scanFold: "Scan a pallet label instead", note: "Note / reference", byHand: "by hand", manOddLot: "This does not look like a normal bag code (example L2031/3X9.35). Save it anyway?",
       issue: "Issue found (blank if none). Anything here keeps it ON HOLD", noteIssue: "Note issue (stay on hold)", issueCol: "Issue",
       issuePrompt: "Describe the issue. Examples: No CA warning / Wrong ingredient statement / Spec issue / Shiny film / Swirl design", holdQ: "is released. Put it ON HOLD?"
     },
@@ -142,7 +144,7 @@
       startDrill: "Iniciar cronómetro de simulacro", stopDrill: "Detener", printEv: "Imprimir evidencia",
       notFound: "No encontrado", onHold: "RETENIDO - no usar", expired: "VENCIDO - no usar", wrongFlavor: "El sabor no coincide",
       all: "Todos", kind: "Tipo", status: "Estado", search: "Buscar",
-      manTitle: "¿Todavía no hay etiqueta de tarima? Registre a mano", manHint: "Escriba el código de lote impreso en las bolsas (ejemplo L2031/3X9.35), el sabor, el tamaño y cuántas bolsas tomó. Úselo en cada salida a e-commerce hasta que las tarimas tengan etiqueta.", manSave: "Guardar", byHand: "a mano", manOddLot: "Esto no parece un código de bolsa normal (ejemplo L2031/3X9.35). ¿Guardar de todos modos?",
+      manTitle: "Registrar bolsas tomadas", manHint: "Un solo guardado para toda la salida de un lote. Si ese lote viene en varias cajas, sume las bolsas y escriba el total. No guarde una fila por caja. Escriba el código de lote impreso en las bolsas (ejemplo L2031/3X9.35).", manSave: "Guardar salida", bagTotal: "Bolsas (total, todas las cajas)", pullDate: "Fecha", pullFuture: "La fecha no puede ser futura.", scanFold: "Escanear una etiqueta de tarima", note: "Nota / referencia", byHand: "a mano", manOddLot: "Esto no parece un código de bolsa normal (ejemplo L2031/3X9.35). ¿Guardar de todos modos?",
       issue: "Problema encontrado (vacío si no hay). Si escribe algo queda RETENIDO", noteIssue: "Anotar problema (sigue retenido)", issueCol: "Problema",
       issuePrompt: "Describa el problema. Ejemplos: Sin advertencia de California / Ingredientes incorrectos / Problema de especificación / Película brillante / Diseño de remolino", holdQ: "está liberado. ¿Retenerlo?"
     }
@@ -162,6 +164,28 @@
   function tsLocal(ts) { var d = new Date(ts); if (isNaN(d)) return String(ts || "").slice(0, 16).replace("T", " "); return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) + " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes()); }
   function dLocal(ts) { return ts ? tsLocal(ts).slice(0, 10) : ""; }
   function today() { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  // Pull date -> event ts. Today keeps the real clock. A backfill keeps today's
+  // clock time on the chosen day so several lots entered for that day stay in order.
+  function tsForPullDate(dateStr) {
+    var now = new Date();
+    if (!dateStr || dateStr === today()) return now.toISOString();
+    var p = String(dateStr).split("-");
+    if (p.length !== 3) return now.toISOString();
+    var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]), now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+    return isNaN(d.getTime()) ? now.toISOString() : d.toISOString();
+  }
+  // Trace e-com window sorts on this. pull_date wins when ts was not moved onto that day.
+  function pullInstant(e) {
+    var d = (e && e.data) || {};
+    var pd = d.pull_date ? String(d.pull_date).slice(0, 10) : "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(pd)) {
+      if (e.ts && dLocal(e.ts) === pd) return String(e.ts);
+      var p = pd.split("-");
+      var dt = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]), 12, 0, 0);
+      if (!isNaN(dt.getTime())) return dt.toISOString();
+    }
+    return String((e && e.ts) || "");
+  }
   function isoWeek(d) {
     d = d ? new Date(d) : new Date();
     var t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -252,7 +276,7 @@
     mix: { flavor: "", prefix: "", inputs: [], bins: 1, lastBins: [] },
     pm: {},            // per machine: { batch, bins:[], film, filmLpn, pendingBins:[], codeChanges:[] }
     move: { lpn: "" },
-    use: { dest: "LINE", ref: "" },
+    use: { dest: "ECOM", ref: "", msize: "4oz" },
     ship: { po: "", customer: "", lines: [] },
     trace: { q: "", drillStart: null },
     labels: { kind: "", status: "", q: "" },
@@ -286,6 +310,19 @@
       "#trc-root .trc-local{background:#fff0d6;border:1px solid #f0c96a;color:#7a4b00;padding:10px;border-radius:8px;margin-bottom:12px;font-weight:600}",
       "#trc-root .trc-timer{font-size:28px;font-weight:800;font-family:monospace;color:#a11}",
       "#trc-root .trc-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}",
+      "#trc-root .trc-use-primary{border:2px solid var(--orange)}",
+      "#trc-root .trc-dests{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 4px}",
+      "#trc-root .trc-dest{flex:1 1 calc(33% - 8px);width:auto;border:2px solid #c3ccd8;background:#fff;border-radius:12px;padding:10px 8px;font-weight:700;cursor:pointer;font-size:13px;color:#1F3864;font-family:inherit}",
+      "#trc-root .trc-dest.ecom{flex:1 1 100%;font-size:18px;padding:14px 16px;border-color:var(--orange)}",
+      "#trc-root .trc-dest.on{background:#1F3864;color:#fff;border-color:#1F3864}",
+      "#trc-root .trc-dest.ecom.on{background:var(--orange);border-color:var(--orange);color:#fff}",
+      "#trc-root .trc-size-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}",
+      "#trc-root .trc-size-lbl{font-size:13px;font-weight:600;color:#445}",
+      "#trc-root .trc-size{width:auto;border:1px solid #c3ccd8;background:#fff;border-radius:999px;padding:6px 12px;font-weight:700;cursor:pointer;font-family:inherit;font-size:14px;color:#1F3864}",
+      "#trc-root .trc-size.on{background:#1F3864;color:#fff;border-color:#1F3864}",
+      "#trc-root button.primary.trc-save{display:block;width:100%;font-size:22px;padding:16px 18px;margin-top:16px}",
+      "#trc-root details.trc-scanfold summary{cursor:pointer;font-weight:700;color:#1F3864;font-size:15px}",
+      "#trc-root details.trc-scanfold summary::-webkit-details-marker{margin-right:6px}",
       "@media print{body.trc-printing header,body.trc-printing nav,body.trc-printing .trc-noprint{display:none!important}}"
     ].join("\n");
     document.head.appendChild(s);
@@ -302,9 +339,14 @@
   }
   function markActive() { try { var nav = $("nav"); if (!nav) return; nav.querySelectorAll(".navitem.active").forEach(function (b) { b.classList.remove("active"); }); if (!ACTIVE) return; var m = $("trc-nav-" + ST.tab); if (m) m.classList.add("active"); } catch (e) {} }
 
+  var RENDERING = false;
   function render() {
-    if (!ACTIVE) return;
+    if (!ACTIVE || RENDERING) return;
     var host = $("view"); if (!host) return;
+    RENDERING = true;
+    try { renderNow(host); } finally { RENDERING = false; }
+  }
+  function renderNow(host) {
     var focusId = document.activeElement && document.activeElement.id;
     var tabs = [["recv", "tRecv"], ["qa", "tQa"], ["mix", "tMix"], ["pmac", "tPmac"], ["move", "tMove"], ["use", "tUse"], ["ship", "tShip"], ["trace", "tTrace"], ["labels", "tLabels"]];
     var holdN = allLabels().filter(function (l) { return l.status === "HOLD"; }).length;
@@ -323,10 +365,25 @@
     h += fn();
     h += '</div>';
     var sc = host.scrollTop;
+    // Drop focus before swapping the view. Replacing a focused input from its own
+    // change handler throws in Chrome (the node moves during blur).
+    var ae = document.activeElement;
+    if (ae && ae.blur && host.contains(ae)) { try { ae.blur(); } catch (e) {} }
     host.innerHTML = h;
     host.scrollTop = sc;
-    var f = (focusId && focusId !== "trc-op" && $(focusId)) || $("trc-scan");
+    var want = W.use && W.use.focusId;
+    if (want) W.use.focusId = "";
+    var inForm = !!(focusId && focusId !== "trc-op" && focusId.indexOf("trc-nav") !== 0 && $(focusId) && $(focusId).closest && $(focusId).closest("#trc-root"));
+    var f = null;
+    if (want && $(want)) f = $(want);
+    else if (focusId === "trc-op" && $("trc-op")) f = $("trc-op");
+    else if (inForm) f = $(focusId);
+    else if (ST.tab === "use" && opName() && $("trc-u-mlot")) f = $("trc-u-mlot");
+    else if (ST.tab === "use" && !opName()) f = $("trc-op");
+    else f = $("trc-scan");
     if (f) { try { f.focus(); } catch (e) {} }
+    var fold = document.querySelector("#trc-root details.trc-scanfold");
+    if (fold) fold.addEventListener("toggle", function () { W.use.scanOpen = !!fold.open; });
     try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
   }
   function scanBox(handler, ph) {
@@ -716,50 +773,113 @@
       .then(function () { flash(l.lpn + ": " + from + " -> " + code, "ok"); W.move.lpn = ""; render(); });
   }
 
-  // =========================== USE (line / e-com / samples / scrap) ===========================
+  // =========================== USE (e-com hand log first; scan stays secondary) ===========================
+  function captureUse() {
+    if ($("trc-u-qty")) W.use.qty = val("trc-u-qty");
+    if ($("trc-u-ref")) W.use.ref = val("trc-u-ref");
+    if ($("trc-u-mlot")) W.use.mlot = val("trc-u-mlot");
+    if ($("trc-u-mflav")) W.use.mflav = val("trc-u-mflav");
+    if ($("trc-u-mbags")) W.use.mbags = val("trc-u-mbags");
+    if ($("trc-u-mdate")) W.use.mdate = val("trc-u-mdate");
+    if ($("trc-u-msize")) W.use.msize = val("trc-u-msize");
+  }
   function vUse() {
     var u = W.use;
-    var h = '<div class="card"><h2 class="sub2">' + esc(L("tUse")) + '</h2><div class="trc-grid">';
-    h += '<div><label>' + esc(L("dest")) + '</label>' + sel("trc-u-dest", DESTS.map(function (d) { return { v: d.k, t: LT(d) }; }), u.dest, "TRACE.useDest(this.value)") + '</div>';
-    h += '<div><label>' + esc(L("qtyTake")) + '</label><input id="trc-u-qty" type="number" min="1" value="' + esc(u.qty || "") + '"></div>';
-    h += '<div><label>Note / reference</label><input id="trc-u-ref" value="' + esc(u.ref || "") + '"></div></div>';
-    h += scanBox("useScan");
+    if (!u.dest) u.dest = "ECOM";
+    if (!u.msize) u.msize = "4oz";
+    var dateVal = u.mdate || today();
+    var h = '<div class="card trc-use-primary"><h2 class="sub2">' + esc(L("manTitle")) + '</h2><p class="hint">' + esc(L("manHint")) + '</p>';
+    h += '<div class="trc-dests" role="group" aria-label="' + esc(L("dest")) + '">';
+    DESTS.forEach(function (d) {
+      var on = u.dest === d.k;
+      h += '<button type="button" class="trc-dest' + (d.k === "ECOM" ? " ecom" : "") + (on ? " on" : "") + '" aria-pressed="' + (on ? "true" : "false") + '" onclick="TRACE.useDest(\'' + d.k + '\')">' + esc(LT(d)) + '</button>';
+    });
+    h += '</div><div class="trc-grid">';
+    h += '<div><label>' + esc(L("lotCode")) + '</label><input id="trc-u-mlot" class="trc-scan" style="font-size:20px;padding:12px" placeholder="L2031/3X9.35" value="' + esc(u.mlot || "") + '" autocomplete="off" enterkeyhint="next" oninput="TRACE.useLotInput()" onkeydown="TRACE.useKey(event,\'lot\')"></div>';
+    h += '<div><label>' + esc(L("flavor")) + '</label>' + sel("trc-u-mflav", flavorOpts(true), u.mflav || "") + '</div>';
+    h += '<div><label>' + esc(L("bagTotal")) + '</label><input id="trc-u-mbags" type="number" inputmode="numeric" min="1" value="' + esc(u.mbags || "") + '" enterkeyhint="done" onkeydown="TRACE.useKey(event,\'bags\')"></div>';
+    h += '<div><label>' + esc(L("pullDate")) + '</label><input id="trc-u-mdate" type="date" value="' + esc(dateVal) + '" onkeydown="TRACE.useKey(event,\'date\')"></div></div>';
+    h += '<div class="trc-size-row"><span class="trc-size-lbl">' + esc(L("size")) + '</span>';
+    ["4oz", "1.5oz", "2.75oz"].forEach(function (sz) {
+      h += '<button type="button" class="trc-size' + (u.msize === sz ? " on" : "") + '" onclick="TRACE.useSize(\'' + sz + '\')">' + esc(sz) + '</button>';
+    });
     h += '</div>';
-    // No pallet label yet (before scanners / labels are everywhere): log the pull by hand from the bag code.
-    var mu = W.use;
-    h += '<div class="card"><h2 class="sub2">' + esc(L("manTitle")) + '</h2><p class="hint">' + esc(L("manHint")) + '</p><div class="trc-grid">';
-    h += '<div><label>' + esc(L("lotCode")) + '</label><input id="trc-u-mlot" class="trc-scan" style="font-size:18px;padding:10px" placeholder="L2031/3X9.35" value="' + esc(mu.mlot || "") + '"></div>';
-    h += '<div><label>' + esc(L("flavor")) + '</label>' + sel("trc-u-mflav", flavorOpts(true), mu.mflav || "") + '</div>';
-    h += '<div><label>' + esc(L("size")) + '</label>' + sel("trc-u-msize", ["4oz", "1.5oz", "2.75oz"], mu.msize || "4oz") + '</div>';
-    h += '<div><label>' + esc(L("bags")) + '</label><input id="trc-u-mbags" type="number" min="1" value="' + esc(mu.mbags || "") + '"></div></div>';
-    h += '<button class="primary" onclick="TRACE.useManual()">' + esc(L("manSave")) + '</button></div>';
+    h += '<button type="button" class="primary trc-save" onclick="TRACE.useManual()">' + esc(L("manSave")) + '</button></div>';
+    h += '<details class="card trc-scanfold"' + (u.scanOpen ? " open" : "") + '><summary>' + esc(L("scanFold")) + '</summary>';
+    h += '<div class="trc-grid" style="margin-top:10px"><div><label>' + esc(L("qtyTake")) + '</label><input id="trc-u-qty" type="number" min="1" value="' + esc(u.qty || "") + '"></div>';
+    h += '<div><label>' + esc(L("note")) + '</label><input id="trc-u-ref" value="' + esc(u.ref || "") + '"></div></div>';
+    h += scanBox("useScan");
+    h += '</details>';
     var recent = S.events.filter(function (e) { return e.type === "USE"; }).slice(-20).reverse();
-    h += '<div class="card"><h2 class="sub2">Recent</h2><table class="trc"><thead><tr><th>When</th><th>Label</th><th>Lot</th><th>Bags</th><th>To</th><th>By</th></tr></thead><tbody>' + recent.map(function (e) { return '<tr><td>' + esc(tsLocal(e.ts).slice(5)) + '</td><td>' + (e.lpn ? esc(e.lpn) : '<i>' + esc(L("byHand")) + '</i>') + '</td><td>' + esc(e.lot) + (e.data && e.data.flavor ? '<br><span class="muted sm">' + esc(e.data.flavor) + ' ' + esc(e.data.size || "") + '</span>' : "") + '</td><td>' + fmt(e.qty) + '</td><td>' + esc(e.to_loc) + (e.ref ? " &middot; " + esc(e.ref) : "") + '</td><td>' + esc(e.operator) + '</td></tr>'; }).join("") + '</tbody></table></div>';
+    h += '<div class="card"><h2 class="sub2">Recent</h2><table class="trc"><thead><tr><th>When</th><th>Label</th><th>Lot</th><th>Bags</th><th>To</th><th>By</th></tr></thead><tbody>' + recent.map(function (e) {
+      var when = tsLocal(pullInstant(e)).slice(5);
+      return '<tr><td>' + esc(when) + '</td><td>' + (e.lpn ? esc(e.lpn) : '<i>' + esc(L("byHand")) + '</i>') + '</td><td>' + esc(e.lot) + (e.data && (e.data.flavor || e.data.flavor_code) ? '<br><span class="muted sm">' + esc(e.data.flavor || e.data.flavor_code) + ' ' + esc(e.data.size || "") + '</span>' : "") + '</td><td>' + fmt(e.qty) + '</td><td>' + esc(e.to_loc) + (e.ref ? " &middot; " + esc(e.ref) : "") + '</td><td>' + esc(e.operator) + '</td></tr>';
+    }).join("") + '</tbody></table></div>';
     return h;
   }
   var BAGCODE_RE = /^[SLA]\d{4}\/\d[A-Z]\d\.\d{1,2}$/;
+  function useLotInput() {
+    captureUse();
+    var lot = cleanScan(W.use.mlot).toUpperCase();
+    var fl = lot.length >= 3 ? flavorBy(lot.slice(0, 3)) : null;
+    if (!fl) return;
+    // Follow the lot code until the operator picks a flavor on purpose.
+    if (W.use.mflav && W.use.mflav !== W.use._flavFromLot) return;
+    W.use.mflav = fl.code;
+    W.use._flavFromLot = fl.code;
+    var s = $("trc-u-mflav"); if (s && s.value !== fl.code) s.value = fl.code;
+  }
+  function useKey(ev, from) {
+    if (!ev || ev.key !== "Enter") return;
+    ev.preventDefault();
+    captureUse();
+    if (from === "lot" && !(num(W.use.mbags) > 0)) {
+      var b = $("trc-u-mbags"); if (b) b.focus();
+      return;
+    }
+    useManual();
+  }
+  function useSize(v) { captureUse(); W.use.msize = v || "4oz"; render(); }
   function useManual() {
     if (needOp()) return;
-    var u = W.use; u.dest = val("trc-u-dest") || u.dest; u.ref = val("trc-u-ref");
-    var lot = cleanScan(val("trc-u-mlot")).toUpperCase().replace(/\s+/g, ""), bags = Math.floor(num(val("trc-u-mbags")));
-    var fc = val("trc-u-mflav") || lot.slice(0, 3), size = val("trc-u-msize") || "4oz";
-    u.mlot = lot; u.mflav = val("trc-u-mflav"); u.msize = size; u.mbags = val("trc-u-mbags");
-    if (!lot) { flash(L("lotCode") + "?", "err"); render(); return; }
-    if (!(bags > 0)) { flash(L("bags") + "?", "err"); render(); return; }
-    if (!BAGCODE_RE.test(lot) && !window.confirm(lot + "\n\n" + L("manOddLot"))) return;
+    captureUse();
+    var u = W.use;
+    u.dest = u.dest || "ECOM";
+    var lot = cleanScan(u.mlot).toUpperCase().replace(/\s+/g, ""), bags = Math.floor(num(u.mbags));
+    var picked = u.mflav || "";
+    var fc = picked || lot.slice(0, 3);
+    var size = u.msize || "4oz";
+    var pullDate = (u.mdate || today()).slice(0, 10);
+    u.mlot = lot; u.msize = size; u.mdate = pullDate;
+    if (!lot) { flash(L("lotCode") + "?", "err"); u.focusId = "trc-u-mlot"; render(); return; }
+    if (!(bags > 0)) { flash(L("bagTotal") + "?", "err"); u.focusId = "trc-u-mbags"; render(); return; }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(pullDate)) { flash(L("pullDate") + "?", "err"); u.focusId = "trc-u-mdate"; render(); return; }
+    if (pullDate > today()) { flash(L("pullFuture"), "err"); u.focusId = "trc-u-mdate"; render(); return; }
     var fl = flavorBy(fc);
-    if (u.mflav && lot.slice(0, 3) !== u.mflav && !window.confirm(L("wrongFlavor") + ": " + lot.slice(0, 3) + " vs " + u.mflav + "\nOK = save anyway")) return;
-    addEvents([{ type: "USE", lpn: null, qty: bags, uom: "bags", to_loc: u.dest, ref: u.ref || "", lot: lot, data: { flavor_code: fl ? fl.code : fc, flavor: fl ? fl.name : "", size: size, manual: true } }]).then(function (res) {
+    if (!fl && !picked) { flash(L("flavor") + "?", "err"); u.focusId = "trc-u-mflav"; render(); return; }
+    // Normal bag codes (L2031/3X9.35) save with no extra confirm. Odd codes still ask.
+    if (!BAGCODE_RE.test(lot) && !window.confirm(lot + "\n\n" + L("manOddLot"))) return;
+    if (picked && lot.slice(0, 3) !== picked && !window.confirm(L("wrongFlavor") + ": " + lot.slice(0, 3) + " vs " + picked + "\nOK = save anyway")) return;
+    var ts = tsForPullDate(pullDate);
+    addEvents([{ type: "USE", ts: ts, lpn: null, qty: bags, uom: "bags", to_loc: u.dest, ref: u.ref || "", lot: lot, data: { flavor_code: fl ? fl.code : fc, flavor: fl ? fl.name : "", size: size, manual: true, pull_date: pullDate } }]).then(function (res) {
       if (res && res.ok === false) { flash("Save failed: " + res.msg, "err"); render(); return; }
       flash(bags + " bags " + lot + " -> " + u.dest + " (" + L("byHand") + ")", "ok");
-      u.mlot = ""; u.mbags = ""; render();
+      u.mflav = fl ? fl.code : (picked || fc);
+      u._flavFromLot = "";
+      u.msize = size;
+      u.mdate = pullDate;
+      u.dest = u.dest || "ECOM";
+      u.mlot = ""; u.mbags = "";
+      u.focusId = "trc-u-mlot";
+      render();
     });
   }
-  function useDest(v) { W.use.dest = v; W.use.qty = val("trc-u-qty"); W.use.ref = val("trc-u-ref"); render(); }
+  function useDest(v) { captureUse(); W.use.dest = v || "ECOM"; render(); }
   function useScan(code) {
     code = cleanScan(code).toUpperCase(); if (!code) return;
     if (needOp()) return;
-    W.use.qty = val("trc-u-qty"); W.use.ref = val("trc-u-ref"); W.use.dest = val("trc-u-dest") || W.use.dest;
+    captureUse();
+    W.use.dest = W.use.dest || "ECOM";
     fetchOne(code).then(function (l) {
       if (!l) { flash(L("notFound") + ": " + code, "err"); render(); return; }
       if (l.kind !== "FG") { flash(code + ": scan a finished pallet (FG) label", "err"); render(); return; }
@@ -768,7 +888,7 @@
       if (!(take > 0)) { flash(code + " is empty", "err"); render(); return; }
       var left = l.qty_left - take;
       updLabel(l.lpn, { qty_left: left, status: left <= 0 ? "EMPTY" : l.status }).then(function () {
-        return addEvents([{ type: "USE", lpn: l.lpn, qty: take, uom: "bags", from_loc: l.location, to_loc: W.use.dest, ref: W.use.ref || "", lot: l.lot, data: { flavor: l.flavor_code, size: l.size } }]);
+        return addEvents([{ type: "USE", lpn: l.lpn, qty: take, uom: "bags", from_loc: l.location, to_loc: W.use.dest, ref: W.use.ref || "", lot: l.lot, data: { flavor: l.flavor_code, flavor_code: l.flavor_code, size: l.size, pull_date: today() } }]);
       }).then(function () { flash(take + " bags " + l.lot + " -> " + W.use.dest + (left > 0 ? " (" + left + " left on pallet)" : " (pallet empty)"), "ok"); W.use.qty = ""; render(); });
     });
   }
@@ -919,13 +1039,13 @@
     var lotFlav = {};
     allLabels().forEach(function (l) { if (l.kind === "FG" && l.lot) lotFlav[l.lot] = { fc: l.flavor_code, size: l.size }; });
     function evFlav(e) { var d = e.data || {}; if (d.flavor_code) return { fc: d.flavor_code, size: d.size || "" }; var l = e.lpn && S.labels[e.lpn]; return l ? { fc: l.flavor_code, size: l.size } : (lotFlav[e.lot] || { fc: String(e.lot || "").slice(0, 3), size: "" }); }
-    var ecomAll = S.events.filter(function (e) { return e.type === "USE" && e.to_loc === "ECOM"; }).sort(function (a, b) { return String(a.ts).localeCompare(String(b.ts)); });
+    var ecomAll = S.events.filter(function (e) { return e.type === "USE" && e.to_loc === "ECOM"; }).sort(function (a, b) { return pullInstant(a).localeCompare(pullInstant(b)); });
     var ecom = ecomAll.filter(function (e) { return lots[e.lot] || String(e.lot || "").toUpperCase() === qU || shown.some(function (l) { return l.lot === e.lot; }); });
     if (ecom.length) {
       h += '<h3>E-commerce window</h3><p class="hint">E-com orders for this flavor and size shipped from the first pull of this lot until the next pull of a different lot are in scope. Match them in ShipStation by ship date.</p><table class="trc"><thead><tr><th>Pulled</th><th>Lot</th><th>Bags</th><th>By</th><th>Window ends</th></tr></thead><tbody>' + ecom.map(function (e) {
         var f = evFlav(e);
-        var nxt = ecomAll.filter(function (x) { var g = evFlav(x); return String(x.ts) > String(e.ts) && x.lot !== e.lot && g.fc === f.fc && (!f.size || !g.size || g.size === f.size); })[0];
-        return '<tr><td>' + esc(tsLocal(e.ts)) + '</td><td>' + esc(e.lot) + (e.lpn ? "" : ' <span class="muted sm">(' + esc(L("byHand")) + ')</span>') + '</td><td>' + fmt(e.qty) + '</td><td>' + esc(e.operator) + '</td><td>' + (nxt ? esc(tsLocal(nxt.ts)) + ' <span class="muted sm">(next lot ' + esc(nxt.lot) + ')</span>' : '<i>still open</i>') + '</td></tr>';
+        var nxt = ecomAll.filter(function (x) { var g = evFlav(x); return pullInstant(x) > pullInstant(e) && x.lot !== e.lot && g.fc === f.fc && (!f.size || !g.size || g.size === f.size); })[0];
+        return '<tr><td>' + esc(tsLocal(pullInstant(e))) + '</td><td>' + esc(e.lot) + (e.lpn ? "" : ' <span class="muted sm">(' + esc(L("byHand")) + ')</span>') + '</td><td>' + fmt(e.qty) + '</td><td>' + esc(e.operator) + '</td><td>' + (nxt ? esc(tsLocal(pullInstant(nxt))) + ' <span class="muted sm">(next lot ' + esc(nxt.lot) + ')</span>' : '<i>still open</i>') + '</td></tr>';
       }).join("") + '</tbody></table>';
     }
     if (res.events.length) h += '<h3>Events referencing ' + esc(t.q) + '</h3><table class="trc"><tbody>' + res.events.slice(-60).map(function (e) { return '<tr><td>' + esc(tsLocal(e.ts)) + '</td><td>' + esc(e.type) + '</td><td>' + esc(e.lpn || "") + '</td><td>' + esc(e.lot || "") + '</td><td>' + (e.qty == null ? "" : fmt(e.qty) + ' ' + esc(e.uom || "")) + '</td><td>' + esc(e.operator || "") + '</td></tr>'; }).join("") + '</tbody></table>';
@@ -1059,8 +1179,7 @@
     if ($("trc-r-type")) recvCapture();
     if ($("trc-m-bins")) W.mix.bins = val("trc-m-bins");
     if ($("trc-p-bags")) W.pmBags = val("trc-p-bags");
-    if ($("trc-u-qty")) { W.use.qty = val("trc-u-qty"); W.use.ref = val("trc-u-ref"); }
-    if ($("trc-u-mlot")) { W.use.mlot = val("trc-u-mlot"); W.use.mflav = val("trc-u-mflav"); W.use.msize = val("trc-u-msize"); W.use.mbags = val("trc-u-mbags"); }
+    captureUse();
     if ($("trc-s-po")) { W.ship.po = val("trc-s-po"); W.ship.customer = val("trc-s-cust"); W.ship.qty = val("trc-s-qty"); }
   }
   document.addEventListener("input", captureAll, true);
@@ -1085,7 +1204,7 @@
     mixNew: function () { W.mix = { flavor: "", prefix: "", inputs: [], bins: 1 }; render(); },
     setMachine: function (v) { ST.machine = v; saveST(); render(); },
     pmScan: pmScan, pmChange: pmChange, pmFinish: pmFinish, pmScrap: pmScrap,
-    moveScan: moveScan, useDest: useDest, useScan: useScan, useManual: useManual,
+    moveScan: moveScan, useDest: useDest, useScan: useScan, useManual: useManual, useSize: useSize, useKey: useKey, useLotInput: useLotInput,
     shipField: shipField, shipScan: shipScan, shipRemove: shipRemove, shipFinish: shipFinish,
     traceQ: traceQ, drill: drill, printEvidence: printEvidence,
     traceOf: function (lpn) { ST.tab = "trace"; W.trace.q = lpn; markActive(); render(); },
