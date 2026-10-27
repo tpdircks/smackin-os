@@ -2,8 +2,7 @@
    Smackin' OS - Department homes (dept-homes.js)
    Top department bar and a full-page home for each team. Each card opens a
    screen that already exists (UI_go, Lot Trace, or a module open()).
-   Fulfillment is a button only: it opens the current Fulfillment menu and
-   does not replace those screens. No writes. No timers.
+   Fulfillment uses the same card page. The left menu stays. No writes. No timers.
    ========================================================================== */
 (function () {
   "use strict";
@@ -12,8 +11,11 @@
   var barCurrent = "";
   var shownLang = "";
   var painting = false;
-  var restoring = false;
   var paintTries = 0;
+  // A department tap blurs the field before click, so remember the mid-entry
+  // check from the press itself. Touch sends a later mousedown after the blur.
+  var pressBusy = false;
+  var touchArmed = false;
 
   var TAB_DEPT = {
     receive: "recv", recvlog: "recv", returns: "recv", qa: "recv",
@@ -28,7 +30,7 @@
     maintenance: "maint",
     produce: "ful", retailprod: "ful", ecomprod: "ful", skulookup: "ful",
     prodlog: "ful", fulfilldaily: "ful", flavinv: "ful", stockbuild: "ful",
-    orders: "ful", orderdocs: "ful"
+    orders: "ful", orderdocs: "ful", shiplog: "ful"
   };
 
   function tx(v) {
@@ -116,7 +118,21 @@
     quality: { go: "quality", icon: "microscope", title: { en: "Quality Logs", es: "Quality Logs", pt: "Quality Logs" }, blurb: { en: "CCP checks: allergen changeover, label verify, metal detector.", es: "Registros CCP: cambio de alergeno, verificacion de etiqueta, detector de metal.", pt: "Registros CCP: troca de alergeno, verificacao de rotulo, detector de metal." } },
     compliance: { go: "compliance", icon: "shield-check", title: { en: "Compliance / SQF", es: "Cumplimiento / SQF", pt: "Conformidade / SQF" }, blurb: { en: "Certifications, the SQF calendar, and controlled documents.", es: "Certificaciones, el calendario SQF y documentos controlados.", pt: "Certificacoes, o calendario SQF e documentos controlados." } },
     maintenance: { go: "maintenance", icon: "hard-hat", title: { en: "Maintenance", es: "Mantenimiento", pt: "Manutencao" }, blurb: { en: "Requests, repairs, and projects.", es: "Solicitudes, reparaciones y proyectos.", pt: "Pedidos, reparos e projetos." } },
-    services: { fn: "svc", icon: "hand-platter", title: { en: "Services", es: "Services", pt: "Services" }, blurb: { en: "Outsourced services and invoices: uniforms, pest, waste, equipment.", es: "Servicios externos y facturas: uniformes, plagas, basura, equipo.", pt: "Servicos externos e faturas: uniformes, pragas, residuos, equipamento." } }
+    services: { fn: "svc", icon: "hand-platter", title: { en: "Services", es: "Services", pt: "Services" }, blurb: { en: "Outsourced services and invoices: uniforms, pest, waste, equipment.", es: "Servicios externos y facturas: uniformes, plagas, basura, equipo.", pt: "Servicos externos e faturas: uniformes, pragas, residuos, equipamento." } },
+    produce: { go: "produce", icon: "factory", title: { en: "Produce", es: "Producir", pt: "Produzir" }, blurb: { en: "Record finished 4oz bags off the line.", es: "Registre bolsas 4oz terminadas de la linea.", pt: "Registre sacos 4oz prontos da linha." } },
+    retailprod: { go: "retailprod", icon: "store", title: { en: "Retail Production", es: "Produccion Retail", pt: "Producao Varejo" }, blurb: { en: "Scan or pick a retail pallet and add it to stock.", es: "Escanee o elija una paleta retail y sumela al inventario.", pt: "Escaneie ou escolha um palete de varejo e some ao estoque." } },
+    ecomprod: { go: "ecomprod", icon: "laptop", title: { en: "E-Commerce", es: "E-Commerce", pt: "E-Commerce" }, blurb: { en: "Scan or pick an e-commerce item and add what you built.", es: "Escanee o elija un item de e-commerce y sume lo producido.", pt: "Escaneie ou escolha um item de e-commerce e some o que produziu." } },
+    trUse: { trace: "use", icon: "log-out", title: { en: "E-com lot pull", es: "Salida e-com", pt: "E-com lot pull" }, blurb: { en: "Log bags pulled for e-commerce. One save is the whole lot.", es: "Registre las bolsas tomadas para e-commerce. Un guardado es todo el lote.", pt: "Registre as bolsas separadas para e-commerce. Um salvamento e o lote inteiro." } },
+    trShip: { trace: "ship", icon: "truck", title: { en: "Ship", es: "Enviar", pt: "Ship" }, blurb: { en: "Build an outbound pallet: enter the PO and scan each pallet you pull.", es: "Arme una tarima de salida: escriba la orden y escanee cada tarima.", pt: "Monte um palete de saida: escreva a OC e leia cada palete." } },
+    skulookup: { go: "skulookup", icon: "scan-search", title: { en: "SKU Lookup", es: "Buscar SKU", pt: "SKU Lookup" }, blurb: { en: "Look up an e-commerce SKU, its picture, and what is inside.", es: "Busque un SKU de e-commerce, su imagen y que contiene.", pt: "Busque um SKU de e-commerce, a imagem e o que tem dentro." } },
+    prodlog: { go: "prodlog", icon: "notebook-pen", title: { en: "Daily Production", es: "Produccion Diaria", pt: "Producao Diaria" }, blurb: { en: "Today's retail pallets, lots, and the metal detector counter.", es: "Paletas retail de hoy, lotes y el contador del detector de metal.", pt: "Paletes de varejo de hoje, lotes e o contador do detector de metal." } },
+    fulfilldaily: { go: "fulfilldaily", icon: "list-todo", title: { en: "Daily Fulfillment", es: "Cumplimiento Diario", pt: "Cumprimento Diario" }, blurb: { en: "Log today's e-commerce labels and Amazon (FBA) builds.", es: "Registre las etiquetas de e-commerce y la produccion Amazon (FBA) de hoy.", pt: "Registre as etiquetas de e-commerce e a producao Amazon (FBA) de hoje." } },
+    flavinv: { go: "flavinv", icon: "bar-chart-2", title: { en: "Flavor Inventory", es: "Inventario de Sabores", pt: "Inventario de Sabores" }, blurb: { en: "On-floor pallets and finished on-hand by flavor.", es: "Paletas en piso y producto terminado en mano, por sabor.", pt: "Paletes no piso e produto acabado em estoque, por sabor." } },
+    stockbuild: { go: "stockbuild", icon: "layers", title: { en: "Stock Build", es: "Construir Inventario", pt: "Construir Estoque" }, blurb: { en: "Build progress against the stock goals. Update on hand as you count.", es: "Avance contra las metas de inventario. Actualice en mano al contar.", pt: "Andamento contra as metas de estoque. Atualize em estoque ao contar." } },
+    orders: { go: "orders", icon: "receipt", title: { en: "Orders", es: "Ordenes", pt: "Pedidos" }, blurb: { en: "Non-SPS and Stripe orders. Open ones stay on top.", es: "Ordenes no-SPS y Stripe. Las abiertas quedan arriba.", pt: "Pedidos nao-SPS e Stripe. Os abertos ficam no topo." } },
+    orderdocs: { go: "orderdocs", icon: "folder", title: { en: "Order Docs", es: "Docs de Orden", pt: "Docs de Pedido" }, blurb: { en: "Paperwork for fulfilled orders: BOL, packing list, pull sheet, invoice.", es: "Papeleo de ordenes cumplidas: BOL, lista de empaque, hoja de picking, factura.", pt: "Papelada de pedidos concluidos: BOL, lista de embalagem, folha de separacao, fatura." } },
+    shiplog: { go: "shiplog", icon: "truck", title: { en: "Shipping Log", es: "Registro de Envios", pt: "Registro de Envios" }, blurb: { en: "Log a one-off outbound shipment and its tracking number.", es: "Registre un envio suelto y su numero de rastreo.", pt: "Registre um envio avulso e o numero de rastreio." } },
+    shipments: { fn: "shipments", icon: "ship", title: { en: "Shipments", es: "Shipments", pt: "Shipments" }, blurb: { en: "ShipStation shipments the server already synced. This screen only reads them.", es: "Envios de ShipStation que el servidor ya sincronizo. Esta pantalla solo los lee.", pt: "Envios do ShipStation que o servidor ja sincronizou. Esta tela so le." } }
   };
 
   var DEPTS = [
@@ -143,8 +159,15 @@
     },
     {
       id: "ful",
-      passthrough: true,
-      label: { en: "Fulfillment", es: "Fulfillment", pt: "Fulfillment" }
+      label: { en: "Fulfillment", es: "Fulfillment", pt: "Fulfillment" },
+      title: { en: "Fulfillment", es: "Fulfillment", pt: "Fulfillment" },
+      intro: { en: "Build retail and e-commerce orders, pull lots, and ship what is ready.", es: "Arme ordenes retail y de e-commerce, tome lotes y envie lo que esta listo.", pt: "Monte pedidos de varejo e e-commerce, separe lotes e envie o que esta pronto." },
+      sections: [
+        { h: { en: "Line", es: "Linea", pt: "Linha" }, tools: ["retailprod", "ecomprod", "trUse", "trShip", "produce", "prodlog", "fulfilldaily"] },
+        { h: { en: "Lookup and stock", es: "Busqueda y stock", pt: "Busca e estoque" }, tools: ["skulookup", "flavinv", "stockbuild"] },
+        { h: { en: "Orders", es: "Ordenes", pt: "Pedidos" }, tools: ["orders", "orderdocs"] },
+        { h: { en: "Shipping", es: "Envios", pt: "Envios" }, tools: ["shiplog", "shipments"] }
+      ]
     },
     {
       id: "mfg",
@@ -211,6 +234,7 @@
     if (!btn) return "";
     if (btn.id === "svc-nav") return "maint";
     if (btn.id === "sf-nav") return "purch";
+    if (btn.id === "shs-nav") return "ful";
     if (btn.id === "mfg-hist-nav" || btn.id === "mfg-up-nav") return "mfg";
     if (btn.getAttribute("data-trc") === "1") {
       var h = btn.getAttribute("data-trc-home") || "";
@@ -263,6 +287,7 @@
     if (fn === "hist" && window.MFGHIST && typeof MFGHIST.open === "function") { MFGHIST.open(); return; }
     if (fn === "up" && window.MFGUPLOAD && typeof MFGUPLOAD.open === "function") { MFGUPLOAD.open(); return; }
     if (fn === "sps" && window.SPSFEED && typeof SPSFEED.open === "function") { SPSFEED.open(); return; }
+    if (fn === "shipments" && window.SHIPPING_SYNC && typeof SHIPPING_SYNC.open === "function") { SHIPPING_SYNC.open(); return; }
     toast(Lmissing());
   }
 
@@ -333,7 +358,10 @@
   }
 
   function showHome(id) {
-    if (entryInProgress()) { toast(Lbusy()); return; }
+    var blocked = pressBusy || entryInProgress();
+    pressBusy = false;
+    touchArmed = false;
+    if (blocked) { toast(Lbusy()); return; }
     var dept = deptById(id);
     if (!dept || dept.passthrough) return;
     releaseOtherViews();
@@ -344,60 +372,6 @@
     paintHome();
     markBar();
     try { window.scrollTo(0, 0); } catch (e) {}
-    syncOffset();
-  }
-
-  function groupLabel(key) {
-    var nav = document.getElementById("nav");
-    if (!nav) return null;
-    var labels = nav.querySelectorAll(".navlabel");
-    for (var i = 0; i < labels.length; i++) {
-      if ((labels[i].getAttribute("onclick") || "").indexOf("'" + key + "'") >= 0) return labels[i];
-    }
-    return null;
-  }
-
-  function restoreAppView() {
-    var nav = document.getElementById("nav");
-    var active = nav && nav.querySelector(".navitem.active");
-    if (active && active.id === "dept-release") active = null;
-    restoring = true;
-    try {
-      if (active) active.click();
-      else if (typeof window.UI_go === "function") window.UI_go("home");
-    } finally {
-      restoring = false;
-    }
-  }
-
-  function revealFulfillment() {
-    var label = groupLabel("grpFulfillment");
-    var group = label && label.closest ? label.closest(".navgroup") : null;
-    if (group && group.classList.contains("collapsed") && window.UI && typeof UI.navGroupToggle === "function") {
-      UI.navGroupToggle("grpFulfillment");
-      label = groupLabel("grpFulfillment");
-    }
-    var nav = document.getElementById("nav");
-    var narrow = false;
-    try { narrow = window.matchMedia("(max-width: 820px)").matches; } catch (e) {}
-    if (narrow && nav) {
-      nav.classList.add("open");
-      var bd = document.getElementById("navBackdrop");
-      if (bd) bd.classList.add("show");
-    }
-    if (label && label.scrollIntoView) {
-      try { label.scrollIntoView({ block: "start" }); } catch (e2) {}
-    }
-  }
-
-  function showFulfillment() {
-    if (entryInProgress()) { toast(Lbusy()); return; }
-    var was = !!homeId;
-    homeId = "";
-    if (was) restoreAppView();
-    revealFulfillment();
-    barCurrent = "ful";
-    markBar();
     syncOffset();
   }
 
@@ -415,9 +389,7 @@
   function onBarClick(e) {
     var btn = e.target && e.target.closest ? e.target.closest("[data-dept]") : null;
     if (!btn) return;
-    var id = btn.getAttribute("data-dept");
-    if (id === "ful") showFulfillment();
-    else showHome(id);
+    showHome(btn.getAttribute("data-dept"));
   }
 
   function onViewClick(e) {
@@ -494,6 +466,18 @@
       if (layout && layout.parentNode) layout.parentNode.insertBefore(bar, layout);
       else document.body.appendChild(bar);
     }
+    bar.addEventListener("touchstart", function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest("[data-dept]") : null;
+      if (!btn) return;
+      touchArmed = true;
+      pressBusy = entryInProgress();
+    }, { passive: true });
+    bar.addEventListener("mousedown", function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest("[data-dept]") : null;
+      if (!btn) return;
+      if (touchArmed) { touchArmed = false; return; }
+      pressBusy = entryInProgress();
+    });
     bar.addEventListener("click", onBarClick);
     renderBar();
     syncOffset();
@@ -521,7 +505,6 @@
         var t = e.target && e.target.closest ? e.target.closest("#nav .navitem") : null;
         if (!t || t.id === "dept-release") return;
         if (homeId) homeId = "";
-        if (restoring) return;
         barCurrent = deptOfNav(t);
         markBar();
       }, true);
@@ -537,7 +520,7 @@
   window.DEPT = {
     show: showHome,
     tool: openTool,
-    fulfillment: showFulfillment,
+    fulfillment: function () { showHome("ful"); },
     current: function () { return { home: homeId, bar: barCurrent }; }
   };
 
