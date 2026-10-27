@@ -1,5 +1,5 @@
 /* ============================================================================
-   Lot Trace & Scan  (trace.js)  b=8
+   Lot Trace & Scan  (trace.js)  b=9
    One scan chain from the dock to the customer, built for SQF traceability.
 
      RECEIVE   raw material in -> our own RM label per pallet/box/roll (supplier lot, exp)
@@ -110,7 +110,7 @@
       startDrill: "Start mock recall timer", stopDrill: "Stop timer", printEv: "Print evidence",
       notFound: "Not found", onHold: "ON HOLD - cannot use", expired: "EXPIRED - cannot use", wrongFlavor: "Flavor does not match",
       all: "All", kind: "Kind", status: "Status", search: "Search",
-      manTitle: "Log bags pulled", manHint: "One save for the whole pull of one lot. If that lot is in several boxes, add the bags together and enter the total. Do not save a row for each box. Type the lot code printed on the bags (example L2031/3X9.35).", manSave: "Save pull", bagTotal: "Bags (total, all boxes)", pullDate: "Date", pullFuture: "Date cannot be in the future.", scanFold: "Scan a pallet label instead", note: "Note / reference", byHand: "by hand", manOddLot: "This does not look like a normal bag code (example L2031/3X9.35). Save it anyway?",
+      manTitle: "Log bags pulled", manHint: "One save for the whole pull of one lot. If that lot is in several boxes, add the bags together and enter the total. Do not save a row for each box. Type the lot code printed on the bags (example L2031/3X9.35).", manSave: "Save pull", lotPh: "Type lot on bags", bagTotal: "Bags (total, all boxes)", pullDate: "Date", pullFuture: "Date cannot be in the future.", scanFold: "Scan a pallet label instead", note: "Note / reference", byHand: "by hand", manOddLot: "This does not look like a normal bag code (example L2031/3X9.35). Save it anyway?",
       issue: "Issue found (blank if none). Anything here keeps it ON HOLD", noteIssue: "Note issue (stay on hold)", issueCol: "Issue",
       issuePrompt: "Describe the issue. Examples: No CA warning / Wrong ingredient statement / Spec issue / Shiny film / Swirl design", holdQ: "is released. Put it ON HOLD?"
     },
@@ -144,7 +144,7 @@
       startDrill: "Iniciar cronómetro de simulacro", stopDrill: "Detener", printEv: "Imprimir evidencia",
       notFound: "No encontrado", onHold: "RETENIDO - no usar", expired: "VENCIDO - no usar", wrongFlavor: "El sabor no coincide",
       all: "Todos", kind: "Tipo", status: "Estado", search: "Buscar",
-      manTitle: "Registrar bolsas tomadas", manHint: "Un solo guardado para toda la salida de un lote. Si ese lote viene en varias cajas, sume las bolsas y escriba el total. No guarde una fila por caja. Escriba el código de lote impreso en las bolsas (ejemplo L2031/3X9.35).", manSave: "Guardar salida", bagTotal: "Bolsas (total, todas las cajas)", pullDate: "Fecha", pullFuture: "La fecha no puede ser futura.", scanFold: "Escanear una etiqueta de tarima", note: "Nota / referencia", byHand: "a mano", manOddLot: "Esto no parece un código de bolsa normal (ejemplo L2031/3X9.35). ¿Guardar de todos modos?",
+      manTitle: "Registrar bolsas tomadas", manHint: "Un solo guardado para toda la salida de un lote. Si ese lote viene en varias cajas, sume las bolsas y escriba el total. No guarde una fila por caja. Escriba el código de lote impreso en las bolsas (ejemplo L2031/3X9.35).", manSave: "Guardar salida", lotPh: "Escriba el lote", bagTotal: "Bolsas (total, todas las cajas)", pullDate: "Fecha", pullFuture: "La fecha no puede ser futura.", scanFold: "Escanear una etiqueta de tarima", note: "Nota / referencia", byHand: "a mano", manOddLot: "Esto no parece un código de bolsa normal (ejemplo L2031/3X9.35). ¿Guardar de todos modos?",
       issue: "Problema encontrado (vacío si no hay). Si escribe algo queda RETENIDO", noteIssue: "Anotar problema (sigue retenido)", issueCol: "Problema",
       issuePrompt: "Describa el problema. Ejemplos: Sin advertencia de California / Ingredientes incorrectos / Problema de especificación / Película brillante / Diseño de remolino", holdQ: "está liberado. ¿Retenerlo?"
     }
@@ -795,7 +795,7 @@
       h += '<button type="button" class="trc-dest' + (d.k === "ECOM" ? " ecom" : "") + (on ? " on" : "") + '" aria-pressed="' + (on ? "true" : "false") + '" onclick="TRACE.useDest(\'' + d.k + '\')">' + esc(LT(d)) + '</button>';
     });
     h += '</div><div class="trc-grid">';
-    h += '<div><label>' + esc(L("lotCode")) + '</label><input id="trc-u-mlot" class="trc-scan" style="font-size:20px;padding:12px" placeholder="L2031/3X9.35" value="' + esc(u.mlot || "") + '" autocomplete="off" enterkeyhint="next" oninput="TRACE.useLotInput()" onkeydown="TRACE.useKey(event,\'lot\')"></div>';
+    h += '<div><label>' + esc(L("lotCode")) + '</label><input id="trc-u-mlot" class="trc-scan" style="font-size:20px;padding:12px" placeholder="' + esc(L("lotPh")) + '" value="' + esc(u.mlot || "") + '" autocomplete="off" enterkeyhint="next" oninput="TRACE.useLotInput()" onkeydown="TRACE.useKey(event,\'lot\')"></div>';
     h += '<div><label>' + esc(L("flavor")) + '</label>' + sel("trc-u-mflav", flavorOpts(true), u.mflav || "") + '</div>';
     h += '<div><label>' + esc(L("bagTotal")) + '</label><input id="trc-u-mbags" type="number" inputmode="numeric" min="1" value="' + esc(u.mbags || "") + '" enterkeyhint="done" onkeydown="TRACE.useKey(event,\'bags\')"></div>';
     h += '<div><label>' + esc(L("pullDate")) + '</label><input id="trc-u-mdate" type="date" value="' + esc(dateVal) + '" onkeydown="TRACE.useKey(event,\'date\')"></div></div>';
@@ -865,7 +865,7 @@
       if (res && res.ok === false) { flash("Save failed: " + res.msg, "err"); render(); return; }
       flash(bags + " bags " + lot + " -> " + u.dest + " (" + L("byHand") + ")", "ok");
       u.mflav = fl ? fl.code : (picked || fc);
-      u._flavFromLot = "";
+      u._flavFromLot = u.mflav;
       u.msize = size;
       u.mdate = pullDate;
       u.dest = u.dest || "ECOM";
