@@ -48,6 +48,9 @@
     var items = Array.prototype.slice.call(nav.querySelectorAll(".navitem"));
     var byLabel = {};
     items.forEach(function (btn) {
+      // Lot-trace stations reuse words like Receive / Mixing / Labels. They are
+      // different screens and must stay visible next to the original item.
+      if (btn.getAttribute("data-trc") === "1") return;
       var label = itemLabel(btn);
       if (!label) return;
       (byLabel[label] || (byLabel[label] = [])).push(btn);
