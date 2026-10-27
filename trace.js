@@ -1,5 +1,5 @@
 /* ============================================================================
-   Lot Trace & Scan  (trace.js)  b=9
+   Lot Trace & Scan  (trace.js)  b=10
    One scan chain from the dock to the customer, built for SQF traceability.
 
      RECEIVE   raw material in -> our own RM label per pallet/box/roll (supplier lot, exp)
@@ -110,7 +110,8 @@
       startDrill: "Start mock recall timer", stopDrill: "Stop timer", printEv: "Print evidence",
       notFound: "Not found", onHold: "ON HOLD - cannot use", expired: "EXPIRED - cannot use", wrongFlavor: "Flavor does not match",
       all: "All", kind: "Kind", status: "Status", search: "Search",
-      manTitle: "Log bags pulled", manHint: "One save for the whole pull of one lot. If that lot is in several boxes, add the bags together and enter the total. Do not save a row for each box. Type the lot code printed on the bags (example L2031/3X9.35).", manSave: "Save pull", lotPh: "Type lot on bags", bagTotal: "Bags (total, all boxes)", pullDate: "Date", pullFuture: "Date cannot be in the future.", scanFold: "Scan a pallet label instead", note: "Note / reference", byHand: "by hand", manOddLot: "This does not look like a normal bag code (example L2031/3X9.35). Save it anyway?",
+      manTitle: "Log bags pulled", manHint: "One save for the whole pull of one lot. If that lot is in several boxes, add the bags together and enter the total. Do not save a row for each box. Type the lot code printed on the bags (example L2031/3X9.35).", manSave: "Save pull", lotPh: "Type lot on bags", lotEmpty: "Empty. Type the lot printed on the bags.", flavorBlank: "Follows the lot", bagTotal: "Bags (total, all boxes)", pullDate: "Date", pullFuture: "Date cannot be in the future.", scanFold: "Scan a pallet label instead", note: "Note / reference", byHand: "by hand", manOddLot: "This does not look like a normal bag code (example L2031/3X9.35). Save it anyway?",
+      navUse: "E-com lot pull", ecomLink: "Log e-com lot pull", ecomLinkHint: "Opens the pull log. Add every box of that lot into one bag total.",
       issue: "Issue found (blank if none). Anything here keeps it ON HOLD", noteIssue: "Note issue (stay on hold)", issueCol: "Issue",
       issuePrompt: "Describe the issue. Examples: No CA warning / Wrong ingredient statement / Spec issue / Shiny film / Swirl design", holdQ: "is released. Put it ON HOLD?"
     },
@@ -144,7 +145,8 @@
       startDrill: "Iniciar cronómetro de simulacro", stopDrill: "Detener", printEv: "Imprimir evidencia",
       notFound: "No encontrado", onHold: "RETENIDO - no usar", expired: "VENCIDO - no usar", wrongFlavor: "El sabor no coincide",
       all: "Todos", kind: "Tipo", status: "Estado", search: "Buscar",
-      manTitle: "Registrar bolsas tomadas", manHint: "Un solo guardado para toda la salida de un lote. Si ese lote viene en varias cajas, sume las bolsas y escriba el total. No guarde una fila por caja. Escriba el código de lote impreso en las bolsas (ejemplo L2031/3X9.35).", manSave: "Guardar salida", lotPh: "Escriba el lote", bagTotal: "Bolsas (total, todas las cajas)", pullDate: "Fecha", pullFuture: "La fecha no puede ser futura.", scanFold: "Escanear una etiqueta de tarima", note: "Nota / referencia", byHand: "a mano", manOddLot: "Esto no parece un código de bolsa normal (ejemplo L2031/3X9.35). ¿Guardar de todos modos?",
+      manTitle: "Registrar bolsas tomadas", manHint: "Un solo guardado para toda la salida de un lote. Si ese lote viene en varias cajas, sume las bolsas y escriba el total. No guarde una fila por caja. Escriba el código de lote impreso en las bolsas (ejemplo L2031/3X9.35).", manSave: "Guardar salida", lotPh: "Escriba el lote", lotEmpty: "Vacío. Escriba el lote impreso en las bolsas.", flavorBlank: "Sigue el lote", bagTotal: "Bolsas (total, todas las cajas)", pullDate: "Fecha", pullFuture: "La fecha no puede ser futura.", scanFold: "Escanear una etiqueta de tarima", note: "Nota / referencia", byHand: "a mano", manOddLot: "Esto no parece un código de bolsa normal (ejemplo L2031/3X9.35). ¿Guardar de todos modos?",
+      navUse: "Salida e-com", ecomLink: "Registrar salida e-com", ecomLinkHint: "Abre el registro. Sume todas las cajas de ese lote en un total.",
       issue: "Problema encontrado (vacío si no hay). Si escribe algo queda RETENIDO", noteIssue: "Anotar problema (sigue retenido)", issueCol: "Problema",
       issuePrompt: "Describa el problema. Ejemplos: Sin advertencia de California / Ingredientes incorrectos / Problema de especificación / Película brillante / Diseño de remolino", holdQ: "está liberado. ¿Retenerlo?"
     }
@@ -311,16 +313,23 @@
       "#trc-root .trc-timer{font-size:28px;font-weight:800;font-family:monospace;color:#a11}",
       "#trc-root .trc-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}",
       "#trc-root .trc-use-primary{border:2px solid var(--orange)}",
+      "#trc-root .trc-use-primary label{font-size:16px;font-weight:800}",
+      "#trc-root .trc-touch,#trc-root .trc-use-primary input,#trc-root .trc-use-primary select{min-height:56px;font-size:20px;padding:14px 12px}",
+      "#trc-root .trc-use-grid{grid-template-columns:1fr;row-gap:12px}",
+      "@media (min-width:800px){#trc-root .trc-use-grid{grid-template-columns:1fr 1fr}#trc-root .trc-lot-field{grid-column:1 / -1}}",
+      "#trc-root #trc-u-mlot.trc-empty{background:#fff8e8;border-color:#E39412}",
+      "#trc-root #trc-u-mlot.trc-empty::placeholder{color:#8a5a00;font-weight:700;opacity:1}",
+      "#trc-root .trc-lot-empty{margin:8px 0 0;font-size:16px;font-weight:800;color:#8a5a00}",
       "#trc-root .trc-dests{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 4px}",
-      "#trc-root .trc-dest{flex:1 1 calc(33% - 8px);width:auto;border:2px solid #c3ccd8;background:#fff;border-radius:12px;padding:10px 8px;font-weight:700;cursor:pointer;font-size:13px;color:#1F3864;font-family:inherit}",
-      "#trc-root .trc-dest.ecom{flex:1 1 100%;font-size:18px;padding:14px 16px;border-color:var(--orange)}",
+      "#trc-root .trc-dest{flex:1 1 calc(33% - 8px);width:auto;min-height:52px;border:2px solid #c3ccd8;background:#fff;border-radius:12px;padding:12px 10px;font-weight:700;cursor:pointer;font-size:16px;color:#1F3864;font-family:inherit}",
+      "#trc-root .trc-dest.ecom{flex:1 1 100%;min-height:68px;font-size:22px;padding:16px 18px;border-color:var(--orange)}",
       "#trc-root .trc-dest.on{background:#1F3864;color:#fff;border-color:#1F3864}",
       "#trc-root .trc-dest.ecom.on{background:var(--orange);border-color:var(--orange);color:#fff}",
-      "#trc-root .trc-size-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}",
-      "#trc-root .trc-size-lbl{font-size:13px;font-weight:600;color:#445}",
-      "#trc-root .trc-size{width:auto;border:1px solid #c3ccd8;background:#fff;border-radius:999px;padding:6px 12px;font-weight:700;cursor:pointer;font-family:inherit;font-size:14px;color:#1F3864}",
+      "#trc-root .trc-size-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}",
+      "#trc-root .trc-size-lbl{font-size:16px;font-weight:800;color:#445}",
+      "#trc-root .trc-size{flex:1 1 96px;width:auto;min-height:52px;border:2px solid #c3ccd8;background:#fff;border-radius:12px;padding:12px 14px;font-weight:800;cursor:pointer;font-family:inherit;font-size:18px;color:#1F3864}",
       "#trc-root .trc-size.on{background:#1F3864;color:#fff;border-color:#1F3864}",
-      "#trc-root button.primary.trc-save{display:block;width:100%;font-size:22px;padding:16px 18px;margin-top:16px}",
+      "#trc-root button.primary.trc-save{display:block;width:100%;min-height:68px;font-size:22px;padding:18px;margin-top:16px}",
       "#trc-root details.trc-scanfold summary{cursor:pointer;font-weight:700;color:#1F3864;font-size:15px}",
       "#trc-root details.trc-scanfold summary::-webkit-details-marker{margin-right:6px}",
       "@media print{body.trc-printing header,body.trc-printing nav,body.trc-printing .trc-noprint{display:none!important}}"
@@ -357,7 +366,7 @@
       var extra = t[0] === "qa" && holdN ? ' (' + holdN + ')' : "";
       return '<button class="' + (ST.tab === t[0] ? "on" : "") + '" onclick="TRACE.tab(\'' + t[0] + '\')">' + esc(L(t[1])) + extra + '</button>';
     }).join("") + '</div>';
-    h += '<div class="trc-grid"><div><label>' + esc(L("op")) + '</label><input id="trc-op" list="trc-ops" value="' + esc(ST.op || "") + '" onchange="TRACE.setOp(this.value)" autocomplete="off"><datalist id="trc-ops">' + (ST.ops || []).map(function (o) { return '<option value="' + esc(o) + '">'; }).join("") + '</datalist></div></div>';
+    h += '<div class="trc-grid"><div><label>' + esc(L("op")) + '</label><input id="trc-op"' + (ST.tab === "use" ? ' class="trc-touch"' : '') + ' list="trc-ops" value="' + esc(ST.op || "") + '" onchange="TRACE.setOp(this.value)" autocomplete="off"><datalist id="trc-ops">' + (ST.ops || []).map(function (o) { return '<option value="' + esc(o) + '">'; }).join("") + '</datalist></div></div>';
     h += '</div>';
     if (W.msg && Date.now() - W.msg.t < 20000) h += '<div class="trc-msg ' + W.msg.kind + ' trc-noprint">' + esc(W.msg.txt) + '</div>';
     if (W.pendingPrint && W.pendingPrint.length) h += '<div class="trc-msg warn trc-noprint">' + W.pendingPrint.length + ' label(s) ready. <button class="primary sm" onclick="TRACE.printPending()">' + esc(L("print")) + '</button></div>';
@@ -794,9 +803,13 @@
       var on = u.dest === d.k;
       h += '<button type="button" class="trc-dest' + (d.k === "ECOM" ? " ecom" : "") + (on ? " on" : "") + '" aria-pressed="' + (on ? "true" : "false") + '" onclick="TRACE.useDest(\'' + d.k + '\')">' + esc(LT(d)) + '</button>';
     });
-    h += '</div><div class="trc-grid">';
-    h += '<div><label>' + esc(L("lotCode")) + '</label><input id="trc-u-mlot" class="trc-scan" style="font-size:20px;padding:12px" placeholder="' + esc(L("lotPh")) + '" value="' + esc(u.mlot || "") + '" autocomplete="off" enterkeyhint="next" oninput="TRACE.useLotInput()" onkeydown="TRACE.useKey(event,\'lot\')"></div>';
-    h += '<div><label>' + esc(L("flavor")) + '</label>' + sel("trc-u-mflav", flavorOpts(true), u.mflav || "") + '</div>';
+    h += '</div><div class="trc-grid trc-use-grid">';
+    var lotEmpty = !cleanScan(u.mlot);
+    h += '<div class="trc-lot-field"><label>' + esc(L("lotCode")) + '</label><input id="trc-u-mlot" class="trc-scan' + (lotEmpty ? " trc-empty" : "") + '" name="trc-lot-code" placeholder="' + esc(L("lotPh")) + '" value="' + esc(u.mlot || "") + '" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" oninput="TRACE.useLotInput()" onkeydown="TRACE.useKey(event,\'lot\')">';
+    h += '<p id="trc-u-mempty" class="trc-lot-empty"' + (lotEmpty ? "" : " hidden") + '>' + esc(L("lotEmpty")) + '</p></div>';
+    var flavs = flavorOpts(true);
+    if (flavs[0]) flavs[0] = { v: "", t: L("flavorBlank") };
+    h += '<div><label>' + esc(L("flavor")) + '</label>' + sel("trc-u-mflav", flavs, u.mflav || "", "TRACE.useFlavorPick()") + '</div>';
     h += '<div><label>' + esc(L("bagTotal")) + '</label><input id="trc-u-mbags" type="number" inputmode="numeric" min="1" value="' + esc(u.mbags || "") + '" enterkeyhint="done" onkeydown="TRACE.useKey(event,\'bags\')"></div>';
     h += '<div><label>' + esc(L("pullDate")) + '</label><input id="trc-u-mdate" type="date" value="' + esc(dateVal) + '" onkeydown="TRACE.useKey(event,\'date\')"></div></div>';
     h += '<div class="trc-size-row"><span class="trc-size-lbl">' + esc(L("size")) + '</span>';
@@ -818,13 +831,26 @@
     return h;
   }
   var BAGCODE_RE = /^[SLA]\d{4}\/\d[A-Z]\d\.\d{1,2}$/;
+  function syncLotEmpty() {
+    var lot = cleanScan(val("trc-u-mlot"));
+    var inp = $("trc-u-mlot");
+    if (inp) inp.classList.toggle("trc-empty", !lot);
+    var hint = $("trc-u-mempty");
+    if (hint) hint.hidden = !!lot;
+  }
+  function useFlavorPick() {
+    captureUse();
+    var picked = W.use.mflav || "";
+    // A real pick sticks. Clearing the dropdown lets the next lot fill flavor again.
+    W.use._flavManual = !!(picked && picked !== W.use._flavFromLot);
+  }
   function useLotInput() {
     captureUse();
+    syncLotEmpty();
     var lot = cleanScan(W.use.mlot).toUpperCase();
+    if (!lot) { W.use._flavManual = false; return; }
     var fl = lot.length >= 3 ? flavorBy(lot.slice(0, 3)) : null;
-    if (!fl) return;
-    // Follow the lot code until the operator picks a flavor on purpose.
-    if (W.use.mflav && W.use.mflav !== W.use._flavFromLot) return;
+    if (!fl || W.use._flavManual) return;
     W.use.mflav = fl.code;
     W.use._flavFromLot = fl.code;
     var s = $("trc-u-mflav"); if (s && s.value !== fl.code) s.value = fl.code;
@@ -866,6 +892,7 @@
       flash(bags + " bags " + lot + " -> " + u.dest + " (" + L("byHand") + ")", "ok");
       u.mflav = fl ? fl.code : (picked || fc);
       u._flavFromLot = u.mflav;
+      u._flavManual = false;
       u.msize = size;
       u.mdate = pullDate;
       u.dest = u.dest || "ECOM";
@@ -1190,7 +1217,7 @@
     open: open, render: render,
     tab: function (t) { ST.tab = t; saveST(); W.msg = null; markActive(); load().then(render); },
     go: function (t, ev) { if (ev && ev.preventDefault) ev.preventDefault(); ST.tab = t; saveST(); W.msg = null; open(); },
-    toggleGroup: function () { ST.navOpen = ST.navOpen === false ? true : false; saveST(); var g = $("trc-navgroup"); if (g) { g.parentNode.removeChild(g); } injectNav(); },
+    toggleGroup: function () { injectNav(); },
     setOp: function (v) { rememberOp(v); render(); },
     recvType: recvType, recvExisting: recvExisting, recvSave: recvSave,
     qa: qaSet, qaScan: qaScan, qaIssue: qaIssue,
@@ -1204,7 +1231,7 @@
     mixNew: function () { W.mix = { flavor: "", prefix: "", inputs: [], bins: 1 }; render(); },
     setMachine: function (v) { ST.machine = v; saveST(); render(); },
     pmScan: pmScan, pmChange: pmChange, pmFinish: pmFinish, pmScrap: pmScrap,
-    moveScan: moveScan, useDest: useDest, useScan: useScan, useManual: useManual, useSize: useSize, useKey: useKey, useLotInput: useLotInput,
+    moveScan: moveScan, useDest: useDest, useScan: useScan, useManual: useManual, useSize: useSize, useKey: useKey, useLotInput: useLotInput, useFlavorPick: useFlavorPick,
     shipField: shipField, shipScan: shipScan, shipRemove: shipRemove, shipFinish: shipFinish,
     traceQ: traceQ, drill: drill, printEvidence: printEvidence,
     traceOf: function (lpn) { ST.tab = "trace"; W.trace.q = lpn; markActive(); render(); },
@@ -1216,54 +1243,117 @@
     _load: load, isoWeek: isoWeek, flavors: FLAVORS
   };
 
-  // ---- nav + re-render protection (observer only, no timers) -------------------
-  // Lives in the Quality (SQF) group, right under "Compliance / SQF". If the Quality group
-  // is collapsed it hides with the group. If a role view hides Quality entirely (floor
-  // stations: receiving, mixing, P-Mac), it goes at the top so every station can reach it.
-  function qualityAnchor(nav) {
-    var keys = ["compliance", "quality", "disposition"];
-    for (var i = 0; i < keys.length; i++) { var b = nav.querySelector('.navitem[onclick*="UI_go(\'' + keys[i] + '\')"]'); if (b) return { btn: b, key: keys[i] }; }
-    return null;
-  }
-  function qualityLabel(nav) {
-    var labs = nav.querySelectorAll(".navlabel"), want = [T.en.grpQ, T.es.grpQ, "Qualidade"];
-    for (var i = 0; i < labs.length; i++) { var t = labs[i].textContent || ""; for (var j = 0; j < want.length; j++) if (t.indexOf(want[j]) >= 0) return labs[i]; }
-    return null;
-  }
-  // "Lot Tracing" is its own sub-section inside Quality, right under "Compliance / SQF":
-  // a small heading (click to collapse) with one menu item per station screen.
-  var NAV_TABS = [["recv", "tRecv", "package-plus"], ["qa", "tQa", "shield-alert"], ["mix", "tMix", "cooking-pot"], ["pmac", "tPmac", "package-open"], ["move", "tMove", "arrow-left-right"], ["use", "tUse", "log-out"], ["ship", "tShip", "truck"], ["trace", "tTrace", "git-branch"], ["labels", "tLabels", "tags"]];
+  // ---- nav: one module, a button in the department that uses it ----------------
+  // Fulfillment (next to E-Commerce): E-com lot pull + Ship.
+  // Manufacturing: Receive, QA Hold, Mixing, P-Mac, Move.
+  // Quality: Trace + Labels, for Brittney / SQF.
+  // A collapsed department hides its stations with the group. A role that hides
+  // the department entirely still gets those stations at the top of the menu.
+  var NAV_HOMES = [
+    { id: "ful", anchors: ["ecomprod", "retailprod"], labels: ["Fulfillment"],
+      tabs: [["use", "navUse", "log-out"], ["ship", "tShip", "truck"]] },
+    { id: "mfg", anchors: ["pmac", "mixing"], labels: ["Manufacturing", "Manufactura", "Manufatura"],
+      tabs: [["recv", "tRecv", "package-plus"], ["qa", "tQa", "shield-alert"], ["mix", "tMix", "cooking-pot"], ["pmac", "tPmac", "package-open"], ["move", "tMove", "arrow-left-right"]] },
+    { id: "qa", anchors: ["compliance"], labels: ["Quality", "Calidad", "Qualidade"],
+      tabs: [["trace", "tTrace", "git-branch"], ["labels", "tLabels", "tags"]] }
+  ];
   function navStyleOnce() {
     if ($("trc-navstyle")) return;
     var s = document.createElement("style"); s.id = "trc-navstyle";
-    s.textContent = "#trc-navgroup{margin:2px 0 4px}" +
-      "#trc-navgroup .trc-subhdr{display:flex;align-items:center;gap:8px;width:100%;background:none;border:0;border-left:3px solid transparent;cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;color:var(--navy);padding:9px 11px;text-align:left}" +
-      "#trc-navgroup .trc-subhdr:hover{background:var(--light)}#trc-navgroup .trc-subhdr .trc-car{margin-left:auto;font-size:10px;color:#aab4c2}" +
-      "nav#nav #trc-navgroup button.navitem{padding:6px 11px 6px 34px;font-size:13px;font-weight:600}" +
-      "nav#nav #trc-navgroup button.navitem .navico svg{width:15px;height:15px}";
+    s.textContent = "nav#nav button.navitem[data-trc]{min-height:44px}" +
+      "#trc-ecom-link{border:2px solid var(--orange)}" +
+      "#trc-ecom-link button.primary{display:block;width:100%;min-height:64px;font-size:20px;margin-top:0}";
     document.head.appendChild(s);
   }
+  function navButtonHtml(t, homeId) {
+    var on = ACTIVE && ST.tab === t[0];
+    return '<button type="button" class="navitem' + (on ? " active" : "") + '" id="trc-nav-' + t[0] + '" data-trc="1" data-trc-home="' + homeId + '" onclick="TRACE.go(\'' + t[0] + '\',event)"><i class="navico" data-lucide="' + t[2] + '"></i><span>' + esc(L(t[1])) + '</span></button>';
+  }
+  function findHome(nav, home) {
+    var anchor = null;
+    for (var i = 0; i < home.anchors.length; i++) {
+      var b = nav.querySelector('.navitem[onclick*="UI_go(\'' + home.anchors[i] + '\')"]');
+      if (b) { anchor = b; break; }
+    }
+    var group = anchor ? anchor.closest(".navgroup") : null;
+    if (!group) {
+      var labs = nav.querySelectorAll(".navlabel");
+      for (var j = 0; j < labs.length && !group; j++) {
+        var text = labs[j].textContent || "";
+        for (var k = 0; k < home.labels.length; k++) {
+          if (text.indexOf(home.labels[k]) >= 0) { group = labs[j].closest(".navgroup"); break; }
+        }
+      }
+    }
+    if (!group) return null;
+    return { group: group, anchor: anchor, collapsed: group.classList.contains("collapsed") };
+  }
+  function placeTabs(group, anchor, tabs, homeId) {
+    var ref = anchor || group.querySelector(":scope > .navlabel");
+    if (!ref) return;
+    for (var i = 0; i < tabs.length; i++) {
+      var hold = document.createElement("div");
+      hold.innerHTML = navButtonHtml(tabs[i], homeId);
+      var btn = hold.firstChild;
+      if (ref.nextSibling) ref.parentNode.insertBefore(btn, ref.nextSibling);
+      else ref.parentNode.appendChild(btn);
+      ref = btn;
+    }
+  }
+  function placeOrphans(nav, tabs) {
+    if (!tabs.length) return;
+    var wrap = document.createElement("div");
+    wrap.className = "navgroup";
+    wrap.setAttribute("data-trc-home", "top");
+    wrap.innerHTML = tabs.map(function (t) { return navButtonHtml(t, "top"); }).join("");
+    var first = nav.querySelector(".navgroup");
+    if (first) nav.insertBefore(wrap, first);
+    else nav.appendChild(wrap);
+  }
+  // Big button on the E-Commerce screen. One tap opens Use. No Quality dig.
+  function injectEcomLink() {
+    var nav = $("nav"), view = $("view");
+    if (!view) return;
+    var onEcom = !ACTIVE && nav && nav.querySelector('.navitem.active[onclick*="UI_go(\'ecomprod\')"]');
+    var existing = $("trc-ecom-link");
+    if (!onEcom) {
+      if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+      return;
+    }
+    if (existing) return;
+    var bar = document.createElement("div");
+    bar.id = "trc-ecom-link";
+    bar.className = "card";
+    bar.innerHTML = '<button type="button" class="primary" onclick="TRACE.go(\'use\',event)">' + esc(L("ecomLink")) + '</button><p class="hint" style="margin:8px 0 0">' + esc(L("ecomLinkHint")) + '</p>';
+    var card = view.querySelector(".card");
+    if (card) view.insertBefore(bar, card);
+    else view.appendChild(bar);
+  }
+  var placingNav = false;
   function injectNav() {
-    var nav = $("nav"); if (!nav || $("trc-navgroup")) return;
-    var anc = qualityAnchor(nav);
-    if (!anc && qualityLabel(nav)) return;   // Quality group is collapsed: stay hidden with it
-    navStyleOnce();
-    var open = ST.navOpen !== false;
-    var g = document.createElement("div"); g.id = "trc-navgroup";
-    var h = '<button class="trc-subhdr" id="trc-nav" onclick="TRACE.toggleGroup()"><i class="navico" data-lucide="scan-barcode"></i><span>' + esc(L("navLbl")) + '</span><span class="trc-car">' + (open ? "&#9662;" : "&#9656;") + '</span></button>';
-    if (open) h += NAV_TABS.map(function (t) {
-      return '<button class="navitem' + (ACTIVE && ST.tab === t[0] ? " active" : "") + '" id="trc-nav-' + t[0] + '" onclick="TRACE.go(\'' + t[0] + '\',event)"><i class="navico" data-lucide="' + t[2] + '"></i><span>' + esc(L(t[1])) + '</span></button>';
-    }).join("");
-    g.innerHTML = h;
-    if (anc && anc.key === "compliance") anc.btn.parentNode.insertBefore(g, anc.btn.nextSibling);
-    else if (anc) anc.btn.parentNode.insertBefore(g, anc.btn);
-    else nav.insertBefore(g, nav.firstChild);
-    try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
+    var nav = $("nav");
+    if (!nav || placingNav) { injectEcomLink(); return; }
+    if (!nav.querySelector(".navlabel") && !nav.querySelector(".navitem")) return;
+    if (nav.querySelector("[data-trc-home]")) { injectEcomLink(); return; }
+    placingNav = true;
+    try {
+      navStyleOnce();
+      var orphans = [];
+      NAV_HOMES.forEach(function (home) {
+        var found = findHome(nav, home);
+        if (!found) { orphans = orphans.concat(home.tabs); return; }
+        if (found.collapsed) return;
+        placeTabs(found.group, found.anchor, home.tabs, home.id);
+      });
+      placeOrphans(nav, orphans);
+      try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
+    } finally { placingNav = false; }
+    injectEcomLink();
   }
   // Leaving: any other nav click ends our view before the app renders its own.
   document.addEventListener("click", function (e) {
     var t = e.target && e.target.closest ? e.target.closest("#nav .navitem") : null;
-    if (t && !(t.closest && t.closest("#trc-navgroup")) && ACTIVE) { ACTIVE = false; }
+    if (t && t.getAttribute("data-trc") !== "1" && ACTIVE) { ACTIVE = false; }
   }, true);
   // Language switch re-renders the app; bring our view back in the new language.
   ["lang-en", "lang-es", "lang-pt"].forEach(function (id) {
