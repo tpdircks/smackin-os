@@ -150,10 +150,12 @@
     ["L15", "S'mores"],                          // no WIP code found; 0 on hand
     ["L16", "Teriyaki (Ana Bruni)"],             // WIP RECIPE list: "LE Ana Bruni Teriyaki"; 0 on hand
     ["L17", "Sweet Thai Chili"],                 // no WIP code found; 0 on hand
-    ["L18", "Loaded Potato"]                     // WIP RECIPE list: "LE Loaded Baked Paotato"; 0 on hand
+    ["L18", "Loaded Potato"],                    // WIP RECIPE list: "LE Loaded Baked Paotato"; 0 on hand
+    ["L19", "Cotton Candy"],                     // added 2026-10-27 (Adriana Inventory 2026)
+    ["L20", "Honey Mustard"]                     // added 2026-10-27 (Konnor Griffin co-brand)
   ];
   const BAG4LE = { L01:5800, L02:1600, L03:6200, L04:6700, L05:2600, L06:3200, L07:5500, L08:1300, L09:5000,
-    L10:0, L11:0, L12:0, L13:0, L14:0, L15:0, L16:0, L17:0, L18:0 };
+    L10:0, L11:0, L12:0, L13:0, L14:0, L15:0, L16:0, L17:0, L18:0, L19:0, L20:0 };
 
   // ---- Build item master + opening stock ----------------------------------
   function build() {
