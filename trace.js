@@ -1,5 +1,5 @@
 /* ============================================================================
-   Lot Trace & Scan  (trace.js)  b=12
+   Lot Trace & Scan  (trace.js)  b=13
    One scan chain from the dock to the customer, built for SQF traceability.
 
      RECEIVE   raw material in -> our own RM label per pallet/box/roll (supplier lot, exp)
@@ -15,7 +15,9 @@
      SHIP      build an outbound pallet for a PO: scan pallets, bags -> OB label w/ lots.
                Scanning a later-dated lot asks before that pallet is added.
      TRACE     type/scan any LPN, lot, supplier lot, PO or seed code -> back + forward
-               tree, mass balance, mock recall timer, printable evidence
+               tree, mass balance, mock recall timer, printable evidence.
+               Hold / Release / Reject a finished lot from here. Hold and
+               Rejected cannot be pulled or shipped until Release.
 
    Data: Supabase tables trace_labels + trace_events (open RLS like the rest of the
    app). If the tables are missing it runs in LOCAL mode (this device only) and says so.
@@ -110,13 +112,32 @@
       traceHint: "Scan or type any label, lot code, supplier lot, PO or seed code.",
       back: "Backward (where it came from)", fwd: "Forward (where it went)", balance: "Mass balance",
       startDrill: "Start mock recall timer", stopDrill: "Stop timer", printEv: "Print evidence",
-      notFound: "Not found", onHold: "ON HOLD - cannot use", expired: "EXPIRED - cannot use", wrongFlavor: "Flavor does not match",
+      notFound: "Not found", onHold: "ON HOLD - cannot use or ship", onReject: "REJECTED - cannot use or ship", expired: "EXPIRED - cannot use", wrongFlavor: "Flavor does not match",
       all: "All", kind: "Kind", status: "Status", search: "Search",
       manTitle: "Log bags pulled", manHint: "One save for the whole pull of one lot. If that lot is in several boxes, add the bags together and enter the total. Do not save a row for each box. Type the lot code printed on the bags (example L2031/3X9.35).", manSave: "Save pull", lotPh: "Type lot on bags", lotEmpty: "Empty. Type the lot printed on the bags.", flavorBlank: "Follows the lot", bagTotal: "Bags (total, all boxes)", pullDate: "Date", pullFuture: "Date cannot be in the future.", scanFold: "Scan a pallet label instead", note: "Note / reference", byHand: "by hand", manOddLot: "This does not look like a normal bag code (example L2031/3X9.35). Save it anyway?",
       fefoHint: "Tap the oldest lot, or type the code on the bags.", fefoUse: "Use this", fefoNone: "No on-hand lots for this flavor yet. Type the code on the bags.", fefoNoDate: "No expiration on these lots. Type the code on the bags.", fefoOldest: "Oldest lot on hand.", fefoUnknown: "date unknown", fefoExp: "exp", fefoPacked: "packed", fefoWeek: "packed week", fefoExpired: "EXPIRED", fefoBags: "bags", fefoLater: "Earlier lot", fefoStill: "still has", fefoPicked: "You picked", fefoSaveAsk: "Save this later lot anyway?", fefoAddAsk: "Add this later lot anyway?", fefoAlso: "more earlier lots also have bags.", fefoShipTitle: "Pull the oldest lot first", fefoCancel: "Not saved. Pull the older lot first.",
       navUse: "E-com lot pull", ecomLink: "Log e-com lot pull", ecomLinkHint: "Opens the pull log. Add every box of that lot into one bag total.",
       issue: "Issue found (blank if none). Anything here keeps it ON HOLD", noteIssue: "Note issue (stay on hold)", issueCol: "Issue",
-      issuePrompt: "Describe the issue. Examples: No CA warning / Wrong ingredient statement / Spec issue / Shiny film / Swirl design", holdQ: "is released. Put it ON HOLD?"
+      issuePrompt: "Describe the issue. Examples: No CA warning / Wrong ingredient statement / Spec issue / Shiny film / Swirl design", holdQ: "is released. Put it ON HOLD?",
+      lotHold: "ON HOLD. Do not pull or ship this lot until QA releases it.",
+      lotReject: "REJECTED. Do not pull or ship this lot.",
+      holdBanner: "ON HOLD. Do not use or ship.",
+      rejectBanner: "REJECTED. Do not use or ship.",
+      releasedOk: "Released. This lot can be pulled and shipped.",
+      holdLot: "Put lot on hold", releaseLot: "Release lot", rejectLot: "Reject lot",
+      holdPallet: "Hold pallet", releasePallet: "Release pallet", rejectPallet: "Reject pallet",
+      holdPrompt: "Why is this lot going on hold? This note is the incident record.",
+      rejectPrompt: "Why is this lot rejected?",
+      releaseAsk: "Release this lot? It can be pulled and shipped again.",
+      releasePalletAsk: "Release this pallet? It can be pulled and shipped again.",
+      holdSaved: "ON HOLD. It stays on hold until you release it.",
+      releaseSaved: "Released. It can be pulled and shipped.",
+      rejectSaved: "REJECTED. Do not pull or ship it.",
+      noFgLot: "No finished pallets on hand for this lot.",
+      alreadyOut: "Nothing left to hold on this lot.",
+      shipBlocked: "Not shipped. Take the held pallet off this outbound pallet first.",
+      heldList: "Lots on hold",
+      palletHeldInherit: "This lot has product on hold. The new pallet is on hold too."
     },
     es: {
       title: "Rastreo de Lotes y Escaneo (SQF)", navLbl: "Rastreo de Lotes", grpQ: "Calidad",
@@ -146,13 +167,32 @@
       traceHint: "Escanee o escriba cualquier etiqueta, lote, lote de proveedor, orden o código de semilla.",
       back: "Hacia atrás (de dónde vino)", fwd: "Hacia adelante (a dónde fue)", balance: "Balance de masa",
       startDrill: "Iniciar cronómetro de simulacro", stopDrill: "Detener", printEv: "Imprimir evidencia",
-      notFound: "No encontrado", onHold: "RETENIDO - no usar", expired: "VENCIDO - no usar", wrongFlavor: "El sabor no coincide",
+      notFound: "No encontrado", onHold: "RETENIDO - no usar ni enviar", onReject: "RECHAZADO - no usar ni enviar", expired: "VENCIDO - no usar", wrongFlavor: "El sabor no coincide",
       all: "Todos", kind: "Tipo", status: "Estado", search: "Buscar",
       manTitle: "Registrar bolsas tomadas", manHint: "Un solo guardado para toda la salida de un lote. Si ese lote viene en varias cajas, sume las bolsas y escriba el total. No guarde una fila por caja. Escriba el código de lote impreso en las bolsas (ejemplo L2031/3X9.35).", manSave: "Guardar salida", lotPh: "Escriba el lote", lotEmpty: "Vacío. Escriba el lote impreso en las bolsas.", flavorBlank: "Sigue el lote", bagTotal: "Bolsas (total, todas las cajas)", pullDate: "Fecha", pullFuture: "La fecha no puede ser futura.", scanFold: "Escanear una etiqueta de tarima", note: "Nota / referencia", byHand: "a mano", manOddLot: "Esto no parece un código de bolsa normal (ejemplo L2031/3X9.35). ¿Guardar de todos modos?",
       fefoHint: "Toque el lote más viejo, o escriba el código de las bolsas.", fefoUse: "Usar este", fefoNone: "No hay lotes disponibles de este sabor. Escriba el código de las bolsas.", fefoNoDate: "Estos lotes no tienen vencimiento. Escriba el código de las bolsas.", fefoOldest: "Lote más viejo disponible.", fefoUnknown: "fecha desconocida", fefoExp: "vence", fefoPacked: "empacado", fefoWeek: "semana emp", fefoExpired: "VENCIDO", fefoBags: "bolsas", fefoLater: "Lote más viejo", fefoStill: "todavía tiene", fefoPicked: "Usted eligió", fefoSaveAsk: "¿Guardar este lote más nuevo de todos modos?", fefoAddAsk: "¿Agregar este lote más nuevo de todos modos?", fefoAlso: "lotes más viejos también tienen bolsas.", fefoShipTitle: "Tome primero el lote más viejo", fefoCancel: "No se guardó. Tome primero el lote más viejo.",
       navUse: "Salida e-com", ecomLink: "Registrar salida e-com", ecomLinkHint: "Abre el registro. Sume todas las cajas de ese lote en un total.",
       issue: "Problema encontrado (vacío si no hay). Si escribe algo queda RETENIDO", noteIssue: "Anotar problema (sigue retenido)", issueCol: "Problema",
-      issuePrompt: "Describa el problema. Ejemplos: Sin advertencia de California / Ingredientes incorrectos / Problema de especificación / Película brillante / Diseño de remolino", holdQ: "está liberado. ¿Retenerlo?"
+      issuePrompt: "Describa el problema. Ejemplos: Sin advertencia de California / Ingredientes incorrectos / Problema de especificación / Película brillante / Diseño de remolino", holdQ: "está liberado. ¿Retenerlo?",
+      lotHold: "RETENIDO. No tome ni envíe este lote hasta que Calidad lo libere.",
+      lotReject: "RECHAZADO. No tome ni envíe este lote.",
+      holdBanner: "RETENIDO. No usar ni enviar.",
+      rejectBanner: "RECHAZADO. No usar ni enviar.",
+      releasedOk: "Liberado. Este lote se puede tomar y enviar.",
+      holdLot: "Retener lote", releaseLot: "Liberar lote", rejectLot: "Rechazar lote",
+      holdPallet: "Retener tarima", releasePallet: "Liberar tarima", rejectPallet: "Rechazar tarima",
+      holdPrompt: "¿Por qué va este lote a retención? Esta nota es el registro del incidente.",
+      rejectPrompt: "¿Por qué se rechaza este lote?",
+      releaseAsk: "¿Liberar este lote? Se puede tomar y enviar de nuevo.",
+      releasePalletAsk: "¿Liberar esta tarima? Se puede tomar y enviar de nuevo.",
+      holdSaved: "RETENIDO. Sigue retenido hasta que usted lo libere.",
+      releaseSaved: "Liberado. Se puede tomar y enviar.",
+      rejectSaved: "RECHAZADO. No lo tome ni lo envíe.",
+      noFgLot: "No hay tarimas terminadas de este lote.",
+      alreadyOut: "No queda nada que retener en este lote.",
+      shipBlocked: "No se envió. Quite primero la tarima retenida de esta tarima de salida.",
+      heldList: "Lotes retenidos",
+      palletHeldInherit: "Este lote tiene producto retenido. La tarima nueva también queda retenida."
     }
   };
   function lang() { var b = document.getElementById("lang-es"); return b && b.classList.contains("active") ? "es" : "en"; }
@@ -369,6 +409,13 @@
       "#trc-root .trc-pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700;background:#eef2f7;color:#334}",
       "#trc-root .trc-pill.HOLD{background:#fff0d6;color:#8a5a00}#trc-root .trc-pill.RELEASED,#trc-root .trc-pill.ACTIVE{background:#e2f4e8;color:#17692f}",
       "#trc-root .trc-pill.REJECTED{background:#fde2e2;color:#a11}#trc-root .trc-pill.EMPTY,#trc-root .trc-pill.SHIPPED{background:#e9e9ee;color:#556}",
+      "#trc-root .trc-pill.trc-status-hot{background:#c81e1e;color:#fff}",
+      "#trc-root .trc-holdban{background:#fde2e2;border:2px solid #e23b3b;color:#8d1212;border-radius:10px;padding:12px 14px;margin:10px 0;font-weight:800;font-size:16px}",
+      "#trc-root .trc-holdban .sub,#trc-root .trc-relban .sub{display:block;font-weight:700;font-size:14px;margin-top:4px}",
+      "#trc-root .trc-relban{background:#e7f6ec;border:2px solid #9fd8b0;color:#17692f;border-radius:10px;padding:12px 14px;margin:10px 0;font-weight:800}",
+      "#trc-root .trc-badge-hold{display:inline-block;background:#c81e1e;color:#fff;border-radius:999px;padding:2px 8px;font-size:12px;font-weight:800;letter-spacing:.3px}",
+      "#trc-root .trc-badge-ok{display:inline-block;background:#17692f;color:#fff;border-radius:999px;padding:2px 8px;font-size:12px;font-weight:800}",
+      "#trc-root tr.trc-held td{background:#fff1f1}#trc-root tr.trc-held td:first-child{box-shadow:inset 4px 0 0 #c81e1e}",
       "#trc-root table.trc{width:100%;border-collapse:collapse;font-size:14px}#trc-root table.trc th,#trc-root table.trc td{border-bottom:1px solid #e3e8ef;padding:7px 6px;text-align:left;vertical-align:top}",
       "#trc-root .trc-tree{font-family:monospace;font-size:13px;white-space:pre-wrap;background:#f7f9fc;border:1px solid #e3e8ef;border-radius:8px;padding:10px;overflow:auto}",
       "#trc-root .trc-local{background:#fff0d6;border:1px solid #f0c96a;color:#7a4b00;padding:10px;border-radius:8px;margin-bottom:12px;font-weight:600}",
@@ -428,6 +475,7 @@
     try { renderNow(host); } finally { RENDERING = false; }
   }
   function renderNow(host) {
+    LOT_ACTS = [];
     var focusId = document.activeElement && document.activeElement.id;
     var tabs = [["recv", "tRecv"], ["qa", "tQa"], ["mix", "tMix"], ["pmac", "tPmac"], ["move", "tMove"], ["use", "tUse"], ["ship", "tShip"], ["trace", "tTrace"], ["labels", "tLabels"]];
     var holdN = allLabels().filter(function (l) { return l.status === "HOLD"; }).length;
@@ -478,11 +526,16 @@
   function flavorOpts(blank) { return (blank ? [{ v: "", t: "-" }] : []).concat(FLAVORS.map(function (f) { return { v: f.code, t: f.code + "  " + f.name }; })); }
   function val(id) { var e = $(id); return e ? e.value : ""; }
   function chk(id) { var e = $(id); return !!(e && e.checked); }
-  function pill(s) { return '<span class="trc-pill ' + esc(s) + '">' + esc(s) + '</span>'; }
+  function pill(s) {
+    var raw = String(s || "");
+    var hot = raw === "HOLD" || raw === "REJECTED" || raw === "QUARANTINE" || raw === "QA-HOLD";
+    return '<span class="trc-pill ' + esc(raw) + (hot ? " trc-status-hot" : "") + '">' + esc(raw) + '</span>';
+  }
   function labelUsable(l) {
     if (!l) return L("notFound");
-    if (l.status === "HOLD") return L("onHold");
-    if (l.status === "REJECTED") return "REJECTED";
+    var st = String(l.status || "").toUpperCase();
+    if (st === "REJECTED") return L("onReject");
+    if (st === "HOLD" || st === "QUARANTINE" || st === "QA-HOLD" || isQuarantineLoc(l.location)) return L("onHold");
     if (l.exp && String(l.exp).slice(0, 10) < today()) return L("expired");
     return "";
   }
@@ -551,7 +604,9 @@
       var isFG = r.type === "FG";
       var lpn = newLpn(isFG ? "FG" : "RM");
       var issue = String(r.issue || "").trim();
-      var status = isFG ? "ACTIVE" : (issue ? "HOLD" : (ty.food && !r.rel ? "HOLD" : "RELEASED"));
+      var status = isFG ? inheritFgStatus(lot) : (issue ? "HOLD" : (ty.food && !r.rel ? "HOLD" : "RELEASED"));
+      var data = { issues: issue ? [{ txt: issue, by: opName(), at: stamp }] : [], unit: (i + 1) + " of " + units, legacy: !!(r.existing || isFG), alg: fl ? fl.alg : "", algTxt: fl ? fl.algTxt : "", released_by: status === "RELEASED" && ty.food ? opName() : "" };
+      if (isFG && (status === "HOLD" || status === "REJECTED")) inheritHoldData(lot, data, status);
       rows.push({
         lpn: lpn, kind: isFG ? "FG" : "RM", mtype: r.type,
         item: r.item || (isFG && fl ? fl.name : "") || LT(ty), flavor_code: fl ? fl.code : "", flavor: fl ? fl.name : "",
@@ -559,7 +614,7 @@
         seed_code: r.type === "SEED" ? String(r.seedCode || "").toUpperCase().trim() : "", exp: isFG ? null : (r.exp || null),
         qty: qty, qty_left: qty, uom: r.uom || ty.uom, status: status, location: isFG ? (r.loc || "STAGING").toUpperCase() : "RECEIVING",
         parents: [], po: r.existing || isFG ? "" : (r.po || ""), station: "RECEIVING",
-        data: { issues: issue ? [{ txt: issue, by: opName(), at: stamp }] : [], unit: (i + 1) + " of " + units, legacy: !!(r.existing || isFG), alg: fl ? fl.alg : "", algTxt: fl ? fl.algTxt : "", released_by: status === "RELEASED" && ty.food ? opName() : "" },
+        data: data,
         created_by: opName(), created_at: stamp
       });
       evs.push({ type: isFG ? "LEGACY_FG" : (r.existing ? "LEGACY_RM" : "RECEIVE"), lpn: lpn, qty: qty, uom: r.uom || ty.uom, to_loc: rows[i].location, ref: rows[i].po, lot: lot, data: { supplier: r.supplier || "", mtype: r.type } });
@@ -577,7 +632,8 @@
         }
         return Promise.all(tasks).then(function () {
           printLabels(rows, pw);
-          flash(L("saved") + ": " + units + " " + L("labelsMade") + " (" + lot + ")", "ok");
+          var fgHeld = rows.some(function (x) { return x.kind === "FG" && (x.status === "HOLD" || x.status === "REJECTED"); });
+          flash(L("saved") + ": " + units + " " + L("labelsMade") + " (" + lot + ")" + (fgHeld ? " " + L("palletHeldInherit") : ""), fgHeld ? "warn" : "ok");
           W.recv = { type: r.type, existing: r.existing, rel: false, reg: r.reg, units: 1, uom: r.uom, supplier: r.supplier, item: r.item, flavor: r.flavor };
           render();
         });
@@ -586,33 +642,68 @@
   }
 
   // =========================== QA HOLD ===========================
+  function qaRow(l) {
+    var iss = (l.data && l.data.issues) || [];
+    var lotShown = l.lot || l.supplier_lot || "";
+    var hot = labelHeld(l);
+    return '<tr class="' + (hot ? "trc-held" : "") + '"><td><b>' + esc(l.lpn) + '</b><br><span class="muted sm">' + esc(dLocal(l.created_at)) + '</span></td><td>' + esc(l.item) + (l.flavor ? '<br><span class="muted sm">' + esc(l.flavor) + (l.size ? " " + esc(l.size) : "") + '</span>' : "") + '</td><td>' + esc(l.supplier || "") + '<br><b>' + esc(lotShown) + '</b></td><td>' + esc(l.exp || "") + '</td><td>' + fmt(l.qty_left != null ? l.qty_left : l.qty) + ' ' + esc(l.uom) + '</td><td>' + (iss.length ? '<b style="color:#a11">' + esc(iss[iss.length - 1].txt) + '</b>' + (iss.length > 1 ? ' <span class="muted sm">(+' + (iss.length - 1) + ')</span>' : '') : esc(holdReasonOf(l))) + '</td><td class="trc-row">' + statusActions(l) + '</td></tr>';
+  }
   function vQa() {
-    var list = allLabels().filter(function (l) { return l.status === "HOLD"; }).sort(byNewest);
+    var list = allLabels().filter(function (l) { return labelHeld(l) && String(l.status || "").toUpperCase() !== "REJECTED"; }).sort(byNewest);
+    var rejected = allLabels().filter(function (l) { return String(l.status || "").toUpperCase() === "REJECTED" && !isClosedStatus(l.status); }).sort(byNewest);
     var h = '<div class="card"><h2 class="sub2">' + esc(L("tQa")) + '</h2><p class="hint">' + esc(L("qaHint")) + '</p>';
+    h += heldBannerHtml();
     h += scanBox("qaScan", L("scanPh") + " (" + L("release") + ")");
     if (!list.length) h += '<p class="muted" style="margin-top:12px">' + esc(L("noHold")) + '</p>';
-    else h += '<table class="trc" style="margin-top:12px"><thead><tr><th>Label</th><th>Item</th><th>Supplier / lot</th><th>Exp</th><th>Qty</th><th>' + esc(L("issueCol")) + '</th><th></th></tr></thead><tbody>' + list.map(function (l) {
-      var iss = (l.data && l.data.issues) || [];
-      return '<tr><td><b>' + esc(l.lpn) + '</b><br><span class="muted sm">' + esc(dLocal(l.created_at)) + '</span></td><td>' + esc(l.item) + (l.flavor ? '<br><span class="muted sm">' + esc(l.flavor) + '</span>' : "") + '</td><td>' + esc(l.supplier) + '<br><b>' + esc(l.supplier_lot) + '</b></td><td>' + esc(l.exp || "") + '</td><td>' + fmt(l.qty) + ' ' + esc(l.uom) + '</td><td>' + (iss.length ? '<b style="color:#a11">' + esc(iss[iss.length - 1].txt) + '</b>' + (iss.length > 1 ? ' <span class="muted sm">(+' + (iss.length - 1) + ')</span>' : '') : '') + '</td><td class="trc-row"><button class="ghost sm" onclick="TRACE.qaIssue(\'' + esc(l.lpn) + '\')">' + esc(L("noteIssue")) + '</button><button class="primary sm" onclick="TRACE.qa(\'' + esc(l.lpn) + '\',\'RELEASED\')">' + esc(L("release")) + '</button><button class="ghost danger sm" onclick="TRACE.qa(\'' + esc(l.lpn) + '\',\'REJECTED\')">' + esc(L("reject")) + '</button></td></tr>';
-    }).join("") + '</tbody></table>';
+    else h += '<table class="trc" style="margin-top:12px"><thead><tr><th>Label</th><th>Item</th><th>Supplier / lot</th><th>Exp</th><th>Qty</th><th>' + esc(L("issueCol")) + '</th><th></th></tr></thead><tbody>' + list.map(qaRow).join("") + '</tbody></table>';
+    if (rejected.length) h += '<h3 style="margin-top:16px">REJECTED</h3><table class="trc"><thead><tr><th>Label</th><th>Item</th><th>Supplier / lot</th><th>Exp</th><th>Qty</th><th>' + esc(L("issueCol")) + '</th><th></th></tr></thead><tbody>' + rejected.map(qaRow).join("") + '</tbody></table>';
     h += '</div>';
     return h;
   }
+  function cloneData(d) { try { return JSON.parse(JSON.stringify(d || {})); } catch (e) { return {}; } }
+  function qaPatch(l, status, reason) {
+    var data = cloneData(l.data);
+    var prev = String(l.status || "").toUpperCase();
+    var prevQa = data.qa || {};
+    var patch = { data: data };
+    if (status === "RELEASED") {
+      var back = (prevQa.prev === "ACTIVE" || prevQa.prev === "RELEASED") ? prevQa.prev : (l.kind === "FG" ? "ACTIVE" : "RELEASED");
+      data.qa = { status: "RELEASED", by: opName(), at: nowISO(), reason: "", prev: prev };
+      patch.status = back;
+      if (isQuarantineLoc(l.location)) patch.location = prevQa.prev_loc && !isQuarantineLoc(prevQa.prev_loc) ? prevQa.prev_loc : (l.kind === "FG" ? "STAGING" : "RECEIVING");
+      return patch;
+    }
+    data.issues = (data.issues || []).concat([{ txt: reason, by: opName(), at: nowISO() }]);
+    var keepPrev = (prev === "ACTIVE" || prev === "RELEASED") ? prev : (prevQa.prev || (l.kind === "FG" ? "ACTIVE" : "RELEASED"));
+    var keepLoc = isQuarantineLoc(l.location) ? (prevQa.prev_loc || "") : (l.location || "");
+    data.qa = { status: status, by: opName(), at: nowISO(), reason: reason, prev: keepPrev, prev_loc: keepLoc };
+    patch.status = status;
+    return patch;
+  }
   function qaSet(lpn, status) {
     if (needOp()) return;
-    var reason = "";
-    if (status === "REJECTED" || status === "HOLD") { reason = window.prompt(L("reason") + "?") || ""; if (!reason) return; }
-    var pre = S.labels[lpn];
-    if (status === "RELEASED" && pre && pre.data && pre.data.issues && pre.data.issues.length && !window.confirm(lpn + ": " + pre.data.issues[pre.data.issues.length - 1].txt + "\n\nRelease anyway? (issue fixed / approved)")) return;
     var l = S.labels[lpn]; if (!l) return;
-    // the sticker on the item still says HOLD: print a replacement when the status changes
+    var reason = "";
+    if (status === "REJECTED" || status === "HOLD") {
+      reason = window.prompt(status === "HOLD" ? L("holdPrompt") : L("rejectPrompt")) || "";
+      reason = String(reason).trim();
+      if (!reason) return;
+    }
+    if (status === "RELEASED") {
+      var why = holdReasonOf(l);
+      if (!window.confirm(lpn + "\n" + L("releasePalletAsk") + (why ? "\n" + why : ""))) return;
+    }
     var pw = openPrintWin();
-    var data = l.data || {}; data.qa = { status: status, by: opName(), at: nowISO(), reason: reason };
-    updLabel(lpn, { status: status, data: data }).then(function (res) {
+    var patch = qaPatch(l, status, reason);
+    var shown = patch.status || status;
+    updLabel(lpn, patch).then(function (res) {
       if (!savedOk(res)) { closeWin(pw); flash("Save failed: " + ((res && res.msg) || ""), "err"); render(); return; }
-      return addEvents([{ type: "QA_" + status, lpn: lpn, lot: l.lot, data: { reason: reason } }]).then(function (res2) {
+      return addEvents([{ type: "QA_" + (status === "RELEASED" ? "RELEASED" : status), lpn: lpn, lot: l.lot, data: { reason: reason, status: shown } }]).then(function (res2) {
         if (!savedOk(res2)) { flash("Label saved, event failed: " + ((res2 && res2.msg) || ""), "warn"); render(); return; }
-        printLabels([S.labels[lpn] || l], pw); flash(lpn + " -> " + status + " (new label printed, put it over the old one)", status === "RELEASED" ? "ok" : "warn"); render();
+        printLabels([S.labels[lpn] || l], pw);
+        var msg = lpn + ": " + (status === "HOLD" ? L("holdSaved") : status === "REJECTED" ? L("rejectSaved") : L("releaseSaved"));
+        flash(msg + " (new label printed, put it over the old one)", status === "RELEASED" ? "ok" : "warn");
+        render();
       });
     });
   }
@@ -620,13 +711,14 @@
     if (needOp()) return;
     var l = S.labels[lpn]; if (!l) return;
     var txt = window.prompt(L("issuePrompt")); if (!txt || !String(txt).trim()) return;
-    var data = l.data || {}; data.issues = (data.issues || []).concat([{ txt: String(txt).trim(), by: opName(), at: nowISO() }]);
+    var pw = openPrintWin();
+    var patch = qaPatch(l, "HOLD", String(txt).trim());
     var was = l.status;
-    updLabel(lpn, { status: "HOLD", data: data }).then(function (res) {
-      if (!savedOk(res)) { flash("Save failed: " + ((res && res.msg) || ""), "err"); render(); return; }
+    updLabel(lpn, patch).then(function (res) {
+      if (!savedOk(res)) { closeWin(pw); flash("Save failed: " + ((res && res.msg) || ""), "err"); render(); return; }
       return addEvents([{ type: "QA_ISSUE", lpn: lpn, lot: l.lot, data: { issue: String(txt).trim(), was: was } }]).then(function (res2) {
         if (!savedOk(res2)) { flash("Label saved, event failed: " + ((res2 && res2.msg) || ""), "warn"); render(); return; }
-        printLabels([S.labels[lpn] || l]); flash(lpn + " ON HOLD: " + txt + " (new HOLD label printed)", "warn"); render();
+        printLabels([S.labels[lpn] || l], pw); flash(lpn + ": " + L("holdSaved") + " " + String(txt).trim(), "warn"); render();
       });
     });
   }
@@ -634,8 +726,9 @@
     code = cleanScan(code).toUpperCase(); if (!code) return;
     fetchOne(code).then(function (l) {
       if (!l) { flash(L("notFound") + ": " + code, "err"); render(); return; }
-      if (l.status === "HOLD") qaSet(code, "RELEASED");
-      else if ((l.status === "RELEASED" || l.status === "ACTIVE") && window.confirm(code + " " + L("holdQ"))) qaIssue(code);
+      var st = String(l.status || "").toUpperCase();
+      if (labelHeld(l)) qaSet(l.lpn, "RELEASED");
+      else if ((st === "RELEASED" || st === "ACTIVE") && window.confirm(code + " " + L("holdQ"))) qaIssue(l.lpn);
       else { flash(code + ": " + l.status, "warn"); render(); }
     });
   }
@@ -750,6 +843,8 @@
     h += '<div><label>' + esc(L("filmLoaded")) + '</label><div style="font-size:20px;font-weight:800">' + esc(p.film || "-") + '</div><div class="muted">' + esc(p.filmLot || "") + '</div></div></div>';
     var bcode = bagCode(p, m);
     h += '<label>' + esc(L("setPrinter")) + '</label><div class="trc-big">' + esc(bcode || "-") + '</div>';
+    var packSt = bcode ? inheritFgStatus(bcode) : "ACTIVE";
+    if (packSt === "HOLD" || packSt === "REJECTED") h += '<div class="trc-holdban"><span class="trc-badge-hold">' + esc(packSt) + '</span> ' + esc(bcode) + '<span class="sub">' + esc(packSt === "REJECTED" ? L("rejectBanner") : L("holdBanner")) + " " + esc(L("palletHeldInherit")) + '</span></div>';
     if (fl) h += '<p><b>Allergen:</b> ' + esc(fl.alg) + ' ' + esc(fl.algTxt) + ' &middot; <b>' + esc(L("size")) + ':</b> ' + esc(size) + '</p>';
     h += '<div class="trc-grid"><div><label>' + esc(L("bags")) + '</label><input id="trc-p-bags" type="number" min="1" placeholder="e.g. 2500" value="' + esc(W.pmBags || "") + '"></div></div>';
     h += '<div class="trc-row"><button class="primary" onclick="TRACE.pmFinish()">' + esc(L("finishPallet")) + '</button><button class="ghost" style="margin-top:14px" onclick="TRACE.pmChange()">' + esc(L("codeChange")) + '</button><button class="ghost" style="margin-top:14px" onclick="TRACE.pmScrap()">' + esc(L("scrapBags")) + '</button></div>';
@@ -836,14 +931,19 @@
     var p = pmState(m), fl = flavorBy(p.flavor), lot = bagCode(p, m);
     var parents = (p.openBins || []).concat(p.openFilms && p.openFilms.length ? p.openFilms : (p.film ? [p.film] : []));
     parents = parents.filter(function (x, i, a) { return x && a.indexOf(x) === i; });
-    var row = { lpn: newLpn("FG"), kind: "FG", mtype: "FG", item: (fl ? fl.name : p.flavor) + " " + sizeForMachine(m), flavor_code: p.flavor, flavor: fl ? fl.name : "", size: sizeForMachine(m), lot: lot, supplier: "", supplier_lot: "", seed_code: "", exp: null, qty: bags, qty_left: bags, uom: "bags", status: "ACTIVE", location: "STAGING", parents: parents, po: "", station: "PMAC " + m, data: { machine: m, week: isoWeek(), date: today(), alg: fl ? fl.alg : "", algTxt: fl ? fl.algTxt : "", batch: p.batch }, created_by: opName(), created_at: nowISO() };
+    var fgStatus = inheritFgStatus(lot);
+    var fgData = { machine: m, week: isoWeek(), date: today(), alg: fl ? fl.alg : "", algTxt: fl ? fl.algTxt : "", batch: p.batch };
+    if (fgStatus === "HOLD" || fgStatus === "REJECTED") inheritHoldData(lot, fgData, fgStatus);
+    var row = { lpn: newLpn("FG"), kind: "FG", mtype: "FG", item: (fl ? fl.name : p.flavor) + " " + sizeForMachine(m), flavor_code: p.flavor, flavor: fl ? fl.name : "", size: sizeForMachine(m), lot: lot, supplier: "", supplier_lot: "", seed_code: "", exp: null, qty: bags, qty_left: bags, uom: "bags", status: fgStatus, location: "STAGING", parents: parents, po: "", station: "PMAC " + m, data: fgData, created_by: opName(), created_at: nowISO() };
     return insLabels([row]).then(function (res) {
       if (!res.ok) { closeWin(pw); flash("Save failed: " + res.msg, "err"); return null; }
       return addEvents([{ type: "PACK", lpn: row.lpn, qty: bags, uom: "bags", ref: "PMAC " + m, lot: lot, to_loc: "STAGING", data: { parents: parents } }]).then(function (res2) {
         if (!savedOk(res2)) { flash("Pallet saved, pack event failed: " + ((res2 && res2.msg) || ""), "warn"); return row; }
         // the bin in the hopper and the film on the machine keep feeding the next pallet
         p.openBins = (p.openBins || []).slice(-1); p.openFilms = p.film ? [p.film] : [];
-        savePm(m); printLabels([row], pw); flash("Pallet " + row.lpn + ": " + bags + " bags " + lot + " -> STAGING", "ok");
+        savePm(m); printLabels([row], pw);
+        var heldPack = row.status === "HOLD" || row.status === "REJECTED";
+        flash("Pallet " + row.lpn + ": " + bags + " bags " + lot + " -> STAGING" + (heldPack ? " " + L("palletHeldInherit") : ""), heldPack ? "warn" : "ok");
         return row;
       });
     });
@@ -872,7 +972,11 @@
     var mv = W.move, l = mv.lpn ? S.labels[mv.lpn] : null;
     var h = '<div class="card"><h2 class="sub2">' + esc(L("tMove")) + '</h2><p class="hint">' + esc(L("moveHint")) + '</p>';
     h += scanBox("moveScan", l ? L("scanLoc") : L("scanPh"));
-    if (l) h += '<p style="margin-top:12px;font-size:18px"><b>' + esc(l.lpn) + '</b> ' + esc(l.item) + ' &middot; ' + esc(l.lot) + ' &middot; ' + fmt(l.qty_left) + ' ' + esc(l.uom) + ' &middot; now at <b>' + esc(l.location) + '</b></p><p class="trc-big" style="font-size:22px">' + esc(L("scanLoc")) + ' &rarr;</p>';
+    if (l) {
+      h += '<p style="margin-top:12px;font-size:18px"><b>' + esc(l.lpn) + '</b> ' + esc(l.item) + ' &middot; ' + esc(l.lot) + ' &middot; ' + fmt(l.qty_left) + ' ' + esc(l.uom) + ' &middot; now at <b>' + esc(l.location) + '</b> ' + pill(l.status) + '</p>';
+      if (labelHeld(l)) h += '<div class="trc-holdban"><span class="trc-badge-hold">' + esc(isRejectStatus(l.status) ? "REJECTED" : "HOLD") + '</span> ' + esc(l.lot || l.lpn) + '<span class="sub">' + esc(isRejectStatus(l.status) ? L("rejectBanner") : L("holdBanner")) + (holdReasonOf(l) ? " " + esc(holdReasonOf(l)) : "") + '</span></div>';
+      h += '<p class="trc-big" style="font-size:22px">' + esc(L("scanLoc")) + ' &rarr;</p>';
+    }
     h += '</div>';
     var recent = S.events.filter(function (e) { return e.type === "MOVE"; }).slice(-15).reverse();
     h += '<div class="card"><h2 class="sub2">Recent moves</h2><table class="trc"><tbody>' + recent.map(function (e) { return '<tr><td>' + esc(tsLocal(e.ts).slice(5)) + '</td><td>' + esc(e.lpn) + '</td><td>' + esc(e.from_loc) + ' &rarr; <b>' + esc(e.to_loc) + '</b></td><td>' + esc(e.operator) + '</td></tr>'; }).join("") + '</tbody></table></div>';
@@ -899,10 +1003,211 @@
     });
   }
 
+  // =========================== LOT HOLD =======================================
+  // Finished pallets keep the existing status field. ACTIVE and RELEASED are released.
+  // HOLD, REJECTED, QUARANTINE, and QA-HOLD (or a QUARANTINE / QA-HOLD location)
+  // cannot be pulled or shipped. A lot is blocked only when none of its open
+  // pallets are still released, so one held pallet does not hide a released
+  // sibling from FEFO. Holding the lot from Trace sets every open pallet.
+  var LOT_ACTS = [];
+  function upStatus(s) { return String(s || "").toUpperCase(); }
+  function normLot(lot) { return String(lot || "").toUpperCase().replace(/\s+/g, ""); }
+  function isHoldStatus(st) { st = upStatus(st); return st === "HOLD" || st === "QUARANTINE" || st === "QA-HOLD"; }
+  function isRejectStatus(st) { return upStatus(st) === "REJECTED"; }
+  function isClosedStatus(st) { st = upStatus(st); return st === "EMPTY" || st === "SHIPPED"; }
+  function isQuarantineLoc(loc) { loc = upStatus(loc); return loc === "QUARANTINE" || loc === "QA-HOLD"; }
+  function labelHeld(l) {
+    if (!l || isClosedStatus(l.status)) return false;
+    return isRejectStatus(l.status) || isHoldStatus(l.status) || isQuarantineLoc(l.location);
+  }
+  function holdReasonOf(l) {
+    if (!l || !l.data) return "";
+    if (l.data.qa && l.data.qa.reason) return String(l.data.qa.reason);
+    var iss = l.data.issues || [];
+    return iss.length ? String(iss[iss.length - 1].txt || "") : "";
+  }
+  function fgForLot(lot) {
+    var key = normLot(lot);
+    if (!key) return [];
+    return allLabels().filter(function (l) { return l && l.kind === "FG" && normLot(l.lot) === key; });
+  }
+  function lotHoldInfo(lot) {
+    var held = [], rejected = [], released = [];
+    fgForLot(lot).forEach(function (l) {
+      if (isClosedStatus(l.status)) return;
+      if (isRejectStatus(l.status)) rejected.push(l);
+      else if (isHoldStatus(l.status) || isQuarantineLoc(l.location)) held.push(l);
+      else if (num(l.qty_left) > 0) released.push(l);
+    });
+    var state = "";
+    if ((rejected.length || held.length) && !released.length) state = rejected.length ? "REJECTED" : "HOLD";
+    else if (released.length) state = "RELEASED";
+    var src = rejected[0] || held[0];
+    return { state: state, held: held, rejected: rejected, released: released, reason: holdReasonOf(src), lot: normLot(lot) };
+  }
+  function lotPullBlock(lot) {
+    var info = lotHoldInfo(lot);
+    if (info.state === "REJECTED") return info.lot + ": " + L("lotReject") + (info.reason ? " (" + info.reason + ")" : "");
+    if (info.state === "HOLD") return info.lot + ": " + L("lotHold") + (info.reason ? " (" + info.reason + ")" : "");
+    return "";
+  }
+  function palletPullBlock(l) {
+    if (!l) return { code: "missing", msg: L("notFound") };
+    if (isRejectStatus(l.status)) return { code: "reject", msg: L("onReject") };
+    if (isHoldStatus(l.status) || isQuarantineLoc(l.location)) return { code: "hold", msg: L("onHold") };
+    var lotMsg = lotPullBlock(l.lot);
+    if (lotMsg) return { code: "hold", msg: lotMsg };
+    if (isClosedStatus(l.status) || !(num(l.qty_left) > 0)) return { code: "empty", msg: "" };
+    return null;
+  }
+  function inheritFgStatus(lot) {
+    var info = lotHoldInfo(lot);
+    if (info.rejected.length) return "REJECTED";
+    if (info.held.length) return "HOLD";
+    return "ACTIVE";
+  }
+  function inheritHoldData(lot, data, status) {
+    var info = lotHoldInfo(lot);
+    data.qa = { status: status, by: opName(), at: nowISO(), reason: info.reason || "", prev: "ACTIVE", inherited: true };
+    if (info.reason) data.issues = [{ txt: info.reason, by: opName(), at: data.qa.at, inherited: true }];
+    return data;
+  }
+  function heldLotRows() {
+    var seen = {}, rows = [];
+    allLabels().forEach(function (l) {
+      if (!l || l.kind !== "FG" || !l.lot) return;
+      var lot = normLot(l.lot);
+      if (seen[lot]) return;
+      seen[lot] = 1;
+      var info = lotHoldInfo(lot);
+      if (info.state !== "HOLD" && info.state !== "REJECTED") return;
+      var sample = info.rejected[0] || info.held[0] || l;
+      rows.push({ lot: lot, state: info.state, reason: info.reason || "", name: ((sample.flavor || sample.item || "") + " " + (sample.size || "")).trim(), n: info.held.length + info.rejected.length });
+    });
+    rows.sort(function (a, b) { return a.lot < b.lot ? -1 : 1; });
+    return rows;
+  }
+  function heldBannerHtml(onlyLots) {
+    var rows = heldLotRows().filter(function (r) { return !onlyLots || onlyLots[r.lot]; });
+    if (!rows.length) return "";
+    var h = '<div class="trc-holdban"><span class="trc-badge-hold">' + esc(L("heldList")) + '</span>';
+    rows.slice(0, 12).forEach(function (r) {
+      h += '<span class="sub"><span class="trc-badge-hold">' + esc(r.state) + '</span> <b>' + esc(r.lot) + '</b>';
+      if (r.name) h += " " + esc(r.name);
+      h += " " + esc(r.state === "REJECTED" ? L("rejectBanner") : L("holdBanner"));
+      if (r.reason) h += " " + esc(r.reason);
+      h += "</span>";
+    });
+    if (rows.length > 12) h += '<span class="sub">' + (rows.length - 12) + " more</span>";
+    h += "</div>";
+    return h;
+  }
+  function statusActions(l) {
+    if (!l || (l.kind !== "FG" && l.kind !== "RM")) return "";
+    var st = upStatus(l.status);
+    if (isClosedStatus(st)) return "";
+    var id = esc(l.lpn);
+    var h = "";
+    if (labelHeld(l)) h += '<button class="primary sm" onclick="TRACE.qa(\'' + id + '\',\'RELEASED\')">' + esc(L("releasePallet")) + '</button>';
+    if (!labelHeld(l)) h += '<button class="ghost sm" onclick="TRACE.qa(\'' + id + '\',\'HOLD\')">' + esc(L("holdPallet")) + '</button>';
+    if (st !== "REJECTED") h += '<button class="ghost danger sm" onclick="TRACE.qa(\'' + id + '\',\'REJECTED\')">' + esc(L("rejectPallet")) + '</button>';
+    if (isHoldStatus(st) || isQuarantineLoc(l.location)) h += '<button class="ghost sm" onclick="TRACE.qaIssue(\'' + id + '\')">' + esc(L("noteIssue")) + '</button>';
+    return h;
+  }
+  function lotBtn(lot, status, label, cls) {
+    var i = LOT_ACTS.length;
+    LOT_ACTS.push({ lot: lot, status: status });
+    return '<button type="button" class="' + cls + '" onclick="TRACE.lotAct(' + i + ')">' + esc(label) + '</button>';
+  }
+  function lotAct(i) {
+    var a = LOT_ACTS[i];
+    if (!a) return;
+    applyLotStatus(a.lot, a.status);
+  }
+  function targetsForLot(lot, next) {
+    return fgForLot(lot).filter(function (l) {
+      if (isClosedStatus(l.status)) return false;
+      if (next === "RELEASED") return labelHeld(l);
+      return true;
+    });
+  }
+  function applyLotStatus(lot, next) {
+    if (needOp()) return;
+    lot = normLot(lot);
+    if (!lot) return;
+    var targets = targetsForLot(lot, next);
+    if (!targets.length) { flash(lot + ": " + (next === "RELEASED" ? L("noFgLot") : L("alreadyOut")), "warn"); render(); return; }
+    var reason = "";
+    if (next === "HOLD" || next === "REJECTED") {
+      reason = window.prompt(next === "HOLD" ? L("holdPrompt") : L("rejectPrompt")) || "";
+      reason = String(reason).trim();
+      if (!reason) return;
+    } else {
+      var info = lotHoldInfo(lot);
+      if (!window.confirm(lot + "\n" + L("releaseAsk") + (info.reason ? "\n" + info.reason : ""))) return;
+    }
+    var jobs = targets.map(function (l) {
+      var patch = qaPatch(l, next, reason);
+      return updLabel(l.lpn, patch).then(function (res) { return { res: res, l: l, status: patch.status || next }; });
+    });
+    Promise.all(jobs).then(function (rows) {
+      var bad = rows.filter(function (r) { return !savedOk(r.res); });
+      var good = rows.filter(function (r) { return savedOk(r.res); });
+      if (!good.length) { flash("Save failed: " + ((bad[0] && bad[0].res && bad[0].res.msg) || ""), "err"); render(); return; }
+      var evType = "QA_" + (next === "RELEASED" ? "RELEASED" : next);
+      var evs = good.map(function (r) { return { type: evType, lpn: r.l.lpn, lot: lot, data: { reason: reason, scope: "lot", status: r.status } }; });
+      evs.push({ type: evType, lpn: null, lot: lot, data: { reason: reason, scope: "lot", count: good.length } });
+      return addEvents(evs).then(function (res2) {
+        printLabels(good.map(function (r) { return S.labels[r.l.lpn] || r.l; }));
+        var msg = lot + ": " + (next === "HOLD" ? L("holdSaved") : next === "REJECTED" ? L("rejectSaved") : L("releaseSaved"));
+        if (bad.length) msg += " (" + bad.length + " not saved)";
+        if (!savedOk(res2)) msg += " Event log failed.";
+        flash(msg, next === "RELEASED" ? "ok" : "warn");
+        render();
+      });
+    });
+  }
+  function traceStatusHtml(labels) {
+    var keys = [], seen = {};
+    (labels || []).forEach(function (l) {
+      if (!l || l.kind !== "FG") return;
+      var key = normLot(l.lot);
+      if (!key || seen[key]) return;
+      seen[key] = 1;
+      keys.push(key);
+    });
+    if (!keys.length) return "";
+    var h = "";
+    keys.forEach(function (lot) {
+      var info = lotHoldInfo(lot);
+      var sample = fgForLot(lot)[0] || {};
+      var name = ((sample.flavor || sample.item || "") + " " + (sample.size || "")).trim();
+      var state = info.state || (fgForLot(lot).some(function (l) { return upStatus(l.status) === "SHIPPED"; }) ? "SHIPPED" : (fgForLot(lot).some(function (l) { return upStatus(l.status) === "EMPTY"; }) ? "EMPTY" : "RELEASED"));
+      var hot = state === "HOLD" || state === "REJECTED";
+      var openN = info.held.length + info.rejected.length + info.released.length;
+      h += '<div class="' + (hot ? "trc-holdban" : "trc-relban") + '">';
+      h += '<span class="' + (hot ? "trc-badge-hold" : "trc-badge-ok") + '">' + esc(state) + '</span> <b>' + esc(lot) + '</b> ' + esc(name);
+      h += '<span class="sub">' + esc(state === "REJECTED" ? L("rejectBanner") : state === "HOLD" ? L("holdBanner") : state === "RELEASED" ? L("releasedOk") : state);
+      if (info.reason && hot) h += " " + esc(info.reason);
+      h += " (" + openN + ")</span>";
+      if (openN) {
+        h += '<div class="trc-row" style="margin-top:8px">';
+        if (hot) h += lotBtn(lot, "RELEASED", L("releaseLot"), "primary sm");
+        if (state !== "HOLD") h += lotBtn(lot, "HOLD", L("holdLot"), "ghost sm");
+        if (state !== "REJECTED") h += lotBtn(lot, "REJECTED", L("rejectLot"), "ghost danger sm");
+        h += "</div>";
+      }
+      h += "</div>";
+    });
+    return h;
+  }
+
   // =========================== FEFO (first expiry, first out) ===========================
   // Finished-bag stock rows are flavor totals (lot is usually blank). On-hand lots come
   // from Lot Trace FG pallets with qty left, and only when that lot has no pallet, from
   // a stock row whose lot is a real bag code.
+  // A finished lot on HOLD or REJECTED (no released pallet left) is not a candidate,
+  // including when the same lot code still sits on a stock row.
   //
   // Date key, oldest first:
   //   1. Real expiration (label.exp or data.exp) beats every guess. Earliest exp wins.
@@ -980,10 +1285,9 @@
   function sameLot(a, b) { return String(a || "").toUpperCase().replace(/\s+/g, "") === String(b || "").toUpperCase().replace(/\s+/g, ""); }
   function fgBlocked(l) {
     if (!l || l.kind !== "FG") return true;
-    var st = String(l.status || "").toUpperCase();
-    if (st === "HOLD" || st === "REJECTED" || st === "EMPTY" || st === "SHIPPED") return true;
-    var loc = String(l.location || "").toUpperCase();
-    if (loc === "QUARANTINE" || loc === "QA-HOLD") return true;
+    var st = upStatus(l.status);
+    if (st === "HOLD" || st === "REJECTED" || st === "EMPTY" || st === "SHIPPED" || st === "QUARANTINE" || st === "QA-HOLD") return true;
+    if (isQuarantineLoc(l.location)) return true;
     return !(num(l.qty_left) > 0);
   }
   function labelExpDay(l) { var d = l.data || {}; return ymd(l.exp) || ymd(d.exp); }
@@ -1085,6 +1389,8 @@
           if (loc === "QUARANTINE" || loc === "QA-HOLD") return;
           var lot = String(r.lot || "").toUpperCase().replace(/\s+/g, "");
           if (!BAGCODE_RE.test(lot) || lotFlavorPrefix(lot) !== fc || byLot[lot]) return;
+          var heldState = lotHoldInfo(lot).state;
+          if (heldState === "HOLD" || heldState === "REJECTED") return;
           byLot[lot] = { lot: lot, fc: fc, size: size, qty: num(r.qty), exp: "", pack: "", from: "stock" };
         });
       } catch (e) {}
@@ -1228,6 +1534,8 @@
     captureUse();
     var row = (W.use._fefoLots || [])[i];
     if (!row) return;
+    var pickedBlock = lotPullBlock(row.lot);
+    if (pickedBlock) { flash(pickedBlock, "err"); return; }
     W.use.mlot = row.lot;
     W.use._fefoAuto = false;
     if (row.fc && flavorBy(row.fc)) {
@@ -1267,6 +1575,7 @@
     syncFefoDefault();
     var dateVal = u.mdate || today();
     var h = '<div class="card trc-use-primary"><h2 class="sub2">' + esc(L("manTitle")) + '</h2><p class="hint">' + esc(L("manHint")) + '</p>';
+    h += heldBannerHtml();
     h += '<div class="trc-dests" role="group" aria-label="' + esc(L("dest")) + '">';
     DESTS.forEach(function (d) {
       var on = u.dest === d.k;
@@ -1278,7 +1587,9 @@
     h += '<p id="trc-u-mempty" class="trc-lot-empty"' + (lotEmpty ? "" : " hidden") + '>' + esc(L("lotEmpty")) + '</p>';
     h += fefoPickerHtml();
     var fefoMsg = fefoNote(cleanScan(u.mlot).toUpperCase().replace(/\s+/g, ""), String(u.mflav || "").toUpperCase(), u.msize || "4oz");
-    h += '<p id="trc-u-fefo-note" class="trc-fefo-note' + (fefoMsg.kind ? " " + fefoMsg.kind : "") + '"' + (fefoMsg.text ? "" : " hidden") + '>' + esc(fefoMsg.text) + '</p></div>';
+    h += '<p id="trc-u-fefo-note" class="trc-fefo-note' + (fefoMsg.kind ? " " + fefoMsg.kind : "") + '"' + (fefoMsg.text ? "" : " hidden") + '>' + esc(fefoMsg.text) + '</p>';
+    var holdMsg = lotPullBlock(cleanScan(u.mlot));
+    h += '<div id="trc-u-hold" class="trc-holdban"' + (holdMsg ? "" : " hidden") + '>' + esc(holdMsg) + '</div></div>';
     var flavs = flavorOpts(true);
     if (flavs[0]) flavs[0] = { v: "", t: L("flavorBlank") };
     h += '<div><label>' + esc(L("flavor")) + '</label>' + sel("trc-u-mflav", flavs, u.mflav || "", "TRACE.useFlavorPick()") + '</div>';
@@ -1326,7 +1637,7 @@
     syncLotEmpty();
     W.use._fefoAuto = false;
     var lot = cleanScan(W.use.mlot).toUpperCase();
-    if (!lot) { W.use._flavManual = false; paintFefoNote(); return; }
+    if (!lot) { W.use._flavManual = false; paintFefoNote(); paintHold(); return; }
     var fl = lot.length >= 3 ? flavorBy(lot.slice(0, 3)) : null;
     if (fl && !W.use._flavManual) {
       W.use.mflav = fl.code;
@@ -1334,6 +1645,14 @@
       var s = $("trc-u-mflav"); if (s && s.value !== fl.code) s.value = fl.code;
     }
     paintFefoNote();
+    paintHold();
+  }
+  function paintHold() {
+    var el = $("trc-u-hold");
+    if (!el) return;
+    var msg = lotPullBlock(cleanScan(val("trc-u-mlot")));
+    el.textContent = msg;
+    el.hidden = !msg;
   }
   function useKey(ev, from) {
     if (!ev || ev.key !== "Enter") return;
@@ -1358,6 +1677,8 @@
     var pullDate = (u.mdate || today()).slice(0, 10);
     u.mlot = lot; u.msize = size; u.mdate = pullDate;
     if (!lot) { flash(L("lotCode") + "?", "err"); u.focusId = "trc-u-mlot"; render(); return; }
+    var heldLot = lotPullBlock(lot);
+    if (heldLot) { flash(heldLot, "err"); u.focusId = "trc-u-mlot"; render(); return; }
     if (!(bags > 0)) { flash(L("bagTotal") + "?", "err"); u.focusId = "trc-u-mbags"; render(); return; }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(pullDate)) { flash(L("pullDate") + "?", "err"); u.focusId = "trc-u-mdate"; render(); return; }
     if (pullDate > today()) { flash(L("pullFuture"), "err"); u.focusId = "trc-u-mdate"; render(); return; }
@@ -1395,7 +1716,8 @@
     fetchOne(code).then(function (l) {
       if (!l) { flash(L("notFound") + ": " + code, "err"); render(); return; }
       if (l.kind !== "FG") { flash(code + ": scan a finished pallet (FG) label", "err"); render(); return; }
-      if (l.status === "HOLD" || l.status === "REJECTED") { flash(code + ": " + L("onHold"), "err"); render(); return; }
+      var useBlock = palletPullBlock(l);
+      if (useBlock) { flash(useBlock.code === "empty" ? (code + " is empty") : (code + ": " + useBlock.msg), "err"); render(); return; }
       var take = num(W.use.qty) > 0 ? Math.min(num(W.use.qty), l.qty_left) : l.qty_left;
       if (!(take > 0)) { flash(code + " is empty", "err"); render(); return; }
       var ask = fefoAsk(l.lot, l.flavor_code, l.size, "use");
@@ -1421,10 +1743,15 @@
     h += '<div><label>' + esc(L("po")) + '</label><input id="trc-s-po" value="' + esc(s.po) + '" onchange="TRACE.shipField(\'po\',this.value)"></div>';
     h += '<div><label>' + esc(L("customer")) + '</label><input id="trc-s-cust" value="' + esc(s.customer) + '" onchange="TRACE.shipField(\'customer\',this.value)"></div>';
     h += '<div><label>' + esc(L("qtyTake")) + '</label><input id="trc-s-qty" type="number" min="1" value="' + esc(W.ship.qty || "") + '"></div></div>';
+    h += heldBannerHtml();
     h += scanBox("shipScan");
     h += fefoShipHtml();
     if (s.lines.length) {
-      h += '<table class="trc" style="margin-top:12px"><thead><tr><th>Pallet</th><th>Flavor</th><th>Lot</th><th>Bags</th><th></th></tr></thead><tbody>' + s.lines.map(function (x, i) { return '<tr><td>' + esc(x.lpn) + '</td><td>' + esc(x.flavor) + ' ' + esc(x.size) + '</td><td><b>' + esc(x.lot) + '</b>' + (x.fefo ? '<br><span class="trc-fefo-note warn">' + esc(L("fefoLater")) + ' ' + esc(x.fefo.fefo_older) + '</span>' : '') + '</td><td>' + fmt(x.bags) + '</td><td><button class="ghost sm" onclick="TRACE.shipRemove(' + i + ')">x</button></td></tr>'; }).join("") + '</tbody></table>';
+      h += '<table class="trc" style="margin-top:12px"><thead><tr><th>Pallet</th><th>Flavor</th><th>Lot</th><th>Bags</th><th></th></tr></thead><tbody>' + s.lines.map(function (x, i) {
+        var live = S.labels[x.lpn];
+        var blocked = palletPullBlock(live);
+        return '<tr class="' + (blocked ? "trc-held" : "") + '"><td>' + esc(x.lpn) + '</td><td>' + esc(x.flavor) + ' ' + esc(x.size) + '</td><td><b>' + esc(x.lot) + '</b>' + (blocked && blocked.code !== "empty" ? '<br><span class="trc-badge-hold">' + esc(blocked.msg) + '</span>' : '') + (x.fefo ? '<br><span class="trc-fefo-note warn">' + esc(L("fefoLater")) + ' ' + esc(x.fefo.fefo_older) + '</span>' : '') + '</td><td>' + fmt(x.bags) + '</td><td><button class="ghost sm" onclick="TRACE.shipRemove(' + i + ')">x</button></td></tr>';
+      }).join("") + '</tbody></table>';
       h += '<button class="primary" onclick="TRACE.shipFinish()">' + esc(L("finishShip")) + '</button>';
     }
     h += '</div>';
@@ -1441,7 +1768,8 @@
     fetchOne(code).then(function (l) {
       if (!l) { flash(L("notFound") + ": " + code, "err"); render(); return; }
       if (l.kind !== "FG") { flash(code + ": scan a finished pallet (FG) label", "err"); render(); return; }
-      if (l.status === "HOLD" || l.status === "REJECTED") { flash(code + ": " + L("onHold"), "err"); render(); return; }
+      var shipBlock = palletPullBlock(l);
+      if (shipBlock) { flash(shipBlock.code === "empty" ? (code + " is empty") : (code + ": " + shipBlock.msg), "err"); render(); return; }
       var already = W.ship.lines.filter(function (x) { return x.lpn === code; }).reduce(function (a, x) { return a + x.bags; }, 0);
       var avail = l.qty_left - already;
       var bags = q > 0 ? Math.min(q, avail) : avail;
@@ -1458,6 +1786,15 @@
     var s = W.ship; s.po = val("trc-s-po") || s.po; s.customer = val("trc-s-cust") || s.customer;
     if (!s.po) { flash(L("po") + "?", "err"); render(); return; }
     if (!s.lines.length) return;
+    var heldLines = [], emptyLines = [];
+    s.lines.forEach(function (x) {
+      var block = palletPullBlock(S.labels[x.lpn]);
+      if (!block) return;
+      if (block.code === "empty") emptyLines.push((x.lot || x.lpn) + " is empty");
+      else heldLines.push((x.lot || x.lpn) + (block.msg ? ": " + block.msg : ""));
+    });
+    if (heldLines.length) { flash(L("shipBlocked") + " " + heldLines.join("; "), "err"); render(); return; }
+    if (emptyLines.length) { flash(emptyLines.join("; "), "err"); render(); return; }
     var parents = s.lines.map(function (x) { return x.lpn; }).filter(function (x, i, a) { return a.indexOf(x) === i; });
     var total = s.lines.reduce(function (a, x) { return a + x.bags; }, 0);
     var nOnPo = allLabels().filter(function (l) { return l.kind === "OB" && l.po === s.po; }).length;
@@ -1503,7 +1840,7 @@
     var t = l.lpn + "  [" + l.kind + (l.mtype && l.mtype !== l.kind ? " " + l.mtype : "") + "]  ";
     if (l.kind === "RM") t += (l.item || "") + (l.flavor ? " (" + l.flavor + ")" : "") + "  supplier " + (l.supplier || "?") + "  lot " + (l.supplier_lot || "?") + (l.seed_code ? "  seed " + l.seed_code : "") + (l.exp ? "  exp " + l.exp : "") + "  " + fmt(l.qty) + " " + l.uom + (l.po ? "  PO " + l.po : "") + "  rcvd " + dLocal(l.created_at) + (l.data && l.data.issues && l.data.issues.length ? "  ISSUE: " + l.data.issues.map(function (x) { return x.txt; }).join("; ") : "");
     else if (l.kind === "BN") t += "bin " + (l.data && l.data.bin_no || "") + "  batch " + l.lot + "  " + (l.flavor || "") + "  mixer " + (l.data && l.data.mixer || "") + "  " + dLocal(l.created_at) + "  by " + (l.created_by || "");
-    else if (l.kind === "FG") t += (l.flavor || l.item) + " " + (l.size || "") + "  LOT " + l.lot + "  " + fmt(l.qty) + " bags (" + fmt(l.qty_left) + " left @ " + l.location + ")  " + (l.station || "") + "  " + dLocal(l.created_at) + (l.data && l.data.legacy ? "  [labeled from existing stock]" : "");
+    else if (l.kind === "FG") t += (l.flavor || l.item) + " " + (l.size || "") + "  LOT " + l.lot + "  " + fmt(l.qty) + " bags (" + fmt(l.qty_left) + " left @ " + l.location + ")  " + (l.station || "") + "  " + dLocal(l.created_at) + (l.data && l.data.legacy ? "  [labeled from existing stock]" : "") + (labelHeld(l) ? "  " + (isRejectStatus(l.status) ? "REJECTED" : "ON HOLD") + (holdReasonOf(l) ? ": " + holdReasonOf(l) : "") : "");
     else if (l.kind === "OB") t += "PO " + l.po + "  " + ((l.data && l.data.customer) || "") + "  " + fmt(l.qty) + " bags  lots " + l.lot + "  " + dLocal(l.created_at);
     return t + "  " + l.status;
   }
@@ -1554,6 +1891,7 @@
     if (!t.q) return h;
     h += '<div class="card" id="trc-evidence"><h2 class="sub2">Trace: ' + esc(t.q) + '</h2><p class="muted">Run ' + esc(new Date().toLocaleString()) + ' by ' + esc(opName() || "?") + (t.drillStart ? " &middot; mock recall in progress" : "") + '</p>';
     if (!res.labels.length && !res.events.length) return h + '<p><b>' + esc(L("notFound")) + '</b></p></div>';
+    h += traceStatusHtml(res.labels);
     var lots = balance(res.labels);
     var lk = Object.keys(lots);
     if (lk.length) {
@@ -1617,7 +1955,8 @@
   function labelTable(list) {
     if (!list.length) return '<p class="muted">-</p>';
     return '<div class="tblwrap"><table class="trc"><thead><tr><th>Label</th><th>Item</th><th>Lot</th><th>Qty left</th><th>Where</th><th>Status</th><th></th></tr></thead><tbody>' + list.map(function (l) {
-      return '<tr><td><b>' + esc(l.lpn) + '</b><br><span class="muted sm">' + esc(tsLocal(l.created_at)) + ' ' + esc(l.created_by || "") + '</span></td><td>' + esc(l.flavor ? l.flavor + (l.size ? " " + l.size : "") : l.item) + (l.kind === "RM" ? '<br><span class="muted sm">' + esc(l.supplier || "") + '</span>' : "") + '</td><td><b>' + esc(l.lot || "") + '</b>' + (l.exp ? '<br><span class="muted sm">exp ' + esc(l.exp) + '</span>' : "") + '</td><td>' + fmt(l.qty_left) + ' ' + esc(l.uom) + '</td><td>' + esc(l.location || "") + '</td><td>' + pill(l.status) + '</td><td class="trc-row"><button class="ghost sm" onclick="TRACE.reprint(\'' + esc(l.lpn) + '\')">' + esc(L("reprint")) + '</button><button class="ghost sm" onclick="TRACE.traceOf(\'' + esc(l.lpn) + '\')">' + esc(L("tTrace")) + '</button></td></tr>';
+      var hot = labelHeld(l);
+      return '<tr class="' + (hot ? "trc-held" : "") + '"><td><b>' + esc(l.lpn) + '</b><br><span class="muted sm">' + esc(tsLocal(l.created_at)) + ' ' + esc(l.created_by || "") + '</span></td><td>' + esc(l.flavor ? l.flavor + (l.size ? " " + l.size : "") : l.item) + (l.kind === "RM" ? '<br><span class="muted sm">' + esc(l.supplier || "") + '</span>' : "") + '</td><td><b>' + esc(l.lot || "") + '</b>' + (l.exp ? '<br><span class="muted sm">exp ' + esc(l.exp) + '</span>' : "") + (hot && holdReasonOf(l) ? '<br><span class="trc-badge-hold">' + esc(holdReasonOf(l)) + '</span>' : "") + '</td><td>' + fmt(l.qty_left) + ' ' + esc(l.uom) + '</td><td>' + esc(l.location || "") + '</td><td>' + pill(l.status) + (hot ? ' <span class="trc-badge-hold">' + esc(isRejectStatus(l.status) ? "REJECTED" : "HOLD") + '</span>' : "") + '</td><td class="trc-row"><button class="ghost sm" onclick="TRACE.reprint(\'' + esc(l.lpn) + '\')">' + esc(L("reprint")) + '</button><button class="ghost sm" onclick="TRACE.traceOf(\'' + esc(l.lpn) + '\')">' + esc(L("tTrace")) + '</button>' + statusActions(l) + '</td></tr>';
     }).join("") + '</tbody></table></div>';
   }
   function vLabels() {
@@ -1630,12 +1969,13 @@
     }).sort(byNewest);
     var h = '<div class="card"><h2 class="sub2">' + esc(L("tLabels")) + ' (' + list.length + ')</h2><div class="trc-grid">';
     h += '<div><label>' + esc(L("kind")) + '</label>' + sel("trc-l-kind", [{ v: "", t: L("all") }, { v: "RM", t: "RM raw material" }, { v: "BN", t: "BN mixed bin" }, { v: "FG", t: "FG finished pallet" }, { v: "OB", t: "OB outbound pallet" }], f.kind, "TRACE.lf('kind',this.value)") + '</div>';
-    h += '<div><label>' + esc(L("status")) + '</label>' + sel("trc-l-st", [{ v: "", t: L("all") }, "HOLD", "RELEASED", "ACTIVE", "EMPTY", "SHIPPED", "REJECTED"].map(function (x) { return typeof x === "string" ? { v: x, t: x } : x; }), f.status, "TRACE.lf('status',this.value)") + '</div>';
+    h += '<div><label>' + esc(L("status")) + '</label>' + sel("trc-l-st", [{ v: "", t: L("all") }, "HOLD", "RELEASED", "ACTIVE", "EMPTY", "SHIPPED", "REJECTED", "QUARANTINE", "QA-HOLD"].map(function (x) { return typeof x === "string" ? { v: x, t: x } : x; }), f.status, "TRACE.lf('status',this.value)") + '</div>';
     h += '<div><label>' + esc(L("search")) + '</label><input id="trc-l-q" value="' + esc(f.q) + '" onchange="TRACE.lf(\'q\',this.value)"></div></div>';
     var onhand = {};
     list.filter(function (l) { return l.kind === "FG" && l.qty_left > 0; }).forEach(function (l) { var k = (l.flavor || l.item) + " " + (l.size || ""); onhand[k] = (onhand[k] || 0) + l.qty_left; });
     var ok = Object.keys(onhand).sort();
     if (ok.length) h += '<p class="muted" style="margin-top:10px"><b>Scanned finished bags on hand:</b> ' + ok.map(function (k) { return esc(k) + ": " + fmt(onhand[k]); }).join(" &middot; ") + '</p>';
+    h += heldBannerHtml();
     h += '</div><div class="card">' + labelTable(list.slice(0, 300)) + '</div>';
     return h;
   }
@@ -1671,7 +2011,10 @@
       body = '<div class="big">' + esc(l.flavor || l.item) + ' &middot; ' + esc(l.size || "") + '</div><div class="lot">LOT ' + esc(l.lot) + '</div>' +
         '<div class="qty">' + fmt(l.qty) + ' BAGS / BOLSAS</div>' +
         (d.alg ? '<div class="alg">Allergen ' + esc(d.alg) + (d.algTxt ? ": " + esc(d.algTxt) : "") + '</div>' : "") +
-        '<div class="kv"><b>Packed:</b> ' + esc(d.date || dLocal(l.created_at)) + (d.machine ? ' &nbsp; <b>P-Mac</b> ' + esc(d.machine) : "") + ' &nbsp; <b>By:</b> ' + esc(l.created_by || "") + '</div>';
+        '<div class="kv"><b>Packed:</b> ' + esc(d.date || dLocal(l.created_at)) + (d.machine ? ' &nbsp; <b>P-Mac</b> ' + esc(d.machine) : "") + ' &nbsp; <b>By:</b> ' + esc(l.created_by || "") + '</div>' +
+        (upStatus(l.status) === "REJECTED"
+          ? '<div class="hold">REJECTED - RECHAZADO<br><span style="font-size:14px">Do not use or ship / No usar ni enviar</span>' + (holdReasonOf(l) ? '<br><span style="font-size:15px">' + esc(holdReasonOf(l)) + '</span>' : '') + '</div>'
+          : (isHoldStatus(l.status) || isQuarantineLoc(l.location) ? '<div class="hold">QA HOLD - RETENIDO<br><span style="font-size:14px">Do not use or ship / No usar ni enviar</span>' + (holdReasonOf(l) ? '<br><span style="font-size:15px">' + esc(holdReasonOf(l)) + '</span>' : '') + '</div>' : ""));
     } else if (l.kind === "OB") {
       top = "OUTBOUND / SALIDA";
       var lines = (d.lines || []).reduce(function (m, x) { var k = x.flavor + " " + x.size + "|" + x.lot; m[k] = (m[k] || 0) + x.bags; return m; }, {});
@@ -1740,7 +2083,7 @@
     pmScan: pmScan, pmChange: pmChange, pmFinish: pmFinish, pmScrap: pmScrap,
     moveScan: moveScan, useDest: useDest, useScan: useScan, useManual: useManual, useSize: useSize, useKey: useKey, useLotInput: useLotInput, useFlavorPick: useFlavorPick, usePickLot: usePickLot,
     shipField: shipField, shipScan: shipScan, shipRemove: shipRemove, shipFinish: shipFinish,
-    traceQ: traceQ, drill: drill, printEvidence: printEvidence,
+    traceQ: traceQ, drill: drill, printEvidence: printEvidence, lotAct: lotAct,
     traceOf: function (lpn) { ST.tab = "trace"; W.trace.q = lpn; markActive(); render(); },
     reprint: function (lpn) { var l = S.labels[lpn]; if (l) printLabels([l]); },
     printPending: function () { var r = W.pendingPrint; W.pendingPrint = null; if (r) printLabels(r); render(); },
@@ -1748,7 +2091,8 @@
     // for testing / other modules
     _state: function () { return { mode: mode, labels: S.labels, events: S.events, W: W, ST: ST }; },
     _load: load, isoWeek: isoWeek, flavors: FLAVORS,
-    _fefo: { onHand: fefoOnHand, ask: fefoAsk, best: fefoBest, monday: isoMonday, week: bagWeek, packDay: inferPackDay, earlier: fefoEarlier }
+    _fefo: { onHand: fefoOnHand, ask: fefoAsk, best: fefoBest, monday: isoMonday, week: bagWeek, packDay: inferPackDay, earlier: fefoEarlier },
+    _hold: { info: lotHoldInfo, block: lotPullBlock, pallet: palletPullBlock, inherit: inheritFgStatus, patch: qaPatch, banner: heldBannerHtml }
   };
 
   // ---- nav: one module, a button in the department that uses it ----------------
