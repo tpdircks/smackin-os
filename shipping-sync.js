@@ -178,6 +178,7 @@
   function openView(ev) {
     if (ev) { ev.preventDefault(); ev.stopPropagation(); }
     markActive();
+    ensureRt();
     try {
       var n = $("nav"), b = $("navBackdrop");
       if (n) n.classList.remove("open");
@@ -214,11 +215,29 @@
     obs.observe(nav, { childList: true });
   }
 
+  var rtOn = false;
+  function ensureRt() {
+    if (rtOn) return;
+    var client = sbClient();
+    if (!client) return;
+    rtOn = true;
+    try {
+      client.channel("ship-sync-live")
+        .on("postgres_changes", { event: "*", schema: "public", table: "shipping_log" }, function () { if (state.viewOpen) renderView(); })
+        .on("postgres_changes", { event: "*", schema: "public", table: "kv_status", filter: "key=eq.shipping:last_sync" }, function () { if (state.viewOpen) renderView(); })
+        .subscribe();
+    } catch (e) { rtOn = false; }
+  }
   document.addEventListener("click", function (e) {
     var it = e.target && e.target.closest ? e.target.closest(".navitem") : null;
     if (!it || it.id === "shs-nav") return;
     state.viewOpen = false;
   }, true);
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible" && state.viewOpen) renderView();
+  });
+  window.SMK_VIEW_LOCKS = window.SMK_VIEW_LOCKS || [];
+  window.SMK_VIEW_LOCKS.push(function () { return state.viewOpen; });
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", watchNav);
   else watchNav();

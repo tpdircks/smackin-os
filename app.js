@@ -2459,7 +2459,7 @@
   let poFormOpen = false;
   let poPrefillFlavor = "";   // flavor to pre-select when the PO form is opened from a dashboard "Produce" click
   function prodStageGet(po) { return (DB.kvGet ? DB.kvGet("po:" + po) : null) || "Open"; }
-  function prodStageSet(po, st) { if (DB.kvSet) DB.kvSet("po:" + po, st); }
+  function prodStageSet(po, st) { return DB.kvSet ? DB.kvSet("po:" + po, st) : Promise.resolve({ ok: true }); }
   function prioRank(p) { p = String(p || "").toUpperCase(); if (p.indexOf("P1") >= 0 || p.indexOf("CRITICAL") >= 0) return 0; if (p.indexOf("P2") >= 0 || p.indexOf("HIGH") >= 0) return 1; if (p.indexOf("P3") >= 0 || p.indexOf("WATCH") >= 0) return 2; if (p === "NORMAL") return 3; return 4; }
   function prioColor(p) { return ["#B52024", "#E39412", "#C9A227", "#6B7280", "#9AA3AE"][prioRank(p)]; }
   function prodOrdersList() {
@@ -5914,19 +5914,20 @@
     poCreateOpen() { poEditId = null; spoView = "create"; poRows = 4; render(); },
     poEditOpen(id) { poEditId = id; spoDetailId = null; poEmailOpen = false; spoView = "create"; render(); window.scrollTo(0, 0); },
     prodToggleAll() { prodShowAll = !prodShowAll; render(); },
-    prodAdvance(po) { const cur = PROD_STAGES.indexOf(prodStageGet(po)); const nx = PROD_STAGES[Math.min(cur + 1, PROD_STAGES.length - 1)]; prodStageSet(po, nx); toast(po + " → " + nx); render(); },
-    prodReset(po) { prodStageSet(po, "Open"); render(); },
-    sdSet(id, val) { if (DB.kvSet) DB.kvSet("sd:" + id, val); toast("Saved"); },
+    async prodAdvance(po) { const cur = PROD_STAGES.indexOf(prodStageGet(po)); const nx = PROD_STAGES[Math.min(cur + 1, PROD_STAGES.length - 1)]; const r = await prodStageSet(po, nx); if (r && r.ok === false) return; toast(po + " → " + nx); render(); },
+    async prodReset(po) { const r = await prodStageSet(po, "Open"); if (r && r.ok === false) return; render(); },
+    async sdSet(id, val) { const r = DB.kvSet ? await DB.kvSet("sd:" + id, val) : { ok: false }; if (r && r.ok === false) return; toast("Saved"); },
     dailyDate(v) { dailyDateSel = v; render(); },
     logFilter(field, val) { if (field === "who") logWho = val; else if (field === "act") logAct = val; else if (field === "q") logQ = val; render(); },
     qualTab(t) { qualTabSel = t; render(); },
-    qualSave() {
+    async qualSave() {
       const g = id => { const e = document.getElementById(id); return e ? String(e.value).trim() : ""; };
       const t = qualTabSel, flav = g("q-flav"); let o = { type: t };
       if (t === "allergen") { o = Object.assign(o, { date: g("q-date"), equip: g("q-equip"), prev: g("q-prev"), flavor: flav, cleanBy: g("q-clean"), qa: g("q-qa") }); if (!o.equip && !flav) { toast("Fill the log first"); return; } }
       else if (t === "label") { o = Object.assign(o, { dt: g("q-dt"), flavor: flav, checked: g("q-checked"), op: g("q-op"), qa: g("q-qa"), comments: g("q-comments") }); if (!flav) { toast("Pick a flavor"); return; } }
       else { o = Object.assign(o, { dt: g("q-dt"), flavor: flav, fe: g("q-fe"), nfe: g("q-nfe"), ss: g("q-ss"), op: g("q-op"), comments: g("q-comments") }); if (!flav) { toast("Pick a flavor"); return; } }
-      if (DB.addQualityLog) DB.addQualityLog(o);
+      const r = DB.addQualityLog ? await DB.addQualityLog(o) : { ok: false, msg: "not ready" };
+      if (r && r.ok === false) return;
       toast("Saved &#10003;"); render();
     },
     poNewOpen() { poPrefillFlavor = ""; poFormOpen = true; active = "prodorders"; closeDrawer(); render(); },
@@ -5940,8 +5941,8 @@
       toast("New PO started for " + (poPrefillFlavor || "flavor"));
     },
     // Reorder Tracker (Allen): edit pallets-on-hand overrides + bins-mixed, and open a PO by flavor code.
-    arSetPallets(code, size, val) { if (DB.kvSet) DB.kvSet("arp" + size + ":" + code, String(val)); render(); },
-    arSetBins(code, val) { if (DB.kvSet) DB.kvSet("arbm:" + code, String(val)); render(); },
+    async arSetPallets(code, size, val) { const r = DB.kvSet ? await DB.kvSet("arp" + size + ":" + code, String(val)) : { ok: false }; if (r && r.ok === false) return; render(); },
+    async arSetBins(code, val) { const r = DB.kvSet ? await DB.kvSet("arbm:" + code, String(val)) : { ok: false }; if (r && r.ok === false) return; render(); },
     produceCode(code) {
       let nm = code;
       try { (window.ALLEN_REORDER.tiers || []).forEach(t => t.flavors.forEach(f => { if (f.code === code) nm = f.name; })); } catch (e) {}
@@ -5963,7 +5964,8 @@
     async skuSave() {
       const g = id => { const e = document.getElementById(id); return e ? String(e.value).trim() : ""; };
       const sku = g("sk-sku"); if (!sku) { toast("SKU?"); return; }
-      await DB.saveSkuCatalog({ sku: sku, name: g("sk-name"), size: g("sk-size"), image_url: g("sk-img"), contents: g("sk-contents"), notes: g("sk-notes") });
+      const r = await DB.saveSkuCatalog({ sku: sku, name: g("sk-name"), size: g("sk-size"), image_url: g("sk-img"), contents: g("sk-contents"), notes: g("sk-notes") });
+      if (r && r.ok === false) return;
       skuEditSku = null; toast(L("skSaved")); render();
     },
     poNewFlavor() {
@@ -5973,7 +5975,7 @@
       setF("pn-fid", r.code); setF("pn-seedtype", r.seed_type); setF("pn-seed", r.seed_type); setF("pn-seas", r.seas_desc); setF("pn-allglvl", r.allergen_level);
       setF("pn-seedlbs", "100 lbs"); setF("pn-water", "5 cups"); setF("pn-malt", "2 lbs"); setF("pn-oil", r.oil || "None"); setF("pn-stevia", "None");
     },
-    poNewSave() {
+    async poNewSave() {
       const g = id => { const e = document.getElementById(id); return e ? String(e.value).trim() : ""; };
       const flavor = g("pn-flavor"); if (!flavor) { toast("Pick a flavor first"); return; }
       const po = g("pn-num");
@@ -5983,8 +5985,11 @@
         pbins: g("pn-pbins"), target_pkgs: g("pn-target"), machines: g("pn-machines"), pmac_instr: g("pn-pmacinstr"),
         fid: g("pn-fid"), seed_type: g("pn-seedtype"), seed_lbs: g("pn-seedlbs"), water: g("pn-water"), oil: g("pn-oil"),
         malt: g("pn-malt"), seasoning: g("pn-seas"), stevia: g("pn-stevia"), notes: g("pn-notes") };
-      if (DB.addProdOrder) DB.addProdOrder(o);
-      prodStageSet(po, "Open"); poFormOpen = false; poPrefillFlavor = ""; toast("PO " + po + " created"); render();
+      const saved = DB.addProdOrder ? await DB.addProdOrder(o) : { ok: false, msg: "not ready" };
+      if (saved && saved.ok === false) return;
+      const stage = await prodStageSet(po, "Open");
+      if (stage && stage.ok === false) return;
+      poFormOpen = false; poPrefillFlavor = ""; toast("PO " + po + " created"); render();
     },
     poNewPrint() {
       const g = id => { const e = document.getElementById(id); return e ? esc(e.value) : ""; };
@@ -6354,9 +6359,19 @@
   // erase their work. Guard: background/realtime renders are deferred while a data-entry form
   // is active; user-initiated render() calls (navigation, save) always run.
   let pendingExternalRender = false;
+  window.SMK_VIEW_LOCKS = window.SMK_VIEW_LOCKS || [];
+  window.SMK_BUSY = window.SMK_BUSY || [];
+  function externalViewLocked() {
+    const list = window.SMK_VIEW_LOCKS || [];
+    for (let i = 0; i < list.length; i++) { try { if (list[i]()) return true; } catch (e) {} }
+    return false;
+  }
   function isBusyEditing() {
     // PO create / non-PO / reorder-draft forms: inputs exist only in the DOM until saved.
+    if (poFormOpen) return true;
     if (active === "purchasing" && (spoView === "create" || spoView === "nonpo" || purchMode === "new")) return true;
+    const busy = window.SMK_BUSY || [];
+    for (let i = 0; i < busy.length; i++) { try { if (busy[i]()) return true; } catch (e) {} }
     // Any other view: if the user is focused in a text field, they're mid-entry -- don't clobber.
     const ae = document.activeElement;
     if (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) {
@@ -6367,9 +6382,17 @@
   }
   // Subscriber for background data changes -- defer if the user is entering data.
   function renderExternal() {
-    if (isBusyEditing()) { pendingExternalRender = true; return; }
+    // Standalone screens (Lot Trace, Services, Shipments, …) own #view.
+    // A stock realtime event must not replace them with the last app route.
+    if (externalViewLocked() || isBusyEditing()) { pendingExternalRender = true; return; }
     render();
   }
+  document.addEventListener("focusout", function () {
+    if (!pendingExternalRender) return;
+    setTimeout(function () {
+      if (pendingExternalRender && !externalViewLocked() && !isBusyEditing()) render();
+    }, 0);
+  }, true);
   // Float the selected-slot panel as a popup right where the user clicked (not at the top of the page).
   function positionLocPopover() {
     const bd = document.getElementById("locPopBackdrop");

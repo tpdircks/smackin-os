@@ -198,6 +198,7 @@
 
   var docs = [];
   var openId = null;
+  var feedOpen = false;
 
   function banner(sync) {
     if (!sync) {
@@ -224,6 +225,7 @@
     styleOnce();
     var host = $("view");
     if (!host) return;
+    feedOpen = true;
     host.innerHTML =
       '<div class="card"><h2>SPS Feed</h2>' +
       '<p class="hint">Purchase orders (850), ship notices (856), and invoices (810) from SPS Commerce. The server reads the Transaction API every 5 minutes and writes them here. This screen only reads Supabase.</p>' +
@@ -358,7 +360,9 @@
   window.SPSFEED = {
     open: function (ev) {
       if (ev && ev.preventDefault) ev.preventDefault();
+      feedOpen = true;
       markActive();
+      ensureRt();
       render();
     },
     show: function (id) { openId = id; showDetail(id); },
@@ -447,6 +451,26 @@
     nav.appendChild(btn);
     try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
   }
+  function ensureRt() {
+    var c = client();
+    if (!c || ensureRt.done) return;
+    ensureRt.done = true;
+    try {
+      c.channel("sps-feed-live")
+        .on("postgres_changes", { event: "*", schema: "public", table: "sps_transactions" }, function () { if (feedOpen) loadFeed(); })
+        .on("postgres_changes", { event: "*", schema: "public", table: "kv_status", filter: "key=eq.sps:last_sync" }, function () { if (feedOpen) loadFeed(); })
+        .subscribe();
+    } catch (e) { ensureRt.done = false; }
+  }
+  document.addEventListener("click", function (e) {
+    var t = e.target && e.target.closest ? e.target.closest("#nav .navitem") : null;
+    if (t && t.id !== "sf-nav") feedOpen = false;
+  }, true);
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible" && feedOpen) loadFeed();
+  });
+  window.SMK_VIEW_LOCKS = window.SMK_VIEW_LOCKS || [];
+  window.SMK_VIEW_LOCKS.push(function () { return feedOpen; });
   try {
     var mo = new MutationObserver(function () { injectNav(); });
     mo.observe(document.documentElement, { childList: true, subtree: true });

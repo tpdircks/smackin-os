@@ -76,8 +76,11 @@
       var c = client();
       if (!c) { cache = lsGet(LS_ROWS, []); return Promise.resolve(cache); }
       return c.from("pmac_log").select("*").order("log_date", { ascending: false }).order("created_at", { ascending: false }).limit(500)
-        .then(function (r) { cache = (r && r.data) ? r.data : []; return cache; })
-        .catch(function () { cache = lsGet(LS_ROWS, []); return cache; });
+        .then(function (r) {
+          if (r && r.error) throw new Error(r.error.message || "could not read P-Mac log");
+          cache = (r && r.data) ? r.data : [];
+          return cache;
+        });
     }
     cache = lsGet(LS_ROWS, []);
     return Promise.resolve(cache);
@@ -104,7 +107,11 @@
   function del(id) {
     if (isCloud()) {
       var c = client();
-      if (c) return c.from("pmac_log").delete().eq("id", id).then(function () { return { ok: true }; }).catch(function () { return { ok: false }; });
+      if (c) return c.from("pmac_log").delete().eq("id", id).select().then(function (r) {
+        if (r && r.error) return { ok: false, msg: r.error.message || "delete failed" };
+        if (!r || !r.data || !r.data.length) return { ok: false, msg: "delete was not confirmed" };
+        return { ok: true };
+      }).catch(function (e) { return { ok: false, msg: (e && e.message) || "delete failed" }; });
     }
     var rows = lsGet(LS_ROWS, []).filter(function (r) { return String(r.id) !== String(id); });
     lsSet(LS_ROWS, rows); return Promise.resolve({ ok: true });
@@ -179,7 +186,13 @@
   }
 
   function render() {
-    if (cache === null) { load().then(rerender); return '<div class="card" id="pml-loading"><h2>P-Mac Log Output</h2><p class="muted">Loading…</p></div>'; }
+    if (cache === null) {
+      load().then(rerender).catch(function (e) {
+        var host = document.getElementById("view");
+        if (host) host.innerHTML = '<div class="card" id="pml-loading"><h2>P-Mac Log Output</h2><p class="muted">' + esc((e && e.message) || "Could not load") + '</p></div>';
+      });
+      return '<div class="card" id="pml-loading"><h2>P-Mac Log Output</h2><p class="muted">Loading…</p></div>';
+    }
     return form() + logTable();
   }
 
@@ -200,7 +213,10 @@
     },
     del: function (id) {
       if (!window.confirm("Delete this run?")) return;
-      del(id).then(function () { return load(); }).then(function () { toast("Deleted"); rerender(); });
+      del(id).then(function (res) {
+        if (res && res.ok === false) { toast(res.msg || "Delete failed"); return; }
+        cache = null; return load();
+      }).then(function (res) { if (res) { toast("Deleted"); rerender(); } }).catch(function (e) { toast((e && e.message) || "Delete failed"); });
     },
     saveForm: function () {
       var v = function (id) { var e = $(id); return e ? String(e.value || "").trim() : ""; };
@@ -231,7 +247,8 @@
       save(row).then(function (res) {
         if (!res || !res.ok) { toast(res && res.msg ? res.msg : "Save failed"); return; }
         toast("Run logged");
-        load().then(rerender);
+        cache = null;
+        load().then(rerender).catch(function (e) { toast((e && e.message) || "Saved, but the list did not refresh"); });
       });
     },
     // expose per-box constants for Phase 2 production math
@@ -246,9 +263,37 @@
   function swapIfLegacy() {
     var host = document.getElementById("view");
     if (host && host.querySelector("#pmo-sel") && !host.querySelector("#pml-date") && !host.querySelector("#pml-loading")) {
+      cache = null;
       host.innerHTML = render();
+      ensureRt();
     }
   }
+  function pmacOnScreen() {
+    var host = document.getElementById("view");
+    return !!(host && (host.querySelector("#pml-date") || host.querySelector("#pml-loading")));
+  }
+  function ensureRt() {
+    var c = client();
+    if (!c || ensureRt.done) return;
+    ensureRt.done = true;
+    try {
+      c.channel("pmac-log-live").on("postgres_changes", { event: "*", schema: "public", table: "pmac_log" }, function () {
+        if (!pmacOnScreen()) return;
+        var ae = document.activeElement;
+        if (ae && ae.closest && ae.closest("#view") && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return;
+        cache = null; load().then(rerender).catch(function (e) { toast((e && e.message) || "Could not refresh"); });
+      }).subscribe();
+    } catch (e) {}
+  }
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState !== "visible" || !pmacOnScreen()) return;
+    var ae = document.activeElement;
+    var host = document.getElementById("view");
+    if (ae && host && host.contains(ae) && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return;
+    cache = null; load().then(rerender).catch(function () {});
+  });
+  window.SMK_VIEW_LOCKS = window.SMK_VIEW_LOCKS || [];
+  window.SMK_VIEW_LOCKS.push(pmacOnScreen);
   function relabelNav() {
     try {
       var nav = document.getElementById("nav"); if (!nav) return;
