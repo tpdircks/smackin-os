@@ -1,9 +1,9 @@
 /* Minimal offline cache for the app shell so scanners load fast and keep
    working through brief wifi drops. Data still requires connectivity in
    cloud mode; local mode works fully offline. */
-const CACHE = "smackin-inv-v237";
+const CACHE = "smackin-inv-v238";
 const ASSETS = [
-  "./", "./index.html", "./styles.css", "./ui-polish.css", "./ui-polish.js", "./stock-alerts.js", "./dept-homes.js", "./dashboard.js", "./demand-wos.js", "./vendor-seed.js", "./vendor-lead.js", "./mixing-recipes.js",
+  "./", "./index.html", "./styles.css", "./ui-polish.css", "./ui-polish.js", "./stock-alerts.js", "./dept-homes.js", "./dashboard.js", "./demand-wos.js", "./vendor-seed.js", "./vendor-lead.js", "./mixing-recipes.js", "./wip-production.js",
   "./config.js", "./seed-data.js", "./skus.js", "./demand.js", "./kits.js", "./ecom.js", "./recipes.js", "./production-orders.js", "./shortdated.js", "./launch-schedule.js", "./allen-reorder.js", "./db.js", "./app.js", "./trace.js", "./trace-recall.js", "./receiving-sop.js", "./batch-record.js", "./sqf-tasks.js", "./shipping-sync.js", "./shipping-lanes.js", "./sps-feed.js",
   "./slc-count-latest.js", "./slc-count-panel.js",
   "./facility.html", "./manifest.webmanifest"
