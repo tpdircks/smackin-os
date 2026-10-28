@@ -1,20 +1,24 @@
 /* ============================================================================
    Smackin' OS - Production History  (mfg-history.js)
    Surfaces Allen's loaded history: pmac_history (per-run P-Mac packaging) and
-   mixing_history (per-run Mixing). Read-only. Adds a "Production History" item
-   to the Manufacturing (Mixing) nav group and renders a dashboard:
+   mixing_history (per-run Mixing), plus daily retail units from
+   wip_production_daily (WIP Production sheet). Read-only. Adds a
+   "Production History" item to the Manufacturing (Mixing) nav group and
+   renders a dashboard:
      - summary cards (totals, date range, days)
-     - P-Mac / Mixing toggle
+     - P-Mac / Mixing / Daily units (WIP) toggle
      - monthly volume bars
-     - top flavors, top operators, and recent runs
-   Self-contained, no app.js edit. Loaded after app.js.
+     - top flavors, top operators, and recent runs (or recent WIP days)
+   Self-contained, no app.js edit. Loaded after app.js. Does not write
+   pmac_history or mixing_history.
    ==========================================================================*/
 (function () {
   "use strict";
   var cfg = window.SMACKIN_CONFIG || {};
   var sb = null, loaded = false, loading = false;
-  var PM = [], MX = [];           // raw rows
-  var dept = "pmac";              // or "mixing"
+  var PM = [], MX = [], WIP = []; // raw rows
+  var wipErr = "";
+  var dept = "pmac";              // pmac | mixing | wip
 
   function isCloud() { return !!(window.supabase && cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY); }
   function client() { if (!sb && isCloud()) { try { sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY); } catch (e) { sb = null; } } return sb; }
@@ -66,6 +70,38 @@
     }
     return page(0);
   }
+  function fetchWip() {
+    var c = client();
+    if (!c) return Promise.reject(new Error("Cloud database is not configured."));
+    var all = [], step = 1000;
+    function page(from) {
+      return c.from("wip_production_daily").select("prod_date,bag_size,flavor,units,source")
+        .eq("source", "wip")
+        .order("prod_date", { ascending: true })
+        .order("bag_size", { ascending: true })
+        .order("flavor", { ascending: true })
+        .range(from, from + step - 1)
+        .then(function (r) {
+          if (r && r.error) throw new Error(r.error.message || "could not read wip_production_daily");
+          var d = (r && r.data) ? r.data : [];
+          all = all.concat(d);
+          if (d.length === step) return page(from + step);
+          return all;
+        });
+    }
+    return page(0);
+  }
+  function refreshWip() {
+    return fetchWip().then(function (rows) {
+      WIP = rows || [];
+      wipErr = "";
+      if (histOpen() && dept === "wip") render();
+    }).catch(function (e) {
+      WIP = [];
+      wipErr = (e && e.message) || "Could not load daily units";
+      if (histOpen() && dept === "wip") render();
+    });
+  }
   function unionPmac(hist, logRows) {
     var seen = {}; hist.forEach(function (r) { seen[dedupeKey(r)] = 1; });
     var add = [];
@@ -80,7 +116,12 @@
     return Promise.all([
       fetchAll("pmac_history", "run_date,bag_size,flavor_code,flavor_name,operator,shift,box_count,total_pkgs"),
       fetchAll("mixing_history", "run_date,flavor_code,flavor_name,operator,machine,total_bins"),
-      fetchPmacLog()
+      fetchPmacLog(),
+      fetchWip().then(function (rows) { WIP = rows || []; wipErr = ""; return WIP; }).catch(function (e) {
+        WIP = [];
+        wipErr = (e && e.message) || "Could not load daily units";
+        return [];
+      })
     ]).then(function (res) { PM = unionPmac(res[0] || [], res[2] || []); MX = res[1] || []; loaded = true; loading = false; })
       .catch(function (e) { loading = false; loaded = false; loadErr = (e && e.message) || "Could not load history"; });
   }
@@ -166,17 +207,127 @@
     (document.head || document.documentElement).appendChild(s);
   }
 
+  function segHtml() {
+    return '<div class="mfgseg">' +
+      '<button class="' + (dept === "pmac" ? "on" : "") + '" onclick="MFGHIST.setDept(\'pmac\')">P-Mac (packaging)</button>' +
+      '<button class="' + (dept === "mixing" ? "on" : "") + '" onclick="MFGHIST.setDept(\'mixing\')">Mixing</button>' +
+      '<button class="' + (dept === "wip" ? "on" : "") + '" onclick="MFGHIST.setDept(\'wip\')">Daily units (WIP)</button>' +
+      '</div>';
+  }
+  function ymd(d) { return String(d || "").slice(0, 10); }
+  function wipByMonth() {
+    var m = {};
+    WIP.forEach(function (r) {
+      var k = ymd(r.prod_date).slice(0, 7);
+      if (!k) return;
+      m[k] = (m[k] || 0) + num(r.units);
+    });
+    return Object.keys(m).sort().map(function (k) { return { k: k, v: m[k] }; });
+  }
+  function wipFlavorRows(limit) {
+    var m = {};
+    WIP.forEach(function (r) {
+      var f = r.flavor || "";
+      if (!f) return;
+      if (!m[f]) m[f] = { k: f, oz15: 0, oz4: 0 };
+      if (r.bag_size === "1.5 oz") m[f].oz15 += num(r.units);
+      else if (r.bag_size === "4 oz") m[f].oz4 += num(r.units);
+    });
+    var rows = Object.keys(m).map(function (k) { return m[k]; });
+    rows.sort(function (a, b) { return (b.oz15 + b.oz4) - (a.oz15 + a.oz4); });
+    return rows.slice(0, limit || 15);
+  }
+  function flavorTable() {
+    var rows = wipFlavorRows(15);
+    if (!rows.length) return '<p class="muted">No data.</p>';
+    return '<div class="tblwrap"><table class="sortable"><thead><tr><th>Flavor</th><th class="right">1.5 oz</th><th class="right">4 oz</th><th class="right">Total</th></tr></thead><tbody>' +
+      rows.map(function (r) {
+        return '<tr><td>' + esc(r.k) + '</td><td class="right">' + fmt(r.oz15) + '</td><td class="right">' + fmt(r.oz4) + '</td><td class="right">' + fmt(r.oz15 + r.oz4) + '</td></tr>';
+      }).join("") + '</tbody></table></div>';
+  }
+  function recentDaysTable() {
+    var m = {};
+    WIP.forEach(function (r) {
+      var d = ymd(r.prod_date);
+      if (!d) return;
+      if (!m[d]) m[d] = { d: d, oz15: 0, oz4: 0 };
+      if (r.bag_size === "1.5 oz") m[d].oz15 += num(r.units);
+      else if (r.bag_size === "4 oz") m[d].oz4 += num(r.units);
+    });
+    var rows = Object.keys(m).sort().slice(-40).reverse().map(function (k) { return m[k]; });
+    if (!rows.length) return '<p class="muted">No data.</p>';
+    return '<div class="tblwrap"><table class="sortable"><thead><tr><th>Date</th><th class="right">1.5 oz</th><th class="right">4 oz</th><th class="right">Total</th></tr></thead><tbody>' +
+      rows.map(function (r) {
+        return '<tr><td class="sm">' + esc(r.d) + '</td><td class="right">' + fmt(r.oz15) + '</td><td class="right">' + fmt(r.oz4) + '</td><td class="right">' + fmt(r.oz15 + r.oz4) + '</td></tr>';
+      }).join("") + '</tbody></table></div>' +
+      '<p class="hint" style="margin-top:6px">Newest 40 production days.</p>';
+  }
+  function wipStatusLine() {
+    var st = null;
+    try { st = window.WIPPROD && window.WIPPROD.status ? window.WIPPROD.status() : null; } catch (e) { st = null; }
+    if (wipErr) return esc(wipErr);
+    if (st && st.error) return esc(st.error);
+    if (st && st.busy) return "Importing daily units from the WIP sheet.";
+    return "No daily units stored yet.";
+  }
+  function renderWip(host) {
+    var body;
+    if (wipErr || !WIP.length) {
+      body = '<p class="muted">' + wipStatusLine() + '</p>';
+    } else {
+      var mn = null, mx = null, u15 = 0, u4 = 0, dayMap = {};
+      WIP.forEach(function (r) {
+        var d = ymd(r.prod_date);
+        var u = num(r.units);
+        if (r.bag_size === "1.5 oz") u15 += u;
+        else if (r.bag_size === "4 oz") u4 += u;
+        if (!d) return;
+        dayMap[d] = 1;
+        if (!mn || d < mn) mn = d;
+        if (!mx || d > mx) mx = d;
+      });
+      var dayCount = Object.keys(dayMap).length;
+      var note = "";
+      try {
+        var chk = window.WIPPROD && window.WIPPROD.check ? window.WIPPROD.check() : null;
+        if (chk && chk.ok && dayCount === chk.days && chk.sourceDays > chk.days) {
+          note = " " + (chk.sourceDays - chk.days) + " sheet days had notes instead of unit counts.";
+        }
+      } catch (e1) { note = ""; }
+      body = '<div class="mfgcards">' +
+        '<div class="mfgcard"><div class="n">' + fmt(u15 + u4) + '</div><div class="l">Total units</div></div>' +
+        '<div class="mfgcard"><div class="n">' + fmt(u4) + '</div><div class="l">4 oz units</div></div>' +
+        '<div class="mfgcard"><div class="n">' + fmt(u15) + '</div><div class="l">1.5 oz units</div></div>' +
+        '<div class="mfgcard"><div class="n">' + fmt(dayCount) + '</div><div class="l">Production days</div></div>' +
+        '</div>' +
+        '<p class="hint">' + esc(mn || "?") + ' \u2192 ' + esc(mx || "?") + note + '</p>';
+    }
+    var html = '<div class="card"><h2>Production History</h2>' +
+      '<p class="hint">Daily retail units by flavor from the WIP Production sheet. Blank cells and sheet notes are not counted.</p>' +
+      segHtml() + body + '</div>';
+    if (!wipErr && WIP.length) {
+      html += '<div class="card"><h2 class="sub2">Units by month</h2>' + barChart(wipByMonth(), "Units") + '</div>' +
+        '<div class="card"><h2 class="sub2">Top flavors</h2>' + flavorTable() + '</div>' +
+        '<div class="card"><h2 class="sub2">Recent days</h2>' + recentDaysTable() + '</div>';
+    }
+    host.innerHTML = html;
+    host.setAttribute("data-mfg", "1");
+    var flag = document.createElement("span"); flag.id = "mfg-hist-active"; flag.style.display = "none"; host.appendChild(flag);
+    try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
+  }
+
   function render() {
     styleOnce();
     var host = $("view"); if (!host) return;
     if (!loaded) {
-      host.innerHTML = '<div class="card"><h2>Production History</h2><p class="muted">' + (loadErr ? esc(loadErr) : "Loading 15 months of Mixing &amp; P-Mac history…") + '</p></div>';
+      host.innerHTML = '<div class="card"><h2>Production History</h2><p class="muted">' + (loadErr ? esc(loadErr) : "Loading production history...") + '</p></div>';
       if (!loadErr) load().then(function () { if ($("mfg-hist-active") || (host.getAttribute("data-mfg") === "1")) render(); });
       // mark active so the load callback knows this view is still showing
       host.setAttribute("data-mfg", "1");
       var flag = document.createElement("span"); flag.id = "mfg-hist-active"; flag.style.display = "none"; host.appendChild(flag);
       return;
     }
+    if (dept === "wip") { renderWip(host); return; }
     var rows = dept === "pmac" ? PM : MX;
     var valKey = dept === "pmac" ? "total_pkgs" : "total_bins";
     var unit = dept === "pmac" ? "Packages" : "Bins";
@@ -187,10 +338,7 @@
 
     var html = '<div class="card"><h2>Production History</h2>' +
       '<p class="hint">Allen\'s Mixing &amp; P-Mac history, loaded from the production trackers. ' + fmt(PM.length) + ' P-Mac runs and ' + fmt(MX.length) + ' Mixing runs on record.</p>' +
-      '<div class="mfgseg">' +
-      '<button class="' + (dept === "pmac" ? "on" : "") + '" onclick="MFGHIST.setDept(\'pmac\')">P-Mac (packaging)</button>' +
-      '<button class="' + (dept === "mixing" ? "on" : "") + '" onclick="MFGHIST.setDept(\'mixing\')">Mixing</button>' +
-      '</div>' +
+      segHtml() +
       '<div class="mfgcards">' +
       '<div class="mfgcard"><div class="n">' + fmt(tot) + '</div><div class="l">Total ' + unit + '</div></div>' +
       '<div class="mfgcard"><div class="n">' + fmt(perDay) + '</div><div class="l">Avg ' + unit + '/day</div></div>' +
@@ -215,7 +363,8 @@
   window.MFGHIST = {
     open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); loaded = false; markActiveNav(); render(); },
     _unionPmac: unionPmac, _mapPmacLog: mapPmacLog,
-    setDept: function (d) { dept = d; render(); }
+    setDept: function (d) { dept = d; render(); },
+    refreshWip: refreshWip
   };
 
   // ---- nav injection (no app.js change) ---------------------------------
