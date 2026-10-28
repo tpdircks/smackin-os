@@ -1,11 +1,11 @@
 /* ============================================================================
    Smackin' OS - Department homes (dept-homes.js)
-   Top department bar and a full-page home for each team. The home opens on
-   live counts and lists from DB (the same records the screens already use).
-   Tool cards sit under that floor and open a screen that already exists
-   (UI_go, Lot Trace, or a module open()).
+   Top department bar and a full-page home for each team. Tool cards sit
+   directly under the title so a create or update screen is one tap away.
+   Live counts and lists from DB follow those cards. Each card opens a
+   screen that already exists (UI_go, Lot Trace, or a module open()).
    Every sidebar group has a tab, equal width: Dashboard, Receiving,
-   Inventory, Items, Purchasing, Demand, Manufacturing, Fulfillment,
+   Inventory, Purchasing, Demand, Manufacturing, Fulfillment,
    Shipping, Quality, Team, Maintenance, Docs, and System. The menu stays
    off-canvas. A click outside the open panel, or Escape, closes it. The
    header button still toggles it. The left sidebar stays collapsed off
@@ -29,8 +29,8 @@
     receive: "recv", recvlog: "recv", returns: "recv", qa: "recv",
     dash: "inv", adjust: "inv", count: "inv", alerts: "inv",
     move: "inv", locations: "inv", facility: "inv", finbags: "inv",
-    seasoning: "items", seed: "items", skus: "items", analytics: "items",
-    labels: "items", recipes: "items",
+    seed: "inv", skus: "inv", analytics: "inv", labels: "inv",
+    seasoning: "mfg", recipes: "mfg",
     purchasing: "purch", expreceipts: "purch", reorder15: "purch", supplierpos: "purch",
     prodorders: "mfg", reordertracker: "mfg", launch: "mfg", mixing: "mfg",
     pmac: "mfg", pmacout: "mfg", floor: "mfg",
@@ -188,19 +188,11 @@
       id: "inv",
       label: { en: "Inventory", es: "Inventario", pt: "Estoque" },
       title: { en: "Inventory", es: "Inventario", pt: "Estoque" },
-      intro: { en: "Counts, adjustments, moves, and locations.", es: "Conteos, ajustes, movimientos y ubicaciones.", pt: "Contagens, ajustes, movimentos e locais." },
+      intro: { en: "Counts, adjustments, moves, locations, seed, SKUs, and reports.", es: "Conteos, ajustes, movimientos, ubicaciones, semilla, SKUs y reportes.", pt: "Contagens, ajustes, movimentos, locais, semente, SKUs e relatorios." },
       sections: [
         { h: { en: "Counts", es: "Conteos", pt: "Contagens" }, tools: ["dash", "adjust", "count", "alerts", "finbags", "move"] },
-        { h: { en: "Locations", es: "Ubicaciones", pt: "Locais" }, tools: ["locations", "facility"] }
-      ]
-    },
-    {
-      id: "items",
-      label: { en: "Items", es: "Items", pt: "Itens" },
-      title: { en: "Items & Reports", es: "Items y Reportes", pt: "Itens e Relatorios" },
-      intro: { en: "Seasoning, seed, SKUs, recipes, and the inventory reports.", es: "Sazon, semilla, SKUs, recetas y los reportes de inventario.", pt: "Tempero, semente, SKUs, receitas e os relatorios de estoque." },
-      sections: [
-        { h: { en: "Catalog", es: "Catalogo", pt: "Catalogo" }, tools: ["seasoning", "seed", "skus", "recipes", "printlabels"] },
+        { h: { en: "Locations", es: "Ubicaciones", pt: "Locais" }, tools: ["locations", "facility"] },
+        { h: { en: "Catalog", es: "Catalogo", pt: "Catalogo" }, tools: ["seed", "skus", "printlabels"] },
         { h: { en: "Reports", es: "Reportes", pt: "Relatorios" }, tools: ["analytics"] }
       ]
     },
@@ -228,10 +220,11 @@
       id: "mfg",
       label: { en: "Mfg", es: "Mfg", pt: "Mfg" },
       title: { en: "Manufacturing", es: "Manufactura", pt: "Manufatura" },
-      intro: { en: "Mix, P-Mac, production orders, the live machines, and the lot stations. Demand has its own tab.", es: "Mezcla, P-Mac, ordenes de produccion, las maquinas en vivo y las estaciones de lote. Demanda tiene su propia pestana.", pt: "Mistura, P-Mac, ordens de producao, as maquinas ao vivo e as estacoes de lote. Demanda tem sua propria aba." },
+      intro: { en: "Mix, P-Mac, production orders, the live machines, lot stations, seasoning, and recipes. Demand has its own tab.", es: "Mezcla, P-Mac, ordenes de produccion, las maquinas en vivo, estaciones de lote, sazon y recetas. Demanda tiene su propia pestana.", pt: "Mistura, P-Mac, ordens de producao, as maquinas ao vivo, estacoes de lote, tempero e receitas. Demanda tem sua propria aba." },
       sections: [
         { h: { en: "Lot trace stations", es: "Estaciones de lote", pt: "Estacoes de lote" }, tools: ["trRecv", "trQa", "trMix", "trPmac", "trMove"] },
         { h: { en: "Floor", es: "Piso", pt: "Piso" }, tools: ["mixing", "pmac", "pmacout", "floor"] },
+        { h: { en: "Seasoning and recipes", es: "Sazon y recetas", pt: "Tempero e receitas" }, tools: ["seasoning", "recipes"] },
         { h: { en: "Planning and history", es: "Plan y historial", pt: "Plano e historico" }, tools: ["prodorders", "reordertracker", "launch", "hist", "upload"] }
       ]
     },
@@ -1020,55 +1013,59 @@
             ];
           })
         ) : empty(tx({ en: "No open short-dated, expired, or off-flavor rows.", es: "Nada short-dated abierto.", pt: "Nada short-dated aberto." })),
-        2, "shortdated");
+        2, "shortdated") + seedCatalogLive();
   }
 
-  function liveItems() {
+  function seasoningLive() {
     var seas = seasLots();
-    var seed = seedLots();
     var recipes = window.RECIPES ? Object.keys(window.RECIPES).length : 0;
+    var today = screenDay();
+    var note = seas.lots.length + " lots · " + fmt(seas.lbs) + " lb";
+    if (seas.exp) note += " · " + seas.exp + " expired";
+    if (seas.quar) note += " · " + seas.quar + " in quarantine";
+    note += ". " + recipes + " batch recipes on file.";
+    return panel(tx({ en: "Seasoning lots", es: "Lotes de sazon", pt: "Lotes de tempero" }),
+      sub(note) + (seas.lots.length ? dfTable(
+        [{ h: "Product" }, { h: "Lot" }, { h: "Exp" }, { h: "Lb", right: true }],
+        seas.lots.map(function (l) {
+          var exp = String(l.exp || "").slice(0, 10);
+          var bad = l.status === "Quarantine" || (exp && exp < today);
+          return [
+            '<div class="df-name">' + esc(l.product || l.flavor_code || "—") + "</div>",
+            esc(l.lot || "—"),
+            esc(exp || "—") + (bad ? " " + pill(l.status === "Quarantine" ? "QUAR" : "EXP", "df-out") : ""),
+            fmt(l.weight)
+          ];
+        })
+      ) : empty(tx({ en: "No seasoning lots yet.", es: "Aun no hay lotes de sazon.", pt: "Ainda nao ha lotes de tempero." }))),
+      2, "seasoning") +
+      panel(tx({ en: "Recipes", es: "Recetas", pt: "Receitas" }),
+        sub(recipes + " batch recipes for mixing."),
+        2, "recipes");
+  }
+
+  function seedCatalogLive() {
+    var seed = seedLots();
     var skuN = (window.SMACKIN_SKUS || []).length;
     var catN = 0;
     try { catN = DB.skuCatalog ? Object.keys(DB.skuCatalog() || {}).length : 0; } catch (e) { catN = 0; }
-    var today = screenDay();
-    return statRow([
-      stat(fmt(seas.lots.length), tx({ en: "Seasoning lots", es: "Lotes de sazon", pt: "Lotes de tempero" })),
-      stat(fmt(seas.exp + seas.quar), tx({ en: "Expired or quarantine", es: "Vencidos o cuarentena", pt: "Vencidos ou quarentena" }), (seas.exp + seas.quar) ? "bad" : ""),
-      stat(fmt(seed.lots.length), tx({ en: "Seed lots", es: "Lotes de semilla", pt: "Lotes de semente" })),
-      stat(fmt(recipes), tx({ en: "Batch recipes", es: "Recetas", pt: "Receitas" }))
-    ]) +
-      panel(tx({ en: "Seasoning lots", es: "Lotes de sazon", pt: "Lotes de tempero" }),
-        seas.lots.length ? sub(fmt(seas.lbs) + " lb on the lot file. Earliest expiration first.") + dfTable(
-          [{ h: "Product" }, { h: "Lot" }, { h: "Exp" }, { h: "Lb", right: true }],
-          seas.lots.map(function (l) {
-            var exp = String(l.exp || "").slice(0, 10);
-            var bad = l.status === "Quarantine" || (exp && exp < today);
-            return [
-              '<div class="df-name">' + esc(l.product || l.flavor_code || "—") + "</div>",
-              esc(l.lot || "—"),
-              esc(exp || "—") + (bad ? " " + pill(l.status === "Quarantine" ? "QUAR" : "EXP", "df-out") : ""),
-              fmt(l.weight)
-            ];
-          })
-        ) : empty(tx({ en: "No seasoning lots yet.", es: "Aun no hay lotes de sazon.", pt: "Ainda nao ha lotes de tempero." })),
-        2, "seasoning") +
-      panel(tx({ en: "Seed lots", es: "Lotes de semilla", pt: "Lotes de semente" }),
-        seed.lots.length ? sub(fmt(seed.lbs) + " lb logged." + (seed.quar ? " " + seed.quar + " in quarantine." : "")) + dfTable(
-          [{ h: "Product" }, { h: "Lot" }, { h: "Received" }, { h: "Lb", right: true }],
-          seed.lots.map(function (l) {
-            return [
-              '<div class="df-name">' + esc(l.product || l.seed_code || "—") + "</div>" +
-                (l.status === "Quarantine" ? pill("QUAR", "df-out") : ""),
-              esc(l.lot || "—"),
-              esc(String(l.received_date || l.received_at || "").slice(0, 10) || "—"),
-              fmt(l.weight)
-            ];
-          })
-        ) : empty(tx({ en: "No seed lots yet.", es: "Aun no hay lotes de semilla.", pt: "Ainda nao ha lotes de semente." })),
-        2, "seed") +
-      panel(tx({ en: "Catalog", es: "Catalogo", pt: "Catalogo" }),
-        sub(skuN + " finished SKUs in the pack list. " + catN + " extra SKUs saved on the catalog. Recipes on file: " + recipes + "."),
-        4, "skus");
+    return panel(tx({ en: "Seed lots", es: "Lotes de semilla", pt: "Lotes de semente" }),
+      seed.lots.length ? sub(fmt(seed.lbs) + " lb logged." + (seed.quar ? " " + seed.quar + " in quarantine." : "")) + dfTable(
+        [{ h: "Product" }, { h: "Lot" }, { h: "Received" }, { h: "Lb", right: true }],
+        seed.lots.map(function (l) {
+          return [
+            '<div class="df-name">' + esc(l.product || l.seed_code || "—") + "</div>" +
+              (l.status === "Quarantine" ? pill("QUAR", "df-out") : ""),
+            esc(l.lot || "—"),
+            esc(String(l.received_date || l.received_at || "").slice(0, 10) || "—"),
+            fmt(l.weight)
+          ];
+        })
+      ) : empty(tx({ en: "No seed lots yet.", es: "Aun no hay lotes de semilla.", pt: "Ainda nao ha lotes de semente." })),
+      2, "seed") +
+      panel(tx({ en: "SKU catalog", es: "Catalogo SKU", pt: "Catalogo SKU" }),
+        sub(skuN + " finished SKUs in the pack list. " + catN + " extra SKUs saved on the catalog."),
+        2, "skus");
   }
 
   function livePurch() {
@@ -1231,7 +1228,7 @@
           allen.map(function (r) {
             return [esc(r.name || r.code || "—"), fmt(r.pallets4), fmt(r.pallets15), "<b>" + fmt(r.binsToOrder) + "</b>"];
           })
-        ), 4, "reordertracker") : "");
+        ), 4, "reordertracker") : "") + seasoningLive();
   }
 
   function liveFul() {
@@ -1550,7 +1547,6 @@
     if (!dbReady()) return notLoaded();
     if (id === "recv") return liveRecv();
     if (id === "inv") return liveInv();
-    if (id === "items") return liveItems();
     if (id === "purch") return livePurch();
     if (id === "demand") return liveDemand();
     if (id === "mfg") return liveMfg();
@@ -1588,7 +1584,7 @@
     return '<div id="dept-home" class="dept-floor" data-dept="' + esc(dept.id) + '">' +
       '<div class="card dept-lead"><h2>' + esc(tx(dept.title)) + '</h2>' +
       '<p class="hint">' + esc(tx(dept.intro)) + "</p></div>" +
-      banner + live + toolsHtml(dept) + "</div>";
+      toolsHtml(dept) + banner + live + "</div>";
   }
 
   function paintHome(force) {
@@ -1844,7 +1840,9 @@
       ".df-more{display:block;width:100%;margin-top:6px;background:#fff;border:1px solid var(--line,#d7dde6);border-radius:8px;padding:6px 10px;font-family:inherit;font-weight:700;font-size:13px;color:var(--navy,#1F3864);cursor:pointer}",
       ".dept-jump{border:0;background:transparent;color:var(--blue,#006DB6);font:800 12px inherit;cursor:pointer;padding:0;white-space:nowrap}",
       "#dept-home .dept-sec{margin:8px 0 4px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#5c6b7c;font-weight:800}",
-      "#dept-home .dept-tools{margin-top:2px}",
+      "#dept-home .dept-tools{margin-top:0}",
+      "#dept-home .dept-tools .dept-sec:first-child{margin-top:2px}",
+      "#dept-home .dept-statrow,#dept-home>.df-banner{margin-top:2px}",
       "#dept-home .dept-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:6px}",
       "#dept-home .dept-card{display:flex;flex-direction:row;align-items:flex-start;gap:8px;text-align:left;background:#fff;border:1px solid var(--line,#d7dde6);border-radius:8px;padding:6px 8px;cursor:pointer;min-height:0;box-shadow:none;font-family:inherit;color:inherit;width:100%}",
       "#dept-home .dept-card:hover{border-color:var(--blue,#006DB6);box-shadow:0 4px 14px rgba(4,34,59,.08)}",
