@@ -57,8 +57,9 @@
   }
   function codeRank(code) {
     var m = /^([A-Z]+)(\d+)$/.exec(String(code || ""));
-    if (!m) return "Z|9999|" + String(code || "");
-    return m[1] + "|" + ("0000" + m[2]).slice(-4);
+    if (!m) return "9|9999";
+    var group = { S: "0", L: "1", A: "2" }[m[1]] || "3";
+    return group + "|" + ("0000" + m[2]).slice(-4);
   }
   function rank(r) {
     if (ratesDiffer(r.seas_lbs, r.wip_lbs_per_batch)) return 0;
