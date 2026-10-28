@@ -30,6 +30,8 @@
       fulfilldaily:"Daily Fulfillment", fdHint:"Log today's E-Commerce labels and Amazon (FBA) build output, plus notes on any custom/unique orders. Saved per day - also acts as a backup and double-check while automation is built out.",
       fdDate:"Date", fdEcomTitle:"E-Commerce - Labels per Person", fdEcomHint:"One row per person who worked e-com labels today. The day's total is the sum of everyone's labels.",
       fdEmployee:"Employee", fdPickEmployee:"Pick a person...", fdLabelsDone:"# Labels Done", fdAddPerson:"+ Add person", fdEcomLabelsTotal:"E-Com Labels Total",
+      fdRosterWait:"This dropdown lists the Fulfillment department only. It stays on the app directory until Gusto access is approved, so hires and people who leave will not update on their own yet.",
+      fdRosterGusto:"Fulfillment team from Gusto.", fdRosterGustoWhen:"Fulfillment team from Gusto. Updated {date}.", fdNotOnTeam:"not on current team",
       fdAmzTitle:"Amazon (FBA)", fdAmzHint:"Pick a SKU (or add a custom one) and the units made. Bags = units x bags/unit - counted separately from e-com labels.",
       fdSku:"SKU", fdPickSku:"Pick a SKU...", fdCustomSku:"+ Custom SKU...", fdCustomSkuPh:"Enter SKU", fdUnitsMade:"Units Made", fdBagsPerUnit:"Bags / Unit", fdBags:"Bags",
       fdAddSku:"+ Add SKU", fdAmzUnitsTotal:"Amazon Units Total", fdAmzBagsTotal:"Amazon Bags Total",
@@ -186,6 +188,8 @@
       fulfilldaily:"Cumplimiento Diario", fdHint:"Registre las etiquetas de E-Commerce de hoy y la produccion de Amazon (FBA), mas notas de pedidos especiales. Se guarda por dia - tambien sirve de respaldo y doble verificacion mientras se automatiza.",
       fdDate:"Fecha", fdEcomTitle:"E-Commerce - Etiquetas por Persona", fdEcomHint:"Una fila por cada persona que trabajo etiquetas de e-com hoy. El total del dia es la suma de todos.",
       fdEmployee:"Empleado", fdPickEmployee:"Elija una persona...", fdLabelsDone:"# Etiquetas Hechas", fdAddPerson:"+ Agregar persona", fdEcomLabelsTotal:"Total Etiquetas E-Com",
+      fdRosterWait:"Esta lista es solo el departamento de Cumplimiento. Sigue el directorio de la app hasta que se apruebe el acceso a Gusto, asi que las altas y bajas no se actualizan solas todavia.",
+      fdRosterGusto:"Equipo de Cumplimiento desde Gusto.", fdRosterGustoWhen:"Equipo de Cumplimiento desde Gusto. Actualizado {date}.", fdNotOnTeam:"ya no esta en el equipo",
       fdAmzTitle:"Amazon (FBA)", fdAmzHint:"Elija un SKU (o agregue uno personalizado) y las unidades hechas. Bolsas = unidades x bolsas/unidad - se cuenta aparte de las etiquetas e-com.",
       fdSku:"SKU", fdPickSku:"Elija un SKU...", fdCustomSku:"+ SKU personalizado...", fdCustomSkuPh:"Ingrese SKU", fdUnitsMade:"Unidades Hechas", fdBagsPerUnit:"Bolsas / Unidad", fdBags:"Bolsas",
       fdAddSku:"+ Agregar SKU", fdAmzUnitsTotal:"Total Unidades Amazon", fdAmzBagsTotal:"Total Bolsas Amazon",
@@ -341,6 +345,8 @@
       fulfilldaily:"Cumprimento Diario", fdHint:"Registre as etiquetas de E-Commerce de hoje e a producao da Amazon (FBA), mais notas de pedidos especiais. Salvo por dia - tambem serve de backup e dupla verificacao enquanto a automacao e construida.",
       fdDate:"Data", fdEcomTitle:"E-Commerce - Etiquetas por Pessoa", fdEcomHint:"Uma linha por pessoa que trabalhou etiquetas de e-com hoje. O total do dia e a soma de todos.",
       fdEmployee:"Funcionario", fdPickEmployee:"Escolha uma pessoa...", fdLabelsDone:"# Etiquetas Feitas", fdAddPerson:"+ Adicionar pessoa", fdEcomLabelsTotal:"Total Etiquetas E-Com",
+      fdRosterWait:"Esta lista e so o departamento de Cumprimento. Continua no diretorio do app ate o acesso ao Gusto ser aprovado, entao contratacoes e saidas ainda nao se atualizam sozinhas.",
+      fdRosterGusto:"Equipe de Cumprimento pelo Gusto.", fdRosterGustoWhen:"Equipe de Cumprimento pelo Gusto. Atualizado {date}.", fdNotOnTeam:"nao esta mais na equipe",
       fdAmzTitle:"Amazon (FBA)", fdAmzHint:"Escolha um SKU (ou adicione um personalizado) e as unidades feitas. Sacos = unidades x sacos/unidade - contado separado das etiquetas e-com.",
       fdSku:"SKU", fdPickSku:"Escolha um SKU...", fdCustomSku:"+ SKU personalizado...", fdCustomSkuPh:"Digite o SKU", fdUnitsMade:"Unidades Feitas", fdBagsPerUnit:"Sacos / Unidade", fdBags:"Sacos",
       fdAddSku:"+ Adicionar SKU", fdAmzUnitsTotal:"Total Unidades Amazon", fdAmzBagsTotal:"Total Sacos Amazon",
@@ -709,11 +715,38 @@
     ["Brian Lepro","Independent Contractor","Contractor",""],
     ["Lorelei Davis","Fulfillment Associate","Fulfillment","Troy Dircks"]
   ].map(a => ({ n:a[0], r:a[1], d:a[2], m:a[3], s:a[4] || "" }));
-  // Daily Fulfillment tracker: anyone who can work e-com labels on a given day -- the whole Fulfillment /
-  // Shipping roster, plus the Operations people who report to Troy on the fulfillment side.
+  // Daily Fulfillment dropdown: Troy's Fulfillment department only.
+  // A future Gusto sync writes kv_status "fulfillment-daily-roster". Until that
+  // row exists, use the Fulfillment names already in PEOPLE. Past days still
+  // show a person who has since left. See docs/gusto-fulfillment-roster.md.
+  function fdDirectoryFulfillment() {
+    return PEOPLE.filter(p => p.d === "Fulfillment").map(p => p.n).sort(function (a, b) { return a.localeCompare(b); });
+  }
   function fdEmployeeList() {
-    return PEOPLE.filter(p => p.d === "Fulfillment" || p.d === "Shipping" || (p.d === "Operations" && p.m === "Troy Dircks"))
-      .map(p => p.n).sort();
+    if (window.GUSTO_ROSTER && typeof GUSTO_ROSTER.names === "function") {
+      var live = GUSTO_ROSTER.names();
+      if (live && live.length) return live.slice();
+    }
+    return fdDirectoryFulfillment();
+  }
+  function fdRosterNote() {
+    var live = (window.GUSTO_ROSTER && typeof GUSTO_ROSTER.names === "function") ? GUSTO_ROSTER.names() : [];
+    if (live && live.length) {
+      var at = (typeof GUSTO_ROSTER.syncedAt === "function") ? GUSTO_ROSTER.syncedAt() : "";
+      if (at) return L("fdRosterGustoWhen").replace("{date}", at);
+      return L("fdRosterGusto");
+    }
+    return L("fdRosterWait");
+  }
+  function fdEmployeeOptions(selected) {
+    const emps = fdEmployeeList();
+    const rows = (window.GUSTO_ROSTER && typeof GUSTO_ROSTER.withHistorical === "function")
+      ? GUSTO_ROSTER.withHistorical(emps, selected)
+      : emps.map(function (n) { return { name: n, historical: false }; });
+    return rows.map(function (row) {
+      const label = row.historical ? (row.name + " (" + L("fdNotOnTeam") + ")") : row.name;
+      return '<option value="' + esc(row.name) + '"' + (row.name === selected ? " selected" : "") + ">" + esc(label) + "</option>";
+    }).join("");
   }
   // ---- left sidebar: tabs grouped by department (NetSuite-style) ----
   const NAV_GROUPS = [
@@ -2833,13 +2866,12 @@
     const today = new Date().toISOString().slice(0, 10);
     const date = fdDate || today;
     const d = fdEnsureDraft();
-    const emps = fdEmployeeList();
     let ecomTotal = 0;
     const ecomRows = d.ecom.map((r, i) => {
       ecomTotal += Number(r.labels) || 0;
       return '<tr><td><select onchange="UI.fdEcomSet(' + i + ',\'employee\',this.value)">' +
         '<option value="">' + L("fdPickEmployee") + '</option>' +
-        emps.map(n => '<option value="' + esc(n) + '"' + (n === r.employee ? ' selected' : '') + '>' + esc(n) + '</option>').join("") +
+        fdEmployeeOptions(r.employee) +
         '</select></td>' +
         '<td><input type="number" min="0" step="1" inputmode="numeric" value="' + esc(r.labels) + '" onchange="UI.fdEcomSet(' + i + ',\'labels\',this.value)" style="width:110px"></td>' +
         '<td><button class="ghost sm danger" onclick="UI.fdEcomRemove(' + i + ')">&#10005;</button></td></tr>';
@@ -2870,6 +2902,7 @@
     const ecomCard = '<div class="card"><div class="suprow"><h2 class="sub2" style="flex:1;margin:0">' + L("fdEcomTitle") + '</h2>' +
       '<span class="muted sm">' + L("fdEcomLabelsTotal") + ': <b>' + fmt(ecomTotal) + '</b></span></div>' +
       '<p class="hint">' + L("fdEcomHint") + '</p>' +
+      '<p class="hint" id="fd-roster-note">' + esc(fdRosterNote()) + '</p>' +
       '<table><thead><tr><th>' + L("fdEmployee") + '</th><th>' + L("fdLabelsDone") + '</th><th></th></tr></thead><tbody>' + ecomRows + '</tbody></table>' +
       '<button class="ghost" style="margin-top:8px" onclick="UI.fdEcomAddRow()">' + L("fdAddPerson") + '</button></div>';
     const amzCard = '<div class="card"><div class="suprow"><h2 class="sub2" style="flex:1;margin:0">' + L("fdAmzTitle") + '</h2>' +
