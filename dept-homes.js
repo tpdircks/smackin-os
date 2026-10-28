@@ -146,6 +146,7 @@
     trLabels: { trace: "labels", icon: "tags", title: { en: "Labels", es: "Etiquetas", pt: "Labels" }, blurb: { en: "Search lot labels and reprint one.", es: "Busque etiquetas de lote y reimprima una.", pt: "Busque etiquetas de lote e reimprima uma." } },
     quality: { go: "quality", icon: "microscope", title: { en: "Quality Logs", es: "Quality Logs", pt: "Quality Logs" }, blurb: { en: "CCP checks: allergen changeover, label verify, metal detector.", es: "Registros CCP: cambio de alergeno, verificacion de etiqueta, detector de metal.", pt: "Registros CCP: troca de alergeno, verificacao de rotulo, detector de metal." } },
     compliance: { go: "compliance", icon: "shield-check", title: { en: "Compliance / SQF", es: "Cumplimiento / SQF", pt: "Conformidade / SQF" }, blurb: { en: "Certifications, the SQF calendar, and controlled documents.", es: "Certificaciones, el calendario SQF y documentos controlados.", pt: "Certificacoes, o calendario SQF e documentos controlados." } },
+    sqftasks: { fn: "sqf", icon: "list-checks", title: { en: "SQF Tasks", es: "Tareas SQF", pt: "Tarefas SQF" }, blurb: { en: "Outstanding SQF clauses, owners, and due dates. This list is the live copy.", es: "Clausulas SQF pendientes, responsables y fechas. Esta lista es la copia viva.", pt: "Clausulas SQF pendentes, responsaveis e datas. Esta lista e a copia viva." } },
     maintenance: { go: "maintenance", icon: "hard-hat", title: { en: "Maintenance", es: "Mantenimiento", pt: "Manutencao" }, blurb: { en: "Requests, repairs, and projects.", es: "Solicitudes, reparaciones y proyectos.", pt: "Pedidos, reparos e projetos." } },
     services: { fn: "svc", icon: "hand-platter", title: { en: "Services", es: "Services", pt: "Services" }, blurb: { en: "Outsourced services and invoices: uniforms, pest, waste, equipment.", es: "Servicios externos y facturas: uniformes, plagas, basura, equipo.", pt: "Servicos externos e faturas: uniformes, pragas, residuos, equipamento." } },
     produce: { go: "produce", icon: "factory", title: { en: "Produce", es: "Producir", pt: "Produzir" }, blurb: { en: "Record finished 4oz bags off the line.", es: "Registre bolsas 4oz terminadas de la linea.", pt: "Registre sacos 4oz prontos da linha." } },
@@ -292,7 +293,7 @@
       intro: { en: "Lot trace, holds, labels, and the quality records this team already keeps.", es: "Rastreo de lote, retenciones, etiquetas y los registros de calidad que este equipo ya usa.", pt: "Rastreio de lote, retencoes, etiquetas e os registros de qualidade que esta equipe ja usa." },
       sections: [
         { h: { en: "Lot trace", es: "Rastreo de lote", pt: "Rastreio de lote" }, tools: ["trace", "trQa", "trLabels"] },
-        { h: { en: "Quality records", es: "Registros de calidad", pt: "Registros de qualidade" }, tools: ["quality", "compliance", "shortdated"] }
+        { h: { en: "Quality records", es: "Registros de calidad", pt: "Registros de qualidade" }, tools: ["quality", "compliance", "sqftasks", "shortdated"] }
       ]
     },
     {
@@ -367,6 +368,7 @@
     if (btn.id === "sf-nav") return "purch";
     if (btn.id === "shs-nav") return "ship";
     if (btn.id === "mfg-hist-nav" || btn.id === "mfg-up-nav" || btn.id === "btr-nav") return "mixing";
+    if (btn.id === "sqf-nav") return "qa";
     if (btn.id === "mp-nav-entry" || btn.id === "mp-nav-log") return "mixing";
     var trcHome = {
       "trc-nav-use": "ful",
@@ -437,6 +439,7 @@
     if (fn === "shipments" && window.SHIPPING_SYNC && typeof SHIPPING_SYNC.open === "function") { SHIPPING_SYNC.open(); return; }
     if (fn === "health" && window.DATAHEALTH && typeof DATAHEALTH.open === "function") { DATAHEALTH.open(); return; }
     if (fn === "batchrec" && window.BATCHREC && typeof BATCHREC.open === "function") { BATCHREC.open(); return; }
+    if (fn === "sqf" && window.SQFTASKS && typeof SQFTASKS.open === "function") { SQFTASKS.open(); return; }
     toast(Lmissing());
   }
 
@@ -1776,6 +1779,7 @@
       else if (entry.kind === "mod" && entry.id === "shipments" && window.SHIPPING_SYNC) { SHIPPING_SYNC.open(); landed = true; }
       else if (entry.kind === "mod" && entry.id === "health" && window.DATAHEALTH) { DATAHEALTH.open(); landed = true; }
       else if (entry.kind === "mod" && entry.id === "svc" && window.SERVICES) { SERVICES.open(); landed = true; }
+      else if (entry.kind === "mod" && entry.id === "sqf" && window.SQFTASKS) { SQFTASKS.open(); landed = true; }
     } finally {
       backRestoring = false;
     }
@@ -1909,6 +1913,7 @@
     wrapFn(window.SHIPPING_SYNC, "open", { kind: "mod", id: "shipments" });
     wrapFn(window.DATAHEALTH, "open", { kind: "mod", id: "health" });
     wrapFn(window.SERVICES, "open", { kind: "mod", id: "svc" });
+    wrapFn(window.SQFTASKS, "open", { kind: "mod", id: "sqf" });
   }
   function leaveBoardMode() {
     if (!document.body.classList.contains("boardmode")) return;
