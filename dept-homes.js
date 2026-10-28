@@ -14,7 +14,9 @@
    closes it. The header button still toggles it. The left sidebar stays
    collapsed off screen. A tool, station, or other screen that replaces
    #view gets one Back control (same place, same wording) to the previous
-   screen or the department home. Dashboard and department homes do not.
+   screen or the department home. It is a compact chip in the same
+   language as the department tabs: navy label, Lucide chevron.
+   Dashboard and department homes do not.
    No writes. No timers.
    ========================================================================== */
 (function () {
@@ -1830,8 +1832,23 @@
     }
     bar.setAttribute("data-label", phrase);
     var button = bar.querySelector("button");
-    button.textContent = "\u2190 " + phrase;
     button.setAttribute("aria-label", phrase);
+    var label = button.querySelector(".dept-back-label");
+    if (!label) {
+      button.textContent = "";
+      var ico = document.createElement("i");
+      ico.className = "dept-back-ico";
+      ico.setAttribute("data-lucide", "chevron-left");
+      ico.setAttribute("aria-hidden", "true");
+      label = document.createElement("span");
+      label.className = "dept-back-label";
+      button.appendChild(ico);
+      button.appendChild(label);
+    }
+    label.textContent = phrase;
+    if (button.querySelector("i.dept-back-ico")) {
+      try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
+    }
     if (view.firstChild !== bar) view.insertBefore(bar, view.firstChild);
   }
   function wrapFn(obj, name, next) {
@@ -2179,11 +2196,14 @@
       "#dept-home .dept-card strong{display:block;font-size:13px;color:var(--navy,#04223B);margin:0 0 1px}",
       "#dept-home .dept-card-copy>span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:11px;color:#3d4c5e;line-height:1.25;font-weight:500}",
       "body.boardmode #deptbar{display:none!important}",
-      "#dept-backbar{position:sticky;top:var(--dept-stack-h,0px);z-index:40;display:flex;align-items:center;margin:0 0 6px;padding:2px 8px;background:#fff;border:1px solid var(--line,#d7dde6);border-radius:8px}",
-      "#dept-backbar button{border:0;background:transparent;color:var(--blue,#006DB6);font:800 13px inherit;cursor:pointer;padding:4px 2px;min-height:28px}",
-      "#dept-backbar button:hover{text-decoration:underline}",
-      "#dept-backbar button:focus-visible{outline:3px solid var(--blue,#006DB6);outline-offset:2px}",
-      "body.boardmode #dept-backbar{position:fixed;top:8px;left:8px;z-index:90;width:auto;margin:0;background:rgba(255,255,255,.94)}",
+      "#dept-backbar{position:sticky;top:var(--dept-stack-h,0px);z-index:40;display:flex;align-items:center;box-sizing:border-box;margin:-4px -6px 8px;padding:8px 6px 0;background:#eef1f5;border:0;border-radius:0}",
+      "#dept-back{display:inline-flex;align-items:center;gap:6px;max-width:100%;min-height:36px;margin:0;padding:6px 12px 6px 8px;border:1px solid #c5d3e2;border-radius:8px;background:#fff;color:var(--navy,#04223B);box-shadow:0 1px 0 rgba(4,34,59,.12);font-family:inherit;font-weight:700;font-size:13px;line-height:1.1;letter-spacing:0;cursor:pointer}",
+      "#dept-back:hover{border-color:var(--blue,#006DB6);background:#f3f8fc;text-decoration:none}",
+      "#dept-back:focus-visible{outline:3px solid var(--blue,#006DB6);outline-offset:2px}",
+      "#dept-back .dept-back-ico,#dept-back svg.dept-back-ico{flex:0 0 auto;width:16px;height:16px;color:var(--blue,#006DB6);stroke-width:2.25}",
+      "#dept-back .dept-back-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
+      "body.boardmode #dept-backbar{position:fixed;top:8px;left:8px;z-index:90;display:inline-flex;width:auto;max-width:calc(100vw - 16px);margin:0;padding:0;background:transparent}",
+      "body.boardmode #dept-back{background:rgba(255,255,255,.96);box-shadow:0 2px 8px rgba(0,0,0,.28)}",
       "@media print{#dept-backbar{display:none!important}}",
       "@media(max-width:1100px){#view:has(>.df-lead){grid-template-columns:repeat(2,minmax(0,1fr))}#dept-home.dept-floor,#dept-home .dept-statrow{grid-template-columns:repeat(2,minmax(0,1fr))}#dept-home .dept-span2{grid-column:1 / -1}}",
       "@media(max-width:700px){#view:has(>.df-lead){grid-template-columns:1fr}#dept-home.dept-floor,#dept-home .dept-statrow{grid-template-columns:1fr}#dept-home .dept-span2{grid-column:1 / -1}}",
