@@ -2,14 +2,17 @@
    Smackin' OS - Department homes (dept-homes.js)
    Top department bar and a full-page home for each team. Tool cards sit
    directly under the title so a create or update screen is one tap away.
-   Live counts and lists from DB follow those cards. Each card opens a
-   screen that already exists (UI_go, Lot Trace, or a module open()).
-   Every sidebar group has a tab, equal width: Dashboard, Receiving,
-   Inventory, Purchasing, Demand, Manufacturing, Fulfillment,
-   Shipping, Quality, Team, Maintenance, Docs, and System. The menu stays
-   off-canvas. A click outside the open panel, or Escape, closes it. The
-   header button still toggles it. The left sidebar stays collapsed off
-   screen. No writes. No timers.
+   Live counts and lists from DB follow those cards. The Running home is
+   the exception: it leads with the live Now Running board, then the cards.
+   Each card opens a screen that already exists (UI_go, Lot Trace, or a
+   module open()).
+   Bar order, left to right: Dashboard, Running (demand tools, the live
+   floor, and in-process production orders), Purchasing, Receiving,
+   Inventory, Mixing, P-Mac, Fulfillment, Shipping, Quality, and Ops.
+   There is no Manufacturing tab. The menu stays off-canvas. A click
+   outside the open panel, or Escape, closes it. The header button still
+   toggles it. The left sidebar stays collapsed off screen. No writes.
+   No timers.
    ========================================================================== */
 (function () {
   "use strict";
@@ -30,20 +33,20 @@
     dash: "inv", adjust: "inv", count: "inv", alerts: "inv",
     move: "inv", locations: "inv", facility: "inv", finbags: "inv",
     seed: "inv", skus: "inv", analytics: "inv", labels: "inv",
-    seasoning: "mfg", recipes: "mfg",
+    seasoning: "mix", recipes: "mix",
     purchasing: "purch", expreceipts: "purch", reorder15: "purch", supplierpos: "purch",
-    prodorders: "mfg", reordertracker: "mfg", launch: "mfg", mixing: "mfg",
-    pmac: "mfg", pmacout: "mfg", floor: "mfg",
+    prodorders: "demand", reordertracker: "mix", launch: "mix", mixing: "mix",
+    pmac: "pmac", pmacout: "pmac", floor: "demand",
     compliance: "qa", quality: "qa", disposition: "qa",
-    maintenance: "maint",
+    maintenance: "ops",
     produce: "ful", retailprod: "ful", ecomprod: "ful", skulookup: "ful",
     prodlog: "ful", fulfilldaily: "ful", flavinv: "ful", stockbuild: "ful",
     orders: "ful", orderdocs: "ful",
     shiplog: "ship",
     demand: "demand", demandboard: "demand", demandsched: "demand", demandimport: "demand",
     ecomdemand: "demand", forecast: "demand",
-    people: "team", improve: "team", rd: "team", log: "team",
-    reference: "docs", board: "system", settings: "system"
+    people: "ops", improve: "ops", rd: "ops", log: "ops",
+    reference: "ops", board: "ops", settings: "ops"
   };
 
   function tx(v) {
@@ -176,24 +179,16 @@
       ]
     },
     {
-      id: "recv",
-      label: { en: "Receiving", es: "Recibo", pt: "Receber" },
-      title: { en: "Receiving", es: "Recibo", pt: "Recebimento" },
-      intro: { en: "Check product in, log the paperwork, take returns, and work quarantine.", es: "Reciba producto, registre el papeleo, tome devoluciones y trabaje cuarentena.", pt: "Receba produto, registre os documentos, lance devolucoes e trabalhe a quarentena." },
+      id: "demand",
+      runningFirst: true,
+      label: { en: "Running", es: "En marcha", pt: "Rodando" },
+      title: { en: "Demand / Running / In Process", es: "Demanda / En marcha / En proceso", pt: "Demanda / Rodando / Em processo" },
+      intro: { en: "What the floor is running right now, production orders still in process, and the demand tools.", es: "Lo que corre en el piso ahora, ordenes de produccion en proceso y las herramientas de demanda.", pt: "O que o piso esta rodando agora, ordens de producao em processo e as ferramentas de demanda." },
       sections: [
-        { h: { en: "Inbound", es: "Entrada", pt: "Entrada" }, tools: ["receive", "recvlog", "returns", "quarantine"] }
-      ]
-    },
-    {
-      id: "inv",
-      label: { en: "Inventory", es: "Inventario", pt: "Estoque" },
-      title: { en: "Inventory", es: "Inventario", pt: "Estoque" },
-      intro: { en: "Counts, adjustments, moves, locations, seed, SKUs, and reports.", es: "Conteos, ajustes, movimientos, ubicaciones, semilla, SKUs y reportes.", pt: "Contagens, ajustes, movimentos, locais, semente, SKUs e relatorios." },
-      sections: [
-        { h: { en: "Counts", es: "Conteos", pt: "Contagens" }, tools: ["dash", "adjust", "count", "alerts", "finbags", "move"] },
-        { h: { en: "Locations", es: "Ubicaciones", pt: "Locais" }, tools: ["locations", "facility"] },
-        { h: { en: "Catalog", es: "Catalogo", pt: "Catalogo" }, tools: ["seed", "skus", "printlabels"] },
-        { h: { en: "Reports", es: "Reportes", pt: "Relatorios" }, tools: ["analytics"] }
+        { h: { en: "Running", es: "En marcha", pt: "Rodando" }, tools: ["floor"] },
+        { h: { en: "In process", es: "En proceso", pt: "Em processo" }, tools: ["prodorders"] },
+        { h: { en: "Demand", es: "Demanda", pt: "Demanda" }, tools: ["demand", "demandboard", "demandsched", "forecast"] },
+        { h: { en: "Imports", es: "Importar", pt: "Importar" }, tools: ["demandimport", "ecomdemand"] }
       ]
     },
     {
@@ -207,34 +202,55 @@
       ]
     },
     {
-      id: "demand",
-      label: { en: "Demand", es: "Demanda", pt: "Demanda" },
-      title: { en: "Demand", es: "Demanda", pt: "Demanda" },
-      intro: { en: "What to build, the order board, and the forecast against the target.", es: "Que producir, el tablero de pedidos y el pronostico contra la meta.", pt: "O que produzir, o painel de pedidos e a previsao contra a meta." },
+      id: "recv",
+      label: { en: "Receiving", es: "Recibo", pt: "Receber" },
+      title: { en: "Receiving", es: "Recibo", pt: "Recebimento" },
+      intro: { en: "Check product in, log the paperwork, take returns, work quarantine, and receive a lot.", es: "Reciba producto, registre el papeleo, tome devoluciones, trabaje cuarentena y reciba un lote.", pt: "Receba produto, registre os documentos, lance devolucoes, trabalhe a quarentena e receba um lote." },
       sections: [
-        { h: { en: "Plan", es: "Plan", pt: "Plano" }, tools: ["demand", "demandboard", "demandsched", "forecast"] },
-        { h: { en: "Imports", es: "Importar", pt: "Importar" }, tools: ["demandimport", "ecomdemand"] }
+        { h: { en: "Inbound", es: "Entrada", pt: "Entrada" }, tools: ["receive", "trRecv", "recvlog", "returns", "quarantine"] }
       ]
     },
     {
-      id: "mfg",
-      label: { en: "Mfg", es: "Mfg", pt: "Mfg" },
-      title: { en: "Manufacturing", es: "Manufactura", pt: "Manufatura" },
-      intro: { en: "Mix, P-Mac, production orders, the live machines, lot stations, seasoning, and recipes. Demand has its own tab.", es: "Mezcla, P-Mac, ordenes de produccion, las maquinas en vivo, estaciones de lote, sazon y recetas. Demanda tiene su propia pestana.", pt: "Mistura, P-Mac, ordens de producao, as maquinas ao vivo, estacoes de lote, tempero e receitas. Demanda tem sua propria aba." },
+      id: "inv",
+      label: { en: "Inventory", es: "Inventario", pt: "Estoque" },
+      title: { en: "Inventory", es: "Inventario", pt: "Estoque" },
+      intro: { en: "Counts, adjustments, moves, locations, seed, SKUs, labels, and reports.", es: "Conteos, ajustes, movimientos, ubicaciones, semilla, SKUs, etiquetas y reportes.", pt: "Contagens, ajustes, movimentos, locais, semente, SKUs, etiquetas e relatorios." },
       sections: [
-        { h: { en: "Lot trace stations", es: "Estaciones de lote", pt: "Estacoes de lote" }, tools: ["trRecv", "trQa", "trMix", "trPmac", "trMove"] },
-        { h: { en: "Floor", es: "Piso", pt: "Piso" }, tools: ["mixing", "pmac", "pmacout", "floor"] },
+        { h: { en: "Counts", es: "Conteos", pt: "Contagens" }, tools: ["dash", "adjust", "count", "alerts", "finbags", "move"] },
+        { h: { en: "Locations", es: "Ubicaciones", pt: "Locais" }, tools: ["locations", "facility", "trMove"] },
+        { h: { en: "Catalog", es: "Catalogo", pt: "Catalogo" }, tools: ["seed", "skus", "printlabels"] },
+        { h: { en: "Reports", es: "Reportes", pt: "Relatorios" }, tools: ["analytics"] }
+      ]
+    },
+    {
+      id: "mix",
+      label: { en: "Mixing", es: "Mezcla", pt: "Mistura" },
+      title: { en: "Mixing", es: "Mezcla", pt: "Mistura" },
+      intro: { en: "What mixing needs, the lot station, seasoning lots, and batch recipes.", es: "Lo que mezcla necesita, la estacion de lote, lotes de sazon y recetas.", pt: "O que a mistura precisa, a estacao de lote, lotes de tempero e receitas." },
+      sections: [
+        { h: { en: "Mixing", es: "Mezcla", pt: "Mistura" }, tools: ["mixing", "trMix"] },
         { h: { en: "Seasoning and recipes", es: "Sazon y recetas", pt: "Tempero e receitas" }, tools: ["seasoning", "recipes"] },
-        { h: { en: "Planning and history", es: "Plan y historial", pt: "Plano e historico" }, tools: ["prodorders", "reordertracker", "launch", "hist", "upload"] }
+        { h: { en: "Plan and history", es: "Plan y historial", pt: "Plano e historico" }, tools: ["reordertracker", "launch", "hist", "upload"] }
+      ]
+    },
+    {
+      id: "pmac",
+      label: { en: "P-Mac", es: "P-Mac", pt: "P-Mac" },
+      title: { en: "P-Mac", es: "P-Mac", pt: "P-Mac" },
+      intro: { en: "What P-Mac needs, bag output off the line, and the lot station.", es: "Lo que P-Mac necesita, bolsas al salir de la linea y la estacion de lote.", pt: "O que o P-Mac precisa, sacos ao sair da linha e a estacao de lote." },
+      sections: [
+        { h: { en: "P-Mac", es: "P-Mac", pt: "P-Mac" }, tools: ["pmac", "pmacout", "trPmac"] },
+        { h: { en: "History", es: "Historial", pt: "Historico" }, tools: ["hist", "upload"] }
       ]
     },
     {
       id: "ful",
       label: { en: "Fulfill", es: "Fulfill", pt: "Fulfill" },
       title: { en: "Fulfillment", es: "Fulfillment", pt: "Fulfillment" },
-      intro: { en: "Build retail and e-commerce orders and pull lots. Shipping has its own tab.", es: "Arme ordenes retail y de e-commerce y tome lotes. Envios tiene su propia pestana.", pt: "Monte pedidos de varejo e e-commerce e separe lotes. Envios tem sua propria aba." },
+      intro: { en: "Build retail and e-commerce, pull a lot for e-com, and build an outbound pallet. The shipping log has its own tab.", es: "Arme retail y e-commerce, tome un lote para e-com y arme una tarima de salida. El registro de envios tiene su propia pestana.", pt: "Monte varejo e e-commerce, separe um lote para e-com e monte um palete de saida. O registro de envios tem sua propria aba." },
       sections: [
-        { h: { en: "Line", es: "Linea", pt: "Linha" }, tools: ["retailprod", "ecomprod", "trUse", "produce", "prodlog", "fulfilldaily"] },
+        { h: { en: "Retail and e-com", es: "Retail y e-com", pt: "Varejo e e-com" }, tools: ["retailprod", "ecomprod", "produce", "prodlog", "fulfilldaily"] },
+        { h: { en: "Lot trace", es: "Rastreo de lote", pt: "Rastreio de lote" }, tools: ["trUse", "trShip"] },
         { h: { en: "Lookup and stock", es: "Busqueda y stock", pt: "Busca e estoque" }, tools: ["skulookup", "flavinv", "stockbuild"] },
         { h: { en: "Orders", es: "Ordenes", pt: "Pedidos" }, tools: ["orders", "orderdocs"] }
       ]
@@ -243,55 +259,31 @@
       id: "ship",
       label: { en: "Shipping", es: "Envios", pt: "Envios" },
       title: { en: "Shipping", es: "Envios", pt: "Envios" },
-      intro: { en: "Log a shipment, read what ShipStation already synced, and build an outbound pallet.", es: "Registre un envio, lea lo que ShipStation ya sincronizo y arme una tarima de salida.", pt: "Registre um envio, leia o que o ShipStation ja sincronizou e monte um palete de saida." },
+      intro: { en: "Log a one-off shipment and read what ShipStation already synced.", es: "Registre un envio suelto y lea lo que ShipStation ya sincronizo.", pt: "Registre um envio avulso e leia o que o ShipStation ja sincronizou." },
       sections: [
-        { h: { en: "Outbound", es: "Salida", pt: "Saida" }, tools: ["shiplog", "shipments", "trShip"] }
+        { h: { en: "Outbound", es: "Salida", pt: "Saida" }, tools: ["shiplog", "shipments"] }
       ]
     },
     {
       id: "qa",
       label: { en: "Quality", es: "Calidad", pt: "Qualidade" },
       title: { en: "Quality", es: "Calidad", pt: "Qualidade" },
-      intro: { en: "Lot trace, labels, and the quality records this team already keeps.", es: "Rastreo de lote, etiquetas y los registros de calidad que este equipo ya usa.", pt: "Rastreio de lote, etiquetas e os registros de qualidade que esta equipe ja usa." },
+      intro: { en: "Lot trace, holds, labels, and the quality records this team already keeps.", es: "Rastreo de lote, retenciones, etiquetas y los registros de calidad que este equipo ya usa.", pt: "Rastreio de lote, retencoes, etiquetas e os registros de qualidade que esta equipe ja usa." },
       sections: [
-        { h: { en: "Lot trace", es: "Rastreo de lote", pt: "Rastreio de lote" }, tools: ["trace", "trLabels"] },
+        { h: { en: "Lot trace", es: "Rastreo de lote", pt: "Rastreio de lote" }, tools: ["trace", "trQa", "trLabels"] },
         { h: { en: "Quality records", es: "Registros de calidad", pt: "Registros de qualidade" }, tools: ["quality", "compliance", "shortdated"] }
       ]
     },
     {
-      id: "team",
-      label: { en: "Team", es: "Equipo", pt: "Equipe" },
-      title: { en: "Team & Ops", es: "Equipo y Ops", pt: "Equipe e Ops" },
-      intro: { en: "People, continuous improvement, R&D, and the activity log.", es: "Personal, mejora continua, I+D y el registro de actividad.", pt: "Pessoas, melhoria continua, P&D e o registro de atividade." },
+      id: "ops",
+      label: { en: "Ops", es: "Ops", pt: "Ops" },
+      title: { en: "Ops", es: "Ops", pt: "Ops" },
+      intro: { en: "People, maintenance, SOPs, TV boards, settings, and how fresh each data source is.", es: "Personal, mantenimiento, SOPs, tableros de TV, ajustes y que tan reciente esta cada fuente.", pt: "Pessoas, manutencao, SOPs, paineis de TV, ajustes e quao recente esta cada fonte." },
       sections: [
-        { h: { en: "People and ideas", es: "Personal e ideas", pt: "Pessoas e ideias" }, tools: ["people", "improve", "rd", "acct"] }
-      ]
-    },
-    {
-      id: "maint",
-      label: { en: "Maint", es: "Mant.", pt: "Manut." },
-      title: { en: "Maintenance", es: "Mantenimiento", pt: "Manutencao" },
-      intro: { en: "Maintenance requests and the services log.", es: "Solicitudes de mantenimiento y el registro de servicios.", pt: "Pedidos de manutencao e o registro de servicos." },
-      sections: [
-        { h: { en: "Shop", es: "Taller", pt: "Oficina" }, tools: ["maintenance", "services"] }
-      ]
-    },
-    {
-      id: "docs",
-      label: { en: "Docs", es: "Docs", pt: "Docs" },
-      title: { en: "Docs", es: "Docs", pt: "Docs" },
-      intro: { en: "SOPs, cheat sheets, and policies.", es: "SOPs, guias rapidas y politicas.", pt: "SOPs, guias rapidos e politicas." },
-      sections: [
-        { h: { en: "Reference", es: "Referencia", pt: "Referencia" }, tools: ["reference"] }
-      ]
-    },
-    {
-      id: "system",
-      label: { en: "System", es: "Sistema", pt: "Sistema" },
-      title: { en: "System", es: "Sistema", pt: "Sistema" },
-      intro: { en: "TV boards, settings, and how fresh each data source is.", es: "Tableros de TV, ajustes y que tan reciente esta cada fuente.", pt: "Paineis de TV, ajustes e quao recente esta cada fonte." },
-      sections: [
-        { h: { en: "Setup", es: "Ajustes", pt: "Ajustes" }, tools: ["board", "settings", "health"] }
+        { h: { en: "Team", es: "Equipo", pt: "Equipe" }, tools: ["people", "improve", "rd", "acct"] },
+        { h: { en: "Maintenance", es: "Mantenimiento", pt: "Manutencao" }, tools: ["maintenance", "services"] },
+        { h: { en: "Docs", es: "Docs", pt: "Docs" }, tools: ["reference"] },
+        { h: { en: "System", es: "Sistema", pt: "Sistema" }, tools: ["board", "settings", "health"] }
       ]
     }
   ];
@@ -348,15 +340,23 @@
 
   function deptOfNav(btn) {
     if (!btn) return "";
-    if (btn.id === "svc-nav") return "maint";
-    if (btn.id === "dh-nav") return "system";
+    if (btn.id === "svc-nav") return "ops";
+    if (btn.id === "dh-nav") return "ops";
     if (btn.id === "sf-nav") return "purch";
-    if (btn.id === "shs-nav" || btn.id === "trc-nav-ship") return "ship";
-    if (btn.id === "mfg-hist-nav" || btn.id === "mfg-up-nav") return "mfg";
+    if (btn.id === "shs-nav") return "ship";
+    if (btn.id === "mfg-hist-nav" || btn.id === "mfg-up-nav") return "mix";
     if (btn.getAttribute("data-trc") === "1") {
+      var tid = btn.id || "";
+      if (tid === "trc-nav-use" || tid === "trc-nav-ship") return "ful";
+      if (tid === "trc-nav-mix") return "mix";
+      if (tid === "trc-nav-pmac") return "pmac";
+      if (tid === "trc-nav-recv") return "recv";
+      if (tid === "trc-nav-move") return "inv";
+      if (tid === "trc-nav-qa" || tid === "trc-nav-trace" || tid === "trc-nav-labels") return "qa";
       var h = btn.getAttribute("data-trc-home") || "";
       if (h === "ful") return "ful";
-      if (h === "mfg") return "mfg";
+      if (h === "mix") return "mix";
+      if (h === "pmac") return "pmac";
       if (h === "qa") return "qa";
       return "";
     }
@@ -1119,7 +1119,7 @@
       e.cases += Number(r.cases) || 0;
     });
     var deptKeys = Object.keys(byDept);
-    return statRow([
+    return inProcessPanel() + statRow([
       stat(fmt(poN), tx({ en: "Open demand POs", es: "OC de demanda abiertas", pt: "OCs de demanda abertas" })),
       stat(fmt(cases), tx({ en: "Open cases", es: "Cajas abiertas", pt: "Caixas abertas" })),
       stat(fmt(bags), tx({ en: "Open bags", es: "Bolsas abiertas", pt: "Sacos abertos" })),
@@ -1159,68 +1159,113 @@
         4, "demand");
   }
 
-  function liveMfg() {
+  function machineTable(list) {
+    if (!list.length) return empty(tx({ en: "No machines on the live board.", es: "No hay maquinas en el tablero.", pt: "Nao ha maquinas no painel." }));
+    return dfTable(
+      [{ h: "Machine" }, { h: "Flavor" }, { h: "Status" }, { h: "Done", right: true }],
+      list.map(function (m) {
+        var st = m.status || "idle";
+        var cls = st === "running" ? "df-ship" : (st === "changeover" ? "df-low" : "df-done");
+        var goal = Number(m.goal) || 0;
+        return [
+          '<div class="df-name">' + esc(m.machine || "-") + '</div><div class="df-meta">' + esc(m.area || "") + "</div>",
+          esc(m.flavor || "-") + (m.size ? " " + esc(m.size) : ""),
+          pill(st, cls),
+          fmt(m.done || 0) + (goal ? " / " + fmt(goal) : "")
+        ];
+      })
+    );
+  }
+
+  // Leads the Running home. Same line_status rows the Now Running floor screen uses.
+  function runningLead() {
+    if (!dbReady()) return "";
     var mach = machines();
     var running = mach.filter(function (m) { return (m.status || "idle") === "running"; });
     var change = mach.filter(function (m) { return m.status === "changeover"; });
-    var orders = openProdOrders();
-    var allen = allenReorder();
-    var logged = outputToday().filter(function (r) { return r.dept === "mixing" || r.dept === "pmac"; });
-    var used = arr(function () { return DB.consumption ? DB.consumption() : []; }).filter(function (r) {
-      return slcDay(r.created_at) === slcToday();
-    });
+    var idle = mach.length - running.length - change.length;
     return statRow([
       stat(running.length + " / " + mach.length, tx({ en: "Machines running", es: "Maquinas en marcha", pt: "Maquinas rodando" }), running.length ? "" : "warn"),
       stat(fmt(change.length), tx({ en: "Changeovers", es: "Cambios", pt: "Trocas" }), change.length ? "warn" : ""),
-      stat(fmt(orders.length), tx({ en: "Open prod orders", es: "Ordenes de produccion abiertas", pt: "Ordens de producao abertas" })),
-      stat(fmt(allen.length), tx({ en: "Allen reorder hits", es: "Reorden Allen", pt: "Reposicao Allen" }), allen.length ? "bad" : "")
+      stat(fmt(Math.max(0, idle)), tx({ en: "Idle", es: "En espera", pt: "Paradas" })),
+      stat(fmt(mach.length), tx({ en: "On the live board", es: "En el tablero", pt: "No painel" }))
     ]) +
-      panel(tx({ en: "Live machines", es: "Maquinas en vivo", pt: "Maquinas ao vivo" }),
-        mach.length ? dfTable(
-          [{ h: "Machine" }, { h: "Flavor" }, { h: "Status" }, { h: "Done", right: true }],
-          mach.map(function (m) {
-            var st = m.status || "idle";
-            var cls = st === "running" ? "df-ship" : (st === "changeover" ? "df-low" : "df-done");
-            var goal = Number(m.goal) || 0;
-            return [
-              '<div class="df-name">' + esc(m.machine || "—") + '</div><div class="df-meta">' + esc(m.area || "") + "</div>",
-              esc(m.flavor || "—") + (m.size ? " " + esc(m.size) : ""),
-              pill(st, cls),
-              fmt(m.done || 0) + (goal ? " / " + fmt(goal) : "")
-            ];
-          })
-        ) : empty(tx({ en: "No machines on the live board.", es: "No hay maquinas en el tablero.", pt: "Nao ha maquinas no painel." })),
-        2, "floor") +
-      panel(tx({ en: "Open production orders", es: "Ordenes de produccion abiertas", pt: "Ordens de producao abertas" }),
-        orders.length ? dfTable(
-          [{ h: "Flavor" }, { h: "PO" }, { h: "Stage" }, { h: "Due" }],
-          orders.map(function (o) {
-            var bins = o.bins || o.bins4 || o.bins15;
-            return [
-              '<div class="df-name">' + esc(o.flavor || "—") + "</div>" + (o.size ? '<div class="df-meta">' + esc(o.size) + "</div>" : ""),
-              esc(o.po || "—") + (bins ? '<div class="df-meta">' + esc(String(bins)) + " bins</div>" : ""),
-              pill(o._stage, o._stage === "Open" ? "df-open" : "df-ship"),
-              esc(o.deadline || o.date || "—")
-            ];
-          })
-        ) : empty(tx({ en: "No open production orders.", es: "No hay ordenes de produccion abiertas.", pt: "Nao ha ordens de producao abertas." })),
-        2, "prodorders") +
-      panel(tx({ en: "Logged today", es: "Registrado hoy", pt: "Registrado hoje" }) + " · " + esc(screenDay()),
-        logged.length ? dfTable(
-          [{ h: "Dept" }, { h: "Shift" }, { h: "Flavor" }, { h: "Bags", right: true }, { h: "Cases", right: true }],
-          logged.map(function (r) {
-            return [esc(r.dept || "—"), r.shift ? "S" + esc(r.shift) : "—", esc(r.flavor || "—"), fmt(r.bags), fmt(r.cases)];
-          })
-        ) : empty(tx({ en: "No mixing or P-Mac output logged for this date.", es: "Nada de mezcla o P-Mac en esta fecha.", pt: "Nada de mistura ou P-Mac nesta data." })),
-        2, "mixing") +
-      panel(tx({ en: "Scanned into the room today", es: "Escaneado hoy", pt: "Lido hoje" }),
-        used.length ? sub("Consumption scans saved today (SLC).") + dfTable(
-          [{ h: "Dept" }, { h: "Item" }, { h: "Qty", right: true }],
-          used.map(function (r) {
-            return [esc(r.department || "—"), esc(r.item_name || r.item_code || "—"), fmt(r.qty)];
-          })
-        ) : empty(tx({ en: "No consumption scans saved today.", es: "No hay escaneos de uso hoy.", pt: "Nao ha leituras de uso hoje." })),
-        2, "pmac") +
+      panel(tx({ en: "Now Running", es: "En marcha", pt: "Em andamento" }),
+        sub(tx({
+          en: "Live machines from the Now Running board. Open it to update a machine.",
+          es: "Maquinas en vivo del tablero En marcha. Abralo para actualizar una maquina.",
+          pt: "Maquinas ao vivo do painel Em andamento. Abra para atualizar uma maquina."
+        })) + machineTable(mach),
+        4, "floor");
+  }
+
+  function inProcessPanel() {
+    var orders = openProdOrders();
+    return panel(tx({ en: "In process", es: "En proceso", pt: "Em processo" }),
+      orders.length ? sub(tx({
+        en: "Production orders that are not Done.",
+        es: "Ordenes de produccion que no estan hechas.",
+        pt: "Ordens de producao que nao estao feitas."
+      })) + dfTable(
+        [{ h: "Flavor" }, { h: "PO" }, { h: "Stage" }, { h: "Due" }],
+        orders.map(function (o) {
+          var bins = o.bins || o.bins4 || o.bins15;
+          return [
+            '<div class="df-name">' + esc(o.flavor || "-") + "</div>" + (o.size ? '<div class="df-meta">' + esc(o.size) + "</div>" : ""),
+            esc(o.po || "-") + (bins ? '<div class="df-meta">' + esc(String(bins)) + " bins</div>" : ""),
+            pill(o._stage, o._stage === "Open" ? "df-open" : "df-ship"),
+            esc(o.deadline || o.date || "-")
+          ];
+        })
+      ) : empty(tx({ en: "No open production orders.", es: "No hay ordenes de produccion abiertas.", pt: "Nao ha ordens de producao abertas." })),
+      4, "prodorders");
+  }
+
+  function scansToday(names) {
+    var want = {};
+    names.forEach(function (n) { want[String(n).toLowerCase()] = 1; });
+    return arr(function () { return DB.consumption ? DB.consumption() : []; }).filter(function (r) {
+      return slcDay(r.created_at) === slcToday() && !!want[String(r.department || "").toLowerCase()];
+    });
+  }
+
+  function loggedPanel(rows, toolId, none) {
+    return panel(tx({ en: "Logged today", es: "Registrado hoy", pt: "Registrado hoje" }) + " · " + esc(screenDay()),
+      rows.length ? dfTable(
+        [{ h: "Shift" }, { h: "Flavor" }, { h: "Bags", right: true }, { h: "Cases", right: true }],
+        rows.map(function (r) {
+          return [r.shift ? "S" + esc(r.shift) : "-", esc(r.flavor || "-"), fmt(r.bags), fmt(r.cases)];
+        })
+      ) : empty(tx(none)),
+      2, toolId);
+  }
+
+  function scanPanel(used, toolId) {
+    return panel(tx({ en: "Scanned into the room today", es: "Escaneado hoy", pt: "Lido hoje" }),
+      used.length ? sub(tx({ en: "Consumption scans saved today (SLC).", es: "Escaneos de uso guardados hoy (SLC).", pt: "Leituras de uso salvas hoje (SLC)." })) + dfTable(
+        [{ h: "Item" }, { h: "Qty", right: true }],
+        used.map(function (r) {
+          return [esc(r.item_name || r.item_code || "-"), fmt(r.qty)];
+        })
+      ) : empty(tx({ en: "No consumption scans saved today.", es: "No hay escaneos de uso hoy.", pt: "Nao ha leituras de uso hoje." })),
+      2, toolId);
+  }
+
+  function liveMix() {
+    var seas = seasLots();
+    var logged = outputToday().filter(function (r) { return r.dept === "mixing"; });
+    var used = scansToday(["Mixing", "mixing"]);
+    var allen = allenReorder();
+    var bags = logged.reduce(function (s, r) { return s + (Number(r.bags) || 0); }, 0);
+    var flagged = (seas.exp || 0) + (seas.quar || 0);
+    return statRow([
+      stat(fmt(seas.lots.length), tx({ en: "Seasoning lots", es: "Lotes de sazon", pt: "Lotes de tempero" })),
+      stat(fmt(flagged), tx({ en: "Expired or quarantine", es: "Vencido o cuarentena", pt: "Vencido ou quarentena" }), flagged ? "bad" : ""),
+      stat(fmt(bags), tx({ en: "Mixing bags logged today", es: "Bolsas de mezcla hoy", pt: "Sacos de mistura hoje" })),
+      stat(fmt(allen.length), tx({ en: "Allen reorder hits", es: "Reorden Allen", pt: "Reposicao Allen" }), allen.length ? "bad" : "")
+    ]) + seasoningLive() +
+      loggedPanel(logged, "mixing", { en: "No mixing output logged for this date.", es: "Nada de mezcla en esta fecha.", pt: "Nada de mistura nesta data." }) +
+      scanPanel(used, "mixing") +
       (allen.length ? panel(tx({ en: "Allen reorder", es: "Reorden Allen", pt: "Reposicao Allen" }),
         sub("Finished-goods pallets on hand are at or under Allen's trigger. Bins to order already subtract bins mixed.") +
         dfTable(
@@ -1228,7 +1273,22 @@
           allen.map(function (r) {
             return [esc(r.name || r.code || "—"), fmt(r.pallets4), fmt(r.pallets15), "<b>" + fmt(r.binsToOrder) + "</b>"];
           })
-        ), 4, "reordertracker") : "") + seasoningLive();
+        ), 4, "reordertracker") : "");
+  }
+
+  function livePmac() {
+    var logged = outputToday().filter(function (r) { return r.dept === "pmac"; });
+    var used = scansToday(["P-Mac", "pmac"]);
+    var bags = logged.reduce(function (s, r) { return s + (Number(r.bags) || 0); }, 0);
+    var cases = logged.reduce(function (s, r) { return s + (Number(r.cases) || 0); }, 0);
+    return statRow([
+      stat(fmt(bags), tx({ en: "P-Mac bags logged today", es: "Bolsas P-Mac hoy", pt: "Sacos P-Mac hoje" })),
+      stat(fmt(cases), tx({ en: "P-Mac cases logged today", es: "Cajas P-Mac hoy", pt: "Caixas P-Mac hoje" })),
+      stat(fmt(used.length), tx({ en: "Scans today", es: "Escaneos hoy", pt: "Leituras hoje" })),
+      stat(fmt(logged.length), tx({ en: "Output rows today", es: "Filas de hoy", pt: "Linhas de hoje" }))
+    ]) +
+      loggedPanel(logged, "pmacout", { en: "No P-Mac output logged for this date.", es: "Nada de P-Mac en esta fecha.", pt: "Nada de P-Mac nesta data." }) +
+      scanPanel(used, "pmac");
   }
 
   function liveFul() {
@@ -1549,14 +1609,12 @@
     if (id === "inv") return liveInv();
     if (id === "purch") return livePurch();
     if (id === "demand") return liveDemand();
-    if (id === "mfg") return liveMfg();
+    if (id === "mix") return liveMix();
+    if (id === "pmac") return livePmac();
     if (id === "ful") return liveFul();
     if (id === "ship") return liveShip();
     if (id === "qa") return liveQa();
-    if (id === "team") return liveTeam();
-    if (id === "maint") return liveMaint();
-    if (id === "docs") return liveDocs();
-    if (id === "system") return liveSystem();
+    if (id === "ops") return liveTeam() + liveMaint() + liveDocs() + liveSystem();
     return "";
   }
 
@@ -1581,10 +1639,14 @@
       es: "Este navegador no esta en la base compartida. Lo de abajo no es dato en vivo de la planta.",
       pt: "Este navegador nao esta na base compartilhada. O que aparece abaixo nao e dado ao vivo da planta."
     })) + "</div>";
+    var ahead = "";
+    if (dept.runningFirst) {
+      try { ahead = runningLead(); } catch (err2) { ahead = ""; }
+    }
     return '<div id="dept-home" class="dept-floor" data-dept="' + esc(dept.id) + '">' +
       '<div class="card dept-lead"><h2>' + esc(tx(dept.title)) + '</h2>' +
       '<p class="hint">' + esc(tx(dept.intro)) + "</p></div>" +
-      toolsHtml(dept) + banner + live + "</div>";
+      ahead + toolsHtml(dept) + banner + live + "</div>";
   }
 
   function paintHome(force) {
