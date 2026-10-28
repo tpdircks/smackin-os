@@ -1,7 +1,9 @@
 /* ============================================================================
    Smackin' OS - Department homes (dept-homes.js)
-   Top department bar and a full-page home for each team. Each card opens a
-   screen that already exists (UI_go, Lot Trace, or a module open()).
+   Top department bar and a full-page home for each team. The home opens on
+   live counts and lists from DB (the same records the screens already use).
+   Tool cards sit under that floor and open a screen that already exists
+   (UI_go, Lot Trace, or a module open()).
    Every sidebar group has a tab, equal width: Dashboard, Receiving,
    Inventory, Items, Purchasing, Demand, Manufacturing, Fulfillment,
    Shipping, Quality, Team, Maintenance, Docs, and System. The menu stays
@@ -419,27 +421,1182 @@
     if (!tool) return "";
     return '<button type="button" class="dept-card" data-dept-tool="' + esc(id) + '">' +
       '<i class="dept-ico" data-lucide="' + esc(tool.icon) + '"></i>' +
-      '<strong>' + esc(tx(tool.title)) + '</strong>' +
-      '<span>' + esc(tx(tool.blurb)) + '</span></button>';
+      '<span class="dept-card-copy"><strong>' + esc(tx(tool.title)) + '</strong>' +
+      '<span>' + esc(tx(tool.blurb)) + '</span></span></button>';
+  }
+
+  // ---- Live floor. Read-only. Same records the department screens already use.
+  var ROW_CAP = 8;
+  var traceState = "idle";
+
+  function cloud() {
+    try { return !!(window.DB && DB.mode === "cloud"); } catch (e) { return false; }
+  }
+  function dbReady() {
+    return !!(window.DB && typeof DB.items === "function");
+  }
+  function arr(fn) {
+    try { var v = fn(); return Array.isArray(v) ? v : []; } catch (e) { return []; }
+  }
+  function num(v) {
+    var n = parseFloat(String(v == null ? "" : v).replace(/,/g, ""));
+    return isNaN(n) ? 0 : n;
+  }
+  function fmt(n) {
+    var x = Number(n);
+    if (isNaN(x)) x = 0;
+    return (Math.round(x * 100) / 100).toLocaleString();
+  }
+  function slcDay(ts) {
+    if (!ts) return "";
+    var d = new Date(ts);
+    if (isNaN(d.getTime())) return "";
+    try {
+      return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Denver", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+    } catch (e) { return d.toISOString().slice(0, 10); }
+  }
+  function slcToday() { return slcDay(new Date().toISOString()); }
+  // Date-only fields (production log, fulfillment daily, retail pallets) are
+  // stored with the UTC day the rest of the app writes on those screens.
+  function screenDay() { return new Date().toISOString().slice(0, 10); }
+  function shiftDay(iso, n) {
+    var p = String(iso || "").split("-");
+    if (p.length < 3) return "";
+    var d = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2]));
+    d.setUTCDate(d.getUTCDate() + n);
+    return d.toISOString().slice(0, 10);
+  }
+  function dueISO(d) {
+    if (!d) return "";
+    d = String(d).trim();
+    var m = d.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return m[1] + "-" + m[2] + "-" + m[3];
+    m = d.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (m) return m[3] + "-" + ("0" + m[1]).slice(-2) + "-" + ("0" + m[2]).slice(-2);
+    return "";
+  }
+  function poKey(s) {
+    return String(s || "").toUpperCase().replace(/\s+/g, "").replace(/-\d{2}$/, "");
+  }
+  function linesOf(po) {
+    try {
+      var l = typeof po.lines === "string" ? JSON.parse(po.lines || "[]") : (po.lines || []);
+      return Array.isArray(l) ? l : [];
+    } catch (e) { return []; }
+  }
+  function pill(text, cls) {
+    return '<span class="df-pill ' + cls + '">' + esc(text) + "</span>";
+  }
+  function jump(toolId) {
+    if (!toolId) return "";
+    return '<button type="button" class="dept-jump" data-dept-tool="' + esc(toolId) + '">' +
+      esc(tx({ en: "Open", es: "Abrir", pt: "Abrir" })) + "</button>";
+  }
+  function stat(n, label, tone) {
+    return '<div class="card dept-stat' + (tone ? " dept-" + tone : "") + '"><div class="dept-n">' + esc(n) +
+      '</div><div class="dept-l">' + esc(label) + "</div></div>";
+  }
+  function statRow(cards) {
+    return '<div class="dept-statrow">' + cards.join("") + "</div>";
+  }
+  function panel(title, body, span, toolId) {
+    return '<div class="card dept-span' + (span || 2) + '"><div class="df-head"><h2 class="sub2">' + title + "</h2>" +
+      jump(toolId) + "</div>" + body + "</div>";
+  }
+  function sub(text) {
+    return '<p class="df-sub">' + esc(text) + "</p>";
+  }
+  function empty(text) {
+    return '<p class="df-empty">' + esc(text) + "</p>";
+  }
+  function dfTable(cols, rows) {
+    if (!rows.length) return "";
+    var head = "<tr>" + cols.map(function (c) {
+      return "<th" + (c.right ? ' class="right"' : "") + ">" + esc(c.h) + "</th>";
+    }).join("") + "</tr>";
+    var body = rows.map(function (r, i) {
+      var hide = i >= ROW_CAP ? ' data-dept-extra="1" hidden' : "";
+      return "<tr" + hide + ">" + r.map(function (cell, j) {
+        return "<td" + (cols[j] && cols[j].right ? ' class="right"' : "") + ">" + cell + "</td>";
+      }).join("") + "</tr>";
+    }).join("");
+    var more = rows.length > ROW_CAP
+      ? '<button type="button" class="df-more" onclick="DEPT.more(this)">' +
+        esc(tx({ en: "Show all " + rows.length, es: "Ver los " + rows.length, pt: "Ver todos os " + rows.length })) + "</button>"
+      : "";
+    return '<div class="df-scroll"><table class="df"><thead>' + head + "</thead><tbody>" + body + "</tbody></table></div>" + more;
+  }
+  function notLoaded() {
+    return panel(tx({ en: "Live data", es: "Datos en vivo", pt: "Dados ao vivo" }),
+      empty(tx({ en: "Inventory data is not loaded yet.", es: "Los datos aun no cargan.", pt: "Os dados ainda nao carregaram." })), 4, "");
+  }
+
+  function stockSplit() {
+    var out = [], low = [];
+    arr(function () { return DB.items(); }).forEach(function (it) {
+      if (!it || !(Number(it.reorder) > 0)) return;
+      var oh = null;
+      try { oh = DB.onHand(it.id); } catch (e) { oh = null; }
+      if (oh == null || oh !== oh) return;
+      if (oh <= 0) out.push({ it: it, oh: oh });
+      else if (oh < Number(it.reorder)) low.push({ it: it, oh: oh });
+    });
+    out.sort(function (a, b) { return String(a.it.name || "").localeCompare(String(b.it.name || "")); });
+    low.sort(function (a, b) {
+      return (Number(b.it.reorder) - b.oh) - (Number(a.it.reorder) - a.oh);
+    });
+    return { out: out, low: low };
+  }
+  function stockRows(list, kind) {
+    return list.map(function (r) {
+      var it = r.it;
+      var gap = Math.max(0, (Number(it.reorder) || 0) - r.oh);
+      return [
+        '<div class="df-name">' + esc(it.name || it.code || "") + '</div><div class="df-meta">' + esc(it.code || it.id || "") + "</div>",
+        "<b>" + fmt(r.oh) + "</b> " + esc(it.unit || ""),
+        fmt(it.reorder),
+        pill(kind === "out" ? "OUT" : "LOW", kind === "out" ? "df-out" : "df-low") +
+          (gap ? '<div class="df-meta">' + fmt(gap) + " short</div>" : "")
+      ];
+    });
+  }
+  function quarantineRows() {
+    var hold = [];
+    var items = arr(function () { return DB.items(); });
+    ["QA-HOLD", "QUARANTINE"].forEach(function (z) {
+      items.forEach(function (i) {
+        var q = 0;
+        try { q = Number(DB.atLoc(i.id, z)) || 0; } catch (e) { q = 0; }
+        if (q > 0) hold.push({ name: i.name || i.code || i.id, code: i.code || i.id, unit: i.unit || "", zone: z, qty: q });
+      });
+    });
+    hold.sort(function (a, b) { return b.qty - a.qty || String(a.name).localeCompare(String(b.name)); });
+    return hold;
+  }
+  function openSupplierPos() {
+    var rlog = arr(function () { return DB.receivingLog(); });
+    var out = [];
+    arr(function () { return DB.supplierPos(); }).forEach(function (po) {
+      var derived = null;
+      try { if (window.POSTATUS && POSTATUS.derive) derived = POSTATUS.derive(po, rlog); } catch (e) { derived = null; }
+      if (derived && derived.status !== "open") return;
+      if (!derived && /\b(cancel+ed|cancel|void(ed)?)\b/i.test(String(po.notes || ""))) return;
+      var raw = linesOf(po);
+      var openLines = [];
+      var outstanding = 0;
+      raw.forEach(function (l, i) {
+        var recv = derived && derived.lines && derived.lines[i] ? !!derived.lines[i].recv : !!(l.recv || l.received === true);
+        if (recv) return;
+        var q = num(l.qty || l.quantity);
+        outstanding += q;
+        openLines.push({
+          desc: l.desc || l.description || l.product || l.item || l.item_no || "Line",
+          qty: l.qty || l.quantity || "",
+          uom: l.uom || l.unit_of_measure || "",
+          ship: String(l.ship || l.ship_date || l.expected || l.eta || "").slice(0, 10)
+        });
+      });
+      if (raw.length && !openLines.length) return;
+      var expect = openLines.map(function (l) { return l.ship; }).filter(Boolean).sort()[0] || String(po.expected || "").slice(0, 10);
+      out.push({
+        num: po.po_num || po.id || "",
+        vendor: po.vendor || "",
+        date: String(po.po_date || po.created_at || "").slice(0, 10),
+        expect: expect,
+        lines: openLines,
+        outstanding: outstanding,
+        nLines: openLines.length
+      });
+    });
+    arr(function () { return DB.purchaseOrders(); }).forEach(function (po) {
+      var st = String(po.status || "").toLowerCase();
+      if (st !== "ordered" && st !== "partial") return;
+      var openLines = [];
+      var outstanding = 0;
+      (po.lines || []).forEach(function (l) {
+        var open = (Number(l.qty) || 0) - (Number(l.received) || 0);
+        if (!(open > 0)) return;
+        outstanding += open;
+        var name = l.item_id;
+        try {
+          var items = DB.items() || [];
+          for (var i = 0; i < items.length; i++) if (items[i].id === l.item_id) { name = items[i].name || name; break; }
+        } catch (e) {}
+        openLines.push({ desc: name || "Line", qty: open, uom: "", ship: String(po.expected || "").slice(0, 10) });
+      });
+      if (!openLines.length) return;
+      var vendor = po.supplier || "";
+      try { if (DB.supplierName) vendor = DB.supplierName(po.supplier) || vendor; } catch (e2) {}
+      out.push({
+        num: po.id || "", vendor: vendor, date: String(po.created || "").slice(0, 10),
+        expect: String(po.expected || "").slice(0, 10), lines: openLines,
+        outstanding: outstanding, nLines: openLines.length, legacy: true
+      });
+    });
+    out.sort(function (a, b) { return String(a.expect || "9999").localeCompare(String(b.expect || "9999")) || String(a.num).localeCompare(String(b.num)); });
+    return out;
+  }
+  function poTable(list) {
+    return dfTable(
+      [{ h: "PO" }, { h: "Vendor" }, { h: "Expected" }, { h: "Still open", right: true }],
+      list.map(function (r) {
+        var bits = r.lines.slice(0, 3).map(function (l) {
+          var q = l.qty === "" || l.qty == null ? "" : fmt(num(l.qty)) || esc(l.qty);
+          return esc(l.desc) + (l.qty !== "" && l.qty != null ? " · " + (typeof l.qty === "number" ? fmt(l.qty) : esc(l.qty)) + (l.uom ? " " + esc(l.uom) : "") : "");
+        });
+        var extra = r.lines.length > 3 ? '<div class="df-meta">+' + (r.lines.length - 3) + " more</div>" : "";
+        return [
+          "<b>" + esc(r.num || "—") + "</b>" + (r.legacy ? '<div class="df-meta">Legacy PO</div>' : ""),
+          esc(r.vendor || "—"),
+          esc(r.expect || "—"),
+          "<b>" + fmt(r.outstanding) + "</b>" + '<div class="df-meta">' + r.nLines + (r.nLines === 1 ? " line" : " lines") + "</div>" +
+            bits.map(function (s) { return "<div>" + s + "</div>"; }).join("") + extra
+        ];
+      })
+    );
+  }
+  function recentReceipts() {
+    return arr(function () { return DB.receivingLog(); }).slice().sort(function (a, b) {
+      return String(b.recv_date || b.created_at || "").localeCompare(String(a.recv_date || a.created_at || ""));
+    });
+  }
+  function recentReturns() {
+    return arr(function () { return DB.returnsLog ? DB.returnsLog() : []; }).slice().sort(function (a, b) {
+      return String(b.return_date || b.created_at || "").localeCompare(String(a.return_date || a.created_at || ""));
+    });
+  }
+  function sdExpDate(s) {
+    s = String(s || "").trim();
+    var m;
+    if ((m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/))) return new Date(+m[3], +m[1] - 1, +m[2]);
+    if ((m = s.match(/^(\d{1,2})\/(\d{4})$/))) return new Date(+m[2], +m[1] - 1, 28);
+    if ((m = s.match(/^(\d{4})$/))) return new Date(+m[1], 11, 31);
+    var d = new Date(s);
+    return isNaN(d) ? null : d;
+  }
+  function sdDays(s) {
+    var d = sdExpDate(s);
+    return d ? Math.round((d - Date.now()) / 864e5) : null;
+  }
+  function sdFlag(x) {
+    var days = sdDays(x.exp), t = String(x.type || "").toLowerCase();
+    if (t.indexOf("off") >= 0) return "OFF-FLAVOR";
+    if (days != null && days < 0) return "EXPIRED";
+    if (days != null && days <= 120) return "SHORT-DATED";
+    if (t.indexOf("discont") >= 0) return "DISCONTINUED";
+    return "OK";
+  }
+  function shortDated() {
+    var seed = (typeof window !== "undefined" && window.SHORTDATED_SEED) ? window.SHORTDATED_SEED : [];
+    return seed.map(function (x) {
+      var flag = sdFlag(x);
+      var disp = "Open";
+      try { if (DB.kvGet) disp = DB.kvGet("sd:" + x.id) || "Open"; } catch (e) {}
+      return {
+        flavor: x.flavor, size: x.size, exp: x.exp, type: x.type,
+        bags: num(String(x.bags).replace(/[^0-9.]/g, "")),
+        flag: flag, disp: disp, days: sdDays(x.exp)
+      };
+    }).filter(function (r) { return r.flag !== "OK"; });
+  }
+  function fgOnHand() {
+    var bag4 = 0, bag15 = 0, rows = [];
+    arr(function () { return DB.items(); }).forEach(function (i) {
+      if (i.category !== "bag4" && i.category !== "bag15") return;
+      var oh = 0;
+      try { oh = Number(DB.onHand(i.id)) || 0; } catch (e) { oh = 0; }
+      if (i.category === "bag4") bag4 += oh; else bag15 += oh;
+      if (oh > 0) rows.push({ name: i.name || i.flavor || i.code, code: i.code || i.id, unit: i.unit || "", oh: oh, cat: i.category });
+    });
+    rows.sort(function (a, b) { return b.oh - a.oh; });
+    return { bag4: bag4, bag15: bag15, rows: rows };
+  }
+  function buyRows() {
+    return stockSplit().out.concat(stockSplit().low).map(function (r) {
+      var onOrder = 0;
+      try { onOrder = DB.onOrder ? Number(DB.onOrder(r.it.id)) || 0 : 0; } catch (e) { onOrder = 0; }
+      return { it: r.it, oh: r.oh, gap: Math.max(0, (Number(r.it.reorder) || 0) - r.oh), onOrder: onOrder };
+    });
+  }
+  function orderShipped(o) {
+    var t = String((o && o.tracking) || "").trim();
+    return !!t && !/^ip$/i.test(t) && /(1z|\d{3,}|pick|deliver|ship|xpo|estes|fedex|ups|odfl|r\+l|saia|old dominion)/i.test(t);
+  }
+  function openToShip() {
+    return arr(function () { return DB.orders(); }).filter(function (o) {
+      return (o.status || "Open") !== "Complete" && !orderShipped(o);
+    }).sort(function (a, b) { return String(b.created_at || "").localeCompare(String(a.created_at || "")); });
+  }
+  function pulledRows() {
+    var orders = arr(function () { return DB.orders(); });
+    var by = {};
+    arr(function () { return DB.demandLines ? DB.demandLines() : []; }).forEach(function (l) {
+      var k = poKey(l.po);
+      if (!k) return;
+      (by[k] = by[k] || []).push(l);
+    });
+    var known = {};
+    var rows = orders.map(function (o) {
+      var a = poKey(o.customer_po), b = poKey(o.order_id);
+      if (a) known[a] = 1;
+      if (b) known[b] = 1;
+      var lines = [];
+      [a, b].forEach(function (k) { if (k && by[k]) lines = lines.concat(by[k]); });
+      var flavors = {};
+      lines.forEach(function (l) {
+        var f = String(l.flavor || "").replace(/^UNMAPPED:\s*/i, "");
+        if (f) flavors[f] = (flavors[f] || 0) + (Number(l.bags) || Number(l.cases) || 0);
+      });
+      var flav = Object.keys(flavors).sort(function (x, y) { return flavors[y] - flavors[x]; }).slice(0, 3).join(", ");
+      return {
+        day: slcDay(o.created_at), customer: o.customer || "", po: o.customer_po || o.order_id || "",
+        status: o.status || "Open", ship: o.ship_date || o.invoice_date || "", flavors: flav
+      };
+    }).filter(function (r) { return r.day; });
+    var groups = {};
+    arr(function () { return DB.demandLines ? DB.demandLines() : []; }).forEach(function (l) {
+      var k = poKey(l.po);
+      if (!k || known[k]) return;
+      var g = groups[k] || (groups[k] = { day: "", at: l.created_at || "", customer: l.partner || "", po: l.po || "", status: l.status || "Open", ship: l.due_date || "", flavors: {} });
+      if ((l.created_at || "") < (g.at || "\uffff")) g.at = l.created_at || g.at;
+      var f = String(l.flavor || "").replace(/^UNMAPPED:\s*/i, "");
+      if (f) g.flavors[f] = (g.flavors[f] || 0) + (Number(l.bags) || Number(l.cases) || 0);
+      if (l.due_date) g.ship = l.due_date;
+    });
+    Object.keys(groups).forEach(function (k) {
+      var g = groups[k];
+      var flav = Object.keys(g.flavors).sort(function (a, b) { return g.flavors[b] - g.flavors[a]; }).slice(0, 3).join(", ");
+      rows.push({ day: slcDay(g.at), customer: g.customer, po: g.po, status: g.status || "Open", ship: g.ship || "", flavors: flav });
+    });
+    return rows;
+  }
+  function pullTable(rows) {
+    return dfTable(
+      [{ h: "Customer" }, { h: "PO" }, { h: "Status" }, { h: "Flavors" }],
+      rows.map(function (r) {
+        var low = String(r.status || "Open").toLowerCase();
+        var cls = low === "open" ? "df-open" : (low === "shipped" ? "df-ship" : "df-done");
+        return [
+          '<div class="df-name">' + esc(r.customer || "—") + "</div>",
+          "<b>" + esc(r.po || "—") + "</b>",
+          pill(r.status || "Open", cls),
+          esc(r.flavors || "—")
+        ];
+      })
+    );
+  }
+  function openDemand() {
+    return arr(function () { return DB.demandLines ? DB.demandLines() : []; }).filter(function (r) {
+      return (r.status || "Open") === "Open";
+    }).slice().sort(function (a, b) {
+      return (dueISO(a.due_date) || "9999").localeCompare(dueISO(b.due_date) || "9999") || String(a.partner || "").localeCompare(String(b.partner || ""));
+    });
+  }
+  function ecomShort() {
+    var q = {};
+    arr(function () { return DB.ecomDemand ? DB.ecomDemand() : []; }).forEach(function (r) {
+      if (!r || !r.flavor) return;
+      q[r.flavor] = (q[r.flavor] || 0) + (Number(r.bags) || 0);
+    });
+    var oh = {};
+    arr(function () { return DB.items(); }).forEach(function (i) {
+      if (i.category !== "bag4" && i.category !== "bag15") return;
+      var fl = i.flavor || "";
+      if (!fl) return;
+      var n = 0;
+      try { n = Number(DB.onHand(i.id)) || 0; } catch (e) { n = 0; }
+      oh[fl] = (oh[fl] || 0) + n;
+    });
+    return Object.keys(q).map(function (fl) {
+      return { flavor: fl, demand: q[fl], oh: oh[fl] || 0, short: Math.max(0, q[fl] - (oh[fl] || 0)) };
+    }).filter(function (x) { return x.demand > 0; }).sort(function (a, b) { return b.short - a.short || b.demand - a.demand; });
+  }
+  function outputToday() {
+    var day = screenDay();
+    return arr(function () { return DB.productionOutput ? DB.productionOutput() : []; }).filter(function (r) {
+      return String(r.prod_date || "").slice(0, 10) === day;
+    });
+  }
+  function machines() {
+    return arr(function () { return DB.lineStatus ? DB.lineStatus() : []; }).slice().sort(function (a, b) {
+      var area = String(a.area || "").localeCompare(String(b.area || ""));
+      return area || ((Number(a.sort) || 0) - (Number(b.sort) || 0));
+    });
+  }
+  function openProdOrders() {
+    var custom = arr(function () { return DB.prodOrdersCustom ? DB.prodOrdersCustom() : []; });
+    var seeded = (window.PROD_ORDERS || []).slice();
+    var stages = { Open: 1, Mixing: 1, Labels: 1, Packaged: 1, "P-Mac": 1, Done: 1 };
+    var all = custom.concat(seeded);
+    all.forEach(function (o) {
+      var st = "Open";
+      try { st = (DB.kvGet && DB.kvGet("po:" + o.po)) || "Open"; } catch (e) { st = "Open"; }
+      o._stage = stages[st] ? st : "Open";
+    });
+    return all.filter(function (o) { return o._stage !== "Done"; }).sort(function (a, b) {
+      return String(a.deadline || a.date || "9999").localeCompare(String(b.deadline || b.date || "9999"));
+    });
+  }
+  function allenReorder() {
+    if (!window.ALLEN_REORDER || !window.ALLEN_CALC || !window.DB) return [];
+    var rows = [];
+    (ALLEN_REORDER.tiers || []).forEach(function (tier) {
+      (tier.flavors || []).forEach(function (f) {
+        var p4 = 0, p15 = 0, bins = 0;
+        try {
+          p4 = (Number(DB.onHand("BAG4-" + f.code)) || 0) / 2500;
+          p15 = (Number(DB.onHand("BAG15-" + f.code)) || 0) / 6250;
+          var ov4 = DB.kvGet ? DB.kvGet("arp4oz:" + f.code) : null;
+          var ov15 = DB.kvGet ? DB.kvGet("arp15oz:" + f.code) : null;
+          var bm = DB.kvGet ? DB.kvGet("arbm:" + f.code) : null;
+          if (ov4 != null && String(ov4).trim() !== "") p4 = Number(ov4) || 0;
+          if (ov15 != null && String(ov15).trim() !== "") p15 = Number(ov15) || 0;
+          if (bm != null && String(bm).trim() !== "") bins = Number(bm) || 0;
+        } catch (e) {}
+        var r = ALLEN_CALC(f, p4, p15, bins);
+        if (r && r.triggered) rows.push(r);
+      });
+    });
+    rows.sort(function (a, b) { return (b.binsToOrder || 0) - (a.binsToOrder || 0); });
+    return rows;
+  }
+  function traceLabels() {
+    try {
+      var st = window.TRACE && TRACE._state ? TRACE._state() : null;
+      if (!st || !st.labels) return [];
+      return Object.keys(st.labels).map(function (k) { return st.labels[k]; });
+    } catch (e) { return []; }
+  }
+  function heldLabels() {
+    return traceLabels().filter(function (l) {
+      if (!l) return false;
+      var s = String(l.status || "").toUpperCase();
+      if (s === "EMPTY" || s === "SHIPPED") return false;
+      var loc = String(l.location || "").toUpperCase();
+      return s === "HOLD" || s === "REJECTED" || s === "QUARANTINE" || s === "QA-HOLD" || loc === "QUARANTINE" || loc === "QA-HOLD";
+    });
+  }
+  function ensureTrace() {
+    if (traceState === "loading" || traceState === "ready" || traceState === "err") return;
+    if (!window.TRACE || typeof TRACE._load !== "function") { traceState = "err"; return; }
+    if (traceLabels().length) { traceState = "ready"; return; }
+    traceState = "loading";
+    TRACE._load().then(function () {
+      traceState = "ready";
+      if (homeId === "qa") paintHome(true);
+    }).catch(function () {
+      traceState = "err";
+      if (homeId === "qa") paintHome(true);
+    });
+  }
+  function qFails(logs) {
+    return logs.filter(function (l) {
+      if (l.fe === "Fail" || l.nfe === "Fail" || l.ss === "Fail") return true;
+      return String(l.checked || "").toLowerCase() === "no";
+    });
+  }
+  function seasLots() {
+    var today = screenDay();
+    var lots = arr(function () { return DB.seasLots ? DB.seasLots() : []; }).slice().sort(function (a, b) {
+      return String(a.exp || "9999").localeCompare(String(b.exp || "9999"));
+    });
+    var quar = 0, exp = 0, lbs = 0;
+    lots.forEach(function (l) {
+      lbs += Number(l.weight) || 0;
+      if (l.status === "Quarantine") quar++;
+      var e = String(l.exp || "").slice(0, 10);
+      if (e && e < today && l.status !== "Quarantine") exp++;
+    });
+    return { lots: lots, quar: quar, exp: exp, lbs: lbs };
+  }
+  function seedLots() {
+    var lots = arr(function () { return DB.seedLots ? DB.seedLots() : []; }).slice().sort(function (a, b) {
+      return String(b.received_date || b.received_at || b.created_at || "").localeCompare(String(a.received_date || a.received_at || a.created_at || ""));
+    });
+    var quar = 0, lbs = 0;
+    lots.forEach(function (l) {
+      lbs += Number(l.weight) || 0;
+      if (l.status === "Quarantine") quar++;
+    });
+    return { lots: lots, quar: quar, lbs: lbs };
+  }
+
+  function liveRecv() {
+    var pos = openSupplierPos();
+    var receipts = recentReceipts();
+    var day = screenDay();
+    var todayN = receipts.filter(function (r) { return String(r.recv_date || "").slice(0, 10) === day; }).length;
+    var hold = quarantineRows();
+    var rets = recentReturns();
+    var outstanding = pos.reduce(function (s, r) { return s + r.outstanding; }, 0);
+    var holdQty = hold.reduce(function (s, r) { return s + r.qty; }, 0);
+    return statRow([
+      stat(fmt(pos.length), tx({ en: "Open inbound POs", es: "OC abiertas", pt: "OCs abertas" }), pos.length ? "warn" : ""),
+      stat(fmt(outstanding), tx({ en: "Qty still open", es: "Cantidad abierta", pt: "Qtd ainda aberta" })),
+      stat(fmt(todayN), tx({ en: "Receipts dated today", es: "Recibos de hoy", pt: "Recebimentos de hoje" })),
+      stat(fmt(hold.length), tx({ en: "Quarantine lines", es: "Lineas en cuarentena", pt: "Linhas em quarentena" }), hold.length ? "bad" : "")
+    ]) +
+      panel(tx({ en: "Open inbound", es: "Entrada abierta", pt: "Entrada aberta" }),
+        pos.length ? sub(pos.length + " open " + (pos.length === 1 ? "PO" : "POs") + ". Received and closed stay off this list.") + poTable(pos)
+          : empty(tx({ en: "No open inbound POs.", es: "No hay ordenes de compra abiertas.", pt: "Nao ha ordens de compra abertas." })),
+        2, "expreceipts") +
+      panel(tx({ en: "Recent receipts", es: "Recibos recientes", pt: "Recebimentos recentes" }),
+        receipts.length ? dfTable(
+          [{ h: "Date" }, { h: "Supplier" }, { h: "PO" }, { h: "Qty", right: true }],
+          receipts.map(function (r) {
+            var cond = r.condition && r.condition !== "Good" ? pill(r.condition, r.condition === "Damaged" || r.condition === "Hold" ? "df-out" : "df-low") : "";
+            return [
+              esc(String(r.recv_date || "").slice(0, 10) || "—"),
+              '<div class="df-name">' + esc(r.supplier || "—") + "</div>" + (r.contents ? '<div class="df-meta">' + esc(r.contents) + "</div>" : ""),
+              esc(r.po_num || "—") + (cond ? "<div>" + cond + "</div>" : ""),
+              r.qty_received != null && r.qty_received !== "" ? fmt(r.qty_received) : "—"
+            ];
+          })
+        ) : empty(tx({ en: "No receiving log rows yet.", es: "Aun no hay recibos.", pt: "Ainda nao ha recebimentos." })),
+        2, "recvlog") +
+      panel(tx({ en: "Quarantine", es: "Cuarentena", pt: "Quarentena" }),
+        hold.length ? sub(fmt(holdQty) + " on hold in QA-HOLD or QUARANTINE.") + dfTable(
+          [{ h: "Item" }, { h: "Zone" }, { h: "Qty", right: true }],
+          hold.map(function (r) {
+            return ['<div class="df-name">' + esc(r.name) + '</div><div class="df-meta">' + esc(r.code) + "</div>", esc(r.zone), "<b>" + fmt(r.qty) + "</b> " + esc(r.unit)];
+          })
+        ) : empty(tx({ en: "Nothing is sitting in quarantine.", es: "Nada esta en cuarentena.", pt: "Nada esta em quarentena." })),
+        2, "quarantine") +
+      panel(tx({ en: "Recent returns", es: "Devoluciones recientes", pt: "Devolucoes recentes" }),
+        rets.length ? dfTable(
+          [{ h: "Date" }, { h: "Who" }, { h: "Product" }, { h: "Qty", right: true }],
+          rets.map(function (r) {
+            var who = r.channel === "ecom" ? (r.marketplace || "E-com") : (r.customer || "—");
+            return [
+              esc(String(r.return_date || r.created_at || "").slice(0, 10) || "—"),
+              esc(who),
+              esc(r.product || r.item_code || "—") + (r.disposition ? '<div class="df-meta">' + esc(r.disposition) + "</div>" : ""),
+              fmt(r.qty)
+            ];
+          })
+        ) : empty(tx({ en: "No returns logged.", es: "No hay devoluciones.", pt: "Nao ha devolucoes." })),
+        2, "returns");
+  }
+
+  function liveInv() {
+    var split = stockSplit();
+    var fg = fgOnHand();
+    var sd = shortDated().filter(function (r) { return r.flag !== "DISCONTINUED" || r.disp === "Open"; });
+    var action = sd.filter(function (r) { return r.disp === "Open" && r.flag !== "OK"; });
+    var cols = [{ h: "Item" }, { h: "On hand", right: true }, { h: "Reorder", right: true }, { h: "" }];
+    return statRow([
+      stat(fmt(split.out.length), tx({ en: "Out of stock", es: "Agotado", pt: "Esgotado" }), split.out.length ? "bad" : ""),
+      stat(fmt(split.low.length), tx({ en: "Low stock", es: "Stock bajo", pt: "Estoque baixo" }), split.low.length ? "warn" : ""),
+      stat(fmt(fg.bag4), tx({ en: "4oz bags on hand", es: "Bolsas 4oz", pt: "Sacos 4oz" })),
+      stat(fmt(fg.bag15), tx({ en: "1.5oz bags on hand", es: "Bolsas 1.5oz", pt: "Sacos 1.5oz" }))
+    ]) +
+      panel(tx({ en: "Out of stock", es: "Agotado", pt: "Esgotado" }),
+        split.out.length ? sub("Reorder point set and on-hand at zero.") + dfTable(cols, stockRows(split.out, "out"))
+          : empty(tx({ en: "Nothing is out of stock.", es: "Nada esta agotado.", pt: "Nada esta esgotado." })),
+        2, "alerts") +
+      panel(tx({ en: "Low stock", es: "Stock bajo", pt: "Estoque baixo" }),
+        split.low.length ? sub("Above zero and under the reorder point.") + dfTable(cols, stockRows(split.low, "low"))
+          : empty(tx({ en: "Nothing is under its reorder point.", es: "Nada esta bajo su punto de reorden.", pt: "Nada esta abaixo do ponto de reposicao." })),
+        2, "dash") +
+      panel(tx({ en: "Finished goods on hand", es: "Producto terminado", pt: "Produto acabado" }),
+        fg.rows.length ? dfTable(
+          [{ h: "Item" }, { h: "Size" }, { h: "On hand", right: true }],
+          fg.rows.map(function (r) {
+            return ['<div class="df-name">' + esc(r.name) + '</div><div class="df-meta">' + esc(r.code) + "</div>", r.cat === "bag4" ? "4oz" : "1.5oz", "<b>" + fmt(r.oh) + "</b> " + esc(r.unit)];
+          })
+        ) : empty(tx({ en: "No finished bags on hand.", es: "No hay bolsas terminadas.", pt: "Nao ha sacos prontos." })),
+        2, "finbags") +
+      panel(tx({ en: "Short-dated", es: "Short-dated", pt: "Short-dated" }),
+        action.length ? sub(action.length + " flagged with disposition still Open. Short-dated is within 120 days.") + dfTable(
+          [{ h: "Item" }, { h: "Bags", right: true }, { h: "Flag" }, { h: "Disposition" }],
+          action.map(function (r) {
+            var cls = r.flag === "SHORT-DATED" ? "df-low" : "df-out";
+            var left = r.days == null ? "" : (r.days < 0 ? Math.abs(r.days) + "d ago" : r.days + "d left");
+            return [
+              '<div class="df-name">' + esc(r.flavor) + '</div><div class="df-meta">' + esc(r.size || "") + (left ? " · " + left : "") + "</div>",
+              fmt(r.bags),
+              pill(r.flag, cls),
+              esc(r.disp)
+            ];
+          })
+        ) : empty(tx({ en: "No open short-dated, expired, or off-flavor rows.", es: "Nada short-dated abierto.", pt: "Nada short-dated aberto." })),
+        2, "shortdated");
+  }
+
+  function liveItems() {
+    var seas = seasLots();
+    var seed = seedLots();
+    var recipes = window.RECIPES ? Object.keys(window.RECIPES).length : 0;
+    var skuN = (window.SMACKIN_SKUS || []).length;
+    var catN = 0;
+    try { catN = DB.skuCatalog ? Object.keys(DB.skuCatalog() || {}).length : 0; } catch (e) { catN = 0; }
+    var today = screenDay();
+    return statRow([
+      stat(fmt(seas.lots.length), tx({ en: "Seasoning lots", es: "Lotes de sazon", pt: "Lotes de tempero" })),
+      stat(fmt(seas.exp + seas.quar), tx({ en: "Expired or quarantine", es: "Vencidos o cuarentena", pt: "Vencidos ou quarentena" }), (seas.exp + seas.quar) ? "bad" : ""),
+      stat(fmt(seed.lots.length), tx({ en: "Seed lots", es: "Lotes de semilla", pt: "Lotes de semente" })),
+      stat(fmt(recipes), tx({ en: "Batch recipes", es: "Recetas", pt: "Receitas" }))
+    ]) +
+      panel(tx({ en: "Seasoning lots", es: "Lotes de sazon", pt: "Lotes de tempero" }),
+        seas.lots.length ? sub(fmt(seas.lbs) + " lb on the lot file. Earliest expiration first.") + dfTable(
+          [{ h: "Product" }, { h: "Lot" }, { h: "Exp" }, { h: "Lb", right: true }],
+          seas.lots.map(function (l) {
+            var exp = String(l.exp || "").slice(0, 10);
+            var bad = l.status === "Quarantine" || (exp && exp < today);
+            return [
+              '<div class="df-name">' + esc(l.product || l.flavor_code || "—") + "</div>",
+              esc(l.lot || "—"),
+              esc(exp || "—") + (bad ? " " + pill(l.status === "Quarantine" ? "QUAR" : "EXP", "df-out") : ""),
+              fmt(l.weight)
+            ];
+          })
+        ) : empty(tx({ en: "No seasoning lots yet.", es: "Aun no hay lotes de sazon.", pt: "Ainda nao ha lotes de tempero." })),
+        2, "seasoning") +
+      panel(tx({ en: "Seed lots", es: "Lotes de semilla", pt: "Lotes de semente" }),
+        seed.lots.length ? sub(fmt(seed.lbs) + " lb logged." + (seed.quar ? " " + seed.quar + " in quarantine." : "")) + dfTable(
+          [{ h: "Product" }, { h: "Lot" }, { h: "Received" }, { h: "Lb", right: true }],
+          seed.lots.map(function (l) {
+            return [
+              '<div class="df-name">' + esc(l.product || l.seed_code || "—") + "</div>" +
+                (l.status === "Quarantine" ? pill("QUAR", "df-out") : ""),
+              esc(l.lot || "—"),
+              esc(String(l.received_date || l.received_at || "").slice(0, 10) || "—"),
+              fmt(l.weight)
+            ];
+          })
+        ) : empty(tx({ en: "No seed lots yet.", es: "Aun no hay lotes de semilla.", pt: "Ainda nao ha lotes de semente." })),
+        2, "seed") +
+      panel(tx({ en: "Catalog", es: "Catalogo", pt: "Catalogo" }),
+        sub(skuN + " finished SKUs in the pack list. " + catN + " extra SKUs saved on the catalog. Recipes on file: " + recipes + "."),
+        4, "skus");
+  }
+
+  function livePurch() {
+    var pos = openSupplierPos();
+    var buys = buyRows();
+    var outstanding = pos.reduce(function (s, r) { return s + r.outstanding; }, 0);
+    var covered = buys.filter(function (r) { return r.onOrder >= r.gap && r.gap > 0; }).length;
+    return statRow([
+      stat(fmt(pos.length), tx({ en: "Open supplier POs", es: "OC de proveedor abiertas", pt: "OCs de fornecedor abertas" }), pos.length ? "warn" : ""),
+      stat(fmt(outstanding), tx({ en: "Outstanding qty", es: "Cantidad pendiente", pt: "Qtd pendente" })),
+      stat(fmt(buys.length), tx({ en: "Under reorder point", es: "Bajo reorden", pt: "Abaixo da reposicao" }), buys.length ? "bad" : ""),
+      stat(fmt(covered), tx({ en: "Shortfall already on a PO", es: "Falta ya en una OC", pt: "Falta ja em uma OC" }))
+    ]) +
+      panel(tx({ en: "Open supplier POs", es: "OC abiertas", pt: "OCs abertas" }),
+        pos.length ? poTable(pos) : empty(tx({ en: "No open supplier POs.", es: "No hay OC abiertas.", pt: "Nao ha OCs abertas." })),
+        2, "purchasing") +
+      panel(tx({ en: "Buy pressure", es: "Presion de compra", pt: "Pressao de compra" }),
+        buys.length ? sub("On hand under the reorder point. On order is open PO qty for that item.") + dfTable(
+          [{ h: "Item" }, { h: "On hand", right: true }, { h: "Short", right: true }, { h: "On order", right: true }],
+          buys.map(function (r) {
+            return [
+              '<div class="df-name">' + esc(r.it.name || "") + '</div><div class="df-meta">' + esc(r.it.code || "") + "</div>",
+              fmt(r.oh) + " " + esc(r.it.unit || ""),
+              "<b>" + fmt(r.gap) + "</b>",
+              r.onOrder ? fmt(r.onOrder) : "—"
+            ];
+          })
+        ) : empty(tx({ en: "Nothing is under its reorder point.", es: "Nada esta bajo reorden.", pt: "Nada esta abaixo da reposicao." })),
+        2, "reorder15");
+  }
+
+  function liveDemand() {
+    var open = openDemand();
+    var pos = {};
+    var cases = 0, bags = 0, unmapped = 0;
+    open.forEach(function (r) {
+      pos[String(r.source || "") + "|" + String(r.po || "")] = 1;
+      cases += Number(r.cases) || 0;
+      bags += Number(r.bags) || 0;
+      if (/^UNMAPPED/i.test(String(r.flavor || ""))) unmapped++;
+    });
+    var poN = Object.keys(pos).length;
+    var ecom = ecomShort();
+    var shortN = ecom.filter(function (x) { return x.short > 0; }).length;
+    var logged = outputToday();
+    var byDept = {};
+    logged.forEach(function (r) {
+      var k = r.dept || "other";
+      var e = byDept[k] || (byDept[k] = { bags: 0, cases: 0 });
+      e.bags += Number(r.bags) || 0;
+      e.cases += Number(r.cases) || 0;
+    });
+    var deptKeys = Object.keys(byDept);
+    return statRow([
+      stat(fmt(poN), tx({ en: "Open demand POs", es: "OC de demanda abiertas", pt: "OCs de demanda abertas" })),
+      stat(fmt(cases), tx({ en: "Open cases", es: "Cajas abiertas", pt: "Caixas abertas" })),
+      stat(fmt(bags), tx({ en: "Open bags", es: "Bolsas abiertas", pt: "Sacos abertos" })),
+      stat(fmt(shortN), tx({ en: "E-com flavors short", es: "Sabores e-com cortos", pt: "Sabores e-com em falta" }), shortN ? "warn" : "")
+    ]) +
+      panel(tx({ en: "Open demand", es: "Demanda abierta", pt: "Demanda aberta" }),
+        open.length ? sub((unmapped ? unmapped + " unmapped lines. " : "") + "Sorted by due date.") + dfTable(
+          [{ h: "Partner" }, { h: "PO" }, { h: "Flavor" }, { h: "Cases", right: true }, { h: "Due" }],
+          open.map(function (r) {
+            var due = dueISO(r.due_date) || String(r.due_date || "");
+            var late = due && due < slcToday();
+            return [
+              esc(r.partner || "—"),
+              "<b>" + esc(r.po || "—") + "</b>",
+              esc(String(r.flavor || "").replace(/^UNMAPPED:\s*/i, "Unmapped: ")),
+              fmt(r.cases),
+              esc(due || "—") + (late ? " " + pill("DUE", "df-out") : "")
+            ];
+          })
+        ) : empty(tx({ en: "No open demand lines.", es: "No hay lineas de demanda abiertas.", pt: "Nao ha linhas de demanda abertas." })),
+        2, "demandboard") +
+      panel(tx({ en: "E-com queue vs bags on hand", es: "Cola e-com vs bolsas", pt: "Fila e-com vs sacos" }),
+        ecom.length ? dfTable(
+          [{ h: "Flavor" }, { h: "On hand", right: true }, { h: "Queue", right: true }, { h: "Short", right: true }],
+          ecom.map(function (x) {
+            return [esc(x.flavor), fmt(x.oh), fmt(x.demand), x.short > 0 ? "<b>" + fmt(x.short) + "</b>" : "—"];
+          })
+        ) : empty(tx({ en: "No e-com demand snapshot loaded.", es: "No hay demanda e-com cargada.", pt: "Nao ha demanda e-com carregada." })),
+        2, "ecomdemand") +
+      panel(tx({ en: "Logged today", es: "Registrado hoy", pt: "Registrado hoje" }) + " · " + esc(screenDay()),
+        deptKeys.length ? dfTable(
+          [{ h: "Department" }, { h: "Bags", right: true }, { h: "Cases", right: true }],
+          deptKeys.map(function (k) {
+            return [esc(k), fmt(byDept[k].bags), fmt(byDept[k].cases)];
+          })
+        ) : empty(tx({ en: "Nothing logged on the production entry for this date.", es: "Nada registrado en produccion para esta fecha.", pt: "Nada registrado na producao para esta data." })),
+        4, "demand");
+  }
+
+  function liveMfg() {
+    var mach = machines();
+    var running = mach.filter(function (m) { return (m.status || "idle") === "running"; });
+    var change = mach.filter(function (m) { return m.status === "changeover"; });
+    var orders = openProdOrders();
+    var allen = allenReorder();
+    var logged = outputToday().filter(function (r) { return r.dept === "mixing" || r.dept === "pmac"; });
+    var used = arr(function () { return DB.consumption ? DB.consumption() : []; }).filter(function (r) {
+      return slcDay(r.created_at) === slcToday();
+    });
+    return statRow([
+      stat(running.length + " / " + mach.length, tx({ en: "Machines running", es: "Maquinas en marcha", pt: "Maquinas rodando" }), running.length ? "" : "warn"),
+      stat(fmt(change.length), tx({ en: "Changeovers", es: "Cambios", pt: "Trocas" }), change.length ? "warn" : ""),
+      stat(fmt(orders.length), tx({ en: "Open prod orders", es: "Ordenes de produccion abiertas", pt: "Ordens de producao abertas" })),
+      stat(fmt(allen.length), tx({ en: "Allen reorder hits", es: "Reorden Allen", pt: "Reposicao Allen" }), allen.length ? "bad" : "")
+    ]) +
+      panel(tx({ en: "Live machines", es: "Maquinas en vivo", pt: "Maquinas ao vivo" }),
+        mach.length ? dfTable(
+          [{ h: "Machine" }, { h: "Flavor" }, { h: "Status" }, { h: "Done", right: true }],
+          mach.map(function (m) {
+            var st = m.status || "idle";
+            var cls = st === "running" ? "df-ship" : (st === "changeover" ? "df-low" : "df-done");
+            var goal = Number(m.goal) || 0;
+            return [
+              '<div class="df-name">' + esc(m.machine || "—") + '</div><div class="df-meta">' + esc(m.area || "") + "</div>",
+              esc(m.flavor || "—") + (m.size ? " " + esc(m.size) : ""),
+              pill(st, cls),
+              fmt(m.done || 0) + (goal ? " / " + fmt(goal) : "")
+            ];
+          })
+        ) : empty(tx({ en: "No machines on the live board.", es: "No hay maquinas en el tablero.", pt: "Nao ha maquinas no painel." })),
+        2, "floor") +
+      panel(tx({ en: "Open production orders", es: "Ordenes de produccion abiertas", pt: "Ordens de producao abertas" }),
+        orders.length ? dfTable(
+          [{ h: "Flavor" }, { h: "PO" }, { h: "Stage" }, { h: "Due" }],
+          orders.map(function (o) {
+            var bins = o.bins || o.bins4 || o.bins15;
+            return [
+              '<div class="df-name">' + esc(o.flavor || "—") + "</div>" + (o.size ? '<div class="df-meta">' + esc(o.size) + "</div>" : ""),
+              esc(o.po || "—") + (bins ? '<div class="df-meta">' + esc(String(bins)) + " bins</div>" : ""),
+              pill(o._stage, o._stage === "Open" ? "df-open" : "df-ship"),
+              esc(o.deadline || o.date || "—")
+            ];
+          })
+        ) : empty(tx({ en: "No open production orders.", es: "No hay ordenes de produccion abiertas.", pt: "Nao ha ordens de producao abertas." })),
+        2, "prodorders") +
+      panel(tx({ en: "Logged today", es: "Registrado hoy", pt: "Registrado hoje" }) + " · " + esc(screenDay()),
+        logged.length ? dfTable(
+          [{ h: "Dept" }, { h: "Shift" }, { h: "Flavor" }, { h: "Bags", right: true }, { h: "Cases", right: true }],
+          logged.map(function (r) {
+            return [esc(r.dept || "—"), r.shift ? "S" + esc(r.shift) : "—", esc(r.flavor || "—"), fmt(r.bags), fmt(r.cases)];
+          })
+        ) : empty(tx({ en: "No mixing or P-Mac output logged for this date.", es: "Nada de mezcla o P-Mac en esta fecha.", pt: "Nada de mistura ou P-Mac nesta data." })),
+        2, "mixing") +
+      panel(tx({ en: "Scanned into the room today", es: "Escaneado hoy", pt: "Lido hoje" }),
+        used.length ? sub("Consumption scans saved today (SLC).") + dfTable(
+          [{ h: "Dept" }, { h: "Item" }, { h: "Qty", right: true }],
+          used.map(function (r) {
+            return [esc(r.department || "—"), esc(r.item_name || r.item_code || "—"), fmt(r.qty)];
+          })
+        ) : empty(tx({ en: "No consumption scans saved today.", es: "No hay escaneos de uso hoy.", pt: "Nao ha leituras de uso hoje." })),
+        2, "pmac") +
+      (allen.length ? panel(tx({ en: "Allen reorder", es: "Reorden Allen", pt: "Reposicao Allen" }),
+        sub("Finished-goods pallets on hand are at or under Allen's trigger. Bins to order already subtract bins mixed.") +
+        dfTable(
+          [{ h: "Flavor" }, { h: "4oz pal", right: true }, { h: "1.5oz pal", right: true }, { h: "Bins to order", right: true }],
+          allen.map(function (r) {
+            return [esc(r.name || r.code || "—"), fmt(r.pallets4), fmt(r.pallets15), "<b>" + fmt(r.binsToOrder) + "</b>"];
+          })
+        ), 4, "reordertracker") : "");
+  }
+
+  function liveFul() {
+    var pulled = pulledRows();
+    var today = slcToday();
+    var yday = shiftDay(today, -1);
+    var tRows = pulled.filter(function (r) { return r.day === today; });
+    var yRows = pulled.filter(function (r) { return r.day === yday; });
+    var open = openToShip();
+    var day = screenDay();
+    var pallets = [];
+    try { pallets = (DB.prodPallets ? DB.prodPallets(day) : []).filter(function (p) { return (p.channel || "retail") === "retail"; }); } catch (e) { pallets = []; }
+    var cases = pallets.reduce(function (s, p) { return s + (Number(p.cases) || 0); }, 0);
+    var fd = arr(function () { return DB.fulfillmentDaily ? DB.fulfillmentDaily() : []; }).filter(function (r) {
+      return String(r.fdate || "").slice(0, 10) === day;
+    })[0];
+    var ecomN = fd ? Number(fd.ecom_total) || 0 : 0;
+    var amz = fd ? Number(fd.amazon_bags) || 0 : 0;
+    return statRow([
+      stat(fmt(tRows.length), tx({ en: "Pulled today", es: "Entradas hoy", pt: "Entraram hoje" })),
+      stat(fmt(yRows.length), tx({ en: "Pulled yesterday", es: "Entradas ayer", pt: "Entraram ontem" })),
+      stat(fmt(open.length), tx({ en: "Open to ship", es: "Abiertas por enviar", pt: "Abertas para enviar" }), open.length ? "warn" : ""),
+      stat(fmt(cases), tx({ en: "Retail cases logged", es: "Cajas retail", pt: "Caixas varejo" }) + " · " + day)
+    ]) +
+      panel(tx({ en: "Pulled today", es: "Entradas hoy", pt: "Entraram hoje" }),
+        sub("Saved into Smackin OS on " + today + " (SLC).") +
+        (tRows.length ? pullTable(tRows) : empty(tx({ en: "No orders pulled today yet.", es: "Ninguna orden entrada hoy.", pt: "Nenhum pedido entrou hoje." }))),
+        2, "orders") +
+      panel(tx({ en: "Pulled yesterday", es: "Entradas ayer", pt: "Entraram ontem" }),
+        yRows.length ? pullTable(yRows) : empty(tx({ en: "No orders pulled yesterday.", es: "Ninguna orden entrada ayer.", pt: "Nenhum pedido entrou ontem." })),
+        2, "orders") +
+      panel(tx({ en: "Open orders", es: "Ordenes abiertas", pt: "Pedidos abertos" }),
+        sub((fd ? "E-com labels " + fmt(ecomN) + " · Amazon " + fmt(amz) + " bags. " : "No daily fulfillment row for " + day + ". ") +
+          pallets.length + " retail pallet" + (pallets.length === 1 ? "" : "s") + " logged.") +
+        (open.length ? dfTable(
+          [{ h: "Customer" }, { h: "PO" }, { h: "Ship / invoice" }],
+          open.map(function (o) {
+            return [
+              '<div class="df-name">' + esc(o.customer || "—") + "</div>",
+              "<b>" + esc(o.customer_po || o.order_id || "—") + "</b>",
+              esc(o.ship_date || o.invoice_date || "—")
+            ];
+          })
+        ) : empty(tx({ en: "No open orders waiting to ship.", es: "No hay ordenes abiertas por enviar.", pt: "Nao ha pedidos abertos para enviar." }))),
+        2, "fulfilldaily") +
+      panel(tx({ en: "Retail pallets", es: "Paletas retail", pt: "Paletes varejo" }) + " · " + esc(day),
+        pallets.length ? dfTable(
+          [{ h: "Line" }, { h: "Flavor" }, { h: "Cases", right: true }],
+          pallets.map(function (p) {
+            return ["L" + esc(p.line || "—"), esc(p.flavor_code || "—"), fmt(p.cases)];
+          })
+        ) : empty(tx({ en: "No retail pallets logged for this date.", es: "No hay paletas retail en esta fecha.", pt: "Nao ha paletes de varejo nesta data." })),
+        2, "prodlog");
+  }
+
+  function liveShip() {
+    var open = openToShip();
+    var log = arr(function () { return DB.shippingLog(); }).slice().sort(function (a, b) {
+      return String(b.ship_date || b.created_at || "").localeCompare(String(a.ship_date || a.created_at || ""));
+    });
+    var pending = log.filter(function (s) { return s.status === "Pending"; });
+    var tracked = arr(function () { return DB.orders(); }).filter(orderShipped).sort(function (a, b) {
+      return String(b.ship_date || b.created_at || "").localeCompare(String(a.ship_date || a.created_at || ""));
+    });
+    return statRow([
+      stat(fmt(open.length), tx({ en: "Open to ship", es: "Abiertas por enviar", pt: "Abertas para enviar" }), open.length ? "warn" : ""),
+      stat(fmt(pending.length), tx({ en: "Shipping log pending", es: "Envios pendientes", pt: "Envios pendentes" }), pending.length ? "warn" : ""),
+      stat(fmt(log.length), tx({ en: "Shipping log rows", es: "Filas del registro", pt: "Linhas do registro" })),
+      stat(fmt(tracked.length), tx({ en: "Orders with tracking", es: "Ordenes con rastreo", pt: "Pedidos com rastreio" }))
+    ]) +
+      panel(tx({ en: "Open to ship", es: "Por enviar", pt: "Para enviar" }),
+        open.length ? sub("Orders that are not Complete and do not have a carrier tracking number yet.") + dfTable(
+          [{ h: "Customer" }, { h: "PO / order" }, { h: "Ship date" }, { h: "Status" }],
+          open.map(function (o) {
+            return [
+              '<div class="df-name">' + esc(o.customer || "—") + "</div>",
+              esc(o.customer_po || o.order_id || "—"),
+              esc(o.ship_date || "—"),
+              pill(o.status || "Open", "df-open")
+            ];
+          })
+        ) : empty(tx({ en: "Nothing is waiting to ship.", es: "Nada esta por enviar.", pt: "Nada esta para enviar." })),
+        2, "orders") +
+      panel(tx({ en: "Recent shipments", es: "Envios recientes", pt: "Envios recentes" }),
+        (log.length || tracked.length) ? dfTable(
+          [{ h: "Date" }, { h: "To" }, { h: "Carrier" }, { h: "Status" }],
+          log.map(function (s) {
+            var st = s.status || "";
+            var cls = st === "Delivered" ? "df-done" : (st === "Pending" ? "df-low" : "df-ship");
+            return [esc(String(s.ship_date || "").slice(0, 10) || "—"), esc(s.recipient || "—"), esc(s.carrier || "—"), st ? pill(st, cls) : "—"];
+          }).concat(tracked.slice(0, 12).map(function (o) {
+            return [
+              esc(String(o.ship_date || o.created_at || "").slice(0, 10) || "—"),
+              '<div class="df-name">' + esc(o.customer || "—") + '</div><div class="df-meta">Order ' + esc(o.customer_po || o.order_id || "") + "</div>",
+              esc(o.carrier || "—"),
+              pill("Tracked", "df-ship")
+            ];
+          }))
+        ) : empty(tx({ en: "No shipments in the log or on orders.", es: "No hay envios.", pt: "Nao ha envios." })),
+        2, "shiplog");
+  }
+
+  function liveQa() {
+    ensureTrace();
+    var holds = heldLabels();
+    var rejected = holds.filter(function (l) { return String(l.status || "").toUpperCase() === "REJECTED"; });
+    var quar = quarantineRows();
+    var sd = shortDated().filter(function (r) { return r.disp === "Open" && (r.flag === "SHORT-DATED" || r.flag === "EXPIRED" || r.flag === "OFF-FLAVOR"); });
+    var logs = arr(function () { return DB.qualityLogs ? DB.qualityLogs() : []; }).slice().sort(function (a, b) {
+      return String(b.created_at || b.dt || b.date || "").localeCompare(String(a.created_at || a.dt || a.date || ""));
+    });
+    var fails = qFails(logs);
+    var holdBody;
+    if (traceState === "loading") holdBody = empty(tx({ en: "Loading lot holds…", es: "Cargando retenciones…", pt: "Carregando retencoes…" }));
+    else if (traceState === "err") holdBody = empty(tx({ en: "Lot holds could not be read.", es: "No se pudieron leer las retenciones.", pt: "Nao foi possivel ler as retencoes." }));
+    else if (!holds.length) holdBody = empty(tx({ en: "No lots on hold or rejected.", es: "Ningun lote retenido o rechazado.", pt: "Nenhum lote retido ou rejeitado." }));
+    else holdBody = dfTable(
+      [{ h: "Lot / label" }, { h: "Item" }, { h: "Status" }, { h: "Where" }],
+      holds.map(function (l) {
+        var s = String(l.status || "").toUpperCase();
+        return [
+          "<b>" + esc(l.lot || l.lpn || "—") + "</b>",
+          esc(((l.flavor || l.item || "") + " " + (l.size || "")).trim() || "—"),
+          pill(s || "HOLD", s === "REJECTED" ? "df-out" : "df-low"),
+          esc(l.location || "—")
+        ];
+      })
+    );
+    return statRow([
+      stat(traceState === "loading" ? "…" : fmt(holds.length - rejected.length), tx({ en: "Lots on hold", es: "Lotes retenidos", pt: "Lotes retidos" }), holds.length ? "bad" : ""),
+      stat(traceState === "loading" ? "…" : fmt(rejected.length), tx({ en: "Rejected", es: "Rechazados", pt: "Rejeitados" }), rejected.length ? "bad" : ""),
+      stat(fmt(quar.length), tx({ en: "Quarantine lines", es: "Cuarentena", pt: "Quarentena" }), quar.length ? "warn" : ""),
+      stat(fmt(fails.length), tx({ en: "CCP fails", es: "Fallos CCP", pt: "Falhas CCP" }), fails.length ? "bad" : "")
+    ]) +
+      panel(tx({ en: "Holds and rejects", es: "Retenciones y rechazos", pt: "Retencoes e rejeicoes" }), holdBody, 2, "trQa") +
+      panel(tx({ en: "Quarantine locations", es: "Ubicaciones de cuarentena", pt: "Locais de quarentena" }),
+        quar.length ? dfTable(
+          [{ h: "Item" }, { h: "Zone" }, { h: "Qty", right: true }],
+          quar.map(function (r) { return [esc(r.name), esc(r.zone), fmt(r.qty)]; })
+        ) : empty(tx({ en: "QA-HOLD and QUARANTINE are empty.", es: "Cuarentena vacia.", pt: "Quarentena vazia." })),
+        2, "quarantine") +
+      panel(tx({ en: "Short-dated still open", es: "Short-dated abierto", pt: "Short-dated aberto" }),
+        sd.length ? dfTable(
+          [{ h: "Item" }, { h: "Bags", right: true }, { h: "Flag" }],
+          sd.map(function (r) {
+            return [esc(r.flavor) + '<div class="df-meta">' + esc(r.size || "") + "</div>", fmt(r.bags), pill(r.flag, r.flag === "SHORT-DATED" ? "df-low" : "df-out")];
+          })
+        ) : empty(tx({ en: "No open short-dated, expired, or off-flavor rows.", es: "Nada short-dated abierto.", pt: "Nada short-dated aberto." })),
+        2, "shortdated") +
+      panel(tx({ en: "CCP log", es: "Registro CCP", pt: "Registro CCP" }),
+        logs.length ? sub(fails.length + " fail" + (fails.length === 1 ? "" : "s") + " in " + logs.length + " entries.") + dfTable(
+          [{ h: "When" }, { h: "Type" }, { h: "Flavor" }, { h: "Result" }],
+          logs.map(function (l) {
+            var fail = qFails([l]).length > 0;
+            return [
+              esc(String(l.dt || l.date || l.created_at || "").replace("T", " ").slice(0, 16) || "—"),
+              esc(l.type || "—"),
+              esc(l.flavor || l.equip || "—"),
+              fail ? pill("FAIL", "df-out") : pill("OK", "df-ship")
+            ];
+          })
+        ) : empty(tx({ en: "No CCP entries yet.", es: "Aun no hay registros CCP.", pt: "Ainda nao ha registros CCP." })),
+        2, "quality");
+  }
+
+  function liveTeam() {
+    var ideas = arr(function () { return DB.improvements(); }).slice().sort(function (a, b) {
+      return String(b.created_at || "").localeCompare(String(a.created_at || ""));
+    });
+    var openIdeas = ideas.filter(function (i) { return i.status !== "Done"; });
+    var inProg = ideas.filter(function (i) { return i.status === "In Progress"; });
+    var rd = arr(function () { return DB.rdRequests(); }).slice().sort(function (a, b) {
+      return String(b.created_at || "").localeCompare(String(a.created_at || ""));
+    });
+    var pend = rd.filter(function (r) { return (r.status || "Pending") !== "Received"; });
+    var today = screenDay();
+    var late = pend.filter(function (r) { var nb = String(r.needed_by || "").slice(0, 10); return nb && nb < today; });
+    var log = arr(function () { return DB.log(); }).slice().sort(function (a, b) {
+      return String(b.t || "").localeCompare(String(a.t || ""));
+    });
+    return statRow([
+      stat(fmt(openIdeas.length), tx({ en: "Open improvements", es: "Mejoras abiertas", pt: "Melhorias abertas" })),
+      stat(fmt(inProg.length), tx({ en: "In progress", es: "En progreso", pt: "Em andamento" })),
+      stat(fmt(pend.length), tx({ en: "R&D still out", es: "I+D pendiente", pt: "P&D pendente" }), pend.length ? "warn" : ""),
+      stat(fmt(late.length), tx({ en: "R&D overdue", es: "I+D vencido", pt: "P&D atrasado" }), late.length ? "bad" : "")
+    ]) +
+      panel(tx({ en: "Improvements", es: "Mejoras", pt: "Melhorias" }),
+        openIdeas.length ? dfTable(
+          [{ h: "Idea" }, { h: "Area" }, { h: "Status" }],
+          openIdeas.map(function (i) {
+            return [
+              '<div class="df-name">' + esc(i.title || "—") + "</div>" + (i.owner ? '<div class="df-meta">' + esc(i.owner) + "</div>" : ""),
+              esc(i.area || i.ci_type || "—"),
+              pill(i.status || "Idea", i.status === "In Progress" ? "df-ship" : "df-open")
+            ];
+          })
+        ) : empty(tx({ en: "No open improvement items.", es: "No hay mejoras abiertas.", pt: "Nao ha melhorias abertas." })),
+        2, "improve") +
+      panel(tx({ en: "R&D requests", es: "Solicitudes I+D", pt: "Pedidos P&D" }),
+        pend.length ? dfTable(
+          [{ h: "Company" }, { h: "Item" }, { h: "Need by" }],
+          pend.map(function (r) {
+            var nb = String(r.needed_by || "").slice(0, 10);
+            return [
+              '<div class="df-name">' + esc(r.company || "—") + '</div><div class="df-meta">' + esc(r.req_no || "") + "</div>",
+              esc(r.items || "—"),
+              esc(nb || "—") + (nb && nb < today ? " " + pill("LATE", "df-out") : "")
+            ];
+          })
+        ) : empty(tx({ en: "No R&D requests still out.", es: "No hay solicitudes I+D pendientes.", pt: "Nao ha pedidos de P&D pendentes." })),
+        2, "rd") +
+      panel(tx({ en: "Latest activity", es: "Actividad reciente", pt: "Atividade recente" }),
+        log.length ? dfTable(
+          [{ h: "When" }, { h: "Action" }, { h: "Who" }],
+          log.slice(0, 12).map(function (e) {
+            var when = "";
+            try { when = e.t ? new Date(e.t).toLocaleString() : ""; } catch (err) { when = String(e.t || ""); }
+            return [esc(when || "—"), '<div class="df-name">' + esc(e.a || "—") + "</div>" + (e.d ? '<div class="df-meta">' + esc(e.d) + "</div>" : ""), esc(e.u || "—")];
+          })
+        ) : empty(tx({ en: "No activity log rows yet.", es: "Aun no hay actividad.", pt: "Ainda nao ha atividade." })),
+        4, "acct");
+  }
+
+  function liveMaint() {
+    var all = arr(function () { return DB.maintenance(); });
+    var rank = { Urgent: 0, High: 1, Medium: 2, Low: 3 };
+    var active = all.filter(function (i) { return i.status !== "Done"; }).sort(function (a, b) {
+      return (rank[a.priority] != null ? rank[a.priority] : 2) - (rank[b.priority] != null ? rank[b.priority] : 2);
+    });
+    var req = all.filter(function (i) { return i.status === "Requested"; }).length;
+    var ip = all.filter(function (i) { return i.status === "In Progress"; }).length;
+    var wait = all.filter(function (i) { return i.status === "Waiting"; }).length;
+    var done = all.filter(function (i) { return i.status === "Done"; }).length;
+    return statRow([
+      stat(fmt(req), tx({ en: "Requested", es: "Solicitados", pt: "Pedidos" }), req ? "warn" : ""),
+      stat(fmt(ip), tx({ en: "In progress", es: "En progreso", pt: "Em andamento" })),
+      stat(fmt(wait), tx({ en: "Waiting", es: "En espera", pt: "Aguardando" }), wait ? "bad" : ""),
+      stat(fmt(done), tx({ en: "Done", es: "Hechos", pt: "Feitos" }))
+    ]) +
+      panel(tx({ en: "Open work", es: "Trabajo abierto", pt: "Trabalho aberto" }),
+        active.length ? dfTable(
+          [{ h: "Request" }, { h: "Area" }, { h: "Priority" }, { h: "Status" }],
+          active.map(function (i) {
+            var pr = i.priority || "";
+            var cls = pr === "Urgent" || pr === "High" ? "df-out" : "df-low";
+            return [
+              '<div class="df-name">' + esc(i.title || "—") + "</div>" + (i.problem ? '<div class="df-meta">' + esc(i.problem) + "</div>" : ""),
+              esc(i.area || "—"),
+              pr ? pill(pr, cls) : "—",
+              esc(i.status || "—") + (i.status === "Waiting" && i.waiting_on ? '<div class="df-meta">' + esc(i.waiting_on) + "</div>" : "")
+            ];
+          })
+        ) : empty(tx({ en: "No open maintenance requests.", es: "No hay solicitudes abiertas.", pt: "Nao ha pedidos abertos." })),
+        4, "maintenance");
+  }
+
+  function liveDocs() {
+    var docs = arr(function () { return DB.referenceDocs ? DB.referenceDocs() : []; }).slice().sort(function (a, b) {
+      return String(b.created_at || b.id || "").localeCompare(String(a.created_at || a.id || ""));
+    });
+    var by = {};
+    docs.forEach(function (d) { var c = d.category || "Other"; by[c] = (by[c] || 0) + 1; });
+    var cats = Object.keys(by).sort();
+    return statRow([
+      stat(fmt(docs.length), tx({ en: "Documents", es: "Documentos", pt: "Documentos" })),
+      stat(fmt(cats.length), tx({ en: "Categories", es: "Categorias", pt: "Categorias" })),
+      stat(fmt(docs.filter(function (d) { return d.file_url; }).length), tx({ en: "With a file", es: "Con archivo", pt: "Com arquivo" })),
+      stat(cats.length ? String(by[cats.slice().sort(function (a, b) { return by[b] - by[a]; })[0]]) : "0",
+        cats.length ? cats.slice().sort(function (a, b) { return by[b] - by[a]; })[0] : tx({ en: "Largest category", es: "Categoria mayor", pt: "Maior categoria" }))
+    ]) +
+      panel(tx({ en: "Library", es: "Biblioteca", pt: "Biblioteca" }),
+        docs.length ? (cats.length ? sub(cats.map(function (c) { return c + " " + by[c]; }).join(" · ")) : "") + dfTable(
+          [{ h: "Title" }, { h: "Category" }, { h: "Notes" }],
+          docs.map(function (d) {
+            var title = esc(d.title || d.file_name || "Document");
+            if (d.file_url) title = '<a href="' + esc(d.file_url) + '" target="_blank" rel="noopener">' + title + "</a>";
+            return [title, esc(d.category || "Other"), esc(d.notes || "")];
+          })
+        ) : empty(tx({ en: "No SOPs or policies uploaded yet.", es: "Aun no hay SOPs.", pt: "Ainda nao ha SOPs." })),
+        4, "reference");
+  }
+
+  function liveSystem() {
+    var items = arr(function () { return DB.items(); });
+    var stock = arr(function () { return DB.stock(); });
+    var orders = arr(function () { return DB.orders(); });
+    var rows = [
+      ["Items", items.length],
+      ["Stock rows", stock.length],
+      ["Orders", orders.length],
+      ["Demand lines", arr(function () { return DB.demandLines ? DB.demandLines() : []; }).length],
+      ["Supplier POs", arr(function () { return DB.supplierPos(); }).length],
+      ["Receiving log", arr(function () { return DB.receivingLog(); }).length],
+      ["Shipping log", arr(function () { return DB.shippingLog(); }).length],
+      ["Quality logs", arr(function () { return DB.qualityLogs ? DB.qualityLogs() : []; }).length],
+      ["Maintenance", arr(function () { return DB.maintenance(); }).length],
+      ["Line status", arr(function () { return DB.lineStatus ? DB.lineStatus() : []; }).length]
+    ];
+    var snap = "";
+    try { snap = DB.SNAPSHOT || ""; } catch (e) { snap = ""; }
+    return statRow([
+      stat(cloud() ? "CLOUD" : "LOCAL", tx({ en: "Connection", es: "Conexion", pt: "Conexao" }), cloud() ? "" : "warn"),
+      stat(fmt(items.length), tx({ en: "Items loaded", es: "Items cargados", pt: "Itens carregados" })),
+      stat(fmt(stock.length), tx({ en: "Stock rows loaded", es: "Filas de stock", pt: "Linhas de estoque" })),
+      stat(fmt(orders.length), tx({ en: "Orders loaded", es: "Ordenes cargadas", pt: "Pedidos carregados" }))
+    ]) +
+      panel(tx({ en: "What this screen has loaded", es: "Lo que cargo esta pantalla", pt: "O que esta tela carregou" }),
+        sub(snap ? "Snapshot " + snap + "." : "Row counts from the data already on this screen.") +
+        dfTable([{ h: "Source" }, { h: "Rows", right: true }], rows.map(function (r) {
+          return [esc(r[0]), fmt(r[1])];
+        })),
+        4, "health");
+  }
+
+  function liveFor(id) {
+    if (!dbReady()) return notLoaded();
+    if (id === "recv") return liveRecv();
+    if (id === "inv") return liveInv();
+    if (id === "items") return liveItems();
+    if (id === "purch") return livePurch();
+    if (id === "demand") return liveDemand();
+    if (id === "mfg") return liveMfg();
+    if (id === "ful") return liveFul();
+    if (id === "ship") return liveShip();
+    if (id === "qa") return liveQa();
+    if (id === "team") return liveTeam();
+    if (id === "maint") return liveMaint();
+    if (id === "docs") return liveDocs();
+    if (id === "system") return liveSystem();
+    return "";
+  }
+
+  function toolsHtml(dept) {
+    return '<div class="dept-tools">' + (dept.sections || []).map(function (sec) {
+      return '<h2 class="dept-sec">' + esc(tx(sec.h)) + '</h2><div class="dept-grid">' +
+        sec.tools.map(cardHtml).join("") + "</div>";
+    }).join("") + "</div>";
   }
 
   function homeHtml(dept) {
-    var sections = (dept.sections || []).map(function (sec) {
-      return '<h2 class="dept-sec">' + esc(tx(sec.h)) + '</h2><div class="dept-grid">' +
-        sec.tools.map(cardHtml).join("") + '</div>';
-    }).join("");
-    return '<div id="dept-home" data-dept="' + esc(dept.id) + '">' +
-      '<h1>' + esc(tx(dept.title)) + '</h1>' +
-      '<p class="hint">' + esc(tx(dept.intro)) + '</p>' +
-      sections + '</div>';
+    var live = "";
+    try { live = liveFor(dept.id); } catch (err) {
+      live = panel("Live data", empty(tx({
+        en: "Live numbers could not be read.",
+        es: "No se pudieron leer los numeros.",
+        pt: "Nao foi possivel ler os numeros."
+      })), 4, "");
+    }
+    var banner = cloud() ? "" : '<div class="df-banner dept-span4">' + esc(tx({
+      en: "This browser is not on the shared cloud database. Counts below are not live plant data.",
+      es: "Este navegador no esta en la base compartida. Lo de abajo no es dato en vivo de la planta.",
+      pt: "Este navegador nao esta na base compartilhada. O que aparece abaixo nao e dado ao vivo da planta."
+    })) + "</div>";
+    return '<div id="dept-home" class="dept-floor" data-dept="' + esc(dept.id) + '">' +
+      '<div class="card dept-lead"><h2>' + esc(tx(dept.title)) + '</h2>' +
+      '<p class="hint">' + esc(tx(dept.intro)) + "</p></div>" +
+      banner + live + toolsHtml(dept) + "</div>";
   }
 
-  function paintHome() {
+  function paintHome(force) {
     var view = document.getElementById("view");
     var dept = deptById(homeId);
     if (!view || !dept || dept.passthrough) return;
     var root = view.querySelector("#dept-home");
-    if (root && root.getAttribute("data-dept") === homeId && root.getAttribute("data-lang") === lang()) return;
+    if (!force && root && root.getAttribute("data-dept") === homeId && root.getAttribute("data-lang") === lang()) return;
     painting = true;
     view.innerHTML = homeHtml(dept);
     var held = view.querySelector("#dept-home");
@@ -655,21 +1812,51 @@
       "#view table.df th,#view table.df td{padding:4px 6px}",
       "#view .df-note{margin:0}",
       "#dept-daily-link{display:inline-block;margin:6px 0 0;padding:0;border:0;background:transparent;color:var(--blue,#006DB6);font:800 13px inherit;cursor:pointer}",
-      "#dept-home{padding:0 0 12px}",
-      "#dept-home h1{margin:0 0 2px;color:var(--navy,#04223B);font-size:18px;line-height:1.1}",
-      "#dept-home .hint{margin:0 0 4px;font-size:12px}",
-      "#dept-home .dept-sec{margin:10px 0 4px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#5c6b7c;font-weight:800}",
-      "#dept-home .dept-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:6px}",
-      "#dept-home .dept-card{display:flex;flex-direction:column;align-items:flex-start;text-align:left;background:#fff;border:1px solid var(--line,#d7dde6);border-radius:8px;padding:8px 10px;cursor:pointer;min-height:0;box-shadow:none;font-family:inherit;color:inherit;width:100%}",
+      "#dept-home.dept-floor{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;align-items:start;padding:0 0 12px}",
+      "#dept-home>.card,#dept-home .dept-stat{padding:8px 10px;border-radius:8px;margin:0}",
+      "#dept-home .dept-lead,#dept-home .dept-span4,#dept-home .dept-statrow,#dept-home .dept-tools,#dept-home .df-banner{grid-column:1 / -1}",
+      "#dept-home .dept-span2{grid-column:span 2}",
+      "#dept-home .dept-lead h2{font-size:16px;margin:0;color:var(--navy,#04223B)}",
+      "#dept-home .dept-lead .hint{margin:2px 0 0;font-size:12px}",
+      "#dept-home .dept-statrow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}",
+      "#dept-home .dept-n{font-size:22px;font-weight:800;line-height:1.05;color:var(--navy,#04223B)}",
+      "#dept-home .dept-l{font-size:12px;font-weight:700;color:#3d4c5e;margin-top:2px}",
+      "#dept-home .dept-stat.dept-bad .dept-n{color:#B52024}",
+      "#dept-home .dept-stat.dept-warn .dept-n{color:#9a5b00}",
+      "#dept-home .df-head{margin:0 0 4px}",
+      "#dept-home .df-head h2,#dept-home h2.sub2{font-size:15px;margin:0 0 4px;padding-bottom:2px}",
+      "#dept-home .df-sub{margin:0 0 4px;font-size:12px}",
+      "#dept-home .df-empty{margin:4px 0 2px;font-size:14px}",
+      "#dept-home .df-scroll{max-height:280px}",
+      "#dept-home table.df th,#dept-home table.df td{padding:4px 6px}",
+      "#dept-home table.df td.right,#dept-home table.df th.right{text-align:right}",
+      ".df-banner{border:1px solid #E39412;background:#FFF8EC;border-radius:8px;padding:8px 10px;margin:0;font-weight:700;color:#1a1204}",
+      ".df-pill{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.3px;padding:2px 7px;border-radius:999px;color:#fff;vertical-align:middle}",
+      ".df-out{background:#B52024}.df-low{background:#E39412;color:#1a1204}.df-open{background:#1F3864}.df-ship{background:#2E6FB5}.df-done{background:#5e6b7a}",
+      "table.df{width:100%;border-collapse:collapse}",
+      "table.df th{font-size:12px;text-align:left;color:#3d4c5e;font-weight:800;padding:4px 6px;border-bottom:1px solid var(--line,#d7dde6);position:sticky;top:0;background:#fff}",
+      "table.df td{padding:4px 6px;border-bottom:1px solid #eef2f6;vertical-align:top;font-size:13px}",
+      ".df-name{font-weight:800;color:var(--navy,#04223B)}",
+      ".df-meta{font-size:12px;color:#3d4c5e;font-weight:600}",
+      ".df-empty{margin:4px 0 2px;font-weight:800;color:var(--navy,#1F3864);font-size:14px}",
+      ".df-sub{margin:0 0 4px;color:#3d4c5e;font-size:12px}",
+      ".df-scroll{max-height:280px;overflow:auto}",
+      ".df-more{display:block;width:100%;margin-top:6px;background:#fff;border:1px solid var(--line,#d7dde6);border-radius:8px;padding:6px 10px;font-family:inherit;font-weight:700;font-size:13px;color:var(--navy,#1F3864);cursor:pointer}",
+      ".dept-jump{border:0;background:transparent;color:var(--blue,#006DB6);font:800 12px inherit;cursor:pointer;padding:0;white-space:nowrap}",
+      "#dept-home .dept-sec{margin:8px 0 4px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#5c6b7c;font-weight:800}",
+      "#dept-home .dept-tools{margin-top:2px}",
+      "#dept-home .dept-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:6px}",
+      "#dept-home .dept-card{display:flex;flex-direction:row;align-items:flex-start;gap:8px;text-align:left;background:#fff;border:1px solid var(--line,#d7dde6);border-radius:8px;padding:6px 8px;cursor:pointer;min-height:0;box-shadow:none;font-family:inherit;color:inherit;width:100%}",
       "#dept-home .dept-card:hover{border-color:var(--blue,#006DB6);box-shadow:0 4px 14px rgba(4,34,59,.08)}",
       "#dept-home .dept-card:focus-visible{outline:3px solid var(--blue,#006DB6);outline-offset:2px}",
-      "#dept-home .dept-ico{color:var(--orange,#F26B21);width:22px;height:22px;margin-bottom:6px}",
-      "#dept-home .dept-ico svg{width:22px;height:22px;stroke-width:1.75}",
-      "#dept-home .dept-card strong{display:block;font-size:14px;color:var(--navy,#04223B);margin:0 0 2px}",
-      "#dept-home .dept-card span{display:block;font-size:12px;color:#3d4c5e;line-height:1.25;font-weight:500}",
+      "#dept-home .dept-ico{color:var(--orange,#F26B21);width:18px;height:18px;margin:1px 0 0;flex:none}",
+      "#dept-home .dept-ico svg{width:18px;height:18px;stroke-width:1.75}",
+      "#dept-home .dept-card-copy{min-width:0}",
+      "#dept-home .dept-card strong{display:block;font-size:13px;color:var(--navy,#04223B);margin:0 0 1px}",
+      "#dept-home .dept-card-copy>span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:11px;color:#3d4c5e;line-height:1.25;font-weight:500}",
       "body.boardmode #deptbar{display:none!important}",
-      "@media(max-width:1100px){#view:has(>.df-lead){grid-template-columns:repeat(2,minmax(0,1fr))}}",
-      "@media(max-width:700px){#view:has(>.df-lead){grid-template-columns:1fr}}",
+      "@media(max-width:1100px){#view:has(>.df-lead){grid-template-columns:repeat(2,minmax(0,1fr))}#dept-home.dept-floor,#dept-home .dept-statrow{grid-template-columns:repeat(2,minmax(0,1fr))}#dept-home .dept-span2{grid-column:1 / -1}}",
+      "@media(max-width:700px){#view:has(>.df-lead){grid-template-columns:1fr}#dept-home.dept-floor,#dept-home .dept-statrow{grid-template-columns:1fr}#dept-home .dept-span2{grid-column:1 / -1}}",
       "@media(max-width:1080px){#deptbar .dept-tab{flex:1 0 84px;min-width:84px}}",
       "@media print{#deptbar{display:none!important}}"
     ].join("");
@@ -767,6 +1954,10 @@
       window.__deptResize = true;
       window.addEventListener("resize", syncOffset);
     }
+    if (!window.__deptData && window.DB && typeof DB.onChange === "function") {
+      window.__deptData = true;
+      DB.onChange(function () { if (homeId && !painting) paintHome(true); });
+    }
     if (!document.documentElement.__deptDrawerOff) {
       document.documentElement.__deptDrawerOff = true;
       document.addEventListener("click", onDrawerOutside);
@@ -780,7 +1971,14 @@
     show: showHome,
     tool: openTool,
     fulfillment: function () { showHome("ful"); },
-    current: function () { return { home: homeId, bar: barCurrent }; }
+    current: function () { return { home: homeId, bar: barCurrent }; },
+    more: function (btn) {
+      var card = btn && btn.parentNode;
+      if (!card) return;
+      var rows = card.querySelectorAll("[data-dept-extra]");
+      for (var i = 0; i < rows.length; i++) rows[i].hidden = false;
+      if (btn.parentNode) btn.parentNode.removeChild(btn);
+    }
   };
 
   var started = false;
