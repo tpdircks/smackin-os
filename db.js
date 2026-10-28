@@ -324,7 +324,13 @@ window.DB = (function () {
         id: r.id, ship_date: r.ship_date, ship_type: r.ship_type, recipient: r.recipient,
         address: r.address, carrier: r.carrier, tracking: r.tracking, requested_by: r.requested_by,
         contents: r.contents, lot: r.lot, status: r.status || "Shipped", cost: Number(r.cost) || 0,
-        notes: r.notes, entered_by: r.entered_by, created_at: r.created_at
+        notes: r.notes, entered_by: r.entered_by, created_at: r.created_at,
+        lane: r.lane || "", po_num: r.po_num || "", bol_number: r.bol_number || "",
+        pallet_count: r.pallet_count == null || r.pallet_count === "" ? "" : Number(r.pallet_count),
+        carton_count: r.carton_count == null || r.carton_count === "" ? "" : Number(r.carton_count),
+        weight_lb: r.weight_lb == null || r.weight_lb === "" ? "" : Number(r.weight_lb),
+        freight_class: r.freight_class || "", seal_number: r.seal_number || "",
+        pickup_date: r.pickup_date || "", hold_log_id: r.hold_log_id || "", qa_hold: !!r.qa_hold
       }));
       cache.receivingLog = (rlog && rlog.data ? rlog.data : []).map(r => ({
         id: r.id, recv_date: r.recv_date, supplier: r.supplier, po_num: r.po_num,
@@ -738,6 +744,33 @@ window.DB = (function () {
   }
 
   // ---------- Shipping Log (outbound shipments: samples, orders, replacements) ----------
+  // Lane columns are optional on the record. Callers that do not send them leave
+  // the stored values alone. shipping-lanes.js feature-detects the columns and
+  // only sends them when the select succeeds.
+  const SHIP_LANE_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  function applyShipLane(target, rec) {
+    if (!rec) return target;
+    ["lane", "po_num", "bol_number", "freight_class", "seal_number"].forEach(function (k) {
+      if (rec[k] !== undefined) target[k] = rec[k] ? String(rec[k]) : null;
+    });
+    if (rec.pickup_date !== undefined) target.pickup_date = rec.pickup_date ? String(rec.pickup_date).slice(0, 10) : null;
+    ["pallet_count", "carton_count", "weight_lb"].forEach(function (k) {
+      if (rec[k] === undefined) return;
+      if (rec[k] === "" || rec[k] == null) target[k] = null;
+      else {
+        const n = Number(rec[k]);
+        target[k] = isFinite(n) ? n : null;
+      }
+    });
+    if (rec.qa_hold !== undefined) target.qa_hold = !!rec.qa_hold;
+    if (rec.hold_log_id !== undefined) {
+      const id = rec.hold_log_id ? String(rec.hold_log_id) : "";
+      if (!id) target.hold_log_id = null;
+      else if (mode === "cloud") target.hold_log_id = SHIP_LANE_UUID.test(id) ? id : null;
+      else target.hold_log_id = id;
+    }
+    return target;
+  }
   function shipLocalId() { return "SHP-" + Date.now().toString(36) + "-" + Math.floor(Math.random() * 1000); }
   async function addShipping(rec, op) {
     const row = {
@@ -747,6 +780,7 @@ window.DB = (function () {
       contents: rec.contents || "", lot: rec.lot || "", status: rec.status || "Shipped", cost: Number(rec.cost) || 0,
       notes: rec.notes || "", entered_by: op || "", created_at: new Date().toISOString()
     };
+    applyShipLane(row, rec);
     const logEntry = { a: "Shipment logged", d: (row.ship_type ? row.ship_type + " - " : "") + row.recipient + (row.tracking ? " (" + row.tracking + ")" : ""), u: op, t: row.created_at };
     if (mode === "cloud") {
       await must(sb.from("shipping_log").insert(row), "shipping_log");
@@ -781,6 +815,7 @@ window.DB = (function () {
       requested_by: rec.requested_by || "", contents: rec.contents || "", lot: rec.lot || "", status: rec.status || "Shipped",
       cost: Number(rec.cost) || 0, notes: rec.notes || ""
     };
+    applyShipLane(patch, rec);
     const logEntry = { a: "Shipment edited", d: (patch.recipient || "") + (patch.tracking ? " (" + patch.tracking + ")" : ""), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
       await must(sb.from("shipping_log").update(patch).eq("id", id), "shipping_log");
