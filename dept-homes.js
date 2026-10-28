@@ -130,6 +130,7 @@
     trRecv: { trace: "recv", icon: "package-plus", title: { en: "Receive", es: "Recibir", pt: "Receive" }, blurb: { en: "Lot station: scan a lot in and print labels.", es: "Estacion de lote: escanee un lote y imprima etiquetas.", pt: "Estacao de lote: leia um lote e imprima etiquetas." } },
     trQa: { trace: "qa", icon: "shield-alert", title: { en: "QA Hold", es: "Retención QA", pt: "QA Hold" }, blurb: { en: "Hold or release a lot before it can run.", es: "Retenga o libere un lote antes de usarlo.", pt: "Segure ou libere um lote antes de usar." } },
     trMix: { trace: "mix", icon: "cooking-pot", title: { en: "Mixing", es: "Mezcla", pt: "Mixing" }, blurb: { en: "Lot station: scan ingredients and print bin tags.", es: "Estacion de lote: escanee ingredientes e imprima etiquetas de bin.", pt: "Estacao de lote: leia ingredientes e imprima etiquetas de bin." } },
+    batchrec: { fn: "batchrec", icon: "clipboard-list", title: { en: "Batch Tracking Record", es: "Registro de lote", pt: "Registro de lote" }, blurb: { en: "One sheet per flavor, date, and shift. Lots can fill from today's mixing scans.", es: "Una hoja por sabor, fecha y turno. Los lotes pueden llenarse con los escaneos de mezcla de hoy.", pt: "Uma ficha por sabor, data e turno. Os lotes podem vir das leituras de mistura de hoje." } },
     trPmac: { trace: "pmac", icon: "package-open", title: { en: "P-Mac", es: "P-Mac", pt: "P-Mac" }, blurb: { en: "Lot station: finish a pallet and print its label.", es: "Estacion de lote: termine una tarima e imprima su etiqueta.", pt: "Estacao de lote: feche um palete e imprima a etiqueta." } },
     trMove: { trace: "move", icon: "arrow-left-right", title: { en: "Move", es: "Mover", pt: "Move" }, blurb: { en: "Lot station: scan a label, then scan the location.", es: "Estacion de lote: escanee la etiqueta y luego la ubicacion.", pt: "Estacao de lote: leia a etiqueta e depois o local." } },
     mixing: { go: "mixing", icon: "cooking-pot", title: { en: "Mixing", es: "Mezcla", pt: "Mistura" }, blurb: { en: "What mixing needs, and usage scanned into the room.", es: "Lo que mezcla necesita y el uso escaneado en el cuarto.", pt: "O que a mistura precisa e o uso lido na sala." } },
@@ -245,7 +246,7 @@
       title: { en: "Mixing", es: "Mezcla", pt: "Mistura" },
       intro: { en: "What mixing needs, the lot station, seasoning, recipes, and production history.", es: "Lo que mezcla necesita, la estacion de lote, sazon, recetas y el historial.", pt: "O que a mistura precisa, a estacao de lote, tempero, receitas e o historico." },
       sections: [
-        { h: { en: "Floor", es: "Piso", pt: "Piso" }, tools: ["mixing", "trMix"] },
+        { h: { en: "Floor", es: "Piso", pt: "Piso" }, tools: ["mixing", "trMix", "batchrec"] },
         { h: { en: "Seasoning and recipes", es: "Sazon y recetas", pt: "Tempero e receitas" }, tools: ["seasoning", "recipes"] },
         { h: { en: "Planning and history", es: "Plan y historial", pt: "Plano e historico" }, tools: ["prodorders", "reordertracker", "launch", "hist", "upload"] }
       ]
@@ -365,7 +366,7 @@
     if (btn.id === "dh-nav") return "ops";
     if (btn.id === "sf-nav") return "purch";
     if (btn.id === "shs-nav") return "ship";
-    if (btn.id === "mfg-hist-nav" || btn.id === "mfg-up-nav") return "mixing";
+    if (btn.id === "mfg-hist-nav" || btn.id === "mfg-up-nav" || btn.id === "btr-nav") return "mixing";
     if (btn.id === "mp-nav-entry" || btn.id === "mp-nav-log") return "mixing";
     var trcHome = {
       "trc-nav-use": "ful",
@@ -435,6 +436,7 @@
     if (fn === "sps" && window.SPSFEED && typeof SPSFEED.open === "function") { SPSFEED.open(); return; }
     if (fn === "shipments" && window.SHIPPING_SYNC && typeof SHIPPING_SYNC.open === "function") { SHIPPING_SYNC.open(); return; }
     if (fn === "health" && window.DATAHEALTH && typeof DATAHEALTH.open === "function") { DATAHEALTH.open(); return; }
+    if (fn === "batchrec" && window.BATCHREC && typeof BATCHREC.open === "function") { BATCHREC.open(); return; }
     toast(Lmissing());
   }
 
