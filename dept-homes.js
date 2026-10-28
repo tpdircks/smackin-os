@@ -1,11 +1,11 @@
 /* ============================================================================
    Smackin' OS - Department homes (dept-homes.js)
-   A full-page home for each team. Each card opens a screen that already
-   exists (UI_go, Lot Trace, or a module open()).
-   The horizontal department bar is not in the page. The tool menu stays
-   off-canvas and opens from the header button, so the dashboard is full
-   width and Lot Trace plus the department homes stay reachable. No writes.
-   No timers.
+   Top department bar and a full-page home for each team. Each card opens a
+   screen that already exists (UI_go, Lot Trace, or a module open()).
+   Departments sit in one row across the full width, equal columns. That bar
+   is the main nav. The tool menu stays off-canvas and opens from the header
+   button (Lot Trace and the same homes are in that menu). The left sidebar
+   stays collapsed off screen. No writes. No timers.
    ========================================================================== */
 (function () {
   "use strict";
@@ -484,7 +484,12 @@
     var s = document.createElement("style");
     s.id = "dept-style";
     s.textContent = [
-      "#deptbar,#dept-stack{display:none!important}",
+      "#dept-stack{position:sticky;top:0;z-index:70}",
+      "#deptbar{display:flex;width:100%;box-sizing:border-box;gap:6px;align-items:stretch;overflow-x:auto;background:#fff;border-bottom:1px solid var(--line,#d7dde6);padding:8px 10px 10px;-webkit-overflow-scrolling:touch}",
+      "#deptbar .dept-tab{flex:1 0 156px;min-width:156px;display:flex;align-items:center;justify-content:center;text-align:center;font-family:inherit;font-weight:800;font-size:14px;line-height:1.15;color:var(--navy,#04223B);background:var(--light,#E1EEF7);border:1px solid transparent;border-radius:10px;padding:8px 10px;cursor:pointer;white-space:nowrap;min-height:44px}",
+      "#deptbar .dept-tab:hover{border-color:var(--blue,#006DB6)}",
+      "#deptbar .dept-tab.on{background:var(--orange,#F26B21);color:#fff}",
+      "#deptbar .dept-tab:focus-visible{outline:3px solid var(--blue,#006DB6);outline-offset:2px}",
       "nav#nav{position:fixed!important;top:0;left:-320px!important;bottom:0;height:100vh;max-height:none!important;width:300px!important;flex:none!important;z-index:80;transform:none!important;transition:left .22s ease;box-shadow:2px 0 14px rgba(0,0,0,.25);visibility:visible!important;pointer-events:auto!important;overflow-y:auto!important;background:#fff}",
       "nav#nav.open{left:0!important}",
       "#navToggle,.navtoggle{display:inline-block!important}",
@@ -502,20 +507,48 @@
       "#dept-home .dept-ico svg{width:28px;height:28px;stroke-width:1.75}",
       "#dept-home .dept-card strong{display:block;font-size:18px;color:var(--navy,#04223B);margin:0 0 4px}",
       "#dept-home .dept-card span{display:block;font-size:14px;color:#3d4c5e;line-height:1.35;font-weight:500}",
-      "@media(max-width:820px){#dept-home h1{font-size:24px}}"
+      "body.boardmode #deptbar{display:none!important}",
+      "@media(max-width:820px){#deptbar{gap:4px;padding:6px 6px 8px}#deptbar .dept-tab{flex-basis:132px;min-width:132px;font-size:13px;padding:8px 8px}#dept-home h1{font-size:24px}}",
+      "@media print{#deptbar{display:none!important}}"
     ].join("");
     document.head.appendChild(s);
   }
 
   function buildBar() {
+    if (document.getElementById("deptbar")) return;
     styleOnce();
-    var bar = document.getElementById("deptbar");
-    if (bar && bar.parentNode) bar.parentNode.removeChild(bar);
+    var header = document.querySelector("header");
     var stack = document.getElementById("dept-stack");
-    if (stack && stack.parentNode) {
-      while (stack.firstChild) stack.parentNode.insertBefore(stack.firstChild, stack);
-      stack.parentNode.removeChild(stack);
+    if (!stack && header && header.parentNode) {
+      stack = document.createElement("div");
+      stack.id = "dept-stack";
+      header.parentNode.insertBefore(stack, header);
+      stack.appendChild(header);
     }
+    var bar = document.createElement("nav");
+    bar.id = "deptbar";
+    bar.setAttribute("aria-label", tx({ en: "Departments", es: "Departamentos", pt: "Departamentos" }));
+    if (stack) stack.appendChild(bar);
+    else {
+      var layout = document.querySelector(".layout");
+      if (layout && layout.parentNode) layout.parentNode.insertBefore(bar, layout);
+      else document.body.appendChild(bar);
+    }
+    bar.addEventListener("touchstart", function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest("[data-dept]") : null;
+      if (!btn) return;
+      touchArmed = true;
+      pressBusy = entryInProgress();
+    }, { passive: true });
+    bar.addEventListener("mousedown", function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest("[data-dept]") : null;
+      if (!btn) return;
+      if (touchArmed) { touchArmed = false; return; }
+      pressBusy = entryInProgress();
+    });
+    bar.addEventListener("click", onBarClick);
+    renderBar();
+    syncOffset();
   }
 
   function boot() {

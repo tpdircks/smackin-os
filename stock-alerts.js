@@ -1,17 +1,12 @@
 /* ============================================================================
    Smackin' OS - Stock alerts (stock-alerts.js)
-   Sticky out-of-stock / low-stock bar on every screen, row highlighting,
-   and a Low / Out filter on Inventory.
-   Counts use the same rule as the dashboard tiles in viewHome:
+   Inventory row highlighting and a Low / Out filter. The sticky red/yellow
+   strip under the header is not mounted: out-of-stock and low-stock lists
+   live on the Dashboard and are not dismissable there.
+   Counts use the same rule as the dashboard sections:
      OUT: reorder > 0 and DB.onHand(id) <= 0
      LOW: reorder > 0 and 0 < DB.onHand(id) < reorder
-   An item leaves the bar only when on-hand rises above its reorder point.
-   The bar stays visible while any item is low or out. It can collapse to a
-   compact header that still shows OUT n / LOW n and View items.
-   A click or tap outside the bar, or Escape, collapses the list only.
-   Choosing an item opens it in Inventory and then collapses the list.
-   Mounted beside #view so app render() cannot destroy it mid-tap.
-   Open state is the sa-open class. Self-contained. Does not edit app.js.
+   Choosing a highlighted row is unchanged. Self-contained. Does not edit app.js.
    ========================================================================== */
 (function () {
   "use strict";
@@ -119,6 +114,7 @@
     var s = document.createElement("style");
     s.id = "sa-style";
     s.textContent = [
+      "#sa-bar{display:none!important}",
       "#sa-bar{position:sticky;top:0;z-index:70;margin:0;overflow:visible;",
       "border-bottom:3px solid #B52024;background:#fff;color:#303030;",
       "box-shadow:0 2px 8px rgba(181,32,36,.12);",
@@ -175,21 +171,10 @@
   }
 
   function ensureChrome() {
-    if (!bar) {
-      bar = document.createElement("div");
-      bar.id = "sa-bar";
-      bar.className = "sa-bar";
-      bar.hidden = true;
-      bar.setAttribute("role", "region");
-      bar.addEventListener("click", onBarClick);
-    }
-    var header = document.querySelector("header");
-    if (header && header.parentNode) {
-      if (!(bar.parentNode === header.parentNode && bar.previousSibling === header)) {
-        header.parentNode.insertBefore(bar, header.nextSibling);
-      }
-      return true;
-    }
+    // Dashboard owns out/low stock. Never mount the sticky strip.
+    var existing = document.getElementById("sa-bar");
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+    bar = null;
     return false;
   }
 
