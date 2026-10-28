@@ -2,10 +2,13 @@
    Smackin' OS - Department homes (dept-homes.js)
    Top department bar and a full-page home for each team. Each card opens a
    screen that already exists (UI_go, Lot Trace, or a module open()).
-   Departments sit in one row across the full width, equal columns. That bar
-   is the main nav. The tool menu stays off-canvas and opens from the header
-   button (Lot Trace and the same homes are in that menu). The left sidebar
-   stays collapsed off screen. No writes. No timers.
+   The bar matches the floor: Dashboard, Receiving, Inventory, Purchasing,
+   Manufacturing, Fulfillment, Shipping, Quality, Maintenance. The old
+   sidebar kept Shipping as its own group (the Shipping Log), so it stays
+   its own tab. People, R&D, and Settings stay on the Maintenance home and
+   in the header menu. That menu stays off-canvas. A click outside the open
+   panel, or Escape, closes it. The header button still toggles it.
+   The left sidebar stays collapsed off screen. No writes. No timers.
    ========================================================================== */
 (function () {
   "use strict";
@@ -21,11 +24,12 @@
   var touchArmed = false;
 
   var TAB_DEPT = {
+    home: "home", daily: "home",
     receive: "recv", recvlog: "recv", returns: "recv", qa: "recv",
-    dash: "recv", adjust: "recv", count: "recv", alerts: "recv",
-    move: "recv", locations: "recv", facility: "recv", finbags: "recv",
-    seasoning: "recv", seed: "recv", skus: "recv", analytics: "recv",
-    labels: "recv", recipes: "recv",
+    dash: "inv", adjust: "inv", count: "inv", alerts: "inv",
+    move: "inv", locations: "inv", facility: "inv", finbags: "inv",
+    seasoning: "inv", seed: "inv", skus: "inv", analytics: "inv",
+    labels: "inv", recipes: "inv",
     purchasing: "purch", expreceipts: "purch", reorder15: "purch", supplierpos: "purch",
     prodorders: "mfg", reordertracker: "mfg", launch: "mfg", mixing: "mfg",
     pmac: "mfg", pmacout: "mfg", floor: "mfg",
@@ -33,8 +37,8 @@
     maintenance: "maint",
     produce: "ful", retailprod: "ful", ecomprod: "ful", skulookup: "ful",
     prodlog: "ful", fulfilldaily: "ful", flavinv: "ful", stockbuild: "ful",
-    orders: "ful", orderdocs: "ful", shiplog: "ful",
-    home: "recv", daily: "recv",
+    orders: "ful", orderdocs: "ful",
+    shiplog: "ship",
     demand: "mfg", demandboard: "mfg", demandsched: "mfg", demandimport: "mfg",
     ecomdemand: "mfg", forecast: "mfg",
     people: "maint", improve: "maint", rd: "maint", log: "maint",
@@ -161,14 +165,32 @@
 
   var DEPTS = [
     {
-      id: "recv",
-      label: { en: "Receiving / Inventory", es: "Recibo / Inventario", pt: "Recebimento / Estoque" },
-      title: { en: "Receiving / Inventory", es: "Recibo / Inventario", pt: "Recebimento / Estoque" },
-      intro: { en: "Receive product, count stock, and open the inventory tools already on this floor.", es: "Reciba producto, cuente existencia y abra las herramientas de inventario que ya estan en piso.", pt: "Receba produto, conte estoque e abra as ferramentas de inventario que ja estao no piso." },
+      id: "home",
+      live: "home",
+      label: { en: "Dashboard", es: "Panel", pt: "Painel" },
+      title: { en: "Dashboard", es: "Panel", pt: "Painel" },
+      intro: { en: "Facility snapshot: stock, orders pulled today, and open inbound POs.", es: "Resumen de la planta: stock, ordenes tomadas hoy y compras abiertas.", pt: "Resumo da planta: estoque, pedidos puxados hoje e compras abertas." },
       sections: [
-        { h: { en: "Facility", es: "Planta", pt: "Planta" }, tools: ["desk", "daily"] },
-        { h: { en: "Receiving", es: "Recibo", pt: "Recebimento" }, tools: ["receive", "recvlog", "returns", "quarantine"] },
-        { h: { en: "Stock and counts", es: "Stock y conteos", pt: "Estoque e contagens" }, tools: ["dash", "adjust", "count", "alerts", "shortdated", "finbags", "move", "locations", "facility"] },
+        { h: { en: "Facility", es: "Planta", pt: "Planta" }, tools: ["desk", "daily"] }
+      ]
+    },
+    {
+      id: "recv",
+      label: { en: "Receiving", es: "Recibo", pt: "Receber" },
+      title: { en: "Receiving", es: "Recibo", pt: "Recebimento" },
+      intro: { en: "Check product in, log the paperwork, take returns, and work quarantine.", es: "Reciba producto, registre el papeleo, tome devoluciones y trabaje cuarentena.", pt: "Receba produto, registre os documentos, lance devolucoes e trabalhe a quarentena." },
+      sections: [
+        { h: { en: "Inbound", es: "Entrada", pt: "Entrada" }, tools: ["receive", "recvlog", "returns", "quarantine"] }
+      ]
+    },
+    {
+      id: "inv",
+      label: { en: "Inventory", es: "Inventario", pt: "Estoque" },
+      title: { en: "Inventory", es: "Inventario", pt: "Estoque" },
+      intro: { en: "Counts, adjustments, locations, and the item catalog.", es: "Conteos, ajustes, ubicaciones y el catalogo de items.", pt: "Contagens, ajustes, locais e o catalogo de itens." },
+      sections: [
+        { h: { en: "Counts", es: "Conteos", pt: "Contagens" }, tools: ["dash", "adjust", "count", "alerts", "finbags", "move"] },
+        { h: { en: "Locations", es: "Ubicaciones", pt: "Locais" }, tools: ["locations", "facility"] },
         { h: { en: "Items", es: "Items", pt: "Itens" }, tools: ["seasoning", "seed", "skus", "recipes", "analytics", "printlabels"] }
       ]
     },
@@ -183,20 +205,8 @@
       ]
     },
     {
-      id: "ful",
-      label: { en: "Fulfillment", es: "Fulfillment", pt: "Fulfillment" },
-      title: { en: "Fulfillment", es: "Fulfillment", pt: "Fulfillment" },
-      intro: { en: "Build retail and e-commerce orders, pull lots, and ship what is ready.", es: "Arme ordenes retail y de e-commerce, tome lotes y envie lo que esta listo.", pt: "Monte pedidos de varejo e e-commerce, separe lotes e envie o que esta pronto." },
-      sections: [
-        { h: { en: "Line", es: "Linea", pt: "Linha" }, tools: ["retailprod", "ecomprod", "trUse", "trShip", "produce", "prodlog", "fulfilldaily"] },
-        { h: { en: "Lookup and stock", es: "Busqueda y stock", pt: "Busca e estoque" }, tools: ["skulookup", "flavinv", "stockbuild"] },
-        { h: { en: "Orders", es: "Ordenes", pt: "Pedidos" }, tools: ["orders", "orderdocs"] },
-        { h: { en: "Shipping", es: "Envios", pt: "Envios" }, tools: ["shiplog", "shipments"] }
-      ]
-    },
-    {
       id: "mfg",
-      label: { en: "Manufacturing", es: "Manufactura", pt: "Manufatura" },
+      label: { en: "Mfg", es: "Mfg", pt: "Mfg" },
       title: { en: "Manufacturing", es: "Manufactura", pt: "Manufatura" },
       intro: { en: "Mix, P-Mac, production orders, demand, the live machines, and the lot stations on this floor.", es: "Mezcla, P-Mac, ordenes de produccion, demanda, las maquinas en vivo y las estaciones de lote en piso.", pt: "Mistura, P-Mac, ordens de producao, demanda, as maquinas ao vivo e as estacoes de lote no piso." },
       sections: [
@@ -204,6 +214,26 @@
         { h: { en: "Floor", es: "Piso", pt: "Piso" }, tools: ["mixing", "pmac", "pmacout", "floor"] },
         { h: { en: "Planning and history", es: "Plan y historial", pt: "Plano e historico" }, tools: ["prodorders", "reordertracker", "launch", "hist", "upload"] },
         { h: { en: "Demand", es: "Demanda", pt: "Demanda" }, tools: ["demand", "demandboard", "demandsched", "demandimport", "ecomdemand", "forecast"] }
+      ]
+    },
+    {
+      id: "ful",
+      label: { en: "Fulfill", es: "Fulfill", pt: "Fulfill" },
+      title: { en: "Fulfillment", es: "Fulfillment", pt: "Fulfillment" },
+      intro: { en: "Build retail and e-commerce orders and pull lots. Shipping has its own tab.", es: "Arme ordenes retail y de e-commerce y tome lotes. Envios tiene su propia pestana.", pt: "Monte pedidos de varejo e e-commerce e separe lotes. Envios tem sua propria aba." },
+      sections: [
+        { h: { en: "Line", es: "Linea", pt: "Linha" }, tools: ["retailprod", "ecomprod", "trUse", "produce", "prodlog", "fulfilldaily"] },
+        { h: { en: "Lookup and stock", es: "Busqueda y stock", pt: "Busca e estoque" }, tools: ["skulookup", "flavinv", "stockbuild"] },
+        { h: { en: "Orders", es: "Ordenes", pt: "Pedidos" }, tools: ["orders", "orderdocs"] }
+      ]
+    },
+    {
+      id: "ship",
+      label: { en: "Shipping", es: "Envios", pt: "Envios" },
+      title: { en: "Shipping", es: "Envios", pt: "Envios" },
+      intro: { en: "Log a shipment, read what ShipStation already synced, and build an outbound pallet.", es: "Registre un envio, lea lo que ShipStation ya sincronizo y arme una tarima de salida.", pt: "Registre um envio, leia o que o ShipStation ja sincronizou e monte um palete de saida." },
+      sections: [
+        { h: { en: "Outbound", es: "Salida", pt: "Saida" }, tools: ["shiplog", "shipments", "trShip"] }
       ]
     },
     {
@@ -218,7 +248,7 @@
     },
     {
       id: "maint",
-      label: { en: "Maintenance", es: "Mantenimiento", pt: "Manutencao" },
+      label: { en: "Maint", es: "Mant.", pt: "Manut." },
       title: { en: "Maintenance", es: "Mantenimiento", pt: "Manutencao" },
       intro: { en: "Maintenance requests, the services log, and the team and system screens.", es: "Solicitudes de mantenimiento, el registro de servicios y las pantallas de equipo y sistema.", pt: "Pedidos de manutencao, o registro de servicos e as telas de equipe e sistema." },
       sections: [
@@ -258,11 +288,33 @@
     if (b) b.classList.remove("show");
   }
 
+  function drawerOpen() {
+    var nav = document.getElementById("nav");
+    return !!(nav && nav.classList.contains("open"));
+  }
+
+  // The header button toggles the panel. Any other click while it is open
+  // is outside the panel (including the dimmed backdrop) and closes it.
+  function onDrawerOutside(e) {
+    if (!drawerOpen()) return;
+    var t = e.target;
+    if (t && t.nodeType !== 1) t = t.parentElement;
+    if (!t || !t.closest) return;
+    if (t.closest("#nav") || t.closest("#navToggle")) return;
+    closeDrawer();
+  }
+
+  function onDrawerKey(e) {
+    if (!drawerOpen()) return;
+    if (e.key !== "Escape" && e.key !== "Esc") return;
+    closeDrawer();
+  }
+
   function deptOfNav(btn) {
     if (!btn) return "";
     if (btn.id === "svc-nav" || btn.id === "dh-nav") return "maint";
     if (btn.id === "sf-nav") return "purch";
-    if (btn.id === "shs-nav") return "ful";
+    if (btn.id === "shs-nav" || btn.id === "trc-nav-ship") return "ship";
     if (btn.id === "mfg-hist-nav" || btn.id === "mfg-up-nav") return "mfg";
     if (btn.getAttribute("data-trc") === "1") {
       var h = btn.getAttribute("data-trc-home") || "";
@@ -361,9 +413,10 @@
     bar.setAttribute("aria-label", tx({ en: "Departments", es: "Departamentos", pt: "Departamentos" }));
     bar.innerHTML = DEPTS.map(function (d) {
       var on = d.id === barCurrent;
-      return '<button type="button" class="dept-tab' + (on ? " on" : "") + '" data-dept="' + d.id + '"' +
+      return '<button type="button" class="dept-tab' + (on ? " on" : "") + '" data-dept="' + d.id + '" title="' + esc(tx(d.title || d.label)) + '"' +
         (on ? ' aria-current="page"' : "") + '>' + esc(tx(d.label)) + '</button>';
     }).join("");
+    scrollActiveTab();
   }
 
   function markBar() {
@@ -377,6 +430,18 @@
       if (on) buttons[i].setAttribute("aria-current", "page");
       else buttons[i].removeAttribute("aria-current");
     }
+    scrollActiveTab();
+  }
+
+  function scrollActiveTab() {
+    var bar = document.getElementById("deptbar");
+    if (!bar) return;
+    var onBtn = bar.querySelector(".dept-tab.on");
+    if (!onBtn) return;
+    var r = onBtn.getBoundingClientRect();
+    var b = bar.getBoundingClientRect();
+    if (r.left < b.left) bar.scrollLeft -= (b.left - r.left + 8);
+    else if (r.right > b.right) bar.scrollLeft += (r.right - b.right + 8);
   }
 
   function syncOffset() {
@@ -394,10 +459,19 @@
     var dept = deptById(id);
     if (!dept || dept.passthrough) return;
     releaseOtherViews();
-    homeId = id;
     barCurrent = id;
     paintTries = 0;
     closeDrawer();
+    if (dept.live && typeof window.UI_go === "function") {
+      homeId = "";
+      markBar();
+      paintDeptActive();
+      window.UI_go(dept.live);
+      try { window.scrollTo(0, 0); } catch (e) {}
+      syncOffset();
+      return;
+    }
+    homeId = id;
     paintHome();
     markBar();
     paintDeptActive();
@@ -428,9 +502,29 @@
     openTool(btn.getAttribute("data-dept-tool"));
   }
 
+  function noteDashboard() {
+    if (homeId) return;
+    var view = document.getElementById("view");
+    if (!view || !view.querySelector(".df-lead")) return;
+    if (barCurrent !== "home") {
+      barCurrent = "home";
+      markBar();
+      paintDeptActive();
+    }
+    var lead = view.querySelector(".df-lead");
+    if (!lead || lead.querySelector("#dept-daily-link")) return;
+    var btn = document.createElement("button");
+    btn.id = "dept-daily-link";
+    btn.type = "button";
+    btn.textContent = tx({ en: "Daily metrics", es: "Metricas del dia", pt: "Metricas do dia" });
+    btn.addEventListener("click", function () { openTool("daily"); });
+    lead.appendChild(btn);
+  }
+
   function onView() {
     if (painting) return;
     if (lang() !== shownLang) renderBar();
+    noteDashboard();
     if (!homeId) return;
     var view = document.getElementById("view");
     if (!view) return;
@@ -450,9 +544,10 @@
   function paintDeptActive() {
     var nav = document.getElementById("nav");
     if (!nav) return;
+    var current = homeId || barCurrent;
     var buttons = nav.querySelectorAll("#dept-nav-homes [data-dept-nav]");
     for (var i = 0; i < buttons.length; i++) {
-      buttons[i].classList.toggle("active", buttons[i].getAttribute("data-dept-nav") === homeId);
+      buttons[i].classList.toggle("active", buttons[i].getAttribute("data-dept-nav") === current);
     }
   }
 
@@ -469,9 +564,9 @@
     var label = tx({ en: "Departments", es: "Departamentos", pt: "Departamentos" });
     block.innerHTML = '<div class="navlabel">' + esc(label) + '</div>' +
       DEPTS.map(function (d) {
-        var on = d.id === homeId;
+        var on = d.id === (homeId || barCurrent);
         return '<button type="button" class="navitem' + (on ? " active" : "") + '" data-dept-nav="' + esc(d.id) + '">' +
-          '<i class="navico" data-lucide="layout-grid"></i><span>' + esc(tx(d.label)) + '</span></button>';
+          '<i class="navico" data-lucide="layout-grid"></i><span>' + esc(tx(d.title || d.label)) + '</span></button>';
       }).join("");
     var firstGroup = nav.querySelector(".navgroup");
     if (firstGroup) nav.insertBefore(block, firstGroup);
@@ -485,30 +580,38 @@
     s.id = "dept-style";
     s.textContent = [
       "#dept-stack{position:sticky;top:0;z-index:70}",
-      "#deptbar{display:flex;width:100%;box-sizing:border-box;gap:6px;align-items:stretch;overflow-x:auto;background:#fff;border-bottom:1px solid var(--line,#d7dde6);padding:8px 10px 10px;-webkit-overflow-scrolling:touch}",
-      "#deptbar .dept-tab{flex:1 0 156px;min-width:156px;display:flex;align-items:center;justify-content:center;text-align:center;font-family:inherit;font-weight:800;font-size:14px;line-height:1.15;color:var(--navy,#04223B);background:var(--light,#E1EEF7);border:1px solid transparent;border-radius:10px;padding:8px 10px;cursor:pointer;white-space:nowrap;min-height:44px}",
+      "#deptbar{display:flex;width:100%;box-sizing:border-box;gap:4px;align-items:stretch;overflow-x:auto;background:#fff;border-bottom:1px solid var(--line,#d7dde6);padding:4px 6px 5px;-webkit-overflow-scrolling:touch}",
+      "#deptbar .dept-tab{flex:1 0 auto;min-width:max-content;display:flex;align-items:center;justify-content:center;text-align:center;font-family:inherit;font-weight:800;font-size:13px;line-height:1.1;color:var(--navy,#04223B);background:var(--light,#E1EEF7);border:1px solid transparent;border-radius:8px;padding:6px 10px;cursor:pointer;white-space:nowrap;min-height:36px}",
       "#deptbar .dept-tab:hover{border-color:var(--blue,#006DB6)}",
       "#deptbar .dept-tab.on{background:var(--orange,#F26B21);color:#fff}",
       "#deptbar .dept-tab:focus-visible{outline:3px solid var(--blue,#006DB6);outline-offset:2px}",
       "nav#nav{position:fixed!important;top:0;left:-320px!important;bottom:0;height:100vh;max-height:none!important;width:300px!important;flex:none!important;z-index:80;transform:none!important;transition:left .22s ease;box-shadow:2px 0 14px rgba(0,0,0,.25);visibility:visible!important;pointer-events:auto!important;overflow-y:auto!important;background:#fff}",
       "nav#nav.open{left:0!important}",
       "#navToggle,.navtoggle{display:inline-block!important}",
-      "#navBackdrop.show{display:block!important}",
-      ".layout{display:block!important;max-width:1180px!important;width:100%!important;margin:0 auto!important}",
+      "#navBackdrop.show{display:block!important;position:fixed!important;inset:0!important;background:rgba(0,0,0,.4);z-index:75}",
+      ".layout{display:block!important;max-width:none!important;width:100%!important;margin:0!important}",
+      "main{padding:6px 8px 16px!important}",
       "main,#view{max-width:none!important;width:100%!important;flex:none!important}",
-      "#dept-home{padding:8px 0 28px}",
-      "#dept-home h1{margin:0 0 6px;color:var(--navy,#04223B);font-size:28px;line-height:1.15}",
-      "#dept-home .dept-sec{margin:22px 0 10px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#5c6b7c;font-weight:800}",
-      "#dept-home .dept-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}",
-      "#dept-home .dept-card{display:flex;flex-direction:column;align-items:flex-start;text-align:left;background:#fff;border:1px solid var(--line,#d7dde6);border-radius:12px;padding:16px 16px 18px;cursor:pointer;min-height:132px;box-shadow:0 1px 2px rgba(0,0,0,.04);font-family:inherit;color:inherit;width:100%}",
+      "#view .df-grid{gap:8px;margin:0 0 8px}",
+      "#view .df-lead,#view .df-grid>.card,#view #df-inbound{padding:8px 10px;border-radius:8px}",
+      "#view .df-lead{margin-bottom:8px}",
+      "#view .df-note{margin:0 0 8px}",
+      "#dept-daily-link{display:inline-block;margin:6px 0 0;padding:0;border:0;background:transparent;color:var(--blue,#006DB6);font:800 13px inherit;cursor:pointer}",
+      "#dept-home{padding:2px 0 16px}",
+      "#dept-home h1{margin:0 0 2px;color:var(--navy,#04223B);font-size:22px;line-height:1.15}",
+      "#dept-home .hint{margin:0 0 6px}",
+      "#dept-home .dept-sec{margin:12px 0 6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#5c6b7c;font-weight:800}",
+      "#dept-home .dept-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}",
+      "#dept-home .dept-card{display:flex;flex-direction:column;align-items:flex-start;text-align:left;background:#fff;border:1px solid var(--line,#d7dde6);border-radius:8px;padding:10px 12px 12px;cursor:pointer;min-height:0;box-shadow:none;font-family:inherit;color:inherit;width:100%}",
       "#dept-home .dept-card:hover{border-color:var(--blue,#006DB6);box-shadow:0 4px 14px rgba(4,34,59,.08)}",
       "#dept-home .dept-card:focus-visible{outline:3px solid var(--blue,#006DB6);outline-offset:2px}",
-      "#dept-home .dept-ico{color:var(--orange,#F26B21);width:28px;height:28px;margin-bottom:10px}",
-      "#dept-home .dept-ico svg{width:28px;height:28px;stroke-width:1.75}",
-      "#dept-home .dept-card strong{display:block;font-size:18px;color:var(--navy,#04223B);margin:0 0 4px}",
-      "#dept-home .dept-card span{display:block;font-size:14px;color:#3d4c5e;line-height:1.35;font-weight:500}",
+      "#dept-home .dept-ico{color:var(--orange,#F26B21);width:22px;height:22px;margin-bottom:6px}",
+      "#dept-home .dept-ico svg{width:22px;height:22px;stroke-width:1.75}",
+      "#dept-home .dept-card strong{display:block;font-size:15px;color:var(--navy,#04223B);margin:0 0 2px}",
+      "#dept-home .dept-card span{display:block;font-size:13px;color:#3d4c5e;line-height:1.3;font-weight:500}",
       "body.boardmode #deptbar{display:none!important}",
-      "@media(max-width:820px){#deptbar{gap:4px;padding:6px 6px 8px}#deptbar .dept-tab{flex-basis:132px;min-width:132px;font-size:13px;padding:8px 8px}#dept-home h1{font-size:24px}}",
+      "@media(min-width:1100px){#dept-home .dept-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}}",
+      "@media(max-width:820px){#deptbar{gap:4px;padding:4px 4px 5px}#deptbar .dept-tab{font-size:12px;padding:6px 8px;min-height:36px}#dept-home h1{font-size:20px}#dept-home .dept-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px}}",
       "@media print{#deptbar{display:none!important}}"
     ].join("");
     document.head.appendChild(s);
@@ -604,6 +707,11 @@
     if (!window.__deptResize) {
       window.__deptResize = true;
       window.addEventListener("resize", syncOffset);
+    }
+    if (!document.documentElement.__deptDrawerOff) {
+      document.documentElement.__deptDrawerOff = true;
+      document.addEventListener("click", onDrawerOutside);
+      document.addEventListener("keydown", onDrawerKey);
     }
     window.SMK_VIEW_LOCKS = window.SMK_VIEW_LOCKS || [];
     window.SMK_VIEW_LOCKS.push(function () { return !!homeId; });
