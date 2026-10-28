@@ -2,13 +2,12 @@
    Smackin' OS - Department homes (dept-homes.js)
    Top department bar and a full-page home for each team. Each card opens a
    screen that already exists (UI_go, Lot Trace, or a module open()).
-   The bar matches the floor: Dashboard, Receiving, Inventory, Purchasing,
-   Manufacturing, Fulfillment, Shipping, Quality, Maintenance. The old
-   sidebar kept Shipping as its own group (the Shipping Log), so it stays
-   its own tab. People, R&D, and Settings stay on the Maintenance home and
-   in the header menu. That menu stays off-canvas. A click outside the open
-   panel, or Escape, closes it. The header button still toggles it.
-   The left sidebar stays collapsed off screen. No writes. No timers.
+   Every sidebar group has a tab, equal width: Dashboard, Receiving,
+   Inventory, Items, Purchasing, Demand, Manufacturing, Fulfillment,
+   Shipping, Quality, Team, Maintenance, Docs, and System. The menu stays
+   off-canvas. A click outside the open panel, or Escape, closes it. The
+   header button still toggles it. The left sidebar stays collapsed off
+   screen. No writes. No timers.
    ========================================================================== */
 (function () {
   "use strict";
@@ -28,8 +27,8 @@
     receive: "recv", recvlog: "recv", returns: "recv", qa: "recv",
     dash: "inv", adjust: "inv", count: "inv", alerts: "inv",
     move: "inv", locations: "inv", facility: "inv", finbags: "inv",
-    seasoning: "inv", seed: "inv", skus: "inv", analytics: "inv",
-    labels: "inv", recipes: "inv",
+    seasoning: "items", seed: "items", skus: "items", analytics: "items",
+    labels: "items", recipes: "items",
     purchasing: "purch", expreceipts: "purch", reorder15: "purch", supplierpos: "purch",
     prodorders: "mfg", reordertracker: "mfg", launch: "mfg", mixing: "mfg",
     pmac: "mfg", pmacout: "mfg", floor: "mfg",
@@ -39,10 +38,10 @@
     prodlog: "ful", fulfilldaily: "ful", flavinv: "ful", stockbuild: "ful",
     orders: "ful", orderdocs: "ful",
     shiplog: "ship",
-    demand: "mfg", demandboard: "mfg", demandsched: "mfg", demandimport: "mfg",
-    ecomdemand: "mfg", forecast: "mfg",
-    people: "maint", improve: "maint", rd: "maint", log: "maint",
-    reference: "qa", board: "maint", settings: "maint"
+    demand: "demand", demandboard: "demand", demandsched: "demand", demandimport: "demand",
+    ecomdemand: "demand", forecast: "demand",
+    people: "team", improve: "team", rd: "team", log: "team",
+    reference: "docs", board: "system", settings: "system"
   };
 
   function tx(v) {
@@ -187,11 +186,20 @@
       id: "inv",
       label: { en: "Inventory", es: "Inventario", pt: "Estoque" },
       title: { en: "Inventory", es: "Inventario", pt: "Estoque" },
-      intro: { en: "Counts, adjustments, locations, and the item catalog.", es: "Conteos, ajustes, ubicaciones y el catalogo de items.", pt: "Contagens, ajustes, locais e o catalogo de itens." },
+      intro: { en: "Counts, adjustments, moves, and locations.", es: "Conteos, ajustes, movimientos y ubicaciones.", pt: "Contagens, ajustes, movimentos e locais." },
       sections: [
         { h: { en: "Counts", es: "Conteos", pt: "Contagens" }, tools: ["dash", "adjust", "count", "alerts", "finbags", "move"] },
-        { h: { en: "Locations", es: "Ubicaciones", pt: "Locais" }, tools: ["locations", "facility"] },
-        { h: { en: "Items", es: "Items", pt: "Itens" }, tools: ["seasoning", "seed", "skus", "recipes", "analytics", "printlabels"] }
+        { h: { en: "Locations", es: "Ubicaciones", pt: "Locais" }, tools: ["locations", "facility"] }
+      ]
+    },
+    {
+      id: "items",
+      label: { en: "Items", es: "Items", pt: "Itens" },
+      title: { en: "Items & Reports", es: "Items y Reportes", pt: "Itens e Relatorios" },
+      intro: { en: "Seasoning, seed, SKUs, recipes, and the inventory reports.", es: "Sazon, semilla, SKUs, recetas y los reportes de inventario.", pt: "Tempero, semente, SKUs, receitas e os relatorios de estoque." },
+      sections: [
+        { h: { en: "Catalog", es: "Catalogo", pt: "Catalogo" }, tools: ["seasoning", "seed", "skus", "recipes", "printlabels"] },
+        { h: { en: "Reports", es: "Reportes", pt: "Relatorios" }, tools: ["analytics"] }
       ]
     },
     {
@@ -205,15 +213,24 @@
       ]
     },
     {
+      id: "demand",
+      label: { en: "Demand", es: "Demanda", pt: "Demanda" },
+      title: { en: "Demand", es: "Demanda", pt: "Demanda" },
+      intro: { en: "What to build, the order board, and the forecast against the target.", es: "Que producir, el tablero de pedidos y el pronostico contra la meta.", pt: "O que produzir, o painel de pedidos e a previsao contra a meta." },
+      sections: [
+        { h: { en: "Plan", es: "Plan", pt: "Plano" }, tools: ["demand", "demandboard", "demandsched", "forecast"] },
+        { h: { en: "Imports", es: "Importar", pt: "Importar" }, tools: ["demandimport", "ecomdemand"] }
+      ]
+    },
+    {
       id: "mfg",
       label: { en: "Mfg", es: "Mfg", pt: "Mfg" },
       title: { en: "Manufacturing", es: "Manufactura", pt: "Manufatura" },
-      intro: { en: "Mix, P-Mac, production orders, demand, the live machines, and the lot stations on this floor.", es: "Mezcla, P-Mac, ordenes de produccion, demanda, las maquinas en vivo y las estaciones de lote en piso.", pt: "Mistura, P-Mac, ordens de producao, demanda, as maquinas ao vivo e as estacoes de lote no piso." },
+      intro: { en: "Mix, P-Mac, production orders, the live machines, and the lot stations. Demand has its own tab.", es: "Mezcla, P-Mac, ordenes de produccion, las maquinas en vivo y las estaciones de lote. Demanda tiene su propia pestana.", pt: "Mistura, P-Mac, ordens de producao, as maquinas ao vivo e as estacoes de lote. Demanda tem sua propria aba." },
       sections: [
         { h: { en: "Lot trace stations", es: "Estaciones de lote", pt: "Estacoes de lote" }, tools: ["trRecv", "trQa", "trMix", "trPmac", "trMove"] },
         { h: { en: "Floor", es: "Piso", pt: "Piso" }, tools: ["mixing", "pmac", "pmacout", "floor"] },
-        { h: { en: "Planning and history", es: "Plan y historial", pt: "Plano e historico" }, tools: ["prodorders", "reordertracker", "launch", "hist", "upload"] },
-        { h: { en: "Demand", es: "Demanda", pt: "Demanda" }, tools: ["demand", "demandboard", "demandsched", "demandimport", "ecomdemand", "forecast"] }
+        { h: { en: "Planning and history", es: "Plan y historial", pt: "Plano e historico" }, tools: ["prodorders", "reordertracker", "launch", "hist", "upload"] }
       ]
     },
     {
@@ -243,19 +260,43 @@
       intro: { en: "Lot trace, labels, and the quality records this team already keeps.", es: "Rastreo de lote, etiquetas y los registros de calidad que este equipo ya usa.", pt: "Rastreio de lote, etiquetas e os registros de qualidade que esta equipe ja usa." },
       sections: [
         { h: { en: "Lot trace", es: "Rastreo de lote", pt: "Rastreio de lote" }, tools: ["trace", "trLabels"] },
-        { h: { en: "Quality records", es: "Registros de calidad", pt: "Registros de qualidade" }, tools: ["quality", "compliance", "shortdated", "reference"] }
+        { h: { en: "Quality records", es: "Registros de calidad", pt: "Registros de qualidade" }, tools: ["quality", "compliance", "shortdated"] }
+      ]
+    },
+    {
+      id: "team",
+      label: { en: "Team", es: "Equipo", pt: "Equipe" },
+      title: { en: "Team & Ops", es: "Equipo y Ops", pt: "Equipe e Ops" },
+      intro: { en: "People, continuous improvement, R&D, and the activity log.", es: "Personal, mejora continua, I+D y el registro de actividad.", pt: "Pessoas, melhoria continua, P&D e o registro de atividade." },
+      sections: [
+        { h: { en: "People and ideas", es: "Personal e ideas", pt: "Pessoas e ideias" }, tools: ["people", "improve", "rd", "acct"] }
       ]
     },
     {
       id: "maint",
       label: { en: "Maint", es: "Mant.", pt: "Manut." },
       title: { en: "Maintenance", es: "Mantenimiento", pt: "Manutencao" },
-      intro: { en: "Maintenance requests, the services log, and the team and system screens.", es: "Solicitudes de mantenimiento, el registro de servicios y las pantallas de equipo y sistema.", pt: "Pedidos de manutencao, o registro de servicos e as telas de equipe e sistema." },
+      intro: { en: "Maintenance requests and the services log.", es: "Solicitudes de mantenimiento y el registro de servicios.", pt: "Pedidos de manutencao e o registro de servicos." },
       sections: [
-        { h: { en: "Shop", es: "Taller", pt: "Oficina" }, tools: ["maintenance"] },
-        { h: { en: "Services", es: "Servicios", pt: "Servicos" }, tools: ["services"] },
-        { h: { en: "Team", es: "Equipo", pt: "Equipe" }, tools: ["people", "improve", "rd", "acct"] },
-        { h: { en: "System", es: "Sistema", pt: "Sistema" }, tools: ["board", "settings", "health"] }
+        { h: { en: "Shop", es: "Taller", pt: "Oficina" }, tools: ["maintenance", "services"] }
+      ]
+    },
+    {
+      id: "docs",
+      label: { en: "Docs", es: "Docs", pt: "Docs" },
+      title: { en: "Docs", es: "Docs", pt: "Docs" },
+      intro: { en: "SOPs, cheat sheets, and policies.", es: "SOPs, guias rapidas y politicas.", pt: "SOPs, guias rapidos e politicas." },
+      sections: [
+        { h: { en: "Reference", es: "Referencia", pt: "Referencia" }, tools: ["reference"] }
+      ]
+    },
+    {
+      id: "system",
+      label: { en: "System", es: "Sistema", pt: "Sistema" },
+      title: { en: "System", es: "Sistema", pt: "Sistema" },
+      intro: { en: "TV boards, settings, and how fresh each data source is.", es: "Tableros de TV, ajustes y que tan reciente esta cada fuente.", pt: "Paineis de TV, ajustes e quao recente esta cada fonte." },
+      sections: [
+        { h: { en: "Setup", es: "Ajustes", pt: "Ajustes" }, tools: ["board", "settings", "health"] }
       ]
     }
   ];
@@ -312,7 +353,8 @@
 
   function deptOfNav(btn) {
     if (!btn) return "";
-    if (btn.id === "svc-nav" || btn.id === "dh-nav") return "maint";
+    if (btn.id === "svc-nav") return "maint";
+    if (btn.id === "dh-nav") return "system";
     if (btn.id === "sf-nav") return "purch";
     if (btn.id === "shs-nav" || btn.id === "trc-nav-ship") return "ship";
     if (btn.id === "mfg-hist-nav" || btn.id === "mfg-up-nav") return "mfg";
@@ -580,8 +622,15 @@
     s.id = "dept-style";
     s.textContent = [
       "#dept-stack{position:sticky;top:0;z-index:70}",
-      "#deptbar{display:flex;width:100%;box-sizing:border-box;gap:4px;align-items:stretch;overflow-x:auto;background:#fff;border-bottom:1px solid var(--line,#d7dde6);padding:4px 6px 5px;-webkit-overflow-scrolling:touch}",
-      "#deptbar .dept-tab{flex:1 0 auto;min-width:max-content;display:flex;align-items:center;justify-content:center;text-align:center;font-family:inherit;font-weight:800;font-size:13px;line-height:1.1;color:var(--navy,#04223B);background:var(--light,#E1EEF7);border:1px solid transparent;border-radius:8px;padding:6px 10px;cursor:pointer;white-space:nowrap;min-height:36px}",
+      "#dept-stack header{padding:4px 8px!important;gap:8px!important}",
+      "#dept-stack .logo{font-size:16px!important;line-height:1.05!important;letter-spacing:0!important}",
+      "#dept-stack .sub{font-size:11px!important;line-height:1.1!important}",
+      "#dept-stack .beta{font-size:9px!important;padding:1px 4px!important;margin-left:3px!important}",
+      "#dept-stack .navtoggle{padding:2px 7px!important;font-size:16px!important;margin-right:2px!important}",
+      "#dept-stack .modebadge{padding:2px 6px!important;font-size:10px!important}",
+      "#dept-stack .lang button{padding:2px 6px!important;font-size:12px!important;margin-left:3px!important}",
+      "#deptbar{display:flex;width:100%;box-sizing:border-box;gap:2px;align-items:stretch;overflow-x:auto;background:#fff;border-bottom:1px solid var(--line,#d7dde6);padding:2px 4px 3px;-webkit-overflow-scrolling:touch}",
+      "#deptbar .dept-tab{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;text-align:center;font-family:inherit;font-weight:700;font-size:12px;line-height:1.05;color:var(--navy,#04223B);background:var(--light,#E1EEF7);border:1px solid transparent;border-radius:6px;padding:4px 2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:28px}",
       "#deptbar .dept-tab:hover{border-color:var(--blue,#006DB6)}",
       "#deptbar .dept-tab.on{background:var(--orange,#F26B21);color:#fff}",
       "#deptbar .dept-tab:focus-visible{outline:3px solid var(--blue,#006DB6);outline-offset:2px}",
@@ -590,28 +639,38 @@
       "#navToggle,.navtoggle{display:inline-block!important}",
       "#navBackdrop.show{display:block!important;position:fixed!important;inset:0!important;background:rgba(0,0,0,.4);z-index:75}",
       ".layout{display:block!important;max-width:none!important;width:100%!important;margin:0!important}",
-      "main{padding:6px 8px 16px!important}",
+      "main{padding:4px 6px 12px!important}",
       "main,#view{max-width:none!important;width:100%!important;flex:none!important}",
-      "#view .df-grid{gap:8px;margin:0 0 8px}",
-      "#view .df-lead,#view .df-grid>.card,#view #df-inbound{padding:8px 10px;border-radius:8px}",
-      "#view .df-lead{margin-bottom:8px}",
-      "#view .df-note{margin:0 0 8px}",
+      "#view:has(>.df-lead){display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;align-items:stretch}",
+      "#view:has(>.df-lead)>.df-banner,#view:has(>.df-lead)>.df-lead,#view:has(>.df-lead)>#df-inbound,#view:has(>.df-lead)>.df-note{grid-column:1 / -1}",
+      "#view:has(>.df-lead)>.df-grid{display:contents}",
+      "#view .df-grid{gap:6px;margin:0}",
+      "#view .df-grid>.card,#view #df-inbound,#view .df-lead{padding:8px 10px;border-radius:8px;margin:0}",
+      "#view .df-lead h2{font-size:16px;margin:0}",
+      "#view .df-head{margin:0 0 4px;gap:6px}",
+      "#view .df-head h2{font-size:15px}",
+      "#view .df-empty{font-size:14px;margin:4px 0 2px}",
+      "#view .df-scroll{max-height:280px}",
+      "#view table.df.df-wide{min-width:0}",
+      "#view table.df th,#view table.df td{padding:4px 6px}",
+      "#view .df-note{margin:0}",
       "#dept-daily-link{display:inline-block;margin:6px 0 0;padding:0;border:0;background:transparent;color:var(--blue,#006DB6);font:800 13px inherit;cursor:pointer}",
-      "#dept-home{padding:2px 0 16px}",
-      "#dept-home h1{margin:0 0 2px;color:var(--navy,#04223B);font-size:22px;line-height:1.15}",
-      "#dept-home .hint{margin:0 0 6px}",
-      "#dept-home .dept-sec{margin:12px 0 6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#5c6b7c;font-weight:800}",
-      "#dept-home .dept-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}",
-      "#dept-home .dept-card{display:flex;flex-direction:column;align-items:flex-start;text-align:left;background:#fff;border:1px solid var(--line,#d7dde6);border-radius:8px;padding:10px 12px 12px;cursor:pointer;min-height:0;box-shadow:none;font-family:inherit;color:inherit;width:100%}",
+      "#dept-home{padding:0 0 12px}",
+      "#dept-home h1{margin:0 0 2px;color:var(--navy,#04223B);font-size:18px;line-height:1.1}",
+      "#dept-home .hint{margin:0 0 4px;font-size:12px}",
+      "#dept-home .dept-sec{margin:10px 0 4px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#5c6b7c;font-weight:800}",
+      "#dept-home .dept-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:6px}",
+      "#dept-home .dept-card{display:flex;flex-direction:column;align-items:flex-start;text-align:left;background:#fff;border:1px solid var(--line,#d7dde6);border-radius:8px;padding:8px 10px;cursor:pointer;min-height:0;box-shadow:none;font-family:inherit;color:inherit;width:100%}",
       "#dept-home .dept-card:hover{border-color:var(--blue,#006DB6);box-shadow:0 4px 14px rgba(4,34,59,.08)}",
       "#dept-home .dept-card:focus-visible{outline:3px solid var(--blue,#006DB6);outline-offset:2px}",
       "#dept-home .dept-ico{color:var(--orange,#F26B21);width:22px;height:22px;margin-bottom:6px}",
       "#dept-home .dept-ico svg{width:22px;height:22px;stroke-width:1.75}",
-      "#dept-home .dept-card strong{display:block;font-size:15px;color:var(--navy,#04223B);margin:0 0 2px}",
-      "#dept-home .dept-card span{display:block;font-size:13px;color:#3d4c5e;line-height:1.3;font-weight:500}",
+      "#dept-home .dept-card strong{display:block;font-size:14px;color:var(--navy,#04223B);margin:0 0 2px}",
+      "#dept-home .dept-card span{display:block;font-size:12px;color:#3d4c5e;line-height:1.25;font-weight:500}",
       "body.boardmode #deptbar{display:none!important}",
-      "@media(min-width:1100px){#dept-home .dept-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}}",
-      "@media(max-width:820px){#deptbar{gap:4px;padding:4px 4px 5px}#deptbar .dept-tab{font-size:12px;padding:6px 8px;min-height:36px}#dept-home h1{font-size:20px}#dept-home .dept-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px}}",
+      "@media(max-width:1100px){#view:has(>.df-lead){grid-template-columns:repeat(2,minmax(0,1fr))}}",
+      "@media(max-width:700px){#view:has(>.df-lead){grid-template-columns:1fr}}",
+      "@media(max-width:1080px){#deptbar .dept-tab{flex:1 0 84px;min-width:84px}}",
       "@media print{#deptbar{display:none!important}}"
     ].join("");
     document.head.appendChild(s);
