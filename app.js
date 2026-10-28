@@ -1982,6 +1982,9 @@
     const today = new Date().toISOString().slice(0, 10);
     const ed = recvEditId ? (DB.receivingLog().find(s => String(s.id) === String(recvEditId)) || {}) : {};
     const editing = !!(recvEditId && ed.id);
+    const rsopFields = (window.RECVSOP && RECVSOP.fieldsHtml) ? RECVSOP.fieldsHtml(ed) : "";
+    const rsopTools = (window.RECVSOP && RECVSOP.toolsHtml) ? RECVSOP.toolsHtml() : "";
+    const rsopHold = (window.RECVSOP && RECVSOP.holdHtml) ? RECVSOP.holdHtml() : "";
     const av = x => esc(x == null ? "" : x);
     const selOpt = (arr, cur, def) => arr.map(t => '<option' + (t === (cur != null && cur !== "" ? cur : def) ? " selected" : "") + '>' + t + '</option>').join("");
     const qv = n => (n != null && n !== "" ? n : "");
@@ -1997,11 +2000,12 @@
       '<div><label>' + L("rlTracking") + ' <span class="muted">(PRO)</span></label><input id="rl-tracking" autocomplete="off" value="' + av(ed.tracking) + '"></div>' +
       '<div><label>' + L("rlCondition") + '</label><select id="rl-condition">' + selOpt(RECV_LOG_CONDITIONS, ed.condition, "Good") + '</select></div></div>' +
       '<div class="row"><div style="flex:2"><label>' + L("rlContents") + '</label><input id="rl-contents" autocomplete="off" value="' + av(ed.contents) + '"></div>' +
-      '<div><label>' + L("rlLot") + ' <span class="muted">(opt.)</span></label><input id="rl-lot" autocomplete="off" placeholder="Lot / batch" value="' + av(ed.lot) + '"></div></div>' +
+      '<div><label>' + L("rlLot") + '</label><input id="rl-lot" autocomplete="off" placeholder="Lot / batch" value="' + av(ed.lot) + '"></div></div>' +
       '<div class="row"><div><label>' + L("rlQtyOrd") + ' <span class="muted">(opt.)</span></label><input id="rl-qord" type="number" min="0" placeholder="0" value="' + qv(ed.qty_ordered) + '"></div>' +
-      '<div><label>' + L("rlQtyRec") + ' <span class="muted">(opt.)</span></label><input id="rl-qrec" type="number" min="0" placeholder="0" value="' + qv(ed.qty_received) + '"></div>' +
+      '<div><label>' + L("rlQtyRec") + '</label><input id="rl-qrec" type="number" min="0" placeholder="0" value="' + qv(ed.qty_received) + '"></div>' +
       '<div><label>' + L("rlReceivedBy") + '</label><input id="rl-by" list="dl-rl-by" autocomplete="off" value="' + av(ed.received_by) + '"></div></div>' +
       '<div><label>' + L("rlNotes") + ' <span class="muted">(opt.)</span></label><input id="rl-notes" autocomplete="off" value="' + av(ed.notes) + '"></div>' +
+      rsopFields +
       opField("Adriana") +
       '<button class="primary" onclick="UI.rlSave()">' + (editing ? L("saveChanges") : L("rlSave")) + '</button>' +
       (editing ? ' <button class="ghost" style="margin-top:14px" onclick="UI.rlEditCancel()">' + L("ordCancel") + '</button>' : '') + '</div>';
@@ -2019,11 +2023,11 @@
       const ovTxt = ov === null ? '&mdash;' : (ov === 0 ? '0' : (ov > 0 ? '-' + ov : '+' + Math.abs(ov)));
       const doc = s.file_url ? '<a href="' + s.file_url + '" target="_blank" rel="noopener" title="' + esc(s.file_name || '') + '">&#128206;</a>' : '';
       const txt = ((s.recv_date || "") + " " + (s.supplier || "") + " " + (s.po_num || "") + " " + (s.carrier || "") + " " + (s.tracking || "") + " " + (s.contents || "") + " " + (s.lot || "") + " " + (s.condition || "") + " " + (s.received_by || "")).toLowerCase().replace(/"/g, "");
-      return '<tr data-txt="' + txt + '"><td>' + esc((s.recv_date || "").slice(0, 10)) + '</td>' +
+      return '<tr data-txt="' + txt + '" data-lot="' + esc(String(s.lot || "").toUpperCase().replace(/\s+/g, "")) + '"><td>' + esc((s.recv_date || "").slice(0, 10)) + '</td>' +
         '<td><b>' + esc(s.supplier || "") + '</b></td><td>' + esc(s.po_num || "") + '</td>' +
         '<td>' + esc(s.carrier || "") + '</td><td>' + trk + '</td>' +
         '<td>' + esc(s.contents || "") + '</td>' +
-        '<td>' + esc(s.lot || "") + '</td>' +
+        '<td>' + esc(s.lot || "") + (s.on_hold ? ' <span class="pill out rsop-holdflag">HOLD</span>' : '') + '</td>' +
         '<td class="right">' + (s.qty_received != null ? fmt(s.qty_received) : '&mdash;') + '</td>' +
         '<td class="right">' + ovTxt + '</td>' +
         '<td><span class="pill ' + cColor(s.condition) + '">' + esc(s.condition || "") + '</span></td>' +
@@ -2040,7 +2044,9 @@
       th("condition", L("rlCondition")) + th("received_by", L("rlReceivedBy")) + '<th>' + L("rlDoc") + '</th>' + '<th></th>' +
       '</tr></thead><tbody id="rlBody">' + rows + '</tbody></table>' : '<p class="muted">' + L("rlNone") + '</p>';
     return byDl + '<div class="card"><h2>' + L("recvlog") + '</h2><p class="hint">' + L("rlHint") + '</p>' + form + '</div>' +
+      rsopHold +
       '<div class="card"><h2 class="sub2">' + L("rlArchive") + ' (' + list.length + ')</h2>' +
+      rsopTools +
       '<input id="rlSearch" autocomplete="off" oninput="UI.rlSearch(this.value)" placeholder="' + L("rlSearchP") + '" style="margin-bottom:10px">' +
       table + '</div>';
   }
@@ -5487,16 +5493,43 @@
       const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
       const supplier = v("rl-supplier"); if (!supplier) return toast(L("rlSupplier"));
       const by = opVal();
-      const rec = { recv_date: v("rl-date"), supplier: supplier, po_num: v("rl-po"),
+      let rec = { recv_date: v("rl-date"), supplier: supplier, po_num: v("rl-po"),
         carrier: v("rl-carrier"), tracking: v("rl-tracking"), contents: v("rl-contents"), lot: v("rl-lot"),
         qty_ordered: v("rl-qord"), qty_received: v("rl-qrec"), condition: v("rl-condition"),
         received_by: v("rl-by"), notes: v("rl-notes") };
+      let gate = { ok: true, rec: rec };
+      if (window.RECVSOP && RECVSOP.prepare) {
+        if (RECVSOP.ensureLoaded) { try { await RECVSOP.ensureLoaded(); } catch (e) {} }
+        gate = RECVSOP.prepare(rec, { id: recvEditId });
+        if (!gate.ok) {
+          if (RECVSOP.showError) RECVSOP.showError(gate.msg);
+          return toast(gate.msg || "Check the receiving checklist");
+        }
+        rec = gate.rec;
+      }
       let res;
-      if (recvEditId) { res = await DB.updateReceivingLog(recvEditId, rec, recvFile, by); }
-      else { res = await DB.addReceivingLog(rec, recvFile, by); }
+      try {
+        if (recvEditId) { res = await DB.updateReceivingLog(recvEditId, rec, recvFile, by); }
+        else { res = await DB.addReceivingLog(rec, recvFile, by); }
+      } catch (e) { return toast(String(e && e.message || e)); }
       if (res && res.ok === false) return toast(res.msg || "error");
+      let note = "";
+      let held = false;
+      if (window.RECVSOP && RECVSOP.afterSave) {
+        try {
+          const holdRes = await RECVSOP.afterSave({ id: (res && res.id) || recvEditId, rec: rec, op: by });
+          held = !!(holdRes && holdRes.held);
+          note = (holdRes && holdRes.note) || "";
+        } catch (e) {
+          toast("Receipt saved. HOLD Log write failed. " + String(e && e.message || e));
+          recvEditId = null; recvFile = null; render(); return;
+        }
+      }
       const wasEdit = !!recvEditId; recvEditId = null; recvFile = null;
-      toast((wasEdit ? L("saved") : L("rlLogged")) + " ✓"); render();
+      let msg = (wasEdit ? L("saved") : L("rlLogged"));
+      if (held) msg += ". ON HOLD";
+      if (note) msg += ". " + note;
+      toast(msg + " ✓"); render();
     },
     async rlDelete(id) { if (!confirm(L("rlConfirmDel"))) return; await DB.deleteReceivingLog(id, opVal()); toast("✓"); render(); },
     // ---- Continuous Improvement ----

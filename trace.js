@@ -483,6 +483,7 @@
   function markActive() { try { var nav = $("nav"); if (!nav) return; nav.querySelectorAll(".navitem.active").forEach(function (b) { b.classList.remove("active"); }); if (!ACTIVE) return; var m = $("trc-nav-" + ST.tab); if (m) m.classList.add("active"); } catch (e) {} }
 
   var RENDERING = false;
+  var recvHoldRev = -1;
   function render() {
     if (!ACTIVE || RENDERING) return;
     var host = $("view"); if (!host) return;
@@ -530,6 +531,13 @@
     var fold = document.querySelector("#trc-root details.trc-scanfold");
     if (fold) fold.addEventListener("toggle", function () { W.use.scanOpen = !!fold.open; });
     try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
+    if ((ST.tab === "use" || ST.tab === "ship") && window.RECVSOP && RECVSOP.ensureLoaded) {
+      RECVSOP.ensureLoaded().then(function (rev) {
+        if (rev === recvHoldRev) return;
+        recvHoldRev = rev;
+        if (ACTIVE && !RENDERING && (ST.tab === "use" || ST.tab === "ship")) render();
+      });
+    }
   }
   function scanBox(handler, ph) {
     return '<label>' + esc(L("scan")) + '</label><input id="trc-scan" class="trc-scan" autocomplete="off" placeholder="' + esc(ph || L("scanPh")) + '" onkeydown="if(event.key===\'Enter\'){event.preventDefault();TRACE.' + handler + '(this.value);this.value=\'\';}">';
@@ -551,6 +559,7 @@
     var st = String(l.status || "").toUpperCase();
     if (st === "REJECTED") return L("onReject");
     if (st === "HOLD" || st === "QUARANTINE" || st === "QA-HOLD" || isQuarantineLoc(l.location)) return L("onHold");
+    if (recvHoldInfo(l.lot) || (l.supplier_lot && recvHoldInfo(l.supplier_lot))) return L("onHold");
     if (l.exp && String(l.exp).slice(0, 10) < today()) return L("expired");
     return "";
   }
@@ -1060,7 +1069,17 @@
     var src = rejected[0] || held[0];
     return { state: state, held: held, rejected: rejected, released: released, reason: holdReasonOf(src), lot: normLot(lot) };
   }
+  function recvHoldInfo(lot) {
+    var api = window.RECVSOP;
+    if (!api || typeof api.lotHeld !== "function") return null;
+    try { return api.lotHeld(lot); } catch (e) { return null; }
+  }
   function lotPullBlock(lot) {
+    var recv = recvHoldInfo(lot);
+    if (recv) {
+      var why = recv.hold_reason || "";
+      return normLot(lot) + ": " + L("lotHold") + (why ? " (" + why + ")" : "");
+    }
     var info = lotHoldInfo(lot);
     if (info.state === "REJECTED") return info.lot + ": " + L("lotReject") + (info.reason ? " (" + info.reason + ")" : "");
     if (info.state === "HOLD") return info.lot + ": " + L("lotHold") + (info.reason ? " (" + info.reason + ")" : "");
@@ -1104,6 +1123,19 @@
   }
   function heldBannerHtml(onlyLots) {
     var rows = heldLotRows().filter(function (r) { return !onlyLots || onlyLots[r.lot]; });
+    var seenHold = {};
+    rows.forEach(function (r) { seenHold[r.lot] = 1; });
+    if (window.RECVSOP && typeof RECVSOP.openHolds === "function") {
+      try {
+        RECVSOP.openHolds().forEach(function (h) {
+          var lot = normLot(h.lot);
+          if (!lot || seenHold[lot]) return;
+          if (onlyLots && !onlyLots[lot]) return;
+          seenHold[lot] = 1;
+          rows.push({ lot: lot, state: "HOLD", reason: h.hold_reason || "", name: h.item_name || "", n: 1 });
+        });
+      } catch (e) {}
+    }
     if (!rows.length) return "";
     var h = '<div class="trc-holdban"><span class="trc-badge-hold">' + esc(L("heldList")) + '</span>';
     rows.slice(0, 12).forEach(function (r) {
@@ -1223,6 +1255,9 @@
   // a stock row whose lot is a real bag code.
   // A finished lot on HOLD or REJECTED (no released pallet left) is not a candidate,
   // including when the same lot code still sits on a stock row.
+  // receiving hold_log status held, destroyed, returned_to_vendor, or other
+  // (and receiving_log.on_hold) also removes the lot from FEFO, Use, and Ship.
+  // status released puts it back.
   //
   // Date key, oldest first:
   //   1. Real expiration (label.exp or data.exp) beats every guess. Earliest exp wins.
@@ -1303,6 +1338,7 @@
     var st = upStatus(l.status);
     if (st === "HOLD" || st === "REJECTED" || st === "EMPTY" || st === "SHIPPED" || st === "QUARANTINE" || st === "QA-HOLD") return true;
     if (isQuarantineLoc(l.location)) return true;
+    if (recvHoldInfo(l.lot)) return true;
     return !(num(l.qty_left) > 0);
   }
   function labelExpDay(l) { var d = l.data || {}; return ymd(l.exp) || ymd(d.exp); }
@@ -1406,6 +1442,7 @@
           if (!BAGCODE_RE.test(lot) || lotFlavorPrefix(lot) !== fc || byLot[lot]) return;
           var heldState = lotHoldInfo(lot).state;
           if (heldState === "HOLD" || heldState === "REJECTED") return;
+          if (recvHoldInfo(lot)) return;
           byLot[lot] = { lot: lot, fc: fc, size: size, qty: num(r.qty), exp: "", pack: "", from: "stock" };
         });
       } catch (e) {}
