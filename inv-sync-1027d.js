@@ -1,12 +1,14 @@
 /* inv-sync-1027d.js
    The only inventory apply module loaded by the app.
-   Sets finished-bag on-hand to the 2026-10-27 SLC count (standard 4 oz and
-   1.5 oz rows in slc-count-latest.js). Quantities are read from that file.
-   This module does not keep an older count.
-   One shared cloud lock so a single browser writes. Every other browser
-   sees the done flag and does not write. Each adjust is awaited, then
-   checked with a fresh stock read. A code already at the sheet total is
-   skipped, so a retry cannot apply the same delta twice. */
+   One shared cloud pass for the 2026-10-27 standard 4 oz and 1.5 oz rows in
+   slc-count-latest.js. Quantities are read from that file. This module does
+   not keep an older count, and it does not run again after the shared done
+   flag is set. A new browser reads that flag and does not write.
+   A hand count wins. The pass writes only when the qty at the largest
+   location is still the post from a sheet sync (blank operator, inv-sync-*,
+   or an older sheet-sync label). A person's name on that post, or a qty
+   that post does not explain, is left alone.
+   Each allowed adjust is awaited and checked with a fresh stock read. */
 (function () {
   "use strict";
   var LOCAL_FLAG = "inv-sync-2026-10-27d-cloud";
@@ -81,26 +83,29 @@
     var rows = await res.json();
     return parseState(rows && rows[0] ? String(rows[0].value) : "");
   }
-  async function serverQty(it) {
+  function sumQty(rows) {
+    return (rows || []).reduce(function (sum, row) { return sum + (Number(row.qty) || 0); }, 0);
+  }
+  async function serverStock(it) {
     var ids = [];
     if (it.id) ids.push(String(it.id));
     if (it.code && String(it.code) !== String(it.id)) ids.push(String(it.code));
     var filter = ids.length === 1
       ? ("item_id=eq." + encodeURIComponent(ids[0]))
       : ("or=(" + ids.map(function (id) { return "item_id.eq." + encodeURIComponent(id); }).join(",") + ")");
-    var url = baseUrl() + "/rest/v1/stock?" + filter + "&select=qty";
+    var url = baseUrl() + "/rest/v1/stock?" + filter + "&select=location,qty";
     var res = await fetch(url, { cache: "no-store", headers: headers() });
     if (!res.ok) throw new Error("stock read " + res.status);
     var rows = await res.json();
-    return (rows || []).reduce(function (sum, row) { return sum + (Number(row.qty) || 0); }, 0);
+    return rows || [];
   }
-  async function alignedQty(it) {
-    var server = await serverQty(it);
-    if (onHandOf(it) === server) return server;
+  async function alignedStock(it) {
+    var rows = await serverStock(it);
+    if (onHandOf(it) === sumQty(rows)) return rows;
     if (typeof DB.refresh === "function") await DB.refresh();
-    server = await serverQty(it);
-    if (onHandOf(it) !== server) throw new Error("on-hand cache does not match stock for " + (it.code || it.id));
-    return server;
+    rows = await serverStock(it);
+    if (onHandOf(it) !== sumQty(rows)) throw new Error("on-hand cache does not match stock for " + (it.code || it.id));
+    return rows;
   }
   async function releaseIfHeld() {
     var st = await readState();
@@ -117,6 +122,68 @@
   }
   function rememberLocal(raw) {
     try { localStorage.setItem(LOCAL_FLAG, raw || new Date().toISOString()); } catch (e) {}
+  }
+  function isSyncOperator(op) {
+    if (op == null) return true;
+    var s = String(op).trim();
+    if (!s || s === "undefined") return true;
+    if (s.indexOf("inv-sync") === 0) return true;
+    // Older sheet imports used these labels. A person's name, including a
+    // receipt note, is a hand adjustment and wins.
+    if (/^Adri Inv\b/i.test(s)) return true;
+    if (/sheet sync/i.test(s)) return true;
+    if (/8\/24 count/i.test(s)) return true;
+    return false;
+  }
+  function postedQty(detail) {
+    var m = String(detail || "").match(/->\s*([0-9][0-9,]*)\s*$/);
+    if (!m) return null;
+    var n = Number(m[1].replace(/,/g, ""));
+    return n === n ? n : null;
+  }
+  async function countHistory(flavor) {
+    var out = [];
+    var offset = 0;
+    while (out.length < 400) {
+      var url = baseUrl() + "/rest/v1/transactions?action=eq.Count/Adjust&detail=like." +
+        encodeURIComponent(flavor + " @*") + "&select=operator,detail&order=ts.desc,id.desc&limit=200&offset=" + offset;
+      var res = await fetch(url, { cache: "no-store", headers: headers() });
+      if (!res.ok) throw new Error("count history " + res.status);
+      var rows = await res.json();
+      rows = rows || [];
+      for (var i = 0; i < rows.length; i++) out.push(rows[i]);
+      if (rows.length < 200) break;
+      offset += rows.length;
+    }
+    return out;
+  }
+  // The count log stores the qty at one location, not the item total.
+  // Write only when that posted location qty is still what is there, the
+  // operator was a sheet sync, and the live total is that post plus the
+  // other locations. A person's name on the post that explains the live
+  // qty wins. The sync does not replace it.
+  async function ownership(it, stockRows, sheetQty) {
+    var currentQty = sumQty(stockRows);
+    if (currentQty === sheetQty) return { write: false, reason: "match" };
+    var flavor = it && it.flavor ? String(it.flavor).trim() : "";
+    if (!flavor) return { write: false, reason: "no flavor", qty: currentQty };
+    var pos = (stockRows || []).filter(function (row) { return Number(row.qty) > 0; });
+    if (!pos.length) return { write: false, reason: "not a sync leftover", qty: currentQty };
+    pos.sort(function (a, b) { return Number(b.qty) - Number(a.qty); });
+    var loc = String(pos[0].location || "");
+    var locQty = pos.filter(function (row) { return String(row.location || "") === loc; })
+      .reduce(function (sum, row) { return sum + Number(row.qty); }, 0);
+    var mark = " @ " + loc + ":";
+    var rows = await countHistory(flavor);
+    for (var i = 0; i < rows.length; i++) {
+      if (String(rows[i].detail || "").indexOf(mark) < 0) continue;
+      if (postedQty(rows[i].detail) !== locQty) continue;
+      if (!isSyncOperator(rows[i].operator)) {
+        return { write: false, reason: "manual", operator: rows[i].operator, qty: currentQty };
+      }
+      return { write: true };
+    }
+    return { write: false, reason: "not a sync leftover", qty: currentQty };
   }
   async function run() {
     try {
@@ -142,6 +209,7 @@
       var list = currentRows();
       if (!list.length) throw new Error("no 10/27 bag rows");
       var changed = [];
+      var kept = [];
       var missed = [];
       for (var i = 0; i < list.length; i++) {
         if (!(await holdLock())) throw new Error("lost lock");
@@ -152,10 +220,17 @@
         }
         var it = findItem(row.code);
         if (!it) { missed.push(row.code); continue; }
-        var before = await alignedQty(it);
-        if (before === sheetQty) continue;
+        var stock = await alignedStock(it);
+        var before = sumQty(stock);
+        var choice = await ownership(it, stock, sheetQty);
+        if (!choice.write) {
+          if (choice.reason && choice.reason !== "match") kept.push({
+            code: row.code, qty: before, reason: choice.reason, operator: choice.operator || ""
+          });
+          continue;
+        }
         await DB.adjustTotal(it, sheetQty, NOTE);
-        var after = await serverQty(it);
+        var after = sumQty(await serverStock(it));
         if (after !== sheetQty) throw new Error(row.code + " read " + after + " after adjust, target " + sheetQty);
         changed.push({ code: row.code, before: before, after: after });
       }
@@ -164,14 +239,14 @@
         await releaseIfHeld();
         return false;
       }
-      var report = JSON.stringify({ at: new Date().toISOString(), rows: changed });
+      var report = JSON.stringify({ at: new Date().toISOString(), rows: changed, kept: kept });
       var saved = await DB.kvSet(REPORT_KEY, report);
       if (!saved || !saved.ok) throw new Error("could not save the discrepancy report");
       var done = "done:" + new Date().toISOString();
       var fin = await DB.kvSet(CLOUD_KEY, done);
       if (!fin || !fin.ok) throw new Error("could not save the done flag");
       rememberLocal(done);
-      console.log("[inv-sync 10/27d] applied", changed.length, "of", list.length);
+      console.log("[inv-sync 10/27d] applied", changed.length, "kept", kept.length, "of", list.length);
       return true;
     } catch (e) {
       console.warn("[inv-sync 10/27d]", e);
