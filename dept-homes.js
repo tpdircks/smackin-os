@@ -105,7 +105,7 @@
   // already has a translation; otherwise they stay in English, same as L().
   var TOOLS = {
     receive: { go: "receive", icon: "package-plus", title: { en: "Receive", es: "Recibir", pt: "Receber" }, blurb: { en: "Check product in and put it on hand.", es: "Reciba producto y dejelo en existencia.", pt: "Receba o produto e coloque em estoque." } },
-    recvlog: { go: "recvlog", icon: "inbox", title: { en: "Receiving Log", es: "Registro de Recibo", pt: "Registro de Recebimento" }, blurb: { en: "Log each inbound shipment and its paperwork.", es: "Registre cada envio que entra y su papeleo.", pt: "Registre cada remessa que entra e os documentos." } },
+    recvlog: { go: "recvlog", icon: "inbox", title: { en: "Receiving Log", es: "Registro de Recibo", pt: "Registro de Recebimento" }, blurb: { en: "WHSE_FORM_1.0 checklist for each lot. N or UA holds the lot.", es: "Lista WHSE_FORM_1.0 por lote. N o UA retiene el lote.", pt: "Lista WHSE_FORM_1.0 por lote. N ou UA retem o lote." } },
     returns: { go: "returns", icon: "rotate-ccw", title: { en: "Returns", es: "Devoluciones", pt: "Devolucoes" }, blurb: { en: "Take returns back into stock.", es: "Ingrese devoluciones de nuevo al inventario.", pt: "Lance devolucoes de volta ao estoque." } },
     quarantine: { go: "qa", icon: "shield-alert", title: { en: "Quarantine", es: "Cuarentena", pt: "Quarentena" }, blurb: { en: "Review items sitting in quarantine.", es: "Revise lo que esta en cuarentena.", pt: "Revise o que esta em quarentena." } },
     dash: { go: "dash", icon: "layout-dashboard", title: { en: "Overview", es: "Resumen", pt: "Visao geral" }, blurb: { en: "On-hand counts across the building.", es: "Existencias en todo el edificio.", pt: "Quantidades em estoque no predio." } },

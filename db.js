@@ -331,7 +331,15 @@ window.DB = (function () {
         carrier: r.carrier, tracking: r.tracking, contents: r.contents, lot: r.lot,
         qty_ordered: r.qty_ordered, qty_received: r.qty_received, condition: r.condition || "Good",
         received_by: r.received_by, notes: r.notes, file_name: r.file_name, file_url: r.file_url,
-        file_path: r.file_path, entered_by: r.entered_by, created_at: r.created_at
+        file_path: r.file_path, entered_by: r.entered_by, created_at: r.created_at,
+        item_id: r.item_id || "", seal_number: r.seal_number || "",
+        temperature_f: r.temperature_f, allergen_flag: r.allergen_flag,
+        chk_trailer_sealed: r.chk_trailer_sealed || "", chk_trailer_clean: r.chk_trailer_clean || "",
+        chk_coa_label: r.chk_coa_label || "", chk_approved_supplier: r.chk_approved_supplier || "",
+        chk_carrier_sanitation: r.chk_carrier_sanitation || "", chk_material_condition: r.chk_material_condition || "",
+        deviation_actions: r.deviation_actions || "",
+        checklist: (r.checklist && typeof r.checklist === "object") ? r.checklist : {},
+        on_hold: !!r.on_hold
       }));
       cache.improvements = (imp && imp.data ? imp.data : []).map(r => ({
         id: r.id, title: r.title, ci_type: r.ci_type, area: r.area, owner: r.owner,
@@ -800,6 +808,25 @@ window.DB = (function () {
 
   // ---------- Receiving Log (inbound shipments + attached paperwork) ----------
   const RECV_BUCKET = "supplier-pos"; // reuse the existing public bucket for receiving paperwork
+  // Checklist columns are optional. Trace and the stock Receive screen omit them.
+  // The Receiving Log form sends them (WHSE_FORM_1.0). Null checks stay null on old rows.
+  function extraRecv(rec) {
+    const o = {};
+    if (!rec) return o;
+    if (rec.item_id !== undefined) o.item_id = rec.item_id ? String(rec.item_id) : null;
+    if (rec.seal_number !== undefined) o.seal_number = rec.seal_number || "";
+    if (rec.temperature_f !== undefined) {
+      const n = rec.temperature_f === "" || rec.temperature_f == null ? null : Number(rec.temperature_f);
+      o.temperature_f = n == null || isNaN(n) ? null : n;
+    }
+    if (rec.allergen_flag !== undefined) o.allergen_flag = rec.allergen_flag == null ? null : !!rec.allergen_flag;
+    ["chk_trailer_sealed", "chk_trailer_clean", "chk_coa_label", "chk_approved_supplier", "chk_carrier_sanitation", "chk_material_condition", "deviation_actions"].forEach(k => {
+      if (rec[k] !== undefined) o[k] = rec[k] || "";
+    });
+    if (rec.checklist !== undefined) o.checklist = rec.checklist || {};
+    if (rec.on_hold !== undefined) o.on_hold = !!rec.on_hold;
+    return o;
+  }
   async function addReceivingLog(rec, file, op) {
     let file_name = file ? file.name : "", file_path = "", file_url = "";
     if (mode === "cloud" && file) {
@@ -812,7 +839,7 @@ window.DB = (function () {
         file_url = (pub && pub.data && pub.data.publicUrl) || "";
       } catch (e) { return { ok: false, msg: String(e) }; }
     }
-    const row = {
+    const row = Object.assign({
       recv_date: rec.recv_date || new Date().toISOString().slice(0, 10),
       supplier: rec.supplier || "", po_num: rec.po_num || "", carrier: rec.carrier || "",
       tracking: rec.tracking || "", contents: rec.contents || "", lot: rec.lot || "",
@@ -821,20 +848,23 @@ window.DB = (function () {
       condition: rec.condition || "Good", received_by: rec.received_by || "",
       notes: rec.notes || "", file_name: file_name, file_path: file_path, file_url: file_url,
       entered_by: op || "", created_at: new Date().toISOString()
-    };
+    }, extraRecv(rec));
     const logEntry = { a: "Receiving logged", d: (row.supplier || "") + (row.po_num ? " PO " + row.po_num : "") + (file_name ? " [" + file_name + "]" : ""), u: op, t: row.created_at };
+    let newId = null;
     if (mode === "cloud") {
-      await must(sb.from("receiving_log").insert(row), "receiving_log");
+      const ins = await must(sb.from("receiving_log").insert(row).select("id"), "receiving_log");
+      newId = ins && ins.data && ins.data[0] ? ins.data[0].id : null;
       await cloud.addLog(logEntry);
       await cloud.loadAll();
     } else {
       row.id = "RCV-" + Date.now().toString(36) + "-" + Math.floor(Math.random() * 1000);
+      newId = row.id;
       if (file && !file_url) row.file_url = URL.createObjectURL(file);
       cache.receivingLog.unshift(row);
       local.addLog(logEntry); local.save();
     }
     emit();
-    return { ok: true };
+    return { ok: true, id: newId };
   }
   async function updateReceivingLog(id, rec, file, op) {
     let filePatch = {};
@@ -853,7 +883,7 @@ window.DB = (function () {
       qty_ordered: rec.qty_ordered === "" || rec.qty_ordered == null ? null : Number(rec.qty_ordered),
       qty_received: rec.qty_received === "" || rec.qty_received == null ? null : Number(rec.qty_received),
       condition: rec.condition || "Good", received_by: rec.received_by || "", notes: rec.notes || ""
-    }, filePatch);
+    }, extraRecv(rec), filePatch);
     const logEntry = { a: "Receiving edited", d: (patch.supplier || "") + (patch.po_num ? " PO " + patch.po_num : ""), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
       await must(sb.from("receiving_log").update(patch).eq("id", id), "receiving_log");
@@ -865,7 +895,7 @@ window.DB = (function () {
       local.addLog(logEntry); local.save();
     }
     emit();
-    return { ok: true };
+    return { ok: true, id: id };
   }
   async function deleteReceivingLog(id, op) {
     if (mode === "cloud") {
