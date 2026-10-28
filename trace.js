@@ -105,6 +105,7 @@
       mixer: "Mixer", prefix: "Batch prefix (flavor code + malto + season, e.g. L2031)", batch: "Batch code",
       inputs: "Ingredients scanned", scanInputs: "Scan the seed, seasoning and malto labels you are loading",
       bins: "Bins to tag", makeBins: "Print bin tags", newBatch: "New batch", lbsUsed: "lbs used", markEmpty: "used up",
+      batchRec: "Batch Tracking Record",
       machine: "P-Mac machine", loaded: "Loaded now", binLoaded: "Batch / bin", filmLoaded: "Film roll",
       setPrinter: "Set the bag printer to", codeChange: "Code change", bags: "Bags on this pallet", finishPallet: "Finish pallet + print label",
       scrapBags: "Scrap bags", reason: "Reason",
@@ -165,6 +166,7 @@
       mixer: "Mezcladora", prefix: "Prefijo del lote (sabor + malto + sazón, ej. L2031)", batch: "Código de lote",
       inputs: "Ingredientes escaneados", scanInputs: "Escanee las etiquetas de semilla, sazonador y malto que va a cargar",
       bins: "Contenedores a etiquetar", makeBins: "Imprimir etiquetas de contenedor", newBatch: "Lote nuevo", lbsUsed: "lbs usadas", markEmpty: "se acabo",
+      batchRec: "Registro de lote",
       machine: "Máquina P-Mac", loaded: "Cargado ahora", binLoaded: "Lote / contenedor", filmLoaded: "Rollo de película",
       setPrinter: "Ponga la impresora de bolsas en", codeChange: "Cambio de código", bags: "Bolsas en esta tarima", finishPallet: "Terminar tarima + imprimir etiqueta",
       scrapBags: "Bolsas de desecho", reason: "Razón",
@@ -779,7 +781,7 @@
     h += '<p style="margin-top:12px">' + (hasSeed ? "&#10003;" : "&#9744;") + ' Seed &nbsp; ' + (hasSeas ? "&#10003;" : "&#9744;") + ' Seasoning &nbsp; ' + (hasMalto ? "&#10003;" : "&#9744;") + ' Malto</p>';
     h += '<label>' + esc(L("batch")) + '</label><div class="trc-big">' + esc(bc || "-") + '</div>';
     h += '<div class="trc-grid"><div><label>' + esc(L("bins")) + '</label><input id="trc-m-bins" type="number" min="1" value="' + esc(m.bins || 1) + '"></div></div>';
-    h += '<div class="trc-row"><button class="primary" onclick="TRACE.mixBins()">' + esc(L("makeBins")) + '</button><button class="ghost" style="margin-top:14px" onclick="TRACE.mixNew()">' + esc(L("newBatch")) + '</button></div>';
+    h += '<div class="trc-row"><button class="primary" onclick="TRACE.mixBins()">' + esc(L("makeBins")) + '</button><button class="ghost" style="margin-top:14px" onclick="TRACE.mixNew()">' + esc(L("newBatch")) + '</button><button class="ghost" style="margin-top:14px" onclick="TRACE.openBatchRecord()">' + esc(L("batchRec")) + '</button></div>';
     h += '</div>';
     var recent = allLabels().filter(function (l) { return l.kind === "BN"; }).sort(byNewest).slice(0, 12);
     h += '<div class="card"><h2 class="sub2">Recent bins</h2>' + labelTable(recent) + '</div>';
@@ -2355,6 +2357,12 @@
     mixEmpty: function (i, b) { if (W.mix.inputs[i]) W.mix.inputs[i].empty = !!b; },
     mixRemove: function (i) { W.mix.inputs.splice(i, 1); render(); },
     mixNew: function () { W.mix = { flavor: "", prefix: "", inputs: [], bins: 1 }; render(); },
+    leave: function () { ACTIVE = false; },
+    openBatchRecord: function () {
+      ACTIVE = false;
+      if (window.BATCHREC && typeof BATCHREC.openFromMix === "function") BATCHREC.openFromMix();
+      else flash("Batch Tracking Record is still loading. Refresh the page.", "warn");
+    },
     setMachine: function (v) { ST.machine = v; saveST(); render(); },
     pmScan: pmScan, pmChange: pmChange, pmFinish: pmFinish, pmScrap: pmScrap,
     moveScan: moveScan, useDest: useDest, useScan: useScan, useManual: useManual, useSize: useSize, useKey: useKey, useLotInput: useLotInput, useFlavorPick: useFlavorPick, usePickLot: usePickLot,
