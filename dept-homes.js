@@ -8,7 +8,8 @@
    exists (UI_go, Lot Trace, or a module open()).
    Tabs, equal width, left to right: Dashboard, Demand, Purchasing,
    Receiving, Inventory, Mixing, P-Mac, Fulfillment, Shipping, Quality,
-   and Ops (Team, Maintenance, Docs, and System). No Manufacturing tab.
+   and Ops (Team, Maintenance, Docs, and System). Each tab is a Lucide
+   icon beside a short name. No Manufacturing tab.
    The menu stays off-canvas. A click outside the open panel, or Escape,
    closes it. The header button still toggles it. The left sidebar stays
    collapsed off screen. A tool, station, or other screen that replaces
@@ -180,6 +181,7 @@
     {
       id: "home",
       live: "home",
+      icon: "layout-dashboard",
       label: { en: "Dashboard", es: "Panel", pt: "Painel" },
       title: { en: "Dashboard", es: "Panel", pt: "Painel" },
       intro: { en: "Facility snapshot: stock, orders pulled today, and open inbound POs.", es: "Resumen de la planta: stock, ordenes tomadas hoy y compras abiertas.", pt: "Resumo da planta: estoque, pedidos puxados hoje e compras abertas." },
@@ -190,6 +192,7 @@
     {
       id: "demand",
       runningFirst: true,
+      icon: "activity",
       label: { en: "Demand", es: "Demanda", pt: "Demanda" },
       title: { en: "Demand", es: "Demanda", pt: "Demanda" },
       intro: { en: "What is running on the floor right now, then what to build and the order board.", es: "Que corre en el piso ahora, luego que producir y el tablero de pedidos.", pt: "O que esta rodando no piso agora, depois o que produzir e o painel de pedidos." },
@@ -201,6 +204,7 @@
     },
     {
       id: "purch",
+      icon: "shopping-cart",
       label: { en: "Purchasing", es: "Compras", pt: "Compras" },
       title: { en: "Purchasing", es: "Compras", pt: "Compras" },
       intro: { en: "Purchase orders, what is due in, and the inbound SPS feed.", es: "Ordenes de compra, lo que debe llegar y el feed SPS de entrada.", pt: "Ordens de compra, o que deve chegar e o feed SPS de entrada." },
@@ -211,6 +215,7 @@
     },
     {
       id: "recv",
+      icon: "package-check",
       label: { en: "Receiving", es: "Recibo", pt: "Receber" },
       title: { en: "Receiving", es: "Recibo", pt: "Recebimento" },
       intro: { en: "Check product in, log the paperwork, take returns, and work quarantine.", es: "Reciba producto, registre el papeleo, tome devoluciones y trabaje cuarentena.", pt: "Receba produto, registre os documentos, lance devolucoes e trabalhe a quarentena." },
@@ -220,6 +225,7 @@
     },
     {
       id: "inv",
+      icon: "boxes",
       label: { en: "Inventory", es: "Inventario", pt: "Estoque" },
       title: { en: "Inventory", es: "Inventario", pt: "Estoque" },
       intro: { en: "Counts, adjustments, moves, locations, seed, SKUs, labels, and reports.", es: "Conteos, ajustes, movimientos, ubicaciones, semilla, SKUs, etiquetas y reportes.", pt: "Contagens, ajustes, movimentos, locais, semente, SKUs, etiquetas e relatorios." },
@@ -232,6 +238,7 @@
     },
     {
       id: "mixing",
+      icon: "flask-conical",
       label: { en: "Mixing", es: "Mezcla", pt: "Mistura" },
       title: { en: "Mixing", es: "Mezcla", pt: "Mistura" },
       intro: { en: "What mixing needs, the lot station, seasoning, recipes, and production history.", es: "Lo que mezcla necesita, la estacion de lote, sazon, recetas y el historial.", pt: "O que a mistura precisa, a estacao de lote, tempero, receitas e o historico." },
@@ -243,6 +250,7 @@
     },
     {
       id: "pmac",
+      icon: "factory",
       label: { en: "P-Mac", es: "P-Mac", pt: "P-Mac" },
       title: { en: "P-Mac", es: "P-Mac", pt: "P-Mac" },
       intro: { en: "What P-Mac needs, bags off the line, and the lot station.", es: "Lo que P-Mac necesita, bolsas de la linea y la estacion de lote.", pt: "O que o P-Mac precisa, sacos da linha e a estacao de lote." },
@@ -253,6 +261,7 @@
     },
     {
       id: "ful",
+      icon: "package",
       label: { en: "Fulfillment", es: "Fulfillment", pt: "Fulfillment" },
       title: { en: "Fulfillment", es: "Fulfillment", pt: "Fulfillment" },
       intro: { en: "Retail and e-commerce builds, lot trace use, and lot trace ship. Shipping has its own tab.", es: "Produccion retail y e-commerce, salida de lote y envio de lote. Envios tiene su propia pestana.", pt: "Producao de varejo e e-commerce, saida de lote e envio de lote. Envios tem sua propria aba." },
@@ -264,6 +273,7 @@
     },
     {
       id: "ship",
+      icon: "ship",
       label: { en: "Shipping", es: "Envios", pt: "Envios" },
       title: { en: "Shipping", es: "Envios", pt: "Envios" },
       intro: { en: "Log a shipment and read what ShipStation already synced.", es: "Registre un envio y lea lo que ShipStation ya sincronizo.", pt: "Registre um envio e leia o que o ShipStation ja sincronizou." },
@@ -273,6 +283,7 @@
     },
     {
       id: "qa",
+      icon: "shield-check",
       label: { en: "Quality", es: "Calidad", pt: "Qualidade" },
       title: { en: "Quality", es: "Calidad", pt: "Qualidade" },
       intro: { en: "Lot trace, holds, labels, and the quality records this team already keeps.", es: "Rastreo de lote, retenciones, etiquetas y los registros de calidad que este equipo ya usa.", pt: "Rastreio de lote, retencoes, etiquetas e os registros de qualidade que esta equipe ja usa." },
@@ -283,6 +294,7 @@
     },
     {
       id: "ops",
+      icon: "settings",
       label: { en: "Ops", es: "Ops", pt: "Ops" },
       title: { en: "Ops", es: "Ops", pt: "Ops" },
       intro: { en: "People, maintenance, documents, and system setup.", es: "Personal, mantenimiento, documentos y ajustes del sistema.", pt: "Pessoas, manutencao, documentos e ajustes do sistema." },
@@ -1910,9 +1922,12 @@
     bar.innerHTML = DEPTS.map(function (d) {
       var on = d.id === barCurrent;
       return '<button type="button" class="dept-tab' + (on ? " on" : "") + '" data-dept="' + d.id + '" title="' + esc(tx(d.title || d.label)) + '"' +
-        (on ? ' aria-current="page"' : "") + '>' + esc(tx(d.label)) + '</button>';
+        (on ? ' aria-current="page"' : "") + '>' +
+        '<i class="dept-tab-ico" data-lucide="' + esc(d.icon || "circle") + '" aria-hidden="true"></i>' +
+        '<span class="dept-tab-label">' + esc(tx(d.label)) + '</span></button>';
     }).join("");
     scrollActiveTab();
+    try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
   }
 
   function markBar() {
@@ -2069,7 +2084,7 @@
       DEPTS.map(function (d) {
         var on = d.id === (homeId || barCurrent);
         return '<button type="button" class="navitem' + (on ? " active" : "") + '" data-dept-nav="' + esc(d.id) + '">' +
-          '<i class="navico" data-lucide="layout-grid"></i><span>' + esc(tx(d.title || d.label)) + '</span></button>';
+          '<i class="navico" data-lucide="' + esc(d.icon || "layout-grid") + '"></i><span>' + esc(tx(d.title || d.label)) + '</span></button>';
       }).join("");
     var firstGroup = nav.querySelector(".navgroup");
     if (firstGroup) nav.insertBefore(block, firstGroup);
@@ -2083,17 +2098,20 @@
     s.id = "dept-style";
     s.textContent = [
       "#dept-stack{position:sticky;top:0;z-index:70}",
-      "#dept-stack header{padding:4px 8px!important;gap:8px!important}",
-      "#dept-stack .logo{font-size:16px!important;line-height:1.05!important;letter-spacing:0!important}",
-      "#dept-stack .sub{font-size:11px!important;line-height:1.1!important}",
-      "#dept-stack .beta{font-size:9px!important;padding:1px 4px!important;margin-left:3px!important}",
-      "#dept-stack .navtoggle{padding:2px 7px!important;font-size:16px!important;margin-right:2px!important}",
-      "#dept-stack .modebadge{padding:2px 6px!important;font-size:10px!important}",
-      "#dept-stack .lang button{padding:2px 6px!important;font-size:12px!important;margin-left:3px!important}",
-      "#deptbar{display:flex;width:100%;box-sizing:border-box;gap:2px;align-items:stretch;overflow-x:auto;background:#fff;border-bottom:1px solid var(--line,#d7dde6);padding:2px 4px 3px;-webkit-overflow-scrolling:touch}",
-      "#deptbar .dept-tab{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;text-align:center;font-family:inherit;font-weight:700;font-size:12px;line-height:1.05;color:var(--navy,#04223B);background:var(--light,#E1EEF7);border:1px solid transparent;border-radius:6px;padding:4px 2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:28px}",
-      "#deptbar .dept-tab:hover{border-color:var(--blue,#006DB6)}",
-      "#deptbar .dept-tab.on{background:var(--orange,#F26B21);color:#fff}",
+      "#dept-stack header{padding:8px 14px!important;gap:12px!important}",
+      "#dept-stack .logo{font-size:22px!important;line-height:1.1!important;letter-spacing:.2px!important}",
+      "#dept-stack .sub{font-size:13px!important;line-height:1.25!important}",
+      "#dept-stack .beta{font-size:11px!important;padding:2px 6px!important;margin-left:6px!important}",
+      "#dept-stack .navtoggle{padding:6px 11px!important;font-size:20px!important;margin-right:4px!important}",
+      "#dept-stack .modebadge{padding:4px 10px!important;font-size:12px!important}",
+      "#dept-stack .lang button{padding:5px 10px!important;font-size:13px!important;margin-left:4px!important}",
+      "#deptbar{display:flex;width:100%;box-sizing:border-box;gap:4px;align-items:stretch;overflow-x:auto;background:#f4f7fb;border-bottom:1px solid var(--line,#d7dde6);padding:6px 6px 7px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}",
+      "#deptbar .dept-tab{flex:1 1 0;min-width:0;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:6px;text-align:center;font-family:inherit;font-weight:800;font-size:13px;line-height:1.1;color:var(--navy,#04223B);background:#fff;border:1px solid #c5d3e2;border-radius:8px;padding:8px 8px;cursor:pointer;min-height:46px;box-shadow:0 1px 0 rgba(4,34,59,.12)}",
+      "#deptbar .dept-tab .dept-tab-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
+      "#deptbar .dept-tab .dept-tab-ico, #deptbar .dept-tab svg.dept-tab-ico{flex:0 0 auto;width:18px;height:18px;color:var(--blue,#006DB6);stroke-width:2.25}",
+      "#deptbar .dept-tab:hover{border-color:var(--blue,#006DB6);background:#f3f8fc}",
+      "#deptbar .dept-tab.on{background:var(--orange,#F26B21);color:#fff;border-color:#d4530d;box-shadow:0 2px 0 rgba(180,62,8,.35)}",
+      "#deptbar .dept-tab.on .dept-tab-ico, #deptbar .dept-tab.on svg.dept-tab-ico{color:#fff}",
       "#deptbar .dept-tab:focus-visible{outline:3px solid var(--blue,#006DB6);outline-offset:2px}",
       "nav#nav{position:fixed!important;top:0;left:-320px!important;bottom:0;height:100vh;max-height:none!important;width:300px!important;flex:none!important;z-index:80;transform:none!important;transition:left .22s ease;box-shadow:2px 0 14px rgba(0,0,0,.25);visibility:visible!important;pointer-events:auto!important;overflow-y:auto!important;background:#fff}",
       "nav#nav.open{left:0!important}",
@@ -2169,7 +2187,9 @@
       "@media print{#dept-backbar{display:none!important}}",
       "@media(max-width:1100px){#view:has(>.df-lead){grid-template-columns:repeat(2,minmax(0,1fr))}#dept-home.dept-floor,#dept-home .dept-statrow{grid-template-columns:repeat(2,minmax(0,1fr))}#dept-home .dept-span2{grid-column:1 / -1}}",
       "@media(max-width:700px){#view:has(>.df-lead){grid-template-columns:1fr}#dept-home.dept-floor,#dept-home .dept-statrow{grid-template-columns:1fr}#dept-home .dept-span2{grid-column:1 / -1}}",
-      "@media(max-width:1080px){#deptbar .dept-tab{flex:1 0 84px;min-width:84px}}",
+      "@media(max-width:1360px){#deptbar .dept-tab{font-size:12px;gap:4px;padding:8px 4px}#deptbar .dept-tab .dept-tab-ico,#deptbar .dept-tab svg.dept-tab-ico{width:16px;height:16px}}",
+      "@media(max-width:1180px){#deptbar .dept-tab{flex:1 0 112px;min-width:112px}}",
+      "@media(max-width:640px){#deptbar .dept-tab{flex:1 0 92px;min-width:92px;min-height:54px;flex-direction:column;gap:2px;padding:6px 4px;font-size:11px}#deptbar .dept-tab .dept-tab-label{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-align:center;line-height:1.05}}",
       "@media print{#deptbar{display:none!important}}"
     ].join("");
     document.head.appendChild(s);
