@@ -158,6 +158,7 @@
     skulookup: { go: "skulookup", icon: "scan-search", title: { en: "SKU Lookup", es: "Buscar SKU", pt: "SKU Lookup" }, blurb: { en: "Look up an e-commerce SKU, its picture, and what is inside.", es: "Busque un SKU de e-commerce, su imagen y que contiene.", pt: "Busque um SKU de e-commerce, a imagem e o que tem dentro." } },
     prodlog: { go: "prodlog", icon: "notebook-pen", title: { en: "Daily Production", es: "Produccion Diaria", pt: "Producao Diaria" }, blurb: { en: "Today's retail pallets, lots, and the metal detector counter.", es: "Paletas retail de hoy, lotes y el contador del detector de metal.", pt: "Paletes de varejo de hoje, lotes e o contador do detector de metal." } },
     fulfilldaily: { go: "fulfilldaily", icon: "list-todo", title: { en: "Daily Fulfillment", es: "Cumplimiento Diario", pt: "Cumprimento Diario" }, blurb: { en: "Log today's e-commerce labels and Amazon (FBA) builds.", es: "Registre las etiquetas de e-commerce y la produccion Amazon (FBA) de hoy.", pt: "Registre as etiquetas de e-commerce e a producao Amazon (FBA) de hoje." } },
+    fulfillerr: { fn: "ferr", icon: "alert-triangle", title: { en: "Fulfillment Errors", es: "Errores de Fulfillment", pt: "Erros de Fulfillment" }, blurb: { en: "Error history, cost by month, and returns. Log a new error or return.", es: "Historial de errores, costo por mes y devoluciones. Registre un error o una devolucion.", pt: "Historico de erros, custo por mes e devolucoes. Registre um erro ou uma devolucao." } },
     flavinv: { go: "flavinv", icon: "bar-chart-2", title: { en: "Flavor Inventory", es: "Inventario de Sabores", pt: "Inventario de Sabores" }, blurb: { en: "On-floor pallets and finished on-hand by flavor.", es: "Paletas en piso y producto terminado en mano, por sabor.", pt: "Paletes no piso e produto acabado em estoque, por sabor." } },
     stockbuild: { go: "stockbuild", icon: "layers", title: { en: "Stock Build", es: "Construir Inventario", pt: "Construir Estoque" }, blurb: { en: "Build progress against the stock goals. Update on hand as you count.", es: "Avance contra las metas de inventario. Actualice en mano al contar.", pt: "Andamento contra as metas de estoque. Atualize em estoque ao contar." } },
     orders: { go: "orders", icon: "receipt", title: { en: "Orders", es: "Ordenes", pt: "Pedidos" }, blurb: { en: "Non-SPS and Stripe orders. Open ones stay on top.", es: "Ordenes no-SPS y Stripe. Las abiertas quedan arriba.", pt: "Pedidos nao-SPS e Stripe. Os abertos ficam no topo." } },
@@ -273,7 +274,8 @@
       sections: [
         { h: { en: "Line", es: "Linea", pt: "Linha" }, tools: ["retailprod", "ecomprod", "trUse", "trShip", "produce", "prodlog", "fulfilldaily"] },
         { h: { en: "Lookup and stock", es: "Busqueda y stock", pt: "Busca e estoque" }, tools: ["skulookup", "flavinv", "stockbuild"] },
-        { h: { en: "Orders", es: "Ordenes", pt: "Pedidos" }, tools: ["orders", "orderdocs"] }
+        { h: { en: "Orders", es: "Ordenes", pt: "Pedidos" }, tools: ["orders", "orderdocs"] },
+        { h: { en: "Errors and returns", es: "Errores y devoluciones", pt: "Erros e devolucoes" }, tools: ["fulfillerr"] }
       ]
     },
     {
@@ -370,6 +372,7 @@
     if (btn.id === "shs-nav") return "ship";
     if (btn.id === "mfg-hist-nav" || btn.id === "mfg-up-nav" || btn.id === "btr-nav") return "mixing";
     if (btn.id === "sqf-nav") return "qa";
+    if (btn.id === "fa-nav") return "ful";
     if (btn.id === "mp-nav-entry" || btn.id === "mp-nav-log") return "mixing";
     var trcHome = {
       "trc-nav-use": "ful",
@@ -441,6 +444,7 @@
     if (fn === "health" && window.DATAHEALTH && typeof DATAHEALTH.open === "function") { DATAHEALTH.open(); return; }
     if (fn === "batchrec" && window.BATCHREC && typeof BATCHREC.open === "function") { BATCHREC.open(); return; }
     if (fn === "sqf" && window.SQFTASKS && typeof SQFTASKS.open === "function") { SQFTASKS.open(); return; }
+    if (fn === "ferr" && window.FULFILL_ANALYTICS && typeof FULFILL_ANALYTICS.open === "function") { FULFILL_ANALYTICS.open(); return; }
     if (fn === "qacheck" && window.QACHECK && typeof QACHECK.open === "function") { QACHECK.open(); return; }
     toast(Lmissing());
   }
@@ -1782,6 +1786,7 @@
       else if (entry.kind === "mod" && entry.id === "health" && window.DATAHEALTH) { DATAHEALTH.open(); landed = true; }
       else if (entry.kind === "mod" && entry.id === "svc" && window.SERVICES) { SERVICES.open(); landed = true; }
       else if (entry.kind === "mod" && entry.id === "sqf" && window.SQFTASKS) { SQFTASKS.open(); landed = true; }
+      else if (entry.kind === "mod" && entry.id === "ferr" && window.FULFILL_ANALYTICS) { FULFILL_ANALYTICS.open(); landed = true; }
       else if (entry.kind === "mod" && entry.id === "qacheck" && window.QACHECK) { QACHECK.open(); landed = true; }
     } finally {
       backRestoring = false;
@@ -1917,6 +1922,7 @@
     wrapFn(window.DATAHEALTH, "open", { kind: "mod", id: "health" });
     wrapFn(window.SERVICES, "open", { kind: "mod", id: "svc" });
     wrapFn(window.SQFTASKS, "open", { kind: "mod", id: "sqf" });
+    wrapFn(window.FULFILL_ANALYTICS, "open", { kind: "mod", id: "ferr" });
     wrapFn(window.QACHECK, "open", { kind: "mod", id: "qacheck" });
   }
   function leaveBoardMode() {
