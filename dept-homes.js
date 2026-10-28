@@ -2,7 +2,9 @@
    Smackin' OS - Department homes (dept-homes.js)
    Top department bar and a full-page home for each team. Each card opens a
    screen that already exists (UI_go, Lot Trace, or a module open()).
-   Fulfillment uses the same card page. The left menu stays. No writes. No timers.
+   The left menu (#nav) stays in the DOM so other modules can still find it,
+   but it takes no space. The department bar is the only navigation. No writes.
+   No timers.
    ========================================================================== */
 (function () {
   "use strict";
@@ -30,7 +32,12 @@
     maintenance: "maint",
     produce: "ful", retailprod: "ful", ecomprod: "ful", skulookup: "ful",
     prodlog: "ful", fulfilldaily: "ful", flavinv: "ful", stockbuild: "ful",
-    orders: "ful", orderdocs: "ful", shiplog: "ful"
+    orders: "ful", orderdocs: "ful", shiplog: "ful",
+    home: "recv", daily: "recv",
+    demand: "mfg", demandboard: "mfg", demandsched: "mfg", demandimport: "mfg",
+    ecomdemand: "mfg", forecast: "mfg",
+    people: "maint", improve: "maint", rd: "maint", log: "maint",
+    reference: "qa", board: "maint", settings: "maint"
   };
 
   function tx(v) {
@@ -132,7 +139,23 @@
     orders: { go: "orders", icon: "receipt", title: { en: "Orders", es: "Ordenes", pt: "Pedidos" }, blurb: { en: "Non-SPS and Stripe orders. Open ones stay on top.", es: "Ordenes no-SPS y Stripe. Las abiertas quedan arriba.", pt: "Pedidos nao-SPS e Stripe. Os abertos ficam no topo." } },
     orderdocs: { go: "orderdocs", icon: "folder", title: { en: "Order Docs", es: "Docs de Orden", pt: "Docs de Pedido" }, blurb: { en: "Paperwork for fulfilled orders: BOL, packing list, pull sheet, invoice.", es: "Papeleo de ordenes cumplidas: BOL, lista de empaque, hoja de picking, factura.", pt: "Papelada de pedidos concluidos: BOL, lista de embalagem, folha de separacao, fatura." } },
     shiplog: { go: "shiplog", icon: "truck", title: { en: "Shipping Log", es: "Registro de Envios", pt: "Registro de Envios" }, blurb: { en: "Log a one-off outbound shipment and its tracking number.", es: "Registre un envio suelto y su numero de rastreo.", pt: "Registre um envio avulso e o numero de rastreio." } },
-    shipments: { fn: "shipments", icon: "ship", title: { en: "Shipments", es: "Shipments", pt: "Shipments" }, blurb: { en: "ShipStation shipments the server already synced. This screen only reads them.", es: "Envios de ShipStation que el servidor ya sincronizo. Esta pantalla solo los lee.", pt: "Envios do ShipStation que o servidor ja sincronizou. Esta tela so le." } }
+    shipments: { fn: "shipments", icon: "ship", title: { en: "Shipments", es: "Shipments", pt: "Shipments" }, blurb: { en: "ShipStation shipments the server already synced. This screen only reads them.", es: "Envios de ShipStation que el servidor ya sincronizo. Esta pantalla solo los lee.", pt: "Envios do ShipStation que o servidor ja sincronizou. Esta tela so le." } },
+    desk: { go: "home", icon: "home", title: { en: "Dashboard", es: "Panel", pt: "Painel" }, blurb: { en: "Facility snapshot: stock, orders, and what needs attention.", es: "Resumen de la planta: stock, ordenes y lo que necesita atencion.", pt: "Resumo da planta: estoque, pedidos e o que precisa de atencao." } },
+    daily: { go: "daily", icon: "calendar-days", title: { en: "Daily Metrics", es: "Daily Metrics", pt: "Daily Metrics" }, blurb: { en: "Every department's numbers for one day, with a 14-day history.", es: "Los numeros de cada departamento en un dia, con historial de 14 dias.", pt: "Os numeros de cada departamento em um dia, com historico de 14 dias." } },
+    demand: { go: "demand", icon: "calendar-clock", title: { en: "By Department", es: "Por Departamento", pt: "Por Departamento" }, blurb: { en: "Today's build target by department.", es: "La meta de produccion de hoy por departamento.", pt: "A meta de producao de hoje por departamento." } },
+    demandboard: { go: "demandboard", icon: "list-checks", title: { en: "Order Board", es: "Tablero de Pedidos", pt: "Painel de Pedidos" }, blurb: { en: "Open orders due to ship.", es: "Ordenes abiertas por enviar.", pt: "Pedidos abertos para enviar." } },
+    demandsched: { go: "demandsched", icon: "gauge", title: { en: "Production Schedule", es: "Programa de Produccion", pt: "Programa de Producao" }, blurb: { en: "What to produce by flavor against finished bags on hand.", es: "Que producir por sabor contra bolsas terminadas en mano.", pt: "O que produzir por sabor contra sacos prontos em estoque." } },
+    demandimport: { go: "demandimport", icon: "file-up", title: { en: "Import Orders", es: "Importar Pedidos", pt: "Importar Pedidos" }, blurb: { en: "Load SPS and ShipIQ exports into the demand board.", es: "Cargue exportaciones SPS y ShipIQ en el tablero de demanda.", pt: "Carregue exportacoes SPS e ShipIQ no painel de demanda." } },
+    ecomdemand: { go: "ecomdemand", icon: "globe", title: { en: "E-Com Demand", es: "Demanda E-Com", pt: "Demanda E-Com" }, blurb: { en: "Bags needed per flavor from a ShipStation product-sales export.", es: "Bolsas necesarias por sabor desde una exportacion de ventas de ShipStation.", pt: "Sacos necessarios por sabor a partir de uma exportacao de vendas do ShipStation." } },
+    forecast: { go: "forecast", icon: "scale", title: { en: "Forecast vs Target", es: "Pronostico vs Objetivo", pt: "Previsao vs Meta" }, blurb: { en: "Compare the WIP forecast with the app targets. Nothing is changed.", es: "Compare el pronostico WIP con las metas de la app. No cambia nada.", pt: "Compare a previsao WIP com as metas do app. Nada e alterado." } },
+    people: { go: "people", icon: "users", title: { en: "People", es: "Personal", pt: "Pessoas" }, blurb: { en: "Team directory and org chart.", es: "Directorio del equipo y organigrama.", pt: "Diretorio da equipe e organograma." } },
+    improve: { go: "improve", icon: "trending-up", title: { en: "Continuous Improvement", es: "Mejora Continua", pt: "Melhoria Continua" }, blurb: { en: "Lean, 5S, and Kaizen ideas and projects.", es: "Ideas y proyectos Lean, 5S y Kaizen.", pt: "Ideias e projetos Lean, 5S e Kaizen." } },
+    rd: { go: "rd", icon: "flask-conical", title: { en: "R&D", es: "I+D", pt: "P&D" }, blurb: { en: "Research requests and what is still out.", es: "Solicitudes de investigacion y lo que sigue pendiente.", pt: "Pedidos de pesquisa e o que ainda esta pendente." } },
+    acct: { go: "log", icon: "history", title: { en: "Accountability", es: "Responsabilidad", pt: "Responsabilidade" }, blurb: { en: "Activity log of what changed.", es: "Registro de actividad de lo que cambio.", pt: "Registro de atividade do que mudou." } },
+    reference: { go: "reference", icon: "book-open", title: { en: "Reference / SOPs", es: "Referencia / SOPs", pt: "Referencia / SOPs" }, blurb: { en: "SOPs, cheat sheets, and policies.", es: "SOPs, guias rapidas y politicas.", pt: "SOPs, guias rapidos e politicas." } },
+    board: { go: "board", icon: "tv", title: { en: "Board Mode / TV", es: "Modo Pizarra / TV", pt: "Modo Painel / TV" }, blurb: { en: "Open a department board for the TV.", es: "Abra un tablero de departamento para la TV.", pt: "Abra um painel de departamento para a TV." } },
+    settings: { go: "settings", icon: "settings", title: { en: "Settings", es: "Ajustes", pt: "Configuracoes" }, blurb: { en: "Connection, lock, and backup.", es: "Conexion, bloqueo y respaldo.", pt: "Conexao, bloqueio e backup." } },
+    health: { fn: "health", icon: "activity", title: { en: "Data Health", es: "Data Health", pt: "Data Health" }, blurb: { en: "How fresh each data source is. This screen only reads.", es: "Que tan reciente esta cada fuente de datos. Esta pantalla solo lee.", pt: "Quao recente esta cada fonte de dados. Esta tela so le." } }
   };
 
   var DEPTS = [
@@ -142,6 +165,7 @@
       title: { en: "Receiving / Inventory", es: "Recibo / Inventario", pt: "Recebimento / Estoque" },
       intro: { en: "Receive product, count stock, and open the inventory tools already on this floor.", es: "Reciba producto, cuente existencia y abra las herramientas de inventario que ya estan en piso.", pt: "Receba produto, conte estoque e abra as ferramentas de inventario que ja estao no piso." },
       sections: [
+        { h: { en: "Facility", es: "Planta", pt: "Planta" }, tools: ["desk", "daily"] },
         { h: { en: "Receiving", es: "Recibo", pt: "Recebimento" }, tools: ["receive", "recvlog", "returns", "quarantine"] },
         { h: { en: "Stock and counts", es: "Stock y conteos", pt: "Estoque e contagens" }, tools: ["dash", "adjust", "count", "alerts", "shortdated", "finbags", "move", "locations", "facility"] },
         { h: { en: "Items", es: "Items", pt: "Itens" }, tools: ["seasoning", "seed", "skus", "recipes", "analytics", "printlabels"] }
@@ -173,11 +197,12 @@
       id: "mfg",
       label: { en: "Manufacturing", es: "Manufactura", pt: "Manufatura" },
       title: { en: "Manufacturing", es: "Manufactura", pt: "Manufatura" },
-      intro: { en: "Mix, P-Mac, production orders, the live machines, and the lot stations on this floor.", es: "Mezcla, P-Mac, ordenes de produccion, las maquinas en vivo y las estaciones de lote en piso.", pt: "Mistura, P-Mac, ordens de producao, as maquinas ao vivo e as estacoes de lote no piso." },
+      intro: { en: "Mix, P-Mac, production orders, demand, the live machines, and the lot stations on this floor.", es: "Mezcla, P-Mac, ordenes de produccion, demanda, las maquinas en vivo y las estaciones de lote en piso.", pt: "Mistura, P-Mac, ordens de producao, demanda, as maquinas ao vivo e as estacoes de lote no piso." },
       sections: [
         { h: { en: "Lot trace stations", es: "Estaciones de lote", pt: "Estacoes de lote" }, tools: ["trRecv", "trQa", "trMix", "trPmac", "trMove"] },
         { h: { en: "Floor", es: "Piso", pt: "Piso" }, tools: ["mixing", "pmac", "pmacout", "floor"] },
-        { h: { en: "Planning and history", es: "Plan y historial", pt: "Plano e historico" }, tools: ["prodorders", "reordertracker", "launch", "hist", "upload"] }
+        { h: { en: "Planning and history", es: "Plan y historial", pt: "Plano e historico" }, tools: ["prodorders", "reordertracker", "launch", "hist", "upload"] },
+        { h: { en: "Demand", es: "Demanda", pt: "Demanda" }, tools: ["demand", "demandboard", "demandsched", "demandimport", "ecomdemand", "forecast"] }
       ]
     },
     {
@@ -187,17 +212,19 @@
       intro: { en: "Lot trace, labels, and the quality records this team already keeps.", es: "Rastreo de lote, etiquetas y los registros de calidad que este equipo ya usa.", pt: "Rastreio de lote, etiquetas e os registros de qualidade que esta equipe ja usa." },
       sections: [
         { h: { en: "Lot trace", es: "Rastreo de lote", pt: "Rastreio de lote" }, tools: ["trace", "trLabels"] },
-        { h: { en: "Quality records", es: "Registros de calidad", pt: "Registros de qualidade" }, tools: ["quality", "compliance", "shortdated"] }
+        { h: { en: "Quality records", es: "Registros de calidad", pt: "Registros de qualidade" }, tools: ["quality", "compliance", "shortdated", "reference"] }
       ]
     },
     {
       id: "maint",
       label: { en: "Maintenance", es: "Mantenimiento", pt: "Manutencao" },
       title: { en: "Maintenance", es: "Mantenimiento", pt: "Manutencao" },
-      intro: { en: "Maintenance requests and the services log.", es: "Solicitudes de mantenimiento y el registro de servicios.", pt: "Pedidos de manutencao e o registro de servicos." },
+      intro: { en: "Maintenance requests, the services log, and the team and system screens.", es: "Solicitudes de mantenimiento, el registro de servicios y las pantallas de equipo y sistema.", pt: "Pedidos de manutencao, o registro de servicos e as telas de equipe e sistema." },
       sections: [
         { h: { en: "Shop", es: "Taller", pt: "Oficina" }, tools: ["maintenance"] },
-        { h: { en: "Services", es: "Servicios", pt: "Servicos" }, tools: ["services"] }
+        { h: { en: "Services", es: "Servicios", pt: "Servicos" }, tools: ["services"] },
+        { h: { en: "Team", es: "Equipo", pt: "Equipe" }, tools: ["people", "improve", "rd", "acct"] },
+        { h: { en: "System", es: "Sistema", pt: "Sistema" }, tools: ["board", "settings", "health"] }
       ]
     }
   ];
@@ -232,7 +259,7 @@
 
   function deptOfNav(btn) {
     if (!btn) return "";
-    if (btn.id === "svc-nav") return "maint";
+    if (btn.id === "svc-nav" || btn.id === "dh-nav") return "maint";
     if (btn.id === "sf-nav") return "purch";
     if (btn.id === "shs-nav") return "ful";
     if (btn.id === "mfg-hist-nav" || btn.id === "mfg-up-nav") return "mfg";
@@ -288,6 +315,7 @@
     if (fn === "up" && window.MFGUPLOAD && typeof MFGUPLOAD.open === "function") { MFGUPLOAD.open(); return; }
     if (fn === "sps" && window.SPSFEED && typeof SPSFEED.open === "function") { SPSFEED.open(); return; }
     if (fn === "shipments" && window.SHIPPING_SYNC && typeof SHIPPING_SYNC.open === "function") { SHIPPING_SYNC.open(); return; }
+    if (fn === "health" && window.DATAHEALTH && typeof DATAHEALTH.open === "function") { DATAHEALTH.open(); return; }
     toast(Lmissing());
   }
 
@@ -426,8 +454,10 @@
       "#deptbar .dept-tab{font-family:inherit;font-weight:800;font-size:14px;line-height:1.2;color:var(--navy,#04223B);background:var(--light,#E1EEF7);border:1px solid transparent;border-radius:999px;padding:10px 14px;cursor:pointer;white-space:nowrap;min-height:44px}",
       "#deptbar .dept-tab:hover{border-color:var(--blue,#006DB6)}",
       "#deptbar .dept-tab.on{background:var(--orange,#F26B21);color:#fff}",
-      "nav#nav{top:var(--dept-stack-h,0px);max-height:calc(100vh - var(--dept-stack-h,0px))}",
-      "main:has(#dept-home){max-width:none}",
+      "nav#nav,nav#nav.open{position:fixed!important;left:0!important;top:0!important;width:0!important;height:0!important;min-width:0!important;max-width:0!important;max-height:0!important;flex:0 0 0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden!important;visibility:hidden!important;pointer-events:none!important;box-shadow:none!important;transform:none!important;clip-path:inset(50%)!important}",
+      "#navToggle,.navtoggle,#navBackdrop,#navBackdrop.show{display:none!important}",
+      ".layout{display:block!important;max-width:none!important;width:100%!important;margin:0!important}",
+      "main,#view{max-width:none!important;width:100%!important;flex:none!important}",
       "#dept-home{padding:8px 0 28px}",
       "#dept-home h1{margin:0 0 6px;color:var(--navy,#04223B);font-size:28px;line-height:1.15}",
       "#dept-home .dept-sec{margin:22px 0 10px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#5c6b7c;font-weight:800}",
@@ -440,7 +470,7 @@
       "#dept-home .dept-card strong{display:block;font-size:18px;color:var(--navy,#04223B);margin:0 0 4px}",
       "#dept-home .dept-card span{display:block;font-size:14px;color:#3d4c5e;line-height:1.35;font-weight:500}",
       "body.boardmode #deptbar{display:none!important}",
-      "@media(max-width:820px){nav#nav{top:var(--dept-stack-h,0px);height:calc(100vh - var(--dept-stack-h,0px));max-height:none}#dept-home h1{font-size:24px}}",
+      "@media(max-width:820px){#dept-home h1{font-size:24px}}",
       "@media print{#deptbar{display:none!important}}"
     ].join("");
     document.head.appendChild(s);
@@ -486,6 +516,9 @@
   function boot() {
     buildBar();
     var nav = document.getElementById("nav");
+    if (nav) nav.setAttribute("aria-hidden", "true");
+    var toggle = document.getElementById("navToggle");
+    if (toggle) toggle.setAttribute("aria-hidden", "true");
     var view = document.getElementById("view");
     if (nav && !nav.__deptObs && typeof MutationObserver === "function") {
       var nobs = new MutationObserver(onNav);
