@@ -123,6 +123,51 @@
     return Math.abs((sheetQty - os) / os) > LARGE_PCT;
   }
   function cloudOn() { return !!(window.DB && DB.mode === "cloud"); }
+  var ADRIANA = "inventory@smackinsnacks.com";
+
+  function reportRows() {
+    try {
+      if (!window.DB || !DB.kvGet) return [];
+      var raw = DB.kvGet("inv-sync-2026-10-27d-report");
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      return (parsed && parsed.rows) || [];
+    } catch (e) { return []; }
+  }
+  function itemsReady() {
+    return !!(window.DB && DB.items && DB.items().length);
+  }
+  function discrepancyMail() {
+    var lines = [];
+    var applied = reportRows();
+    if (applied.length) {
+      lines.push("Corrected to the 2026-10-27 count (previous on-hand -> sheet):");
+      applied.forEach(function (r) {
+        lines.push(r.code + "  " + r.before + " -> " + r.after);
+      });
+      lines.push("");
+    }
+    var open = [];
+    if (itemsReady()) {
+      rows().forEach(function (row) {
+        var info = classify(row);
+        if (info.variance === 0) return;
+        open.push((row.code || "(unmapped)") + "  " + (row.desc || "") +
+          "  OS " + (info.os == null ? "none" : info.os) +
+          "  sheet " + info.sheetQty +
+          (info.loc ? "  at " + info.loc : "") +
+          "  " + info.status);
+      });
+    }
+    if (open.length) {
+      lines.push("Still different, not auto-applied:");
+      open.forEach(function (line) { lines.push(line); });
+    }
+    if (!applied.length && !open.length) return null;
+    var when = (feed() && feed().date) || "2026-10-27";
+    var subject = "SLC count discrepancies " + when;
+    return "mailto:" + ADRIANA + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(lines.join("\n"));
+  }
 
   function classify(row) {
     var key = rowKey(row);
@@ -238,6 +283,8 @@
       "#slc-count-panel button{font:700 13px system-ui;border-radius:8px;border:1px solid #04223B;background:#04223B;color:#fff;padding:8px 12px;cursor:pointer}" +
       "#slc-count-panel button.slc-ghost{background:#fff;color:#04223B}" +
       "#slc-count-panel button:disabled{opacity:.45;cursor:not-allowed}" +
+      "#slc-count-panel a.slc-mail{font:700 13px system-ui;border-radius:8px;border:1px solid #04223B;background:#fff;color:#04223B;padding:8px 12px;text-decoration:none;display:inline-block}" +
+      "#slc-count-panel a.slc-mail.is-off{opacity:.45;pointer-events:none}" +
       "#slc-count-panel .slc-note{font:12px system-ui;color:#3d4c5e}" +
       "#slc-count-panel .slc-cloud{font:700 12px system-ui;color:#9a5b00}" +
       ".slc-scroll{overflow:auto;max-height:560px;border:1px solid #dbe3ec;border-radius:8px}" +
@@ -276,8 +323,10 @@
       '<button type="button" class="slc-ghost" id="slc-count-all">Select safe rows</button>' +
       '<button type="button" class="slc-ghost" id="slc-count-clear">Clear</button>' +
       '<button type="button" id="slc-count-apply">Apply selected</button>' +
+      '<a class="slc-mail is-off" id="slc-count-mail">Email discrepancies to Adriana</a>' +
       '</div>' +
       '<p class="slc-note" id="slc-count-cloud"></p>' +
+      '<p class="slc-note" id="slc-count-adriana"></p>' +
       '<div id="slc-count-body"></div>';
     var lead = home.querySelector(".dept-lead");
     if (lead && lead.nextSibling) home.insertBefore(el, lead.nextSibling);
@@ -326,7 +375,8 @@
         sub.textContent = "Count file is missing. Nothing to compare.";
       } else {
         sub.textContent = "Sheet " + (data.sheet || "Inventory SLC 2026") + ", count date " + data.date +
-          ". Limited 1.5 oz on this file is dated 2026-10-26. The sheet stays the source until you apply a bag row. " +
+          ". This count is compared with what OS holds now. Differences go to Adriana (inventory@smackinsnacks.com). " +
+          "Limited 1.5 oz on this file is dated 2026-10-26. The sheet stays the source until you apply a bag row. " +
           "Apply uses DB.adjustTotal and only when that write lands on RECEIVING. A fresh stock read has to match before a row counts as applied. " +
           "Clear the ticks before leaving this screen.";
       }
@@ -352,6 +402,35 @@
       cloud.textContent = cloudOn()
         ? "Cloud is on. Checked bag rows write one at a time. Large variances are not included in Select safe rows."
         : "Apply stays off until this browser is on the shared cloud database. You can still review the sheet against whatever on-hand is loaded.";
+    }
+    var adriana = el.querySelector("#slc-count-adriana");
+    if (adriana) {
+      if (!itemsReady()) {
+        adriana.textContent = "New counts are compared with the on-hand already in OS. Email the differences to Adriana (" + ADRIANA + "). Waiting for OS stock to load.";
+      } else {
+        var appliedN = reportRows().length;
+        var openN = 0;
+        rows().forEach(function (row) {
+          var info = classify(row);
+          if (info.variance !== 0) openN++;
+        });
+        adriana.textContent = "New counts are compared with the on-hand already in OS. Email the differences to Adriana (" + ADRIANA + "). " +
+          (appliedN ? (appliedN + " code(s) were corrected to the 2026-10-27 sheet total. ") : "") +
+          (openN ? (openN + " row(s) still differ and were not auto-applied.") : "No open sheet differences.");
+      }
+    }
+    var mail = el.querySelector("#slc-count-mail");
+    if (mail) {
+      var href = discrepancyMail();
+      if (href) {
+        mail.href = href;
+        mail.classList.remove("is-off");
+        mail.textContent = "Email discrepancies to Adriana";
+      } else {
+        mail.removeAttribute("href");
+        mail.classList.add("is-off");
+        mail.textContent = "No discrepancies to email";
+      }
     }
     var picked = selectedApplyable().length;
     var btn = el.querySelector("#slc-count-apply");
