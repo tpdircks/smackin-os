@@ -39,13 +39,13 @@ htmlFiles.forEach(function (name) {
 });
 
 var index = read("index.html");
-assert(index.indexOf('src="inv-sync-1027d.js?b=1"') >= 0, "current apply script");
-assert(index.indexOf('src="slc-count-latest.js?b=1"') < index.indexOf('src="inv-sync-1027d.js?b=1"'), "count file loads first");
-assert(index.indexOf('src="slc-count-panel.js?b=2"') >= 0, "panel cache bust");
+assert(index.indexOf('src="inv-sync-1027d.js?b=2"') >= 0, "current apply script");
+assert(index.indexOf('src="slc-count-latest.js?b=1"') < index.indexOf('src="inv-sync-1027d.js?b=2"'), "count file loads first");
+assert(index.indexOf('src="slc-count-panel.js?b=3"') >= 0, "panel cache bust");
 
 var sw = read("service-worker.js");
-assert(sw.indexOf('const CACHE = "smackin-inv-v242"') >= 0, "cache v242");
-assert(sw.indexOf("smackin-inv-v241") < 0, "old cache gone");
+assert(sw.indexOf('const CACHE = "smackin-inv-v243"') >= 0, "cache v243");
+assert(sw.indexOf("smackin-inv-v242") < 0, "old cache gone");
 assert(sw.indexOf("./inv-sync-1027d.js") >= 0, "sw precaches the apply module");
 obsolete.forEach(function (rel) { assert(sw.indexOf(rel) < 0, "sw lists " + rel); });
 
@@ -53,6 +53,9 @@ var apply = read("inv-sync-1027d.js");
 assert(apply.indexOf("inv-sync-2026-10-27d-cloud") >= 0, "new local flag");
 assert(apply.indexOf("inv-sync-2026-10-23") < 0, "old 10/23 flag absent");
 assert(apply.indexOf("await DB.adjustTotal(it, sheetQty, NOTE)") >= 0, "awaited adjust");
+assert(apply.indexOf("function isSyncOperator") >= 0, "manual operator guard");
+assert(apply.indexOf("A hand count wins") >= 0, "hand count rule");
+assert(apply.indexOf("if (!choice.write)") >= 0, "skips when a hand count owns the total");
 assert(apply.indexOf("var TARGET") < 0, "no baked target table");
 assert(apply.indexOf('SHEETS = { "Inventory Bags 4 oz": 1, "Inventory Bags 1.5 oz": 1 }') >= 0, "bag sheets only");
 assert(apply.indexOf("DT275") < 0 && apply.indexOf("BOX-") < 0, "does not name excluded skus");
@@ -121,7 +124,13 @@ function harness(opts) {
       if (url.indexOf("/stock") >= 0) {
         return Promise.resolve({
           ok: true,
-          json: function () { return Promise.resolve([{ qty: onHandQty }]); }
+          json: function () { return Promise.resolve(opts.stock || [{ location: "RETURNS", qty: onHandQty }]); }
+        });
+      }
+      if (url.indexOf("transactions") >= 0) {
+        return Promise.resolve({
+          ok: true,
+          json: function () { return Promise.resolve(opts.history || []); }
         });
       }
       return Promise.reject(new Error("unexpected " + url));
@@ -147,7 +156,8 @@ var one = {
   date: "2026-10-27",
   rows: [{ code: "B4-S07", sheet: "Inventory Bags 4 oz", sheetDate: "2026-10-27", sheetQty: 29100, desc: "Cheddar Jalapeno" }]
 };
-var item = { id: "BAG4-S07", code: "B4-S07" };
+var item = { id: "BAG4-S07", code: "B4-S07", flavor: "Cheddar Jalapeno" };
+var syncHist = [{ operator: null, detail: "Cheddar Jalapeno @ RETURNS: 29,100 -> 36,000" }];
 
 (async function () {
   var flagged = harness({ slc: one, item: item, onHand: 36000, flag: "done:already" });
@@ -169,7 +179,7 @@ var item = { id: "BAG4-S07", code: "B4-S07" };
   assert(skipped.kv.value.indexOf("done:") === 0, "matching run still finishes once");
   assert(skipped.store["inv-sync-2026-10-27d-cloud"], "local done flag set");
 
-  var applyOnce = harness({ slc: one, item: item, onHand: 36000 });
+  var applyOnce = harness({ slc: one, item: item, onHand: 36000, history: syncHist });
   await settle(2000);
   assert(applyOnce.adjusts.length === 1, "one adjust");
   assert(applyOnce.adjusts[0] && applyOnce.adjusts[0].qty === 29100 && applyOnce.adjusts[0].note === "inv-sync-1027d", "writes the sheet total");
@@ -177,6 +187,45 @@ var item = { id: "BAG4-S07", code: "B4-S07" };
   var reportPut = applyOnce.puts.filter(function (p) { return p.key === "inv-sync-2026-10-27d-report"; })[0];
   var report = reportPut ? JSON.parse(reportPut.val) : null;
   assert(report && report.rows.length === 1 && report.rows[0].before === 36000 && report.rows[0].after === 29100, "report keeps the previous on-hand");
+
+  var manual = harness({
+    slc: one, item: item, onHand: 35000,
+    history: [{ operator: "Jesus", detail: "Cheddar Jalapeno @ RETURNS: 36,000 -> 35,000" }]
+  });
+  await settle(2000);
+  assert(manual.adjusts.length === 0, "a named count is not overwritten");
+  assert(manual.kv.value.indexOf("done:") === 0, "manual skip still finishes the one pass");
+  var manualReport = JSON.parse(manual.puts.filter(function (p) { return p.key === "inv-sync-2026-10-27d-report"; })[0].val);
+  assert(manualReport.kept.length === 1 && manualReport.kept[0].operator === "Jesus", "manual is reported, not applied");
+
+  var moved = harness({
+    slc: one, item: item, onHand: 36100,
+    history: syncHist
+  });
+  await settle(2000);
+  assert(moved.adjusts.length === 0, "a total that is no longer the sync post is left alone");
+
+  var buried = harness({
+    slc: one, item: item, onHand: 36000,
+    history: [
+      { operator: null, detail: "Cheddar Jalapeno @ RETURNS: 1 -> 100" },
+      { operator: "Jesus", detail: "Cheddar Jalapeno @ RETURNS: 10 -> 5" },
+      { operator: null, detail: "Cheddar Jalapeno @ RETURNS: 29,100 -> 36,000" }
+    ]
+  });
+  await settle(2000);
+  assert(buried.adjusts.length === 1, "an older hand count does not block the sync post that is live");
+
+  var oldSheet = harness({
+    slc: one, item: item, onHand: 36000,
+    history: [{ operator: "Adri Inv 9/21", detail: "Cheddar Jalapeno @ RETURNS: 1 -> 36,000" }]
+  });
+  await settle(2000);
+  assert(oldSheet.adjusts.length === 1, "an old sheet-sync label is not a hand count");
+
+  var later = harness({ slc: one, item: item, onHand: 35000, kv: "done:earlier", history: syncHist });
+  await settle(80);
+  assert(later.adjusts.length === 0 && later.puts.length === 0, "shared done flag blocks another browser from re-applying");
 
   if (failed) {
     console.error(failed + " failed");

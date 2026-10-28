@@ -125,15 +125,17 @@
   function cloudOn() { return !!(window.DB && DB.mode === "cloud"); }
   var ADRIANA = "inventory@smackinsnacks.com";
 
-  function reportRows() {
+  function reportDoc() {
     try {
-      if (!window.DB || !DB.kvGet) return [];
+      if (!window.DB || !DB.kvGet) return { rows: [], kept: [] };
       var raw = DB.kvGet("inv-sync-2026-10-27d-report");
-      if (!raw) return [];
+      if (!raw) return { rows: [], kept: [] };
       var parsed = JSON.parse(raw);
-      return (parsed && parsed.rows) || [];
-    } catch (e) { return []; }
+      return { rows: (parsed && parsed.rows) || [], kept: (parsed && parsed.kept) || [] };
+    } catch (e) { return { rows: [], kept: [] }; }
   }
+  function reportRows() { return reportDoc().rows; }
+  function reportKept() { return reportDoc().kept; }
   function itemsReady() {
     return !!(window.DB && DB.items && DB.items().length);
   }
@@ -141,9 +143,17 @@
     var lines = [];
     var applied = reportRows();
     if (applied.length) {
-      lines.push("Corrected to the 2026-10-27 count (previous on-hand -> sheet):");
+      lines.push("Corrected to the 2026-10-27 count where the live total was still a sheet sync (previous on-hand -> sheet):");
       applied.forEach(function (r) {
         lines.push(r.code + "  " + r.before + " -> " + r.after);
+      });
+      lines.push("");
+    }
+    var kept = reportKept();
+    if (kept.length) {
+      lines.push("Left alone. A hand count or a later stock move owns these, so the sheet sync did not override them:");
+      kept.forEach(function (r) {
+        lines.push(r.code + "  OS " + r.qty + (r.operator ? "  by " + r.operator : "") + "  " + (r.reason || ""));
       });
       lines.push("");
     }
@@ -163,7 +173,7 @@
       lines.push("Still different, not auto-applied:");
       open.forEach(function (line) { lines.push(line); });
     }
-    if (!applied.length && !open.length) return null;
+    if (!applied.length && !open.length && !kept.length) return null;
     var when = (feed() && feed().date) || "2026-10-27";
     var subject = "SLC count discrepancies " + when;
     return "mailto:" + ADRIANA + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(lines.join("\n"));
@@ -375,7 +385,7 @@
         sub.textContent = "Count file is missing. Nothing to compare.";
       } else {
         sub.textContent = "Sheet " + (data.sheet || "Inventory SLC 2026") + ", count date " + data.date +
-          ". This count is compared with what OS holds now. Differences go to Adriana (inventory@smackinsnacks.com). " +
+          ". This count is compared with what OS holds now. A hand count stays. The sheet sync does not write over it or run again. Differences go to Adriana (inventory@smackinsnacks.com). " +
           "Limited 1.5 oz on this file is dated 2026-10-26. The sheet stays the source until you apply a bag row. " +
           "Apply uses DB.adjustTotal and only when that write lands on RECEIVING. A fresh stock read has to match before a row counts as applied. " +
           "Clear the ticks before leaving this screen.";
@@ -409,13 +419,15 @@
         adriana.textContent = "New counts are compared with the on-hand already in OS. Email the differences to Adriana (" + ADRIANA + "). Waiting for OS stock to load.";
       } else {
         var appliedN = reportRows().length;
+        var keptN = reportKept().length;
         var openN = 0;
         rows().forEach(function (row) {
           var info = classify(row);
           if (info.variance !== 0) openN++;
         });
-        adriana.textContent = "New counts are compared with the on-hand already in OS. Email the differences to Adriana (" + ADRIANA + "). " +
-          (appliedN ? (appliedN + " code(s) were corrected to the 2026-10-27 sheet total. ") : "") +
+        adriana.textContent = "New counts are compared with the on-hand already in OS. A hand count is not replaced by an old sheet sync. Email the differences to Adriana (" + ADRIANA + "). " +
+          (appliedN ? (appliedN + " code(s) were still a sheet-sync total and were corrected to the 2026-10-27 sheet. ") : "") +
+          (keptN ? (keptN + " code(s) were left at a hand count or later move. ") : "") +
           (openN ? (openN + " row(s) still differ and were not auto-applied.") : "No open sheet differences.");
       }
     }
