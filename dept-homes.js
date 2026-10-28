@@ -145,6 +145,7 @@
     trace: { trace: "trace", icon: "git-branch", title: { en: "Trace", es: "Rastrear", pt: "Trace" }, blurb: { en: "Look up a label, lot, supplier lot, or PO.", es: "Busque una etiqueta, lote, lote de proveedor u orden.", pt: "Busque uma etiqueta, lote, lote de fornecedor ou OC." } },
     trLabels: { trace: "labels", icon: "tags", title: { en: "Labels", es: "Etiquetas", pt: "Labels" }, blurb: { en: "Search lot labels and reprint one.", es: "Busque etiquetas de lote y reimprima una.", pt: "Busque etiquetas de lote e reimprima uma." } },
     quality: { go: "quality", icon: "microscope", title: { en: "Quality Logs", es: "Quality Logs", pt: "Quality Logs" }, blurb: { en: "CCP checks: allergen changeover, label verify, metal detector.", es: "Registros CCP: cambio de alergeno, verificacion de etiqueta, detector de metal.", pt: "Registros CCP: troca de alergeno, verificacao de rotulo, detector de metal." } },
+    qacheck: { fn: "qacheck", icon: "clipboard-check", title: { en: "QA Checklists", es: "Listas de calidad", pt: "Listas de qualidade" }, blurb: { en: "Pre-op, GMP, metal detector, and hourly pouch checks. Paper stays the backup until QA confirms digital storage.", es: "Preoperacional, GMP, detector de metal y revision horaria de bolsas. El papel sigue como respaldo hasta que Calidad confirme el almacenamiento digital.", pt: "Pre-op, GMP, detector de metal e checagem horaria de sache. O papel continua como copia de apoio ate a Qualidade confirmar o armazenamento digital." } },
     compliance: { go: "compliance", icon: "shield-check", title: { en: "Compliance / SQF", es: "Cumplimiento / SQF", pt: "Conformidade / SQF" }, blurb: { en: "Certifications, the SQF calendar, and controlled documents.", es: "Certificaciones, el calendario SQF y documentos controlados.", pt: "Certificacoes, o calendario SQF e documentos controlados." } },
     sqftasks: { fn: "sqf", icon: "list-checks", title: { en: "SQF Tasks", es: "Tareas SQF", pt: "Tarefas SQF" }, blurb: { en: "Outstanding SQF clauses, owners, and due dates. This list is the live copy.", es: "Clausulas SQF pendientes, responsables y fechas. Esta lista es la copia viva.", pt: "Clausulas SQF pendentes, responsaveis e datas. Esta lista e a copia viva." } },
     maintenance: { go: "maintenance", icon: "hard-hat", title: { en: "Maintenance", es: "Mantenimiento", pt: "Manutencao" }, blurb: { en: "Requests, repairs, and projects.", es: "Solicitudes, reparaciones y proyectos.", pt: "Pedidos, reparos e projetos." } },
@@ -295,7 +296,7 @@
       intro: { en: "Lot trace, holds, labels, and the quality records this team already keeps.", es: "Rastreo de lote, retenciones, etiquetas y los registros de calidad que este equipo ya usa.", pt: "Rastreio de lote, retencoes, etiquetas e os registros de qualidade que esta equipe ja usa." },
       sections: [
         { h: { en: "Lot trace", es: "Rastreo de lote", pt: "Rastreio de lote" }, tools: ["trace", "trQa", "trLabels"] },
-        { h: { en: "Quality records", es: "Registros de calidad", pt: "Registros de qualidade" }, tools: ["quality", "compliance", "sqftasks", "shortdated"] }
+        { h: { en: "Quality records", es: "Registros de calidad", pt: "Registros de qualidade" }, tools: ["qacheck", "quality", "compliance", "sqftasks", "shortdated"] }
       ]
     },
     {
@@ -444,6 +445,7 @@
     if (fn === "batchrec" && window.BATCHREC && typeof BATCHREC.open === "function") { BATCHREC.open(); return; }
     if (fn === "sqf" && window.SQFTASKS && typeof SQFTASKS.open === "function") { SQFTASKS.open(); return; }
     if (fn === "ferr" && window.FULFILL_ANALYTICS && typeof FULFILL_ANALYTICS.open === "function") { FULFILL_ANALYTICS.open(); return; }
+    if (fn === "qacheck" && window.QACHECK && typeof QACHECK.open === "function") { QACHECK.open(); return; }
     toast(Lmissing());
   }
 
@@ -1785,6 +1787,7 @@
       else if (entry.kind === "mod" && entry.id === "svc" && window.SERVICES) { SERVICES.open(); landed = true; }
       else if (entry.kind === "mod" && entry.id === "sqf" && window.SQFTASKS) { SQFTASKS.open(); landed = true; }
       else if (entry.kind === "mod" && entry.id === "ferr" && window.FULFILL_ANALYTICS) { FULFILL_ANALYTICS.open(); landed = true; }
+      else if (entry.kind === "mod" && entry.id === "qacheck" && window.QACHECK) { QACHECK.open(); landed = true; }
     } finally {
       backRestoring = false;
     }
@@ -1920,6 +1923,7 @@
     wrapFn(window.SERVICES, "open", { kind: "mod", id: "svc" });
     wrapFn(window.SQFTASKS, "open", { kind: "mod", id: "sqf" });
     wrapFn(window.FULFILL_ANALYTICS, "open", { kind: "mod", id: "ferr" });
+    wrapFn(window.QACHECK, "open", { kind: "mod", id: "qacheck" });
   }
   function leaveBoardMode() {
     if (!document.body.classList.contains("boardmode")) return;

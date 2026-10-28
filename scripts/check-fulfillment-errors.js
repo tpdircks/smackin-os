@@ -78,7 +78,7 @@ var index = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
 assert(index.indexOf('src="fulfillment-analytics.js?b=1"') >= 0, "index script");
 assert(index.indexOf("fulfillment-analytics.js") < index.indexOf("dept-homes.js"), "script order");
 var sw = fs.readFileSync(path.join(__dirname, "..", "service-worker.js"), "utf8");
-assert(sw.indexOf("smackin-inv-v238") >= 0 && sw.indexOf("./fulfillment-analytics.js") >= 0 && sw.indexOf("./data/wip-fulfillment-errors.json") >= 0, "cache bump");
+assert(sw.indexOf("smackin-inv-v241") >= 0 && sw.indexOf("./fulfillment-analytics.js") >= 0 && sw.indexOf("./data/wip-fulfillment-errors.json") >= 0, "cache bump");
 var homes = fs.readFileSync(path.join(__dirname, "..", "dept-homes.js"), "utf8");
 assert(homes.indexOf("fulfillerr") >= 0 && homes.indexOf('fn: "ferr"') >= 0 && homes.indexOf('id: "ferr"') >= 0, "dept home");
 
