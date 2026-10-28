@@ -11,7 +11,10 @@
    and Ops (Team, Maintenance, Docs, and System). No Manufacturing tab.
    The menu stays off-canvas. A click outside the open panel, or Escape,
    closes it. The header button still toggles it. The left sidebar stays
-   collapsed off screen. No writes. No timers.
+   collapsed off screen. A tool, station, or other screen that replaces
+   #view gets one Back control (same place, same wording) to the previous
+   screen or the department home. Dashboard and department homes do not.
+   No writes. No timers.
    ========================================================================== */
 (function () {
   "use strict";
@@ -21,6 +24,13 @@
   var shownLang = "";
   var painting = false;
   var paintTries = 0;
+  // Where Back returns. Top of the stack is the previous screen.
+  // kind: "home" (department id), "go" (UI_go tab), "trace", "mod".
+  var backStack = [];
+  var backHere = null;
+  var backRestoring = false;
+  var backPressBusy = false;
+  var DEMAND_TABS = { demand: 1, demandboard: 1, demandsched: 1, demandimport: 1, ecomdemand: 1, forecast: 1 };
   // A department tap blurs the field before click, so remember the mid-entry
   // check from the press itself. Touch sends a later mousedown after the blur.
   var pressBusy = false;
@@ -1666,6 +1676,218 @@
     return head + toolsHtml(dept) + banner + live + "</div>";
   }
 
+  function sameStop(a, b) {
+    return !!(a && b && a.kind === b.kind && a.id === b.id);
+  }
+  function toolBy(field, id) {
+    var keys = Object.keys(TOOLS);
+    for (var i = 0; i < keys.length; i++) {
+      if (TOOLS[keys[i]][field] === id) return TOOLS[keys[i]];
+    }
+    return null;
+  }
+  function destName(entry) {
+    if (!entry) return "";
+    if (entry.kind === "home") {
+      var dept = deptById(entry.id);
+      return dept ? tx(dept.label || dept.title) : "";
+    }
+    var tool = null;
+    if (entry.kind === "go") tool = toolBy("go", entry.id);
+    else if (entry.kind === "trace") tool = toolBy("trace", entry.id);
+    else if (entry.kind === "mod") tool = toolBy("fn", entry.id);
+    return tool ? tx(tool.title) : "";
+  }
+  function backPhrase(entry) {
+    var name = destName(entry);
+    if (!name) return tx({ en: "Back", es: "Volver", pt: "Voltar" });
+    return tx({
+      en: "Back to " + name,
+      es: "Volver a " + name,
+      pt: "Voltar para " + name
+    });
+  }
+  function currentReturn() {
+    if (backStack.length) return backStack[backStack.length - 1];
+    return { kind: "home", id: barCurrent || "home" };
+  }
+  // Remember the screen we are leaving so Back can return to it.
+  // Leaving a department home replaces the trail with that home.
+  // Demand tabs are siblings: switching them does not add a step.
+  function pushBefore(next) {
+    if (backRestoring || !next) return;
+    if (sameStop(backHere, next)) return;
+    if (backHere && backHere.kind === "go" && next.kind === "go" && DEMAND_TABS[backHere.id] && DEMAND_TABS[next.id]) return;
+    if (backHere && backHere.kind === "trace" && next.kind === "trace") return;
+    if (!backHere) {
+      backStack = [{ kind: "home", id: barCurrent || "home" }];
+      return;
+    }
+    if (backHere.kind === "home") {
+      backStack = [backHere];
+      return;
+    }
+    var top = backStack[backStack.length - 1];
+    if (!sameStop(top, backHere)) backStack.push(backHere);
+    if (backStack.length > 12) backStack.shift();
+  }
+  // Full-screen editors that already have their own Back stay as they are.
+  function ownsBack(view) {
+    if (view.querySelector("#pn-to, #po-vendor, #np-vendor, #po-sup, #sk-sku")) return true;
+    if (view.querySelector("[onclick*='spoCloseDetail'], [onclick*='poCreateBack'], [onclick*='nonPoBack'], [onclick*='poNewClose'], [onclick*='skuEditClose'], [onclick*='UI.poBack']")) return true;
+    return false;
+  }
+  function isDashboard(view) {
+    return !!(view && view.querySelector(".df-lead"));
+  }
+  function removeBackBar(view) {
+    var bar = view && view.querySelector("#dept-backbar");
+    if (bar && bar.parentNode) bar.parentNode.removeChild(bar);
+  }
+  function restoreStop(entry) {
+    if (!entry || entry.kind === "home") {
+      showHome(entry && entry.id ? entry.id : (barCurrent || "home"));
+      return;
+    }
+    var landed = false;
+    backRestoring = true;
+    try {
+      if (entry.kind === "go" && typeof window.UI_go === "function") { window.UI_go(entry.id); landed = true; }
+      else if (entry.kind === "trace" && window.TRACE && typeof TRACE.go === "function") { TRACE.go(entry.id); landed = true; }
+      else if (entry.kind === "mod" && entry.id === "hist" && window.MFGHIST) { MFGHIST.open(); landed = true; }
+      else if (entry.kind === "mod" && entry.id === "up" && window.MFGUPLOAD) { MFGUPLOAD.open(); landed = true; }
+      else if (entry.kind === "mod" && entry.id === "sps" && window.SPSFEED) { SPSFEED.open(); landed = true; }
+      else if (entry.kind === "mod" && entry.id === "shipments" && window.SHIPPING_SYNC) { SHIPPING_SYNC.open(); landed = true; }
+      else if (entry.kind === "mod" && entry.id === "health" && window.DATAHEALTH) { DATAHEALTH.open(); landed = true; }
+      else if (entry.kind === "mod" && entry.id === "svc" && window.SERVICES) { SERVICES.open(); landed = true; }
+    } finally {
+      backRestoring = false;
+    }
+    if (landed) backHere = entry;
+    else showHome(barCurrent || "home");
+  }
+  // Department tabs refuse to switch while any field is focused. Back is a
+  // deliberate leave, so an empty scan box (Receive and the lot stations
+  // focus one on open) does not count. A field the user has typed in does.
+  function backBlocked() {
+    if (document.getElementById("po-vendor") || document.getElementById("po-sup") ||
+        document.getElementById("np-vendor") || document.getElementById("pn-to") ||
+        document.getElementById("sk-sku")) return true;
+    var ae = document.activeElement;
+    if (!ae || !ae.closest || !ae.closest("#view")) return false;
+    if (ae.tagName !== "INPUT" && ae.tagName !== "TEXTAREA") return false;
+    var typ = String(ae.type || "text").toLowerCase();
+    if (typ === "button" || typ === "submit" || typ === "checkbox" || typ === "radio" || typ === "file" || typ === "hidden" || typ === "date" || typ === "time" || typ === "datetime-local") return false;
+    return String(ae.value || "").trim() !== "";
+  }
+  function goBack() {
+    var blocked = backPressBusy || backBlocked();
+    backPressBusy = false;
+    if (blocked) { toast(Lbusy()); return; }
+    var prev = backStack.length ? backStack.pop() : { kind: "home", id: barCurrent || "home" };
+    restoreStop(prev);
+  }
+  function syncBackBar() {
+    var view = document.getElementById("view");
+    if (!view || painting || homeId) return;
+    if (view.querySelector("#dept-home") || isDashboard(view)) {
+      removeBackBar(view);
+      if (!backHere) backHere = { kind: "home", id: barCurrent || "home" };
+      return;
+    }
+    if (ownsBack(view)) {
+      removeBackBar(view);
+      return;
+    }
+    var phrase = backPhrase(currentReturn());
+    var bar = view.querySelector("#dept-backbar");
+    if (bar && bar.getAttribute("data-label") === phrase && view.firstChild === bar) return;
+    if (!bar) {
+      bar = document.createElement("div");
+      bar.id = "dept-backbar";
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.id = "dept-back";
+      btn.addEventListener("touchstart", function () { backPressBusy = backBlocked(); }, { passive: true });
+      btn.addEventListener("mousedown", function () { backPressBusy = backBlocked(); });
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        goBack();
+      });
+      bar.appendChild(btn);
+    }
+    bar.setAttribute("data-label", phrase);
+    var button = bar.querySelector("button");
+    button.textContent = "\u2190 " + phrase;
+    button.setAttribute("aria-label", phrase);
+    if (view.firstChild !== bar) view.insertBefore(bar, view.firstChild);
+  }
+  function wrapFn(obj, name, next) {
+    if (!obj || typeof obj[name] !== "function" || obj[name].__deptBack) return;
+    var orig = obj[name];
+    var wrapped = function () {
+      if (!backRestoring) {
+        pushBefore(next);
+        backHere = next;
+      }
+      return orig.apply(this, arguments);
+    };
+    wrapped.__deptBack = true;
+    obj[name] = wrapped;
+  }
+  function wrapNavigation() {
+    if (typeof window.UI_go === "function" && !window.UI_go.__deptBack) {
+      var origGo = window.UI_go;
+      var go = function (tab) {
+        var nextId = String(tab || "");
+        if (!backRestoring) {
+          if (nextId === "home") {
+            /* Dashboard is a home. The wrapper clears the trail after render. */
+          } else {
+            var next = { kind: "go", id: nextId };
+            pushBefore(next);
+            backHere = next;
+          }
+        }
+        var result = origGo.apply(this, arguments);
+        if (!backRestoring && nextId === "home") {
+          backHere = { kind: "home", id: "home" };
+          backStack = [];
+        }
+        return result;
+      };
+      go.__deptBack = true;
+      window.UI_go = go;
+    }
+    if (window.TRACE && typeof TRACE.go === "function" && !TRACE.go.__deptBack) {
+      var origTrace = TRACE.go;
+      var traceGo = function (tab) {
+        var next = { kind: "trace", id: String(tab || "") };
+        if (!backRestoring) {
+          pushBefore(next);
+          backHere = next;
+        }
+        return origTrace.apply(this, arguments);
+      };
+      traceGo.__deptBack = true;
+      TRACE.go = traceGo;
+    }
+    wrapFn(window.MFGHIST, "open", { kind: "mod", id: "hist" });
+    wrapFn(window.MFGUPLOAD, "open", { kind: "mod", id: "up" });
+    wrapFn(window.SPSFEED, "open", { kind: "mod", id: "sps" });
+    wrapFn(window.SHIPPING_SYNC, "open", { kind: "mod", id: "shipments" });
+    wrapFn(window.DATAHEALTH, "open", { kind: "mod", id: "health" });
+    wrapFn(window.SERVICES, "open", { kind: "mod", id: "svc" });
+  }
+  function leaveBoardMode() {
+    if (!document.body.classList.contains("boardmode")) return;
+    var prev = backRestoring;
+    backRestoring = true;
+    try { if (typeof window.UI_go === "function") window.UI_go("home"); } catch (e) {}
+    backRestoring = prev;
+    document.body.classList.remove("boardmode");
+  }
+
   function paintHome(force) {
     var view = document.getElementById("view");
     var dept = deptById(homeId);
@@ -1733,14 +1955,21 @@
     var dept = deptById(id);
     if (!dept || dept.passthrough) return;
     releaseOtherViews();
+    leaveBoardMode();
     barCurrent = id;
     paintTries = 0;
     closeDrawer();
+    backHere = { kind: "home", id: id };
+    backStack = [];
     if (dept.live && typeof window.UI_go === "function") {
       homeId = "";
       markBar();
       paintDeptActive();
+      backRestoring = true;
       window.UI_go(dept.live);
+      backRestoring = false;
+      backHere = { kind: "home", id: id };
+      backStack = [];
       try { window.scrollTo(0, 0); } catch (e) {}
       syncOffset();
       return;
@@ -1799,7 +2028,7 @@
     if (painting) return;
     if (lang() !== shownLang) renderBar();
     noteDashboard();
-    if (!homeId) return;
+    if (!homeId) { syncBackBar(); return; }
     var view = document.getElementById("view");
     if (!view) return;
     var root = view.querySelector("#dept-home");
@@ -1932,6 +2161,12 @@
       "#dept-home .dept-card strong{display:block;font-size:13px;color:var(--navy,#04223B);margin:0 0 1px}",
       "#dept-home .dept-card-copy>span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:11px;color:#3d4c5e;line-height:1.25;font-weight:500}",
       "body.boardmode #deptbar{display:none!important}",
+      "#dept-backbar{position:sticky;top:var(--dept-stack-h,0px);z-index:40;display:flex;align-items:center;margin:0 0 6px;padding:2px 8px;background:#fff;border:1px solid var(--line,#d7dde6);border-radius:8px}",
+      "#dept-backbar button{border:0;background:transparent;color:var(--blue,#006DB6);font:800 13px inherit;cursor:pointer;padding:4px 2px;min-height:28px}",
+      "#dept-backbar button:hover{text-decoration:underline}",
+      "#dept-backbar button:focus-visible{outline:3px solid var(--blue,#006DB6);outline-offset:2px}",
+      "body.boardmode #dept-backbar{position:fixed;top:8px;left:8px;z-index:90;width:auto;margin:0;background:rgba(255,255,255,.94)}",
+      "@media print{#dept-backbar{display:none!important}}",
       "@media(max-width:1100px){#view:has(>.df-lead){grid-template-columns:repeat(2,minmax(0,1fr))}#dept-home.dept-floor,#dept-home .dept-statrow{grid-template-columns:repeat(2,minmax(0,1fr))}#dept-home .dept-span2{grid-column:1 / -1}}",
       "@media(max-width:700px){#view:has(>.df-lead){grid-template-columns:1fr}#dept-home.dept-floor,#dept-home .dept-statrow{grid-template-columns:1fr}#dept-home .dept-span2{grid-column:1 / -1}}",
       "@media(max-width:1080px){#deptbar .dept-tab{flex:1 0 84px;min-width:84px}}",
@@ -1978,6 +2213,7 @@
   }
 
   function boot() {
+    wrapNavigation();
     buildBar();
     var nav = document.getElementById("nav");
     if (nav) nav.removeAttribute("aria-hidden");
@@ -2047,6 +2283,7 @@
   window.DEPT = {
     show: showHome,
     tool: openTool,
+    back: goBack,
     fulfillment: function () { showHome("ful"); },
     current: function () { return { home: homeId, bar: barCurrent }; },
     more: function (btn) {
