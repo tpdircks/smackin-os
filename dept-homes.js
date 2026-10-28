@@ -2,14 +2,16 @@
    Smackin' OS - Department homes (dept-homes.js)
    Top department bar and a full-page home for each team. Tool cards sit
    directly under the title so a create or update screen is one tap away.
-   Live counts and lists from DB follow those cards. Each card opens a
-   screen that already exists (UI_go, Lot Trace, or a module open()).
-   Every sidebar group has a tab, equal width: Dashboard, Receiving,
-   Inventory, Purchasing, Demand, Manufacturing, Fulfillment,
-   Shipping, Quality, Team, Maintenance, Docs, and System. The menu stays
-   off-canvas. A click outside the open panel, or Escape, closes it. The
-   header button still toggles it. The left sidebar stays collapsed off
-   screen. No writes. No timers.
+   Live counts and lists from DB follow those cards. Demand is the
+   exception: the live floor (Now Running / In Process) is first, then
+   the demand tools and lists. Each card opens a screen that already
+   exists (UI_go, Lot Trace, or a module open()).
+   Tabs, equal width, left to right: Dashboard, Demand, Purchasing,
+   Receiving, Inventory, Mixing, P-Mac, Fulfillment, Shipping, Quality,
+   and Ops (Team, Maintenance, Docs, and System). No Manufacturing tab.
+   The menu stays off-canvas. A click outside the open panel, or Escape,
+   closes it. The header button still toggles it. The left sidebar stays
+   collapsed off screen. No writes. No timers.
    ========================================================================== */
 (function () {
   "use strict";
@@ -30,20 +32,20 @@
     dash: "inv", adjust: "inv", count: "inv", alerts: "inv",
     move: "inv", locations: "inv", facility: "inv", finbags: "inv",
     seed: "inv", skus: "inv", analytics: "inv", labels: "inv",
-    seasoning: "mfg", recipes: "mfg",
+    seasoning: "mixing", recipes: "mixing",
     purchasing: "purch", expreceipts: "purch", reorder15: "purch", supplierpos: "purch",
-    prodorders: "mfg", reordertracker: "mfg", launch: "mfg", mixing: "mfg",
-    pmac: "mfg", pmacout: "mfg", floor: "mfg",
+    prodorders: "mixing", reordertracker: "mixing", launch: "mixing", mixing: "mixing",
+    pmac: "pmac", pmacout: "pmac", floor: "demand",
     compliance: "qa", quality: "qa", disposition: "qa",
-    maintenance: "maint",
+    maintenance: "ops",
     produce: "ful", retailprod: "ful", ecomprod: "ful", skulookup: "ful",
     prodlog: "ful", fulfilldaily: "ful", flavinv: "ful", stockbuild: "ful",
     orders: "ful", orderdocs: "ful",
     shiplog: "ship",
     demand: "demand", demandboard: "demand", demandsched: "demand", demandimport: "demand",
     ecomdemand: "demand", forecast: "demand",
-    people: "team", improve: "team", rd: "team", log: "team",
-    reference: "docs", board: "system", settings: "system"
+    people: "ops", improve: "ops", rd: "ops", log: "ops",
+    reference: "ops", board: "ops", settings: "ops"
   };
 
   function tx(v) {
@@ -120,7 +122,7 @@
     mixing: { go: "mixing", icon: "cooking-pot", title: { en: "Mixing", es: "Mezcla", pt: "Mistura" }, blurb: { en: "What mixing needs, and usage scanned into the room.", es: "Lo que mezcla necesita y el uso escaneado en el cuarto.", pt: "O que a mistura precisa e o uso lido na sala." } },
     pmac: { go: "pmac", icon: "wrench", title: { en: "P-Mac", es: "P-Mac", pt: "P-Mac" }, blurb: { en: "What P-Mac needs, and usage scanned into the room.", es: "Lo que P-Mac necesita y el uso escaneado en el cuarto.", pt: "O que o P-Mac precisa e o uso lido na sala." } },
     pmacout: { go: "pmacout", icon: "package-open", title: { en: "P-Mac Log Output", es: "P-Mac Log Output", pt: "P-Mac Log Output" }, blurb: { en: "Log finished bags as they come off the line.", es: "Registre bolsas terminadas al salir de la linea.", pt: "Registre sacos prontos ao sair da linha." } },
-    floor: { go: "floor", icon: "activity", title: { en: "Now Running", es: "En Marcha", pt: "Em Andamento" }, blurb: { en: "What is mixing, and what each P-Mac is running.", es: "Que se esta mezclando y que corre cada P-Mac.", pt: "O que esta misturando e o que cada P-Mac esta rodando." } },
+    floor: { go: "floor", icon: "activity", title: { en: "Now Running / In Process", es: "En marcha / En proceso", pt: "Em andamento / Em processo" }, blurb: { en: "What is mixing, and what each P-Mac is running.", es: "Que se esta mezclando y que corre cada P-Mac.", pt: "O que esta misturando e o que cada P-Mac esta rodando." } },
     prodorders: { go: "prodorders", icon: "clipboard-pen", title: { en: "Prod Orders", es: "Prod Orders", pt: "Prod Orders" }, blurb: { en: "Production orders for Mixing and P-Mac.", es: "Ordenes de produccion para Mezcla y P-Mac.", pt: "Ordens de producao para Mistura e P-Mac." } },
     reordertracker: { go: "reordertracker", icon: "package-search", title: { en: "Reorder Tracker", es: "Reorder Tracker", pt: "Reorder Tracker" }, blurb: { en: "Allen's pallet and bin reorder tracker.", es: "El tracker de reorden de tarimas y bins de Allen.", pt: "O tracker de reposicao de paletes e bins do Allen." } },
     launch: { go: "launch", icon: "rocket", title: { en: "Launches", es: "Launches", pt: "Launches" }, blurb: { en: "New-flavor launch calendar.", es: "Calendario de lanzamiento de sabores nuevos.", pt: "Calendario de lancamento de sabores novos." } },
@@ -176,24 +178,15 @@
       ]
     },
     {
-      id: "recv",
-      label: { en: "Receiving", es: "Recibo", pt: "Receber" },
-      title: { en: "Receiving", es: "Recibo", pt: "Recebimento" },
-      intro: { en: "Check product in, log the paperwork, take returns, and work quarantine.", es: "Reciba producto, registre el papeleo, tome devoluciones y trabaje cuarentena.", pt: "Receba produto, registre os documentos, lance devolucoes e trabalhe a quarentena." },
+      id: "demand",
+      runningFirst: true,
+      label: { en: "Demand", es: "Demanda", pt: "Demanda" },
+      title: { en: "Demand", es: "Demanda", pt: "Demanda" },
+      intro: { en: "What is running on the floor right now, then what to build and the order board.", es: "Que corre en el piso ahora, luego que producir y el tablero de pedidos.", pt: "O que esta rodando no piso agora, depois o que produzir e o painel de pedidos." },
       sections: [
-        { h: { en: "Inbound", es: "Entrada", pt: "Entrada" }, tools: ["receive", "recvlog", "returns", "quarantine"] }
-      ]
-    },
-    {
-      id: "inv",
-      label: { en: "Inventory", es: "Inventario", pt: "Estoque" },
-      title: { en: "Inventory", es: "Inventario", pt: "Estoque" },
-      intro: { en: "Counts, adjustments, moves, locations, seed, SKUs, and reports.", es: "Conteos, ajustes, movimientos, ubicaciones, semilla, SKUs y reportes.", pt: "Contagens, ajustes, movimentos, locais, semente, SKUs e relatorios." },
-      sections: [
-        { h: { en: "Counts", es: "Conteos", pt: "Contagens" }, tools: ["dash", "adjust", "count", "alerts", "finbags", "move"] },
-        { h: { en: "Locations", es: "Ubicaciones", pt: "Locais" }, tools: ["locations", "facility"] },
-        { h: { en: "Catalog", es: "Catalogo", pt: "Catalogo" }, tools: ["seed", "skus", "printlabels"] },
-        { h: { en: "Reports", es: "Reportes", pt: "Relatorios" }, tools: ["analytics"] }
+        { h: { en: "Floor", es: "Piso", pt: "Piso" }, tools: ["floor"] },
+        { h: { en: "Plan", es: "Plan", pt: "Plano" }, tools: ["demand", "demandboard", "demandsched", "forecast"] },
+        { h: { en: "Imports", es: "Importar", pt: "Importar" }, tools: ["demandimport", "ecomdemand"] }
       ]
     },
     {
@@ -207,34 +200,54 @@
       ]
     },
     {
-      id: "demand",
-      label: { en: "Demand", es: "Demanda", pt: "Demanda" },
-      title: { en: "Demand", es: "Demanda", pt: "Demanda" },
-      intro: { en: "What to build, the order board, and the forecast against the target.", es: "Que producir, el tablero de pedidos y el pronostico contra la meta.", pt: "O que produzir, o painel de pedidos e a previsao contra a meta." },
+      id: "recv",
+      label: { en: "Receiving", es: "Recibo", pt: "Receber" },
+      title: { en: "Receiving", es: "Recibo", pt: "Recebimento" },
+      intro: { en: "Check product in, log the paperwork, take returns, and work quarantine.", es: "Reciba producto, registre el papeleo, tome devoluciones y trabaje cuarentena.", pt: "Receba produto, registre os documentos, lance devolucoes e trabalhe a quarentena." },
       sections: [
-        { h: { en: "Plan", es: "Plan", pt: "Plano" }, tools: ["demand", "demandboard", "demandsched", "forecast"] },
-        { h: { en: "Imports", es: "Importar", pt: "Importar" }, tools: ["demandimport", "ecomdemand"] }
+        { h: { en: "Inbound", es: "Entrada", pt: "Entrada" }, tools: ["receive", "recvlog", "returns", "quarantine", "trRecv"] }
       ]
     },
     {
-      id: "mfg",
-      label: { en: "Mfg", es: "Mfg", pt: "Mfg" },
-      title: { en: "Manufacturing", es: "Manufactura", pt: "Manufatura" },
-      intro: { en: "Mix, P-Mac, production orders, the live machines, lot stations, seasoning, and recipes. Demand has its own tab.", es: "Mezcla, P-Mac, ordenes de produccion, las maquinas en vivo, estaciones de lote, sazon y recetas. Demanda tiene su propia pestana.", pt: "Mistura, P-Mac, ordens de producao, as maquinas ao vivo, estacoes de lote, tempero e receitas. Demanda tem sua propria aba." },
+      id: "inv",
+      label: { en: "Inventory", es: "Inventario", pt: "Estoque" },
+      title: { en: "Inventory", es: "Inventario", pt: "Estoque" },
+      intro: { en: "Counts, adjustments, moves, locations, seed, SKUs, labels, and reports.", es: "Conteos, ajustes, movimientos, ubicaciones, semilla, SKUs, etiquetas y reportes.", pt: "Contagens, ajustes, movimentos, locais, semente, SKUs, etiquetas e relatorios." },
       sections: [
-        { h: { en: "Lot trace stations", es: "Estaciones de lote", pt: "Estacoes de lote" }, tools: ["trRecv", "trQa", "trMix", "trPmac", "trMove"] },
-        { h: { en: "Floor", es: "Piso", pt: "Piso" }, tools: ["mixing", "pmac", "pmacout", "floor"] },
+        { h: { en: "Counts", es: "Conteos", pt: "Contagens" }, tools: ["dash", "adjust", "count", "alerts", "finbags", "move", "trMove"] },
+        { h: { en: "Locations", es: "Ubicaciones", pt: "Locais" }, tools: ["locations", "facility"] },
+        { h: { en: "Catalog", es: "Catalogo", pt: "Catalogo" }, tools: ["seed", "skus", "printlabels"] },
+        { h: { en: "Reports", es: "Reportes", pt: "Relatorios" }, tools: ["analytics"] }
+      ]
+    },
+    {
+      id: "mixing",
+      label: { en: "Mixing", es: "Mezcla", pt: "Mistura" },
+      title: { en: "Mixing", es: "Mezcla", pt: "Mistura" },
+      intro: { en: "What mixing needs, the lot station, seasoning, recipes, and production history.", es: "Lo que mezcla necesita, la estacion de lote, sazon, recetas y el historial.", pt: "O que a mistura precisa, a estacao de lote, tempero, receitas e o historico." },
+      sections: [
+        { h: { en: "Floor", es: "Piso", pt: "Piso" }, tools: ["mixing", "trMix"] },
         { h: { en: "Seasoning and recipes", es: "Sazon y recetas", pt: "Tempero e receitas" }, tools: ["seasoning", "recipes"] },
         { h: { en: "Planning and history", es: "Plan y historial", pt: "Plano e historico" }, tools: ["prodorders", "reordertracker", "launch", "hist", "upload"] }
       ]
     },
     {
-      id: "ful",
-      label: { en: "Fulfill", es: "Fulfill", pt: "Fulfill" },
-      title: { en: "Fulfillment", es: "Fulfillment", pt: "Fulfillment" },
-      intro: { en: "Build retail and e-commerce orders and pull lots. Shipping has its own tab.", es: "Arme ordenes retail y de e-commerce y tome lotes. Envios tiene su propia pestana.", pt: "Monte pedidos de varejo e e-commerce e separe lotes. Envios tem sua propria aba." },
+      id: "pmac",
+      label: { en: "P-Mac", es: "P-Mac", pt: "P-Mac" },
+      title: { en: "P-Mac", es: "P-Mac", pt: "P-Mac" },
+      intro: { en: "What P-Mac needs, bags off the line, and the lot station.", es: "Lo que P-Mac necesita, bolsas de la linea y la estacion de lote.", pt: "O que o P-Mac precisa, sacos da linha e a estacao de lote." },
       sections: [
-        { h: { en: "Line", es: "Linea", pt: "Linha" }, tools: ["retailprod", "ecomprod", "trUse", "produce", "prodlog", "fulfilldaily"] },
+        { h: { en: "Line", es: "Linea", pt: "Linha" }, tools: ["pmac", "pmacout", "trPmac"] },
+        { h: { en: "Planning and history", es: "Plan y historial", pt: "Plano e historico" }, tools: ["prodorders", "hist", "upload"] }
+      ]
+    },
+    {
+      id: "ful",
+      label: { en: "Fulfillment", es: "Fulfillment", pt: "Fulfillment" },
+      title: { en: "Fulfillment", es: "Fulfillment", pt: "Fulfillment" },
+      intro: { en: "Retail and e-commerce builds, lot trace use, and lot trace ship. Shipping has its own tab.", es: "Produccion retail y e-commerce, salida de lote y envio de lote. Envios tiene su propia pestana.", pt: "Producao de varejo e e-commerce, saida de lote e envio de lote. Envios tem sua propria aba." },
+      sections: [
+        { h: { en: "Line", es: "Linea", pt: "Linha" }, tools: ["retailprod", "ecomprod", "trUse", "trShip", "produce", "prodlog", "fulfilldaily"] },
         { h: { en: "Lookup and stock", es: "Busqueda y stock", pt: "Busca e estoque" }, tools: ["skulookup", "flavinv", "stockbuild"] },
         { h: { en: "Orders", es: "Ordenes", pt: "Pedidos" }, tools: ["orders", "orderdocs"] }
       ]
@@ -243,55 +256,31 @@
       id: "ship",
       label: { en: "Shipping", es: "Envios", pt: "Envios" },
       title: { en: "Shipping", es: "Envios", pt: "Envios" },
-      intro: { en: "Log a shipment, read what ShipStation already synced, and build an outbound pallet.", es: "Registre un envio, lea lo que ShipStation ya sincronizo y arme una tarima de salida.", pt: "Registre um envio, leia o que o ShipStation ja sincronizou e monte um palete de saida." },
+      intro: { en: "Log a shipment and read what ShipStation already synced.", es: "Registre un envio y lea lo que ShipStation ya sincronizo.", pt: "Registre um envio e leia o que o ShipStation ja sincronizou." },
       sections: [
-        { h: { en: "Outbound", es: "Salida", pt: "Saida" }, tools: ["shiplog", "shipments", "trShip"] }
+        { h: { en: "Outbound", es: "Salida", pt: "Saida" }, tools: ["shiplog", "shipments"] }
       ]
     },
     {
       id: "qa",
       label: { en: "Quality", es: "Calidad", pt: "Qualidade" },
       title: { en: "Quality", es: "Calidad", pt: "Qualidade" },
-      intro: { en: "Lot trace, labels, and the quality records this team already keeps.", es: "Rastreo de lote, etiquetas y los registros de calidad que este equipo ya usa.", pt: "Rastreio de lote, etiquetas e os registros de qualidade que esta equipe ja usa." },
+      intro: { en: "Lot trace, holds, labels, and the quality records this team already keeps.", es: "Rastreo de lote, retenciones, etiquetas y los registros de calidad que este equipo ya usa.", pt: "Rastreio de lote, retencoes, etiquetas e os registros de qualidade que esta equipe ja usa." },
       sections: [
-        { h: { en: "Lot trace", es: "Rastreo de lote", pt: "Rastreio de lote" }, tools: ["trace", "trLabels"] },
+        { h: { en: "Lot trace", es: "Rastreo de lote", pt: "Rastreio de lote" }, tools: ["trace", "trQa", "trLabels"] },
         { h: { en: "Quality records", es: "Registros de calidad", pt: "Registros de qualidade" }, tools: ["quality", "compliance", "shortdated"] }
       ]
     },
     {
-      id: "team",
-      label: { en: "Team", es: "Equipo", pt: "Equipe" },
-      title: { en: "Team & Ops", es: "Equipo y Ops", pt: "Equipe e Ops" },
-      intro: { en: "People, continuous improvement, R&D, and the activity log.", es: "Personal, mejora continua, I+D y el registro de actividad.", pt: "Pessoas, melhoria continua, P&D e o registro de atividade." },
+      id: "ops",
+      label: { en: "Ops", es: "Ops", pt: "Ops" },
+      title: { en: "Ops", es: "Ops", pt: "Ops" },
+      intro: { en: "People, maintenance, documents, and system setup.", es: "Personal, mantenimiento, documentos y ajustes del sistema.", pt: "Pessoas, manutencao, documentos e ajustes do sistema." },
       sections: [
-        { h: { en: "People and ideas", es: "Personal e ideas", pt: "Pessoas e ideias" }, tools: ["people", "improve", "rd", "acct"] }
-      ]
-    },
-    {
-      id: "maint",
-      label: { en: "Maint", es: "Mant.", pt: "Manut." },
-      title: { en: "Maintenance", es: "Mantenimiento", pt: "Manutencao" },
-      intro: { en: "Maintenance requests and the services log.", es: "Solicitudes de mantenimiento y el registro de servicios.", pt: "Pedidos de manutencao e o registro de servicos." },
-      sections: [
-        { h: { en: "Shop", es: "Taller", pt: "Oficina" }, tools: ["maintenance", "services"] }
-      ]
-    },
-    {
-      id: "docs",
-      label: { en: "Docs", es: "Docs", pt: "Docs" },
-      title: { en: "Docs", es: "Docs", pt: "Docs" },
-      intro: { en: "SOPs, cheat sheets, and policies.", es: "SOPs, guias rapidas y politicas.", pt: "SOPs, guias rapidos e politicas." },
-      sections: [
-        { h: { en: "Reference", es: "Referencia", pt: "Referencia" }, tools: ["reference"] }
-      ]
-    },
-    {
-      id: "system",
-      label: { en: "System", es: "Sistema", pt: "Sistema" },
-      title: { en: "System", es: "Sistema", pt: "Sistema" },
-      intro: { en: "TV boards, settings, and how fresh each data source is.", es: "Tableros de TV, ajustes y que tan reciente esta cada fuente.", pt: "Paineis de TV, ajustes e quao recente esta cada fonte." },
-      sections: [
-        { h: { en: "Setup", es: "Ajustes", pt: "Ajustes" }, tools: ["board", "settings", "health"] }
+        { h: { en: "Team", es: "Equipo", pt: "Equipe" }, tools: ["people", "improve", "rd", "acct"] },
+        { h: { en: "Maintenance", es: "Mantenimiento", pt: "Manutencao" }, tools: ["maintenance", "services"] },
+        { h: { en: "Docs", es: "Docs", pt: "Docs" }, tools: ["reference"] },
+        { h: { en: "System", es: "Sistema", pt: "Sistema" }, tools: ["board", "settings", "health"] }
       ]
     }
   ];
@@ -348,16 +337,32 @@
 
   function deptOfNav(btn) {
     if (!btn) return "";
-    if (btn.id === "svc-nav") return "maint";
-    if (btn.id === "dh-nav") return "system";
+    if (btn.id === "svc-nav") return "ops";
+    if (btn.id === "dh-nav") return "ops";
     if (btn.id === "sf-nav") return "purch";
-    if (btn.id === "shs-nav" || btn.id === "trc-nav-ship") return "ship";
-    if (btn.id === "mfg-hist-nav" || btn.id === "mfg-up-nav") return "mfg";
+    if (btn.id === "shs-nav") return "ship";
+    if (btn.id === "mfg-hist-nav" || btn.id === "mfg-up-nav") return "mixing";
+    if (btn.id === "mp-nav-entry" || btn.id === "mp-nav-log") return "mixing";
+    var trcHome = {
+      "trc-nav-use": "ful",
+      "trc-nav-ship": "ful",
+      "trc-nav-recv": "recv",
+      "trc-nav-qa": "qa",
+      "trc-nav-mix": "mixing",
+      "trc-nav-pmac": "pmac",
+      "trc-nav-move": "inv",
+      "trc-nav-trace": "qa",
+      "trc-nav-labels": "qa"
+    };
+    if (trcHome[btn.id]) return trcHome[btn.id];
     if (btn.getAttribute("data-trc") === "1") {
       var h = btn.getAttribute("data-trc-home") || "";
       if (h === "ful") return "ful";
-      if (h === "mfg") return "mfg";
       if (h === "qa") return "qa";
+      if (h === "mixing") return "mixing";
+      if (h === "pmac") return "pmac";
+      if (h === "recv") return "recv";
+      if (h === "inv") return "inv";
       return "";
     }
     var m = (btn.getAttribute("onclick") || "").match(/UI_go\('([^']+)'\)/);
@@ -639,9 +644,9 @@
         });
         var extra = r.lines.length > 3 ? '<div class="df-meta">+' + (r.lines.length - 3) + " more</div>" : "";
         return [
-          "<b>" + esc(r.num || "—") + "</b>" + (r.legacy ? '<div class="df-meta">Legacy PO</div>' : ""),
-          esc(r.vendor || "—"),
-          esc(r.expect || "—"),
+          "<b>" + esc(r.num || "-") + "</b>" + (r.legacy ? '<div class="df-meta">Legacy PO</div>' : ""),
+          esc(r.vendor || "-"),
+          esc(r.expect || "-"),
           "<b>" + fmt(r.outstanding) + "</b>" + '<div class="df-meta">' + r.nLines + (r.nLines === 1 ? " line" : " lines") + "</div>" +
             bits.map(function (s) { return "<div>" + s + "</div>"; }).join("") + extra
         ];
@@ -770,10 +775,10 @@
         var low = String(r.status || "Open").toLowerCase();
         var cls = low === "open" ? "df-open" : (low === "shipped" ? "df-ship" : "df-done");
         return [
-          '<div class="df-name">' + esc(r.customer || "—") + "</div>",
-          "<b>" + esc(r.po || "—") + "</b>",
+          '<div class="df-name">' + esc(r.customer || "-") + "</div>",
+          "<b>" + esc(r.po || "-") + "</b>",
           pill(r.status || "Open", cls),
-          esc(r.flavors || "—")
+          esc(r.flavors || "-")
         ];
       })
     );
@@ -939,10 +944,10 @@
           receipts.map(function (r) {
             var cond = r.condition && r.condition !== "Good" ? pill(r.condition, r.condition === "Damaged" || r.condition === "Hold" ? "df-out" : "df-low") : "";
             return [
-              esc(String(r.recv_date || "").slice(0, 10) || "—"),
-              '<div class="df-name">' + esc(r.supplier || "—") + "</div>" + (r.contents ? '<div class="df-meta">' + esc(r.contents) + "</div>" : ""),
-              esc(r.po_num || "—") + (cond ? "<div>" + cond + "</div>" : ""),
-              r.qty_received != null && r.qty_received !== "" ? fmt(r.qty_received) : "—"
+              esc(String(r.recv_date || "").slice(0, 10) || "-"),
+              '<div class="df-name">' + esc(r.supplier || "-") + "</div>" + (r.contents ? '<div class="df-meta">' + esc(r.contents) + "</div>" : ""),
+              esc(r.po_num || "-") + (cond ? "<div>" + cond + "</div>" : ""),
+              r.qty_received != null && r.qty_received !== "" ? fmt(r.qty_received) : "-"
             ];
           })
         ) : empty(tx({ en: "No receiving log rows yet.", es: "Aun no hay recibos.", pt: "Ainda nao ha recebimentos." })),
@@ -959,11 +964,11 @@
         rets.length ? dfTable(
           [{ h: "Date" }, { h: "Who" }, { h: "Product" }, { h: "Qty", right: true }],
           rets.map(function (r) {
-            var who = r.channel === "ecom" ? (r.marketplace || "E-com") : (r.customer || "—");
+            var who = r.channel === "ecom" ? (r.marketplace || "E-com") : (r.customer || "-");
             return [
-              esc(String(r.return_date || r.created_at || "").slice(0, 10) || "—"),
+              esc(String(r.return_date || r.created_at || "").slice(0, 10) || "-"),
               esc(who),
-              esc(r.product || r.item_code || "—") + (r.disposition ? '<div class="df-meta">' + esc(r.disposition) + "</div>" : ""),
+              esc(r.product || r.item_code || "-") + (r.disposition ? '<div class="df-meta">' + esc(r.disposition) + "</div>" : ""),
               fmt(r.qty)
             ];
           })
@@ -1031,9 +1036,9 @@
           var exp = String(l.exp || "").slice(0, 10);
           var bad = l.status === "Quarantine" || (exp && exp < today);
           return [
-            '<div class="df-name">' + esc(l.product || l.flavor_code || "—") + "</div>",
-            esc(l.lot || "—"),
-            esc(exp || "—") + (bad ? " " + pill(l.status === "Quarantine" ? "QUAR" : "EXP", "df-out") : ""),
+            '<div class="df-name">' + esc(l.product || l.flavor_code || "-") + "</div>",
+            esc(l.lot || "-"),
+            esc(exp || "-") + (bad ? " " + pill(l.status === "Quarantine" ? "QUAR" : "EXP", "df-out") : ""),
             fmt(l.weight)
           ];
         })
@@ -1054,10 +1059,10 @@
         [{ h: "Product" }, { h: "Lot" }, { h: "Received" }, { h: "Lb", right: true }],
         seed.lots.map(function (l) {
           return [
-            '<div class="df-name">' + esc(l.product || l.seed_code || "—") + "</div>" +
+            '<div class="df-name">' + esc(l.product || l.seed_code || "-") + "</div>" +
               (l.status === "Quarantine" ? pill("QUAR", "df-out") : ""),
-            esc(l.lot || "—"),
-            esc(String(l.received_date || l.received_at || "").slice(0, 10) || "—"),
+            esc(l.lot || "-"),
+            esc(String(l.received_date || l.received_at || "").slice(0, 10) || "-"),
             fmt(l.weight)
           ];
         })
@@ -1090,7 +1095,7 @@
               '<div class="df-name">' + esc(r.it.name || "") + '</div><div class="df-meta">' + esc(r.it.code || "") + "</div>",
               fmt(r.oh) + " " + esc(r.it.unit || ""),
               "<b>" + fmt(r.gap) + "</b>",
-              r.onOrder ? fmt(r.onOrder) : "—"
+              r.onOrder ? fmt(r.onOrder) : "-"
             ];
           })
         ) : empty(tx({ en: "Nothing is under its reorder point.", es: "Nada esta bajo reorden.", pt: "Nada esta abaixo da reposicao." })),
@@ -1132,11 +1137,11 @@
             var due = dueISO(r.due_date) || String(r.due_date || "");
             var late = due && due < slcToday();
             return [
-              esc(r.partner || "—"),
-              "<b>" + esc(r.po || "—") + "</b>",
+              esc(r.partner || "-"),
+              "<b>" + esc(r.po || "-") + "</b>",
               esc(String(r.flavor || "").replace(/^UNMAPPED:\s*/i, "Unmapped: ")),
               fmt(r.cases),
-              esc(due || "—") + (late ? " " + pill("DUE", "df-out") : "")
+              esc(due || "-") + (late ? " " + pill("DUE", "df-out") : "")
             ];
           })
         ) : empty(tx({ en: "No open demand lines.", es: "No hay lineas de demanda abiertas.", pt: "Nao ha linhas de demanda abertas." })),
@@ -1145,7 +1150,7 @@
         ecom.length ? dfTable(
           [{ h: "Flavor" }, { h: "On hand", right: true }, { h: "Queue", right: true }, { h: "Short", right: true }],
           ecom.map(function (x) {
-            return [esc(x.flavor), fmt(x.oh), fmt(x.demand), x.short > 0 ? "<b>" + fmt(x.short) + "</b>" : "—"];
+            return [esc(x.flavor), fmt(x.oh), fmt(x.demand), x.short > 0 ? "<b>" + fmt(x.short) + "</b>" : "-"];
           })
         ) : empty(tx({ en: "No e-com demand snapshot loaded.", es: "No hay demanda e-com cargada.", pt: "Nao ha demanda e-com carregada." })),
         2, "ecomdemand") +
@@ -1159,76 +1164,143 @@
         4, "demand");
   }
 
-  function liveMfg() {
-    var mach = machines();
-    var running = mach.filter(function (m) { return (m.status || "idle") === "running"; });
-    var change = mach.filter(function (m) { return m.status === "changeover"; });
-    var orders = openProdOrders();
-    var allen = allenReorder();
-    var logged = outputToday().filter(function (r) { return r.dept === "mixing" || r.dept === "pmac"; });
-    var used = arr(function () { return DB.consumption ? DB.consumption() : []; }).filter(function (r) {
-      return slcDay(r.created_at) === slcToday();
+  function machineStatus(m) {
+    return m.status || "idle";
+  }
+  function statusLabel(st) {
+    if (st === "running") return tx({ en: "Running", es: "En marcha", pt: "Em andamento" });
+    if (st === "changeover") return tx({ en: "In process", es: "En proceso", pt: "Em processo" });
+    return tx({ en: "Idle", es: "Inactiva", pt: "Parada" });
+  }
+  // Same Now Running floor the Manufacturing home used to show (line_status / floor).
+  function liveRunning() {
+    var rank = { running: 0, changeover: 1, idle: 2 };
+    var mach = machines().slice().sort(function (a, b) {
+      var d = (rank[machineStatus(a)] == null ? 9 : rank[machineStatus(a)]) - (rank[machineStatus(b)] == null ? 9 : rank[machineStatus(b)]);
+      if (d) return d;
+      var area = String(a.area || "").localeCompare(String(b.area || ""));
+      return area || ((Number(a.sort) || 0) - (Number(b.sort) || 0));
     });
+    var running = mach.filter(function (m) { return machineStatus(m) === "running"; });
+    var change = mach.filter(function (m) { return machineStatus(m) === "changeover"; });
+    var idle = mach.filter(function (m) { return machineStatus(m) === "idle"; });
     return statRow([
-      stat(running.length + " / " + mach.length, tx({ en: "Machines running", es: "Maquinas en marcha", pt: "Maquinas rodando" }), running.length ? "" : "warn"),
-      stat(fmt(change.length), tx({ en: "Changeovers", es: "Cambios", pt: "Trocas" }), change.length ? "warn" : ""),
-      stat(fmt(orders.length), tx({ en: "Open prod orders", es: "Ordenes de produccion abiertas", pt: "Ordens de producao abertas" })),
-      stat(fmt(allen.length), tx({ en: "Allen reorder hits", es: "Reorden Allen", pt: "Reposicao Allen" }), allen.length ? "bad" : "")
+      stat(running.length + " / " + mach.length, tx({ en: "Now running", es: "En marcha", pt: "Em andamento" }), running.length ? "" : "warn"),
+      stat(fmt(change.length), tx({ en: "In process", es: "En proceso", pt: "Em processo" }), change.length ? "warn" : ""),
+      stat(fmt(idle.length), tx({ en: "Idle", es: "Inactivas", pt: "Paradas" })),
+      stat(fmt(mach.length), tx({ en: "Machines", es: "Maquinas", pt: "Maquinas" }))
     ]) +
-      panel(tx({ en: "Live machines", es: "Maquinas en vivo", pt: "Maquinas ao vivo" }),
-        mach.length ? dfTable(
+      panel(tx({ en: "Now Running / In Process", es: "En marcha / En proceso", pt: "Em andamento / Em processo" }),
+        sub(tx({
+          en: "Floor board. In process is a changeover. Running is listed first.",
+          es: "Tablero de piso. En proceso es un cambio. En marcha va primero.",
+          pt: "Painel do piso. Em processo e uma troca. Em andamento vem primeiro."
+        })) +
+        (mach.length ? dfTable(
           [{ h: "Machine" }, { h: "Flavor" }, { h: "Status" }, { h: "Done", right: true }],
           mach.map(function (m) {
-            var st = m.status || "idle";
+            var st = machineStatus(m);
             var cls = st === "running" ? "df-ship" : (st === "changeover" ? "df-low" : "df-done");
             var goal = Number(m.goal) || 0;
             return [
-              '<div class="df-name">' + esc(m.machine || "—") + '</div><div class="df-meta">' + esc(m.area || "") + "</div>",
-              esc(m.flavor || "—") + (m.size ? " " + esc(m.size) : ""),
-              pill(st, cls),
+              '<div class="df-name">' + esc(m.machine || "-") + '</div><div class="df-meta">' + esc(m.area || "") + "</div>",
+              esc(m.flavor || "-") + (m.size ? " " + esc(m.size) : ""),
+              pill(statusLabel(st), cls),
               fmt(m.done || 0) + (goal ? " / " + fmt(goal) : "")
             ];
           })
-        ) : empty(tx({ en: "No machines on the live board.", es: "No hay maquinas en el tablero.", pt: "Nao ha maquinas no painel." })),
-        2, "floor") +
-      panel(tx({ en: "Open production orders", es: "Ordenes de produccion abiertas", pt: "Ordens de producao abertas" }),
-        orders.length ? dfTable(
-          [{ h: "Flavor" }, { h: "PO" }, { h: "Stage" }, { h: "Due" }],
-          orders.map(function (o) {
-            var bins = o.bins || o.bins4 || o.bins15;
-            return [
-              '<div class="df-name">' + esc(o.flavor || "—") + "</div>" + (o.size ? '<div class="df-meta">' + esc(o.size) + "</div>" : ""),
-              esc(o.po || "—") + (bins ? '<div class="df-meta">' + esc(String(bins)) + " bins</div>" : ""),
-              pill(o._stage, o._stage === "Open" ? "df-open" : "df-ship"),
-              esc(o.deadline || o.date || "—")
-            ];
-          })
-        ) : empty(tx({ en: "No open production orders.", es: "No hay ordenes de produccion abiertas.", pt: "Nao ha ordens de producao abertas." })),
-        2, "prodorders") +
-      panel(tx({ en: "Logged today", es: "Registrado hoy", pt: "Registrado hoje" }) + " · " + esc(screenDay()),
-        logged.length ? dfTable(
-          [{ h: "Dept" }, { h: "Shift" }, { h: "Flavor" }, { h: "Bags", right: true }, { h: "Cases", right: true }],
-          logged.map(function (r) {
-            return [esc(r.dept || "—"), r.shift ? "S" + esc(r.shift) : "—", esc(r.flavor || "—"), fmt(r.bags), fmt(r.cases)];
-          })
-        ) : empty(tx({ en: "No mixing or P-Mac output logged for this date.", es: "Nada de mezcla o P-Mac en esta fecha.", pt: "Nada de mistura ou P-Mac nesta data." })),
-        2, "mixing") +
-      panel(tx({ en: "Scanned into the room today", es: "Escaneado hoy", pt: "Lido hoje" }),
-        used.length ? sub("Consumption scans saved today (SLC).") + dfTable(
-          [{ h: "Dept" }, { h: "Item" }, { h: "Qty", right: true }],
-          used.map(function (r) {
-            return [esc(r.department || "—"), esc(r.item_name || r.item_code || "—"), fmt(r.qty)];
-          })
-        ) : empty(tx({ en: "No consumption scans saved today.", es: "No hay escaneos de uso hoy.", pt: "Nao ha leituras de uso hoje." })),
-        2, "pmac") +
+        ) : empty(tx({ en: "No machines on the live board.", es: "No hay maquinas en el tablero.", pt: "Nao ha maquinas no painel." }))),
+        4, "floor");
+  }
+  function loggedFor(dept) {
+    return outputToday().filter(function (r) { return r.dept === dept; });
+  }
+  function usedFor(deptName) {
+    var want = String(deptName || "").toLowerCase();
+    return arr(function () { return DB.consumption ? DB.consumption() : []; }).filter(function (r) {
+      return slcDay(r.created_at) === slcToday() && String(r.department || "").toLowerCase() === want;
+    });
+  }
+  function prodOrderPanel(orders, emptyMsg) {
+    return panel(tx({ en: "Open production orders", es: "Ordenes de produccion abiertas", pt: "Ordens de producao abertas" }),
+      orders.length ? dfTable(
+        [{ h: "Flavor" }, { h: "PO" }, { h: "Stage" }, { h: "Due" }],
+        orders.map(function (o) {
+          var bins = o.bins || o.bins4 || o.bins15;
+          return [
+            '<div class="df-name">' + esc(o.flavor || "-") + "</div>" + (o.size ? '<div class="df-meta">' + esc(o.size) + "</div>" : ""),
+            esc(o.po || "-") + (bins ? '<div class="df-meta">' + esc(String(bins)) + " bins</div>" : ""),
+            pill(o._stage, o._stage === "Open" ? "df-open" : "df-ship"),
+            esc(o.deadline || o.date || "-")
+          ];
+        })
+      ) : empty(emptyMsg),
+      2, "prodorders");
+  }
+  function loggedPanel(rows, toolId, none) {
+    return panel(tx({ en: "Logged today", es: "Registrado hoy", pt: "Registrado hoje" }) + " · " + esc(screenDay()),
+      rows.length ? dfTable(
+        [{ h: "Shift" }, { h: "Flavor" }, { h: "Bags", right: true }, { h: "Cases", right: true }],
+        rows.map(function (r) {
+          return [r.shift ? "S" + esc(r.shift) : "-", esc(r.flavor || "-"), fmt(r.bags), fmt(r.cases)];
+        })
+      ) : empty(none),
+      2, toolId);
+  }
+  function usedPanel(rows, toolId) {
+    return panel(tx({ en: "Scanned into the room today", es: "Escaneado hoy", pt: "Lido hoje" }),
+      rows.length ? sub(tx({ en: "Consumption scans saved today (SLC).", es: "Escaneos de uso guardados hoy (SLC).", pt: "Leituras de uso salvas hoje (SLC)." })) + dfTable(
+        [{ h: "Item" }, { h: "Qty", right: true }],
+        rows.map(function (r) {
+          return [esc(r.item_name || r.item_code || "-"), fmt(r.qty)];
+        })
+      ) : empty(tx({ en: "No consumption scans saved today.", es: "No hay escaneos de uso hoy.", pt: "Nao ha leituras de uso hoje." })),
+      2, toolId);
+  }
+  function liveMix() {
+    var orders = openProdOrders();
+    var allen = allenReorder();
+    var logged = loggedFor("mixing");
+    var used = usedFor("Mixing");
+    var bags = logged.reduce(function (s, r) { return s + (Number(r.bags) || 0); }, 0);
+    return statRow([
+      stat(fmt(orders.length), tx({ en: "Open prod orders", es: "Ordenes de produccion abiertas", pt: "Ordens de producao abertas" })),
+      stat(fmt(bags), tx({ en: "Bags logged today", es: "Bolsas hoy", pt: "Sacos hoje" })),
+      stat(fmt(used.length), tx({ en: "Scans today", es: "Escaneos hoy", pt: "Leituras hoje" })),
+      stat(fmt(allen.length), tx({ en: "Allen reorder hits", es: "Reorden Allen", pt: "Reposicao Allen" }), allen.length ? "bad" : "")
+    ]) +
+      prodOrderPanel(orders, tx({ en: "No open production orders.", es: "No hay ordenes de produccion abiertas.", pt: "Nao ha ordens de producao abertas." })) +
+      loggedPanel(logged, "mixing", tx({ en: "No mixing output logged for this date.", es: "Nada de mezcla en esta fecha.", pt: "Nada de mistura nesta data." })) +
+      usedPanel(used, "mixing") +
       (allen.length ? panel(tx({ en: "Allen reorder", es: "Reorden Allen", pt: "Reposicao Allen" }),
-        sub("Finished-goods pallets on hand are at or under Allen's trigger. Bins to order already subtract bins mixed.") +
+        sub(tx({
+          en: "Finished-goods pallets on hand are at or under Allen's trigger. Bins to order already subtract bins mixed.",
+          es: "Las tarimas de producto terminado estan en el punto de Allen o debajo. Los bins a pedir ya restan lo mezclado.",
+          pt: "Os paletes de produto acabado estao no gatilho do Allen ou abaixo. Os bins a pedir ja descontam o misturado."
+        })) +
         dfTable(
           [{ h: "Flavor" }, { h: "4oz pal", right: true }, { h: "1.5oz pal", right: true }, { h: "Bins to order", right: true }],
           allen.map(function (r) {
-            return [esc(r.name || r.code || "—"), fmt(r.pallets4), fmt(r.pallets15), "<b>" + fmt(r.binsToOrder) + "</b>"];
+            return [esc(r.name || r.code || "-"), fmt(r.pallets4), fmt(r.pallets15), "<b>" + fmt(r.binsToOrder) + "</b>"];
           })
         ), 4, "reordertracker") : "") + seasoningLive();
+  }
+  function livePmac() {
+    var orders = openProdOrders().filter(function (o) {
+      return o._stage === "P-Mac" || o._stage === "Packaged" || o._stage === "Labels";
+    });
+    var logged = loggedFor("pmac");
+    var used = usedFor("P-Mac");
+    var bags = logged.reduce(function (s, r) { return s + (Number(r.bags) || 0); }, 0);
+    return statRow([
+      stat(fmt(orders.length), tx({ en: "Open prod orders", es: "Ordenes de produccion abiertas", pt: "Ordens de producao abertas" })),
+      stat(fmt(bags), tx({ en: "Bags logged today", es: "Bolsas hoy", pt: "Sacos hoje" })),
+      stat(fmt(used.length), tx({ en: "Scans today", es: "Escaneos hoy", pt: "Leituras hoje" })),
+      stat(fmt(logged.length), tx({ en: "Rows logged today", es: "Filas hoy", pt: "Linhas hoje" }))
+    ]) +
+      prodOrderPanel(orders, tx({ en: "No open production orders for P-Mac.", es: "No hay ordenes de produccion abiertas para P-Mac.", pt: "Nao ha ordens de producao abertas para P-Mac." })) +
+      loggedPanel(logged, "pmac", tx({ en: "No P-Mac output logged for this date.", es: "Nada de P-Mac en esta fecha.", pt: "Nada de P-Mac nesta data." })) +
+      usedPanel(used, "pmac");
   }
 
   function liveFul() {
@@ -1267,9 +1339,9 @@
           [{ h: "Customer" }, { h: "PO" }, { h: "Ship / invoice" }],
           open.map(function (o) {
             return [
-              '<div class="df-name">' + esc(o.customer || "—") + "</div>",
-              "<b>" + esc(o.customer_po || o.order_id || "—") + "</b>",
-              esc(o.ship_date || o.invoice_date || "—")
+              '<div class="df-name">' + esc(o.customer || "-") + "</div>",
+              "<b>" + esc(o.customer_po || o.order_id || "-") + "</b>",
+              esc(o.ship_date || o.invoice_date || "-")
             ];
           })
         ) : empty(tx({ en: "No open orders waiting to ship.", es: "No hay ordenes abiertas por enviar.", pt: "Nao ha pedidos abertos para enviar." }))),
@@ -1278,7 +1350,7 @@
         pallets.length ? dfTable(
           [{ h: "Line" }, { h: "Flavor" }, { h: "Cases", right: true }],
           pallets.map(function (p) {
-            return ["L" + esc(p.line || "—"), esc(p.flavor_code || "—"), fmt(p.cases)];
+            return ["L" + esc(p.line || "-"), esc(p.flavor_code || "-"), fmt(p.cases)];
           })
         ) : empty(tx({ en: "No retail pallets logged for this date.", es: "No hay paletas retail en esta fecha.", pt: "Nao ha paletes de varejo nesta data." })),
         2, "prodlog");
@@ -1304,9 +1376,9 @@
           [{ h: "Customer" }, { h: "PO / order" }, { h: "Ship date" }, { h: "Status" }],
           open.map(function (o) {
             return [
-              '<div class="df-name">' + esc(o.customer || "—") + "</div>",
-              esc(o.customer_po || o.order_id || "—"),
-              esc(o.ship_date || "—"),
+              '<div class="df-name">' + esc(o.customer || "-") + "</div>",
+              esc(o.customer_po || o.order_id || "-"),
+              esc(o.ship_date || "-"),
               pill(o.status || "Open", "df-open")
             ];
           })
@@ -1318,12 +1390,12 @@
           log.map(function (s) {
             var st = s.status || "";
             var cls = st === "Delivered" ? "df-done" : (st === "Pending" ? "df-low" : "df-ship");
-            return [esc(String(s.ship_date || "").slice(0, 10) || "—"), esc(s.recipient || "—"), esc(s.carrier || "—"), st ? pill(st, cls) : "—"];
+            return [esc(String(s.ship_date || "").slice(0, 10) || "-"), esc(s.recipient || "-"), esc(s.carrier || "-"), st ? pill(st, cls) : "-"];
           }).concat(tracked.slice(0, 12).map(function (o) {
             return [
-              esc(String(o.ship_date || o.created_at || "").slice(0, 10) || "—"),
-              '<div class="df-name">' + esc(o.customer || "—") + '</div><div class="df-meta">Order ' + esc(o.customer_po || o.order_id || "") + "</div>",
-              esc(o.carrier || "—"),
+              esc(String(o.ship_date || o.created_at || "").slice(0, 10) || "-"),
+              '<div class="df-name">' + esc(o.customer || "-") + '</div><div class="df-meta">Order ' + esc(o.customer_po || o.order_id || "") + "</div>",
+              esc(o.carrier || "-"),
               pill("Tracked", "df-ship")
             ];
           }))
@@ -1350,10 +1422,10 @@
       holds.map(function (l) {
         var s = String(l.status || "").toUpperCase();
         return [
-          "<b>" + esc(l.lot || l.lpn || "—") + "</b>",
-          esc(((l.flavor || l.item || "") + " " + (l.size || "")).trim() || "—"),
+          "<b>" + esc(l.lot || l.lpn || "-") + "</b>",
+          esc(((l.flavor || l.item || "") + " " + (l.size || "")).trim() || "-"),
           pill(s || "HOLD", s === "REJECTED" ? "df-out" : "df-low"),
-          esc(l.location || "—")
+          esc(l.location || "-")
         ];
       })
     );
@@ -1384,9 +1456,9 @@
           logs.map(function (l) {
             var fail = qFails([l]).length > 0;
             return [
-              esc(String(l.dt || l.date || l.created_at || "").replace("T", " ").slice(0, 16) || "—"),
-              esc(l.type || "—"),
-              esc(l.flavor || l.equip || "—"),
+              esc(String(l.dt || l.date || l.created_at || "").replace("T", " ").slice(0, 16) || "-"),
+              esc(l.type || "-"),
+              esc(l.flavor || l.equip || "-"),
               fail ? pill("FAIL", "df-out") : pill("OK", "df-ship")
             ];
           })
@@ -1420,8 +1492,8 @@
           [{ h: "Idea" }, { h: "Area" }, { h: "Status" }],
           openIdeas.map(function (i) {
             return [
-              '<div class="df-name">' + esc(i.title || "—") + "</div>" + (i.owner ? '<div class="df-meta">' + esc(i.owner) + "</div>" : ""),
-              esc(i.area || i.ci_type || "—"),
+              '<div class="df-name">' + esc(i.title || "-") + "</div>" + (i.owner ? '<div class="df-meta">' + esc(i.owner) + "</div>" : ""),
+              esc(i.area || i.ci_type || "-"),
               pill(i.status || "Idea", i.status === "In Progress" ? "df-ship" : "df-open")
             ];
           })
@@ -1433,9 +1505,9 @@
           pend.map(function (r) {
             var nb = String(r.needed_by || "").slice(0, 10);
             return [
-              '<div class="df-name">' + esc(r.company || "—") + '</div><div class="df-meta">' + esc(r.req_no || "") + "</div>",
-              esc(r.items || "—"),
-              esc(nb || "—") + (nb && nb < today ? " " + pill("LATE", "df-out") : "")
+              '<div class="df-name">' + esc(r.company || "-") + '</div><div class="df-meta">' + esc(r.req_no || "") + "</div>",
+              esc(r.items || "-"),
+              esc(nb || "-") + (nb && nb < today ? " " + pill("LATE", "df-out") : "")
             ];
           })
         ) : empty(tx({ en: "No R&D requests still out.", es: "No hay solicitudes I+D pendientes.", pt: "Nao ha pedidos de P&D pendentes." })),
@@ -1446,7 +1518,7 @@
           log.slice(0, 12).map(function (e) {
             var when = "";
             try { when = e.t ? new Date(e.t).toLocaleString() : ""; } catch (err) { when = String(e.t || ""); }
-            return [esc(when || "—"), '<div class="df-name">' + esc(e.a || "—") + "</div>" + (e.d ? '<div class="df-meta">' + esc(e.d) + "</div>" : ""), esc(e.u || "—")];
+            return [esc(when || "-"), '<div class="df-name">' + esc(e.a || "-") + "</div>" + (e.d ? '<div class="df-meta">' + esc(e.d) + "</div>" : ""), esc(e.u || "-")];
           })
         ) : empty(tx({ en: "No activity log rows yet.", es: "Aun no hay actividad.", pt: "Ainda nao ha atividade." })),
         4, "acct");
@@ -1475,10 +1547,10 @@
             var pr = i.priority || "";
             var cls = pr === "Urgent" || pr === "High" ? "df-out" : "df-low";
             return [
-              '<div class="df-name">' + esc(i.title || "—") + "</div>" + (i.problem ? '<div class="df-meta">' + esc(i.problem) + "</div>" : ""),
-              esc(i.area || "—"),
-              pr ? pill(pr, cls) : "—",
-              esc(i.status || "—") + (i.status === "Waiting" && i.waiting_on ? '<div class="df-meta">' + esc(i.waiting_on) + "</div>" : "")
+              '<div class="df-name">' + esc(i.title || "-") + "</div>" + (i.problem ? '<div class="df-meta">' + esc(i.problem) + "</div>" : ""),
+              esc(i.area || "-"),
+              pr ? pill(pr, cls) : "-",
+              esc(i.status || "-") + (i.status === "Waiting" && i.waiting_on ? '<div class="df-meta">' + esc(i.waiting_on) + "</div>" : "")
             ];
           })
         ) : empty(tx({ en: "No open maintenance requests.", es: "No hay solicitudes abiertas.", pt: "Nao ha pedidos abertos." })),
@@ -1549,14 +1621,12 @@
     if (id === "inv") return liveInv();
     if (id === "purch") return livePurch();
     if (id === "demand") return liveDemand();
-    if (id === "mfg") return liveMfg();
+    if (id === "mixing") return liveMix();
+    if (id === "pmac") return livePmac();
     if (id === "ful") return liveFul();
     if (id === "ship") return liveShip();
     if (id === "qa") return liveQa();
-    if (id === "team") return liveTeam();
-    if (id === "maint") return liveMaint();
-    if (id === "docs") return liveDocs();
-    if (id === "system") return liveSystem();
+    if (id === "ops") return liveTeam() + liveMaint() + liveDocs() + liveSystem();
     return "";
   }
 
@@ -1567,24 +1637,33 @@
     }).join("") + "</div>";
   }
 
+  function liveFailed() {
+    return panel("Live data", empty(tx({
+      en: "Live numbers could not be read.",
+      es: "No se pudieron leer los numeros.",
+      pt: "Nao foi possivel ler os numeros."
+    })), 4, "");
+  }
   function homeHtml(dept) {
+    var leadLive = "";
     var live = "";
-    try { live = liveFor(dept.id); } catch (err) {
-      live = panel("Live data", empty(tx({
-        en: "Live numbers could not be read.",
-        es: "No se pudieron leer los numeros.",
-        pt: "Nao foi possivel ler os numeros."
-      })), 4, "");
+    // Demand puts the floor first. Every other home keeps tools under the title, then live lists.
+    if (dept.runningFirst) {
+      try { leadLive = dbReady() ? liveRunning() : notLoaded(); } catch (err) { leadLive = liveFailed(); }
+      try { live = dbReady() ? liveDemand() : ""; } catch (err) { live = liveFailed(); }
+    } else {
+      try { live = liveFor(dept.id); } catch (err) { live = liveFailed(); }
     }
     var banner = cloud() ? "" : '<div class="df-banner dept-span4">' + esc(tx({
       en: "This browser is not on the shared cloud database. Counts below are not live plant data.",
       es: "Este navegador no esta en la base compartida. Lo de abajo no es dato en vivo de la planta.",
       pt: "Este navegador nao esta na base compartilhada. O que aparece abaixo nao e dado ao vivo da planta."
     })) + "</div>";
-    return '<div id="dept-home" class="dept-floor" data-dept="' + esc(dept.id) + '">' +
+    var head = '<div id="dept-home" class="dept-floor" data-dept="' + esc(dept.id) + '">' +
       '<div class="card dept-lead"><h2>' + esc(tx(dept.title)) + '</h2>' +
-      '<p class="hint">' + esc(tx(dept.intro)) + "</p></div>" +
-      toolsHtml(dept) + banner + live + "</div>";
+      '<p class="hint">' + esc(tx(dept.intro)) + "</p></div>";
+    if (dept.runningFirst) return head + banner + leadLive + toolsHtml(dept) + live + "</div>";
+    return head + toolsHtml(dept) + banner + live + "</div>";
   }
 
   function paintHome(force) {
