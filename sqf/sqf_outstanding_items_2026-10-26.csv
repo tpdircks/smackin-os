@@ -1,0 +1,292 @@
+clause,section,requirement,owner_raw,action_notes,due_raw,due_date,status
+11.1.2.4,Facility,"Walls, partitions, ceilings, and doors shall be of durable construction. Internal surfaces shall have an even and regular surface and be impervious with a light-colored finish and shall be kept clean (refer to 11.2.5).
+Wall-to-wall and wall-to-floor junctions shall be designed to be easily cleaned and sealed to prevent the accumulation of food debris.",Allen/Todd,"Walkthrough needed to list damaged/unsealed walls, ceiling panels, and wall-to-floor junctions. Ken has been working on this. Todd has been working repairing holes in the wall. Angel will come out and do some additional repairs.",,2026-10-23,open
+11.1.2.6,Facility,"Pipes carrying sanitary waste or wastewater that are located directly over product lines or storage areas shall be designed and constructed to prevent the contamination of food, materials, ingredients, and food contact surfaces and shall allow ease of cleaning. 
+A risk analysis shall be conducted to ensure food contamination risks are mitigated.",Allen/Todd - complete; Monica to complete RA,An issue like this was identified and corrected when we were working to be certified with the Department of Agriculture and Food with the  State of Utah. Monica will complete a RA,,2026-10-31,open
+11.1.2.7,Facility,"Doors, hatches, and windows and their frames in food processing, handling, or storage areas shall be of a material and construction that meets the same functional requirements as for internal walls and partitions. Doors and hatches shall be of solid construction, and windows shall be made of shatterproof glass or similar material.",Allen/Todd,"Ken and Todd have been working on improving the dock doors.  I will followup with them about the status. 
+We have some repairs around door frames going into the cleaning room that Angel will repair as noted above.",,2026-10-23,open
+11.1.2.8,Facility,"Product shall be processed and handled in areas that are fitted with a ceiling or other acceptable structure that is constructed and  maintained to prevent the contamination of products. Drop ceilings, where present, shall be constructed to enable monitoring for pest activity, facilitate cleaning, and provide access to utilities.",Allen/Todd,Todd is working to replace a celing tile in the P-Mac room. I believe there is also a missing tile in mixing as well.,,2026-10-23,open
+11.1.5.1,Facility,"All external windows, ventilation openings, doors, and other openings shall be effectively sealed when closed, and proofed against dust, vermin, and other pests. 
+External personnel access doors shall be effectively insect-proofed and fitted with a self-closing device and proper seals to protect against entry of dust, vermin, and other pests.",Allen/Todd,Todd scheduled to complete dock door gaps by 10/21/26 (see pest items).,,2026-10-21,open
+11.1.5.2,Facility,"External doors, including overhead dock doors in food handling areas used for product, pedestrian, or truck access, shall be  designed and maintained to prevent pest ingress by at least one or a combination of the following methods:
+i. A self-closing device;
+ii. An effective air curtain;
+iii. A pest-proof screen;
+iv. A pest-proof annex; and
+v. Adequate sealing around trucks in docking areas.",Allen/Todd,"Same as above. 
+
+No air curtains for now.",,2026-10-21,open
+11.1.6.1,Facility,"Adequate ventilation shall be provided in enclosed processing and food handling areas.
+Where appropriate, positive air-pressure systems shall be installed to prevent airborne contamination.",Matt,Matt & Michelle are working on installing dust extraction in the Mixing room. We also need a positive-air pressure system in both clean rooms. I will follow-up with them to get a time-line. We are currently waiting on an updated bid. MN 10/19/26,TBD,,open
+11.1.6.4,Facility,Fans and exhaust vents shall be insect-proofed and located so they do not pose a contamination risk and shall be kept clean.,Allen,We have been cleaning the fans in the cleanrooms. There are no external vents or fans. We will add this to the master cleaning schedule.,,2026-10-16,open
+11.1.7.2,Facility,"Equipment and utensils shall be designed, constructed, installed, operated, and maintained to meet any applicable regulatory requirements and to not pose a contamination threat to products.",Allen,"Inspect equipment for rust, flaking paint, tape/wire temporary fixes, and non-food-grade parts; document repairs. Confirm only food-grade lubricants are used.",,2026-10-20,open
+11.1.7.3,Facility,"Equipment storage rooms shall be designed and constructed to allow for the hygienic and efficient storage of equipment and containers. Where possible, food contact equipment shall be segregated from non-food contact equipment.",Allen,Set up a designated equipment storage area with labeled shelving off the floor; keep food-contact equipment separate from non-food-contact.,,2026-10-20,open
+11.1.7.5,Facility,"Benches, tables, conveyors, mixers, mincers, graders, and other mechanical processing equipment shall be hygienically designed and located for appropriate cleaning. Equipment surfaces shall be smooth, impervious, and free from cracks or crevices.",Allen,"Wood/porous tables in P-Mac have been replaced with stainless steel tables.
+Ensure all tape, strings and cardboard are removed as this can not be effectively cleaned and is considered a temporary repair.
+Leo is working on the Tape fixes 10/20/26 BC",,2026-10-20,open
+11.1.7.6,Facility,"Product containers, tubs, and bins used for edible and inedible material shall be constructed of materials that are non-toxic, smooth, impervious, and readily cleaned as per 11.2.5.1. Bins used for inedible material shall be clearly identified.",Allen,"The bins used in production are food safe. 
+Replace cracked/damaged bins. 
+All items must remain off the floor",,2026-10-16,open
+11.1.8.1,Facility,"A suitable external environment shall be established, and the effectiveness of the measures shall be monitored and periodically reviewed. The premises, its surrounding areas, storage facilities, machinery, and equipment shall be kept free of waste or accumulated debris, and vegetation shall be controlled so as not to attract pests and vermin or present a food safety hazard to the sanitary operation of the site.",Allen/Ken,This is something Ken has worked on. I will visit with him to see if the suroundings are in compliance. Start a monthly exterior inspection log.,,2026-10-20,open
+11.2.1.2,Maintenance,"Routine maintenance of plant and equipment in any food processing, handling, or storage areas shall be performed according to a maintenance control schedule and recorded.
+The maintenance schedule shall be prepared to include buildings, equipment, and other areas of the premises critical to the maintenance of product safety.",Allen/Todd,"Build a written preventive maintenance schedule for building and equipment (mixers, P-Mac machines) with a log to record completed work. Roadblock: compiling the full equipment list with Todd.",,2026-10-23,open
+11.2.1.6,Maintenance,"Temporary repairs, where required, shall not pose a food safety risk and shall be included in routine inspections (refer to 2.5.4.3) and the cleaning program. There shall be a plan in place to address the completion of temporary repairs to ensure they do not become permanent solutions.",Allen/Todd,"Create a temporary repair log (date, item, owner, permanent-fix date) and add temporary repairs to pre-op/GMP inspections and the cleaning program.",,2026-10-20,open
+11.2.3.2,Calibration,"Equipment shall be calibrated against national or international reference standards and methods or to an accuracy appropriate to its use. In cases where standards are not available, the site shall provide evidence to support the calibration reference method applied.",Brittney,"Completed 09/16/26
+ Completed 10/2/26",Completed,,done
+11.2.3.6,Calibration,"A directory of measuring, testing, and inspection equipment that require calibration and records of the calibration tests shall be maintained.",Brittney,Completed,Completed,,done
+11.2.4.1,Pest Prevention,"A documented pest prevention program shall be effectively implemented. It shall:
+i. Describe the methods and responsibility for the development, implementation, and maintenance of the pest prevention program;
+ii. Record pest sightings and trend the frequency of pest activity to target pesticide applications;
+iii. Outline the methods used to prevent pest problems;
+iv. Outline the pest elimination methods and the appropriate documentation for each inspection;
+v. Outline the frequency with which pest status is to be checked;
+vi. Include the identification, location, number, and type of applied pest control/monitoring devices on a site map;
+vii. List the chemicals used. The chemicals are required to be approved by the relevant authority and their Safety Data Sheets (SDS) made available;
+viii. Outline the methods used to make staff aware of the bait control program and the measures to take when they come into contact with a bait station;
+ix. Outline the requirements for staff awareness and training in the use of pest and vermin control chemicals and baits; and
+x. Measure the effectiveness of the program to verify the elimination of applicable pests and to identify trends.",Brittney,"Casey is coming to 
+ sign off on outstanding
+  items on 10/23/26
+ Todd will complete
+ the gaps on doc 
+ doors by 10/21/26
+Casey is coming 10/23/26",In proccess,,in_progress
+11.2.4.2,Pest Prevention,"Pest contractors and/or internal pest controllers shall:
+i. Be licensed and approved by the local relevant authority;
+ii. Use only trained and qualified operators, who comply with regulatory requirements;
+iii. Use only approved chemicals;
+iv. Provide a pest prevention plan (refer to 2.3.2.8), which includes a site map, indicating the location of bait stations traps and other applicable pest control/monitoring devices;
+v. Report to a responsible authorized person on entering the premises and after the completion of inspections or treatments;
+vi. Provide regular inspections for pest activity with appropriate action taken if pests are present, and
+vii. Provide a written report of their findings and the inspections and treatments applied.",Brittney,"Casey is coming to 
+ sign off on outstanding
+  items on 10/23/26
+ Todd will complete
+ the gaps on doc 
+ doors by 10/21/26
+Casey is coming 10/15/26",In proccess,,in_progress
+11.2.5.1,sanitation,"The methods and responsibility for the effective cleaning of the food handling and processing equipment and environment and storage areas shall be documented and implemented. Consideration shall be given to:
+i. What is to be cleaned;
+ii. How it is to be cleaned;
+iii. When it is to be cleaned;
+iv. Who is responsible for the cleaning;
+v. Validation of the cleaning procedures for food contact surfaces (including CIP);
+vi. Methods used to confirm the correct concentrations of detergents and sanitizers; and
+vii. The responsibility and methods used to verify the effectiveness of the cleaning and sanitation program.",Allen/Brittney,"In process 
+Need SSOP for each item to be cleaned.",,2026-10-31,open
+11.2.5.2,sanitation,"Detergents and sanitizers shall be suitable for use in a food manufacturing environment, labeled according to regulatory requirements, and purchased in accordance with applicable legislation. The organization shall ensure:
+i. The site maintains a list of chemicals approved for use;
+ii. An inventory of all purchased and used chemicals is maintained;
+iii. Detergents and sanitizers are stored as outlined in element 11.6.4;
+iv. Safety Data Sheets (SDS) are provided for all detergents and sanitizers purchased; and
+v. Only trained staff handle sanitizers and detergents.",Allen/Brittney/Ken,"We have the                                                           
+chemical list 
+created and 
+all sds sheets just need 
+. Training for this was 
+completed last month
+Brittney or Ken - can you save the list in the SQF folder?","Completed 
+10/16/26",,done
+11.2.5.8,sanitation,"Staff amenities, sanitary facilities, and other essential areas shall be inspected by qualified personnel at a defined frequency to ensure the areas are clean.",Allen/Brittney,"Restrooms are being cleaned, also need to document break areas
+Document created will do training tonight","Completed 
+10/19/26",,done
+11.2.5.9,sanitation,"The responsibility and methods used to verify the effectiveness of the cleaning procedures shall be documented and implemented. A verification schedule shall be prepared.
+A record of pre-operational hygiene inspections, cleaning and sanitation activities, and verification activities shall be maintained.",Allen/Brittney,"Cleaning log, Pre Op
+has already been 
+Implemented and records
+kept. Working on a master cleaning schedule",,2026-10-31,open
+11.3.3.1,clothing and personnel,"The site shall undertake a risk analysis to ensure that the clothing and hair policy protects materials, food, and food contact  surfaces from unintentional microbiological or physical contamination.",Monica,Need time to complete,,2026-10-31,open
+11.3.3.8,clothing and personnel,"Jewelry and other loose objects shall not be worn or taken into a food handling or processing operation or into any area where food is exposed. Wearing plain bands with no stones, prescribed medical alert bracelets, or jewelry accepted for religious or cultural reasons can be permitted, provided these items are properly covered and do not pose a food safety risk. 
+All exceptions shall meet regulatory and customer requirements and shall be subject to a risk assessment and evidence of ongoing risk management.",Allen/Brittney,"Already implemented. This requires frequent follow-up training and inspection. GMP form 
+is filled out daily",Completed,,done
+11.4.1.1,processing operations,"All personnel engaged in any food handling, preparation, or processing operations shall ensure that products and materials are handled and stored in such a way as to prevent damage or product contamination. They shall comply with the following processing practices:
+i. Personnel entry to processing areas shall be through the personnel access doors only;
+ii. All doors are to be kept closed. Doors shall not be open for extended periods when access is required for waste removal or receiving of product/ingredient/packaging;
+iii. Packaging, product, and ingredients shall be kept in appropriate containers as required and off the floor;
+iv. Waste shall be contained in the bins identified for this purpose and removed from the processing area on a regular basis and not left to accumulate; and
+v. All wash down and compressed air hoses shall be stored on hose racks after use and not left on the floor.",Allen/Brittney,"Allen and Brittney will hold a 
+meeting this week to reinforce all GMP pracitces.",10/20/26 Completed,,done
+11.4.1.2,processing operations,"Personnel working in or visiting food handling or processing operations shall ensure that:
+i. Staff shall not eat or taste any product being processed in the food handling/contact zones,
+except as noted in element 11.4.1.4;
+SQF Food Safety Code: Food Manufacturing, Edition 9 68
+PART B: The SQF Food Safety Code: Food Manufacturing – Module 11
+ii. The wearing of false fingernails, false eyelashes, eyelash extensions, long nails, or fingernail
+polish is not permitted when handling exposed food;
+iii. Hair restraints and beard covers, where applicable, shall be used in areas where product is
+exposed.
+iv. Smoking, chewing, eating, or spitting is not permitted in areas where product is produced,
+stored, or otherwise exposed.
+v. Drinking water is permissible only under conditions that prevent contamination or other food
+safety risks from occurring. Drinking water containers in production and storage areas shall
+be stored in clear, covered containers, and in designated areas away from raw materials,
+packaging, tools, or equipment storage.",Allen,"As noted above re-train staff on GMP rules (no eating/chewing, no nail polish/false nails/lashes, hair and beard nets, water only in clear covered containers in a designated area). Cover at the 10/16 meeting with a sign-in sheet; post bilingual signs.",,2026-10-20,open
+11.4.1.3,processing operations,"The flow of personnel in food processing and handling areas shall be managed such
+that the potential for contamination is minimized.",Allen\Brittney\Monica,"Draft and post a personnel flow map (entry, handwash, Mixing to P-Mac, break room) and restrict traffic from warehouse/outside into production.
+We have been in the process of improving this.",,2026-10-20,open
+11.4.1.4,processing operations,"In circumstances where it is necessary to undertake sensory evaluations in a food handling/contact zone, the site shall implement controls and procedures to ensure:
+i. Food safety is not compromised;
+ii. Sensory evaluations are conducted by authorized personnel only;
+iii. A high standard of personal hygiene is practiced by personnel conducting sensory evaluations;
+iv. Sensory evaluations are conducted in areas equipped for the purpose; and
+v. Equipment used for sensory evaluations is sanitized, maintained, and stored separately from processing equipment.",Allen,"Write a sensory evaluation procedure (authorized tasters only, designated area, sanitized utensils stored separately), or document that no tasting is done on the floor.",,2026-10-20,open
+11.5.1.2,water supply,Contingency plans shall be in place for instances when the potable water supply is deemed to be contaminated or otherwise inappropriate for use.,Monica,Need to write a water contingency plan,,2026-10-31,open
+11.5.1.4,water supply,"The delivery of water within the premises shall ensure potable water is not contaminated. Testing of the backflow system, where possible, shall be conducted at least annually and records shall be maintained.",Michelle?,Need to call a plumber in to test and certify backflow system,,,open
+11.6.3.2,storage,Racks provided for the storage of packaging shall be constructed of impervious materials and designed to enable cleaning and inspection of the floors and behind the racks. Storage areas shall be cleaned at a pre-determined frequency.,Allen/Brittney,Add warehouse racking to Master Sanitation Schedule,,2026-10-31,open
+11.6.4.2,hazardous chemicals,"Storage of hazardous chemicals and toxic substances shall be:
+i. Located in an area with appropriate signage indicating that the area is for hazardous storage;
+ii. Controlled, lockable, and accessible only by personnel trained in the storage and use of chemicals;
+iii. Adequately ventilated;
+iv. Stored where intended and not comingled (e.g., food versus non-food grade); 
+v. Designed such that pesticides, rodenticides, fumigants, and insecticides are stored separately from sanitizers and detergents; and
+vi. Stored in a manner that prevents a hazard to finished product or product contact surfaces.
+Processing utensils and packaging shall not be stored in areas used to store hazardous chemicals and toxic substances.",Ken/Allen,"Need a Flammable Storage Cabinet. 
+
+Allen will review with Ken how to meet this requirement.",,2026-10-23,open
+11.6.4.4,hazardous chemicals,"Daily supplies of chemicals used for continuous sanitizing of water, as a processing aid, or for emergency cleaning of food processing equipment and surfaces in food contact zones may be stored within or in close proximity to a processing area, provided that access to the chemical storage facility is restricted to only authorized personnel.",Ken/Allen,"Keep daily-use sanitizer at the diluter in a labeled, restricted area; post a list of trained/authorized personnel.",,2026-10-16,open
+11.6.4.5,hazardous chemicals,"Personnel who handle hazardous chemicals and toxic substances, including pesticides and cleaning chemicals,:
+i. Shall be fully trained in the purpose of the hazardous chemicals and toxic substances, their storage, handling, and use;
+ii. Be provided first aid equipment and personnel protective equipment (PPE); and
+iii. Ensure compliance with the proper identification, storage, usage, disposal, and clean-up requirements.",Ken/Allen,"Training was completed
+last month.
+
+Keep training records on file and verify PPE and first aid/eyewash are stocked near the chemical area.",,2026-10-16,open
+11.6.5.2,loading/unloading,"Vehicles (e.g., trucks/vans/containers) used for transporting food within the site and from the site shall be inspected prior to loading to ensure they are clean, in good repair, suitable for the purpose, and free from odors or other conditions that may impact negatively on the product.",Troy,Need a record for each delivery and shipment,Trailer Inspection forms created 9/16,,open
+2.1.1.3,management responsibility,"The reporting structure shall identify and describe site personnel with specific responsibilities for tasks within the food safety management system and identify a backup for the absence of key personnel. 
+Job descriptions for the key personnel shall be documented.
+Site management shall ensure departments and operations are appropriately staffed and organizationally aligned to meet food safety objectives.",Michelle/Monica,Need Org chart from Matt to supervisors. Isn't this done? Let me know if you need the org chart in electronic form. MN 10/19/26,,,open
+2.1.1.4,management responsibility,"Senior site management shall designate a primary and substitute SQF practitioner for each site with responsibility and authority to:
+i. Oversee the development, implementation, review, and maintenance of the SQF System;
+ii. Take appropriate action to ensure the integrity of the SQF System; and
+iii. Communicate to relevant personnel all information essential to ensure the effective implementation and maintenance of the SQF System.",Monica,"Monica can be primary. Does anyone else have HACCP or PCQI?
+Brittney has HACCP",,,open
+2.1.1.5,management responsibility,"The primary and substitute SQF practitioner shall:
+i. Be employed by the site;
+ii. Hold a position of responsibility related to the management of the site's SQF System;
+iii. Have completed a HACCP training course;
+iv. Be competent to implement and maintain HACCP based food safety plans; and
+v. Have an understanding of the SQF Food Safety Code: Food Manufacturing and the requirements to implement and maintain an SQF System relevant to the site's scope of certification",Monica,"Need to identify a backup
+
+Brittney is the Backup?",,,open
+2.1.1.6,management responsibility,"Senior site management shall ensure the training needs of the site are resourced, implemented, and meet the requirements outlined in system elements 2.9 and that site personnel meet the required competencies to carry out those functions affecting the legality and safety of food products.",Matt/Michelle,"Need to hold trainings for GMP, Personal hygiene, Food Defense, Food Fraud, SQF, HACCP, Sanitation, Pest Control annually",,,open
+2.1.1.7,management responsibility,Senior site management shall ensure the integrity and continued operation of the food safety system in the event of organizational or personnel changes within the company or associated facilities.,Matt/Michelle,Need adequate personnel to complete all tasks required,,,open
+2.1.2.1,management review,"The SQF System shall be reviewed by senior site management at least annually and include:
+i. Changes to food safety management system documentation (policies, procedures, specifications, food safety plan);
+ii. Food safety culture performance;
+iii. Food safety objectives and performance measures;
+iv. Corrective and preventative actions and trends in findings from internal and external audits, customer complaints, and verification and validation activities;
+v. Hazard and risk management system; and
+vi. Follow-up action items from previous management reviews.
+Records of all management reviews and updates shall be maintained.",All,Need a formal review once all are implemented,,,open
+2.1.2.2,management review,"The SQF practitioner(s) shall update senior site management on at least a monthly basis on matters impacting the implementation and maintenance of the SQF System.
+The updates and management responses shall be documented.",All,Monthly Management meetings need to occur,,,open
+2.1.3.3,complaint management,"Corrective and preventative action shall be implemented based on the seriousness of the incident and the root cause analysis as outlined in 2.5.3. Records of customer complaints, their investigation, and resolution shall be maintained.",Monica/Brittney,"Where are all the customer complaints 
+sent?",,,open
+2.2.3.2,records,"All records shall be legible and confirmed by those undertaking monitoring activities that demonstrate inspections, analyses, and other essential activities that have been completed.",All,Brittney will conduct Good Document Training by 10/20,Completed 10/21/26,,done
+2.3.1.6,product formulation,"Records of product design, formulations, label compliance, process flows, shelf life trials, and approvals for all new and existing products shall be maintained.",Monica,Records missing or show inaccuracies - especially in label compliance,,,open
+2.3.2.2,specifications,"Specifications for all raw materials and packaging, including, but not limited to, ingredients, additives, hazardous chemicals, processing aids, and packaging that impact finished product safety shall be documented and kept current.",Brittney,"Need specifications for all finished product. Specifications must match labels. Could these be living in Sales? Wondering about information we've given Customers? MN
+I am creating all FG Specs",,2026-10-31,open
+2.3.2.6,specifications,"Verification of packaging shall include a certification of all packaging that comes into direct contact with food meets either regulatory acceptance or approval criteria. Documentation shall either be in the form of a declaration of continued guarantee of compliance, a certificate of conformance, or a certificate from the applicable regulatory agency.
+In the absence of a certificate of conformance, certificate of analysis, or letter of guarantee, analyses to confirm the absence of potential chemical migration from the packaging to the food contents shall be conducted and records maintained.",Brittney,Brittney has requested COC from packaging suppliers. Recieved COC from Belmark already,,2026-10-16,open
+2.3.2.7,specifications,"Finished product labels shall be accurate, comply with the relevant legislation, and be approved by qualified company personnel.",Brittney/Monica,We have identified inaccuracies. Need to update artwork as soon as possible and/or ingredient suppliers. Does someone have a list of all of these inaccuracies? MN 10/19/26,,,open
+2.3.2.8,specifications,"Description of services for contract service providers that have an impact on product safety shall be documented, current, include a full description of the services to be provided, and detail relevant training requirements of all contract personnel.",Michelle/Monica,Need a list of all contract service providers and what services they provide. Also need an agreement with each,,,open
+2.3.2.9,specifications,"Finished product specifications shall be documented, current, approved by the site and its customer, accessible to relevant staff, and shall include, where applicable:
+i. Microbiological, chemical, and physical limits;
+ii. Composition to meet label claims;
+iii. Labeling and packaging requirements; and
+iv. Storage conditions.",Brittney/Monica,"Need to develop finished product specs. What have we been supplying to our customers? MN 10/19/26
+I have been working on creating spec sheets for finished good but we do not do Microbioloical, chemical, testing",,,open
+2.3.2.10,specifications,"Specifications for raw materials and packaging, chemicals, processing aids, contract services, and finished products shall be reviewed as changes occur that impact product safety. Records of reviews shall be maintained.
+A list of all the above specifications shall be maintained and kept current.",Brittney/Monica,"Should have all spec's on file. Need a master list of each to keep on file. Could this be saved in the 000 files on the G Drive? MN 10/19/26 
+We already request spec sheets for every thing we use and file them in the G drive",,,open
+2.3.3.2,contract manufacturers,"The site shall establish a method to determine the food safety risk level of contract manufactured product and shall document the risk. The site shall ensure that:
+i. Products and processes of co-manufacturers that are considered high-risk have undergone an audit by the site or third-party agency to confirm compliance with the SQF Food Safety Code: Food Manufacturing and regulatory and customer requirements;
+ii. Products and processes of co-manufacturers that are considered low-risk meet the requirements of the SQF Food Safety Code: Food Manufacturing, or other GFSI benchmarked certification programs, and regulatory and customer requirements; and
+iii. Changes to contractual agreements are approved by both parties and communicated to relevant personnel.",Brittney,"Need to gather all documents from Herman's. Has this been requested? MN 10/19/26
+ The last I was told anything the seeds and nuts were seperate?
+Have I been left out of the loop or ? I have not request nor do I have a contact for Hermans BC",,,open
+2.3.4.2,approved supplier,"The approved supplier program shall be based on the past performance of a supplier and the risk level of the raw materials, ingredients, processing aids, packaging, and services supplied, and shall contain at a minimum:
+i. Agreed specifications (refer to 2.3.2);
+ii. Reference to the level of risk applied to raw materials, ingredients, packaging, and services from the approved supplier;
+iii. A summary of the food safety controls implemented by the approved supplier;
+iv. Methods for granting approved supplier status;
+v. Methods and frequency of monitoring approved suppliers;
+vi. Details of the certificates of conformance, if required; and
+vii. Methods and frequency of reviewing approved supplier performance and status.",Brittney/Monica,"Missing: 
+Firehouse
+ADM 1 doc",,2026-10-23,open
+2.3.4.6,approved supplier,Supplier audits shall be based on risk (as determined in 2.3.4.2) and shall be conducted by individuals knowledgeable of applicable regulatory and food safety requirements and trained in auditing techniques.,Monica,Need to create a risk for all suppliers,,,open
+2.4.5.2,non-conforming product,"Quarantine records and records of the handling, corrective action, or disposal of nonconforming materials or product shall be maintained.",Brittney,Need to ensure we have all documented and logged. What form are we using for this? Where will these files be stored? MN 10/19/26,,,open
+2.4.7.1,product release,"The responsibility and methods for releasing products shall be documented and implemented. The methods applied shall ensure the product is released by authorized personnel, and only after all inspections and analyses are successfully completed and documented to verify legislative and other established food safety controls have been met.
+Records of all product releases shall be maintained.",Troy/Brittney,"Need to verify we have records for all outbound shipments. We also need to create a product release procedure. Is this the ""scanner"" plan? MN 10/19/26",,,open
+2.5.3.2,capa,"Records of all investigation, root cause analysis, and resolution of non-conformities, their corrections, and the implementation of preventative actions shall be maintained.",Brittney/Monica,Need to document and log all CAPA's,,,open
+2.5.4.2,internal audits,"Staff conducting internal audits shall be trained and competent in internal audit procedures. Where practical, staff conducting internal audits shall be independent of the function being audited.",Monica,"Monica has IA training, need to train others so more people can conduct IA.",,,open
+2.5.4.4,internal audits,"Records of internal audits and inspections and any corrective and preventative actions taken as a result of internal audits shall be recorded as per 2.5.3. 
+Changes implemented from internal audits that have an impact on the site's ability to deliver safe food shall require a review of applicable aspects of the SQF System (refer to 2.3.1.3).",Monica,"Once we are audit ready, we can conduct a IA. 
+This file will act as IA",,,open
+2.6.2.1,traceability,"The responsibility and methods used to trace product shall be documented and implemented to ensure:
+i. Finished product is traceable at least one step forward to the customer and at least one step back from the process to the manufacturing supplier;
+ii. The receipt dates of raw materials, ingredients, food contact packaging and materials, and
+other inputs are recorded (refer to 2.8.1.8 for traceback of allergen containing food products.);
+iii. Traceability is maintained where product is reworked (refer to 2.4.6); and
+iv. The effectiveness of the product trace system is reviewed at least annually, as part of the product recall and withdrawal review (refer to 2.6.3.2).
+Records of raw and packaging material receipt and use and finished product dispatch and destination shall be maintained.",All,Need to successfully conduct a traceability exercise. Must go from the supplier to the customer.,,,open
+2.6.3.2,traceability,"The product withdrawal and recall system shall be reviewed, tested, and verified as effective at least annually. Testing shall include incoming materials (minimum traceability one step back) and finished product (minimum traceability one step forward).
+Testing shall be carried out on products from different shifts and for materials (including bulk materials) that are used across a range of products and/or products that are shipped to a wide range of customers.",All,Need to successfully conduct a recall exercise. Must go from the supplier to the customer.,,,open
+2.6.4.1,crisis management,"A crisis management plan based on the understanding of known potential dangers (e.g., flood, drought, fire, tsunami, or other severe weather events, warfare or civil unrest, computer outage, pandemic, loss of electricity or refrigeration, ammonia leak, labor strike) that can impact the site's ability to deliver safe food shall be documented by senior management, outlining the methods and responsibility the site shall implement to cope with such a business crisis. The crisis management plan shall include at a minimum:
+i. A senior manager responsible for decision making, oversight, and initiating actions arising from a crisis management incident;
+ii. The nomination and training of a crisis management team;
+iii. The controls implemented to ensure any responses do not compromise product safety;
+iv. The measures to isolate and identify product affected by a response to a crisis;
+v. The measures taken to verify the acceptability of food prior to release;
+vi. The preparation and maintenance of a current crisis alert contact list, including supply chain customers;
+vii. Sources of legal and expert advice; and 
+viii. The responsibility for internal communications and communicating with authorities, external organizations, and media.",Monica,Need to create a plan,,,open
+2.6.4.2,crisis management,"The crisis management plan shall be reviewed, tested, and verified at least annually with gaps and appropriate corrective actions documented. Records of reviews of the crisis management plan shall be maintained.",Monica,Need to test and verify the plan,,,open
+2.7.1.2,food defense,"A food defense plan shall be documented, implemented, and maintained based on the threat assessment (refer to 2.7.1.1). The food defense plan shall meet legislative requirements as applicable and shall include at a minimum:
+i. The methods, responsibility, and criteria for preventing food adulteration caused by a deliberate act of sabotage or terrorist-like incident;
+ii. The name of the senior site management person responsible for food defense;
+iii. The methods implemented to ensure only authorized personnel have access to production equipment and vehicles, manufacturing, and storage areas through designated access points;
+iv. The methods implemented to protect sensitive processing points from intentional adulteration;
+v. The measures taken to ensure the secure receipt and storage of raw materials, ingredients, packaging, equipment, and hazardous chemicals to protect them from deliberate acts of sabotage or terrorist-like incidents;
+vi. The measures implemented to ensure raw materials, ingredients, packaging (including labels), work-in-progress, process inputs, and finished products are held under secure storage and transportation conditions; and
+vii. The methods implemented to record and control access to the premises by site personnel, contractors, and visitors.",Monica,Need to document a food defense plan,,,open
+2.7.1.3,food defense,Instruction shall be provided to all relevant staff on the effective implementation of the food defense plan (refer to 2.9.2.1).,Monica,train staff,,,open
+2.7.1.4,food defense,"The food defense threat assessment and prevention plan shall be reviewed and tested at least annually or when the threat level, as defined in the threat assessment, changes. Records of reviews and tests of the food defense plan shall be maintained.",Monica,Need to conduct a threat assessment and test,,,open
+2.7.2.2,food fraud,"A food fraud mitigation plan shall be developed and implemented that specifies the methods by which the identified food fraud vulnerabilities shall be controlled, including identified food safety vulnerabilities of ingredients and materials.",Monica,Need to create a mitigation plan,,,open
+2.7.2.3,food fraud,Instruction shall be provided to all relevant staff on the effective implementation of the food fraud mitigation plan (refer to 2.9.2.1).,Monica,train staff,,,open
+2.7.2.4,food fraud,The food fraud vulnerability assessment and mitigation plan shall be reviewed and verified at least annually with gaps and corrective actions documented. Records of reviews shall be maintained.,Monica,need to conduct a vulnerability assessment and mitigation plan review,,,open
+2.8.1.1,allergens,"The responsibility and methods used to control allergens and to prevent sources of allergens from contaminating product shall be documented and implemented. The allergen management program shall include:
+i. A risk analysis of those raw materials, ingredients, and processing aids, including food grade lubricants, that contain food allergens;
+ii. An assessment of workplace-related food allergens that may originate from locker rooms, vending machines, lunchrooms, and visitors;
+iii. A list of allergens that is applicable in the country of manufacture and the country(ies) of destination, if known;
+iv. A list of allergens that is accessible to relevant staff;
+v. The control of hazards associated with allergens and incorporated into the food safety plan, and
+vi. Management plans for control of the identified allergens.",Monica/Brittney/Allen,"Need a full allergen plan, including lunchroom allergens, create a master list for staff to reference",,,open
+2.8.1.4,allergens,"Where allergenic material may be intentionally or unintentionally present cleaning and sanitation of product contact surfaces between line changeovers shall be effective, appropriate to the risk and legal requirements, and sufficient to remove all potential target allergens from product contact surfaces, including aerosols as appropriate, to prevent cross-contact.
+Separate handling and production equipment shall be provided, where satisfactory line hygiene and clean-up or segregation are not possible.",Monica,,,,open
+2.8.1.5,allergens,"Based on risk assessment, procedures for validation and verification of the effectiveness of the cleaning and sanitation of areas and equipment in which allergens are used shall be documented and effectively implemented.",Monica,Need to verify allergen cleaning effectiveness.,,,open
+2.8.1.9,allergens,"The site shall document and implement methods to control the accuracy of finished product labels (or consumer information where applicable) and assure work-in progress and finished product are true to label with regard to allergens. Measures may include label approvals at receipt, label reconciliations during production, destruction of obsolete labels, verification of labels on finished product as appropriate, and product change over procedures.",Monica/Brittney/Allen,"Label all raw materials with allergens present in each - sticker pallets or individual units
+The best way I have seen this be done and work is a colored label with a referance page posted near the product BC 10/23/26",,,open
+2.9.2.1,training,"A training program shall be documented and implemented that at a minimum outlines the necessary competencies for specific duties and the training methods to be applied to personnel carrying out tasks associated with:
+i. Implementing HACCP for staff involved in developing and maintaining food safety plans;
+ii. Monitoring and corrective action procedures for all staff engaged in monitoring critical control points (CCPs);
+iii. Personal hygiene for all staff involved in the handling of food products and food contact surfaces;
+iv. Good Manufacturing Practices and work instructions for all staff engaged in food handling, food processing, and equipment;
+v. Sampling and test methods for all staff involved in sampling and testing of raw materials, packaging, work-in-progress, and finished products;
+vi. Environmental monitoring for relevant staff;
+vii. Allergen management, food defense, and food fraud for all relevant staff; and
+viii. Tasks identified as critical to meeting the effective implementation and maintenance of the SQF code.
+The training program shall include provisions for identifying and implementing the refresher training needs of the organization.",Ken/Brittney,"Need training for HACCP, Metal Detector, Personal hygiene, GMP, sampling and testing materials, environmental (QA), Allergens, food defense, food fraud, food defense, SQF, Shipping/receiving (those involved with this)","Completed with everyone on 
+the floor but missing a few 
+people in the office for training
+ Matt, Michelle, and Troy 10/23/26 BC",,done
+2.9.2.2,training,"Training materials, the delivery of training, and procedures on all tasks critical to meeting regulatory compliance and the maintenance of food safety shall be provided in language(s) understood by staff.",Ken/Brittney,Ken is developing materials and conducting trainings. approximately 3 hours of training needed for each employee.,,,open
+2.9.2.3,training,"Training records shall be maintained and include:
+i. Participant name;
+ii. Skills description;
+iii. Description of the training provided;
+iv. Date training completed;
+v. Trainer or training provider; and
+vi. Verification that the trainee is competent to complete the required tasks.","Ken/Brittney
+Ken is helping manage this project",need to create a master spreadsheet with all of this information,,,open
