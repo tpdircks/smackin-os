@@ -1,9 +1,10 @@
 /* ============================================================================
    Smackin' OS - Department homes (dept-homes.js)
-   Top department bar and a full-page home for each team. Each card opens a
-   screen that already exists (UI_go, Lot Trace, or a module open()).
-   The left menu (#nav) stays in the DOM so other modules can still find it,
-   but it takes no space. The department bar is the only navigation. No writes.
+   A full-page home for each team. Each card opens a screen that already
+   exists (UI_go, Lot Trace, or a module open()).
+   The horizontal department bar is not in the page. The tool menu stays
+   off-canvas and opens from the header button, so the dashboard is full
+   width and Lot Trace plus the department homes stay reachable. No writes.
    No timers.
    ========================================================================== */
 (function () {
@@ -399,6 +400,7 @@
     closeDrawer();
     paintHome();
     markBar();
+    paintDeptActive();
     try { window.scrollTo(0, 0); } catch (e) {}
     syncOffset();
   }
@@ -442,6 +444,39 @@
   function onNav() {
     if (painting) return;
     ensureRelease();
+    injectDeptNav();
+  }
+
+  function paintDeptActive() {
+    var nav = document.getElementById("nav");
+    if (!nav) return;
+    var buttons = nav.querySelectorAll("#dept-nav-homes [data-dept-nav]");
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].classList.toggle("active", buttons[i].getAttribute("data-dept-nav") === homeId);
+    }
+  }
+
+  function injectDeptNav() {
+    var nav = document.getElementById("nav");
+    if (!nav || !nav.querySelector(".navitem, .navlabel")) return;
+    var existing = document.getElementById("dept-nav-homes");
+    if (existing && existing.getAttribute("data-lang") === lang()) return;
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+    var block = document.createElement("div");
+    block.className = "navgroup";
+    block.id = "dept-nav-homes";
+    block.setAttribute("data-lang", lang());
+    var label = tx({ en: "Departments", es: "Departamentos", pt: "Departamentos" });
+    block.innerHTML = '<div class="navlabel">' + esc(label) + '</div>' +
+      DEPTS.map(function (d) {
+        var on = d.id === homeId;
+        return '<button type="button" class="navitem' + (on ? " active" : "") + '" data-dept-nav="' + esc(d.id) + '">' +
+          '<i class="navico" data-lucide="layout-grid"></i><span>' + esc(tx(d.label)) + '</span></button>';
+      }).join("");
+    var firstGroup = nav.querySelector(".navgroup");
+    if (firstGroup) nav.insertBefore(block, firstGroup);
+    else nav.appendChild(block);
+    try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
   }
 
   function styleOnce() {
@@ -449,14 +484,12 @@
     var s = document.createElement("style");
     s.id = "dept-style";
     s.textContent = [
-      "#dept-stack{position:sticky;top:0;z-index:70}",
-      "#deptbar{display:flex;gap:8px;align-items:center;overflow-x:auto;background:#fff;border-bottom:1px solid var(--line,#d7dde6);padding:8px 12px 10px;-webkit-overflow-scrolling:touch}",
-      "#deptbar .dept-tab{font-family:inherit;font-weight:800;font-size:14px;line-height:1.2;color:var(--navy,#04223B);background:var(--light,#E1EEF7);border:1px solid transparent;border-radius:999px;padding:10px 14px;cursor:pointer;white-space:nowrap;min-height:44px}",
-      "#deptbar .dept-tab:hover{border-color:var(--blue,#006DB6)}",
-      "#deptbar .dept-tab.on{background:var(--orange,#F26B21);color:#fff}",
-      "nav#nav,nav#nav.open{position:fixed!important;left:0!important;top:0!important;width:0!important;height:0!important;min-width:0!important;max-width:0!important;max-height:0!important;flex:0 0 0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden!important;visibility:hidden!important;pointer-events:none!important;box-shadow:none!important;transform:none!important;clip-path:inset(50%)!important}",
-      "#navToggle,.navtoggle,#navBackdrop,#navBackdrop.show{display:none!important}",
-      ".layout{display:block!important;max-width:none!important;width:100%!important;margin:0!important}",
+      "#deptbar,#dept-stack{display:none!important}",
+      "nav#nav{position:fixed!important;top:0;left:-320px!important;bottom:0;height:100vh;max-height:none!important;width:300px!important;flex:none!important;z-index:80;transform:none!important;transition:left .22s ease;box-shadow:2px 0 14px rgba(0,0,0,.25);visibility:visible!important;pointer-events:auto!important;overflow-y:auto!important;background:#fff}",
+      "nav#nav.open{left:0!important}",
+      "#navToggle,.navtoggle{display:inline-block!important}",
+      "#navBackdrop.show{display:block!important}",
+      ".layout{display:block!important;max-width:1180px!important;width:100%!important;margin:0 auto!important}",
       "main,#view{max-width:none!important;width:100%!important;flex:none!important}",
       "#dept-home{padding:8px 0 28px}",
       "#dept-home h1{margin:0 0 6px;color:var(--navy,#04223B);font-size:28px;line-height:1.15}",
@@ -469,56 +502,48 @@
       "#dept-home .dept-ico svg{width:28px;height:28px;stroke-width:1.75}",
       "#dept-home .dept-card strong{display:block;font-size:18px;color:var(--navy,#04223B);margin:0 0 4px}",
       "#dept-home .dept-card span{display:block;font-size:14px;color:#3d4c5e;line-height:1.35;font-weight:500}",
-      "body.boardmode #deptbar{display:none!important}",
-      "@media(max-width:820px){#dept-home h1{font-size:24px}}",
-      "@media print{#deptbar{display:none!important}}"
+      "@media(max-width:820px){#dept-home h1{font-size:24px}}"
     ].join("");
     document.head.appendChild(s);
   }
 
   function buildBar() {
-    if (document.getElementById("deptbar")) return;
     styleOnce();
-    var header = document.querySelector("header");
+    var bar = document.getElementById("deptbar");
+    if (bar && bar.parentNode) bar.parentNode.removeChild(bar);
     var stack = document.getElementById("dept-stack");
-    if (!stack && header && header.parentNode) {
-      stack = document.createElement("div");
-      stack.id = "dept-stack";
-      header.parentNode.insertBefore(stack, header);
-      stack.appendChild(header);
+    if (stack && stack.parentNode) {
+      while (stack.firstChild) stack.parentNode.insertBefore(stack.firstChild, stack);
+      stack.parentNode.removeChild(stack);
     }
-    var bar = document.createElement("nav");
-    bar.id = "deptbar";
-    bar.setAttribute("aria-label", tx({ en: "Departments", es: "Departamentos", pt: "Departamentos" }));
-    if (stack) stack.appendChild(bar);
-    else {
-      var layout = document.querySelector(".layout");
-      if (layout && layout.parentNode) layout.parentNode.insertBefore(bar, layout);
-      else document.body.appendChild(bar);
-    }
-    bar.addEventListener("touchstart", function (e) {
-      var btn = e.target && e.target.closest ? e.target.closest("[data-dept]") : null;
-      if (!btn) return;
-      touchArmed = true;
-      pressBusy = entryInProgress();
-    }, { passive: true });
-    bar.addEventListener("mousedown", function (e) {
-      var btn = e.target && e.target.closest ? e.target.closest("[data-dept]") : null;
-      if (!btn) return;
-      if (touchArmed) { touchArmed = false; return; }
-      pressBusy = entryInProgress();
-    });
-    bar.addEventListener("click", onBarClick);
-    renderBar();
-    syncOffset();
   }
 
   function boot() {
     buildBar();
     var nav = document.getElementById("nav");
-    if (nav) nav.setAttribute("aria-hidden", "true");
+    if (nav) nav.removeAttribute("aria-hidden");
     var toggle = document.getElementById("navToggle");
-    if (toggle) toggle.setAttribute("aria-hidden", "true");
+    if (toggle) toggle.removeAttribute("aria-hidden");
+    if (nav && !nav.__deptHomeClick) {
+      nav.__deptHomeClick = true;
+      nav.addEventListener("touchstart", function (e) {
+        var btn = e.target && e.target.closest ? e.target.closest("[data-dept-nav]") : null;
+        if (!btn) return;
+        touchArmed = true;
+        pressBusy = entryInProgress();
+      }, { passive: true });
+      nav.addEventListener("mousedown", function (e) {
+        var btn = e.target && e.target.closest ? e.target.closest("[data-dept-nav]") : null;
+        if (!btn) return;
+        if (touchArmed) { touchArmed = false; return; }
+        pressBusy = entryInProgress();
+      });
+      nav.addEventListener("click", function (e) {
+        var btn = e.target && e.target.closest ? e.target.closest("[data-dept-nav]") : null;
+        if (!btn) return;
+        showHome(btn.getAttribute("data-dept-nav"));
+      });
+    }
     var view = document.getElementById("view");
     if (nav && !nav.__deptObs && typeof MutationObserver === "function") {
       var nobs = new MutationObserver(onNav);
@@ -536,10 +561,11 @@
       document.documentElement.__deptNavClick = true;
       document.addEventListener("click", function (e) {
         var t = e.target && e.target.closest ? e.target.closest("#nav .navitem") : null;
-        if (!t || t.id === "dept-release") return;
+        if (!t || t.id === "dept-release" || t.getAttribute("data-dept-nav")) return;
         if (homeId) homeId = "";
         barCurrent = deptOfNav(t);
         markBar();
+        paintDeptActive();
       }, true);
     }
     if (!window.__deptResize) {
