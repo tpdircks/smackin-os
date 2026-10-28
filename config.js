@@ -9,6 +9,7 @@ window.SMACKIN_CONFIG = {
   SUPABASE_ANON_KEY: "sb_publishable_KlPxfCQUmxbIAVc2p_M5Lw_ligy0COY",
   ORG_NAME: "Smackin' Snacks — SLC Fulfillment"
   // Shipments are synced by the shipping-sync edge function.
-  // SHIPPING_PROVIDER on that function selects shipstation or globalship.
+  // SHIPPING_PROVIDER selects the adapter. Today: xpo,worldwide.
+  // Later: easypost. shipstation and globalship stay selectable.
   // Credentials are not stored here.
 };

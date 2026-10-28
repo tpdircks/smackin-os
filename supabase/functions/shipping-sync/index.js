@@ -1,6 +1,7 @@
 // Shipping provider poll. Server-side only.
 // Secrets: SHIPSTATION_API_KEY, SHIPSTATION_API_SECRET.
-// Provider: SHIPPING_PROVIDER=shipstation (default) or globalship (stub).
+// Provider: SHIPPING_PROVIDER. Today the default is xpo,worldwide.
+// easypost is a stub for the later swap. shipstation and globalship stay selectable.
 // Writes normalized rows to shipping_log. Cursor and last run live in kv_status.
 // The browser never receives the API key or secret.
 var PUBLISHABLE = "sb_publishable_KlPxfCQUmxbIAVc2p_M5Lw_ligy0COY";
@@ -284,7 +285,7 @@ var shipstation = {
     var key = Deno.env.get("SHIPSTATION_API_KEY") || "";
     var secret = Deno.env.get("SHIPSTATION_API_SECRET") || "";
     if (!key || !secret) {
-      return { missingSecrets: true, shipments: [], orders: [], complete: false };
+      return { missingSecrets: true, message: "ShipStation is not connected yet. Set SHIPSTATION_API_KEY and SHIPSTATION_API_SECRET on the shipping-sync function.", shipments: [], orders: [], complete: false };
     }
     var auth = basicAuth(key, secret);
     var started = Date.now();
@@ -336,11 +337,120 @@ var globalship = {
   }
 };
 
+// EasyPost replaces the carrier adapters later. Same contract, no client yet.
+var easypost = {
+  id: "easypost",
+  label: "EasyPost",
+  stub: true,
+  async fetchUpdated() {
+    return { stub: true, shipments: [], orders: [], complete: true, rawShipments: [], rawOrders: [], message: "EasyPost is not connected yet." };
+  }
+};
+
+// XPO and Worldwide Express are the current carriers. The browser links tracking
+// numbers to their public pages. The pull stays inside fetchUpdated so a real
+// client can be dropped in without changing the sync loop. Until that client
+// exists, a missing key is reported and nothing is written.
+function pendingCarrier(id, label, envName) {
+  return {
+    id: id,
+    label: label,
+    stub: false,
+    async fetchUpdated() {
+      var key = String(Deno.env.get(envName) || "").trim();
+      var message = key
+        ? (label + " key is set, but the pull client is not wired yet.")
+        : (label + " is not connected yet. Set " + envName + " on the shipping-sync function.");
+      return { missingSecrets: true, message: message, shipments: [], orders: [], complete: false };
+    }
+  };
+}
+var xpo = pendingCarrier("xpo", "XPO", "XPO_API_KEY");
+var worldwide = pendingCarrier("worldwide", "Worldwide Express", "WWEX_API_KEY");
+
+var PROVIDERS = {
+  shipstation: shipstation,
+  globalship: globalship,
+  xpo: xpo,
+  worldwide: worldwide,
+  wwex: worldwide,
+  worldwideexpress: worldwide,
+  easypost: easypost
+};
+
+function resolveOne(id) {
+  var key = String(id || "").trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (PROVIDERS[key]) return PROVIDERS[key];
+  return { id: id || "unknown", label: id || "unknown", stub: true, unknown: true, fetchUpdated: globalship.fetchUpdated };
+}
+
+function combineProviders(list) {
+  var unknown = list.filter(function (p) { return p.unknown; });
+  if (unknown.length) return unknown[0];
+  return {
+    id: list.map(function (p) { return p.id; }).join("+"),
+    label: list.map(function (p) { return p.label; }).join(" and "),
+    stub: list.every(function (p) { return p.stub; }),
+    async fetchUpdated(cursor) {
+      var saved = (cursor && cursor.parts) || {};
+      var shipments = [];
+      var orders = [];
+      var nextParts = {};
+      var pages = {};
+      var notes = [];
+      var complete = true;
+      var anyRows = false;
+      for (var i = 0; i < list.length; i++) {
+        var adapter = list[i];
+        if (adapter.stub) {
+          notes.push(adapter.label + " is not connected yet.");
+          nextParts[adapter.id] = saved[adapter.id] || {};
+          continue;
+        }
+        var pack = await adapter.fetchUpdated(saved[adapter.id] || {});
+        nextParts[adapter.id] = pack.next || saved[adapter.id] || {};
+        if (pack.pages) pages[adapter.id] = pack.pages;
+        if (pack.message) notes.push(pack.message);
+        else if (pack.missingSecrets) notes.push(adapter.label + " is not connected yet.");
+        var got = (pack.shipments || []).concat(pack.orders || []);
+        if (got.length) anyRows = true;
+        shipments = shipments.concat(pack.shipments || []);
+        orders = orders.concat(pack.orders || []);
+        if (pack.complete === false) complete = false;
+      }
+      var message = notes.filter(Boolean).join(" ");
+      if (!anyRows && notes.length) {
+        return { missingSecrets: true, message: message, shipments: [], orders: [], complete: false, next: { parts: nextParts } };
+      }
+      return {
+        missingSecrets: false,
+        message: message,
+        shipments: shipments,
+        orders: orders,
+        next: { parts: nextParts },
+        complete: complete,
+        pages: pages,
+        rawShipments: [],
+        rawOrders: []
+      };
+    }
+  };
+}
+
 function providerOf() {
-  var id = String(Deno.env.get("SHIPPING_PROVIDER") || "shipstation").trim().toLowerCase();
-  if (id === "globalship") return globalship;
-  if (id === "shipstation") return shipstation;
-  return { id: id, label: id, stub: true, unknown: true, fetchUpdated: globalship.fetchUpdated };
+  var raw = String(Deno.env.get("SHIPPING_PROVIDER") || "xpo,worldwide").trim().toLowerCase();
+  var ids = raw.split(/[,+|]/).map(function (s) { return s.trim(); }).filter(Boolean);
+  if (!ids.length) ids = ["xpo", "worldwide"];
+  if (ids.length === 1) return resolveOne(ids[0]);
+  var list = [];
+  var seen = {};
+  ids.forEach(function (id) {
+    var adapter = resolveOne(id);
+    if (seen[adapter.id]) return;
+    seen[adapter.id] = true;
+    list.push(adapter);
+  });
+  return combineProviders(list);
 }
 
 async function rowsForMarker(markerText) {
@@ -411,11 +521,12 @@ async function writeRows(recs) {
   return { written: updated + inserted, updated: updated, inserted: inserted };
 }
 function cursorOf(saved, providerId) {
-  if (!saved || saved.provider !== providerId) return { shipments: "", voids: "", orders: "" };
+  if (!saved || saved.provider !== providerId) return { shipments: "", voids: "", orders: "", parts: {} };
   return {
     shipments: saved.shipments || "",
     voids: saved.voids || "",
-    orders: saved.orders || ""
+    orders: saved.orders || "",
+    parts: saved.parts || {}
   };
 }
 
@@ -462,17 +573,13 @@ Deno.serve(async function (req) {
         ok: false,
         provider: provider.id,
         label: provider.label,
-        message: "SHIPSTATION_API_KEY and SHIPSTATION_API_SECRET are not set on the shipping-sync function."
+        stub: !!pack.stub,
+        message: pack.message || (provider.label + " is not connected yet.")
       });
-      return json({ ok: false, error: "missing_secrets" });
+      return json({ ok: false, error: "missing_secrets", provider: provider.id, message: pack.message || "" });
     }
     var wrote = await writeRows((pack.shipments || []).concat(pack.orders || []));
-    var nextCursor = {
-      provider: provider.id,
-      shipments: pack.next.shipments,
-      voids: pack.next.voids,
-      orders: pack.next.orders
-    };
+    var nextCursor = Object.assign({ provider: provider.id }, pack.next || {});
     await setKv("shipping:cursor", nextCursor);
     var summary = {
       at: new Date().toISOString(),
@@ -486,7 +593,8 @@ Deno.serve(async function (req) {
       inserted: wrote.inserted,
       updated: wrote.updated,
       complete: pack.complete,
-      pages: pack.pages
+      pages: pack.pages,
+      message: pack.message || ""
     };
     await setKv("shipping:last_sync", summary);
     console.log("shipping-sync provider=" + provider.id + " shipments=" + summary.shipments + " orders=" + summary.orders + " written=" + summary.written);

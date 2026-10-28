@@ -48,19 +48,24 @@ window.DB = (function () {
   }
   let lastLoadAt = 0;
   let refreshTimer = null;
+  let loadGate = null;
+  let loadAgain = false;
   function noteLoaded() { lastLoadAt = Date.now(); }
-  async function refreshFromCloud(force) {
+  async function refreshFromCloud() {
     if (mode !== "cloud" || !sb) return;
-    if (!force && Date.now() - lastLoadAt < 1500) return;
-    lastLoadAt = Date.now();
+    // A load already in flight may have read before this change committed.
+    // Fold into that load so it runs once more, instead of dropping the event.
+    if (loadGate) { loadAgain = true; return loadGate; }
     try { await cloud.loadAll(); noteLoaded(); emit(); }
     catch (e) { console.warn("refresh failed", e); }
   }
   // One reload for a burst of realtime events. Polling is not used.
+  // The timer always forces a reload. The old 1.5s gate dropped events that
+  // arrived while a load was running, so an open screen kept the previous cache.
   function scheduleRefresh() {
     if (mode !== "cloud") return;
     if (refreshTimer) return;
-    refreshTimer = setTimeout(function () { refreshTimer = null; refreshFromCloud(false); }, 600);
+    refreshTimer = setTimeout(function () { refreshTimer = null; refreshFromCloud(); }, 600);
   }
   function bindFocusRefresh() {
     if (bindFocusRefresh.done) return;
@@ -173,31 +178,101 @@ window.DB = (function () {
   };
 
   // ---------- CLOUD backend (Supabase) ----------
+  // PostgREST returns at most 1000 rows per request and does not error when
+  // .limit() asks for more. Page with a unique trailing sort so a screen that
+  // asks for 3000 rows actually receives them. cap null means "the whole table"
+  // up to a safety ceiling.
+  const PAGE_ROWS = 1000;
+  const READ_CEILING = 20000;
+  async function readRows(make, cap) {
+    const max = cap == null ? READ_CEILING : cap;
+    const rows = [];
+    let from = 0;
+    while (rows.length < max) {
+      const size = Math.min(PAGE_ROWS, max - rows.length);
+      const res = await make().range(from, from + size - 1);
+      if (res && res.error) throw new Error(res.error.message || "Cloud read failed");
+      const part = (res && res.data) || [];
+      for (let i = 0; i < part.length; i++) rows.push(part[i]);
+      if (part.length < size) break;
+      from += part.length;
+    }
+    return { data: rows, error: null };
+  }
+  // Newest shipments fill the archive window. One-off rows (not sync:*) have
+  // older ship dates, so a newest-N read drops them once ShipStation rows pass
+  // the page size. Always union those rows back in.
+  async function loadShippingLog() {
+    const recent = await readRows(function () {
+      return sb.from("shipping_log").select("*").order("ship_date", { ascending: false }).order("id", { ascending: false });
+    }, 3000);
+    let manual = [];
+    try {
+      const extra = await readRows(function () {
+        return sb.from("shipping_log").select("*").or("entered_by.is.null,entered_by.not.like.sync:*").order("id", { ascending: true });
+      }, 2000);
+      manual = extra.data || [];
+    } catch (e) { manual = []; }
+    const seen = {};
+    const rows = [];
+    manual.concat(recent.data || []).forEach(function (r) {
+      const id = String(r && r.id);
+      if (seen[id]) return;
+      seen[id] = true;
+      rows.push(r);
+    });
+    return { data: rows, error: null };
+  }
   const cloud = {
+    // Overlapping loadAll calls used to finish out of order and write an older
+    // snapshot over a newer one. One load runs at a time. A change that arrives
+    // mid-load sets another pass instead of starting a second race.
     async loadAll() {
+      if (loadGate) { loadAgain = true; return loadGate; }
+      const self = this;
+      loadGate = (async function () {
+        let passes = 0;
+        try {
+          do {
+            loadAgain = false;
+            await self.loadAllOnce();
+            passes++;
+          } while (loadAgain && passes < 3);
+        } finally {
+          const more = loadAgain;
+          loadGate = null;
+          if (more) scheduleRefresh();
+        }
+      })();
+      return loadGate;
+    },
+    async loadAllOnce() {
       const [it, su, st, lg, po, pl, sl, od, rd, sp, odc, con, sdl, sbd, slog, rlog, imp, pday, ppal, refd, dmd, rtl] = await Promise.all([
-        sb.from("items").select("*"),
-        sb.from("suppliers").select("*"),
-        sb.from("stock").select("*"),
-        sb.from("transactions").select("*").order("ts", { ascending: false }).limit(500),
-        sb.from("purchase_orders").select("*").order("created_at", { ascending: false }),
-        sb.from("po_lines").select("*"),
-        sb.from("seasoning_lots").select("*").order("exp", { ascending: true }),
-        sb.from("orders").select("*").order("created_at", { ascending: false }).limit(2000),
-        sb.from("rd_requests").select("*").order("created_at", { ascending: false }).limit(2000),
-        sb.from("supplier_pos").select("*").order("created_at", { ascending: false }).limit(2000),
-        sb.from("order_docs").select("*").order("created_at", { ascending: false }).limit(3000),
-        sb.from("consumption").select("*").order("created_at", { ascending: false }).limit(3000),
-        sb.from("seed_lots").select("*").order("created_at", { ascending: false }).limit(3000),
-        sb.from("stock_build").select("*").limit(500),
-        sb.from("shipping_log").select("*").order("ship_date", { ascending: false }).limit(3000),
-        sb.from("receiving_log").select("*").order("recv_date", { ascending: false }).limit(3000),
-        sb.from("improvements").select("*").order("created_at", { ascending: false }).limit(3000),
-        sb.from("production_days").select("*").limit(2000),
-        sb.from("production_pallets").select("*").order("created_at", { ascending: false }).limit(5000),
-        sb.from("reference_docs").select("*").order("created_at", { ascending: false }).limit(2000),
-        sb.from("demand_lines").select("*").order("created_at", { ascending: false }).limit(6000),
-        sb.from("returns_log").select("*").order("created_at", { ascending: false }).limit(5000)
+        readRows(function () { return sb.from("items").select("*").order("id", { ascending: true }); }),
+        readRows(function () { return sb.from("suppliers").select("*").order("id", { ascending: true }); }),
+        readRows(function () { return sb.from("stock").select("*").order("item_id", { ascending: true }).order("location", { ascending: true }).order("lot", { ascending: true }); }),
+        readRows(function () { return sb.from("transactions").select("*").order("ts", { ascending: false }).order("id", { ascending: false }); }, 500),
+        readRows(function () { return sb.from("purchase_orders").select("*").order("created_at", { ascending: false }).order("id", { ascending: false }); }),
+        readRows(function () { return sb.from("po_lines").select("*").order("po_id", { ascending: true }).order("item_id", { ascending: true }); }),
+        readRows(function () { return sb.from("seasoning_lots").select("*").order("exp", { ascending: true }).order("id", { ascending: true }); }),
+        // Orders feed the Orders board and the Shipping Log paperwork rows.
+        // The old limit of 2000 was already short of the live table, and the
+        // server was only returning the first 1000.
+        readRows(function () { return sb.from("orders").select("*").order("created_at", { ascending: false }).order("id", { ascending: false }); }, 10000),
+        readRows(function () { return sb.from("rd_requests").select("*").order("created_at", { ascending: false }).order("id", { ascending: false }); }, 2000),
+        readRows(function () { return sb.from("supplier_pos").select("*").order("created_at", { ascending: false }).order("id", { ascending: false }); }, 2000),
+        readRows(function () { return sb.from("order_docs").select("*").order("created_at", { ascending: false }).order("id", { ascending: false }); }, 3000),
+        readRows(function () { return sb.from("consumption").select("*").order("created_at", { ascending: false }).order("id", { ascending: false }); }, 3000),
+        readRows(function () { return sb.from("seed_lots").select("*").order("created_at", { ascending: false }).order("id", { ascending: false }); }, 3000),
+        readRows(function () { return sb.from("stock_build").select("*").order("item_key", { ascending: true }); }, 500),
+        loadShippingLog(),
+        readRows(function () { return sb.from("receiving_log").select("*").order("recv_date", { ascending: false }).order("id", { ascending: false }); }, 3000),
+        readRows(function () { return sb.from("improvements").select("*").order("created_at", { ascending: false }).order("id", { ascending: false }); }, 3000),
+        readRows(function () { return sb.from("production_days").select("*").order("prod_date", { ascending: false }).order("channel", { ascending: true }); }, 2000),
+        readRows(function () { return sb.from("production_pallets").select("*").order("created_at", { ascending: false }).order("id", { ascending: false }); }, 5000),
+        readRows(function () { return sb.from("reference_docs").select("*").order("created_at", { ascending: false }).order("id", { ascending: false }); }, 2000),
+        readRows(function () { return sb.from("demand_lines").select("*").order("created_at", { ascending: false }).order("id", { ascending: false }); }, 6000),
+        readRows(function () { return sb.from("returns_log").select("*").order("created_at", { ascending: false }).order("id", { ascending: false }); }, 5000)
       ]);
       cache.items = it.data || [];
       cache.suppliers = su.data || [];
@@ -290,7 +365,7 @@ window.DB = (function () {
       }));
       // production_output loaded separately + resiliently so a missing table never breaks the app shell
       try {
-        const pr = await sb.from("production_output").select("*").order("created_at", { ascending: false }).limit(6000);
+        const pr = await readRows(function () { return sb.from("production_output").select("*").order("created_at", { ascending: false }).order("id", { ascending: false }); }, 6000);
         cache.prodOut = (pr && pr.data ? pr.data : []).map(r => ({
           id: r.id, prod_date: r.prod_date, dept: r.dept, shift: Number(r.shift) || 1,
           flavor: r.flavor || "", bags: Number(r.bags) || 0, cases: Number(r.cases) || 0,
@@ -299,7 +374,7 @@ window.DB = (function () {
       } catch (e) { cache.prodOut = cache.prodOut || []; }
       // line_status (Now Running floor board) loaded separately + resiliently so a missing table never breaks the app shell
       try {
-        const lsr = await sb.from("line_status").select("*").order("sort", { ascending: true });
+        const lsr = await readRows(function () { return sb.from("line_status").select("*").order("sort", { ascending: true }).order("id", { ascending: true }); });
         cache.lineStatus = (lsr && lsr.data ? lsr.data : []).map(r => ({
           id: r.id, area: r.area || "", machine: r.machine || "", flavor: r.flavor || "",
           size: r.size || "", status: r.status || "idle", sort: Number(r.sort) || 0,
@@ -309,7 +384,7 @@ window.DB = (function () {
       } catch (e) { cache.lineStatus = cache.lineStatus || []; }
       // demand_forecast (WIP FORECAST snapshot, compare-only) loaded separately + resiliently so a missing table never breaks the app shell
       try {
-        const fc = await sb.from("demand_forecast").select("*");
+        const fc = await readRows(function () { return sb.from("demand_forecast").select("*").order("id", { ascending: true }); });
         cache.forecast = (fc && fc.data ? fc.data : []).map(r => ({
           flavor: r.flavor || "", size: r.size || "", forecast_bags: Number(r.forecast_bags) || 0,
           source_month: r.source_month || ""
@@ -318,7 +393,7 @@ window.DB = (function () {
       // ecom_demand (ShipStation e-com bags-needed-per-flavor snapshot) loaded separately + resiliently
       // so a missing table never breaks the app shell (same pattern as demand_forecast above).
       try {
-        const ecd = await sb.from("ecom_demand").select("*");
+        const ecd = await readRows(function () { return sb.from("ecom_demand").select("*").order("id", { ascending: true }); });
         cache.ecomDemand = (ecd && ecd.data ? ecd.data : []).map(r => ({
           id: r.id, flavor: r.flavor || "", size: r.size || "", bags: Number(r.bags) || 0,
           period_days: Number(r.period_days) || 0, avg_day: Number(r.avg_day) || 0,
@@ -329,7 +404,7 @@ window.DB = (function () {
       // short-dated dispositions ("sd:<id>"), so those sync to every screen. Resilient: a missing
       // table just leaves the app on localStorage until the table is created (one-time SQL).
       try {
-        const kvr = await sb.from("kv_status").select("*").limit(5000);
+        const kvr = await readRows(function () { return sb.from("kv_status").select("*").order("key", { ascending: true }); }, 5000);
         if (kvr && kvr.error) throw kvr.error;    // table missing -> stay on localStorage
         cache.kv = {}; (kvr && kvr.data ? kvr.data : []).forEach(r => { cache.kv[r.key] = r.value; });
         cache.kvCloud = true;
@@ -337,7 +412,7 @@ window.DB = (function () {
       // production_orders: new POs Allen creates in-app (flexible JSON blob). Resilient: falls back to
       // localStorage until the table exists. Merged with the imported PROD_ORDERS seed on the board.
       try {
-        const por = await sb.from("production_orders").select("*").order("created_at", { ascending: false }).limit(2000);
+        const por = await readRows(function () { return sb.from("production_orders").select("*").order("created_at", { ascending: false }).order("id", { ascending: false }); }, 2000);
         if (por && por.error) throw por.error;
         cache.prodOrders = (por && por.data ? por.data : []).map(r => r.data || r);
         cache.poCloud = true;
@@ -348,7 +423,7 @@ window.DB = (function () {
       // quality_logs: CCP monitoring records (allergen changeover, label check, metal detector). Flexible JSON,
       // resilient with localStorage fallback until the table is created.
       try {
-        const qlr = await sb.from("quality_logs").select("*").order("created_at", { ascending: false }).limit(3000);
+        const qlr = await readRows(function () { return sb.from("quality_logs").select("*").order("created_at", { ascending: false }).order("id", { ascending: false }); }, 3000);
         if (qlr && qlr.error) throw qlr.error;
         cache.qualityLogs = (qlr && qlr.data ? qlr.data : []).map(r => r.data || r);
       } catch (e) {
@@ -357,7 +432,7 @@ window.DB = (function () {
       // sku_catalog: curated overlay for the SKU Lookup (image + Spanish contents/notes per SKU),
       // plus brand-new SKUs not in the built-in list. Resilient: falls back to localStorage.
       try {
-        const scr = await sb.from("sku_catalog").select("*");
+        const scr = await readRows(function () { return sb.from("sku_catalog").select("*").order("sku", { ascending: true }); });
         if (scr && scr.error) throw scr.error;
         cache.skuCatalog = {}; (scr && scr.data ? scr.data : []).forEach(r => { cache.skuCatalog[String(r.sku).toUpperCase()] = r; });
       } catch (e) {
@@ -366,7 +441,7 @@ window.DB = (function () {
       // maintenance_items (Maintenance request + project tracker) loaded separately + resiliently
       // so a missing table never breaks the app shell (same pattern as demand_forecast above).
       try {
-        const mnt = await sb.from("maintenance_items").select("*").order("created_at", { ascending: false }).limit(3000);
+        const mnt = await readRows(function () { return sb.from("maintenance_items").select("*").order("created_at", { ascending: false }).order("id", { ascending: false }); }, 3000);
         cache.maintenance = (mnt && mnt.data ? mnt.data : []).map(r => ({
           id: r.id, title: r.title, mtype: r.mtype, area: r.area, priority: r.priority || "Medium",
           status: r.status || "Requested", assignee: r.assignee, waiting_on: r.waiting_on,
@@ -378,7 +453,7 @@ window.DB = (function () {
       // fulfillment_daily (Daily Fulfillment tracker: e-com labels/person + Amazon FBA units->bags + notes)
       // loaded separately + resiliently so a missing table never breaks the app shell.
       try {
-        const fd = await sb.from("fulfillment_daily").select("*").order("fdate", { ascending: false }).limit(400);
+        const fd = await readRows(function () { return sb.from("fulfillment_daily").select("*").order("fdate", { ascending: false }).order("id", { ascending: false }); }, 400);
         cache.fulfillmentDaily = (fd && fd.data ? fd.data : []).map(r => ({
           id: r.id, fdate: r.fdate,
           ecom_labels: typeof r.ecom_labels === "string" ? JSON.parse(r.ecom_labels || "[]") : (r.ecom_labels || []),

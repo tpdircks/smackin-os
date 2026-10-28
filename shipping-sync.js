@@ -1,7 +1,7 @@
 /* ============================================================================
    Smackin' OS - Shipments view  (shipping-sync.js)
    Reads shipping_log and kv_status written by the shipping-sync edge function.
-   The browser does not call ShipStation and does not fetch credentials.
+   The browser does not call XPO, Worldwide Express, or EasyPost and does not fetch credentials.
    The nav item is kept by a MutationObserver on #nav. No DOM timers.
    ========================================================================== */
 (function () {
@@ -65,15 +65,31 @@
     else if (s === "voided" || s === "cancelled" || s === "canceled") cls = "out";
     return '<span class="pill ' + cls + '">' + esc(prettyStatus(status)) + "</span>";
   }
+  function providerLabel(sync) {
+    if (sync && sync.label) return String(sync.label);
+    if (sync && sync.provider) return String(sync.provider);
+    return "the shipping provider";
+  }
+  function trackHref(carrier, num) {
+    var n = encodeURIComponent(String(num || "").trim());
+    if (!n) return "";
+    var c = String(carrier || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+    if (c.indexOf("XPO") === 0) return "https://ltl.xpo.com/webapp/manifestrpts_p_app/shipmentTracking.do?PRO=" + n;
+    if (c.indexOf("WORLDWIDE") === 0 || c === "WWEX" || c.indexOf("SPEEDSHIP") === 0) return "https://track.speedship.com/#" + n;
+    if (c.indexOf("UPS") === 0) return "https://www.ups.com/track?tracknum=" + n;
+    if (c.indexOf("FEDEX") === 0) return "https://www.fedex.com/fedextrack/?trknbr=" + n;
+    if (c.indexOf("USPS") === 0) return "https://tools.usps.com/go/TrackConfirmAction?tLabels=" + n;
+    if (c.indexOf("DHL") === 0) return "https://www.dhl.com/us-en/home/tracking.html?tracking-id=" + n;
+    return "";
+  }
   function banner(sync, rowCount) {
     if (sync && sync.stub) {
       return '<div class="shs-banner shs-wait">' + esc(sync.message || ((sync.label || "Shipping") + " is not connected yet.")) + "</div>";
     }
-    var provider = sync && sync.provider;
-    var shipstation = !provider || provider === "shipstation";
-    var connected = shipstation && (rowCount > 0 || (sync && sync.ok));
+    var named = sync && (sync.provider || sync.label);
+    var connected = named && (rowCount > 0 || sync.ok || sync.at);
     if (connected) {
-      var parts = ["Connected to ShipStation."];
+      var parts = ["Connected to " + providerLabel(sync) + "."];
       if (sync && sync.at) parts.push("Last sync " + when(sync.at) + ".");
       if (sync && (sync.shipments != null || sync.orders != null)) {
         var nShip = Number(sync.shipments) || 0;
@@ -83,8 +99,8 @@
       var html = '<div class="shs-banner ' + (sync && sync.ok === false ? "shs-wait" : "shs-ok") + '">' + esc(parts.join(" "));
       if (sync && sync.ok === false) {
         html += "<br>" + esc("The latest run did not finish.");
-        if (sync.message) html += "<br>" + esc(sync.message);
       }
+      if (sync && sync.message) html += "<br>" + esc(sync.message);
       return html + "</div>";
     }
     if (sync && sync.ok === false) {
@@ -92,7 +108,7 @@
         (sync.at ? " " + esc("Last sync " + when(sync.at) + ".") : "") +
         (sync.message ? "<br>" + esc(sync.message) : "") + "</div>";
     }
-    return '<div class="shs-banner shs-wait">ShipStation sync has not run yet. Shipments appear here after the server sync.</div>';
+    return '<div class="shs-banner shs-wait">' + esc(providerLabel(sync) + " sync has not run yet. Shipments appear here after the server sync.") + "</div>";
   }
   function load() {
     var client = sbClient();
@@ -131,7 +147,10 @@
         "<td><b>" + esc(r.recipient || "") + "</b></td>" +
         "<td>" + esc(r.carrier || "") + "</td>" +
         "<td>" + esc(r.ship_type || "") + "</td>" +
-        "<td class=\"sm\">" + esc(r.tracking || "") + "</td>" +
+        "<td class=\"sm\">" + (function () {
+          var href = trackHref(r.carrier, r.tracking);
+          return href ? '<a href="' + href + '" target="_blank" rel="noopener">' + esc(r.tracking || "") + "</a>" : esc(r.tracking || "");
+        })() + "</td>" +
         '<td class="right">' + esc(money(r.cost)) + "</td>" +
         "<td>" + statusPill(r.status) + "</td>" +
         "<td class=\"sm\">" + esc(r.contents || "") + "</td></tr>";
@@ -146,7 +165,7 @@
     var token = ++state.token;
     styleOnce();
     host.innerHTML = '<div class="card"><h2>Shipments</h2>' +
-      '<p class="hint">The server syncs ShipStation into this list. This screen only reads the database. Open it again to refresh.</p>' +
+      '<p class="hint">The server syncs the selected shipping provider into this list. This screen only reads the database.</p>' +
       '<div id="shs-sync"><p class="muted">Loading...</p></div>' +
       '<div id="shs-body"></div></div>';
     load().then(function (pack) {

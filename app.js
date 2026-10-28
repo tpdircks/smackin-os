@@ -527,7 +527,7 @@
   const ODOC_TYPES = ["BOL","Packing List","Pull Sheet","Labels","Commercial Invoice","ASN","Other"];
   const ODOC_UPLOADERS = ["Javier","Ken","Adriana","Jesus","Troy"];
   const SHIP_TYPES = ["Sample","Customer Order","Replacement","Event","Retail","Other"];
-  const SHIP_CARRIERS = ["UPS","FedEx","USPS","XPO","DHL","Other"];
+  const SHIP_CARRIERS = ["UPS","FedEx","USPS","XPO","Worldwide Express","DHL","Other"];
   const SHIP_STATUSES = ["Pending","Shipped","Delivered","Returned"];
   const SHIP_REQUESTERS = ["Matt","Troy","Brittney","Ken","Javier","Adriana","Jesus","Other"];
   const RECV_LOG_CONDITIONS = ["Good","Damaged","Short","Over","Hold"];
@@ -571,14 +571,27 @@
   function flavorImgAny(text) { const t = String(text || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, ""); const keys = Object.keys(FLAVOR_IMG).sort((a, b) => b.length - a.length); for (const k of keys) { if (t.indexOf(k) >= 0) return FLAVOR_IMG[k]; } return ""; }
   // Flavor-name cell with an optional small bag thumbnail
   function flavCell(name, img, small) { const cls = small ? "flavimg sm" : "flavimg"; return '<div class="flavcell">' + (img ? '<img class="' + cls + '" src="' + img + '" loading="lazy" alt="">' : '') + '<b>' + esc(name) + '</b></div>'; }
+  function carrierKey(carrier) {
+    const c = String(carrier || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+    if (c.indexOf("XPO") === 0) return "XPO";
+    if (c.indexOf("WORLDWIDE") === 0 || c === "WWEX" || c.indexOf("SPEEDSHIP") === 0) return "WWEX";
+    if (c.indexOf("FEDEX") === 0) return "FEDEX";
+    if (c.indexOf("USPS") === 0) return "USPS";
+    if (c.indexOf("DHL") === 0) return "DHL";
+    if (c.indexOf("UPS") === 0) return "UPS";
+    return c;
+  }
   function trackingUrl(carrier, num) {
     if (!num) return "";
     const n = encodeURIComponent(String(num).trim());
-    switch ((carrier || "").toUpperCase()) {
+    switch (carrierKey(carrier)) {
       case "UPS": return "https://www.ups.com/track?tracknum=" + n;
       case "FEDEX": return "https://www.fedex.com/fedextrack/?trknbr=" + n;
       case "USPS": return "https://tools.usps.com/go/TrackConfirmAction?tLabels=" + n;
       case "DHL": return "https://www.dhl.com/us-en/home/tracking.html?tracking-id=" + n;
+      case "XPO": return "https://ltl.xpo.com/webapp/manifestrpts_p_app/shipmentTracking.do?PRO=" + n;
+      // SpeedShip has no public number-in-the-URL. The hash keeps the PRO with the link.
+      case "WWEX": return "https://track.speedship.com/#" + n;
       default: return "";
     }
   }
