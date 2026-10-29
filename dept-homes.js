@@ -610,10 +610,11 @@
   function openSupplierPos() {
     var rlog = arr(function () { return DB.receivingLog(); });
     var out = [];
-    arr(function () { return DB.supplierPos(); }).forEach(function (po) {
+    var spos = arr(function () { return DB.supplierPos(); });
+    spos.forEach(function (po) {
       var derived = null;
-      try { if (window.POSTATUS && POSTATUS.derive) derived = POSTATUS.derive(po, rlog); } catch (e) { derived = null; }
-      if (derived && derived.status !== "open") return;
+      try { if (window.POSTATUS && POSTATUS.derive) derived = POSTATUS.derive(po, rlog, spos); } catch (e) { derived = null; }
+      if (derived && derived.status !== "open" && derived.status !== "partial") return;
       if (!derived && /\b(cancel+ed|cancel|void(ed)?)\b/i.test(String(po.notes || ""))) return;
       var raw = linesOf(po);
       var openLines = [];
@@ -632,6 +633,8 @@
       });
       if (raw.length && !openLines.length) return;
       var expect = openLines.map(function (l) { return l.ship; }).filter(Boolean).sort()[0] || String(po.expected || "").slice(0, 10);
+      var chip = "";
+      try { if (window.POSTATUS && POSTATUS.statusLabel) chip = POSTATUS.statusLabel(po.notes); } catch (eChip) { chip = ""; }
       out.push({
         num: po.po_num || po.id || "",
         vendor: po.vendor || "",
@@ -639,7 +642,9 @@
         expect: expect,
         lines: openLines,
         outstanding: outstanding,
-        nLines: openLines.length
+        nLines: openLines.length,
+        partial: !!(derived && derived.status === "partial"),
+        statusLabel: chip
       });
     });
     arr(function () { return DB.purchaseOrders(); }).forEach(function (po) {
@@ -680,7 +685,10 @@
         });
         var extra = r.lines.length > 3 ? '<div class="df-meta">+' + (r.lines.length - 3) + " more</div>" : "";
         return [
-          "<b>" + esc(r.num || "-") + "</b>" + (r.legacy ? '<div class="df-meta">Legacy PO</div>' : ""),
+          "<b>" + esc(r.num || "-") + "</b>" +
+            (r.partial ? ' <span class="pill partial">Partially received</span>' : "") +
+            (r.statusLabel ? ' <span class="pill status">' + esc(r.statusLabel) + '</span>' : "") +
+            (r.legacy ? '<div class="df-meta">Legacy PO</div>' : ""),
           esc(r.vendor || "-"),
           esc(r.expect || "-"),
           "<b>" + fmt(r.outstanding) + "</b>" + '<div class="df-meta">' + r.nLines + (r.nLines === 1 ? " line" : " lines") + "</div>" +

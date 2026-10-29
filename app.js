@@ -1580,7 +1580,8 @@
       const dl = s.file_url ? '<a class="order sm" href="' + s.file_url + '" target="_blank" rel="noopener">' + L("spoDownload") + '</a>' : (s.file_name ? '<span class="muted sm">' + s.file_name + '</span>' : "&mdash;");
       const poCell = '<a class="polink" onclick="UI.spoOpen(\'' + s.id + '\')" title="' + L("spoOpenDetails") + '">' + (s.po_num || L("spoView2")) + '</a>';
       const _np = /^NP-/.test(s.po_num || ""); const _eta = etaOfNotes(s.notes);
-      const _tags = (_np ? ' <span class="pill">' + L("nonPoTag") + '</span>' : "") + (_eta ? ' <span class="pill low">ETA ' + _eta.slice(5).replace("-", "/") + '</span>' : "");
+      const _status = (window.POSTATUS && POSTATUS.statusPill) ? POSTATUS.statusPill(s.notes) : "";
+      const _tags = (_np ? ' <span class="pill">' + L("nonPoTag") + '</span>' : "") + (_eta ? ' <span class="pill low">ETA ' + _eta.slice(5).replace("-", "/") + '</span>' : "") + _status;
       return '<tr data-txt="' + txt + '"><td><b>' + (s.vendor || "&mdash;") + '</b>' + _tags + (window.POSTATUS ? POSTATUS.pill(s) : "") + (s.uploaded_by ? '<div class="muted sm">' + L("oByPrefix") + " " + s.uploaded_by + '</div>' : "") + '</td>' +
         '<td>' + poCell + '</td><td class="sm">' + (s.po_date || "") + '</td>' +
         '<td class="right">' + money(s.total) + '</td><td class="right muted">' + (s.item_count || 0) + '</td>' +
@@ -1588,7 +1589,8 @@
     }).join("") : '<tr><td colspan="7" class="muted">' + L("spoNone") + '</td></tr>';
     return '<div class="card"><div class="spohead"><h2>' + L("purchPOs") + '</h2>' +
       '<span><button class="primary sm" onclick="UI.poCreateOpen()">' + L("poCreate") + '</button> <button class="ghost sm" onclick="UI.nonPoOpen()">' + L("nonPoBtn") + '</button></span></div>' +
-      '<p class="hint">' + L("spoHint") + '</p>' + form + '</div>' +
+      '<p class="hint">' + L("spoHint") + '</p>' +
+      '<p class="hint">Purchasing status: set it on the PO, or put [[STATUS:Awaiting Payment]] in the notes.</p>' + form + '</div>' +
       '<div class="card"><h2 class="sub2">' + L("spoList") + ' (' + list.length + ')</h2>' + (window.POSTATUS ? POSTATUS.toggleHtml(_spoAll) : "") +
       '<input id="spoSearch" autocomplete="off" oninput="UI.spoSearch(this.value)" placeholder="' + L("spoSearchP") + '" style="margin-bottom:10px">' +
       '<table><thead><tr>' +
@@ -1602,9 +1604,42 @@
   // Parse a supplier PO's line items defensively (imports & Create-PO use slightly different keys).
   // Shared by the detail table render and the Email PO summary builder.
   // ETA / lead-time is stored inside the PO notes as a [[ETA:YYYY-MM-DD]] token (no schema change).
-  function etaOfNotes(n){ var m=/\[\[ETA:(\d{4}-\d{2}-\d{2})\]\]/.exec(n||""); return m?m[1]:""; }
-  function notesClean(n){ return String(n||"").replace(/\s*\[\[ETA:\d{4}-\d{2}-\d{2}\]\]\s*/,"").trim(); }
-  function notesWithEta(n,eta){ var base=notesClean(n); return eta?("[[ETA:"+eta+"]]"+(base?" "+base:"")):base; }
+  function etaOfNotes(n){ var m=/\[\[ETA:(\d{4}-\d{2}-\d{2})\]\]/i.exec(n||""); return m?m[1]:""; }
+  function statusOfNotes(n){
+    if (window.POSTATUS && POSTATUS.statusLabel) return POSTATUS.statusLabel(n);
+    var m=/\[\[STATUS:\s*([^\]\r\n]{1,40}?)\s*\]\]/i.exec(String(n||""));
+    return m ? m[1].replace(/\s+/g, " ").trim() : "";
+  }
+  function notesClean(n){
+    return String(n||"")
+      .replace(/\[\[ETA:\d{4}-\d{2}-\d{2}\]\]/ig, " ")
+      .replace(/\[\[STATUS:[^\]]*\]\]/ig, " ")
+      .replace(/[ \t]{2,}/g, " ")
+      .replace(/^\s+|\s+$/g, "");
+  }
+  function notesWithTags(n, eta, status){
+    var e = eta || "";
+    var s = status == null ? "" : String(status).replace(/\s+/g, " ").trim();
+    if (s.length > 40) s = s.slice(0, 40);
+    var base = notesClean(n);
+    var parts = [];
+    if (e) parts.push("[[ETA:" + e + "]]");
+    if (s) parts.push("[[STATUS:" + s + "]]");
+    if (base) parts.push(base);
+    return parts.join(" ");
+  }
+  function notesWithEta(n, eta){ return notesWithTags(n, eta, statusOfNotes(n)); }
+  function notesWithStatus(n, status){ return notesWithTags(n, etaOfNotes(n), status); }
+  const PO_STATUS_CHOICES = ["Awaiting Payment", "Pre-Production"];
+  function poPurchStatusField(s){
+    var cur = statusOfNotes(s.notes);
+    var opts = [""].concat(PO_STATUS_CHOICES);
+    if (cur && opts.indexOf(cur) < 0) opts.push(cur);
+    var html = opts.map(function (o) {
+      return '<option value="' + esc(o) + '"' + (o === cur ? " selected" : "") + '>' + (o ? esc(o) : "—") + "</option>";
+    }).join("");
+    return '<div class="podf"><span class="podl">Purchasing status</span><span class="podv"><select onchange="UI.spoSetStatus(\'' + s.id + '\', this.value)">' + html + '</select></span></div>';
+  }
   function poLinesOf(s) {
     let lines = [];
     try { const p = typeof s.lines === "string" ? JSON.parse(s.lines || "[]") : (s.lines || []); if (Array.isArray(p)) lines = p; } catch (e) {}
@@ -1736,7 +1771,7 @@
     const row = r => '<tr><td class="sm">' + esc(r.ship) + " " + (r.recv ? "" : chip(r.ship)) + "</td>" +
       "<td><b>" + esc(r.desc || r.item || "") + "</b>" + (r.item && r.desc ? '<div class="muted sm">' + esc(r.item) + "</div>" : "") + "</td>" +
       '<td class="right">' + esc(r.qty) + " " + esc(r.uom || "") + "</td>" +
-      "<td>" + esc(r.vendor || "") + '<div class="muted sm">PO ' + esc(r.po_num || "") + "</div></td>" +
+      "<td>" + esc(r.vendor || "") + '<div class="muted sm">PO ' + esc(r.po_num || "") + (r.poStatus === "partial" ? ' <span class="pill partial">Partially received</span>' : "") + "</div></td>" +
       "<td>" + (r.recv ? '<span class="pill ok">received ' + esc(r.recv_date) + "</span>" : '<button class="primary sm" onclick="UI.markReceived(\'' + r.poId + "'," + r.idx + ')">Mark received</button>') + "</td></tr>";
     const head = "<thead><tr><th>Ship date</th><th>Item</th><th class=\"right\">Qty</th><th>Vendor / PO</th><th data-nosort></th></tr></thead>";
     const openTbl = open.length ? '<table class="sortable">' + head + "<tbody>" + open.map(row).join("") + "</tbody></table>" : '<p class="muted">No open expected receipts. Ship dates flow in from POs that have per-line ship dates.</p>';
@@ -1810,7 +1845,8 @@
       fld(L("poVendorAddr"), s.vendor_addr) + fld(L("poVendorEmail"), s.vendor_email) + fld(L("poVendorPhone"), s.vendor_phone) +
       fld(L("poShipTo"), s.ship_to) + fld(L("poPreparedBy"), s.prepared_by) + fld(L("spoUploadedBy"), s.uploaded_by) +
       fld(L("when"), s.created_at ? String(s.created_at).slice(0, 10) : "") +
-      '<div class="podf"><span class="podl">' + L("poExpectedEdit") + '</span><span class="podv"><input type="date" value="' + esc(etaOfNotes(s.notes)) + '" onchange="UI.spoSetEta(\'' + s.id + '\',this.value)"></span></div>';
+      '<div class="podf"><span class="podl">' + L("poExpectedEdit") + '</span><span class="podv"><input type="date" value="' + esc(etaOfNotes(s.notes)) + '" onchange="UI.spoSetEta(\'' + s.id + '\',this.value)"></span></div>' +
+      poPurchStatusField(s);
     const totalsRows =
       (s.subtotal != null && s.subtotal !== "" ? '<div><span>' + L("poSubtotalL") + '</span><b>' + money(s.subtotal) + '</b></div>' : "") +
       (s.shipping != null && s.shipping !== "" ? '<div><span>' + L("poShippingL") + '</span><b>' + money(s.shipping) + '</b></div>' : "") +
@@ -5905,6 +5941,13 @@
       if (res && res.ok === false) return toast(res.msg || "save failed");
       toast(L("poEtaSaved")); render();
     },
+    async spoSetStatus(id, val) {
+      const s = DB.supplierPos().find(x => String(x.id) === String(id)); if (!s) return;
+      const label = String(val || "").replace(/\s+/g, " ").trim().slice(0, 40);
+      const res = await DB.updateSupplierPO(id, { notes: notesWithStatus(s.notes, label) }, opVal());
+      if (res && res.ok === false) return toast(res.msg || "save failed");
+      toast("Purchasing status saved"); render();
+    },
     poAddLine() { const tb = $("po-lines"); if (!tb) return; const i = tb.querySelectorAll("tr").length; const tr = document.createElement("tr"); tr.innerHTML = poRowInner(i); tb.appendChild(tr); },
     poRecalc() {
       let sub = 0;
@@ -5962,10 +6005,11 @@
         subtotal: String(Math.round(sub * 100) / 100), shipping: v("po-shipping"), tax: v("po-tax"), other: v("po-other"),
         total: String(Math.round(grand * 100) / 100), prepared_by: v("po-by"), notes: v("po-notes") };
       if (poEditId) {
-        // Preserve any ETA tag already stored in notes so editing the PO doesn't wipe the expected date.
+        // Preserve ETA and [[STATUS:...]] tags so editing the PO doesn't wipe them.
         const prev = DB.supplierPos().find(x => String(x.id) === String(poEditId));
-        const eta = prev ? etaOfNotes(prev.notes) : "";
-        if (eta) rec.notes = notesWithEta(rec.notes, eta);
+        const eta = (prev && etaOfNotes(prev.notes)) || etaOfNotes(rec.notes);
+        const st = (prev && statusOfNotes(prev.notes)) || statusOfNotes(rec.notes);
+        if (eta || st) rec.notes = notesWithTags(rec.notes, eta, st);
         const res = await DB.updateSupplierPO(poEditId, rec, rec.prepared_by);
         if (res && res.ok === false) return toast(res.msg || "error");
         const saved = poEditId; poEditId = null; spoView = "list"; spoDetailId = saved; toast(L("poSavedMsg")); render(); window.scrollTo(0, 0);
