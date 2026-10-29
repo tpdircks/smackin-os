@@ -137,7 +137,7 @@
     pmac: { go: "pmac", icon: "wrench", title: { en: "P-Mac", es: "P-Mac", pt: "P-Mac" }, blurb: { en: "What P-Mac needs, and usage scanned into the room.", es: "Lo que P-Mac necesita y el uso escaneado en el cuarto.", pt: "O que o P-Mac precisa e o uso lido na sala." } },
     pmacout: { go: "pmacout", icon: "package-open", title: { en: "P-Mac Log Output", es: "P-Mac Log Output", pt: "P-Mac Log Output" }, blurb: { en: "Log finished bags as they come off the line.", es: "Registre bolsas terminadas al salir de la linea.", pt: "Registre sacos prontos ao sair da linha." } },
     floor: { go: "floor", icon: "activity", title: { en: "Now Running / In Process", es: "En marcha / En proceso", pt: "Em andamento / Em processo" }, blurb: { en: "What is mixing, and what each P-Mac is running.", es: "Que se esta mezclando y que corre cada P-Mac.", pt: "O que esta misturando e o que cada P-Mac esta rodando." } },
-    prodorders: { go: "prodorders", icon: "clipboard-pen", title: { en: "Prod Orders", es: "Prod Orders", pt: "Prod Orders" }, blurb: { en: "Production orders for Mixing and P-Mac.", es: "Ordenes de produccion para Mezcla y P-Mac.", pt: "Ordens de producao para Mistura e P-Mac." } },
+    prodorders: { go: "prodorders", icon: "clipboard-pen", title: { en: "Work Orders", es: "Ordenes de trabajo", pt: "Ordens de trabalho" }, blurb: { en: "Open a work order, log bags done, and see bags demand still needs.", es: "Abra una orden de trabajo, registre bolsas hechas y vea lo que la demanda aun necesita.", pt: "Abra uma ordem de trabalho, registre sacos feitos e veja o que a demanda ainda precisa." } },
     reordertracker: { go: "reordertracker", icon: "package-search", title: { en: "Reorder Tracker", es: "Reorder Tracker", pt: "Reorder Tracker" }, blurb: { en: "Allen's pallet and bin reorder tracker.", es: "El tracker de reorden de tarimas y bins de Allen.", pt: "O tracker de reposicao de paletes e bins do Allen." } },
     launch: { go: "launch", icon: "rocket", title: { en: "Launches", es: "Launches", pt: "Launches" }, blurb: { en: "New-flavor launch calendar.", es: "Calendario de lanzamiento de sabores nuevos.", pt: "Calendario de lancamento de sabores novos." } },
     hist: { fn: "hist", icon: "history", title: { en: "Production History", es: "Production History", pt: "Production History" }, blurb: { en: "Past mixing and P-Mac runs.", es: "Corridas anteriores de mezcla y P-Mac.", pt: "Corridas anteriores de mistura e P-Mac." } },
@@ -250,9 +250,9 @@
       title: { en: "Mixing", es: "Mezcla", pt: "Mistura" },
       intro: { en: "What mixing needs, the lot station, seasoning, recipes, and production history.", es: "Lo que mezcla necesita, la estacion de lote, sazon, recetas y el historial.", pt: "O que a mistura precisa, a estacao de lote, tempero, receitas e o historico." },
       sections: [
-        { h: { en: "Floor", es: "Piso", pt: "Piso" }, tools: ["mixing", "trMix", "batchrec"] },
+        { h: { en: "Floor", es: "Piso", pt: "Piso" }, tools: ["prodorders", "mixing", "trMix", "batchrec", "reordertracker"] },
         { h: { en: "Seasoning and recipes", es: "Sazon y recetas", pt: "Tempero e receitas" }, tools: ["seasoning", "recipes"] },
-        { h: { en: "Planning and history", es: "Plan y historial", pt: "Plano e historico" }, tools: ["prodorders", "reordertracker", "launch", "hist", "upload"] }
+        { h: { en: "Planning and history", es: "Plan y historial", pt: "Plano e historico" }, tools: ["launch", "hist", "upload"] }
       ]
     },
     {
@@ -262,8 +262,8 @@
       title: { en: "P-Mac", es: "P-Mac", pt: "P-Mac" },
       intro: { en: "What P-Mac needs, bags off the line, and the lot station.", es: "Lo que P-Mac necesita, bolsas de la linea y la estacion de lote.", pt: "O que o P-Mac precisa, sacos da linha e a estacao de lote." },
       sections: [
-        { h: { en: "Line", es: "Linea", pt: "Linha" }, tools: ["pmac", "pmacout", "trPmac"] },
-        { h: { en: "Planning and history", es: "Plan y historial", pt: "Plano e historico" }, tools: ["prodorders", "hist", "upload"] }
+        { h: { en: "Line", es: "Linea", pt: "Linha" }, tools: ["prodorders", "pmac", "pmacout", "trPmac"] },
+        { h: { en: "Planning and history", es: "Plan y historial", pt: "Plano e historico" }, tools: ["hist", "upload"] }
       ]
     },
     {
