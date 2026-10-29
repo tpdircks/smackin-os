@@ -17,7 +17,7 @@
   var LARGE_PCT = 0.25;
   var MULTI = { "B4-S02": 1, "B4-S04": 1, "BAG4-S02": 1, "BAG4-S04": 1 };
   var BAG_CAT = { bag4: 1, bag15: 1, bag275: 1, dollartree275: 1 };
-  var ZONE = { RECEIVING: 1, RETURNS: 1, QUARANTINE: 1, STAGING: 1, "PROD-WEIGH": 1, CAGE: 1, "QA-HOLD": 1 };
+  var ZONE = { RECEIVING: 1, RETURNS: 1, "RETURNS-HOLD": 1, QUARANTINE: 1, STAGING: 1, "PROD-WEIGH": 1, CAGE: 1, "QA-HOLD": 1 };
 
   var selected = {};
   var results = {};

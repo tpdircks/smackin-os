@@ -41,7 +41,7 @@
     levels: ["L1", "L2", "L3", "L4"], // L1 floor .. L4 top
     docks: [11, 12, 13, 14, 15, 16, 17, 18, 19], // 19 = office end, 11 = far end
     // ST-01..08 kept for existing bucket/packaging stock; finished bags now live on the S-floor slots.
-    zones: ["RECEIVING", "STAGING", "RETURNS", "QUARANTINE", "WIP", "PACKOUT", "CAGE", "PROD-WEIGH", "PROD-PACK", "SHIPPING", "PACKAGING",
+    zones: ["RECEIVING", "STAGING", "RETURNS", "RETURNS-HOLD", "QUARANTINE", "QA-HOLD", "WIP", "PACKOUT", "CAGE", "PROD-WEIGH", "PROD-PACK", "SHIPPING", "PACKAGING",
             "ST-01", "ST-02", "ST-03", "ST-04", "ST-05", "ST-06", "ST-07", "ST-08"],
     floor4: FLOOR_4OZ,
     floor15: FLOOR_15OZ

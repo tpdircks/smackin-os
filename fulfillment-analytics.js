@@ -2,9 +2,8 @@
    Fulfillment Errors (fulfillment-analytics.js)
    Fulfillment analytics for the WIP fulfillment error history: KPI cards,
    a monthly view, a filterable log, and a form to log a new error.
-   The Returns tab reads and writes the existing returns_log table.
-   The WIP Return Log sheet was an empty template. This screen leaves those
-   185 stored returns in place and only adds new ones going forward.
+   The Returns tab is a read-only list. New returns are logged in Inventory
+   (returns-workflow.js), which is the only write path into returns_log.
    Cloud-gated seed loads data/wip-fulfillment-errors.json and upserts on a
    hash of order_num + date_reported + product_ordered.
    ?faseed=dry logs the rows and does not write. ?faseed=force writes again.
@@ -76,7 +75,9 @@
       cloudOff: "Not saved. The shared database is not connected.",
       seedErr: "Error history did not finish loading",
       retTitle: "Returns",
-      retHint: "The WIP Return Log sheet was an empty template. This tab lists the returns already stored in the system. Log new returns here going forward.",
+      retHint: "This list is read-only. Log and dispose returns in Inventory. That is the only screen that changes stock.",
+      retRedirect: "Returns moved to Inventory. Adriana chooses Hold, Release to stock, Scrap, or Other there. This tab does not write a return and does not change on-hand.",
+      retOpen: "Open Inventory Returns",
       retTotal: "Returns on file",
       retMonth: "This month",
       retEcom: "E-commerce",
@@ -175,7 +176,9 @@
       cloudOff: "No se guardo. La base compartida no esta conectada.",
       seedErr: "El historial de errores no termino de cargar",
       retTitle: "Devoluciones",
-      retHint: "La hoja WIP Return Log era una plantilla vacia. Esta pestana lista las devoluciones que ya estan guardadas. Registre devoluciones nuevas aqui de ahora en adelante.",
+      retHint: "Esta lista es solo lectura. Registre y decida las devoluciones en Inventario. Esa es la unica pantalla que cambia el stock.",
+      retRedirect: "Las devoluciones pasaron a Inventario. Adriana elige Retener, Liberar, Desechar u Otro ahi. Esta pestana no graba una devolucion ni cambia la existencia.",
+      retOpen: "Abrir devoluciones de Inventario",
       retTotal: "Devoluciones guardadas",
       retMonth: "Este mes",
       retEcom: "E-commerce",
@@ -274,7 +277,9 @@
       cloudOff: "Nao foi salvo. O banco compartilhado nao esta conectado.",
       seedErr: "O historico de erros nao terminou de carregar",
       retTitle: "Devolucoes",
-      retHint: "A planilha WIP Return Log era um modelo vazio. Esta aba lista as devolucoes que ja estao guardadas. Registre devolucoes novas aqui daqui pra frente.",
+      retHint: "Esta lista e so leitura. Registre e decida as devolucoes em Estoque. Essa e a unica tela que muda o estoque.",
+      retRedirect: "As devolucoes foram para Estoque. Adriana escolhe Reter, Liberar, Descartar ou Outro la. Esta aba nao grava uma devolucao nem muda a quantidade.",
+      retOpen: "Abrir devolucoes de Estoque",
       retTotal: "Devolucoes guardadas",
       retMonth: "Este mes",
       retEcom: "E-commerce",
@@ -975,36 +980,9 @@
   }
 
   function returnForm() {
-    if (!retDraft.date) retDraft.date = todayDenver();
-    var reasons = reasonList();
-    var disps = dispList();
-    var reasonOpts = opt("", tx("anyReason"), retDraft.reason) + reasons.map(function (r) { return opt(r, r, retDraft.reason); }).join("");
-    var dispOpts = opt("", tx("anyDisp"), retDraft.disp) + disps.map(function (r) { return opt(r, r, retDraft.disp); }).join("");
-    var ch = '<select id="fa-channel">' + opt("ecom", tx("ecom"), retDraft.channel) + opt("major", tx("major"), retDraft.channel) + "</select>";
-    var anyway = dupForce ? '<button type="button" class="ghost" data-fa="save-return" data-force="1">' + esc(tx("retAnyway")) + "</button>" : "";
     return '<div class="card"><h2 class="sub2">' + esc(tx("retLog")) + "</h2>" +
-      '<div class="row">' +
-      field(tx("retDate"), '<input id="fa-rdate" type="date" value="' + esc(retDraft.date) + '">') +
-      field(tx("channel"), ch) +
-      field(tx("qty"), '<input id="fa-qty" inputmode="decimal" value="' + esc(retDraft.qty) + '" autocomplete="off">') +
-      "</div>" +
-      '<div class="row">' +
-      field(tx("customer"), '<input id="fa-customer" value="' + esc(retDraft.customer) + '" autocomplete="off">') +
-      field(tx("market"), '<input id="fa-market" value="' + esc(retDraft.market) + '" autocomplete="off">') +
-      field(tx("product"), '<input id="fa-product" value="' + esc(retDraft.product) + '" autocomplete="off">') +
-      "</div>" +
-      '<div class="row">' +
-      field(tx("orderRef"), '<input id="fa-orderref" value="' + esc(retDraft.orderRef) + '" autocomplete="off">') +
-      field(tx("retTrack"), '<input id="fa-rtrack" value="' + esc(retDraft.tracking) + '" autocomplete="off">') +
-      field(tx("shipId"), '<input id="fa-ship" value="' + esc(retDraft.shipId) + '" autocomplete="off">') +
-      "</div>" +
-      '<div class="row">' +
-      field(tx("reason"), '<select id="fa-reason">' + reasonOpts + "</select>") +
-      field(tx("disp"), '<select id="fa-disp">' + dispOpts + "</select>") +
-      field(tx("by"), '<input id="fa-by" value="' + esc(retDraft.by) + '" autocomplete="off">') +
-      "</div>" +
-      field(tx("notes"), '<textarea id="fa-rnotes" rows="2">' + esc(retDraft.notes) + "</textarea>") +
-      '<div class="fa-tools"><button type="button" class="primary" data-fa="save-return"' + (saving ? " disabled" : "") + ">" + esc(saving ? tx("saving") : tx("saveRet")) + "</button>" + anyway + "</div></div>";
+      '<div class="fa-note">' + esc(tx("retRedirect")) + "</div>" +
+      '<div class="fa-tools"><button type="button" class="primary" data-fa="open-returns">' + esc(tx("retOpen")) + "</button></div></div>";
   }
   function returnTable(shown, all) {
     if (retError) return '<p class="fa-fail">' + esc(retError) + "</p>";
@@ -1169,74 +1147,9 @@
       return got;
     });
   }
-  function saveReturn(force) {
-    if (saving) return;
-    pullDraft();
-    if (!creds()) { loud(tx("cloudOff")); return; }
-    var date = isoDate(retDraft.date);
-    var product = String(retDraft.product || "").trim();
-    var qty = Number(String(retDraft.qty || "").replace(/,/g, "").trim());
-    if (!date) { loud(tx("needRetDate")); return; }
-    if (!product) { loud(tx("needProduct")); return; }
-    if (!isFinite(qty) || qty <= 0) { loud(tx("needQty")); return; }
-    var channel = retDraft.channel === "major" ? "major" : "ecom";
-    var rec = {
-      channel: channel,
-      marketplace: cleanText(retDraft.market),
-      return_date: date,
-      customer: cleanText(retDraft.customer),
-      shipment_id: cleanText(retDraft.shipId),
-      product: product,
-      tracking: cleanText(retDraft.tracking),
-      qty: qty,
-      is_kit: false,
-      reason: cleanText(retDraft.reason),
-      disposition: cleanText(retDraft.disp),
-      restocked: retDraft.disp === "Restock",
-      order_ref: cleanText(retDraft.orderRef),
-      received_by: cleanText(retDraft.by),
-      notes: cleanText(retDraft.notes)
-    };
-    rec.dup_key = returnDupKey(rec);
-    var row = cleanReturn(rec);
-    saving = true;
-    banner = "";
-    render();
-    var gate = force ? Promise.resolve(null) : rest("returns_log?dup_key=eq." + encodeURIComponent(row.dup_key) + "&select=id,return_date,product,qty&limit=1");
-    gate.then(function (existing) {
-      if (existing && existing.length) {
-        dupForce = true;
-        var ex = existing[0];
-        throw Object.assign(new Error(tx("retDup").replace("{d}", ex.return_date || "").replace("{p}", ex.product || "").replace("{q}", ex.qty == null ? "" : String(ex.qty))), { dup: true });
-      }
-      return rest("returns_log", {
-        method: "POST",
-        headers: { Prefer: "return=representation" },
-        body: JSON.stringify(row)
-      });
-    }).then(function (created) {
-      var id = created && created[0] && created[0].id;
-      if (!id) throw new Error(tx("readBack") + ": no id");
-      return readBackReturn(id, row);
-    }).then(function () {
-      saving = false;
-      dupForce = false;
-      banner = "";
-      retDraft.customer = "";
-      retDraft.market = "";
-      retDraft.orderRef = "";
-      retDraft.tracking = "";
-      retDraft.shipId = "";
-      retDraft.product = "";
-      retDraft.qty = "";
-      retDraft.notes = "";
-      toast(tx("retSaved").replace("{p}", product));
-      var refresh = root.DB && typeof root.DB.refresh === "function" ? root.DB.refresh() : null;
-      return Promise.resolve(refresh).catch(function () { return null; }).then(function () { return loadReturns(); });
-    }).then(function () { if (active) render(); }).catch(function (e) {
-      if (e && e.dup) loud(e.message);
-      else loud(friendly(e));
-    });
+  function saveReturn() {
+    active = false;
+    if (root.UI_go) root.UI_go("returns");
   }
 
   function onClick(e) {
@@ -1265,7 +1178,11 @@
     }
     if (act === "kpi-open") { filters.uncredited = !filters.uncredited; render(); return; }
     if (act === "save-error") { saveError(); return; }
-    if (act === "save-return") { saveReturn(t.getAttribute("data-force") === "1"); return; }
+    if (act === "save-return" || act === "open-returns") {
+      active = false;
+      if (root.UI_go) root.UI_go("returns");
+      return;
+    }
     if (act === "reload") {
       var job = tab === "returns" ? loadReturns() : loadErrors();
       job.then(function () { if (active) render(); });

@@ -131,6 +131,29 @@ window.DB = (function () {
     const itemId = resolveItemId(id);
     return cache.stock.filter(r => r.item_id === itemId && r.location === loc).reduce((s, r) => s + Number(r.qty), 0);
   }
+  // Hold locations are on the books but not sellable. RETURNS is intentionally
+  // not in this set: older count loads parked sellable-looking units there, and
+  // this release does not reclassify or move them.
+  const HOLD_LOCATIONS = ["RETURNS-HOLD", "QUARANTINE", "QA-HOLD"];
+  const ADJUST_SKIP_LOCATIONS = ["RETURNS", "QUARANTINE", "QA-HOLD", "RETURNS-HOLD"];
+  const HOLD_LOC_SET = {};
+  HOLD_LOCATIONS.forEach(function (l) { HOLD_LOC_SET[l] = 1; });
+  const ADJUST_SKIP_SET = {};
+  ADJUST_SKIP_LOCATIONS.forEach(function (l) { ADJUST_SKIP_SET[l] = 1; });
+  function isHoldLocation(loc) { return !!HOLD_LOC_SET[String(loc || "").toUpperCase()]; }
+  function heldOnHand(id) {
+    const itemId = resolveItemId(id);
+    return cache.stock.filter(r => r.item_id === itemId && isHoldLocation(r.location)).reduce((s, r) => s + Number(r.qty), 0);
+  }
+  function availableOnHand(id) { return onHand(id) - heldOnHand(id); }
+  // Largest location that a total-count correction is allowed to change.
+  // Skip locations stay as they are. When every row is skipped, the correction
+  // parks in RECEIVING.
+  function adjustTargetLocation(rows) {
+    const open = (rows || []).filter(r => !ADJUST_SKIP_SET[String(r.location || "").toUpperCase()] && Number(r.qty) !== 0);
+    if (!open.length) return "RECEIVING";
+    return open.slice().sort((a, b) => Number(b.qty) - Number(a.qty))[0].location;
+  }
   // Positive qty lands on the largest lot already at that location so a count
   // does not create a second blank RECEIVING row beside the real lot rows.
   // Negative qty peels those lot rows, largest first.
@@ -362,7 +385,14 @@ window.DB = (function () {
         product: r.product, item_code: r.item_code, flavor: r.flavor, upc: r.upc, add_upc: r.add_upc,
         tracking: r.tracking, qty: Number(r.qty) || 0, is_kit: !!r.is_kit, kit_sku: r.kit_sku,
         reason: r.reason, condition: r.condition, disposition: r.disposition, restocked: !!r.restocked,
-        dup_key: r.dup_key, order_ref: r.order_ref, received_by: r.received_by, notes: r.notes, created_at: r.created_at
+        dup_key: r.dup_key, order_ref: r.order_ref, received_by: r.received_by, notes: r.notes, created_at: r.created_at,
+        status: r.status || "", inspected_by: r.inspected_by || "", inspected_at: r.inspected_at || "",
+        disposed_at: r.disposed_at || "", stock_item_id: r.stock_item_id || "",
+        stock_qty: r.stock_qty == null || r.stock_qty === "" ? null : Number(r.stock_qty),
+        stock_loc: r.stock_loc || "",
+        stock_moves: Array.isArray(r.stock_moves) ? r.stock_moves : null,
+        qty_hold: Number(r.qty_hold) || 0, qty_release: Number(r.qty_release) || 0,
+        qty_scrap: Number(r.qty_scrap) || 0, qty_other: Number(r.qty_other) || 0
       }));
       cache.demandLines = (dmd && dmd.data ? dmd.data : []).map(r => ({
         id: r.id, batch_id: r.batch_id, batch_label: r.batch_label, source: r.source,
@@ -580,23 +610,31 @@ window.DB = (function () {
     );
     return { ok: true };
   }
-  // Set an item's TOTAL on-hand (location handled automatically) — spreadsheet-style counting.
+  // Set an item's TOTAL on-hand. The correction never targets RETURNS, QUARANTINE,
+  // QA-HOLD, or RETURNS-HOLD. It lands on the largest other location, or on
+  // RECEIVING when every existing row is in a skipped location.
+  // Units already sitting in RETURNS (count-load contamination, including the
+  // Cheddar Jalapeno / Original / BBQ pile) are not moved by this function.
+  // Adriana confirms any RETURNS cleanup separately.
   async function adjustTotal(item, newTotal, op) {
     newTotal = Number(newTotal);
     const itemId = resolveItemId(item);
     const rows = cache.stock.filter(r => r.item_id === itemId);
     const cur = rows.reduce((s, r) => s + Number(r.qty), 0);
-    if (newTotal === cur) return { ok: true, unchanged: true };
-    let loc;
-    if (rows.length) {
-      loc = rows.slice().sort((a, b) => Number(b.qty) - Number(a.qty))[0].location;
-      const primaryCur = rows.filter(r => r.location === loc).reduce((s, r) => s + Number(r.qty), 0);
-      const others = cur - primaryCur;
-      await adjust(item, loc, Math.max(newTotal - others, 0), op);
-    } else {
-      loc = "RECEIVING";
-      await adjust(item, loc, newTotal, op);
+    if (newTotal === cur) return { ok: true, unchanged: true, location: adjustTargetLocation(rows) };
+    const loc = adjustTargetLocation(rows);
+    const primaryCur = rows.filter(r => r.location === loc).reduce((s, r) => s + Number(r.qty), 0);
+    const others = cur - primaryCur;
+    const next = newTotal - others;
+    if (next < -0.0001) {
+      return {
+        ok: false,
+        location: loc,
+        blocked: true,
+        msg: "Count is below the qty already in RETURNS or a hold location. Those locations were not changed."
+      };
     }
+    await adjust(item, loc, Math.max(next, 0), op);
     return { ok: true, location: loc };
   }
   // ---------- Recipe engine (Allen's Manufacturing doc: Recipes + Codes tabs) ----------
@@ -671,21 +709,44 @@ window.DB = (function () {
     await applyDeltas(deltas, { a: "Produce", d: detail, u: op, t: new Date().toISOString() });
   }
   // ---------- Returns (customer + Amazon) ----------
-  // meta: { channel, reason, disposition, rma }
-  // Restock -> RETURNS zone; Quarantine -> QUARANTINE; Scrap -> log only (no stock)
+  // meta: { channel, reason, disposition, rma, location }
+  // Hold -> RETURNS-HOLD (not available). Release / legacy Restock -> RECEIVING.
+  // Quarantine -> QUARANTINE. Scrap and Other with no location -> log only.
+  // meta.location wins when the caller already picked a destination.
+  // New sellable returns do not land in RETURNS.
   async function returnStock(item, qty, op, meta) {
     meta = meta || {};
     const disp = meta.disposition || "Restock";
-    const loc = disp === "Restock" ? "RETURNS" : disp === "Quarantine" ? "QUARANTINE" : null;
+    let loc = meta.location ? String(meta.location).toUpperCase() : "";
+    if (!loc) {
+      if (disp === "Hold") loc = "RETURNS-HOLD";
+      else if (disp === "Quarantine") loc = "QUARANTINE";
+      else if (disp === "Release" || disp === "Restock") loc = "RECEIVING";
+      else loc = "";
+    }
+    if (meta.stock === false) loc = "";
     const parts = [];
     if (meta.channel) parts.push(meta.channel);
     if (meta.rma) parts.push("RMA " + meta.rma);
     if (meta.reason) parts.push(meta.reason);
     parts.push("[" + disp + "]");
-    const detail = fmt(qty) + " " + item.unit + " " + item.flavor + " (" + parts.join(", ") + ")" + (loc ? " -> " + loc : " (scrapped)");
+    const detail = fmt(qty) + " " + (item.unit || "") + " " + (item.flavor || item.name || "") + " (" + parts.join(", ") + ")" + (loc ? " -> " + loc : " (no stock)");
     const deltas = loc ? [{ item_id: resolveItemId(item), location: loc, delta: qty, lot: null }] : [];
     await applyDeltas(deltas, { a: "Return", d: detail, u: op, t: new Date().toISOString() });
-    return { ok: true, location: loc };
+    return { ok: true, location: loc || null };
+  }
+  // Remove qty from one location. Never pulls from a different location and
+  // never drives the row negative. short > 0 means the units were not all there.
+  async function pullStock(item, loc, qty, op) {
+    qty = Number(qty) || 0;
+    loc = String(loc || "").toUpperCase();
+    if (!(qty > 0) || !loc) return { ok: true, taken: 0, short: qty, have: 0 };
+    const have = atLoc(resolveItemId(item), loc);
+    const take = Math.min(qty, have);
+    if (!(take > 0)) return { ok: true, taken: 0, short: qty, have: have };
+    const next = Math.round((have - take) * 1000) / 1000;
+    const res = await adjust(item, loc, next, op || "");
+    return { ok: !res || res.ok !== false, taken: take, short: Math.round((qty - take) * 1000) / 1000, have: have };
   }
 
   // ---------- Seasoning lot registry (Lot / Exp / Manufacturer / Weight, FEFO) ----------
@@ -2025,7 +2086,7 @@ window.DB = (function () {
   }
 
   // ---- Returns log (major-customer + e-commerce, with duplicate prevention) ----
-  const RTL_COLS = ["channel","marketplace","return_date","customer","shipment_id","ship_address","product","item_code","flavor","upc","add_upc","tracking","qty","is_kit","kit_sku","reason","condition","disposition","restocked","dup_key","order_ref","received_by","notes"];
+  const RTL_COLS = ["channel","marketplace","return_date","customer","shipment_id","ship_address","product","item_code","flavor","upc","add_upc","tracking","qty","is_kit","kit_sku","reason","condition","disposition","restocked","dup_key","order_ref","received_by","notes","status","inspected_by","inspected_at","disposed_at","stock_item_id","stock_qty","stock_loc","stock_moves","qty_hold","qty_release","qty_scrap","qty_other"];
   function cleanRtl(r) { const o = {}; RTL_COLS.forEach(k => { if (r[k] !== undefined) o[k] = r[k]; }); return o; }
   function returnDupKey(rec) {
     // one order/tracking can hold many returned items, so the dedup key is per (order-ref + item + date)
@@ -2043,11 +2104,37 @@ window.DB = (function () {
     const row = cleanRtl(rec);
     row.dup_key = returnDupKey(rec);
     if (!force) { const ex = findReturnDup(row.dup_key); if (ex) return { ok: false, dup: true, existing: ex }; }
-    row.received_by = op || ""; row.qty = Number(row.qty) || 0; row.is_kit = !!row.is_kit; row.restocked = !!row.restocked;
+    row.received_by = op || row.received_by || ""; row.qty = Number(row.qty) || 0; row.is_kit = !!row.is_kit; row.restocked = !!row.restocked;
+    ["qty_hold", "qty_release", "qty_scrap", "qty_other"].forEach(function (k) { if (row[k] !== undefined) row[k] = Number(row[k]) || 0; });
+    if (row.stock_qty !== undefined && row.stock_qty !== null && row.stock_qty !== "") row.stock_qty = Number(row.stock_qty) || 0;
     const now = new Date().toISOString();
-    const logEntry = { a: "Return logged", d: (row.channel === "ecom" ? "E-Com " : "") + (row.product || row.item_code || "") + " x" + row.qty + (row.tracking ? " [" + row.tracking + "]" : ""), u: op, t: now };
-    if (mode === "cloud") { await must(sb.from("returns_log").insert(row), "returns_log"); await cloud.addLog(logEntry); await cloud.loadAll(); }
-    else { row.id = "RTN-" + Date.now().toString(36); row.created_at = now; cache.returnsLog.unshift(row); local.addLog(logEntry); local.save(); }
+    const logEntry = { a: "Return logged", d: (row.channel === "ecom" ? "E-Com " : "") + (row.product || row.item_code || "") + " x" + row.qty + (row.status ? " [" + row.status + "]" : "") + (row.tracking ? " [" + row.tracking + "]" : ""), u: op, t: now };
+    let newId = null;
+    if (mode === "cloud") {
+      const ins = await must(sb.from("returns_log").insert(row).select("id"), "returns_log");
+      newId = ins.data && ins.data[0] && ins.data[0].id;
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      row.id = "RTN-" + Date.now().toString(36); newId = row.id; row.created_at = now;
+      cache.returnsLog.unshift(row); local.addLog(logEntry); local.save();
+    }
+    emit(); return { ok: true, id: newId };
+  }
+  async function updateReturn(id, rec, op) {
+    const row = cleanRtl(rec || {});
+    ["qty_hold", "qty_release", "qty_scrap", "qty_other", "qty"].forEach(function (k) { if (row[k] !== undefined) row[k] = Number(row[k]) || 0; });
+    if (row.stock_qty !== undefined && row.stock_qty !== null && row.stock_qty !== "") row.stock_qty = Number(row.stock_qty) || 0;
+    if (row.restocked !== undefined) row.restocked = !!row.restocked;
+    if (row.is_kit !== undefined) row.is_kit = !!row.is_kit;
+    const logEntry = { a: "Return updated", d: (row.product || row.item_code || id) + (row.disposition ? " [" + row.disposition + "]" : "") + (row.status ? " " + row.status : ""), u: op, t: new Date().toISOString() };
+    if (mode === "cloud") {
+      await must(sb.from("returns_log").update(row).eq("id", id), "returns_log");
+      await cloud.addLog(logEntry); await cloud.loadAll();
+    } else {
+      const cur = (cache.returnsLog || []).find(r => String(r.id) === String(id));
+      if (cur) Object.assign(cur, row);
+      local.addLog(logEntry); local.save();
+    }
     emit(); return { ok: true };
   }
   async function deleteReturn(id, op) {
@@ -2138,12 +2225,13 @@ window.DB = (function () {
     lineStatus, addMachine, setLineStatus, deleteMachine,
     forecast,
     ecomDemand, addEcomDemand, clearEcomDemand,
-    returnsLog, addReturn, deleteReturn, returnDupKey, findReturnDup,
-    items, suppliers, stock, log, itemByCode, onHand, atLoc,
+    returnsLog, addReturn, updateReturn, deleteReturn, returnDupKey, findReturnDup,
+    items, suppliers, stock, log, itemByCode, onHand, atLoc, availableOnHand, heldOnHand, isHoldLocation,
+    HOLD_LOCATIONS, ADJUST_SKIP_LOCATIONS, adjustTargetLocation,
     purchaseOrders, supplierName, createPO, setPOStatus, deletePO, receivePO,
     receive, move, adjust, adjustTotal, produce, resetDemo, updateItemFields, createItem,
     prodDay, prodPallets, setProdDay, addProdPallet, deleteProdPallet,
-    returnStock, seasLots, addSeasLot, setSeasLotStatus, updateSeasLot, quarantineExpiredSeas,
+    returnStock, pullStock, seasLots, addSeasLot, setSeasLotStatus, updateSeasLot, quarantineExpiredSeas,
     seedLots, addSeedLot, setSeedLotStatus, updateSeedLot,
     stockBuild, setStockBuildOnHand,
     deadStock, flagDeadStock, clearDeadStock,

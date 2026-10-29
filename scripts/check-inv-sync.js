@@ -41,10 +41,10 @@ htmlFiles.forEach(function (name) {
 var index = read("index.html");
 assert(index.indexOf('src="inv-sync-1027d.js?b=2"') >= 0, "current apply script");
 assert(index.indexOf('src="slc-count-latest.js?b=1"') < index.indexOf('src="inv-sync-1027d.js?b=2"'), "count file loads first");
-assert(index.indexOf('src="slc-count-panel.js?b=3"') >= 0, "panel cache bust");
+assert(index.indexOf('src="slc-count-panel.js?b=4"') >= 0, "panel cache bust");
 
 var sw = read("service-worker.js");
-assert(sw.indexOf('const CACHE = "smackin-inv-v244"') >= 0, "cache v244");
+assert(sw.indexOf('const CACHE = "smackin-inv-v245"') >= 0, "cache v245");
 assert(sw.indexOf("smackin-inv-v242") < 0, "old cache gone");
 assert(sw.indexOf("./inv-sync-1027d.js") >= 0, "sw precaches the apply module");
 obsolete.forEach(function (rel) { assert(sw.indexOf(rel) < 0, "sw lists " + rel); });

@@ -41,7 +41,7 @@
 
   var TAB_DEPT = {
     home: "home", daily: "home",
-    receive: "recv", recvlog: "recv", returns: "recv", qa: "recv",
+    receive: "recv", recvlog: "recv", returns: "inv", qa: "recv",
     dash: "inv", adjust: "inv", count: "inv", alerts: "inv",
     move: "inv", locations: "inv", facility: "inv", finbags: "inv",
     seed: "inv", skus: "inv", analytics: "inv", labels: "inv",
@@ -106,7 +106,7 @@
   var TOOLS = {
     receive: { go: "receive", icon: "package-plus", title: { en: "Receive", es: "Recibir", pt: "Receber" }, blurb: { en: "Check product in and put it on hand.", es: "Reciba producto y dejelo en existencia.", pt: "Receba o produto e coloque em estoque." } },
     recvlog: { go: "recvlog", icon: "inbox", title: { en: "Receiving Log", es: "Registro de Recibo", pt: "Registro de Recebimento" }, blurb: { en: "WHSE_FORM_1.0 checklist for each lot. N or UA holds the lot.", es: "Lista WHSE_FORM_1.0 por lote. N o UA retiene el lote.", pt: "Lista WHSE_FORM_1.0 por lote. N ou UA retem o lote." } },
-    returns: { go: "returns", icon: "rotate-ccw", title: { en: "Returns", es: "Devoluciones", pt: "Devolucoes" }, blurb: { en: "Take returns back into stock.", es: "Ingrese devoluciones de nuevo al inventario.", pt: "Lance devolucoes de volta ao estoque." } },
+    returns: { go: "returns", icon: "rotate-ccw", title: { en: "Returns", es: "Devoluciones", pt: "Devolucoes" }, blurb: { en: "Adriana's screen. Hold, release to stock, scrap, or other. Dock uses this same screen.", es: "Pantalla de Adriana. Retener, liberar, desechar u otro. El muelle abre la misma pantalla.", pt: "Tela da Adriana. Reter, liberar, descartar ou outro. O cais abre a mesma tela." } },
     quarantine: { go: "qa", icon: "shield-alert", title: { en: "Quarantine", es: "Cuarentena", pt: "Quarentena" }, blurb: { en: "Review items sitting in quarantine.", es: "Revise lo que esta en cuarentena.", pt: "Revise o que esta em quarentena." } },
     dash: { go: "dash", icon: "layout-dashboard", title: { en: "Overview", es: "Resumen", pt: "Visao geral" }, blurb: { en: "On-hand counts across the building.", es: "Existencias en todo el edificio.", pt: "Quantidades em estoque no predio." } },
     adjust: { go: "adjust", icon: "sliders-horizontal", title: { en: "Adjust", es: "Ajustar", pt: "Ajustar" }, blurb: { en: "Set a count to the number you just counted.", es: "Fije el conteo al numero que acaba de contar.", pt: "Defina a contagem com o numero que voce contou." } },
@@ -224,7 +224,7 @@
       icon: "package-check",
       label: { en: "Receiving", es: "Recibo", pt: "Receber" },
       title: { en: "Receiving", es: "Recibo", pt: "Recebimento" },
-      intro: { en: "Check product in, log the paperwork, take returns, and work quarantine.", es: "Reciba producto, registre el papeleo, tome devoluciones y trabaje cuarentena.", pt: "Receba produto, registre os documentos, lance devolucoes e trabalhe a quarentena." },
+      intro: { en: "Check product in, log the paperwork, and work quarantine. Returns opens Adriana's Inventory screen.", es: "Reciba producto, registre el papeleo y trabaje cuarentena. Devoluciones abre la pantalla de Inventario.", pt: "Receba produto, registre os documentos e trabalhe a quarentena. Devolucoes abre a tela de Estoque." },
       sections: [
         { h: { en: "Inbound", es: "Entrada", pt: "Entrada" }, tools: ["receive", "recvlog", "returns", "quarantine", "trRecv"] }
       ]
@@ -236,6 +236,7 @@
       title: { en: "Inventory", es: "Inventario", pt: "Estoque" },
       intro: { en: "Counts, adjustments, moves, locations, seed, SKUs, labels, and reports.", es: "Conteos, ajustes, movimientos, ubicaciones, semilla, SKUs, etiquetas y reportes.", pt: "Contagens, ajustes, movimentos, locais, semente, SKUs, etiquetas e relatorios." },
       sections: [
+        { h: { en: "Returns", es: "Devoluciones", pt: "Devolucoes" }, tools: ["returns"] },
         { h: { en: "Counts", es: "Conteos", pt: "Contagens" }, tools: ["dash", "adjust", "count", "alerts", "finbags", "move", "trMove"] },
         { h: { en: "Locations", es: "Ubicaciones", pt: "Locais" }, tools: ["locations", "facility"] },
         { h: { en: "Catalog", es: "Catalogo", pt: "Catalogo" }, tools: ["seed", "skus", "printlabels"] },
@@ -569,7 +570,7 @@
     arr(function () { return DB.items(); }).forEach(function (it) {
       if (!it || !(Number(it.reorder) > 0)) return;
       var oh = null;
-      try { oh = DB.onHand(it.id); } catch (e) { oh = null; }
+      try { oh = DB.availableOnHand ? DB.availableOnHand(it.id) : DB.onHand(it.id); } catch (e) { oh = null; }
       if (oh == null || oh !== oh) return;
       if (oh <= 0) out.push({ it: it, oh: oh });
       else if (oh < Number(it.reorder)) low.push({ it: it, oh: oh });
@@ -596,7 +597,7 @@
   function quarantineRows() {
     var hold = [];
     var items = arr(function () { return DB.items(); });
-    ["QA-HOLD", "QUARANTINE"].forEach(function (z) {
+    ["QA-HOLD", "QUARANTINE", "RETURNS-HOLD"].forEach(function (z) {
       items.forEach(function (i) {
         var q = 0;
         try { q = Number(DB.atLoc(i.id, z)) || 0; } catch (e) { q = 0; }
@@ -737,9 +738,11 @@
     arr(function () { return DB.items(); }).forEach(function (i) {
       if (i.category !== "bag4" && i.category !== "bag15") return;
       var oh = 0;
-      try { oh = Number(DB.onHand(i.id)) || 0; } catch (e) { oh = 0; }
+      var held = 0;
+      try { oh = Number(DB.availableOnHand ? DB.availableOnHand(i.id) : DB.onHand(i.id)) || 0; } catch (e) { oh = 0; }
+      try { held = Number(DB.heldOnHand ? DB.heldOnHand(i.id) : 0) || 0; } catch (e2) { held = 0; }
       if (i.category === "bag4") bag4 += oh; else bag15 += oh;
-      if (oh > 0) rows.push({ name: i.name || i.flavor || i.code, code: i.code || i.id, unit: i.unit || "", oh: oh, cat: i.category });
+      if (oh > 0 || held > 0) rows.push({ name: i.name || i.flavor || i.code, code: i.code || i.id, unit: i.unit || "", oh: oh, held: held, cat: i.category });
     });
     rows.sort(function (a, b) { return b.oh - a.oh; });
     return { bag4: bag4, bag15: bag15, rows: rows };
@@ -837,7 +840,7 @@
       var fl = i.flavor || "";
       if (!fl) return;
       var n = 0;
-      try { n = Number(DB.onHand(i.id)) || 0; } catch (e) { n = 0; }
+      try { n = Number(DB.availableOnHand ? DB.availableOnHand(i.id) : DB.onHand(i.id)) || 0; } catch (e) { n = 0; }
       oh[fl] = (oh[fl] || 0) + n;
     });
     return Object.keys(q).map(function (fl) {
@@ -877,8 +880,8 @@
       (tier.flavors || []).forEach(function (f) {
         var p4 = 0, p15 = 0, bins = 0;
         try {
-          p4 = (Number(DB.onHand("BAG4-" + f.code)) || 0) / 2500;
-          p15 = (Number(DB.onHand("BAG15-" + f.code)) || 0) / 6250;
+          p4 = (Number(DB.availableOnHand ? DB.availableOnHand("BAG4-" + f.code) : DB.onHand("BAG4-" + f.code)) || 0) / 2500;
+          p15 = (Number(DB.availableOnHand ? DB.availableOnHand("BAG15-" + f.code) : DB.onHand("BAG15-" + f.code)) || 0) / 6250;
           var ov4 = DB.kvGet ? DB.kvGet("arp4oz:" + f.code) : null;
           var ov15 = DB.kvGet ? DB.kvGet("arp15oz:" + f.code) : null;
           var bm = DB.kvGet ? DB.kvGet("arbm:" + f.code) : null;
@@ -988,7 +991,7 @@
         ) : empty(tx({ en: "No receiving log rows yet.", es: "Aun no hay recibos.", pt: "Ainda nao ha recebimentos." })),
         2, "recvlog") +
       panel(tx({ en: "Quarantine", es: "Cuarentena", pt: "Quarentena" }),
-        hold.length ? sub(fmt(holdQty) + " on hold in QA-HOLD or QUARANTINE.") + dfTable(
+        hold.length ? sub(fmt(holdQty) + " on hold in RETURNS-HOLD, QA-HOLD, or QUARANTINE. Not available to ship.") + dfTable(
           [{ h: "Item" }, { h: "Zone" }, { h: "Qty", right: true }],
           hold.map(function (r) {
             return ['<div class="df-name">' + esc(r.name) + '</div><div class="df-meta">' + esc(r.code) + "</div>", esc(r.zone), "<b>" + fmt(r.qty) + "</b> " + esc(r.unit)];
@@ -1017,12 +1020,28 @@
     var sd = shortDated().filter(function (r) { return r.flag !== "DISCONTINUED" || r.disp === "Open"; });
     var action = sd.filter(function (r) { return r.disp === "Open" && r.flag !== "OK"; });
     var cols = [{ h: "Item" }, { h: "On hand", right: true }, { h: "Reorder", right: true }, { h: "" }];
+    var openR = recentReturns().filter(function (r) {
+      if (window.RETURNS_WF && RETURNS_WF.isOpenRow) return RETURNS_WF.isOpenRow(r);
+      return String(r.status || "") === "held" || Number(r.qty_hold) > 0;
+    });
     return statRow([
       stat(fmt(split.out.length), tx({ en: "Out of stock", es: "Agotado", pt: "Esgotado" }), split.out.length ? "bad" : ""),
       stat(fmt(split.low.length), tx({ en: "Low stock", es: "Stock bajo", pt: "Estoque baixo" }), split.low.length ? "warn" : ""),
-      stat(fmt(fg.bag4), tx({ en: "4oz bags on hand", es: "Bolsas 4oz", pt: "Sacos 4oz" })),
-      stat(fmt(fg.bag15), tx({ en: "1.5oz bags on hand", es: "Bolsas 1.5oz", pt: "Sacos 1.5oz" }))
+      stat(fmt(fg.bag4), tx({ en: "4oz available", es: "4oz disponible", pt: "4oz disponivel" })),
+      stat(fmt(fg.bag15), tx({ en: "1.5oz available", es: "1.5oz disponible", pt: "1.5oz disponivel" }))
     ]) +
+      panel(tx({ en: "Open returns", es: "Devoluciones abiertas", pt: "Devolucoes abertas" }),
+        openR.length ? sub(openR.length + " held for Adriana. Release, scrap, or other from Returns.") + dfTable(
+          [{ h: "Date" }, { h: "Item" }, { h: "Held", right: true }],
+          openR.slice(0, 8).map(function (r) {
+            return [
+              esc(String(r.return_date || r.created_at || "").slice(0, 10) || "-"),
+              esc(r.product || r.item_code || "-"),
+              fmt(r.qty_hold || r.qty)
+            ];
+          })
+        ) : empty(tx({ en: "No returns are sitting on hold.", es: "No hay devoluciones retenidas.", pt: "Nao ha devolucoes retidas." })),
+        2, "returns") +
       panel(tx({ en: "Out of stock", es: "Agotado", pt: "Esgotado" }),
         split.out.length ? sub("Reorder point set and on-hand at zero.") + dfTable(cols, stockRows(split.out, "out"))
           : empty(tx({ en: "Nothing is out of stock.", es: "Nada esta agotado.", pt: "Nada esta esgotado." })),
@@ -1035,7 +1054,7 @@
         fg.rows.length ? dfTable(
           [{ h: "Item" }, { h: "Size" }, { h: "On hand", right: true }],
           fg.rows.map(function (r) {
-            return ['<div class="df-name">' + esc(r.name) + '</div><div class="df-meta">' + esc(r.code) + "</div>", r.cat === "bag4" ? "4oz" : "1.5oz", "<b>" + fmt(r.oh) + "</b> " + esc(r.unit)];
+            return ['<div class="df-name">' + esc(r.name) + '</div><div class="df-meta">' + esc(r.code) + "</div>", r.cat === "bag4" ? "4oz" : "1.5oz", "<b>" + fmt(r.oh) + "</b> " + esc(r.unit) + (r.held > 0 ? '<div class="df-meta">' + fmt(r.held) + " held</div>" : "")];
           })
         ) : empty(tx({ en: "No finished bags on hand.", es: "No hay bolsas terminadas.", pt: "Nao ha sacos prontos." })),
         2, "finbags") +
