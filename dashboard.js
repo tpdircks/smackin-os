@@ -10,8 +10,9 @@
        demand due date are shown as detail and do not pick the day.
        demand_lines supply the flavor / bag summary for the same PO. A demand
        PO with no orders row is listed on the day its lines were first saved.
-     - Inbound: open supplier_pos (po-status.js) plus legacy purchase_orders
-       still ordered or partial. Closed, received, and cancelled POs are out.
+     - Inbound: open and partially received supplier_pos (po-status.js) plus
+       legacy purchase_orders still ordered or partial. Closed, received, and
+       cancelled POs are out. [[STATUS:...]] notes show as a pill on the PO.
    No writes. No timers.
    ========================================================================== */
 (function () {
@@ -296,8 +297,8 @@
     try { rlog = (DB.receivingLog ? DB.receivingLog() : []) || []; } catch (e2) { rlog = []; }
     spos.forEach(function (po) {
       var derived = null;
-      try { if (window.POSTATUS && POSTATUS.derive) derived = POSTATUS.derive(po, rlog); } catch (e3) { derived = null; }
-      if (derived && derived.status !== "open") return;
+      try { if (window.POSTATUS && POSTATUS.derive) derived = POSTATUS.derive(po, rlog, spos); } catch (e3) { derived = null; }
+      if (derived && derived.status !== "open" && derived.status !== "partial") return;
       if (!derived && /\b(cancel+ed|cancel|void(ed)?)\b/i.test(String(po.notes || ""))) return;
       var raw = linesOf(po);
       var openLines = [];
@@ -315,6 +316,8 @@
       });
       if (raw.length && !openLines.length) return;
       var expect = openLines.map(function (l) { return l.ship; }).filter(Boolean).sort()[0] || "";
+      var chip = "";
+      try { if (window.POSTATUS && POSTATUS.statusLabel) chip = POSTATUS.statusLabel(po.notes); } catch (eChip) { chip = ""; }
       out.push({
         num: po.po_num || po.id || "",
         vendor: po.vendor || "",
@@ -322,7 +325,9 @@
         total: po.total || "",
         expect: expect,
         lines: openLines,
-        bare: !raw.length
+        bare: !raw.length,
+        partial: !!(derived && derived.status === "partial"),
+        statusLabel: chip
       });
     });
     var legacy = [];
@@ -381,7 +386,10 @@
       var tot = "";
       var totNum = parseFloat(String(r.total == null ? "" : r.total).replace(/[^0-9.\-]/g, ""));
       if (totNum > 0) tot = '<div class="df-meta">$' + totNum.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</div>';
-      return '<tr' + hide + '><td><b>' + esc(r.num || "—") + '</b>' + tot + '</td>' +
+      var pills = "";
+      if (r.partial) pills += ' <span class="pill partial">Partially received</span>';
+      if (r.statusLabel) pills += ' <span class="pill status">' + esc(r.statusLabel) + '</span>';
+      return '<tr' + hide + '><td><b>' + esc(r.num || "—") + '</b>' + pills + tot + '</td>' +
         '<td>' + esc(r.vendor || "—") + '</td>' +
         '<td>' + esc(r.date || "—") + '</td>' +
         '<td>' + lineBits(r.lines) + '</td>' +

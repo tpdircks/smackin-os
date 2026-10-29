@@ -13,6 +13,14 @@
        received, OR it is older than AGED_DAYS with no unreceived line still
        carrying a recent/future ship date ("Closed - aged").
      - otherwise OPEN.
+   Digit-run receive match: after the existing exact/contains rules, a
+   receiving_log row also links when the longest digit run of length >= 6
+   from one normalized po_num appears inside the other (Txt092326StrChz
+   links to MN092326-01 via 092326). The row is kept only for the supplier_pos
+   po_num with the strictly longest overlap, so a shared date code cannot
+   close an unrelated PO. A supplier_pos row is required.
+   Some-but-not-all received lines are status "partial" (Partially Received).
+   [[STATUS:Label]] in notes is a purchasing chip (POSTATUS.statusLabel).
    Overrides DB.expectedReceipts (adds receiving_log evidence; closed POs drop
    out of the open list) and DB.onOrderMap (On Order tile now reads open
    supplier_pos lines, unioned with the legacy purchase_orders result).
@@ -30,6 +38,7 @@
   var LS_FILTER = "po-status-filter";
   var filter = "open";
   try { filter = localStorage.getItem(LS_FILTER) || "open"; } catch (e) {}
+  if (filter !== "all" && filter !== "closed" && filter !== "partial" && filter !== "open") filter = "open";
 
   function norm(x) { return String(x == null ? "" : x).toUpperCase().replace(/[^A-Z0-9]/g, ""); }
   function words(x) { return String(x || "").toLowerCase().split(/[^a-z0-9]+/).filter(function (w) { return w.length >= 4; }); }
@@ -46,12 +55,85 @@
   function lineShip(l) { return String(l.ship || l.ship_date || l.expected || l.eta || "").slice(0, 10); }
   function lineFlag(l) { return !!(l.recv || l.received === true); }
 
-  function rlogFor(po, rlog) {
-    var pn = norm(po.po_num); if (!pn) return [];
-    return rlog.filter(function (r) {
-      var q = norm(r.po_num); if (!q) return false;
-      return q === pn || (pn.length >= 6 && q.indexOf(pn) >= 0) || (q.length >= 8 && pn.indexOf(q) >= 0);
+  function legacyPoMatch(pn, q) {
+    if (!pn || !q) return false;
+    return q === pn || (pn.length >= 6 && q.indexOf(pn) >= 0) || (q.length >= 8 && pn.indexOf(q) >= 0);
+  }
+  function longestDigitRuns(s) {
+    var runs = String(s || "").match(/\d{6,}/g) || [], best = 0, out = [];
+    for (var i = 0; i < runs.length; i++) {
+      if (runs[i].length > best) { best = runs[i].length; out = [runs[i]]; }
+      else if (runs[i].length === best) out.push(runs[i]);
+    }
+    return out;
+  }
+  // Length of the longest digit run (>=6) from either normalized po_num that
+  // appears inside the other. 0 when neither side has that kind of overlap.
+  function digitOverlap(pn, q) {
+    var best = 0;
+    function hit(run, hay) {
+      if (run && run.length >= 6 && hay.indexOf(run) >= 0 && run.length > best) best = run.length;
+    }
+    longestDigitRuns(pn).forEach(function (run) { hit(run, q); });
+    longestDigitRuns(q).forEach(function (run) { hit(run, pn); });
+    return best;
+  }
+  function catalogFor(po, catalog) {
+    var list = catalog;
+    if (!list) { try { list = allPos(); } catch (e) { list = []; } }
+    if (!list || !list.length) return [po];
+    for (var i = 0; i < list.length; i++) {
+      var p = list[i];
+      if (!p) continue;
+      if (p === po) return list;
+      if (po && po.id && p.id === po.id) return list;
+      if (po && po.po_num && p.po_num === po.po_num && norm(p.po_num)) return list;
+    }
+    return list.concat([po]);
+  }
+  var linkMemo = null;
+  function buildLinks(pos, rows) {
+    var byIdx = [], norms = [];
+    for (var i = 0; i < pos.length; i++) { byIdx.push([]); norms.push(norm(pos[i] && pos[i].po_num)); }
+    (rows || []).forEach(function (r) {
+      var q = norm(r && r.po_num);
+      if (!q) return;
+      var legacy = [];
+      for (var i = 0; i < pos.length; i++) if (legacyPoMatch(norms[i], q)) legacy.push(i);
+      if (legacy.length) {
+        for (var a = 0; a < legacy.length; a++) byIdx[legacy[a]].push(r);
+        return;
+      }
+      var best = 0, winnerNorms = [];
+      for (var j = 0; j < pos.length; j++) {
+        if (!norms[j]) continue;
+        var score = digitOverlap(norms[j], q);
+        if (score < 6) continue;
+        if (score > best) { best = score; winnerNorms = [norms[j]]; }
+        else if (score === best && winnerNorms.indexOf(norms[j]) < 0) winnerNorms.push(norms[j]);
+      }
+      if (winnerNorms.length !== 1) return;
+      var win = winnerNorms[0];
+      for (var k = 0; k < norms.length; k++) if (norms[k] === win) byIdx[k].push(r);
     });
+    return byIdx;
+  }
+  function rlogFor(po, rlog, catalog) {
+    var pn = norm(po && po.po_num); if (!pn) return [];
+    var rows = rlog || [];
+    var pos = catalogFor(po, catalog);
+    if (!linkMemo || linkMemo.rlog !== rows || linkMemo.pos !== pos) {
+      linkMemo = { rlog: rows, pos: pos, byIdx: buildLinks(pos, rows) };
+    }
+    var idx = -1;
+    for (var i = 0; i < pos.length; i++) if (pos[i] === po) { idx = i; break; }
+    if (idx < 0 && po && po.id) {
+      for (var j = 0; j < pos.length; j++) if (pos[j] && pos[j].id === po.id) { idx = j; break; }
+    }
+    if (idx < 0) {
+      for (var k = 0; k < pos.length; k++) if (norm(pos[k] && pos[k].po_num) === pn) { idx = k; break; }
+    }
+    return idx >= 0 ? linkMemo.byIdx[idx] : [];
   }
   function lineMatchesLog(l, r) {
     var c = String(r.contents || "") + " " + String(r.notes || "");
@@ -61,9 +143,9 @@
     return hit >= Math.min(2, lw.length);
   }
 
-  // Core derivation. Returns { status:'open'|'closed', reason, lines:[{recv,recv_date,src}], rl:[...] }
-  function derive(po, rlog) {
-    var lines = linesOf(po), rl = rlogFor(po, rlog || []);
+  // Core derivation. Returns { status:'open'|'partial'|'closed', reason, lines:[{recv,recv_date,src}], rl:[...] }
+  function derive(po, rlog, catalog) {
+    var lines = linesOf(po), rl = rlogFor(po, rlog || [], catalog);
     var lastRl = rl.map(function (r) { return String(r.recv_date || "").slice(0, 10); }).sort().pop() || "";
     var out = lines.map(function (l) {
       if (lineFlag(l)) return { recv: true, recv_date: String(l.recv_date || "").slice(0, 10), src: "line" };
@@ -77,6 +159,7 @@
     if (/\b(cancel+ed|cancel|void(ed)?)\b/i.test(String(po.notes || ""))) { res.status = "closed"; res.reason = "Cancelled"; return res; }
     if (lines.length && out.every(function (x) { return x.recv; })) { res.status = "closed"; res.reason = "Received"; return res; }
     if (!lines.length && rl.length) { res.status = "closed"; res.reason = "Received"; return res; }
+    if (lines.length && out.some(function (x) { return x.recv; })) { res.status = "partial"; res.reason = "Partially Received"; return res; }
     var d = parseDate(po.po_date) || parseDate(po.created_at);
     var age = d ? Math.floor((Date.now() - d.getTime()) / 864e5) : 0;
     if (age > AGED_DAYS) {
@@ -89,7 +172,19 @@
 
   function rlog() { try { return (window.DB && DB.receivingLog) ? DB.receivingLog() : []; } catch (e) { return []; } }
   function allPos() { try { return (window.DB && DB.supplierPos) ? DB.supplierPos() : []; } catch (e) { return []; } }
-  function statusOf(po) { return derive(po, rlog()); }
+  function statusOf(po) { var pos = allPos(); return derive(po, rlog(), pos.length ? pos : [po]); }
+  function escHtml(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function statusLabel(notes) {
+    var m = /\[\[STATUS:\s*([^\]\r\n]+?)\s*\]\]/i.exec(String(notes || ""));
+    if (!m) return "";
+    var label = m[1].replace(/\s+/g, " ").trim();
+    if (!label || label.length > 40) return "";
+    return label;
+  }
 
   // Statuses that are not "on order". Legacy purchase_orders use ordered/partial;
   // anything in this list (and drafts) is excluded, same as DB.onOrderMap.
@@ -135,10 +230,11 @@
       });
     } catch (e) {}
     var rl = rlog();
-    allPos().forEach(function (po) {
+    var pos = allPos();
+    pos.forEach(function (po) {
       if (isTerminalStatus(po.status) || isTerminalStatus(po.po_status) || isTerminalStatus(po.state)) return;
-      var stt = derive(po, rl);
-      if (stt.status !== "open") return;
+      var stt = derive(po, rl, pos);
+      if (stt.status !== "open" && stt.status !== "partial") return;
       linesOf(po).forEach(function (l, i) {
         if ((stt.lines[i] || {}).recv) return;
         var id = itemIdFor(l); if (!id) return;
@@ -214,9 +310,9 @@
 
     // Expected Receipts: same shape as db.js, but received/closed uses derived status
     DB.expectedReceipts = function () {
-      var out = [], rl = rlog();
-      allPos().forEach(function (po) {
-        var st = derive(po, rl);
+      var out = [], rl = rlog(), pos = allPos();
+      pos.forEach(function (po) {
+        var st = derive(po, rl, pos);
         linesOf(po).forEach(function (l, i) {
           var ship = lineShip(l); if (!ship) return;
           var li = st.lines[i] || {};
@@ -250,28 +346,48 @@
     derive: derive,
     statusOf: statusOf,
     getFilter: function () { return filter; },
-    setFilter: function (f) { filter = (f === "all" || f === "closed") ? f : "open"; try { localStorage.setItem(LS_FILTER, filter); } catch (e) {} },
+    setFilter: function (f) {
+      filter = (f === "all" || f === "closed" || f === "partial") ? f : "open";
+      try { localStorage.setItem(LS_FILTER, filter); } catch (e) {}
+    },
     filter: function (list) {
       if (filter === "all") return list;
       var rl = rlog();
-      return list.filter(function (po) { return derive(po, rl).status === filter; });
+      return list.filter(function (po) {
+        var s = derive(po, rl, list).status;
+        if (filter === "open") return s === "open" || s === "partial";
+        return s === filter;
+      });
     },
     counts: function (list) {
-      var rl = rlog(), c = { open: 0, closed: 0, all: list.length };
-      list.forEach(function (po) { c[derive(po, rl).status]++; });
+      var rl = rlog(), c = { open: 0, partial: 0, closed: 0, all: list.length };
+      list.forEach(function (po) {
+        var s = derive(po, rl, list).status;
+        if (s === "partial") c.partial++;
+        else if (s === "closed") c.closed++;
+        else c.open++;
+      });
       return c;
     },
     openOnOrderCount: openOnOrderCount,
+    statusLabel: statusLabel,
+    statusPill: function (notes) {
+      var label = statusLabel(notes);
+      if (!label) return "";
+      return ' <span class="pill status" title="Purchasing status from notes">' + escHtml(label) + '</span>';
+    },
     pill: function (po) {
       var st = statusOf(po);
+      if (st.status === "partial") return ' <span class="pill partial" title="Partially Received">Partially received</span>';
       return st.status === "closed"
-        ? ' <span class="pill ok" title="' + st.reason + '">Closed' + (st.reason && st.reason !== "Received" ? " &middot; " + st.reason : "") + '</span>'
+        ? ' <span class="pill ok" title="' + escHtml(st.reason) + '">Closed' + (st.reason && st.reason !== "Received" ? " &middot; " + escHtml(st.reason) : "") + '</span>'
         : ' <span class="pill low">Open</span>';
     },
     toggleHtml: function (list) {
       var c = this.counts(list);
       var b = function (v, lbl) { return '<button class="' + (filter === v ? "active" : "") + '" onclick="UI.poStatusFilter(\'' + v + '\')">' + lbl + '</button>'; };
-      return '<div class="ordtabs" style="margin:0 0 10px">' + b("open", "Open (" + c.open + ")") + b("closed", "Closed (" + c.closed + ")") + b("all", "All (" + c.all + ")") + '</div>';
+      var openN = c.open + c.partial;
+      return '<div class="ordtabs" style="margin:0 0 10px">' + b("open", "Open (" + openN + ")") + b("partial", "Partially Received (" + c.partial + ")") + b("closed", "Closed (" + c.closed + ")") + b("all", "All (" + c.all + ")") + '</div>';
     },
     install: install
   };
