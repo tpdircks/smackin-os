@@ -1039,7 +1039,7 @@
   function isHoldStatus(st) { st = upStatus(st); return st === "HOLD" || st === "QUARANTINE" || st === "QA-HOLD"; }
   function isRejectStatus(st) { return upStatus(st) === "REJECTED"; }
   function isClosedStatus(st) { st = upStatus(st); return st === "EMPTY" || st === "SHIPPED"; }
-  function isQuarantineLoc(loc) { loc = upStatus(loc); return loc === "QUARANTINE" || loc === "QA-HOLD"; }
+  function isQuarantineLoc(loc) { loc = upStatus(loc); return loc === "QUARANTINE" || loc === "QA-HOLD" || loc === "RETURNS-HOLD"; }
   function labelHeld(l) {
     if (!l || isClosedStatus(l.status)) return false;
     return isRejectStatus(l.status) || isHoldStatus(l.status) || isQuarantineLoc(l.location);
@@ -1437,7 +1437,7 @@
         DB.stock().forEach(function (r) {
           if (!r || !ids[r.item_id] || !(num(r.qty) > 0)) return;
           var loc = String(r.location || "").toUpperCase();
-          if (loc === "QUARANTINE" || loc === "QA-HOLD") return;
+          if (loc === "QUARANTINE" || loc === "QA-HOLD" || loc === "RETURNS-HOLD") return;
           var lot = String(r.lot || "").toUpperCase().replace(/\s+/g, "");
           if (!BAGCODE_RE.test(lot) || lotFlavorPrefix(lot) !== fc || byLot[lot]) return;
           var heldState = lotHoldInfo(lot).state;

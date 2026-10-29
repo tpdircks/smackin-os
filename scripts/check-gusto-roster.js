@@ -66,7 +66,7 @@ assert(html.indexOf('src="gusto-roster.js?b=1"') >= 0, "script tagged");
 assert(html.indexOf("gusto-roster.js") < html.indexOf("app.js?b="), "roster script loads before app");
 
 var sw = fs.readFileSync(path.join(__dirname, "..", "service-worker.js"), "utf8");
-assert(sw.indexOf('const CACHE = "smackin-inv-v244"') >= 0, "cache v244");
+assert(sw.indexOf('const CACHE = "smackin-inv-v245"') >= 0, "cache v245");
 assert(sw.indexOf("./gusto-roster.js") >= 0, "service worker lists roster script");
 
 if (failed) {

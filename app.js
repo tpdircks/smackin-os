@@ -752,7 +752,7 @@
   const NAV_GROUPS = [
     { key:"", items:["home","daily"] },
     { key:"grpReceiving", items:["receive","recvlog","returns","qa"] },
-    { key:"grpInventory", items:["dash","adjust","count","move","locations","facility","finbags"] },
+    { key:"grpInventory", items:["returns","dash","adjust","count","move","locations","facility","finbags"] },
     { key:"grpItems", items:["seasoning","recipes","seed","skus","analytics","labels"] },
     { key:"grpFulfillment", items:["produce","retailprod","ecomprod","skulookup","prodlog","fulfilldaily","flavinv","stockbuild","orders","orderdocs"] },
     { key:"grpDemand", items:["demand","demandboard","demandsched","demandimport","ecomdemand","forecast"] },
@@ -896,7 +896,9 @@
   const fmt = n => (Math.round(n * 100) / 100).toLocaleString();
   const selOpts = (arr, sel) => (arr || []).map(o => '<option' + (o === sel ? ' selected' : '') + '>' + o + '</option>').join("");
   function toast(m) { const t = $("toast"); t.textContent = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 1700); }
-  function statusOf(it) { const oh = DB.onHand(it.id); if (oh <= 0) return "out"; if (oh < it.reorder) return "low"; return "ok"; }
+  function heldOf(id) { return DB.heldOnHand ? DB.heldOnHand(id) : 0; }
+  function availOf(id) { return DB.availableOnHand ? DB.availableOnHand(id) : DB.onHand(id); }
+  function statusOf(it) { const oh = availOf(it.id); if (oh <= 0) return "out"; if (oh < it.reorder) return "low"; return "ok"; }
   // ---- alerts helpers ----
   const EXPIRY_WARN_DAYS = 30;
   function daysUntil(dstr) { if (!dstr) return null; const d = new Date(String(dstr).slice(0, 10) + "T00:00:00"); if (isNaN(d.getTime())) return null; const t = new Date(new Date().toISOString().slice(0, 10) + "T00:00:00"); return Math.round((d - t) / 86400000); }
@@ -1016,8 +1018,14 @@
       td: i => '<td><b>' + i.name + '</b><div class="muted sm">' + i.code + '</div></td>',
       val: i => i.name.toLowerCase() },
     onhand: { th: () => '<th class="right" data-sort="onhand">' + L("colOnhand") + '</th>',
-      td: i => '<td class="right"><b>' + fmt(DB.onHand(i.id)) + '</b> ' + i.unit + '</td>',
-      val: i => DB.onHand(i.id) },
+      td: i => {
+        const total = DB.onHand(i.id);
+        const held = heldOf(i.id);
+        const avail = total - held;
+        const sub = held > 0 ? '<div class="muted sm">' + fmt(avail) + ' available · ' + fmt(held) + ' held</div>' : '';
+        return '<td class="right"><b>' + fmt(held > 0 ? avail : total) + '</b> ' + i.unit + sub + '</td>';
+      },
+      val: i => availOf(i.id) },
     reorder: { th: () => '<th class="right" data-sort="reorder">' + L("colReorder") + '</th>',
       td: i => '<td class="right muted">' + fmt(i.reorder) + '</td>', val: i => i.reorder },
     status: { th: () => '<th data-sort="status">' + L("colStatus") + '</th>',
@@ -1214,7 +1222,7 @@
         if (out.length) push("out", plural(out.length, "seed type") + " OUT — production is gated");
         if (low.length) push("low", plural(low.length, "seed type") + " low");
       } else if (tab === "qa") {
-        let held = 0; ["QA-HOLD", "QUARANTINE"].forEach(z => DB.items().forEach(i => { if (DB.atLoc(i.id, z) > 0) held++; }));
+        let held = 0; ["QA-HOLD", "QUARANTINE", "RETURNS-HOLD"].forEach(z => DB.items().forEach(i => { if (DB.atLoc(i.id, z) > 0) held++; }));
         if (held) push("out", plural(held, "item") + " in QA-Hold / Quarantine to review");
       } else if (tab === "orders") {
         const nw = (typeof newOrdersCount === "function") ? newOrdersCount() : 0;
@@ -1292,15 +1300,16 @@
     const its = DB.items().slice().sort((a, b) => (CATLBL[a.category] || a.category).localeCompare(CATLBL[b.category] || b.category) || a.name.localeCompare(b.name));
     const rows = its.map(i => {
       const oh = DB.onHand(i.id);
-      const qHold = (DB.atLoc(i.id, "QUARANTINE") || 0) + (DB.atLoc(i.id, "QA-HOLD") || 0);
+      const qHold = heldOf(i.id);
+      const avail = availOf(i.id);
       const quarBadge = qHold > 0 ? ' <span class="pill low" title="' + L("adjQuarTip") + '">&#128274; ' + fmt(qHold) + ' ' + L("adjQuarWord") + '</span>' : '';
       const txt = (i.name + " " + i.code + " " + (CATLBL[i.category] || i.category) + (qHold > 0 ? " quarantine" : "")).toLowerCase();
       return '<tr data-txt="' + txt.replace(/"/g, "") + '"><td><span class="tag">' + (CATLBL[i.category] || i.category) + '</span></td>' +
         '<td><b>' + i.name + '</b>' + quarBadge + '<div class="muted sm">' + i.code + '</div></td>' +
-        '<td class="right muted">' + fmt(oh) + ' ' + i.unit + (qHold > 0 ? '<div class="sm" style="color:#B25C00">' + fmt(qHold) + ' ' + L("adjQuarWord") + '</div>' : '') + '</td>' +
+        '<td class="right muted">' + fmt(oh) + ' ' + i.unit + (qHold > 0 ? '<div class="sm" style="color:#B25C00">' + fmt(avail) + ' available · ' + fmt(qHold) + ' held</div>' : '') + '</td>' +
         '<td><input class="adjq" id="adj-' + i.id + '" type="number" min="0" inputmode="numeric" placeholder="' + fmt(oh) + '" data-cur="' + oh + '"></td></tr>';
     }).join("");
-    return '<div class="card"><h2>' + L("adjust") + '</h2><p class="hint">' + L("adjustHint") + '</p>' +
+    return '<div class="card"><h2>' + L("adjust") + '</h2><p class="hint">' + L("adjustHint") + ' A count correction lands in RECEIVING, or the largest location that is not RETURNS, RETURNS-HOLD, QUARANTINE, or QA-HOLD. Those locations are left as they are.</p>' +
       opField("Adriana") +
       '<label style="margin-top:12px">' + L("searchItems") + '</label><input id="adjSearch" autocomplete="off" oninput="UI.adjSearch(this.value)" placeholder="' + L("searchItems") + '">' +
       '<table class="sortable" style="margin-top:10px"><thead><tr><th>' + L("colCategory") + '</th><th>' + L("item") + '</th><th class="right">' + L("onhand") + '</th><th data-nosort>' + L("newCount") + '</th></tr></thead><tbody id="adjBody">' + rows + '</tbody></table>' +
@@ -1766,13 +1775,13 @@
     const rowFor = (scode, name, is15) => {
       const floor = flavorFloorPallets(scode); floorTotal += floor;
       const it = flavorFinishedItem(name, is15);
-      const oh = it ? DB.onHand(it.id) : 0; const unit = it ? (it.unit || "") : ""; const reorder = it ? (Number(it.reorder) || 0) : 0;
+      const oh = it ? availOf(it.id) : 0; const held = it ? heldOf(it.id) : 0; const unit = it ? (it.unit || "") : ""; const reorder = it ? (Number(it.reorder) || 0) : 0;
       let status;
       if (oh <= 0) { status = '<span class="pill out">Out</span>'; shortCount++; }
       else if (reorder && oh < reorder) { status = '<span class="pill low">Low</span>'; shortCount++; }
       else status = '<span class="pill ok">OK</span>';
       return '<tr><td><b>' + esc(name) + '</b> <span class="muted sm">' + esc(scode) + '</span></td>' +
-        '<td class="right">' + fmt(floor) + '</td><td class="right">' + fmt(oh) + ' ' + esc(unit) + '</td><td>' + status + '</td></tr>';
+        '<td class="right">' + fmt(floor) + '</td><td class="right">' + fmt(oh) + ' ' + esc(unit) + (held > 0 ? '<div class="muted sm">' + fmt(held) + ' held</div>' : '') + '</td><td>' + status + '</td></tr>';
     };
     const tbl = (title, arr, is15) => '<div class="card"><h2 class="sub2">' + title + '</h2>' +
       '<table class="sortable"><thead><tr><th>Flavor</th><th class="right">On floor (pallets)</th><th class="right">Finished on-hand</th><th>Status</th></tr></thead><tbody>' +
@@ -1780,7 +1789,7 @@
     const body4 = tbl("&#127871; 4 oz flavors", f4, false);
     const body15 = tbl("&#127871; 1.5 oz flavors", f15, true);
     return '<div class="card"><h2>&#128202; Flavor Inventory</h2>' +
-      '<p class="hint">Live per-flavor view of what\'s on the floor and finished on-hand, with shortage flags. Note: the 4 oz floor is shared between e-commerce and retail production &mdash; both draw from it.</p>' +
+      '<p class="hint">Live per-flavor view of what is on the floor and finished available stock, with shortage flags. Held qty in RETURNS-HOLD, QUARANTINE, or QA-HOLD is not in the available number. The 4 oz floor is shared between e-commerce and retail production.</p>' +
       '<div class="kpis"><div class="kpi' + (shortCount ? " alert" : "") + '"><div class="n">' + shortCount + '</div><div class="l">Flavors low / out</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(floorTotal) + '</div><div class="l">Pallets on floor</div></div>' +
       '<div class="kpi"><div class="n">' + (f4.length + f15.length) + '</div><div class="l">Flavors tracked</div></div></div></div>' +
@@ -2991,7 +3000,7 @@
   function viewEcomProd() { return productionEntry("ecom"); }
   function viewQA() {
     const hold = [];
-    ["QA-HOLD", "QUARANTINE"].forEach(z => DB.items().forEach(i => { const q = DB.atLoc(i.id, z); if (q > 0) hold.push({ i, z, q }); }));
+    ["QA-HOLD", "QUARANTINE", "RETURNS-HOLD"].forEach(z => DB.items().forEach(i => { const q = DB.atLoc(i.id, z); if (q > 0) hold.push({ i, z, q }); }));
     const body = hold.length ? hold.map(x =>
       '<tr><td><b>' + x.i.name + '</b><div class="muted sm">' + x.i.code + '</div></td><td>' + x.z + '</td>' +
       '<td class="right"><b>' + fmt(x.q) + '</b> ' + x.i.unit + '</td>' +
@@ -3693,16 +3702,19 @@
     const b4 = DB.items().filter(i => i.category === "bag4");
     const b15 = DB.items().filter(i => i.category === "bag15");
     const flavors = Array.from(new Set(b4.concat(b15).map(i => i.flavor))).sort();
-    const on = (arr, fl) => { const it = arr.find(i => i.flavor === fl); return it ? DB.onHand(it.id) : null; };
+    const on = (arr, fl) => { const it = arr.find(i => i.flavor === fl); return it ? availOf(it.id) : null; };
+    const heldBag = (arr, fl) => { const it = arr.find(i => i.flavor === fl); return it ? heldOf(it.id) : 0; };
     let t4 = 0, t15 = 0;
     const rows = flavors.map(fl => {
       const o4 = on(b4, fl), o15 = on(b15, fl);
       if (o4) t4 += o4; if (o15) t15 += o15;
       const img = flavorImg(fl);
       const nameCell = '<div class="flavcell">' + (img ? '<img class="flavimg" src="' + img + '" alt="" loading="lazy">' : '<span class="flavimg ph"></span>') + '<b>' + esc(fl) + '</b></div>';
-      return '<tr><td>' + nameCell + '</td><td class="right">' + (o4 != null ? fmt(o4) : "&mdash;") + '</td><td class="right">' + (o15 != null ? fmt(o15) : "&mdash;") + '</td></tr>';
+      const h4 = heldBag(b4, fl), h15 = heldBag(b15, fl);
+      const cell = (n, h) => n == null ? "&mdash;" : (fmt(n) + (h > 0 ? '<div class="muted sm">' + fmt(h) + " held</div>" : ""));
+      return '<tr><td>' + nameCell + '</td><td class="right">' + cell(o4, h4) + '</td><td class="right">' + cell(o15, h15) + '</td></tr>';
     }).join("");
-    return '<div class="card"><h2>' + L("finbags") + '</h2><p class="hint">' + L("fbHint") + '</p>' +
+    return '<div class="card"><h2>' + L("finbags") + '</h2><p class="hint">' + L("fbHint") + ' Counts are available to ship. RETURNS-HOLD, QUARANTINE, and QA-HOLD show as held and are not in the total.</p>' +
       '<div class="kpis"><div class="kpi"><div class="n">' + fmt(t4) + '</div><div class="l">' + L("fb4oz") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(t15) + '</div><div class="l">' + L("fb15oz") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(t4 + t15) + '</div><div class="l">' + L("fbTotal") + '</div></div></div>' +
@@ -3945,7 +3957,7 @@
     if (!snap.length) return '<div class="card"><h2>&#128722; ' + L("mnTitle") + '</h2><p class="hint">' + L("mnNone") + '</p></div>';
     const q = {}; snap.forEach(r => { q[r.flavor] = (q[r.flavor] || 0) + (Number(r.bags) || 0); });
     const items = DB.items().filter(i => i.category === "bag4" || i.category === "bag15");
-    const ohByF = {}; items.forEach(i => { ohByF[i.flavor] = (ohByF[i.flavor] || 0) + (Number(DB.onHand(i.id)) || 0); });
+    const ohByF = {}; items.forEach(i => { ohByF[i.flavor] = (ohByF[i.flavor] || 0) + (Number(availOf(i.id)) || 0); });
     const rows = Object.keys(q).map(fl => { const demand = q[fl], oh = ohByF[fl] || 0; return { flavor: fl, demand, oh, short: Math.max(0, demand - oh) }; })
       .filter(x => x.demand > 0).sort((a, b) => b.short - a.short || b.demand - a.demand);
     const toMake = rows.filter(x => x.short > 0);
@@ -5459,7 +5471,7 @@
       const qty = parseFloat(($("qa-qty") || {}).value); if (!(qty > 0)) return toast(L("enter"));
       const reason = ($("qa-reason") || {}).value || "";
       const op = opVal() + (reason ? (" — " + reason) : "");
-      const rows = (DB.stock() || []).filter(r => r.item_id === it.id && r.location !== "QUARANTINE" && r.location !== "QA-HOLD" && Number(r.qty) > 0).sort((a, b) => Number(b.qty) - Number(a.qty));
+      const rows = (DB.stock() || []).filter(r => r.item_id === it.id && r.location !== "QUARANTINE" && r.location !== "QA-HOLD" && r.location !== "RETURNS-HOLD" && Number(r.qty) > 0).sort((a, b) => Number(b.qty) - Number(a.qty));
       let remaining = qty, moved = 0;
       for (const r of rows) { if (remaining <= 0) break; const take = Math.min(remaining, Number(r.qty)); const res = await DB.move(it, r.location, "QUARANTINE", take, op); if (res && res.ok) { moved += take; remaining -= take; } }
       if (moved <= 0) return toast("No on-hand stock to quarantine for " + it.name);
@@ -6124,6 +6136,7 @@
     boardExit() { boardDept = ""; boardStopTimers(); try { const u = new URL(location.href); u.searchParams.delete("board"); history.replaceState(null, "", u.pathname + (u.search || "")); } catch (e) {} go("home"); }
   };
   window.UI = UI;
+  window.SMK_UNLOCK = ensureUnlocked;
   UI.lock = lockEdits;
   // Gate every write action behind the PIN. Viewing stays open.
   ["saveAdjust","ordAdd","ordComplete","ordReopen","receive","put","move","produce","count","doReturn","addSeasLot","seasStatus","quarExpired","qaConvert","qaScrap","poSave","poOrder","poCancel","poDelete","poReceiveConfirm","reset"].forEach(fn => {
@@ -6269,7 +6282,13 @@
     pendingExternalRender = false;
     _deadCache = null; // recompute dead-stock flags fresh each render
     renderNav(); refreshDatalists();
-    const map = { home: viewHome, daily: viewDaily, dash: viewDash, analytics: viewAnalytics, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: viewReturns, orders: viewOrders, rd: viewRD, qa: viewQA,
+    const map = { home: viewHome, daily: viewDaily, dash: viewDash, analytics: viewAnalytics, alerts: viewAlerts, adjust: viewAdjust, receive: viewReceive, putaway: viewPut, returns: function () {
+      if (window.RETURNS_WF && typeof RETURNS_WF.view === "function") {
+        try { return RETURNS_WF.view(); }
+        catch (e) { return '<div class="card"><h2>Returns</h2><p class="hint">' + esc(e && e.message ? e.message : e) + '</p></div>'; }
+      }
+      return viewReturns();
+    }, orders: viewOrders, rd: viewRD, qa: viewQA,
       move: viewMove, prodorders: viewProdOrders, reordertracker: viewReorderTracker, launch: viewLaunch, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, skulookup: viewSkuLookup, prodlog: viewProdLog, fulfilldaily: viewFulfillDaily, stockbuild: viewStockBuild, reorder15: viewReorder15, seasoning: viewSeasoning, recipes: viewRecipes, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, expreceipts: viewExpectedReceipts, flavinv: viewFlavorInventory, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, maintenance: viewMaintenance, compliance: viewCompliance, quality: viewQuality, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
       demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, ecomdemand: viewEcomDemand, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor, board: viewBoard, disposition: viewDisposition };
