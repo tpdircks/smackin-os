@@ -44,7 +44,7 @@ assert(index.indexOf('src="slc-count-latest.js?b=1"') < index.indexOf('src="inv-
 assert(index.indexOf('src="slc-count-panel.js?b=4"') >= 0, "panel cache bust");
 
 var sw = read("service-worker.js");
-assert(sw.indexOf('const CACHE = "smackin-inv-v245"') >= 0, "cache v245");
+assert(sw.indexOf('const CACHE = "smackin-inv-v246"') >= 0, "cache v246");
 assert(sw.indexOf("smackin-inv-v242") < 0, "old cache gone");
 assert(sw.indexOf("./inv-sync-1027d.js") >= 0, "sw precaches the apply module");
 obsolete.forEach(function (rel) { assert(sw.indexOf(rel) < 0, "sw lists " + rel); });

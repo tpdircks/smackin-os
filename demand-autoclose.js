@@ -13,6 +13,10 @@
    What it does now (read-only wrapper over DB.demandLines — NO database writes):
      - Marks a line "Shipped" ONLY when its due date is more than CUTOFF_DAYS in the
        past — a line that far past due is dead / already shipped. Nothing else changes.
+     - Target is never remapped. SPS often has no Target ship row, so a past-due
+       Target PO stays Open on the board until someone marks it shipped.
+   Persisted closes (orders Complete, or non-Target due at least 14 days ago)
+   are written by demand-close-cleanup.js. This file still does not write.
    Raw rows remain available at DB.demandLinesRaw().
 */
 (function () {
@@ -29,6 +33,7 @@
     var now = Date.now();
     return raw.map(function (r) {
       if ((r.status || "Open") !== "Open") return r;
+      if (/target/i.test(String(r.partner || ""))) return r;
       var due = dueMs(r.due_date);
       if (due !== null && (now - due) > CUTOFF_DAYS * 86400000) return Object.assign({}, r, { status: "Shipped", _autoclosed: true });
       return r;
