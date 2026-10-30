@@ -58,7 +58,7 @@
       seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdOnHand:"On hand by type", sdReceived:"Received",sdIntCode:"Internal code",sdPackaging:"Packaging",sdPickPack:"Select packaging...",sdPallets:"# Pallets",sdPalletsShort:"pallet(s)",sdPackDate:"Packaging date", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
       skus:"SKUs", skusHint:"Finished-goods / retail SKU catalog - bundles, singles, and cases with bag count and flavor contents. Reference only.", skuCode:"SKU", skuTitle:"Product", skuBags:"Bags", skuComp:"Contents", skuSearchP:"Search SKU, product, or flavor...", skuCount:"SKUs",
       stockbuild:"Stock Build", reorder15:"1.5oz Reorder", r15Hint:"Trigger-based reorder for 1.5oz finished bags (Allen's rule): when a flavor drops to 2 pallets (12,500 bags) or less, build the tier quantity. Prime = 48 bins, Secondary = 24 bins. Coverage uses actual per-flavor ShipStation demand.", r15Prime:"Prime flavors", r15Secondary:"Secondary flavors", r15Bins:"bins", r15After:"after reorder", r15Reorder:"REORDER", r15Ok:"OK", r15NoItem:"no 1.5oz item", r15WksLeft:"Wks left", r15WksAfter:"Wks after", r15ToReorder:"Flavors to reorder now", r15BuildNow:"Build needed now (bags)", r15Trigger:"Trigger (2 pallets)", r15Note:"Coverage after reorder uses actual per-flavor 1.5oz ShipStation demand (FY), not an even split - fast movers like Dill, Maple, Cracked Pepper and BBQ run shorter. Pull recent per-flavor sales before locking targets.", sbHint:"Live build progress vs goals. Update On Hand as you go - the whole team sees it instantly. Yellow field = enter today's count.", sbGoal:"Goal", sbOnHand:"On hand", sbToBuild:"To build", sbPallets:"Pallets", sbDone:"Done", sbTotalGoal:"Total goal", sbComplete:"Complete", sbSaved:"Saved", sbRetail:"Retail", sbEcom:"E-Commerce", sb12pk:"12-Pack Boxes", sbCoverage:"Coverage by group", sbBuilt:"Built vs goal",
-      board:"Board Mode / TV", boardPick:"Pick a department", boardPickHint:"Open this on the TV and pick a department, or bookmark the URL (example: ?board=pmac).", boardExit:"Exit", grpDemand:"Demand", demand:"By Department", demandboard:"Order Board", demandsched:"Production Schedule", demandimport:"Import Orders", ecomdemand:"E-Com Demand", forecast:"Forecast vs Target",
+      board:"Board Mode / TV", boardPick:"Pick a department", boardPickHint:"Open this on the floor TV. It shows what to make and today's counts. Bookmark the URL (example: ?board=pmac).", boardExit:"Exit", grpDemand:"Demand", demand:"By Department", demandboard:"Order Board", demandsched:"Production Schedule", demandimport:"Import Orders", ecomdemand:"E-Com Demand", forecast:"Forecast vs Target",
       fcHint:"Compare only - the app's targets are not changed by this.", fcSnapshot:"Snapshot", fcFlavor:"Flavor", fcApp4:"App Target (4oz)", fcWip4:"WIP Forecast (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"App Target (1.5oz)", fcWip15:"WIP Forecast (1.5oz)", fcDelta15:"Δ (1.5oz)",
       fcNoAppTarget15:"No per-flavor 1.5oz target in the app (bucket / variety-pack only)", fcNone:"No forecast snapshot yet. Ask Claude to refresh it from the WIP FORECAST sheet.", fcBags:"bags",
       dqMix:"Mixing", dqPmac:"P-Mac", dqFul:"Fulfillment", dqToday:"Today", dqTarget:"Today's target", dqTargetShort:"Today",
@@ -95,7 +95,7 @@
       columns:"Columns", colCategory:"Category", colItem:"Item", colOnhand:"On hand", colReorder:"Reorder", colStatus:"Status", resetCols:"Reset",
       pinTitle:"Enter PIN to make changes", pinHint:"Only staff with the PIN can add or change inventory. Viewing is open to everyone.", pinWrong:"Wrong PIN - try again", pinBtn:"Unlock", locked:"Editing locked", unlocked:"Editing unlocked", lockBtn:"Lock editing",
       adjust:"Adjust", adjustHint:"Set the current count for any item: type the number you counted and Save. Use the search box to find items fast. Leave a box blank to keep it unchanged.", searchItems:"Search item name or code", newCount:"New count", saveCounts:"Save counts", noChanges:"No counts entered", savedN:"Counts saved",
-      orders:"Orders", ordersHint:"Non-SPS / Stripe orders. Newest on top; completed orders move to the archive.",
+      orders:"Orders", ordersHint:"Retail and e-commerce are separate boards. This screen never adds those counts together.", ordRetail:"Retail", ordEcom:"E-Commerce", ordRetailTitle:"Retail orders", ordEcomTitle:"E-Commerce orders", ordRetailHint:"EDI and SPS retail only. Shopify, TikTok, ShipStation, Faire, and Stripe stay on E-Commerce and are not in this count.", ordEcomHint:"Shopify, TikTok, ShipStation, Faire, and Stripe only. Retail EDI and SPS stay on Retail and are not in this count.", noOpenRetail:"No open retail orders.", noOpenEcom:"No open e-commerce orders.", noCompleteRetail:"No completed retail orders.", noCompleteEcom:"No completed e-commerce orders.",
       ordOpen:"Open", ordComplete:"Complete", ordAdd:"+ Add order", ordSave:"Save order", ordCancel:"Cancel",
       oCustomer:"Customer", oPO:"Customer PO #", oOrderId:"Order ID", oInvDate:"Invoice date", oShipDate:"Ship date",
       oTracking:"Tracking / BOL / PRO", oCarrier:"Carrier", oAppt:"Appointment / Opendock", oNotes:"Notes", oStripe:"Stripe link", oStatus:"Status",
@@ -216,7 +216,7 @@
       seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdOnHand:"En mano por tipo", sdReceived:"Recibido",sdIntCode:"Codigo interno",sdPackaging:"Empaque",sdPickPack:"Elegir empaque...",sdPallets:"# Paletas",sdPalletsShort:"paleta(s)",sdPackDate:"Fecha de empaque", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
       skus:"SKUs", skusHint:"Catalogo de SKU de producto terminado / retail - paquetes, individuales y cajas con cantidad de bolsas y sabores. Solo referencia.", skuCode:"SKU", skuTitle:"Producto", skuBags:"Bolsas", skuComp:"Contenido", skuSearchP:"Buscar SKU, producto o sabor...", skuCount:"SKUs",
       stockbuild:"Construir Inventario", reorder15:"Reorden 1.5oz", r15Hint:"Reorden por disparador para bolsas 1.5oz (regla de Allen): cuando un sabor baja a 2 paletas (12,500 bolsas) o menos, produzca la cantidad del nivel. Prime = 48 bins, Secundario = 24 bins. La cobertura usa la demanda real por sabor de ShipStation.", r15Prime:"Sabores Prime", r15Secondary:"Sabores Secundarios", r15Bins:"bins", r15After:"tras reorden", r15Reorder:"REORDENAR", r15Ok:"OK", r15NoItem:"sin item 1.5oz", r15WksLeft:"Sem. rest.", r15WksAfter:"Sem. tras", r15ToReorder:"Sabores a reordenar ahora", r15BuildNow:"Produccion necesaria (bolsas)", r15Trigger:"Disparador (2 paletas)", r15Note:"La cobertura tras reorden usa la demanda real por sabor de 1.5oz de ShipStation (ano fiscal), no un promedio - los rapidos como Dill, Maple, Cracked Pepper y BBQ duran menos. Use ventas recientes por sabor antes de fijar metas.", sbHint:"Progreso de construccion vs metas en vivo. Actualice En Mano segun avanza - todo el equipo lo ve al instante. Campo amarillo = ingrese el conteo de hoy.", sbGoal:"Meta", sbOnHand:"En mano", sbToBuild:"Por hacer", sbPallets:"Paletas", sbDone:"Listo", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Guardado", sbRetail:"Minorista", sbEcom:"Comercio Electronico", sb12pk:"Cajas de 12", sbCoverage:"Cobertura por grupo", sbBuilt:"Hecho vs meta",
-      board:"Modo Pizarra / TV", boardPick:"Elija un departamento", boardPickHint:"Abra esto en la TV y elija un departamento, o guarde el URL (ejemplo: ?board=pmac).", boardExit:"Salir", grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Tablero de Pedidos", demandsched:"Programa de Produccion", demandimport:"Importar Pedidos", ecomdemand:"Demanda E-Com", forecast:"Pronostico vs Objetivo",
+      board:"Modo Pizarra / TV", boardPick:"Elija un departamento", boardPickHint:"Abra esto en la TV del piso. Muestra que hacer y los numeros de hoy. Guarde el URL (ejemplo: ?board=pmac).", boardExit:"Salir", grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Tablero de Pedidos", demandsched:"Programa de Produccion", demandimport:"Importar Pedidos", ecomdemand:"Demanda E-Com", forecast:"Pronostico vs Objetivo",
       fcHint:"Solo comparacion - esto no cambia los objetivos de la aplicacion.", fcSnapshot:"Instantanea", fcFlavor:"Sabor", fcApp4:"Objetivo App (4oz)", fcWip4:"Pronostico WIP (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"Objetivo App (1.5oz)", fcWip15:"Pronostico WIP (1.5oz)", fcDelta15:"Δ (1.5oz)",
       fcNoAppTarget15:"Sin objetivo por sabor de 1.5oz en la app (solo cubeta / variety pack)", fcNone:"Aun no hay instantanea de pronostico. Pida a Claude que la actualice desde la hoja WIP FORECAST.", fcBags:"bolsas",
       dqMix:"Mezcla", dqPmac:"P-Mac", dqFul:"Cumplimiento", dqToday:"Hoy", dqTarget:"Meta de hoy", dqTargetShort:"Hoy",
@@ -252,7 +252,7 @@
       columns:"Columnas", colCategory:"Categoria", colItem:"Articulo", colOnhand:"Disponible", colReorder:"Reorden", colStatus:"Estado", resetCols:"Reiniciar",
       pinTitle:"Ingrese el PIN para hacer cambios", pinHint:"Solo el personal con el PIN puede agregar o cambiar inventario. Ver es libre para todos.", pinWrong:"PIN incorrecto - intente de nuevo", pinBtn:"Desbloquear", locked:"Edicion bloqueada", unlocked:"Edicion desbloqueada", lockBtn:"Bloquear edicion",
       adjust:"Ajustar", adjustHint:"Fije el conteo actual de cualquier articulo: escriba la cantidad que conto y Guarde. Use el buscador para encontrar articulos rapido. Deje la casilla vacia para no cambiarlo.", searchItems:"Buscar nombre o codigo", newCount:"Nuevo conteo", saveCounts:"Guardar conteos", noChanges:"No ingreso conteos", savedN:"Conteos guardados",
-      orders:"Ordenes", ordersHint:"Ordenes no-SPS / Stripe. Las mas nuevas arriba; las completadas pasan al archivo.",
+      orders:"Ordenes", ordersHint:"Retail y e-commerce son tableros separados. Esta pantalla no suma esos conteos.", ordRetail:"Retail", ordEcom:"E-Commerce", ordRetailTitle:"Ordenes retail", ordEcomTitle:"Ordenes e-commerce", ordRetailHint:"Solo retail EDI y SPS. Shopify, TikTok, ShipStation, Faire y Stripe quedan en E-Commerce y no entran en este conteo.", ordEcomHint:"Solo Shopify, TikTok, ShipStation, Faire y Stripe. El retail EDI y SPS queda en Retail y no entra en este conteo.", noOpenRetail:"No hay ordenes retail abiertas.", noOpenEcom:"No hay ordenes e-commerce abiertas.", noCompleteRetail:"No hay ordenes retail completadas.", noCompleteEcom:"No hay ordenes e-commerce completadas.",
       ordOpen:"Abiertas", ordComplete:"Completadas", ordAdd:"+ Agregar orden", ordSave:"Guardar orden", ordCancel:"Cancelar",
       oCustomer:"Cliente", oPO:"OC del cliente #", oOrderId:"ID de orden", oInvDate:"Fecha factura", oShipDate:"Fecha envio",
       oTracking:"Rastreo / BOL / PRO", oCarrier:"Transportista", oAppt:"Cita / Opendock", oNotes:"Notas", oStripe:"Enlace Stripe", oStatus:"Estado",
@@ -373,7 +373,7 @@
       seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdOnHand:"Em estoque por tipo", sdReceived:"Recebido",sdIntCode:"Codigo interno",sdPackaging:"Embalagem",sdPickPack:"Selecionar embalagem...",sdPallets:"# Paletes",sdPalletsShort:"palete(s)",sdPackDate:"Data de embalagem", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
       skus:"SKUs", skusHint:"Catalogo de SKU de produto acabado / varejo - pacotes, individuais e caixas com contagem de sacos e sabores. Apenas referencia.", skuCode:"SKU", skuTitle:"Produto", skuBags:"Sacos", skuComp:"Conteudo", skuSearchP:"Buscar SKU, produto ou sabor...", skuCount:"SKUs",
       stockbuild:"Construir Estoque", reorder15:"Reposicao 1.5oz", r15Hint:"Reposicao por gatilho para bolsas 1.5oz (regra do Allen): quando um sabor cai para 2 paletes (12,500 bolsas) ou menos, produza a quantidade do nivel. Prime = 48 bins, Secundario = 24 bins. A cobertura usa a demanda real por sabor do ShipStation.", r15Prime:"Sabores Prime", r15Secondary:"Sabores Secundarios", r15Bins:"bins", r15After:"apos reposicao", r15Reorder:"REPOR", r15Ok:"OK", r15NoItem:"sem item 1.5oz", r15WksLeft:"Sem. rest.", r15WksAfter:"Sem. apos", r15ToReorder:"Sabores a repor agora", r15BuildNow:"Producao necessaria (bolsas)", r15Trigger:"Gatilho (2 paletes)", r15Note:"A cobertura apos reposicao usa a demanda real por sabor de 1.5oz do ShipStation (ano fiscal), nao uma media - rapidos como Dill, Maple, Cracked Pepper e BBQ duram menos. Use vendas recentes por sabor antes de fixar metas.", sbHint:"Progresso de construcao vs metas ao vivo. Atualize Em Estoque conforme avanca - toda a equipe ve na hora. Campo amarelo = insira a contagem de hoje.", sbGoal:"Meta", sbOnHand:"Em estoque", sbToBuild:"A fazer", sbPallets:"Paletes", sbDone:"Pronto", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Salvo", sbRetail:"Varejo", sbEcom:"E-Commerce", sb12pk:"Caixas de 12", sbCoverage:"Cobertura por grupo", sbBuilt:"Feito vs meta",
-      board:"Modo Painel / TV", boardPick:"Escolha um departamento", boardPickHint:"Abra isto na TV e escolha um departamento, ou salve o URL (exemplo: ?board=pmac).", boardExit:"Sair", grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Painel de Pedidos", demandsched:"Programa de Producao", demandimport:"Importar Pedidos", ecomdemand:"Demanda E-Com", forecast:"Previsao vs Meta",
+      board:"Modo Painel / TV", boardPick:"Escolha um departamento", boardPickHint:"Abra isto na TV do piso. Mostra o que fazer e os numeros de hoje. Salve o URL (exemplo: ?board=pmac).", boardExit:"Sair", grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Painel de Pedidos", demandsched:"Programa de Producao", demandimport:"Importar Pedidos", ecomdemand:"Demanda E-Com", forecast:"Previsao vs Meta",
       fcHint:"Somente comparacao - isso nao altera as metas do aplicativo.", fcSnapshot:"Instantaneo", fcFlavor:"Sabor", fcApp4:"Meta App (4oz)", fcWip4:"Previsao WIP (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"Meta App (1.5oz)", fcWip15:"Previsao WIP (1.5oz)", fcDelta15:"Δ (1.5oz)",
       fcNoAppTarget15:"Sem meta por sabor de 1.5oz no app (somente balde / variety pack)", fcNone:"Ainda sem instantaneo de previsao. Peca ao Claude para atualizar a partir da planilha WIP FORECAST.", fcBags:"sacos",
       dqMix:"Mistura", dqPmac:"P-Mac", dqFul:"Expedicao", dqToday:"Hoje", dqTarget:"Meta de hoje", dqTargetShort:"Hoje",
@@ -409,7 +409,7 @@
       columns:"Colunas", colCategory:"Categoria", colItem:"Item", colOnhand:"Em estoque", colReorder:"Reposicao", colStatus:"Status", resetCols:"Reiniciar",
       pinTitle:"Digite o PIN para fazer alteracoes", pinHint:"Somente a equipe com o PIN pode adicionar ou alterar o estoque. Visualizar e livre para todos.", pinWrong:"PIN incorreto - tente de novo", pinBtn:"Desbloquear", locked:"Edicao bloqueada", unlocked:"Edicao desbloqueada", lockBtn:"Bloquear edicao",
       adjust:"Ajustar", adjustHint:"Defina a contagem atual de qualquer item: digite a quantidade que contou e Salve. Use a busca para achar itens rapido. Deixe a caixa vazia para nao alterar.", searchItems:"Buscar nome ou codigo", newCount:"Nova contagem", saveCounts:"Salvar contagens", noChanges:"Nenhuma contagem inserida", savedN:"Contagens salvas",
-      orders:"Pedidos", ordersHint:"Pedidos nao-SPS / Stripe. Os mais novos no topo; os concluidos vao para o arquivo.",
+      orders:"Pedidos", ordersHint:"Varejo e e-commerce sao paineis separados. Esta tela nao soma essas contagens.", ordRetail:"Retail", ordEcom:"E-Commerce", ordRetailTitle:"Pedidos varejo", ordEcomTitle:"Pedidos e-commerce", ordRetailHint:"So varejo EDI e SPS. Shopify, TikTok, ShipStation, Faire e Stripe ficam em E-Commerce e nao entram nesta contagem.", ordEcomHint:"So Shopify, TikTok, ShipStation, Faire e Stripe. O varejo EDI e SPS fica em Retail e nao entra nesta contagem.", noOpenRetail:"Nao ha pedidos de varejo abertos.", noOpenEcom:"Nao ha pedidos de e-commerce abertos.", noCompleteRetail:"Nao ha pedidos de varejo concluidos.", noCompleteEcom:"Nao ha pedidos de e-commerce concluidos.",
       ordOpen:"Abertos", ordComplete:"Concluidos", ordAdd:"+ Adicionar pedido", ordSave:"Salvar pedido", ordCancel:"Cancelar",
       oCustomer:"Cliente", oPO:"OC do cliente #", oOrderId:"ID do pedido", oInvDate:"Data da fatura", oShipDate:"Data de envio",
       oTracking:"Rastreio / BOL / PRO", oCarrier:"Transportadora", oAppt:"Agendamento / Opendock", oNotes:"Observacoes", oStripe:"Link Stripe", oStatus:"Status",
@@ -757,12 +757,12 @@
     { key:"grpFulfillment", items:["produce","retailprod","ecomprod","skulookup","prodlog","fulfilldaily","flavinv","stockbuild","orders","orderdocs"] },
     { key:"grpDemand", items:["demand","demandboard","demandsched","demandimport","ecomdemand","forecast"] },
     { key:"grpShipping", items:["shiplog"] },
-    { key:"grpMixing", items:["prodorders","reordertracker","launch","mixing","pmac","pmacout","floor"] },
+    { key:"grpMixing", items:["board","prodorders","reordertracker","launch","mixing","pmac","pmacout","floor"] },
     { key:"grpPurchasing", items:["purchasing","expreceipts","reorder15"] },
     { key:"grpQuality", items:["compliance","quality","disposition"] },
     { key:"grpTeam", items:["people","maintenance","improve","rd","log"] },
     { key:"grpDocs", items:["reference"] },
-    { key:"grpSystem", items:["board","settings"] }
+    { key:"grpSystem", items:["settings"] }
   ];
   // Lucide icon names (clean SVG line icons) rendered via lucide.createIcons()
   const NAV_ICON = {
@@ -843,6 +843,8 @@
   let colPanel = false; // dashboard column editor open?
   let dragCol = null;
   let orderView = "open"; // orders: "open" | "complete"
+  let orderLane = "retail"; // "retail" | "ecom". The two boards are never added together.
+  if (window.ORDER_LANE) ORDER_LANE.current = function () { return orderLane === "ecom" ? "ecom" : "retail"; };
   let orderAddOpen = false;
   let ordSpsOpen = false; // orders: SPS-open paste/sync panel open?
   let peopleView = "dir"; // People: "dir" | "org"
@@ -911,7 +913,11 @@
     return DB.allLocations().indexOf(code) >= 0 || /^[A-E]-\d{2}-L[1-4]$/.test(code); }
 
   function setLang(l) { lang = l; ["en","es","pt"].forEach(x => { const b = $("lang-" + x); if (b) b.classList.toggle("active", l === x); }); render(); }
-  function go(t) { active = t; if (t !== "purchasing") { purchMode = "list"; receivingPOid = null; } else { spoDetailId = null; spoView = "list"; } if (t === "orders") markOrdersSeen(); closeDrawer(); render(); }
+  function go(t) {
+    if (t === "ordersretail") { orderLane = "retail"; t = "orders"; }
+    else if (t === "ordersecom") { orderLane = "ecom"; t = "orders"; }
+    active = t; if (t !== "purchasing") { purchMode = "list"; receivingPOid = null; } else { spoDetailId = null; spoView = "list"; } if (t === "orders") markOrdersSeen(); closeDrawer(); render();
+  }
   function opVal() { const e = $("op"); return e ? e.value : "Troy"; }
 
   // ---------- edit lock (PIN) — viewing is open, changes require the PIN ----------
@@ -1226,10 +1232,11 @@
         let held = 0; ["QA-HOLD", "QUARANTINE", "RETURNS-HOLD"].forEach(z => DB.items().forEach(i => { if (DB.atLoc(i.id, z) > 0) held++; }));
         if (held) push("out", plural(held, "item") + " in QA-Hold / Quarantine to review");
       } else if (tab === "orders") {
-        const nw = (typeof newOrdersCount === "function") ? newOrdersCount() : 0;
-        const openUn = DB.orders().filter(orderWaiting).length;
-        if (nw) push("out", plural(nw, "new order") + " to review");
-        if (openUn) push("low", plural(openUn, "open order") + " not yet shipped");
+        const waiting = DB.orders().filter(orderWaiting);
+        const retailN = waiting.filter(o => orderChannel(o) === "retail").length;
+        const ecomN = waiting.filter(o => orderChannel(o) === "ecom").length;
+        if (retailN) push("low", plural(retailN, "open retail order") + " on the Retail board");
+        if (ecomN) push("low", plural(ecomN, "open e-commerce order") + " on the E-Commerce board");
       } else if (demandFam.indexOf(tab) >= 0) {
         const dl = DB.demandLines ? DB.demandLines() : [];
         const openRows = dl.filter(r => (r.status || "Open") === "Open");
@@ -1318,6 +1325,14 @@
   }
   function orderIsComplete(o) { return (o.status || "Open") === "Complete"; }
   function spsOrder(o) { return !!(window.SPSMap && typeof SPSMap.isSpsOrder === "function" && SPSMap.isSpsOrder(o)); }
+  function orderChannel(o) {
+    if (window.ORDER_LANE && typeof ORDER_LANE.channel === "function") return ORDER_LANE.channel(o);
+    return "ecom";
+  }
+  function orderNotesShown(o) {
+    if (window.ORDER_LANE && typeof ORDER_LANE.displayNotes === "function") return ORDER_LANE.displayNotes(o && o.notes);
+    return (o && o.notes) || "";
+  }
   function demandCountsForBuild(r) {
     if (window.SPSMap && typeof SPSMap.countsForBuild === "function") return SPSMap.countsForBuild(r);
     return (r.status || "Open") === "Open";
@@ -1338,20 +1353,33 @@
     return /\b(issue|problem|hold|damage|short|delay|delayed|back ?order|missing|wrong|re ?ship|refus|lost|rejected)\b/.test(x); }
   function orderStateClass(o) { return orderIssue(o) ? "o-issue" : (orderShipped(o) ? "o-ship" : "o-ip"); }
   function viewOrders() {
+    const lane = orderLane === "ecom" ? "ecom" : "retail";
     const all = DB.orders().slice().sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
-    // Non-SPS: a real tracking number leaves the Open list. SPS Open stays Open
+    const retailAll = all.filter(o => orderChannel(o) === "retail");
+    const ecomAll = all.filter(o => orderChannel(o) === "ecom");
+    const mine = lane === "ecom" ? ecomAll : retailAll;
+    // A real tracking number leaves a non-SPS Open list. SPS Open stays Open
     // when a BOL, tracking number, or ASN is present. Complete leaves Open.
-    // Test stays off both lists.
-    const openList = all.filter(orderWaiting);
-    const compList = all.filter(o => {
-      const st = String(o.status || "Open");
-      if (st === "Test") return false;
-      return orderIsComplete(o) || orderShipped(o);
-    });
-    const list = orderView === "complete" ? compList : openList;
+    // Test stays off both lists. Counts are this lane only.
+    const splitLists = rows => {
+      const openList = rows.filter(orderWaiting);
+      const compList = rows.filter(o => {
+        const st = String(o.status || "Open");
+        if (st === "Test") return false;
+        return orderIsComplete(o) || orderShipped(o);
+      });
+      return { openList, compList };
+    };
+    const retailLists = splitLists(retailAll);
+    const ecomLists = splitLists(ecomAll);
+    const here = lane === "ecom" ? ecomLists : retailLists;
+    const list = orderView === "complete" ? here.compList : here.openList;
+    const channels = '<div class="ordtabs">' +
+      '<button class="' + (lane === "retail" ? "active" : "") + '" onclick="UI_go(\'ordersretail\')">' + L("ordRetail") + ' (' + retailLists.openList.length + ')</button>' +
+      '<button class="' + (lane === "ecom" ? "active" : "") + '" onclick="UI_go(\'ordersecom\')">' + L("ordEcom") + ' (' + ecomLists.openList.length + ')</button></div>';
     const toggle = '<div class="ordtabs">' +
-      '<button class="' + (orderView === "open" ? "active" : "") + '" onclick="UI.ordView(\'open\')">' + L("ordOpen") + ' (' + openList.length + ')</button>' +
-      '<button class="' + (orderView === "complete" ? "active" : "") + '" onclick="UI.ordView(\'complete\')">' + L("ordComplete") + ' (' + compList.length + ')</button></div>';
+      '<button class="' + (orderView === "open" ? "active" : "") + '" onclick="UI.ordView(\'open\')">' + L("ordOpen") + ' (' + here.openList.length + ')</button>' +
+      '<button class="' + (orderView === "complete" ? "active" : "") + '" onclick="UI.ordView(\'complete\')">' + L("ordComplete") + ' (' + here.compList.length + ')</button></div>';
     const eo = orderEditId ? (DB.orders().find(o => String(o.id) === String(orderEditId)) || {}) : {};
     const oediting = !!(orderEditId && eo.id);
     const oav = x => esc(x == null ? "" : x);
@@ -1367,33 +1395,38 @@
       '<div class="row"><div><label>' + L("oTracking") + '</label><input id="o-trk" autocomplete="off" value="' + oav(eo.tracking) + '"></div>' +
       '<div><label>' + L("oAppt") + ' <span class="muted">(opt.)</span></label><input id="o-appt" autocomplete="off" value="' + oav(eo.appointment) + '"></div>' +
       '<div><label>' + L("oStripe") + ' <span class="muted">(opt.)</span></label><input id="o-stripe" autocomplete="off" value="' + oav(eo.stripe_link) + '"></div></div>' +
-      '<div><label>' + L("oNotes") + '</label><input id="o-notes" autocomplete="off" value="' + oav(eo.notes) + '"></div>' +
+      '<div><label>' + L("oNotes") + '</label><input id="o-notes" autocomplete="off" value="' + oav(orderNotesShown(eo)) + '"></div>' +
       '<div class="row"><div><label>' + L("oEnteredBy") + '</label><select id="o-by">' + ORDER_ENTERERS.map(n => '<option' + (oediting && eo.entered_by === n ? ' selected' : '') + '>' + n + '</option>').join("") + '<option value="__other">' + L("oOther") + '</option></select></div>' +
       '<div><label>' + L("oByOther") + ' <span class="muted">(opt.)</span></label><input id="o-by-other" autocomplete="off"></div></div>' +
       '<button class="primary" onclick="UI.ordAdd()">' + (oediting ? L("saveChanges") : L("ordSave")) + '</button> ' +
       '<button class="ghost" style="margin-top:14px" onclick="UI.' + (oediting ? "ordEditCancel" : "ordAddToggle") + '()">' + L("ordCancel") + '</button></div>'
     ) : "";
+    const emptyLane = orderView === "complete"
+      ? L(lane === "ecom" ? "noCompleteEcom" : "noCompleteRetail")
+      : L(lane === "ecom" ? "noOpenEcom" : "noOpenRetail");
     const rows = list.length ? list.map(o => {
-      const txt = ((o.customer || "") + " " + (o.customer_po || "") + " " + (o.order_id || "") + " " + (o.tracking || "") + " " + (o.carrier || "")).toLowerCase().replace(/"/g, "");
+      const shownNotes = orderNotesShown(o);
+      const txt = ((o.customer || "") + " " + (o.customer_po || "") + " " + (o.order_id || "") + " " + (o.tracking || "") + " " + (o.carrier || "") + " " + shownNotes).toLowerCase().replace(/"/g, "");
       const trk = o.tracking ? (o.tracking + (o.carrier ? ' <span class="muted sm">' + o.carrier + '</span>' : "")) : (o.carrier || "&mdash;");
       const stripe = o.stripe_link ? ' <a class="order sm" href="' + o.stripe_link + '" target="_blank" rel="noopener">Stripe &#8599;</a>' : "";
-      // No manual complete/reopen -- orders drop off automatically when they ship (tracking added). Edit stays so tracking can be entered.
       const act = "";
       return '<tr class="' + orderStateClass(o) + '" data-txt="' + txt + (o.entered_by ? " " + o.entered_by.toLowerCase() : "") + '"><td><b>' + (o.customer || "&mdash;") + '</b>' + (o.appointment ? '<div class="muted sm">' + o.appointment + '</div>' : "") + (o.entered_by ? '<div class="muted sm">' + L("oByPrefix") + ' ' + o.entered_by + '</div>' : "") + '</td>' +
         '<td>' + (o.customer_po || "&mdash;") + '<div class="muted sm">' + (o.order_id || "") + '</div></td>' +
         '<td class="muted sm">' + (o.ship_date || o.invoice_date || "") + '</td>' +
         '<td>' + trk + stripe + '</td>' +
-        '<td>' + (o.notes ? '<span class="sm">' + o.notes + '</span>' : "") + '</td>' +
+        '<td>' + (shownNotes ? '<span class="sm">' + esc(shownNotes) + '</span>' : "") + '</td>' +
         '<td>' + act + ' <button class="ghost sm" title="' + L("editRow") + '" onclick="UI.ordEdit(\'' + o.id + '\')">&#9998;</button></td></tr>';
-    }).join("") : '<tr><td colspan="6" class="muted">' + (orderView === "complete" ? L("noCompleteOrders") : L("noOpenOrders")) + '</td></tr>';
-    return '<div class="card"><div class="suprow"><h2>' + L("orders") + ' ' + freshChip(dhMax(all), 1) + '</h2>' +
-      '<div><button class="ghost sm" onclick="UI.ordSpsToggle()">&#8635; Sync SPS Open</button> ' +
+    }).join("") : '<tr><td colspan="6" class="muted">' + emptyLane + '</td></tr>';
+    const spsBtn = lane === "retail" ? '<button class="ghost sm" onclick="UI.ordSpsToggle()">&#8635; Sync SPS Open</button> ' : "";
+    return '<div class="card"><div class="suprow"><h2>' + L(lane === "ecom" ? "ordEcomTitle" : "ordRetailTitle") + ' ' + freshChip(dhMax(mine), 1) + '</h2>' +
+      '<div>' + spsBtn +
       '<button class="primary sm" onclick="UI.ordAddToggle()">' + L("ordAdd") + '</button></div></div>' +
-      (ordSpsOpen ? '<div class="ordform"><p class="hint">Paste the SPS "Exclude Target" open orders, one per line as <b>Customer | Document ID | Date</b>. This sets the board to exactly those (marks any SPS order that dropped off as shipped). Legacy orders are untouched.</p>' +
+      channels +
+      (lane === "retail" && ordSpsOpen ? '<div class="ordform"><p class="hint">Paste the SPS "Exclude Target" open orders, one per line as <b>Customer | Document ID | Date</b>. This sets the Retail board to exactly those (marks any SPS order that dropped off as shipped). E-commerce orders are untouched.</p>' +
         '<textarea id="sps-paste" rows="6" style="width:100%" placeholder="McLane | SW10101575-01 | Jul 20, 2026&#10;Bass Pro | 14687637 | Jul 20, 2026"></textarea>' +
-        '<button class="primary" style="margin-top:8px" onclick="UI.ordSpsSync()">Reconcile board to these</button> ' +
+        '<button class="primary" style="margin-top:8px" onclick="UI.ordSpsSync()">Reconcile Retail board to these</button> ' +
         '<button class="ghost" style="margin-top:8px" onclick="UI.ordSpsToggle()">' + L("ordCancel") + '</button></div>' : '') +
-      '<p class="hint">' + L("ordersHint") + '</p>' + toggle +
+      '<p class="hint">' + L(lane === "ecom" ? "ordEcomHint" : "ordRetailHint") + '</p>' + toggle +
       '<div class="ordlegend"><span class="lg lg-ship"></span>' + L("oLegShip") + '<span class="lg lg-ip"></span>' + L("oLegIP") + '<span class="lg lg-issue"></span>' + L("oLegIssue") + '</div>' + addForm +
       '<input id="ordSearch" autocomplete="off" style="margin-top:10px" oninput="UI.ordSearch(this.value)" placeholder="' + L("ordSearchP") + '">' +
       '<table class="sortable" style="margin-top:10px"><thead><tr><th>' + L("oCustomer") + '</th><th>' + L("oPO") + '</th><th>' + L("oShipDate") + '</th><th>' + L("oTracking") + '</th><th>' + L("oNotes") + '</th><th data-nosort></th></tr></thead><tbody id="ordBody">' + rows + '</tbody></table></div>';
@@ -4636,7 +4669,7 @@
     bags: { en: "BAGS", es: "BOLSAS" }, cases: { en: "CASES", es: "CAJAS" },
     allCovered: { en: "ALL COVERED", es: "TODO CUBIERTO" }, exit: { en: "Exit", es: "Salir" },
     pickTitle: { en: "Board Mode - pick a department", es: "Modo Pizarra - elija un departamento" },
-    pickHint: { en: "Open this on the TV and pick a department, or bookmark the URL (example: ?board=pmac).", es: "Abra esto en la TV y elija un departamento, o guarde el URL (ejemplo: ?board=pmac)." }
+    pickHint: { en: "Open this on the floor TV. It shows what to make and today's counts. Bookmark the URL (example: ?board=pmac).", es: "Abra esto en la TV del piso. Muestra que hacer y los numeros de hoy. Guarde el URL (ejemplo: ?board=pmac)." }
   };
   function bt(key) { const t = BOARD_TXT[key] || { en: key, es: key }; return '<span class="bt-en">' + esc(t.en) + '</span><span class="bt-es">' + esc(t.es) + '</span>'; }
   function boardStartTimers() {
@@ -5768,8 +5801,8 @@
       if (!list.length) return toast("Paste at least one line: Customer | Document ID | Date");
       toast("Syncing " + list.length + " open orders...");
       const r = await DB.reconcileSpsOrders(list, opVal());
-      ordSpsOpen = false; orderView = "open"; render();
-      toast("Orders board = " + r.open + " open (+" + r.inserted + " new / " + r.archived + " shipped)");
+      ordSpsOpen = false; orderLane = "retail"; orderView = "open"; render();
+      toast("Retail board = " + r.open + " open SPS orders (+" + r.inserted + " new / " + r.archived + " shipped)");
     },
     ordSearch(val) { const q = (val || "").toLowerCase().trim();
       document.querySelectorAll("#ordBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
@@ -5782,6 +5815,12 @@
       const rec = { customer: cust, customer_po: v("o-po"), order_id: v("o-oid"), invoice_date: v("o-inv"),
         ship_date: v("o-ship"), tracking: v("o-trk"), carrier: v("o-carr"), appointment: v("o-appt"),
         stripe_link: v("o-stripe"), notes: v("o-notes"), entered_by: by };
+      const existing = orderEditId ? (DB.orders().find(o => String(o.id) === String(orderEditId)) || null) : null;
+      if (!existing || !spsOrder(existing)) {
+        var lane = orderLane === "ecom" ? "ecom" : "retail";
+        if (String(rec.stripe_link || "").trim()) lane = "ecom";
+        if (window.ORDER_LANE && typeof ORDER_LANE.stamp === "function") rec.notes = ORDER_LANE.stamp(rec.notes, lane);
+      }
       if (orderEditId) { await DB.updateOrder(orderEditId, rec, by); orderEditId = null; toast(L("saved") + " ✓"); render(); return; }
       rec.status = "Open";
       await DB.createOrder(rec, by);
@@ -6279,7 +6318,12 @@
     },
     setLang,
     boardOpen(d) { boardDept = d; try { const u = new URL(location.href); u.searchParams.set("board", d); history.replaceState(null, "", u.pathname + u.search); } catch (e) {} render(); },
-    boardExit() { boardDept = ""; boardStopTimers(); try { const u = new URL(location.href); u.searchParams.delete("board"); history.replaceState(null, "", u.pathname + (u.search || "")); } catch (e) {} go("home"); }
+    boardExit() {
+      boardDept = ""; boardStopTimers();
+      try { const u = new URL(location.href); u.searchParams.delete("board"); history.replaceState(null, "", u.pathname + (u.search || "")); } catch (e) {}
+      if (window.DEPT && typeof DEPT.back === "function") { DEPT.back(); return; }
+      go("home");
+    }
   };
   window.UI = UI;
   window.SMK_UNLOCK = ensureUnlocked;

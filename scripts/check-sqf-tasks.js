@@ -132,7 +132,7 @@ assert(src.indexOf("\u2014") < 0, "em dash in sqf-tasks.js");
 var homes = fs.readFileSync(path.join(__dirname, "..", "dept-homes.js"), "utf8");
 assert(homes.indexOf("sqftasks") >= 0 && homes.indexOf('fn: "sqf"') >= 0, "dept home tool");
 var sw = fs.readFileSync(path.join(__dirname, "..", "service-worker.js"), "utf8");
-assert(sw.indexOf('smackin-inv-v262') >= 0 && sw.indexOf("./sqf-tasks.js") >= 0, "cache bump");
+assert(sw.indexOf('smackin-inv-v263') >= 0 && sw.indexOf("./sqf-tasks.js") >= 0, "cache bump");
 
 if (failed) {
   console.error(failed + " failed");

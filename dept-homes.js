@@ -61,12 +61,12 @@
     maintenance: "ops",
     produce: "ful", retailprod: "ful", ecomprod: "ful", skulookup: "ful",
     prodlog: "ful", fulfilldaily: "ful", flavinv: "ful", stockbuild: "ful",
-    orders: "ful", orderdocs: "ful",
+    orders: "ful", ordersretail: "ful", ordersecom: "ful", orderdocs: "ful",
     shiplog: "ship",
     demand: "demand", demandboard: "demand", demandsched: "demand", demandimport: "demand",
     ecomdemand: "demand", forecast: "demand",
     people: "ops", improve: "ops", rd: "ops", log: "ops",
-    reference: "ops", board: "ops", settings: "ops"
+    reference: "ops", board: "mixing", settings: "ops"
   };
 
   function tx(v) {
@@ -170,7 +170,9 @@
     fulfillerr: { fn: "ferr", icon: "alert-triangle", title: { en: "Fulfillment Errors", es: "Errores de Fulfillment", pt: "Erros de Fulfillment" }, blurb: { en: "Error history, cost by month, and returns. Log a new error or return.", es: "Historial de errores, costo por mes y devoluciones. Registre un error o una devolucion.", pt: "Historico de erros, custo por mes e devolucoes. Registre um erro ou uma devolucao." } },
     flavinv: { go: "flavinv", icon: "bar-chart-2", title: { en: "Flavor Inventory", es: "Inventario de Sabores", pt: "Inventario de Sabores" }, blurb: { en: "On-floor pallets and finished on-hand by flavor.", es: "Paletas en piso y producto terminado en mano, por sabor.", pt: "Paletes no piso e produto acabado em estoque, por sabor." } },
     stockbuild: { go: "stockbuild", icon: "layers", title: { en: "Stock Build", es: "Construir Inventario", pt: "Construir Estoque" }, blurb: { en: "Build progress against the stock goals. Update on hand as you count.", es: "Avance contra las metas de inventario. Actualice en mano al contar.", pt: "Andamento contra as metas de estoque. Atualize em estoque ao contar." } },
-    orders: { go: "orders", icon: "receipt", title: { en: "Orders", es: "Ordenes", pt: "Pedidos" }, blurb: { en: "Non-SPS and Stripe orders. Open ones stay on top.", es: "Ordenes no-SPS y Stripe. Las abiertas quedan arriba.", pt: "Pedidos nao-SPS e Stripe. Os abertos ficam no topo." } },
+    orders: { go: "orders", icon: "receipt", title: { en: "Orders", es: "Ordenes", pt: "Pedidos" }, blurb: { en: "Opens Retail or E-Commerce. Those boards are never combined.", es: "Abre Retail o E-Commerce. Esos tableros no se suman.", pt: "Abre Varejo ou E-Commerce. Esses paineis nao se somam." } },
+    ordersRetail: { go: "ordersretail", icon: "store", title: { en: "Retail orders", es: "Ordenes retail", pt: "Pedidos varejo" }, blurb: { en: "EDI and SPS retail only. Open orders stay on top.", es: "Solo retail EDI y SPS. Las abiertas quedan arriba.", pt: "So varejo EDI e SPS. Os abertos ficam no topo." } },
+    ordersEcom: { go: "ordersecom", icon: "laptop", title: { en: "E-Commerce orders", es: "Ordenes e-commerce", pt: "Pedidos e-commerce" }, blurb: { en: "Shopify, TikTok, ShipStation, Faire, and Stripe. Retail is a different board.", es: "Shopify, TikTok, ShipStation, Faire y Stripe. Retail es otro tablero.", pt: "Shopify, TikTok, ShipStation, Faire e Stripe. Varejo e outro painel." } },
     orderdocs: { go: "orderdocs", icon: "folder", title: { en: "Order Docs", es: "Docs de Orden", pt: "Docs de Pedido" }, blurb: { en: "Paperwork for fulfilled orders: BOL, packing list, pull sheet, invoice.", es: "Papeleo de ordenes cumplidas: BOL, lista de empaque, hoja de picking, factura.", pt: "Papelada de pedidos concluidos: BOL, lista de embalagem, folha de separacao, fatura." } },
     shiplog: { go: "shiplog", icon: "truck", title: { en: "Shipping Log", es: "Registro de Envios", pt: "Registro de Envios" }, blurb: { en: "Log a one-off outbound shipment and its tracking number.", es: "Registre un envio suelto y su numero de rastreo.", pt: "Registre um envio avulso e o numero de rastreio." } },
     shipments: { fn: "shipments", icon: "ship", title: { en: "Shipments", es: "Shipments", pt: "Shipments" }, blurb: { en: "ShipStation shipments the server already synced. This screen only reads them.", es: "Envios de ShipStation que el servidor ya sincronizo. Esta pantalla solo los lee.", pt: "Envios do ShipStation que o servidor ja sincronizou. Esta tela so le." } },
@@ -187,7 +189,7 @@
     rd: { go: "rd", icon: "flask-conical", title: { en: "R&D", es: "I+D", pt: "P&D" }, blurb: { en: "Research requests and what is still out.", es: "Solicitudes de investigacion y lo que sigue pendiente.", pt: "Pedidos de pesquisa e o que ainda esta pendente." } },
     acct: { go: "log", icon: "history", title: { en: "Accountability", es: "Responsabilidad", pt: "Responsabilidade" }, blurb: { en: "Activity log of what changed.", es: "Registro de actividad de lo que cambio.", pt: "Registro de atividade do que mudou." } },
     reference: { go: "reference", icon: "book-open", title: { en: "Reference / SOPs", es: "Referencia / SOPs", pt: "Referencia / SOPs" }, blurb: { en: "SOPs, cheat sheets, and policies.", es: "SOPs, guias rapidas y politicas.", pt: "SOPs, guias rapidos e politicas." } },
-    board: { go: "board", icon: "tv", title: { en: "Board Mode / TV", es: "Modo Pizarra / TV", pt: "Modo Painel / TV" }, blurb: { en: "Open a department board for the TV.", es: "Abra un tablero de departamento para la TV.", pt: "Abra um painel de departamento para a TV." } },
+    board: { go: "board", icon: "tv", title: { en: "Board Mode / TV", es: "Modo Pizarra / TV", pt: "Modo Painel / TV" }, blurb: { en: "Floor TV: what to make, and today's counts for Mixing, P-Mac, or Fulfillment.", es: "TV del piso: que hacer y los numeros de hoy para Mezcla, P-Mac o Fulfillment.", pt: "TV do piso: o que fazer e os numeros de hoje para Mistura, P-Mac ou Fulfillment." } },
     settings: { go: "settings", icon: "settings", title: { en: "Settings", es: "Ajustes", pt: "Configuracoes" }, blurb: { en: "Connection, lock, and backup.", es: "Conexion, bloqueo y respaldo.", pt: "Conexao, bloqueio e backup." } },
     health: { fn: "health", icon: "activity", title: { en: "Data Health", es: "Data Health", pt: "Data Health" }, blurb: { en: "How fresh each data source is. This screen only reads.", es: "Que tan reciente esta cada fuente de datos. Esta pantalla solo lee.", pt: "Quao recente esta cada fonte de dados. Esta tela so le." } }
   };
@@ -200,13 +202,14 @@
       id: "home",
       live: "home",
       primary: "desk",
-      actions: [],
+      actions: ["board"],
+      actionShort: { board: { en: "TV board", es: "Pizarra TV", pt: "Painel TV" } },
       subs: ["desk", "daily"],
       short: { desk: { en: "Overview", es: "Resumen", pt: "Visao geral" } },
       icon: "layout-dashboard",
       label: { en: "Dashboard", es: "Panel", pt: "Painel" },
       title: { en: "Dashboard", es: "Panel", pt: "Painel" },
-      intro: { en: "Stockouts, past-due demand, and inbound that still needs a look. Daily metrics is a tab.", es: "Agotados, demanda vencida y la entrada por revisar. Metricas del dia es una pestana.", pt: "Esgotados, demanda vencida e a entrada por revisar. Metricas do dia e uma aba." }
+      intro: { en: "Stockouts, past-due demand, and inbound that still needs a look. The TV board is the action for the floor. Daily metrics is a tab.", es: "Agotados, demanda vencida y la entrada por revisar. La pizarra TV es la accion para el piso. Metricas del dia es una pestana.", pt: "Esgotados, demanda vencida e a entrada por revisar. O painel TV e a acao para o piso. Metricas do dia e uma aba." }
     },
     {
       id: "demand",
@@ -226,13 +229,18 @@
     {
       id: "purch",
       primary: "purchasing",
-      actions: ["reorder15"],
-      subs: ["purchasing", "expreceipts", "sps"],
-      short: { purchasing: { en: "POs", es: "OC", pt: "OCs" } },
+      actions: ["expreceipts"],
+      actionShort: { expreceipts: { en: "Due in", es: "Por llegar", pt: "A chegar" } },
+      subs: ["purchasing", "expreceipts", "reorder15", "sps"],
+      short: {
+        purchasing: { en: "POs", es: "OC", pt: "OCs" },
+        reorder15: { en: "1.5oz", es: "1.5oz", pt: "1.5oz" },
+        sps: { en: "SPS", es: "SPS", pt: "SPS" }
+      },
       icon: "shopping-cart",
       label: { en: "Purchasing", es: "Compras", pt: "Compras" },
       title: { en: "Purchasing", es: "Compras", pt: "Compras" },
-      intro: { en: "Open purchase orders. The 1.5oz reorder is the action. Receipts and SPS are tabs.", es: "Ordenes de compra abiertas. La reorden 1.5oz es la accion. Recepciones y SPS son pestanas.", pt: "Ordens de compra abertas. A reposicao 1.5oz e a acao. Recebimentos e SPS sao abas." }
+      intro: { en: "Open purchase orders and the buy list. Expected receipts is the action. The 1.5oz rule and the SPS feed are later tabs.", es: "Ordenes de compra abiertas y la lista de compra. Lo que llega es la accion. La regla 1.5oz y SPS son pestanas de despues.", pt: "Ordens de compra abertas e a lista de compra. O que chega e a acao. A regra 1.5oz e o SPS sao abas depois." }
     },
     {
       id: "recv",
@@ -263,23 +271,25 @@
     {
       id: "mixing",
       primary: "mixing",
-      actions: ["prodorders", "trMix", "batchrec"],
+      actions: ["board", "prodorders", "trMix", "batchrec"],
       actionShort: {
+        board: { en: "TV board", es: "Pizarra TV", pt: "Painel TV" },
         trMix: { en: "Lot station", es: "Estacion de lote", pt: "Estacao de lote" },
         batchrec: { en: "Batch record", es: "Registro de lote", pt: "Registro de lote" }
       },
-      subs: ["mixing", "reordertracker", "seasoning", "recipes", "launch", "hist", "upload"],
+      subs: ["mixing", "seasoning", "recipes", "reordertracker", "launch", "hist", "upload"],
       short: { mixing: { en: "Status", es: "Estado", pt: "Status" } },
       icon: "flask-conical",
       label: { en: "Mixing", es: "Mezcla", pt: "Mistura" },
       title: { en: "Mixing", es: "Mezcla", pt: "Mistura" },
-      intro: { en: "What mixing needs today. Work orders, the lot station, and the batch record are the actions. Recipes is a tab.", es: "Lo que mezcla necesita hoy. Ordenes, la estacion de lote y el registro son las acciones. Recetas es una pestana.", pt: "O que a mistura precisa hoje. Ordens, a estacao de lote e o registro sao as acoes. Receitas e uma aba." }
+      intro: { en: "What mixing needs today, and the log for this shift. The TV board, work orders, the lot station, and the batch record are the actions. Seasoning and recipes are the next tabs.", es: "Lo que mezcla necesita hoy y el registro del turno. La pizarra TV, las ordenes, la estacion de lote y el registro son las acciones. Sazon y recetas son las pestanas siguientes.", pt: "O que a mistura precisa hoje e o registro do turno. O painel TV, as ordens, a estacao de lote e o registro sao as acoes. Tempero e receitas sao as proximas abas." }
     },
     {
       id: "pmac",
       primary: "pmac",
-      actions: ["prodorders", "pmacout", "trPmac"],
+      actions: ["board", "prodorders", "pmacout", "trPmac"],
       actionShort: {
+        board: { en: "TV board", es: "Pizarra TV", pt: "Painel TV" },
         pmacout: { en: "Log output", es: "Registrar salida", pt: "Registrar saida" },
         trPmac: { en: "Lot station", es: "Estacion de lote", pt: "Estacao de lote" }
       },
@@ -288,17 +298,31 @@
       icon: "factory",
       label: { en: "P-Mac", es: "P-Mac", pt: "P-Mac" },
       title: { en: "P-Mac", es: "P-Mac", pt: "P-Mac" },
-      intro: { en: "What P-Mac needs today. Work orders, log output, and the lot station are the actions.", es: "Lo que P-Mac necesita hoy. Ordenes, registrar salida y la estacion de lote son las acciones.", pt: "O que o P-Mac precisa hoje. Ordens, registrar saida e a estacao de lote sao as acoes." }
+      intro: { en: "What P-Mac needs today. The TV board, work orders, log output, and the lot station are the actions. Best-by lots are the next tab.", es: "Lo que P-Mac necesita hoy. La pizarra TV, las ordenes, registrar salida y la estacion de lote son las acciones. Los lotes de consumir antes son la pestana siguiente.", pt: "O que o P-Mac precisa hoje. O painel TV, as ordens, registrar saida e a estacao de lote sao as acoes. Os lotes de validade sao a proxima aba." }
     },
     {
       id: "ful",
-      primary: "orders",
-      actions: ["retailprod", "ecomprod", "trUse", "trShip"],
-      subs: ["orders", "fulfilldaily", "prodlog", "produce", "fglots", "skulookup", "flavinv", "stockbuild", "orderdocs", "fulfillerr"],
+      primary: "ordersRetail",
+      actions: ["board", "retailprod", "ecomprod", "trShip", "trUse"],
+      actionShort: {
+        board: { en: "TV board", es: "Pizarra TV", pt: "Painel TV" },
+        retailprod: { en: "Log retail", es: "Registrar retail", pt: "Registrar varejo" },
+        ecomprod: { en: "Log e-com", es: "Registrar e-com", pt: "Registrar e-com" },
+        trShip: { en: "Ship", es: "Enviar", pt: "Enviar" },
+        trUse: { en: "Lot pull", es: "Salida lote", pt: "Saida lote" }
+      },
+      subs: ["ordersRetail", "ordersEcom", "fulfilldaily", "prodlog", "skulookup", "orderdocs", "flavinv", "stockbuild", "produce", "fglots", "fulfillerr"],
+      short: {
+        ordersRetail: { en: "Retail", es: "Retail", pt: "Varejo" },
+        ordersEcom: { en: "E-Commerce", es: "E-Commerce", pt: "E-Commerce" },
+        fulfilldaily: { en: "Daily log", es: "Diario", pt: "Diario" },
+        prodlog: { en: "Pallet log", es: "Paletas", pt: "Paletes" },
+        skulookup: { en: "SKU lookup", es: "Buscar SKU", pt: "Buscar SKU" }
+      },
       icon: "package",
       label: { en: "Fulfillment", es: "Fulfillment", pt: "Fulfillment" },
       title: { en: "Fulfillment", es: "Fulfillment", pt: "Fulfillment" },
-      intro: { en: "Open orders to build and ship. Retail, e-commerce, lot pull, and ship are the actions.", es: "Ordenes abiertas por armar y enviar. Retail, e-commerce, salida de lote y envio son las acciones.", pt: "Pedidos abertos para montar e enviar. Varejo, e-commerce, saida de lote e envio sao as acoes." }
+      intro: { en: "Retail orders and e-commerce orders are separate boards with their own counts. Retail is this tab. E-Commerce is the next tab. The TV board and the log buttons are the actions.", es: "Las ordenes retail y las de e-commerce son tableros separados, cada uno con su conteo. Retail es esta pestana. E-Commerce es la siguiente. La pizarra TV y los registros son las acciones.", pt: "Pedidos de varejo e de e-commerce sao paineis separados, cada um com sua contagem. Varejo e esta aba. E-Commerce e a proxima. O painel TV e os registros sao as acoes." }
     },
     {
       id: "ship",
@@ -325,7 +349,7 @@
       id: "ops",
       primary: "maintenance",
       actions: [],
-      subs: ["maintenance", "people", "improve", "rd", "acct", "services", "reference", "board", "settings", "health"],
+      subs: ["maintenance", "people", "improve", "rd", "acct", "services", "reference", "settings", "health"],
       icon: "settings",
       label: { en: "Ops", es: "Ops", pt: "Ops" },
       title: { en: "Ops", es: "Ops", pt: "Ops" },
@@ -797,6 +821,22 @@
     var t = String((o && o.tracking) || "").trim();
     return !!t && !/^ip$/i.test(t) && /(1z|\d{3,}|pick|deliver|ship|xpo|estes|fedex|ups|odfl|r\+l|saia|old dominion)/i.test(t);
   }
+  function laneOfOrder(o) {
+    try {
+      if (window.ORDER_LANE && typeof ORDER_LANE.channel === "function") {
+        return ORDER_LANE.channel(o) === "retail" ? "retail" : "ecom";
+      }
+    } catch (e) {}
+    return "ecom";
+  }
+  function laneOfDemand(line) {
+    try {
+      if (window.ORDER_LANE && typeof ORDER_LANE.demandChannel === "function") {
+        return ORDER_LANE.demandChannel(line) === "ecom" ? "ecom" : "retail";
+      }
+    } catch (e2) {}
+    return "retail";
+  }
   function openToShip() {
     return arr(function () { return DB.orders(); }).filter(function (o) {
       var st = String((o && o.status) || "Open");
@@ -827,14 +867,15 @@
       var flav = Object.keys(flavors).sort(function (x, y) { return flavors[y] - flavors[x]; }).slice(0, 3).join(", ");
       return {
         day: slcDay(o.created_at), customer: o.customer || "", po: o.customer_po || o.order_id || "",
-        status: o.status || "Open", ship: o.ship_date || o.invoice_date || "", flavors: flav
+        status: o.status || "Open", ship: o.ship_date || o.invoice_date || "", flavors: flav,
+        channel: laneOfOrder(o)
       };
     }).filter(function (r) { return r.day; });
     var groups = {};
     arr(function () { return DB.demandLines ? DB.demandLines() : []; }).forEach(function (l) {
       var k = poKey(l.po);
       if (!k || known[k]) return;
-      var g = groups[k] || (groups[k] = { day: "", at: l.created_at || "", customer: l.partner || "", po: l.po || "", status: l.status || "Open", ship: l.due_date || "", flavors: {} });
+      var g = groups[k] || (groups[k] = { day: "", at: l.created_at || "", customer: l.partner || "", po: l.po || "", status: l.status || "Open", ship: l.due_date || "", flavors: {}, source: l.source || "", imported_by: l.imported_by || "", notes: l.notes || "" });
       if ((l.created_at || "") < (g.at || "\uffff")) g.at = l.created_at || g.at;
       var f = String(l.flavor || "").replace(/^UNMAPPED:\s*/i, "");
       if (f) g.flavors[f] = (g.flavors[f] || 0) + (Number(l.bags) || Number(l.cases) || 0);
@@ -843,7 +884,10 @@
     Object.keys(groups).forEach(function (k) {
       var g = groups[k];
       var flav = Object.keys(g.flavors).sort(function (a, b) { return g.flavors[b] - g.flavors[a]; }).slice(0, 3).join(", ");
-      rows.push({ day: slcDay(g.at), customer: g.customer, po: g.po, status: g.status || "Open", ship: g.ship || "", flavors: flav });
+      rows.push({
+        day: slcDay(g.at), customer: g.customer, po: g.po, status: g.status || "Open", ship: g.ship || "", flavors: flav,
+        channel: laneOfDemand({ source: g.source, partner: g.customer, imported_by: g.imported_by, notes: g.notes })
+      });
     });
     return rows;
   }
@@ -1422,32 +1466,55 @@
     })[0];
     var ecomN = fd ? Number(fd.ecom_total) || 0 : 0;
     var amz = fd ? Number(fd.amazon_bags) || 0 : 0;
+    var tRetail = tRows.filter(function (r) { return r.channel === "retail"; });
+    var tEcom = tRows.filter(function (r) { return r.channel !== "retail"; });
+    var yRetail = yRows.filter(function (r) { return r.channel === "retail"; });
+    var yEcom = yRows.filter(function (r) { return r.channel !== "retail"; });
+    var openRetail = open.filter(function (o) { return laneOfOrder(o) === "retail"; });
+    var openEcom = open.filter(function (o) { return laneOfOrder(o) === "ecom"; });
+    function openTable(list) {
+      return dfTable(
+        [{ h: "Customer" }, { h: "PO" }, { h: "Ship / invoice" }],
+        list.map(function (o) {
+          return [
+            '<div class="df-name">' + esc(o.customer || "-") + "</div>",
+            "<b>" + esc(o.customer_po || o.order_id || "-") + "</b>",
+            esc(o.ship_date || o.invoice_date || "-")
+          ];
+        })
+      );
+    }
     return statRow([
-      stat(fmt(tRows.length), tx({ en: "Pulled today", es: "Entradas hoy", pt: "Entraram hoje" })),
-      stat(fmt(yRows.length), tx({ en: "Pulled yesterday", es: "Entradas ayer", pt: "Entraram ontem" })),
-      stat(fmt(open.length), tx({ en: "Open to ship", es: "Abiertas por enviar", pt: "Abertas para enviar" }), open.length ? "warn" : ""),
-      stat(fmt(cases), tx({ en: "Retail cases logged", es: "Cajas retail", pt: "Caixas varejo" }) + " · " + day)
+      stat(fmt(openRetail.length), tx({ en: "Retail open", es: "Retail abiertas", pt: "Varejo abertos" }), openRetail.length ? "warn" : ""),
+      stat(fmt(openEcom.length), tx({ en: "E-com open", es: "E-com abiertas", pt: "E-com abertos" }), openEcom.length ? "warn" : ""),
+      stat(fmt(cases), tx({ en: "Retail cases logged", es: "Cajas retail", pt: "Caixas varejo" }) + " · " + day),
+      stat(fmt(ecomN), tx({ en: "E-com labels", es: "Etiquetas e-com", pt: "Etiquetas e-com" }) + " · " + day)
     ]) +
-      panel(tx({ en: "Pulled today", es: "Entradas hoy", pt: "Entraram hoje" }),
+      panel(tx({ en: "Retail open", es: "Retail abiertas", pt: "Varejo abertos" }),
+        openRetail.length ? openTable(openRetail) : empty(tx({ en: "No open retail orders.", es: "No hay ordenes retail abiertas.", pt: "Nao ha pedidos de varejo abertos." })),
+        2, "ordersRetail") +
+      panel(tx({ en: "E-Commerce open", es: "E-Commerce abiertas", pt: "E-Commerce abertos" }),
+        sub(tx({
+          en: "Shopify, TikTok, ShipStation, Faire, and Stripe. Not included in the Retail count.",
+          es: "Shopify, TikTok, ShipStation, Faire y Stripe. No entra en el conteo retail.",
+          pt: "Shopify, TikTok, ShipStation, Faire e Stripe. Nao entra na contagem de varejo."
+        })) + (openEcom.length ? openTable(openEcom) : empty(tx({ en: "No open e-commerce orders.", es: "No hay ordenes e-commerce abiertas.", pt: "Nao ha pedidos de e-commerce abertos." }))),
+        2, "ordersEcom") +
+      panel(tx({ en: "Retail pulled today", es: "Retail entrado hoy", pt: "Varejo entrou hoje" }),
         sub("Saved into Smackin OS on " + today + " (SLC).") +
-        (tRows.length ? pullTable(tRows) : empty(tx({ en: "No orders pulled today yet.", es: "Ninguna orden entrada hoy.", pt: "Nenhum pedido entrou hoje." }))),
-        2, "orders") +
-      foldPanel(tx({ en: "Pulled yesterday", es: "Entradas ayer", pt: "Entraram ontem" }),
-        yRows.length ? pullTable(yRows) : empty(tx({ en: "No orders pulled yesterday.", es: "Ninguna orden entrada ayer.", pt: "Nenhum pedido entrou ontem." })),
-        2, "orders") +
-      panel(tx({ en: "Open orders", es: "Ordenes abiertas", pt: "Pedidos abertos" }),
-        sub((fd ? "E-com labels " + fmt(ecomN) + " · Amazon " + fmt(amz) + " bags. " : "No daily fulfillment row for " + day + ". ") +
-          pallets.length + " retail pallet" + (pallets.length === 1 ? "" : "s") + " logged.") +
-        (open.length ? dfTable(
-          [{ h: "Customer" }, { h: "PO" }, { h: "Ship / invoice" }],
-          open.map(function (o) {
-            return [
-              '<div class="df-name">' + esc(o.customer || "-") + "</div>",
-              "<b>" + esc(o.customer_po || o.order_id || "-") + "</b>",
-              esc(o.ship_date || o.invoice_date || "-")
-            ];
-          })
-        ) : empty(tx({ en: "No open orders waiting to ship.", es: "No hay ordenes abiertas por enviar.", pt: "Nao ha pedidos abertos para enviar." }))),
+        (tRetail.length ? pullTable(tRetail) : empty(tx({ en: "No retail orders pulled today yet.", es: "Ninguna orden retail entrada hoy.", pt: "Nenhum pedido de varejo entrou hoje." }))),
+        2, "ordersRetail") +
+      panel(tx({ en: "E-Commerce pulled today", es: "E-Commerce entrado hoy", pt: "E-Commerce entrou hoje" }),
+        tEcom.length ? pullTable(tEcom) : empty(tx({ en: "No e-commerce orders pulled today yet.", es: "Ninguna orden e-commerce entrada hoy.", pt: "Nenhum pedido de e-commerce entrou hoje." })),
+        2, "ordersEcom") +
+      foldPanel(tx({ en: "Retail pulled yesterday", es: "Retail entrado ayer", pt: "Varejo entrou ontem" }),
+        yRetail.length ? pullTable(yRetail) : empty(tx({ en: "No retail orders pulled yesterday.", es: "Ninguna orden retail entrada ayer.", pt: "Nenhum pedido de varejo entrou ontem." })),
+        2, "ordersRetail") +
+      foldPanel(tx({ en: "E-Commerce pulled yesterday", es: "E-Commerce entrado ayer", pt: "E-Commerce entrou ontem" }),
+        yEcom.length ? pullTable(yEcom) : empty(tx({ en: "No e-commerce orders pulled yesterday.", es: "Ninguna orden e-commerce entrada ayer.", pt: "Nenhum pedido de e-commerce entrou ontem." })),
+        2, "ordersEcom") +
+      panel(tx({ en: "E-com labels and Amazon", es: "Etiquetas e-com y Amazon", pt: "Etiquetas e-com e Amazon" }) + " · " + esc(day),
+        sub(fd ? ("E-com labels " + fmt(ecomN) + " · Amazon " + fmt(amz) + " bags.") : ("No daily fulfillment row for " + day + ".")),
         2, "fulfilldaily") +
       panel(tx({ en: "Retail pallets", es: "Paletas retail", pt: "Paletes varejo" }) + " · " + esc(day),
         pallets.length ? dfTable(
@@ -1468,25 +1535,35 @@
     var tracked = arr(function () { return DB.orders(); }).filter(orderShipped).sort(function (a, b) {
       return String(b.ship_date || b.created_at || "").localeCompare(String(a.ship_date || a.created_at || ""));
     });
+    var openRetail = open.filter(function (o) { return laneOfOrder(o) === "retail"; });
+    var openEcom = open.filter(function (o) { return laneOfOrder(o) === "ecom"; });
+    function shipOpenTable(list) {
+      return dfTable(
+        [{ h: "Customer" }, { h: "PO / order" }, { h: "Ship date" }, { h: "Status" }],
+        list.map(function (o) {
+          return [
+            '<div class="df-name">' + esc(o.customer || "-") + "</div>",
+            esc(o.customer_po || o.order_id || "-"),
+            esc(o.ship_date || "-"),
+            pill(o.status || "Open", "df-open")
+          ];
+        })
+      );
+    }
     return statRow([
-      stat(fmt(open.length), tx({ en: "Open to ship", es: "Abiertas por enviar", pt: "Abertas para enviar" }), open.length ? "warn" : ""),
+      stat(fmt(openRetail.length), tx({ en: "Retail open", es: "Retail abiertas", pt: "Varejo abertos" }), openRetail.length ? "warn" : ""),
+      stat(fmt(openEcom.length), tx({ en: "E-com open", es: "E-com abiertas", pt: "E-com abertos" }), openEcom.length ? "warn" : ""),
       stat(fmt(pending.length), tx({ en: "Shipping log pending", es: "Envios pendientes", pt: "Envios pendentes" }), pending.length ? "warn" : ""),
-      stat(fmt(log.length), tx({ en: "Shipping log rows", es: "Filas del registro", pt: "Linhas do registro" })),
-      stat(fmt(tracked.length), tx({ en: "Orders with tracking", es: "Ordenes con rastreo", pt: "Pedidos com rastreio" }))
+      stat(fmt(tracked.length), tx({ en: "With tracking", es: "Con rastreo", pt: "Com rastreio" }))
     ]) +
-      panel(tx({ en: "Open to ship", es: "Por enviar", pt: "Para enviar" }),
-        open.length ? sub("Orders that are not Complete. An SPS BOL or ASN does not take an Open order off this list.") + dfTable(
-          [{ h: "Customer" }, { h: "PO / order" }, { h: "Ship date" }, { h: "Status" }],
-          open.map(function (o) {
-            return [
-              '<div class="df-name">' + esc(o.customer || "-") + "</div>",
-              esc(o.customer_po || o.order_id || "-"),
-              esc(o.ship_date || "-"),
-              pill(o.status || "Open", "df-open")
-            ];
-          })
-        ) : empty(tx({ en: "Nothing is waiting to ship.", es: "Nada esta por enviar.", pt: "Nada esta para enviar." })),
-        2, "orders") +
+      panel(tx({ en: "Retail open", es: "Retail abiertas", pt: "Varejo abertos" }),
+        openRetail.length ? sub("EDI and SPS retail that are not Complete. An SPS BOL or ASN does not take an Open order off this list.") + shipOpenTable(openRetail)
+          : empty(tx({ en: "No retail orders are waiting to ship.", es: "Ninguna orden retail por enviar.", pt: "Nenhum pedido de varejo para enviar." })),
+        2, "ordersRetail") +
+      panel(tx({ en: "E-Commerce open", es: "E-Commerce abiertas", pt: "E-Commerce abertos" }),
+        openEcom.length ? sub("Shopify, TikTok, ShipStation, Faire, and Stripe. Not included in the Retail count.") + shipOpenTable(openEcom)
+          : empty(tx({ en: "No e-commerce orders are waiting to ship.", es: "Ninguna orden e-commerce por enviar.", pt: "Nenhum pedido de e-commerce para enviar." })),
+        2, "ordersEcom") +
       panel(tx({ en: "Recent shipments", es: "Envios recientes", pt: "Envios recentes" }),
         (log.length || tracked.length) ? dfTable(
           [{ h: "Date" }, { h: "To" }, { h: "Carrier" }, { h: "Status" }],
@@ -1822,6 +1899,11 @@
     return !!(dept && toolId && dept.subs.indexOf(toolId) >= 0);
   }
   function noteShell(kind, id) {
+    if (kind === "go" && id === "orders") {
+      var lane = "retail";
+      try { if (window.ORDER_LANE && typeof ORDER_LANE.current === "function") lane = ORDER_LANE.current(); } catch (eLane) {}
+      id = lane === "ecom" ? "ordersecom" : "ordersretail";
+    }
     var dept = shellDept();
     if (!dept) { shellHere = ""; return; }
     var field = kind === "trace" ? "trace" : (kind === "mod" ? "fn" : "go");
