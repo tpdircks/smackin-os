@@ -133,10 +133,26 @@ assert(src.toLowerCase().indexOf("ocr") >= 0, "ocr called out");
 var homes = fs.readFileSync(path.join(__dirname, "..", "dept-homes.js"), "utf8");
 assert(homes.indexOf("qacheck") >= 0 && homes.indexOf('fn: "qacheck"') >= 0, "dept home tool");
 var sw = fs.readFileSync(path.join(__dirname, "..", "service-worker.js"), "utf8");
-assert(sw.indexOf("smackin-inv-v256") >= 0 && sw.indexOf("./qa-checklists.js") >= 0, "cache bump");
+assert(sw.indexOf("smackin-inv-v258") >= 0 && sw.indexOf("./qa-checklists.js") >= 0, "cache bump");
 assert(sw.indexOf("smackin-inv-v241") < 0, "old cache gone");
 var html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
-assert(html.indexOf('src="qa-checklists.js?b=1"') >= 0, "index script");
+assert(html.indexOf('src="qa-checklists.js?b=2"') >= 0, "index script");
+var emptyDash = qa.completion([]);
+assert(emptyDash.total === 0 && emptyDash.complete === 0, "empty total");
+assert(emptyDash.byType.preop === 0 && emptyDash.byType.metal === 0 && emptyDash.byType.gmp === 0 && emptyDash.byType.pouch === 0, "empty types");
+var dashRows = [
+  { form_type: "preop", form_date: "2026-10-26", status: "complete" },
+  { form_type: "preop", form_date: "2026-10-26", status: "draft" },
+  { form_type: "metal", form_date: "2026-10-28", status: "complete" },
+  { form_type: "gmp", form_date: "2026-10-28", status: "draft" },
+  { form_type: "pouch", form_date: "2026-10-28", status: "complete" },
+  { form_type: "other", form_date: "2026-10-28", status: "complete" }
+];
+var dash = qa.completion(dashRows);
+assert(dash.total === 5 && dash.complete === 3, "known types only");
+assert(dash.byType.preop === 2 && dash.completeByType.preop === 1, "preop split");
+assert(dash.days[0].date === "2026-10-28" && dash.days[0].metal === 1 && dash.days[0].gmp === 1 && dash.days[0].pouch === 1, "newest day");
+assert(dash.days[1].date === "2026-10-26" && dash.days[1].preop === 2, "older day");
 assert(html.indexOf("qa-checklists.js") < html.indexOf("dept-homes.js"), "loads before dept homes");
 
 var round = qa.hydrate(qa.toRow(good));

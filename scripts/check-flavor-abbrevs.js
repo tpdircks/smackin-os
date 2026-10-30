@@ -51,7 +51,17 @@ var ABBREV = [
   ["MPLE", "Maple Brown Sugar", "S09"],
   ["BRWN SUG", "Maple Brown Sugar", "S09"],
   ["BRWN SUGAR", "Maple Brown Sugar", "S09"],
-  ["ORIG", "OG Original", "S01"]
+  ["ORIG", "OG Original", "S01"],
+  ["SMACKIN CHDR JAL SNFL SD", "Cheddar Jalapeno", "S07"],
+  ["SMACKIN SNFLWR SDS ORIG", "OG Original", "S01"],
+  ["SMACKIN SNFLWR SDS CRCKD PEPPER", "Cracked Pepper", "S06"],
+  ["SMACKIN SNFLWR SDS MPLE BRWN SUG", "Maple Brown Sugar", "S09"],
+  ["SMACKIN' SEEDS SNFL CHED JLP 4Z", "Cheddar Jalapeno", "S07"],
+  ["SMACKIN' SEEDS SNFL RNCH 4Z", "Ranch", "S08"],
+  ["SMACKIN SNFLWR SDS CHED/JALA", "Cheddar Jalapeno", "S07"],
+  ["UNMAPPED: SMACKN GRL PRM SNFLWR SDS", "Garlic Parmesan", "S04"],
+  ["UNMAPPED: SUNFLOWER SEED CRCKD PEPPR 4OZ", "Cracked Pepper", "S06"],
+  ["UNMAPPED: SMACKIN' SEEDS SNFL RNCH 4Z", "Ranch", "S08"]
 ];
 
 // Existing full names and older abbreviations. ORIG is last, so a description
@@ -195,6 +205,7 @@ var dbCtx = {
 };
 dbCtx.window = dbCtx;
 vm.createContext(dbCtx);
+vm.runInContext(read("demand.js"), dbCtx, { filename: "demand.js" });
 vm.runInContext(read("db.js"), dbCtx, { filename: "db.js" });
 var DB = dbCtx.DB;
 
@@ -209,9 +220,12 @@ DB.importDemand(remapCases.map(function (row, i) {
   return DB.remapDemandFlavors("test");
 }).then(function (res) {
   var byNotes = {};
-  DB.demandLines().forEach(function (line) { byNotes[line.notes] = line.flavor; });
+  DB.demandLines().forEach(function (line) { byNotes[line.notes] = line; });
   remapCases.forEach(function (row) {
-    same(byNotes[row[0]], row[1], "remap " + row[0]);
+    var line = byNotes[row[0]];
+    same(line && line.flavor, row[1], "remap " + row[0]);
+    if (String(row[1]).indexOf("UNMAPPED") === 0) same(String(line && line.flavor_code || ""), "", "remap blank code " + row[0]);
+    else same(line && line.flavor_code, row[2], "remap code " + row[0]);
   });
   var expectFixed = remapCases.length - UNMAPPED.length;
   same(res.fixed, expectFixed, "remap fixed count");
@@ -220,11 +234,13 @@ DB.importDemand(remapCases.map(function (row, i) {
   var html = read("index.html");
   var sw = read("service-worker.js");
   var sync = read("supabase/functions/sps-sync/index.js");
-  eq(html.indexOf('src="demand.js?b=3"') >= 0, "demand cache bust");
-  eq(html.indexOf('src="sps-map.js?b=4"') >= 0, "sps-map cache bust");
-  eq(html.indexOf('src="db.js?b=93"') >= 0, "db cache bust");
-  eq(sw.indexOf('const CACHE = "smackin-inv-v256"') >= 0, "cache v254");
-  eq(sw.indexOf("smackin-inv-v252") < 0, "old cache gone");
+  eq(html.indexOf('src="demand.js?b=4"') >= 0, "demand cache bust");
+  eq(html.indexOf('src="sps-map.js?b=5"') >= 0, "sps-map cache bust");
+  eq(html.indexOf('src="db.js?b=94"') >= 0, "db cache bust");
+  eq(html.indexOf('src="demand-flavor-remap.js?b=1"') >= 0, "flavor remap script");
+  eq(sw.indexOf('const CACHE = "smackin-inv-v258"') >= 0, "cache v258");
+  eq(sw.indexOf("smackin-inv-v257") < 0, "old cache gone");
+  eq(sw.indexOf("./demand-flavor-remap.js") >= 0, "flavor remap asset");
   eq(sync.indexOf('Deno.env.get("SPS_FOLDER") || "testout"') >= 0, "SPS_FOLDER default stays testout");
   eq(read("app.js").indexOf("\\bcrckd\\b") < 0, "app.js flavor rules untouched");
 

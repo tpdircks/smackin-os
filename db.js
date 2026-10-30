@@ -1313,18 +1313,47 @@ window.DB = (function () {
   }
 
   // ---------- Demand flavor re-map (fix stale UNMAPPED rows using the parser's rules) ----------
+  // Prefer DEMAND.resolveFlavor so a stored "UNMAPPED:" label, 4Z/4OZ, and SNFL/SNFLWR SDS
+  // noise are stripped the same way a new import strips them. The local copy is only for a
+  // page that loaded db.js without demand.js.
+  function cleanFlavorText(s) {
+    let t = String(s || "");
+    t = t.replace(/^(?:unmapped:\s*)+/i, "");
+    t = t.replace(/['\u2019]/g, "");
+    t = t.replace(/\b\d+(?:\.\d+)?\s*(?:oz|z)\b/ig, " ");
+    t = t.replace(/\b(?:smackin|smackn|sunflower|sunflwr|snflwr|seeds|snfl|seed|sds|sd)\b/ig, " ");
+    t = t.replace(/[._\-\/]+/g, " ").replace(/\s+/g, " ").trim();
+    return t;
+  }
+  function codeForFlavor(flavor) {
+    const codes = (window.DEMAND && window.DEMAND.FLAVOR_CODES) || {};
+    if (codes[flavor]) return codes[flavor];
+    const it = (cache.items || []).find(i => String(i.name || "").toLowerCase() === ("bags 4oz - " + flavor).toLowerCase());
+    return it ? String(it.code).replace(/^B4-/, "") : "";
+  }
+  function fallbackResolveFlavor(raw) {
+    const rules = [[/cinnamon|churro/i, "Cinnamon Churro"], [/garlic|parm|\bgrlc\b|prmsn|\bgrl\b|\bprm\b/i, "Garlic Parmesan"], [/backyard|bbq|barbe|\bbyrd\b/i, "Backyard BBQ"], [/dill|pickle|\bdll\b|\bpckl\b/i, "Dill Pickle"], [/crack|\bcrck\b|black pepper|\bcrckd\b|\bcrk\b|\bpeppr\b/i, "Cracked Pepper"], [/cheddar|jalap|\bchd\b|\bched\b|\bchdr\b|\bjala?\b|\bjlp\b/i, "Cheddar Jalapeno"], [/ranch|\brnch\b/i, "Ranch"], [/maple|brown sugar|\bmple\b|\bbrwn sug/i, "Maple Brown Sugar"], [/lemon/i, "Lemon Pepper"], [/sour cream|onion|s&o|sco/i, "Sour Cream & Onion"], [/cheeseburger/i, "Cheeseburger"], [/pizza|deep dish|pca/i, "PCA Pizza"], [/4\s*-?\s*var|variety/i, "Variety Pack"], [/original|\bog\b|\borig\b/i, "OG Original"]];
+    const hit = rules.find(r => r[0].test(cleanFlavorText(raw)));
+    if (!hit) return null;
+    return { flavor: hit[1], flavor_code: codeForFlavor(hit[1]) };
+  }
+  function resolveStoredFlavor(raw) {
+    if (window.DEMAND && typeof window.DEMAND.resolveFlavor === "function") {
+      const hit = window.DEMAND.resolveFlavor(raw);
+      if (!hit || !hit.flavor) return null;
+      return { flavor: hit.flavor, flavor_code: hit.flavor_code || codeForFlavor(hit.flavor) };
+    }
+    return fallbackResolveFlavor(raw);
+  }
   async function remapDemandFlavors(op) {
-    const rules = [[/cinnamon|churro/i, "Cinnamon Churro"], [/garlic|parm|grlc|prmsn|\bgrl\b|\bprm\b/i, "Garlic Parmesan"], [/backyard|bbq|barbe|byrd/i, "Backyard BBQ"], [/dill|pickle|dll|pckl/i, "Dill Pickle"], [/crack|crck|black pepper|\bcrckd\b|\bcrk\b|\bpeppr\b/i, "Cracked Pepper"], [/cheddar|jalap|chd|\bched\b|\bchdr\b|\bjala?\b|\bjlp\b/i, "Cheddar Jalapeno"], [/ranch|\brnch\b/i, "Ranch"], [/maple|brown sugar|\bmple\b|\bbrwn sug/i, "Maple Brown Sugar"], [/lemon/i, "Lemon Pepper"], [/sour cream|onion|s&o|sco/i, "Sour Cream & Onion"], [/cheeseburger/i, "Cheeseburger"], [/pizza|deep dish|pca/i, "PCA Pizza"], [/4\s*-?\s*var|variety/i, "Variety Pack"], [/original|\bog\b|\borig\b/i, "OG Original"]];
-    const codeFor = flavor => { const it = (cache.items || []).find(i => String(i.name || "").toLowerCase() === ("bags 4oz - " + flavor).toLowerCase()); return it ? String(it.code).replace(/^B4-/, "") : ""; };
     const rows = (cache.demandLines || []).filter(d => /^UNMAPPED/i.test(String(d.flavor || "")));
     let fixed = 0;
     for (const d of rows) {
-      const desc = String(d.flavor || "").replace(/^UNMAPPED:?\s*/i, "");
-      const hit = rules.find(r => r[0].test(desc));
+      const hit = resolveStoredFlavor(d.flavor);
       if (!hit) continue;
-      const patch = { flavor: hit[1], flavor_code: codeFor(hit[1]) };
+      const patch = { flavor: hit.flavor, flavor_code: hit.flavor_code || "" };
       if (mode === "cloud") { if (d.id != null) await must(sb.from("demand_lines").update(patch).eq("id", d.id), "demand_lines"); }
-      else { d.flavor = hit[1]; d.flavor_code = patch.flavor_code; }
+      else { d.flavor = hit.flavor; d.flavor_code = patch.flavor_code; }
       fixed++;
     }
     if (mode === "cloud") await cloud.loadAll(); else local.save();
