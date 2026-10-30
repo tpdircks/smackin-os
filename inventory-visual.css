@@ -29,10 +29,14 @@
 .ivx-mode { margin-left: auto; display: inline-flex; gap: 4px; }
 #ivx-q { width: 100%; max-width: 520px; min-height: 46px; font-size: 17px; padding: 8px 12px; border-radius: 10px; }
 
-/* groups */
+/* groups — Finished Goods, then Raw Goods subsections in WIP order */
+.ivx-super { margin-top: 22px; padding-top: 12px; border-top: 2px solid var(--navy, #04223B); }
+.ivx-superhead h2 { margin: 0 0 2px; font-size: 22px; color: var(--navy, #04223B); }
+.ivx-superhead .hint { margin: 0 0 4px; }
 .ivx-group { margin-top: 16px; }
 .ivx-ghead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin: 0 0 8px; }
-.ivx-ghead h2 { margin: 0; font-size: 19px; }
+.ivx-ghead h2, .ivx-ghead h3 { margin: 0; font-size: 19px; }
+.ivx-subhead { margin: 18px 0 8px; font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #5b6573; }
 .ivx-gsum { color: #5b6573; font-size: 15px; }
 .ivx-gsum b { color: var(--navy, #04223B); }
 .ivx-empty { padding: 16px 0; }
@@ -53,6 +57,7 @@
 .ivx-row { border-top: 1px dashed var(--line, #d7dde6); padding-top: 8px; }
 .ivx-rowtop { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .ivx-size { background: var(--navy, #04223B); color: #fff; font-weight: 700; font-size: 13px; padding: 2px 8px; border-radius: 6px; }
+.ivx-size.mc { background: var(--orange, #F26B21); }
 .ivx-code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; color: #5b6573; }
 .ivx-rowtop .pill { margin-left: auto; }
 .ivx-total { margin: 4px 0 2px; }
