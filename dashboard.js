@@ -191,6 +191,18 @@
       if (a) known[a] = 1;
       if (b) known[b] = 1;
     });
+    function laneOf(o) {
+      try {
+        if (window.ORDER_LANE && typeof ORDER_LANE.channel === "function") return ORDER_LANE.channel(o) === "retail" ? "retail" : "ecom";
+      } catch (eLane) {}
+      return "ecom";
+    }
+    function demandLane(line) {
+      try {
+        if (window.ORDER_LANE && typeof ORDER_LANE.demandChannel === "function") return ORDER_LANE.demandChannel(line) === "ecom" ? "ecom" : "retail";
+      } catch (eLane2) {}
+      return "retail";
+    }
     var rows = orders.map(function (o) {
       return {
         day: slcDay(o.created_at),
@@ -201,6 +213,7 @@
         status: o.status || "Open",
         ship: o.ship_date || o.invoice_date || "",
         source: o.entered_by || "",
+        channel: laneOf(o),
         flavors: flavorSummary(linesForOrder(o, by))
       };
     }).filter(function (r) { return r.day; });
@@ -211,7 +224,7 @@
     dlines.forEach(function (l) {
       var k = poKey(l.po);
       if (!k || known[k]) return;
-      var g = groups[k] || (groups[k] = { po: l.po || "", customer: l.partner || "", at: l.created_at || "", status: l.status || "Open", ship: l.due_date || "", source: l.imported_by || "Demand", lines: [] });
+      var g = groups[k] || (groups[k] = { po: l.po || "", customer: l.partner || "", at: l.created_at || "", status: l.status || "Open", ship: l.due_date || "", source: l.imported_by || "Demand", demandSource: l.source || "", notes: l.notes || "", lines: [] });
       if ((l.created_at || "") < (g.at || "\uffff")) g.at = l.created_at || g.at;
       if (String(l.status || "").toLowerCase() === "open") g.status = "Open";
       if (!g.ship && l.due_date) g.ship = l.due_date;
@@ -222,6 +235,7 @@
       rows.push({
         day: slcDay(g.at), at: g.at, customer: g.customer, po: g.po, oid: "",
         status: g.status || "Open", ship: g.ship || "", source: g.source || "Demand",
+        channel: demandLane({ source: g.demandSource, partner: g.customer, imported_by: g.source, notes: g.notes }),
         flavors: flavorSummary(g.lines)
       });
     });
@@ -409,21 +423,25 @@
   }
 
   function lastPull(rows) {
-    var best = "", n = 0;
+    var best = "";
     rows.forEach(function (r) { if (r.day && r.day > best) best = r.day; });
     if (!best) return null;
-    rows.forEach(function (r) { if (r.day === best) n++; });
-    return { day: best, n: n };
+    var retail = 0, ecom = 0;
+    rows.forEach(function (r) {
+      if (r.day !== best) return;
+      if (r.channel === "retail") retail++;
+      else ecom++;
+    });
+    return { day: best, retail: retail, ecom: ecom };
   }
 
   function orderCard(which, day, rows, all) {
     var list = rows.filter(function (r) { return r.day === day; });
+    var retail = list.filter(function (r) { return r.channel === "retail"; });
+    var ecom = list.filter(function (r) { return r.channel !== "retail"; });
     var title = which === "today"
       ? tx({ en: "Pulled today", es: "Entrado hoy", pt: "Entraram hoje" })
       : tx({ en: "Pulled yesterday", es: "Entrado ayer", pt: "Entraram ontem" });
-    var empty = which === "today"
-      ? tx({ en: "No orders pulled today yet.", es: "Ninguna orden entrada hoy todavia.", pt: "Nenhum pedido entrou hoje ainda." })
-      : tx({ en: "No orders pulled yesterday.", es: "Ninguna orden entrada ayer.", pt: "Nenhum pedido entrou ontem." });
     var body;
     if (!cloud()) {
       body = '<p class="df-empty">' + tx({ en: "Live orders load only when this screen is on the cloud database.", es: "Las ordenes en vivo cargan solo en la base de la nube.", pt: "Os pedidos ao vivo carregam so na base da nuvem." }) + '</p>';
@@ -432,16 +450,26 @@
       var extra = "";
       if (last) {
         extra = '<p class="df-sub">' + tx({
-          en: "Last pull into Smackin OS was " + pretty(last.day) + " (" + last.n + (last.n === 1 ? " order" : " orders") + ").",
-          es: "La ultima entrada fue " + pretty(last.day) + " (" + last.n + ").",
-          pt: "A ultima entrada foi " + pretty(last.day) + " (" + last.n + ")."
+          en: "Last pull into Smackin OS was " + pretty(last.day) + " (Retail " + last.retail + ", E-Commerce " + last.ecom + "). These are not added together.",
+          es: "La ultima entrada fue " + pretty(last.day) + " (Retail " + last.retail + ", E-Commerce " + last.ecom + "). No se suman.",
+          pt: "A ultima entrada foi " + pretty(last.day) + " (Varejo " + last.retail + ", E-Commerce " + last.ecom + "). Nao se somam."
         }) + '</p>';
       }
-      body = '<p class="df-empty">' + empty + '</p>' + extra;
+      body = '<p class="df-empty">' + tx({
+        en: which === "today" ? "No orders pulled today yet." : "No orders pulled yesterday.",
+        es: which === "today" ? "Ninguna orden entrada hoy todavia." : "Ninguna orden entrada ayer.",
+        pt: which === "today" ? "Nenhum pedido entrou hoje ainda." : "Nenhum pedido entrou ontem."
+      }) + '</p>' + extra;
     } else {
-      body = '<p class="df-sub">' + list.length + (list.length === 1 ? " order" : " orders") + " · " + pretty(day) + '</p>' + orderTable(list, "df-" + which);
+      body = '<p class="df-sub">' + tx({
+        en: "Retail " + retail.length + " · E-Commerce " + ecom.length + ". These are not added together.",
+        es: "Retail " + retail.length + " · E-Commerce " + ecom.length + ". No se suman.",
+        pt: "Varejo " + retail.length + " · E-Commerce " + ecom.length + ". Nao se somam."
+      }) + '</p>' +
+        '<p class="df-sub">Retail</p>' + (retail.length ? orderTable(retail, "df-" + which + "-retail") : '<p class="df-empty">' + tx({ en: "No retail orders pulled.", es: "Ninguna orden retail.", pt: "Nenhum pedido de varejo." }) + '</p>') +
+        '<p class="df-sub">E-Commerce</p>' + (ecom.length ? orderTable(ecom, "df-" + which + "-ecom") : '<p class="df-empty">' + tx({ en: "No e-commerce orders pulled.", es: "Ninguna orden e-commerce.", pt: "Nenhum pedido de e-commerce." }) + '</p>');
     }
-    return '<div class="card">' + head(title + ' <span class="df-meta">' + esc(pretty(day)) + '</span>', go("orders", "Orders →") + go("demandboard", "Demand →")) + body + '</div>';
+    return '<div class="card">' + head(title + ' <span class="df-meta">' + esc(pretty(day)) + '</span>', go("ordersretail", "Retail") + go("ordersecom", "E-Commerce") + go("demandboard", "Demand")) + body + '</div>';
   }
 
   function stockCard(kind, list) {

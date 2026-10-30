@@ -18,7 +18,7 @@
      Cmd+Shift+R can drop a stale smackin-inv worker even when that worker
      swallows sw-escape.js. Only an older smackin-inv cache is removed. */
   (function () {
-    var EMBEDDED = "smackin-inv-v262";
+    var EMBEDDED = "smackin-inv-v263";
     function ver(id) {
       var m = /smackin-inv-v(\d+)/.exec(String(id || ""));
       return m ? parseInt(m[1], 10) : 0;
@@ -64,7 +64,7 @@
     }).catch(function () {});
   })();
   </script>
-  <script src="sw-escape.js?b=5"></script>
+  <script src="sw-escape.js?b=6"></script>
 </head>
 <body>
   <header>
@@ -110,7 +110,8 @@
   <script src="allen-reorder.js?b=1"></script>
   <script src="db.js?b=94"></script>
   <script src="gusto-roster.js?b=1"></script>
-  <script src="app.js?b=195"></script>
+  <script src="order-lanes.js?b=1"></script>
+  <script src="app.js?b=196"></script>
   <script src="returns-workflow.js?b=2"></script>
   <script src="fg-lots.js?b=1"></script>
   <script src="trace.js?b=18"></script>
@@ -129,7 +130,7 @@
   <script src="sps-map.js?b=6"></script>
   <script src="sps-feed.js?b=5"></script>
   <script src="po-status.js?b=4"></script>
-  <script src="dashboard.js?b=4"></script>
+  <script src="dashboard.js?b=5"></script>
   <script src="shipping-sync.js?b=5"></script>
   <script src="shipping-lanes.js?b=1"></script>
   <script src="outbound-folders.js?b=1"></script>
@@ -138,7 +139,7 @@
   <script src="sqf-tasks.js?b=3"></script>
   <script src="qa-checklists.js?b=2"></script>
   <script src="fulfillment-analytics.js?b=2"></script>
-  <script src="dept-homes.js?b=28"></script>
+  <script src="dept-homes.js?b=29"></script>
   <script src="demand-wos.js?b=1"></script>
   <script src="vendor-seed.js?b=2"></script>
   <script src="vendor-lead.js?b=3"></script>

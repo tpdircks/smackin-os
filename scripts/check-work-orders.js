@@ -27,14 +27,14 @@ eq(src.indexOf("create table if not exists public.production_orders") >= 0, "fal
 eq(src.indexOf("work_orders (") < 0, "no new work_orders table");
 eq(paper.indexOf("window.PROD_ORDERS") >= 0, "paper orders kept");
 eq(app.indexOf("production orders to Mixing") >= 0, "legacy marker");
-eq(sw.indexOf('const CACHE = "smackin-inv-v262"') >= 0, "cache v254");
+eq(sw.indexOf('const CACHE = "smackin-inv-v263"') >= 0, "cache v254");
 eq(sw.indexOf('const CACHE = "smackin-inv-v249"') < 0, "old cache gone");
 eq(sw.indexOf('"./work-orders.js"') >= 0, "sw asset");
 eq(sw.indexOf('"./inventory-visual.js"') >= 0 && sw.indexOf('"./inventory-visual.css"') >= 0, "visual assets stay cached");
 eq(sw.indexOf("./slc-count-panel.js") < 0 && sw.indexOf("./slc-count-latest.js") < 0 && sw.indexOf("./inv-sync-1027d.js") < 0, "sheet sync is not precached");
 eq(html.indexOf("work-orders.js?b=3") >= 0, "script tag");
 eq(html.indexOf("mixing-recipes.js?b=3") >= 0, "mixing cache bust");
-eq(html.indexOf("dept-homes.js?b=28") >= 0, "dept homes cache bust");
+eq(html.indexOf("dept-homes.js?b=29") >= 0, "dept homes cache bust");
 eq(html.indexOf("inventory-visual.js?b=3") >= 0 && html.indexOf("inventory-visual.css?b=3") >= 0, "visual still wired");
 function deptSlice(id, next) {
   var at = homes.indexOf('id: "' + id + '"');
@@ -54,10 +54,10 @@ eq(homes.indexOf('var INV_SUBS = ["dash", "returns", "finbags", "locations", "fa
 eq(homes.indexOf("data-dept-sub") >= 0, "subtab buttons");
 eq(homes.indexOf('shell.id = "dept-shell"') >= 0, "shared department shell");
 eq(mixDept.indexOf('primary: "mixing"') >= 0, "mixing opens status");
-eq(mixDept.indexOf('actions: ["prodorders", "trMix", "batchrec"]') >= 0, "mixing actions");
+eq(mixDept.indexOf('actions: ["board", "prodorders", "trMix", "batchrec"]') >= 0, "mixing actions");
 eq(mixDept.slice(mixDept.indexOf("actions:"), mixDept.indexOf("subs:")).indexOf("recipes") < 0, "recipes are not an action");
 eq(mixDept.indexOf('"recipes"') > mixDept.indexOf("subs:"), "recipes stay a subtab");
-eq(pmac.indexOf('actions: ["prodorders", "pmacout", "trPmac"]') >= 0, "pmac work orders before the log");
+eq(pmac.indexOf('actions: ["board", "prodorders", "pmacout", "trPmac"]') >= 0, "pmac work orders before the log");
 ["home", "demand", "purch", "recv", "inv", "mixing", "pmac", "ful", "ship", "qa", "ops"].forEach(function (id, i, all) {
   var slice = deptSlice(id, all[i + 1]);
   eq(slice.indexOf("primary:") >= 0, id + " has a primary view");
@@ -66,7 +66,8 @@ eq(pmac.indexOf('actions: ["prodorders", "pmacout", "trPmac"]') >= 0, "pmac work
 eq(deptSlice("demand", "purch").indexOf('primary: "demandboard"') >= 0, "demand opens the order board");
 eq(deptSlice("recv", "inv").indexOf('primary: "recvlog"') >= 0, "receiving opens the dock log");
 eq(deptSlice("purch", "recv").indexOf('primary: "purchasing"') >= 0, "purchasing opens POs");
-eq(deptSlice("ful", "ship").indexOf('primary: "orders"') >= 0, "fulfillment opens orders");
+eq(deptSlice("ful", "ship").indexOf('primary: "ordersRetail"') >= 0, "fulfillment opens retail orders");
+eq(deptSlice("ful", "ship").indexOf('"ordersEcom"') >= 0, "ecom orders are their own tab");
 eq(deptSlice("qa", "ops").indexOf('primary: "qacheck"') >= 0, "quality opens checklists");
 eq(deptSlice("ship", "qa").indexOf('primary: "shipments"') >= 0, "shipping opens shipments");
 eq(deptSlice("ops", null).indexOf('primary: "maintenance"') >= 0, "ops opens maintenance");
