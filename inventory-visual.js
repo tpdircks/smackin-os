@@ -19,9 +19,10 @@
      - big on-hand totals plus a location breakdown per item
      - sticky filter chips (group, size, in stock only) and a search box that
        also matches locations
-     - action buttons that only navigate to the existing Receive / Adjust /
-       Move / Count / Returns / Locations screens and prefill the item code and
-       location. Saving still happens on those screens with their own buttons.
+   - per-item buttons that only navigate to Adjust / Move / Count and prefill
+     the item code and location. Saving still happens on those screens.
+     The department shell (dept-homes.js) owns the Inventory subtabs and the
+     Actions row (Receive, Adjust, Count, Move, Alerts).
    Also adds light body classes for Receive, Returns, Adjust, Move and Count so
    inventory-visual.css can enlarge inputs and make the primary button obvious.
 
@@ -532,13 +533,9 @@
       '<input id="ivx-q" type="search" autocomplete="off" enterkeyhint="search" placeholder="' + esc(t("search")) + '" value="' + esc(st.q) + '">' +
       '</div>';
   }
-  function actionsHtml() {
-    var a = [["receive", t("receive"), "ivx-primary"], ["adjust", t("adjustCounts"), ""], ["move", t("movePick"), ""], ["count", t("cycle"), ""], ["returns", t("returns"), ""], ["locations", t("locations"), ""]];
-    return '<div class="ivx-actions">' + a.map(function (x) { return '<button type="button" class="ivx-action ' + x[2] + '" data-go="' + x[0] + '">' + x[1] + '</button>'; }).join("") + '</div>';
-  }
   function rootHtml() {
     return '<div class="ivx-head"><div><h2 class="ivx-title">' + t("title") + '</h2><p class="hint">' + t("sub") + '</p></div></div>' +
-      actionsHtml() + barHtml() + '<div id="ivx-body">' + (st.mode === "cards" ? gridHtml() : "") + '</div>';
+      barHtml() + '<div id="ivx-body">' + (st.mode === "cards" ? gridHtml() : "") + '</div>';
   }
 
   // ---------- navigation helpers (no writes; the target screen's own button saves) ----------
