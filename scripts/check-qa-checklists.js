@@ -133,7 +133,7 @@ assert(src.toLowerCase().indexOf("ocr") >= 0, "ocr called out");
 var homes = fs.readFileSync(path.join(__dirname, "..", "dept-homes.js"), "utf8");
 assert(homes.indexOf("qacheck") >= 0 && homes.indexOf('fn: "qacheck"') >= 0, "dept home tool");
 var sw = fs.readFileSync(path.join(__dirname, "..", "service-worker.js"), "utf8");
-assert(sw.indexOf("smackin-inv-v259") >= 0 && sw.indexOf("./qa-checklists.js") >= 0, "cache bump");
+assert(sw.indexOf("smackin-inv-v260") >= 0 && sw.indexOf("./qa-checklists.js") >= 0, "cache bump");
 assert(sw.indexOf("smackin-inv-v241") < 0, "old cache gone");
 var html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
 assert(html.indexOf('src="qa-checklists.js?b=2"') >= 0, "index script");

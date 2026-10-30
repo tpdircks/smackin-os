@@ -117,7 +117,10 @@
       of: "of",
       more: "more lines",
       flavorNeed: "Flavor is required.",
-      bagsBad: "Bags done has to be a number, zero or more."
+      bagsBad: "Bags done has to be a number, zero or more.",
+      seasLot: "Seasoning lot on file",
+      seasVer: "Seasoning lot verified",
+      seasHint: "Optional. Operator confirms the lot used matches the lot on file. This does not replace mixing-log lot recording."
     },
     es: {
       title: "Ordenes de trabajo",
@@ -176,7 +179,15 @@
       of: "de",
       more: "lineas mas",
       flavorNeed: "El sabor es obligatorio.",
-      bagsBad: "Bolsas hechas tiene que ser un numero, cero o mas."
+      bagsBad: "Bolsas hechas tiene que ser un numero, cero o mas.",
+      seasLot: "Lote de sazonador en archivo",
+      seasVer: "Lote de sazonador verificado",
+      seasHint: "Opcional. El operador confirma que el lote usado coincide con el lote en archivo. Esto no reemplaza el registro de lote en el registro de mezcla."
+    },
+    pt: {
+      seasLot: "Lote de tempero no arquivo",
+      seasVer: "Lote de tempero verificado",
+      seasHint: "Opcional. O operador confirma que o lote usado confere com o lote no arquivo. Isto nao substitui o registro de lote no registro de mistura."
     }
   };
 
@@ -199,7 +210,9 @@
   function lang() {
     if (!doc) return "en";
     var es = doc.getElementById("lang-es");
+    var pt = doc.getElementById("lang-pt");
     if (es && es.classList.contains("active")) return "es";
+    if (pt && pt.classList.contains("active")) return "pt";
     return "en";
   }
   function tx(key) {
@@ -270,7 +283,8 @@
       bags_needed: null, bags_done: 0, target_date: "", status: "Open",
       operators: [], demand: [], priority: "", mix_instr: "", pmac_instr: "",
       bins: "", source: "manual", live: false, fromCloud: false, localOnly: false,
-      created_at: "", updated_at: "", updated_by: "", driver: "", open_bags: null
+      created_at: "", updated_at: "", updated_by: "", driver: "", open_bags: null,
+      seasoning_lot_on_file: "", seasoning_lot_verified: ""
     };
   }
   function fromPaper(p, kvStage) {
@@ -312,6 +326,8 @@
     if (num(obj.open_bags) != null) row.open_bags = num(obj.open_bags);
     if (obj.updated_at) row.updated_at = obj.updated_at;
     if (obj.updated_by) row.updated_by = obj.updated_by;
+    if (obj.seasoning_lot_on_file != null) row.seasoning_lot_on_file = trim(obj.seasoning_lot_on_file);
+    if (obj.seasoning_lot_verified != null) row.seasoning_lot_verified = (obj.seasoning_lot_verified === true || String(obj.seasoning_lot_verified).toUpperCase() === "Y") ? "Y" : "";
     if (obj.created_at && !row.created_at) row.created_at = obj.created_at;
     row.live = true;
     row.fromCloud = !!fromCloud;
@@ -602,7 +618,9 @@
       open_bags: num(row.open_bags),
       updated_at: new Date().toISOString(),
       updated_by: trim(who),
-      created_at: row.created_at || new Date().toISOString()
+      created_at: row.created_at || new Date().toISOString(),
+      seasoning_lot_on_file: trim(row.seasoning_lot_on_file),
+      seasoning_lot_verified: (row.seasoning_lot_verified === true || String(row.seasoning_lot_verified || "").toUpperCase() === "Y") ? "Y" : ""
     };
   }
   function sameQty(a, b) {
@@ -671,6 +689,9 @@
       "#wo-root .wo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}",
       "#wo-root .wo-grid label{display:block;font-size:12px;font-weight:800;margin-bottom:4px}",
       "#wo-root .wo-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}",
+      "#wo-root label.wo-check{display:flex;align-items:center;gap:8px;font-weight:800;margin:10px 0 0;min-height:44px}",
+      "#wo-root label.wo-check input{width:auto;margin:0}",
+      "#wo-root #wo-slot{max-width:420px}",
       "#wo-root .wo-stages{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}",
       "#wo-root .wo-stages button{font-weight:800}",
       "#wo-root .wo-pill{display:inline-block;border-radius:999px;padding:2px 8px;font-size:12px;font-weight:800;background:#eef3f8;color:#04223B}",
@@ -802,6 +823,9 @@
       "<div><label>" + esc(tx("status")) + '</label><select id="wo-status">' + statusOpts + "</select></div>" +
       "<div><label>" + esc(tx("operators")) + '</label><input id="wo-ops" value="' + esc((w.operators || []).join(", ")) + '" placeholder="Leo, Wilson"></div>' +
       "<div><label>" + esc(tx("who")) + '</label><input id="wo-who" value="' + esc(w.updated_by || "") + '"></div></div>' +
+      "<div><label>" + esc(tx("seasLot")) + '</label><input id="wo-slot" autocomplete="off" value="' + esc(w.seasoning_lot_on_file || "") + '"></div>' +
+      '<label class="wo-check"><input type="checkbox" id="wo-sver"' + (w.seasoning_lot_verified === "Y" ? " checked" : "") + "> " + esc(tx("seasVer")) + "</label>" +
+      '<p class="hint">' + esc(tx("seasHint")) + "</p>" +
       '<div class="wo-stages">' + stages + "</div>" +
       "<div><b>" + esc(tx("progress")) + "</b> " + (p == null ? "-" : p + "%") + bar + "</div>" +
       '<div class="wo-actions"><button type="button" class="primary" data-wo="save">' + esc(tx("save")) + "</button></div></div>" +
@@ -849,6 +873,8 @@
     var status = doc.getElementById("wo-status");
     var ops = doc.getElementById("wo-ops");
     var who = doc.getElementById("wo-who");
+    var slot = doc.getElementById("wo-slot");
+    var sver = doc.getElementById("wo-sver");
     if (flavor) draft.flavor = flavor.value || "";
     if (code) draft.code = trim(code.value);
     if (need) draft.bags_needed = need.value === "" ? null : num(need.value);
@@ -857,6 +883,8 @@
     if (status) draft.status = stageOf(status.value);
     if (ops) draft.operators = splitOps(ops.value);
     if (who) draft.updated_by = trim(who.value);
+    if (slot) draft.seasoning_lot_on_file = trim(slot.value);
+    if (sver) draft.seasoning_lot_verified = sver.checked ? "Y" : "";
     var hit = findNeed(draft.flavor);
     if (hit) {
       draft.code = draft.code || hit.code || "";
