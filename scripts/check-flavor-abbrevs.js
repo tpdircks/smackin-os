@@ -223,7 +223,7 @@ DB.importDemand(remapCases.map(function (row, i) {
   eq(html.indexOf('src="demand.js?b=3"') >= 0, "demand cache bust");
   eq(html.indexOf('src="sps-map.js?b=4"') >= 0, "sps-map cache bust");
   eq(html.indexOf('src="db.js?b=93"') >= 0, "db cache bust");
-  eq(sw.indexOf('const CACHE = "smackin-inv-v253"') >= 0, "cache v253");
+  eq(sw.indexOf('const CACHE = "smackin-inv-v254"') >= 0, "cache v254");
   eq(sw.indexOf("smackin-inv-v252") < 0, "old cache gone");
   eq(sync.indexOf('Deno.env.get("SPS_FOLDER") || "testout"') >= 0, "SPS_FOLDER default stays testout");
   eq(read("app.js").indexOf("\\bcrckd\\b") < 0, "app.js flavor rules untouched");
