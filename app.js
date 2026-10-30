@@ -4140,7 +4140,7 @@
   // Sub-navigation for the Demand family — one nav entry, tabs move between the views.
   function demandTabsBar(active) {
     const T = [["demand", "Board"], ["demandboard", "Orders"], ["demandsched", "Schedule"], ["demandimport", "Import"], ["ecomdemand", "E-Com"], ["forecast", "Forecast"]];
-    return '<div class="ordtabs" style="margin-bottom:12px;flex-wrap:wrap">' +
+    return '<div class="ordtabs dmd-family" style="margin-bottom:12px;flex-wrap:wrap">' +
       T.map(t => '<button class="' + (active === t[0] ? "active" : "") + '" onclick="UI_go(\'' + t[0] + '\')">' + t[1] + '</button>').join("") + '</div>';
   }
   function viewDemand() { return deptDemandBoard(dmdDept, true); }

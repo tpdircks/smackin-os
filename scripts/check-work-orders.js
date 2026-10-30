@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* Invariants for Work Orders and the Mixing tools-first layout. No network. */
+/* Invariants for Work Orders and the department shell. No network. */
 "use strict";
 
 var fs = require("fs");
@@ -27,23 +27,50 @@ eq(src.indexOf("create table if not exists public.production_orders") >= 0, "fal
 eq(src.indexOf("work_orders (") < 0, "no new work_orders table");
 eq(paper.indexOf("window.PROD_ORDERS") >= 0, "paper orders kept");
 eq(app.indexOf("production orders to Mixing") >= 0, "legacy marker");
-eq(sw.indexOf('const CACHE = "smackin-inv-v261"') >= 0, "cache v254");
+eq(sw.indexOf('const CACHE = "smackin-inv-v262"') >= 0, "cache v254");
 eq(sw.indexOf('const CACHE = "smackin-inv-v249"') < 0, "old cache gone");
 eq(sw.indexOf('"./work-orders.js"') >= 0, "sw asset");
 eq(sw.indexOf('"./inventory-visual.js"') >= 0 && sw.indexOf('"./inventory-visual.css"') >= 0, "visual assets stay cached");
 eq(sw.indexOf("./slc-count-panel.js") < 0 && sw.indexOf("./slc-count-latest.js") < 0 && sw.indexOf("./inv-sync-1027d.js") < 0, "sheet sync is not precached");
 eq(html.indexOf("work-orders.js?b=3") >= 0, "script tag");
 eq(html.indexOf("mixing-recipes.js?b=3") >= 0, "mixing cache bust");
-eq(html.indexOf("dept-homes.js?b=27") >= 0, "dept homes cache bust");
+eq(html.indexOf("dept-homes.js?b=28") >= 0, "dept homes cache bust");
 eq(html.indexOf("inventory-visual.js?b=3") >= 0 && html.indexOf("inventory-visual.css?b=3") >= 0, "visual still wired");
-var invAt = homes.indexOf('id: "inv"');
-var mixAt = homes.indexOf('id: "mixing"');
-eq(invAt > 0 && mixAt > invAt, "inventory before mixing");
-eq(homes.slice(invAt, mixAt).indexOf('live: "dash"') >= 0, "inventory opens the floor");
-eq(homes.slice(mixAt, mixAt + 500).indexOf("live:") < 0, "mixing stays a tool home");
+function deptSlice(id, next) {
+  var at = homes.indexOf('id: "' + id + '"');
+  eq(at >= 0, id + " dept");
+  var end = next ? homes.indexOf('id: "' + next + '"', at + 1) : homes.indexOf("function deptById");
+  return homes.slice(at, end);
+}
+var inv = deptSlice("inv", "mixing");
+var mixDept = deptSlice("mixing", "pmac");
+var pmac = deptSlice("pmac", "ful");
+eq(inv.indexOf('live: "dash"') >= 0, "inventory opens the floor");
+eq(inv.indexOf('primary: "dash"') >= 0, "inventory primary is the floor");
+eq(inv.indexOf('floorSel: "#dashBody"') >= 0, "inventory actions only on the floor");
+eq(inv.indexOf("actions: INV_ACTIONS") >= 0 && inv.indexOf("subs: INV_SUBS") >= 0, "inventory uses the shared lists");
 eq(homes.indexOf('var INV_ACTIONS = ["receive", "adjust", "count", "move", "alerts"]') >= 0, "inventory actions");
 eq(homes.indexOf('var INV_SUBS = ["dash", "returns", "finbags", "locations", "facility", "seed", "skus", "printlabels", "analytics", "trMove"]') >= 0, "inventory subtabs");
-eq(homes.indexOf("data-inv-sub") >= 0, "subtab buttons");
+eq(homes.indexOf("data-dept-sub") >= 0, "subtab buttons");
+eq(homes.indexOf('shell.id = "dept-shell"') >= 0, "shared department shell");
+eq(mixDept.indexOf('primary: "mixing"') >= 0, "mixing opens status");
+eq(mixDept.indexOf('actions: ["prodorders", "trMix", "batchrec"]') >= 0, "mixing actions");
+eq(mixDept.slice(mixDept.indexOf("actions:"), mixDept.indexOf("subs:")).indexOf("recipes") < 0, "recipes are not an action");
+eq(mixDept.indexOf('"recipes"') > mixDept.indexOf("subs:"), "recipes stay a subtab");
+eq(pmac.indexOf('actions: ["prodorders", "pmacout", "trPmac"]') >= 0, "pmac work orders before the log");
+["home", "demand", "purch", "recv", "inv", "mixing", "pmac", "ful", "ship", "qa", "ops"].forEach(function (id, i, all) {
+  var slice = deptSlice(id, all[i + 1]);
+  eq(slice.indexOf("primary:") >= 0, id + " has a primary view");
+  eq(slice.indexOf("runningFirst") < 0 && slice.indexOf("sections:") < 0, id + " has no tool-card home");
+});
+eq(deptSlice("demand", "purch").indexOf('primary: "demandboard"') >= 0, "demand opens the order board");
+eq(deptSlice("recv", "inv").indexOf('primary: "recvlog"') >= 0, "receiving opens the dock log");
+eq(deptSlice("purch", "recv").indexOf('primary: "purchasing"') >= 0, "purchasing opens POs");
+eq(deptSlice("ful", "ship").indexOf('primary: "orders"') >= 0, "fulfillment opens orders");
+eq(deptSlice("qa", "ops").indexOf('primary: "qacheck"') >= 0, "quality opens checklists");
+eq(deptSlice("ship", "qa").indexOf('primary: "shipments"') >= 0, "shipping opens shipments");
+eq(deptSlice("ops", null).indexOf('primary: "maintenance"') >= 0, "ops opens maintenance");
+eq(deptSlice("home", "demand").indexOf('primary: "desk"') >= 0, "dashboard opens the snapshot");
 eq(read("inventory-visual.js").indexOf("actionsHtml()") < 0, "floor does not repeat the action row");
 eq(html.indexOf("slc-count-panel.js") < 0 && html.indexOf("slc-count-latest.js") < 0 && html.indexOf("inv-sync-1027d.js") < 0, "sheet sync is not loaded");
 eq(html.indexOf("app.js") < html.indexOf("work-orders.js"), "loads after app");
@@ -62,17 +89,6 @@ var homeMount = mix.slice(mix.indexOf('if (mode === "home")'), mix.indexOf("bind
 eq(homeMount.indexOf("home.appendChild(el)") >= 0, "recipes go after the mixing tools");
 eq(homeMount.indexOf(".dept-lead") < 0, "recipes no longer insert under the title");
 eq(homeMount.indexOf("insertBefore") < 0, "recipes are not inserted above the page");
-
-function sectionTools(id) {
-  var at = homes.indexOf('id: "' + id + '"');
-  eq(at >= 0, id + " dept");
-  var slice = homes.slice(at, at + 1200);
-  var tools = slice.indexOf("tools:");
-  return slice.slice(tools, tools + 180);
-}
-eq(sectionTools("mixing").indexOf('["prodorders"') === sectionTools("mixing").indexOf("tools:") + "tools: ".length, "mixing work orders first");
-eq(sectionTools("pmac").indexOf('["prodorders"') >= 0, "pmac work orders in the line group");
-eq(sectionTools("pmac").indexOf('["prodorders"') < sectionTools("pmac").indexOf("pmacout"), "pmac work orders before the log");
 
 var ctx = { window: {}, console: console };
 ctx.window = ctx;

@@ -147,18 +147,18 @@ assert(trace.indexOf('bestByNotSet: "Not set. Type the date printed on the bag."
 assert(trace.indexOf("No definido. Escriba la fecha impresa en la bolsa.") >= 0, "spanish guidance");
 assert(trace.indexOf("Nao definido. Digite a data impressa no saco.") >= 0, "portuguese guidance");
 assert(homes.indexOf('fn: "fglots"') >= 0, "dept tool");
-assert(homes.indexOf('"trUse", "trShip", "fglots"') >= 0, "fulfillment card");
-assert(homes.indexOf('"trPmac", "fglots"') >= 0, "pmac card");
-assert(homes.indexOf('"trLabels", "fglots"') >= 0, "quality card");
+assert(homes.indexOf('"produce", "fglots"') >= 0, "fulfillment subtab");
+assert(homes.indexOf('subs: ["pmac", "fglots"') >= 0, "pmac subtab");
+assert(homes.indexOf('"trLabels", "fglots"') >= 0, "quality subtab");
 assert(health.indexOf('t: "trace_labels"') >= 0, "data health source");
 assert(html.indexOf('src="fg-lots.js?b=1"') >= 0 && html.indexOf("fg-lots.js") < html.indexOf("trace.js"), "script order");
 assert(html.indexOf('src="trace.js?b=18"') >= 0, "trace cache bust");
-assert(html.indexOf('src="dept-homes.js?b=27"') >= 0, "dept homes cache bust");
+assert(html.indexOf('src="dept-homes.js?b=28"') >= 0, "dept homes cache bust");
 assert(html.indexOf('src="data-health.js?b=5"') >= 0, "data health cache bust");
-assert(sw.indexOf('const CACHE = "smackin-inv-v261"') >= 0 && sw.indexOf("./fg-lots.js") >= 0, "cache and asset");
-assert(read("build-id.txt").trim() === "smackin-inv-v261", "build id");
-assert(html.indexOf('var EMBEDDED = "smackin-inv-v261"') >= 0, "index embedded");
-assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v261"') >= 0, "escape embedded");
+assert(sw.indexOf('const CACHE = "smackin-inv-v262"') >= 0 && sw.indexOf("./fg-lots.js") >= 0, "cache and asset");
+assert(read("build-id.txt").trim() === "smackin-inv-v262", "build id");
+assert(html.indexOf('var EMBEDDED = "smackin-inv-v262"') >= 0, "index embedded");
+assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v262"') >= 0, "escape embedded");
 
 if (failed) {
   console.error(failed + " failed");
