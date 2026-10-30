@@ -27,14 +27,14 @@ eq(src.indexOf("create table if not exists public.production_orders") >= 0, "fal
 eq(src.indexOf("work_orders (") < 0, "no new work_orders table");
 eq(paper.indexOf("window.PROD_ORDERS") >= 0, "paper orders kept");
 eq(app.indexOf("production orders to Mixing") >= 0, "legacy marker");
-eq(sw.indexOf('const CACHE = "smackin-inv-v259"') >= 0, "cache v254");
+eq(sw.indexOf('const CACHE = "smackin-inv-v260"') >= 0, "cache v254");
 eq(sw.indexOf('const CACHE = "smackin-inv-v249"') < 0, "old cache gone");
 eq(sw.indexOf('"./work-orders.js"') >= 0, "sw asset");
 eq(sw.indexOf('"./inventory-visual.js"') >= 0 && sw.indexOf('"./inventory-visual.css"') >= 0, "visual assets stay cached");
 eq(sw.indexOf("./slc-count-panel.js") < 0 && sw.indexOf("./slc-count-latest.js") < 0 && sw.indexOf("./inv-sync-1027d.js") < 0, "sheet sync is not precached");
-eq(html.indexOf("work-orders.js?b=2") >= 0, "script tag");
+eq(html.indexOf("work-orders.js?b=3") >= 0, "script tag");
 eq(html.indexOf("mixing-recipes.js?b=3") >= 0, "mixing cache bust");
-eq(html.indexOf("dept-homes.js?b=25") >= 0, "dept homes cache bust");
+eq(html.indexOf("dept-homes.js?b=26") >= 0, "dept homes cache bust");
 eq(html.indexOf("inventory-visual.js?b=2") >= 0 && html.indexOf("inventory-visual.css?b=2") >= 0, "visual still wired");
 eq(html.indexOf("slc-count-panel.js") < 0 && html.indexOf("slc-count-latest.js") < 0 && html.indexOf("inv-sync-1027d.js") < 0, "sheet sync is not loaded");
 eq(html.indexOf("app.js") < html.indexOf("work-orders.js"), "loads after app");
@@ -131,6 +131,14 @@ eq(sent.kind === "work_order" && sent.po === "2026.10.29-01" && sent.bags_done =
 eq(W.readbackError(sent, { id: sent.po, data: sent }) === "", "read-back matches");
 eq(W.readbackError(sent, { id: sent.po, data: Object.assign({}, sent, { status: "Done" }) }).indexOf("status") >= 0, "read-back catches status");
 eq(sent.operators.join(",") === "Leo,Wilson", "operators parsed");
+eq(sent.seasoning_lot_on_file === "" && sent.seasoning_lot_verified === "", "seasoning lot starts blank");
+var seasoned = W.payloadOf({ id: "2026.10.29-01", flavor: "Ranch", bags_needed: 100, bags_done: 0, status: "Open", operators: [], seasoning_lot_on_file: " SL-9 ", seasoning_lot_verified: "Y" }, "Allen");
+eq(seasoned.seasoning_lot_on_file === "SL-9" && seasoned.seasoning_lot_verified === "Y", "seasoning lot is optional");
+eq(W.readbackError(seasoned, { id: seasoned.po, data: seasoned }) === "", "seasoning lot does not break read-back");
+var seasonedRows = W.mergeOrders([], [{ id: "2026.10.30-01", data: { po: "2026.10.30-01", wo: "2026.10.30-01", flavor: "Ranch", status: "Open", bags_done: 0, seasoning_lot_on_file: "SL-9", seasoning_lot_verified: "Y" } }], {}, {});
+eq(seasonedRows[0].seasoning_lot_on_file === "SL-9" && seasonedRows[0].seasoning_lot_verified === "Y", "seasoning lot round trip");
+eq(src.indexOf("does not replace mixing-log lot recording") >= 0, "seasoning hint");
+eq(src.indexOf("seasNeed") < 0, "seasoning lot is not required");
 
 if (fail.length) {
   console.error(fail.join("\n"));

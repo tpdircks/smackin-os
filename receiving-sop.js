@@ -2,10 +2,14 @@
    Receiving SOP checklist (receiving-sop.js)
    WHSE_FORM_1.0 Warehouse Receiving Log and WHSE_FORM_3.0 HOLD Log.
    One receiving row per lot. Any N or UA sets receiving_log.on_hold and
-   writes hold_log (status held). Release clears the hold. Thrown away,
+   writes hold_log (status held), except Trailer Sealed N. N means an
+   unsealed LTL or shared trailer and does not hold the lot. Broken (B)
+   holds and needs deviation actions. Release clears the hold. Thrown away,
    returned to vendor, and other keep the lot out of FEFO and Use.
    Approved supplier is a manual Y/N. The vendor register stays in Drive.
-   Temperature is recorded. A dry-range mismatch does not block the save.
+   Temperature is recorded when there is a reading. Not measured stores a
+   null temperature and does not block the save. A dry-range mismatch warns
+   only. Allergen Unknown does not hold the lot.
    Paper stays the backup until Troy confirms this storage.
    Does not import Smackin Receiving Log.xlsx or the 2023 WIP history.
    ========================================================================== */
@@ -17,7 +21,7 @@
   var LS_HOLDS = "smk-hold-log-v1";
   var FORM_VERSION = "WHSE_FORM_1.0 v1.0 12.12.25";
   var CHECKS = [
-    { key: "chk_trailer_sealed", kind: "YN", label: "Trailer Sealed/Padlock" },
+    { key: "chk_trailer_sealed", kind: "SEAL", label: "Trailer Sealed/Padlock", hint: "seal" },
     { key: "chk_trailer_clean", kind: "YN", label: "Trailer clean, no pests, no holes, no off odors" },
     { key: "chk_coa_label", kind: "AU", label: "COA/Label Acceptable" },
     { key: "chk_approved_supplier", kind: "YN", label: "Approved Supplier", hint: "supplier" },
@@ -43,10 +47,16 @@
       paper: "Paper Receiving Log and HOLD Log stay the backup until Troy confirms this screen is the stored record.",
       oneLot: "One row per lot. A second lot on the same truck gets its own row.",
       supplierHint: "Manual Y or N. The approved vendor register is the Drive spreadsheet.",
-      allergenHint: "Y means an allergen is present and the load is segregated.",
-      devHint: "Required when any check is N or UA. That lot is written to the HOLD Log and skipped by FEFO and Use.",
+      allergenHint: "Y means an allergen is present. Segregate the load. N means none known for this load. Unknown means a shared trailer or not enough information. Unknown does not hold the lot. Write a note or deviation if you need more detail.",
+      devHint: "Required when a check is N or UA, or when the seal is Broken. N on Trailer Sealed means an unsealed LTL trailer and does not hold the lot by itself. A held lot is written to the HOLD Log and skipped by FEFO and Use.",
       time: "Time", item: "Item code", seal: "Seal #", temp: "Temperature F",
+      tempNm: "Not measured",
+      tempNmHint: "No thermometer on the dock. Check this to save without a number. A reading is still saved when you have one. 80 to 110 F warns only and does not block the save.",
       allergen: "Allergen present", deviation: "Deviation Actions",
+      algU: "Unknown",
+      sealN: "N (LTL OK)", sealB: "Broken",
+      sealHint: "Choose N for an LTL or shared trailer that arrived unsealed. That is normal and does not hold the lot. Seal # is required only when sealed is Y. Choose Broken when a seal was expected and it is broken or missing. Broken holds the lot and needs deviation actions.",
+      sealPick: " needs Y, N (LTL OK), or Broken.",
       holdTitle: "WHSE_FORM_3.0 Warehouse HOLD Log",
       holdHint: "Release puts the lot back into FEFO and Use. Thrown away, returned to vendor, and other close the hold and keep the lot unavailable.",
       exportRecv: "Export Receiving Log CSV", exportHold: "Export HOLD Log CSV",
@@ -67,9 +77,9 @@
       lotReq: "Lot # is required. One row per lot.", qtyReq: "# of cases is required.",
       ynReq: " needs Y or N.", auReq: " needs A or UA.",
       sealReq: "Seal # is required when the trailer is sealed.",
-      tempReq: "Temperature F is required. The value is recorded either way.",
-      devReq: "Deviation Actions is required when a check is N or UA.",
-      algReq: "Allergen present needs Y or N.",
+      tempReq: "Enter a temperature F, or check Not measured when there is no thermometer.",
+      devReq: "Deviation Actions is required when a check is N or UA, or when the seal is Broken.",
+      algReq: "Allergen needs Y, N, or Unknown.",
       tempWarn: "Recorded {n} F. Receiving dry range in the SOP is 80 to 110 F. Shipping dry range is 40 to 110 F. This value is saved either way. Tell Monica if those ranges should match."
     },
     es: {
@@ -77,10 +87,16 @@
       paper: "El papel del registro de recibo y del registro HOLD sigue como respaldo hasta que Troy confirme que esta pantalla es el registro guardado.",
       oneLot: "Una fila por lote. Un segundo lote en el mismo camion lleva su propia fila.",
       supplierHint: "Y o N manual. El registro de proveedores aprobados es la hoja de Drive.",
-      allergenHint: "Y significa que hay alergeno y la carga esta separada.",
-      devHint: "Obligatorio si alguna revision es N o UA. Ese lote va al registro HOLD y FEFO y Uso lo saltan.",
+      allergenHint: "Y significa que hay alergeno. Separe la carga. N significa que no se conoce ninguno en esta carga. Desconocido significa trailer compartido o informacion insuficiente. Desconocido no retiene el lote. Escriba una nota o desviacion si hace falta mas detalle.",
+      devHint: "Obligatorio si alguna revision es N o UA, o si el sello esta Roto. N en Trailer sellado significa un trailer LTL sin sello y no retiene el lote por si solo. Ese lote va al registro HOLD y FEFO y Uso lo saltan.",
       time: "Hora", item: "Codigo de item", seal: "Sello #", temp: "Temperatura F",
+      tempNm: "No medida",
+      tempNmHint: "No hay termometro en el muelle. Marque esto para guardar sin un numero. Si tiene una lectura, se guarda igual. 80 a 110 F solo avisa y no bloquea el guardado.",
       allergen: "Alergeno presente", deviation: "Acciones de desviacion",
+      algU: "Desconocido",
+      sealN: "N (LTL OK)", sealB: "Roto",
+      sealHint: "Elija N para un trailer LTL o compartido que llego sin sello. Eso es normal y no retiene el lote. El numero de sello es obligatorio solo cuando el sello es Y. Elija Roto si se esperaba un sello y esta roto o falta. Roto retiene el lote y exige acciones de desviacion.",
+      sealPick: " necesita Y, N (LTL OK) o Roto.",
       holdTitle: "WHSE_FORM_3.0 Registro HOLD",
       holdHint: "Liberar devuelve el lote a FEFO y Uso. Desechado, devuelto al proveedor y otro cierran la retencion y el lote sigue no disponible.",
       exportRecv: "Exportar registro de recibo CSV", exportHold: "Exportar registro HOLD CSV",
@@ -101,9 +117,9 @@
       lotReq: "El lote es obligatorio. Una fila por lote.", qtyReq: "El numero de cajas es obligatorio.",
       ynReq: " necesita Y o N.", auReq: " necesita A o UA.",
       sealReq: "El sello es obligatorio cuando el trailer esta sellado.",
-      tempReq: "La temperatura F es obligatoria. El valor se registra de todas formas.",
-      devReq: "Las acciones de desviacion son obligatorias cuando una revision es N o UA.",
-      algReq: "Alergeno presente necesita Y o N.",
+      tempReq: "Ingrese la temperatura F, o marque No medida si no hay termometro.",
+      devReq: "Las acciones de desviacion son obligatorias cuando una revision es N o UA, o cuando el sello esta Roto.",
+      algReq: "Alergeno necesita Y, N o Desconocido.",
       tempWarn: "Registrado {n} F. El rango seco de recibo en el SOP es 80 a 110 F. El rango seco de envio es 40 a 110 F. Este valor se guarda igual. Avise a Monica si esos rangos deben coincidir."
     },
     pt: {
@@ -111,10 +127,16 @@
       paper: "O papel do registro de recebimento e do registro HOLD continua como copia de apoio ate Troy confirmar que esta tela e o registro guardado.",
       oneLot: "Uma linha por lote. Um segundo lote no mesmo caminhao tem a propria linha.",
       supplierHint: "Y ou N manual. O cadastro de fornecedores aprovados e a planilha do Drive.",
-      allergenHint: "Y significa que ha alergeno e a carga esta separada.",
-      devHint: "Obrigatorio se alguma checagem for N ou UA. Esse lote vai para o registro HOLD e o FEFO e o Uso pulam ele.",
+      allergenHint: "Y significa que ha alergeno. Separe a carga. N significa que nenhum e conhecido nesta carga. Desconhecido significa trailer compartilhado ou informacao insuficiente. Desconhecido nao retem o lote. Escreva uma nota ou desvio se precisar de mais detalhe.",
+      devHint: "Obrigatorio se alguma checagem for N ou UA, ou se o lacre estiver Quebrado. N em Trailer lacrado significa um trailer LTL sem lacre e nao retem o lote sozinho. Esse lote vai para o registro HOLD e o FEFO e o Uso pulam ele.",
       time: "Hora", item: "Codigo do item", seal: "Lacre #", temp: "Temperatura F",
+      tempNm: "Nao medida",
+      tempNmHint: "Nao ha termometro no cais. Marque isto para salvar sem um numero. Uma leitura ainda e salva quando voce tem uma. 80 a 110 F so avisa e nao bloqueia o salvamento.",
       allergen: "Alergeno presente", deviation: "Acoes de desvio",
+      algU: "Desconhecido",
+      sealN: "N (LTL OK)", sealB: "Quebrado",
+      sealHint: "Escolha N para um trailer LTL ou compartilhado que chegou sem lacre. Isso e normal e nao retem o lote. O numero do lacre e obrigatorio so quando o lacre e Y. Escolha Quebrado se um lacre era esperado e esta quebrado ou ausente. Quebrado retem o lote e exige acoes de desvio.",
+      sealPick: " precisa de Y, N (LTL OK) ou Quebrado.",
       holdTitle: "WHSE_FORM_3.0 Registro HOLD",
       holdHint: "Liberar devolve o lote ao FEFO e ao Uso. Descartado, devolvido ao fornecedor e outro fecham a retencao e o lote continua indisponivel.",
       exportRecv: "Exportar registro de recebimento CSV", exportHold: "Exportar registro HOLD CSV",
@@ -135,9 +157,9 @@
       lotReq: "O lote e obrigatorio. Uma linha por lote.", qtyReq: "O numero de caixas e obrigatorio.",
       ynReq: " precisa de Y ou N.", auReq: " precisa de A ou UA.",
       sealReq: "O lacre e obrigatorio quando o trailer esta lacrado.",
-      tempReq: "A temperatura F e obrigatoria. O valor e registrado de qualquer forma.",
-      devReq: "As acoes de desvio sao obrigatorias quando uma checagem e N ou UA.",
-      algReq: "Alergeno presente precisa de Y ou N.",
+      tempReq: "Informe a temperatura F, ou marque Nao medida se nao ha termometro.",
+      devReq: "As acoes de desvio sao obrigatorias quando uma checagem e N ou UA, ou quando o lacre esta Quebrado.",
+      algReq: "Alergeno precisa de Y, N ou Desconhecido.",
       tempWarn: "Registrado {n} F. A faixa seca de recebimento no SOP e 80 a 110 F. A faixa seca de envio e 40 a 110 F. Este valor e salvo mesmo assim. Avise a Monica se essas faixas devem coincidir."
     }
   };
@@ -210,10 +232,58 @@
   function checkValue(input, key) {
     return String(input && input[key] != null ? input[key] : "").trim().toUpperCase();
   }
+  function tempNotMeasured(input) {
+    if (!input) return false;
+    if (input.temp_not_measured === true) return true;
+    var flag = String(input.temp_not_measured == null ? "" : input.temp_not_measured).trim().toUpperCase();
+    return flag === "1" || flag === "Y" || flag === "NM" || flag === "TRUE";
+  }
+  function allergenCode(input) {
+    var alg = checkValue(input, "allergen");
+    if (!alg) {
+      var stored = String(checklistOf(input).allergen || "").toUpperCase();
+      if (stored === "U" || stored === "UNKNOWN") alg = "U";
+      else if (stored === "Y" || stored === "N") alg = stored;
+    }
+    if (!alg && input && input.allergen_flag === true) alg = "Y";
+    if (!alg && input && input.allergen_flag === false) alg = "N";
+    if (alg === "UNKNOWN") alg = "U";
+    return alg;
+  }
+  function temperatureStored(input) {
+    if (tempNotMeasured(input)) return null;
+    var raw = String(input && input.temperature_f != null ? input.temperature_f : "").trim();
+    if (raw === "") return null;
+    var n = Number(raw);
+    return isNaN(n) ? null : n;
+  }
+  function recordPatch(input) {
+    input = input || {};
+    var alg = allergenCode(input);
+    var nm = tempNotMeasured(input);
+    var temp = temperatureStored(input);
+    return {
+      temperature_f: nm ? null : temp,
+      allergen_flag: alg === "Y" ? true : (alg === "N" ? false : null),
+      checklist: {
+        version: FORM_VERSION,
+        received_time: String(input.received_time || ""),
+        temp_warn: !nm && tempWarn(temp) ? "outside-80-110" : "",
+        temp_not_measured: nm,
+        allergen: alg === "U" ? "U" : alg
+      }
+    };
+  }
   function failingChecks(input) {
     var out = [];
     CHECKS.forEach(function (c) {
       var v = checkValue(input, c.key);
+      // N on Trailer Sealed is an unsealed LTL. That is acceptable and does not hold.
+      // Broken (B) is a seal that was expected and is broken or missing.
+      if (c.key === "chk_trailer_sealed") {
+        if (v === "B") out.push({ key: c.key, label: c.label, value: "Broken" });
+        return;
+      }
       if (v === "N" || v === "UA") out.push({ key: c.key, label: c.label, value: v });
     });
     return out;
@@ -246,14 +316,16 @@
     CHECKS.forEach(function (c) {
       var v = checkValue(input, c.key);
       if (c.kind === "YN" && v !== "Y" && v !== "N") errors.push(c.label + tx("ynReq"));
+      if (c.kind === "SEAL" && v !== "Y" && v !== "N" && v !== "B") errors.push(c.label + tx("sealPick"));
       if (c.kind === "AU" && v !== "A" && v !== "UA") errors.push(c.label + tx("auReq"));
     });
-    var alg = checkValue(input, "allergen");
-    if (!alg && input.allergen_flag === true) alg = "Y";
-    if (!alg && input.allergen_flag === false) alg = "N";
-    if (alg !== "Y" && alg !== "N") errors.push(tx("algReq"));
+    var alg = allergenCode(input);
+    if (alg !== "Y" && alg !== "N" && alg !== "U") errors.push(tx("algReq"));
     if (checkValue(input, "chk_trailer_sealed") === "Y" && !String(input.seal_number || "").trim()) errors.push(tx("sealReq"));
-    if (String(input.temperature_f == null ? "" : input.temperature_f).trim() === "" || isNaN(Number(input.temperature_f))) errors.push(tx("tempReq"));
+    if (!tempNotMeasured(input)) {
+      var rawTemp = String(input.temperature_f == null ? "" : input.temperature_f).trim();
+      if (rawTemp === "" || isNaN(Number(rawTemp))) errors.push(tx("tempReq"));
+    }
     if (failingChecks(input).length && !String(input.deviation_actions || "").trim()) errors.push(tx("devReq"));
     if (input.duplicate) errors.push(tx("dup") + (input.duplicate === true ? "" : " (" + input.duplicate + ")"));
     return errors;
@@ -277,17 +349,30 @@
     return t ? (day + " " + t) : day;
   }
   function allergenCell(r) {
+    var stored = String(checklistOf(r).allergen || "").toUpperCase();
+    if (stored === "U" || stored === "UNKNOWN") return "U";
+    if (stored === "Y") return "Y";
+    if (stored === "N") return "N";
     if (!r || r.allergen_flag == null || r.allergen_flag === "") return "";
     return r.allergen_flag ? "Y" : "N";
+  }
+  function tempCell(r) {
+    if (checklistOf(r).temp_not_measured && (r.temperature_f == null || r.temperature_f === "")) return "NM";
+    return r.temperature_f == null || r.temperature_f === "" ? "" : r.temperature_f;
+  }
+  function sealCell(r) {
+    var v = String((r && r.chk_trailer_sealed) || "").trim().toUpperCase();
+    if (v === "B") return "Broken";
+    return (r && r.chk_trailer_sealed) || "";
   }
   function receivingCsv(rows) {
     var lines = [RECV_HEAD.map(csvCell).join(",")];
     (rows || []).forEach(function (r) {
       lines.push([
         dateTimeCell(r), r.received_by, r.supplier, r.contents, r.lot, r.qty_received,
-        r.chk_trailer_sealed, r.seal_number, r.chk_trailer_clean, r.chk_coa_label,
+        sealCell(r), r.seal_number, r.chk_trailer_clean, r.chk_coa_label,
         r.chk_approved_supplier, r.chk_carrier_sanitation, r.chk_material_condition,
-        r.deviation_actions, r.temperature_f == null ? "" : r.temperature_f,
+        r.deviation_actions, tempCell(r),
         allergenCell(r), r.on_hold ? "Yes" : "No"
       ].map(csvCell).join(","));
     });
@@ -392,20 +477,29 @@
   function radios(name, opts, cur) {
     cur = String(cur || "").toUpperCase();
     return opts.map(function (o) {
-      return '<label class="rsop-choice"><input type="radio" name="' + name + '" value="' + o + '"' + (cur === o ? " checked" : "") + "> " + o + "</label>";
+      var value = typeof o === "string" ? o : o.value;
+      var label = typeof o === "string" ? o : o.label;
+      value = String(value || "");
+      return '<label class="rsop-choice"><input type="radio" name="' + name + '" value="' + esc(value) + '"' + (cur === value.toUpperCase() ? " checked" : "") + "> " + esc(label) + "</label>";
     }).join("");
   }
   function fieldsHtml(ed) {
     ed = ed || {};
     var c = checklistOf(ed);
-    var time = c.received_time || (ed.id ? "" : nowTime());
-    var alg = ed.allergen_flag === true ? "Y" : (ed.allergen_flag === false ? "N" : "");
-    var warn = tempWarn(ed.temperature_f);
+    var time = c.received_time || nowTime();
+    var alg = allergenCode(ed);
+    var nm = tempNotMeasured(c) || tempNotMeasured(ed);
+    var warn = nm ? "" : tempWarn(ed.temperature_f);
     var fails = failingChecks(ed);
     var boxes = CHECKS.map(function (chk) {
-      var opts = chk.kind === "YN" ? ["Y", "N"] : ["A", "UA"];
-      var hint = chk.hint === "supplier" ? '<p class="rsop-sub">' + esc(tx("supplierHint")) + "</p>" : "";
-      return "<fieldset><legend>" + esc(chk.label) + "</legend>" + radios("rsop_" + chk.key, opts, ed[chk.key]) + hint + "</fieldset>";
+      var opts = chk.kind === "SEAL"
+        ? [{ value: "Y", label: "Y" }, { value: "N", label: tx("sealN") }, { value: "B", label: tx("sealB") }]
+        : (chk.kind === "YN" ? ["Y", "N"] : ["A", "UA"]);
+      var hint = "";
+      if (chk.hint === "supplier") hint = '<p class="rsop-sub">' + esc(tx("supplierHint")) + "</p>";
+      if (chk.hint === "seal") hint = '<p class="rsop-sub">' + esc(tx("sealHint")) + "</p>";
+      var idAttr = chk.key === "chk_trailer_sealed" ? ' id="rsop-seal-fs"' : "";
+      return "<fieldset" + idAttr + "><legend>" + esc(chk.label) + "</legend>" + radios("rsop_" + chk.key, opts, ed[chk.key]) + hint + "</fieldset>";
     }).join("");
     kick();
     return '<div id="rsop-box">' +
@@ -415,10 +509,12 @@
       '<div class="row"><div><label>' + esc(tx("time")) + '</label><input id="rsop-time" type="time" value="' + esc(time) + '"></div>' +
       '<div><label>' + esc(tx("item")) + '</label><input id="rsop-item" list="dl-items" autocomplete="off" value="' + esc(ed.item_id || "") + '"></div>' +
       '<div><label>' + esc(tx("seal")) + '</label><input id="rsop-seal" autocomplete="off" value="' + esc(ed.seal_number || "") + '"></div>' +
-      '<div><label>' + esc(tx("temp")) + '</label><input id="rsop-temp" type="number" step="0.1" inputmode="decimal" value="' + esc(ed.temperature_f == null ? "" : ed.temperature_f) + '"></div></div>' +
+      '<div><label>' + esc(tx("temp")) + '</label><input id="rsop-temp" type="number" step="0.1" inputmode="decimal" value="' + esc(nm || ed.temperature_f == null ? "" : ed.temperature_f) + '"' + (nm ? " disabled" : "") + ">" +
+      '<label class="rsop-choice"><input type="checkbox" id="rsop-temp-nm"' + (nm ? " checked" : "") + "> " + esc(tx("tempNm")) + "</label>" +
+      '<p class="rsop-sub">' + esc(tx("tempNmHint")) + "</p></div></div>" +
       '<p id="rsop-temp-warn" class="rsop-warn"' + (warn ? "" : " hidden") + ">" + esc(warn) + "</p>" +
       '<div id="rsop-checks">' + boxes +
-      "<fieldset><legend>" + esc(tx("allergen")) + "</legend>" + radios("rsop_allergen", ["Y", "N"], alg) +
+      "<fieldset><legend>" + esc(tx("allergen")) + "</legend>" + radios("rsop_allergen", [{ value: "Y", label: "Y" }, { value: "N", label: "N" }, { value: "U", label: tx("algU") }], alg) +
       '<p class="rsop-sub">' + esc(tx("allergenHint")) + "</p></fieldset></div>" +
       "<div><label>" + esc(tx("deviation")) + '</label><textarea id="rsop-dev">' + esc(ed.deviation_actions || "") + "</textarea>" +
       '<p class="hint">' + esc(tx("devHint")) + "</p></div>" +
@@ -493,6 +589,7 @@
       received_time: val("rsop-time"),
       seal_number: val("rsop-seal"),
       temperature_f: val("rsop-temp"),
+      temp_not_measured: !!(doc && doc.getElementById("rsop-temp-nm") && doc.getElementById("rsop-temp-nm").checked),
       deviation_actions: val("rsop-dev"),
       allergen: radioVal("rsop_allergen"),
       item_code: val("rsop-item")
@@ -511,18 +608,15 @@
     var it = matchItem(input.item_code);
     var fails = failingChecks(input);
     var open = openHoldFor(opts.id, input.lot);
+    var patch = recordPatch(input);
     var rec = Object.assign({}, base, {
       item_id: it ? (it.id || it.code || input.item_code) : (input.item_code || null),
       seal_number: input.seal_number,
-      temperature_f: Number(input.temperature_f),
-      allergen_flag: input.allergen === "Y",
+      temperature_f: patch.temperature_f,
+      allergen_flag: patch.allergen_flag,
       deviation_actions: input.deviation_actions,
       on_hold: fails.length > 0 || !!open,
-      checklist: {
-        version: FORM_VERSION,
-        received_time: input.received_time,
-        temp_warn: tempWarn(input.temperature_f) ? "outside-80-110" : ""
-      }
+      checklist: patch.checklist
     });
     CHECKS.forEach(function (c) { rec[c.key] = input[c.key]; });
     if (fails.length && (!rec.condition || rec.condition === "Good")) rec.condition = "Hold";
@@ -754,7 +848,7 @@
       "#rsop-checks fieldset{border:1px solid #d5dde8;border-radius:8px;margin:0;padding:8px 10px}",
       "#rsop-checks legend{font-weight:800;color:#1F3864;padding:0 4px}",
       "#rsop-box label.rsop-choice{display:inline-flex;align-items:center;gap:6px;margin:4px 16px 4px 0;font-weight:800;font-size:16px;min-height:44px}",
-      "#rsop-box input[type=radio]{width:auto;padding:0;margin:0}",
+      "#rsop-box input[type=radio],#rsop-box input[type=checkbox]{width:auto;padding:0;margin:0}",
       "#rsop-box .rsop-sub{margin:4px 0 0;color:#556;font-size:13px}",
       "#rsop-holdbox .rsop-scroll{overflow:auto}",
       "#rsop-holdbox select,#rsop-holdbox input{width:auto;min-width:140px}",
@@ -799,6 +893,11 @@
     styleOnce();
     doc.addEventListener("input", function (e) {
       if (!e.target || e.target.id !== "rsop-temp") return;
+      var nm = doc.getElementById("rsop-temp-nm");
+      if (nm && String(e.target.value || "").trim() !== "") {
+        nm.checked = false;
+        e.target.disabled = false;
+      }
       var warn = doc.getElementById("rsop-temp-warn");
       if (!warn) return;
       var w = tempWarn(e.target.value);
@@ -806,7 +905,18 @@
       warn.textContent = w;
     });
     doc.addEventListener("change", function (e) {
-      if (!e.target || !e.target.name || String(e.target.name).indexOf("rsop_") !== 0) return;
+      if (!e.target) return;
+      if (e.target.id === "rsop-temp-nm") {
+        var temp = doc.getElementById("rsop-temp");
+        var warn = doc.getElementById("rsop-temp-warn");
+        if (temp) {
+          temp.disabled = !!e.target.checked;
+          if (e.target.checked) temp.value = "";
+        }
+        if (warn && e.target.checked) { warn.hidden = true; warn.textContent = ""; }
+        return;
+      }
+      if (!e.target.name || String(e.target.name).indexOf("rsop_") !== 0) return;
       paintPreview();
     });
     doc.addEventListener("click", function (e) {
@@ -834,6 +944,9 @@
       validate: validate,
       tempWarn: tempWarn,
       failingChecks: failingChecks,
+      recordPatch: recordPatch,
+      allergenCode: allergenCode,
+      tempNotMeasured: tempNotMeasured,
       reasonText: reasonText,
       lotBlocked: lotBlocked,
       receivingCsv: receivingCsv,

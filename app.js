@@ -19,8 +19,8 @@
       printLoc:"Print all location labels", printItem:"Print item labels", newLpn:"New pallet label (LPN)", print:"Print",
       labelsHint:"Print barcodes on your thermal label printer. Location labels are permanent; a pallet LPN is one barcode per incoming pallet.",
       dashHint:"Live on hand across every location. Filter by category.",
-      receiveHint:"Scan an item, enter qty + details, then pick where it goes (scan the slot or tap Section-Bay-Level) - it lands there in one step. Leave the location blank to hold at Receiving.",rniNewBtn:"New item (not in list)",rniCancelBtn:"Use existing item",rniTitle:"Create a new item",rniCode:"Item code / SKU",rniName:"Item name",rniNamePh:"e.g. Kraft box 12x9",rniUnit:"Unit",rniHint:"This adds a brand-new item to the master, then receives it below.",rniNeed:"Enter a code and name for the new item",
-      rSupplier:"Supplier", rInvoice:"Invoice / PO #", rCategory:"Category", rPallets:"Pallets", rCondition:"Condition", rStatus:"Status", rDeliveryHdr:"Delivery & paperwork (saved to Receiving Log)", rAttachDoc:"Attach paperwork (packing slip / BOL / invoice)", rCarrier:"Carrier", rProNum:"Tracking / PRO", rQtyOrd:"Qty ordered", rLogNotes:"Notes", rMergeHint:"Choose a supplier (and add carrier/PRO or attach paperwork) and this receipt is saved to the Receiving Log automatically - no separate entry needed.",
+      receiveHint:"Scan an item, enter qty + details, then pick where it goes (scan the slot or tap Section-Bay-Level) - it lands there in one step. Leave the location blank to hold at Receiving. Receive puts stock on hand. If you enter a supplier, the Receiving Log opens already filled in so you only finish the trailer and SOP checks once.",rniNewBtn:"New item (not in list)",rniCancelBtn:"Use existing item",rniTitle:"Create a new item",rniCode:"Item code / SKU",rniName:"Item name",rniNamePh:"e.g. Kraft box 12x9",rniUnit:"Unit",rniHint:"This adds a brand-new item to the master, then receives it below.",rniNeed:"Enter a code and name for the new item",
+      rSupplier:"Supplier", rInvoice:"Invoice / PO #", rCategory:"Category", rPallets:"Pallets", rCondition:"Condition", rStatus:"Status", rDeliveryHdr:"Delivery & paperwork (saved to Receiving Log)", rAttachDoc:"Attach paperwork (packing slip / BOL / invoice)", rCarrier:"Carrier", rProNum:"Tracking / PRO", rQtyOrd:"Qty ordered", rLogNotes:"Notes", rMergeHint:"Receive puts stock on hand. Enter a supplier and this receipt is saved to the Receiving Log, then the log opens already filled in so you only finish the trailer and SOP checks once. Carrier, PRO, and a file are optional.", rLogOpened:"Receiving Log is open. Finish the trailer and SOP checks.", rLogFail:"Stock is on hand. The Receiving Log row did not save. Open Receiving Log and enter the shipment once.", rlFromDock:"Stock is on hand. This row is filled in from Receive. Finish the trailer and SOP checks. You do not need to retype the shipment.",
       putHint:"Scan the item, then scan the slot barcode OR tap Section - Bay - Level. Moves from Receiving in real time.",
       puDest:"Destination", puSection:"Section", puBay:"Bay", puLevel:"Level", puZones:"Floor / zones", puScanLoc:"A-05-L3 / scan slot barcode",
       moveHint:"Scan item, pick from and to (slot, WIP, Pack-Out, Shipping...).",
@@ -123,7 +123,7 @@
       odocDrop:"Choose a file to store  (PDF, Excel, image, Word)", odocCustomer:"Customer", odocPO:"PO / Order #", odocType:"Document type", odocSave:"Store document", odocArchive:"Document archive", odocNone:"No documents stored yet. Add one above.", odocSearchP:"Search customer, PO, doc type...", odocSaved:"Document stored", odocConfirmDel:"Delete this document?", odocNoFile:"Choose a file first",
       shiplog:"Shipping Log", shlHint:"Log every outbound shipment - samples, replacements, one-off customer sends. Pick the carrier and the tracking # becomes a clickable link.",
       shlDate:"Date", shlType:"Type", shlRecipient:"Recipient", shlAddress:"Address", shlCarrier:"Carrier", shlTracking:"Tracking #", shlReqBy:"Requested by", shlCost:"Cost", shlContents:"What was sent", shlLot:"Lot / batch #", shlStatus:"Status", shlNotes:"Notes", shlSave:"Log shipment", shlArchive:"Shipment log", shlNone:"No shipments logged yet. Add one above.", shlSearchP:"Search recipient, tracking, type...", shlLogged:"Shipment logged", shlConfirmDel:"Delete this shipment entry?",
-      recvlog:"Receiving Log", rlHint:"Log every inbound shipment and attach the paperwork (packing slip, BOL, invoice). Pick the carrier and the PRO/tracking # becomes a clickable link.",
+      recvlog:"Receiving Log", rlHint:"Log every inbound shipment and attach the paperwork (packing slip, BOL, invoice). A receipt saved from Receive opens here already filled in. Finish the trailer and SOP checks once. Pick the carrier and the PRO/tracking number becomes a clickable link.",
       rlDrop:"Attach paperwork  (PDF, Excel, image, Word)", rlDate:"Date", rlSupplier:"Supplier", rlPO:"PO #", rlCarrier:"Carrier", rlTracking:"Tracking / PRO #", rlContents:"What was received", rlLot:"Lot / batch #", rlQtyOrd:"Qty ordered", rlQtyRec:"Qty received", rlShortOver:"Short/Over", rlCondition:"Condition", rlReceivedBy:"Received by", rlNotes:"Notes", rlDoc:"Doc", rlSave:"Log receipt", rlArchive:"Receiving log", rlNone:"No receipts logged yet. Add one above.", rlSearchP:"Search supplier, PO, carrier...", rlLogged:"Receipt logged", rlConfirmDel:"Delete this receiving entry?",
       editRow:"Edit", editingRow:"Editing this entry - change what you need, then Save.", saveChanges:"Save changes", saved:"Saved", rlKeepDoc:"current file kept unless you attach a new one", sortHint:"Click to sort", dlPdf:"Download PDF", dlExcel:"Download Excel",
       finbags:"Finished Bags", fbHint:"Bags that have come off P-Mac and are staged in storage. Inventory counts these; Fulfillment counts the master-case output.", fb4oz:"4oz bags", fb15oz:"1.5oz bags", fbTotal:"All bags",
@@ -177,8 +177,8 @@
       printLoc:"Imprimir etiquetas de ubicacion", printItem:"Imprimir etiquetas de articulo", newLpn:"Nueva etiqueta de pallet (LPN)", print:"Imprimir",
       labelsHint:"Imprima codigos en su impresora termica. Las de ubicacion son permanentes; el LPN es un codigo por pallet entrante.",
       dashHint:"Disponible en vivo en todas las ubicaciones. Filtre por categoria.",
-      receiveHint:"Escanee un articulo, ingrese cant. + detalles, luego elija a donde va (escanee el slot o toque Seccion-Bahia-Nivel) - llega ahi en un paso. Deje la ubicacion en blanco para dejarlo en Recibo.",rniNewBtn:"Articulo nuevo (no en la lista)",rniCancelBtn:"Usar articulo existente",rniTitle:"Crear un articulo nuevo",rniCode:"Codigo / SKU",rniName:"Nombre del articulo",rniNamePh:"ej. Caja Kraft 12x9",rniUnit:"Unidad",rniHint:"Esto agrega un articulo nuevo al maestro y luego lo recibe abajo.",rniNeed:"Ingrese codigo y nombre del articulo nuevo",
-      rSupplier:"Proveedor", rInvoice:"Factura / OC #", rCategory:"Categoria", rPallets:"Pallets", rCondition:"Condicion", rStatus:"Estado", rDeliveryHdr:"Entrega y documentos (se guarda en el Registro de Recepcion)", rAttachDoc:"Adjuntar documentos (packing slip / BOL / factura)", rCarrier:"Transportista", rProNum:"Rastreo / PRO", rQtyOrd:"Cant. pedida", rLogNotes:"Notas", rMergeHint:"Elige un proveedor (y agrega transportista/PRO o adjunta documentos) y este recibo se guarda en el Registro de Recepcion automaticamente - sin entrada aparte.",
+      receiveHint:"Escanee un articulo, ingrese cant. + detalles, luego elija a donde va (escanee el slot o toque Seccion-Bahia-Nivel) - llega ahi en un paso. Deje la ubicacion en blanco para dejarlo en Recibo. Recibir pone el stock en mano. Si ingresa un proveedor, el Registro de Recibo se abre ya lleno para que solo termine las revisiones del trailer y del SOP una vez.",rniNewBtn:"Articulo nuevo (no en la lista)",rniCancelBtn:"Usar articulo existente",rniTitle:"Crear un articulo nuevo",rniCode:"Codigo / SKU",rniName:"Nombre del articulo",rniNamePh:"ej. Caja Kraft 12x9",rniUnit:"Unidad",rniHint:"Esto agrega un articulo nuevo al maestro y luego lo recibe abajo.",rniNeed:"Ingrese codigo y nombre del articulo nuevo",
+      rSupplier:"Proveedor", rInvoice:"Factura / OC #", rCategory:"Categoria", rPallets:"Pallets", rCondition:"Condicion", rStatus:"Estado", rDeliveryHdr:"Entrega y documentos (se guarda en el Registro de Recepcion)", rAttachDoc:"Adjuntar documentos (packing slip / BOL / factura)", rCarrier:"Transportista", rProNum:"Rastreo / PRO", rQtyOrd:"Cant. pedida", rLogNotes:"Notas", rMergeHint:"Recibir pone el stock en mano. Ingrese un proveedor y este recibo se guarda en el Registro de Recibo. Luego el registro se abre ya lleno para que solo termine las revisiones del trailer y del SOP una vez. Transportista, PRO y archivo son opcionales.", rLogOpened:"El Registro de Recibo esta abierto. Termine las revisiones del trailer y del SOP.", rLogFail:"El stock ya esta en mano. No se guardo la fila del Registro de Recibo. Abra el Registro de Recibo e ingrese el envio una vez.", rlFromDock:"El stock ya esta en mano. Esta fila viene de Recibir. Termine las revisiones del trailer y del SOP. No necesita volver a escribir el envio.",
       putHint:"Escanee el articulo, luego escanee el codigo del slot O toque Seccion - Bahia - Nivel. Sale de Recibo en tiempo real.",
       puDest:"Destino", puSection:"Seccion", puBay:"Bahia", puLevel:"Nivel", puZones:"Piso / zonas", puScanLoc:"A-05-L3 / escanee slot",
       moveHint:"Escanee articulo, elija desde y hacia (slot, WIP, Empaque, Embarque...).",
@@ -280,7 +280,7 @@
       odocDrop:"Elija un archivo para guardar  (PDF, Excel, imagen, Word)", odocCustomer:"Cliente", odocPO:"OC / # de Orden", odocType:"Tipo de documento", odocSave:"Guardar documento", odocArchive:"Archivo de documentos", odocNone:"Aun no hay documentos. Agregue uno arriba.", odocSearchP:"Buscar cliente, OC, tipo...", odocSaved:"Documento guardado", odocConfirmDel:"Eliminar este documento?", odocNoFile:"Elija un archivo primero",
       shiplog:"Registro de Envios", shlHint:"Registre cada envio saliente - muestras, reemplazos, envios puntuales a clientes. Elija el transportista y el # de rastreo se vuelve un enlace.",
       shlDate:"Fecha", shlType:"Tipo", shlRecipient:"Destinatario", shlAddress:"Direccion", shlCarrier:"Transportista", shlTracking:"# de Rastreo", shlReqBy:"Solicitado por", shlCost:"Costo", shlContents:"Que se envio", shlLot:"Lote / # de lote", shlStatus:"Estado", shlNotes:"Notas", shlSave:"Registrar envio", shlArchive:"Registro de envios", shlNone:"Aun no hay envios. Agregue uno arriba.", shlSearchP:"Buscar destinatario, rastreo, tipo...", shlLogged:"Envio registrado", shlConfirmDel:"Eliminar este registro de envio?",
-      recvlog:"Registro de Recibo", rlHint:"Registre cada envio entrante y adjunte el papeleo (remito, BOL, factura). Elija el transportista y el # PRO/rastreo se vuelve un enlace.",
+      recvlog:"Registro de Recibo", rlHint:"Registre cada envio entrante y adjunte el papeleo (remito, BOL, factura). Un recibo guardado en Recibir se abre aqui ya lleno. Termine las revisiones del trailer y del SOP una vez. Elija el transportista y el numero PRO/rastreo se vuelve un enlace.",
       rlDrop:"Adjuntar papeleo  (PDF, Excel, imagen, Word)", rlDate:"Fecha", rlSupplier:"Proveedor", rlPO:"# OC", rlCarrier:"Transportista", rlTracking:"# Rastreo / PRO", rlContents:"Que se recibio", rlLot:"Lote / # de lote", rlQtyOrd:"Cant. pedida", rlQtyRec:"Cant. recibida", rlShortOver:"Faltante/Sobrante", rlCondition:"Condicion", rlReceivedBy:"Recibido por", rlNotes:"Notas", rlDoc:"Doc", rlSave:"Registrar recibo", rlArchive:"Registro de recibo", rlNone:"Aun no hay recibos. Agregue uno arriba.", rlSearchP:"Buscar proveedor, OC, transportista...", rlLogged:"Recibo registrado", rlConfirmDel:"Eliminar este registro de recibo?",
       editRow:"Editar", editingRow:"Editando esta entrada - cambie lo necesario y guarde.", saveChanges:"Guardar cambios", saved:"Guardado", rlKeepDoc:"se conserva el archivo actual salvo que adjunte uno nuevo", sortHint:"Clic para ordenar", dlPdf:"Descargar PDF", dlExcel:"Descargar Excel",
       finbags:"Bolsas Terminadas", fbHint:"Bolsas que salieron de P-Mac y estan en almacenamiento. Inventario las cuenta; Fulfillment cuenta la salida de cajas maestras.", fb4oz:"Bolsas 4oz", fb15oz:"Bolsas 1.5oz", fbTotal:"Todas las bolsas",
@@ -334,8 +334,8 @@
       printLoc:"Imprimir etiquetas de local", printItem:"Imprimir etiquetas de item", newLpn:"Nova etiqueta de palete (LPN)", print:"Imprimir",
       labelsHint:"Imprima codigos na sua impressora termica. As de local sao permanentes; o LPN e um codigo por palete recebido.",
       dashHint:"Estoque ao vivo em todos os locais. Filtre por categoria.",
-      receiveHint:"Escaneie um item, digite qtd. + detalhes, depois escolha para onde vai (escaneie o slot ou toque Secao-Baia-Nivel) - chega la em um passo. Deixe o local em branco para segurar no Recebimento.",rniNewBtn:"Item novo (nao esta na lista)",rniCancelBtn:"Usar item existente",rniTitle:"Criar um item novo",rniCode:"Codigo / SKU",rniName:"Nome do item",rniNamePh:"ex. Caixa Kraft 12x9",rniUnit:"Unidade",rniHint:"Isto adiciona um item novo ao mestre e depois o recebe abaixo.",rniNeed:"Insira codigo e nome do item novo",
-      rSupplier:"Fornecedor", rInvoice:"Fatura / OC #", rCategory:"Categoria", rPallets:"Paletes", rCondition:"Condicao", rStatus:"Status", rDeliveryHdr:"Entrega e documentos (salvo no Registro de Recebimento)", rAttachDoc:"Anexar documentos (packing slip / BOL / nota)", rCarrier:"Transportadora", rProNum:"Rastreio / PRO", rQtyOrd:"Qtd pedida", rLogNotes:"Notas", rMergeHint:"Escolha um fornecedor (e adicione transportadora/PRO ou anexe documentos) e este recebimento e salvo no Registro de Recebimento automaticamente - sem entrada separada.",
+      receiveHint:"Escaneie um item, digite qtd. + detalhes, depois escolha para onde vai (escaneie o slot ou toque Secao-Baia-Nivel) - chega la em um passo. Deixe o local em branco para segurar no Recebimento. Receber coloca o estoque em maos. Se voce informar o fornecedor, o Registro de Recebimento abre ja preenchido para voce so terminar as checagens do trailer e do SOP uma vez.",rniNewBtn:"Item novo (nao esta na lista)",rniCancelBtn:"Usar item existente",rniTitle:"Criar um item novo",rniCode:"Codigo / SKU",rniName:"Nome do item",rniNamePh:"ex. Caixa Kraft 12x9",rniUnit:"Unidade",rniHint:"Isto adiciona um item novo ao mestre e depois o recebe abaixo.",rniNeed:"Insira codigo e nome do item novo",
+      rSupplier:"Fornecedor", rInvoice:"Fatura / OC #", rCategory:"Categoria", rPallets:"Paletes", rCondition:"Condicao", rStatus:"Status", rDeliveryHdr:"Entrega e documentos (salvo no Registro de Recebimento)", rAttachDoc:"Anexar documentos (packing slip / BOL / nota)", rCarrier:"Transportadora", rProNum:"Rastreio / PRO", rQtyOrd:"Qtd pedida", rLogNotes:"Notas", rMergeHint:"Receber coloca o estoque em maos. Informe um fornecedor e este recebimento e salvo no Registro de Recebimento. Depois o registro abre ja preenchido para voce so terminar as checagens do trailer e do SOP uma vez. Transportadora, PRO e arquivo sao opcionais.", rLogOpened:"O Registro de Recebimento esta aberto. Termine as checagens do trailer e do SOP.", rLogFail:"O estoque ja esta em maos. A linha do Registro de Recebimento nao foi salva. Abra o Registro de Recebimento e lance o envio uma vez.", rlFromDock:"O estoque ja esta em maos. Esta linha veio de Receber. Termine as checagens do trailer e do SOP. Voce nao precisa digitar o envio de novo.",
       putHint:"Escaneie o item, depois escaneie o codigo do slot OU toque Secao - Baia - Nivel. Sai de Recebimento em tempo real.",
       puDest:"Destino", puSection:"Secao", puBay:"Baia", puLevel:"Nivel", puZones:"Piso / zonas", puScanLoc:"A-05-L3 / escaneie slot",
       moveHint:"Escaneie item, escolha de e para (slot, WIP, Empacotamento, Expedicao...).",
@@ -437,7 +437,7 @@
       odocDrop:"Escolha um arquivo para armazenar  (PDF, Excel, imagem, Word)", odocCustomer:"Cliente", odocPO:"OC / No do Pedido", odocType:"Tipo de documento", odocSave:"Armazenar documento", odocArchive:"Arquivo de documentos", odocNone:"Nenhum documento ainda. Adicione um acima.", odocSearchP:"Buscar cliente, OC, tipo...", odocSaved:"Documento armazenado", odocConfirmDel:"Excluir este documento?", odocNoFile:"Escolha um arquivo primeiro",
       shiplog:"Registro de Envios", shlHint:"Registre cada envio de saida - amostras, reposicoes, envios avulsos a clientes. Escolha a transportadora e o no de rastreio vira um link.",
       shlDate:"Data", shlType:"Tipo", shlRecipient:"Destinatario", shlAddress:"Endereco", shlCarrier:"Transportadora", shlTracking:"No de Rastreio", shlReqBy:"Solicitado por", shlCost:"Custo", shlContents:"O que foi enviado", shlLot:"Lote / no do lote", shlStatus:"Status", shlNotes:"Notas", shlSave:"Registrar envio", shlArchive:"Registro de envios", shlNone:"Nenhum envio ainda. Adicione um acima.", shlSearchP:"Buscar destinatario, rastreio, tipo...", shlLogged:"Envio registrado", shlConfirmDel:"Excluir este registro de envio?",
-      recvlog:"Registro de Recebimento", rlHint:"Registre cada envio recebido e anexe a papelada (romaneio, BOL, fatura). Escolha a transportadora e o no PRO/rastreio vira um link.",
+      recvlog:"Registro de Recebimento", rlHint:"Registre cada envio recebido e anexe a papelada (romaneio, BOL, fatura). Um recebimento salvo em Receber abre aqui ja preenchido. Termine as checagens do trailer e do SOP uma vez. Escolha a transportadora e o numero PRO/rastreio vira um link.",
       rlDrop:"Anexar papelada  (PDF, Excel, imagem, Word)", rlDate:"Data", rlSupplier:"Fornecedor", rlPO:"No OC", rlCarrier:"Transportadora", rlTracking:"Rastreio / PRO", rlContents:"O que foi recebido", rlLot:"Lote / no do lote", rlQtyOrd:"Qtd pedida", rlQtyRec:"Qtd recebida", rlShortOver:"Falta/Sobra", rlCondition:"Condicao", rlReceivedBy:"Recebido por", rlNotes:"Notas", rlDoc:"Doc", rlSave:"Registrar recebimento", rlArchive:"Registro de recebimento", rlNone:"Nenhum recebimento ainda. Adicione um acima.", rlSearchP:"Buscar fornecedor, OC, transportadora...", rlLogged:"Recebimento registrado", rlConfirmDel:"Excluir este registro de recebimento?",
       editRow:"Editar", editingRow:"Editando esta entrada - altere o necessario e salve.", saveChanges:"Salvar alteracoes", saved:"Salvo", rlKeepDoc:"o arquivo atual e mantido a menos que anexe um novo", sortHint:"Clique para ordenar", dlPdf:"Baixar PDF", dlExcel:"Baixar Excel",
       finbags:"Sacos Terminados", fbHint:"Sacos que sairam do P-Mac e estao no armazenamento. O Estoque os conta; o Fulfillment conta a saida de caixas master.", fb4oz:"Sacos 4oz", fb15oz:"Sacos 1.5oz", fbTotal:"Todos os sacos",
@@ -856,6 +856,7 @@
   let recvSortKey = "recv_date", recvSortDir = -1;  // Receiving Log sort state
   let recvFile = null;                        // Receiving Log paperwork upload state
   let shipEditId = null, recvEditId = null, orderEditId = null, seasEditId = null, seedEditId = null;  // inline-edit: id of record being edited
+  let recvFromDock = false;
   let pmoSel = "", pmoRecent = [];   // P-Mac bag-output: selected bag item + recent adds this session
   let navCollapsed = (function () { try { return new Set(JSON.parse(localStorage.getItem("smk-navcollapsed") || "[]")); } catch (e) { return new Set(); } })();  // collapsed nav groups
   let ciView = "active", ciAddOpen = false, ciEditId = null;  // Continuous Improvement view/edit state
@@ -2075,6 +2076,47 @@
       '<input id="shlSearch" autocomplete="off" oninput="UI.shlSearch(this.value)" placeholder="' + L("shlSearchP") + '" style="margin-bottom:10px">' +
       table + '</div>';
   }
+  function normRecvLot(lot) {
+    if (window.RECVSOP && RECVSOP.normLot) return RECVSOP.normLot(lot);
+    return String(lot || "").toUpperCase().replace(/\s+/g, "");
+  }
+  function findRecvByLot(lot) {
+    const key = normRecvLot(lot);
+    if (!key || !DB.receivingLog) return null;
+    const rows = DB.receivingLog();
+    for (let i = 0; i < rows.length; i++) {
+      if (normRecvLot(rows[i].lot) === key) return rows[i];
+    }
+    return null;
+  }
+  // Keep checklist columns off this patch so a second Receive does not wipe SOP answers.
+  function dockRecvRec(existing, next) {
+    const prev = existing || {};
+    const pick = (a, b) => (a != null && String(a).trim() !== "" ? a : (b == null ? "" : b));
+    return {
+      recv_date: next.recv_date || prev.recv_date || "",
+      supplier: pick(next.supplier, prev.supplier),
+      po_num: pick(next.po_num, prev.po_num),
+      carrier: pick(next.carrier, prev.carrier),
+      tracking: pick(next.tracking, prev.tracking),
+      contents: pick(next.contents, prev.contents),
+      lot: pick(next.lot, prev.lot),
+      qty_ordered: (next.qty_ordered !== "" && next.qty_ordered != null) ? next.qty_ordered : (prev.qty_ordered == null ? "" : prev.qty_ordered),
+      qty_received: next.qty_received,
+      condition: next.condition || prev.condition || "Good",
+      received_by: pick(next.received_by, prev.received_by),
+      notes: pick(next.notes, prev.notes),
+      item_id: pick(next.item_id, prev.item_id)
+    };
+  }
+  function focusRecvSop() {
+    setTimeout(function () {
+      const box = document.getElementById("rsop-seal-fs");
+      if (box && box.scrollIntoView) { try { box.scrollIntoView({ block: "center" }); } catch (e) {} }
+      const first = document.querySelector("#rsop-seal-fs input[type=radio]");
+      if (first) first.focus();
+    }, 50);
+  }
   function viewReceivingLog() {
     const today = new Date().toISOString().slice(0, 10);
     const ed = recvEditId ? (DB.receivingLog().find(s => String(s.id) === String(recvEditId)) || {}) : {};
@@ -2140,7 +2182,8 @@
       '<th class="right">' + L("rlQtyRec") + '</th>' + '<th class="right">' + L("rlShortOver") + '</th>' +
       th("condition", L("rlCondition")) + th("received_by", L("rlReceivedBy")) + '<th>' + L("rlDoc") + '</th>' + '<th></th>' +
       '</tr></thead><tbody id="rlBody">' + rows + '</tbody></table>' : '<p class="muted">' + L("rlNone") + '</p>';
-    return byDl + '<div class="card"><h2>' + L("recvlog") + '</h2><p class="hint">' + L("rlHint") + '</p>' + form + '</div>' +
+    return byDl + '<div class="card"><h2>' + L("recvlog") + '</h2><p class="hint">' + L("rlHint") + '</p>' +
+      (recvFromDock ? '<p class="hint">' + L("rlFromDock") + '</p>' : '') + form + '</div>' +
       rsopHold +
       '<div class="card"><h2 class="sub2">' + L("rlArchive") + ' (' + list.length + ')</h2>' +
       rsopTools +
@@ -5043,12 +5086,17 @@
     recvToggleNew() { recvNewItem = !recvNewItem; render(); },
     async receive() {
       const v = id => { const e = $(id); return e ? (e.value || "") : ""; };
-      // Capture ALL form values FIRST — DB.createItem() re-renders the form (emit) and would wipe these.
+      // Capture form values first. createItem and receive re-render and wipe the inputs.
       const q = parseFloat(v("r-qty")); const lot = v("r-lot").trim();
       const loc = v("r-loc").trim().toUpperCase();
       const meta = { supplier: v("r-sup"), invoice: v("r-inv").trim(), category: v("r-cat"),
         pallets: v("r-pal"), condition: v("r-cond") || "Good", status: v("r-stat") || "Received", location: loc || "" };
       const op = $("op") ? $("op").value : opVal();
+      const rlCarrier = v("r-carrier");
+      const rlTrack = v("r-tracking").trim();
+      const rlQord = v("r-qord").trim();
+      const rlNotes = v("r-notes").trim();
+      const file = recvFile;
       const newCode = recvNewItem ? v("r-newcode").trim() : "";
       const newName = recvNewItem ? v("r-newname").trim() : "";
       const newCat = recvNewItem ? v("r-newcat") : "";
@@ -5068,15 +5116,49 @@
       }
       if (!it) return toast(L("notfound"));
       const r = await DB.receive(it, q, lot, op, meta);
-      // Single-entry receiving: also save a Receiving Log record when this is an inbound delivery
-      // (supplier picked) or carrier/PRO/paperwork was provided - no separate Receiving Log entry.
-      const rlCarrier = v("r-carrier"), rlTrack = v("r-tracking").trim(), rlQord = v("r-qord").trim();
-      if (meta.supplier || rlCarrier || rlTrack || recvFile) {
-        try { await DB.addReceivingLog({ recv_date: new Date().toISOString().slice(0, 10), supplier: meta.supplier || "", po_num: meta.invoice || "", carrier: rlCarrier, tracking: rlTrack, contents: it.name, lot: lot || "", qty_ordered: rlQord, qty_received: q, condition: meta.condition || "Good", received_by: op, notes: v("r-notes").trim() }, recvFile, op); } catch (e) {}
-        recvFile = null;
+      // Supplier alone writes the Receiving Log. Carrier, PRO, and a file still do too.
+      // Stock receive above is unchanged. Open that row so the SOP checks are finished once.
+      const supplier = String(meta.supplier || "").trim();
+      const wantLog = !!(supplier || rlCarrier || rlTrack || file);
+      let logId = "";
+      let logErr = "";
+      if (wantLog) {
+        const next = {
+          recv_date: new Date().toISOString().slice(0, 10), supplier: supplier, po_num: meta.invoice || "",
+          carrier: rlCarrier, tracking: rlTrack, contents: it.name || "", lot: lot || "",
+          qty_ordered: rlQord, qty_received: q, condition: meta.condition || "Good",
+          received_by: op, notes: rlNotes, item_id: it.id || it.code || ""
+        };
+        try {
+          const existing = lot ? findRecvByLot(lot) : null;
+          const saved = existing
+            ? await DB.updateReceivingLog(existing.id, dockRecvRec(existing, next), file, op)
+            : await DB.addReceivingLog(next, file, op);
+          if (saved && saved.ok === false) logErr = saved.msg || L("rLogFail");
+          else {
+            logId = (saved && saved.id) || (existing && existing.id) || "";
+            if (!logId && lot) {
+              const again = findRecvByLot(lot);
+              if (again) logId = again.id;
+            }
+            recvFile = null;
+          }
+        } catch (e) { logErr = L("rLogFail"); }
       }
       puSec = ""; puBay = ""; puLevel = ""; recvNewItem = false;
-      toast("+" + fmt(q) + " " + it.name + (r && r.location ? " → " + r.location : "")); go("receive"); },
+      const placed = "+" + fmt(q) + " " + it.name + (r && r.location ? " → " + r.location : "");
+      if (logId) {
+        recvEditId = logId;
+        recvFromDock = true;
+        toast(placed + ". " + L("rLogOpened"));
+        go("recvlog");
+        focusRecvSop();
+        return;
+      }
+      if (logErr) toast(placed + ". " + logErr);
+      else toast(placed);
+      go("receive");
+    },
     // ---- Put-Away location picker (tap Section/Bay/Level, or scan/type the slot) ----
     _puField() { return $("r-loc") || $("p-loc"); },
     puPick(kind, val) {
@@ -5588,8 +5670,8 @@
     rlSort(key) { if (recvSortKey === key) recvSortDir = -recvSortDir; else { recvSortKey = key; recvSortDir = (key === "recv_date") ? -1 : 1; } render(); },
     rlSearch(val) { const q = (val || "").toLowerCase().trim();
       document.querySelectorAll("#rlBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
-    rlEdit(id) { recvEditId = id; recvFile = null; render(); window.scrollTo(0, 0); },
-    rlEditCancel() { recvEditId = null; recvFile = null; render(); },
+    rlEdit(id) { recvEditId = id; recvFromDock = false; recvFile = null; render(); window.scrollTo(0, 0); },
+    rlEditCancel() { recvEditId = null; recvFromDock = false; recvFile = null; render(); },
     async rlSave() {
       const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
       const supplier = v("rl-supplier"); if (!supplier) return toast(L("rlSupplier"));
@@ -5623,10 +5705,10 @@
           note = (holdRes && holdRes.note) || "";
         } catch (e) {
           toast("Receipt saved. HOLD Log write failed. " + String(e && e.message || e));
-          recvEditId = null; recvFile = null; render(); return;
+          recvEditId = null; recvFromDock = false; recvFile = null; render(); return;
         }
       }
-      const wasEdit = !!recvEditId; recvEditId = null; recvFile = null;
+      const wasEdit = !!recvEditId; recvEditId = null; recvFromDock = false; recvFile = null;
       let msg = (wasEdit ? L("saved") : L("rlLogged"));
       if (held) msg += ". ON HOLD";
       if (note) msg += ". " + note;
