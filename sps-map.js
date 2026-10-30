@@ -18,6 +18,8 @@
     "Cheeseburger": "L25", "PCA Pizza": "L20", "Variety Pack": "VP48"
   };
   // Same description rules as demand.js. GRL / PRM are whole words. ORIG stays last so it cannot steal a flavor above.
+  // cleanFlavorText drops a stored UNMAPPED prefix, pack sizes (4Z / 4OZ), and brand/seed noise
+  // (SMACKIN, SNFL, SNFLWR, SDS, SD) before these rules run.
   var DESC_RULES = [
     [/cinnamon|churro/i, "Cinnamon Churro"],
     [/garlic|parm|\bgrlc\b|prmsn|\bgrl\b|\bprm\b/i, "Garlic Parmesan"],
@@ -100,9 +102,18 @@
     }
     return "";
   }
-  function normDesc(s) { return String(s || "").replace(/[._\-]+/g, " ").replace(/\s+/g, " ").trim(); }
+  // Same cleaner as demand.js cleanFlavorText. Keep the two copies in step.
+  function cleanFlavorText(s) {
+    var t = String(s || "");
+    t = t.replace(/^(?:unmapped:\s*)+/i, "");
+    t = t.replace(/['\u2019]/g, "");
+    t = t.replace(/\b\d+(?:\.\d+)?\s*(?:oz|z)\b/ig, " ");
+    t = t.replace(/\b(?:smackin|smackn|sunflower|sunflwr|snflwr|seeds|snfl|seed|sds|sd)\b/ig, " ");
+    t = t.replace(/[._\-\/]+/g, " ").replace(/\s+/g, " ").trim();
+    return t;
+  }
   function flavorFromDesc(desc) {
-    var d = normDesc(desc);
+    var d = cleanFlavorText(desc);
     for (var i = 0; i < DESC_RULES.length; i++) if (DESC_RULES[i][0].test(d)) return DESC_RULES[i][1];
     return "";
   }
