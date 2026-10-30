@@ -144,6 +144,7 @@
     upload: { fn: "up", icon: "upload", title: { en: "Upload Production", es: "Upload Production", pt: "Upload Production" }, blurb: { en: "Load a mixing or P-Mac history file.", es: "Cargue un archivo de historial de mezcla o P-Mac.", pt: "Carregue um arquivo de historico de mistura ou P-Mac." } },
     trace: { trace: "trace", icon: "git-branch", title: { en: "Trace", es: "Rastrear", pt: "Trace" }, blurb: { en: "Look up a label, lot, supplier lot, or PO.", es: "Busque una etiqueta, lote, lote de proveedor u orden.", pt: "Busque uma etiqueta, lote, lote de fornecedor ou OC." } },
     trLabels: { trace: "labels", icon: "tags", title: { en: "Labels", es: "Etiquetas", pt: "Labels" }, blurb: { en: "Search lot labels and reprint one.", es: "Busque etiquetas de lote y reimprima una.", pt: "Busque etiquetas de lote e reimprima uma." } },
+    fglots: { fn: "fglots", icon: "calendar-check", title: { en: "FG Lots / Best-by", es: "Lotes PT / Consumir antes", pt: "Lotes PA / Validade" }, blurb: { en: "Finished lots, best-by, and what is left. Logged bag codes have no quantity.", es: "Lotes terminados, consumir antes y lo que queda. Los codigos anotados no tienen cantidad.", pt: "Lotes acabados, validade e o que resta. Codigos anotados nao tem quantidade." } },
     quality: { go: "quality", icon: "microscope", title: { en: "Quality Logs", es: "Quality Logs", pt: "Quality Logs" }, blurb: { en: "CCP checks: allergen changeover, label verify, metal detector.", es: "Registros CCP: cambio de alergeno, verificacion de etiqueta, detector de metal.", pt: "Registros CCP: troca de alergeno, verificacao de rotulo, detector de metal." } },
     qacheck: { fn: "qacheck", icon: "clipboard-check", title: { en: "QA Checklists", es: "Listas de calidad", pt: "Listas de qualidade" }, blurb: { en: "Pre-op, GMP, metal detector, and hourly pouch checks. Paper stays the backup until QA confirms digital storage.", es: "Preoperacional, GMP, detector de metal y revision horaria de bolsas. El papel sigue como respaldo hasta que Calidad confirme el almacenamiento digital.", pt: "Pre-op, GMP, detector de metal e checagem horaria de sache. O papel continua como copia de apoio ate a Qualidade confirmar o armazenamento digital." } },
     compliance: { go: "compliance", icon: "shield-check", title: { en: "Compliance / SQF", es: "Cumplimiento / SQF", pt: "Conformidade / SQF" }, blurb: { en: "Certifications, the SQF calendar, and controlled documents.", es: "Certificaciones, el calendario SQF y documentos controlados.", pt: "Certificacoes, o calendario SQF e documentos controlados." } },
@@ -262,7 +263,7 @@
       title: { en: "P-Mac", es: "P-Mac", pt: "P-Mac" },
       intro: { en: "What P-Mac needs, bags off the line, and the lot station.", es: "Lo que P-Mac necesita, bolsas de la linea y la estacion de lote.", pt: "O que o P-Mac precisa, sacos da linha e a estacao de lote." },
       sections: [
-        { h: { en: "Line", es: "Linea", pt: "Linha" }, tools: ["prodorders", "pmac", "pmacout", "trPmac"] },
+        { h: { en: "Line", es: "Linea", pt: "Linha" }, tools: ["prodorders", "pmac", "pmacout", "trPmac", "fglots"] },
         { h: { en: "Planning and history", es: "Plan y historial", pt: "Plano e historico" }, tools: ["hist", "upload"] }
       ]
     },
@@ -273,7 +274,7 @@
       title: { en: "Fulfillment", es: "Fulfillment", pt: "Fulfillment" },
       intro: { en: "Retail and e-commerce builds, lot trace use, and lot trace ship. Shipping has its own tab.", es: "Produccion retail y e-commerce, salida de lote y envio de lote. Envios tiene su propia pestana.", pt: "Producao de varejo e e-commerce, saida de lote e envio de lote. Envios tem sua propria aba." },
       sections: [
-        { h: { en: "Line", es: "Linea", pt: "Linha" }, tools: ["retailprod", "ecomprod", "trUse", "trShip", "produce", "prodlog", "fulfilldaily"] },
+        { h: { en: "Line", es: "Linea", pt: "Linha" }, tools: ["retailprod", "ecomprod", "trUse", "trShip", "fglots", "produce", "prodlog", "fulfilldaily"] },
         { h: { en: "Lookup and stock", es: "Busqueda y stock", pt: "Busca e estoque" }, tools: ["skulookup", "flavinv", "stockbuild"] },
         { h: { en: "Orders", es: "Ordenes", pt: "Pedidos" }, tools: ["orders", "orderdocs"] },
         { h: { en: "Errors and returns", es: "Errores y devoluciones", pt: "Erros e devolucoes" }, tools: ["fulfillerr"] }
@@ -296,7 +297,7 @@
       title: { en: "Quality", es: "Calidad", pt: "Qualidade" },
       intro: { en: "Lot trace, holds, labels, and the quality records this team already keeps.", es: "Rastreo de lote, retenciones, etiquetas y los registros de calidad que este equipo ya usa.", pt: "Rastreio de lote, retencoes, etiquetas e os registros de qualidade que esta equipe ja usa." },
       sections: [
-        { h: { en: "Lot trace", es: "Rastreo de lote", pt: "Rastreio de lote" }, tools: ["trace", "trQa", "trLabels"] },
+        { h: { en: "Lot trace", es: "Rastreo de lote", pt: "Rastreio de lote" }, tools: ["trace", "trQa", "trLabels", "fglots"] },
         { h: { en: "Quality records", es: "Registros de calidad", pt: "Registros de qualidade" }, tools: ["qacheck", "quality", "compliance", "sqftasks", "shortdated"] }
       ]
     },
@@ -447,6 +448,7 @@
     if (fn === "sqf" && window.SQFTASKS && typeof SQFTASKS.open === "function") { SQFTASKS.open(); return; }
     if (fn === "ferr" && window.FULFILL_ANALYTICS && typeof FULFILL_ANALYTICS.open === "function") { FULFILL_ANALYTICS.open(); return; }
     if (fn === "qacheck" && window.QACHECK && typeof QACHECK.open === "function") { QACHECK.open(); return; }
+    if (fn === "fglots" && window.FGLOTS && typeof FGLOTS.open === "function") { FGLOTS.open(); return; }
     toast(Lmissing());
   }
 
@@ -1815,6 +1817,7 @@
       else if (entry.kind === "mod" && entry.id === "sqf" && window.SQFTASKS) { SQFTASKS.open(); landed = true; }
       else if (entry.kind === "mod" && entry.id === "ferr" && window.FULFILL_ANALYTICS) { FULFILL_ANALYTICS.open(); landed = true; }
       else if (entry.kind === "mod" && entry.id === "qacheck" && window.QACHECK) { QACHECK.open(); landed = true; }
+      else if (entry.kind === "mod" && entry.id === "fglots" && window.FGLOTS) { FGLOTS.open(); landed = true; }
     } finally {
       backRestoring = false;
     }
@@ -1951,6 +1954,7 @@
     wrapFn(window.SQFTASKS, "open", { kind: "mod", id: "sqf" });
     wrapFn(window.FULFILL_ANALYTICS, "open", { kind: "mod", id: "ferr" });
     wrapFn(window.QACHECK, "open", { kind: "mod", id: "qacheck" });
+    wrapFn(window.FGLOTS, "open", { kind: "mod", id: "fglots" });
   }
   function leaveBoardMode() {
     if (!document.body.classList.contains("boardmode")) return;

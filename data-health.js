@@ -27,7 +27,8 @@
     { t: "receiving_log", col: "created_at", label: "Receiving log", warn: 14, bad: 30 },
     { t: "supplier_pos", col: "created_at", label: "Supplier POs", warn: 30, bad: 60 },
     { t: "launch_pipeline", col: "updated_at", label: "Launch pipeline", warn: 45, bad: 90 },
-    { t: "machine_live", col: "updated_at", label: "Live machine feed", warn: 3, bad: 14 }
+    { t: "machine_live", col: "updated_at", label: "Live machine feed", warn: 3, bad: 14 },
+    { t: "trace_labels", col: "created_at", label: "Lot trace labels", warn: 4, bad: 14 }
   ];
 
   function daysAgo(ts) {

@@ -142,7 +142,7 @@ var html = fs.readFileSync(path.join(root, "index.html"), "utf8");
 var sw = fs.readFileSync(path.join(root, "service-worker.js"), "utf8");
 var sync = fs.readFileSync(path.join(root, "supabase/functions/sps-sync/index.js"), "utf8");
 eq(html.indexOf("sps-map.js?b=4") >= 0, "sps-map cache bust");
-eq(sw.indexOf('const CACHE = "smackin-inv-v255"') >= 0, "cache v254");
+eq(sw.indexOf('const CACHE = "smackin-inv-v256"') >= 0, "cache v254");
 eq(sw.indexOf("smackin-inv-v250") < 0, "old cache gone");
 eq(sync.indexOf("SPS.fileFlags") >= 0, "sync uses fileFlags");
 eq(sync.indexOf('Deno.env.get("SPS_FOLDER") || "testout"') >= 0, "folder default unchanged");
