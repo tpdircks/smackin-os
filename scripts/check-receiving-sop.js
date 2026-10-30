@@ -16,9 +16,9 @@ var app = read("app.js");
 var html = read("index.html");
 var sw = read("service-worker.js");
 
-eq(sw.indexOf('const CACHE = "smackin-inv-v261"') >= 0, "cache bump");
+eq(sw.indexOf('const CACHE = "smackin-inv-v262"') >= 0, "cache bump");
 eq(html.indexOf("receiving-sop.js?b=2") >= 0, "sop cache bust");
-eq(html.indexOf("app.js?b=194") >= 0, "app cache bust");
+eq(html.indexOf("app.js?b=195") >= 0, "app cache bust");
 eq(src.indexOf("\u2014") < 0 && src.indexOf("\u2013") < 0, "receiving-sop dash");
 eq(src.indexOf("temp_not_measured") >= 0, "not measured is stored");
 eq(src.indexOf('v === "B"') >= 0, "broken seal is the hold");

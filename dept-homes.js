@@ -1,28 +1,22 @@
 /* ============================================================================
    Smackin' OS - Department homes (dept-homes.js)
-   Top department bar and a full-page home for each team. Tool cards sit
-   directly under the title so a create or update screen is one tap away.
-   Live counts and lists from DB follow those cards. Demand is one
-   exception: the live floor (Now Running / In Process) is first, then
-   the demand tools and lists. Inventory is the other: the tab opens the
-   Floor (on-hand by flavor, with bag photos). Subtabs switch Inventory
-   jobs. Overview is that Floor. Returns, finished bags, locations, and
-   the catalog and reports are the other subtabs. A short Actions row on
-   Overview is only Receive, Adjust, Count, Move, and Alerts.
-   Each card opens a screen that already exists (UI_go, Lot Trace, or a
+   Top department bar. Every department opens on its primary work view.
+   Inventory opens the Floor (on-hand by flavor, with bag photos). A short
+   Actions row on that primary view is only the high-frequency do tools.
+   Other jobs are subtabs, not a tool-card wall. Back from an action
+   returns to the primary view. Subtabs replace each other and stay usable.
+   Each tool opens a screen that already exists (UI_go, Lot Trace, or a
    module open()).
    Tabs, equal width, left to right: Dashboard, Demand, Purchasing,
    Receiving, Inventory, Mixing, P-Mac, Fulfillment, Shipping, Quality,
-   and Ops (Team, Maintenance, Docs, and System). Each tab is a Lucide
-   icon beside a short name. No Manufacturing tab.
+   and Ops. Each tab is a Lucide icon beside a short name. No Manufacturing tab.
    The menu stays off-canvas. A click outside the open panel, or Escape,
    closes it. The header button still toggles it. The left sidebar stays
    collapsed off screen. A tool, station, or other screen that replaces
    #view gets one Back control (same place, same wording) to the previous
-   screen or the department home. It is a compact chip in the same
+   screen or the department primary view. It is a compact chip in the same
    language as the department tabs: navy label, Lucide chevron.
-   Dashboard and department homes do not. The Inventory Floor does not,
-   when Back would only reopen that Floor.
+   The primary view does not show Back when Back would only reopen it.
    No writes. No timers.
    ========================================================================== */
 (function () {
@@ -45,12 +39,10 @@
   // check from the press itself. Touch sends a later mousedown after the blur.
   var pressBusy = false;
   var touchArmed = false;
-  // Which Inventory subtab is showing. Empty on an action screen (Adjust, and the rest).
-  var invHere = "";
+  // Which subtab is showing for the current department. Empty on an action screen.
+  var shellHere = "";
   var INV_SUBS = ["dash", "returns", "finbags", "locations", "facility", "seed", "skus", "printlabels", "analytics", "trMove"];
   var INV_ACTIONS = ["receive", "adjust", "count", "move", "alerts"];
-  var INV_SUB_SET = {};
-  INV_SUBS.forEach(function (id) { INV_SUB_SET[id] = 1; });
   var INV_SUB_SHORT = {
     trMove: { en: "Lot move", es: "Mover lote", pt: "Mover lote" }
   };
@@ -200,138 +192,144 @@
     health: { fn: "health", icon: "activity", title: { en: "Data Health", es: "Data Health", pt: "Data Health" }, blurb: { en: "How fresh each data source is. This screen only reads.", es: "Que tan reciente esta cada fuente de datos. Esta pantalla solo lee.", pt: "Quao recente esta cada fonte de dados. Esta tela so le." } }
   };
 
+  // primary: tool opened when the department tab is tapped.
+  // actions: do-tools on that primary view only. subs: jobs, primary first.
+  // floorSel: Inventory actions show only when this element is on the Floor.
   var DEPTS = [
     {
       id: "home",
       live: "home",
+      primary: "desk",
+      actions: [],
+      subs: ["desk", "daily"],
+      short: { desk: { en: "Overview", es: "Resumen", pt: "Visao geral" } },
       icon: "layout-dashboard",
       label: { en: "Dashboard", es: "Panel", pt: "Painel" },
       title: { en: "Dashboard", es: "Panel", pt: "Painel" },
-      intro: { en: "Start with stockouts, past-due demand, and inbound that still needs a look.", es: "Empiece por agotados, demanda vencida y la entrada que aun hay que revisar.", pt: "Comece por esgotados, demanda vencida e a entrada que ainda precisa de olho." },
-      sections: [
-        { h: { en: "Facility", es: "Planta", pt: "Planta" }, tools: ["desk", "daily"] }
-      ]
+      intro: { en: "Stockouts, past-due demand, and inbound that still needs a look. Daily metrics is a tab.", es: "Agotados, demanda vencida y la entrada por revisar. Metricas del dia es una pestana.", pt: "Esgotados, demanda vencida e a entrada por revisar. Metricas do dia e uma aba." }
     },
     {
       id: "demand",
-      runningFirst: true,
+      primary: "demandboard",
+      actions: ["demandimport"],
+      subs: ["demandboard", "demand", "floor", "demandsched", "ecomdemand", "forecast"],
+      short: {
+        floor: { en: "Now Running", es: "En marcha", pt: "Em andamento" },
+        demandsched: { en: "Schedule", es: "Programa", pt: "Programa" },
+        forecast: { en: "Forecast", es: "Pronostico", pt: "Previsao" }
+      },
       icon: "activity",
       label: { en: "Demand", es: "Demanda", pt: "Demanda" },
       title: { en: "Demand", es: "Demanda", pt: "Demanda" },
-      intro: { en: "What is running on the floor right now, then what to build and the order board.", es: "Que corre en el piso ahora, luego que producir y el tablero de pedidos.", pt: "O que esta rodando no piso agora, depois o que produzir e o painel de pedidos." },
-      sections: [
-        { h: { en: "Floor", es: "Piso", pt: "Piso" }, tools: ["floor"] },
-        { h: { en: "Plan", es: "Plan", pt: "Plano" }, tools: ["demand", "demandboard", "demandsched", "forecast"] },
-        { h: { en: "Imports", es: "Importar", pt: "Importar" }, tools: ["demandimport", "ecomdemand"] }
-      ]
+      intro: { en: "Open orders due to ship. Import is the action. The other boards are tabs.", es: "Ordenes abiertas por enviar. Importar es la accion. Los otros tableros son pestanas.", pt: "Pedidos abertos para enviar. Importar e a acao. Os outros paineis sao abas." }
     },
     {
       id: "purch",
+      primary: "purchasing",
+      actions: ["reorder15"],
+      subs: ["purchasing", "expreceipts", "sps"],
+      short: { purchasing: { en: "POs", es: "OC", pt: "OCs" } },
       icon: "shopping-cart",
       label: { en: "Purchasing", es: "Compras", pt: "Compras" },
       title: { en: "Purchasing", es: "Compras", pt: "Compras" },
-      intro: { en: "Purchase orders, what is due in, and the inbound SPS feed.", es: "Ordenes de compra, lo que debe llegar y el feed SPS de entrada.", pt: "Ordens de compra, o que deve chegar e o feed SPS de entrada." },
-      sections: [
-        { h: { en: "Buy and receive", es: "Comprar y recibir", pt: "Comprar e receber" }, tools: ["purchasing", "expreceipts", "reorder15"] },
-        { h: { en: "Inbound", es: "Entrada", pt: "Entrada" }, tools: ["sps"] }
-      ]
+      intro: { en: "Open purchase orders. The 1.5oz reorder is the action. Receipts and SPS are tabs.", es: "Ordenes de compra abiertas. La reorden 1.5oz es la accion. Recepciones y SPS son pestanas.", pt: "Ordens de compra abertas. A reposicao 1.5oz e a acao. Recebimentos e SPS sao abas." }
     },
     {
       id: "recv",
+      primary: "recvlog",
+      actions: ["receive", "trRecv"],
+      actionShort: { trRecv: { en: "Lot station", es: "Estacion de lote", pt: "Estacao de lote" } },
+      subs: ["recvlog", "returns", "quarantine"],
+      short: { recvlog: { en: "Dock", es: "Muelle", pt: "Cais" } },
       icon: "package-check",
       label: { en: "Receiving", es: "Recibo", pt: "Receber" },
       title: { en: "Receiving", es: "Recibo", pt: "Recebimento" },
-      intro: { en: "Check product in, log the paperwork, and work quarantine. Returns opens Adriana's Inventory screen.", es: "Reciba producto, registre el papeleo y trabaje cuarentena. Devoluciones abre la pantalla de Inventario.", pt: "Receba produto, registre os documentos e trabalhe a quarentena. Devolucoes abre a tela de Estoque." },
-      sections: [
-        { h: { en: "Dock", es: "Muelle", pt: "Cais" }, tools: ["receive", "recvlog", "returns"] },
-        { h: { en: "Checks", es: "Revisiones", pt: "Checagens" }, tools: ["quarantine", "trRecv"] }
-      ]
+      intro: { en: "Dock log of inbound lots. Receive and the lot station are the actions.", es: "Registro del muelle de lotes de entrada. Recibir y la estacion de lote son las acciones.", pt: "Registro do cais dos lotes de entrada. Receber e a estacao de lote sao as acoes." }
     },
     {
       id: "inv",
       live: "dash",
+      primary: "dash",
+      actions: INV_ACTIONS,
+      subs: INV_SUBS,
+      short: INV_SUB_SHORT,
+      floorSel: "#dashBody",
+      floorClass: "inv-floor",
       icon: "boxes",
       label: { en: "Inventory", es: "Inventario", pt: "Estoque" },
       title: { en: "Inventory", es: "Inventario", pt: "Estoque" },
-      intro: { en: "On-hand by flavor. Actions are receive, adjust, count, move, and alerts. Other jobs are the tabs.", es: "Existencias por sabor. Las acciones son recibir, ajustar, contar, mover y alertas. Lo demas son las pestanas.", pt: "Estoque por sabor. As acoes sao receber, ajustar, contar, mover e alertas. O resto sao as abas." },
-      sections: [
-        { h: { en: "Returns", es: "Devoluciones", pt: "Devolucoes" }, tools: ["returns"] },
-        { h: { en: "Counts", es: "Conteos", pt: "Contagens" }, tools: ["dash", "adjust", "count", "alerts", "finbags", "move", "trMove"] },
-        { h: { en: "Locations", es: "Ubicaciones", pt: "Locais" }, tools: ["locations", "facility"] },
-        { h: { en: "Catalog", es: "Catalogo", pt: "Catalogo" }, tools: ["seed", "skus", "printlabels"] },
-        { h: { en: "Reports", es: "Reportes", pt: "Relatorios" }, tools: ["analytics"] }
-      ]
+      intro: { en: "On-hand by flavor. Actions are receive, adjust, count, move, and alerts. Other jobs are the tabs.", es: "Existencias por sabor. Las acciones son recibir, ajustar, contar, mover y alertas. Lo demas son las pestanas.", pt: "Estoque por sabor. As acoes sao receber, ajustar, contar, mover e alertas. O resto sao as abas." }
     },
     {
       id: "mixing",
+      primary: "mixing",
+      actions: ["prodorders", "trMix", "batchrec"],
+      actionShort: {
+        trMix: { en: "Lot station", es: "Estacion de lote", pt: "Estacao de lote" },
+        batchrec: { en: "Batch record", es: "Registro de lote", pt: "Registro de lote" }
+      },
+      subs: ["mixing", "reordertracker", "seasoning", "recipes", "launch", "hist", "upload"],
+      short: { mixing: { en: "Status", es: "Estado", pt: "Status" } },
       icon: "flask-conical",
       label: { en: "Mixing", es: "Mezcla", pt: "Mistura" },
       title: { en: "Mixing", es: "Mezcla", pt: "Mistura" },
-      intro: { en: "What mixing needs, the lot station, seasoning, recipes, and production history.", es: "Lo que mezcla necesita, la estacion de lote, sazon, recetas y el historial.", pt: "O que a mistura precisa, a estacao de lote, tempero, receitas e o historico." },
-      sections: [
-        { h: { en: "Floor", es: "Piso", pt: "Piso" }, tools: ["prodorders", "mixing", "trMix", "batchrec", "reordertracker"] },
-        { h: { en: "Seasoning and recipes", es: "Sazon y recetas", pt: "Tempero e receitas" }, tools: ["seasoning", "recipes"] },
-        { h: { en: "Planning and history", es: "Plan y historial", pt: "Plano e historico" }, tools: ["launch", "hist", "upload"] }
-      ]
+      intro: { en: "What mixing needs today. Work orders, the lot station, and the batch record are the actions. Recipes is a tab.", es: "Lo que mezcla necesita hoy. Ordenes, la estacion de lote y el registro son las acciones. Recetas es una pestana.", pt: "O que a mistura precisa hoje. Ordens, a estacao de lote e o registro sao as acoes. Receitas e uma aba." }
     },
     {
       id: "pmac",
+      primary: "pmac",
+      actions: ["prodorders", "pmacout", "trPmac"],
+      actionShort: {
+        pmacout: { en: "Log output", es: "Registrar salida", pt: "Registrar saida" },
+        trPmac: { en: "Lot station", es: "Estacion de lote", pt: "Estacao de lote" }
+      },
+      subs: ["pmac", "fglots", "hist", "upload"],
+      short: { pmac: { en: "Status", es: "Estado", pt: "Status" } },
       icon: "factory",
       label: { en: "P-Mac", es: "P-Mac", pt: "P-Mac" },
       title: { en: "P-Mac", es: "P-Mac", pt: "P-Mac" },
-      intro: { en: "What P-Mac needs, bags off the line, and the lot station.", es: "Lo que P-Mac necesita, bolsas de la linea y la estacion de lote.", pt: "O que o P-Mac precisa, sacos da linha e a estacao de lote." },
-      sections: [
-        { h: { en: "Line", es: "Linea", pt: "Linha" }, tools: ["prodorders", "pmac", "pmacout", "trPmac", "fglots"] },
-        { h: { en: "Planning and history", es: "Plan y historial", pt: "Plano e historico" }, tools: ["hist", "upload"] }
-      ]
+      intro: { en: "What P-Mac needs today. Work orders, log output, and the lot station are the actions.", es: "Lo que P-Mac necesita hoy. Ordenes, registrar salida y la estacion de lote son las acciones.", pt: "O que o P-Mac precisa hoje. Ordens, registrar saida e a estacao de lote sao as acoes." }
     },
     {
       id: "ful",
+      primary: "orders",
+      actions: ["retailprod", "ecomprod", "trUse", "trShip"],
+      subs: ["orders", "fulfilldaily", "prodlog", "produce", "fglots", "skulookup", "flavinv", "stockbuild", "orderdocs", "fulfillerr"],
       icon: "package",
       label: { en: "Fulfillment", es: "Fulfillment", pt: "Fulfillment" },
       title: { en: "Fulfillment", es: "Fulfillment", pt: "Fulfillment" },
-      intro: { en: "Retail and e-commerce builds, lot trace use, and lot trace ship. Shipping has its own tab.", es: "Produccion retail y e-commerce, salida de lote y envio de lote. Envios tiene su propia pestana.", pt: "Producao de varejo e e-commerce, saida de lote e envio de lote. Envios tem sua propria aba." },
-      sections: [
-        { h: { en: "Today", es: "Hoy", pt: "Hoje" }, tools: ["fulfilldaily", "retailprod", "ecomprod", "prodlog"] },
-        { h: { en: "Line", es: "Linea", pt: "Linha" }, tools: ["trUse", "trShip", "fglots", "produce"] },
-        { h: { en: "Lookup and stock", es: "Busqueda y stock", pt: "Busca e estoque" }, tools: ["skulookup", "flavinv", "stockbuild"] },
-        { h: { en: "Orders", es: "Ordenes", pt: "Pedidos" }, tools: ["orders", "orderdocs"] },
-        { h: { en: "Errors and returns", es: "Errores y devoluciones", pt: "Erros e devolucoes" }, tools: ["fulfillerr"] }
-      ]
+      intro: { en: "Open orders to build and ship. Retail, e-commerce, lot pull, and ship are the actions.", es: "Ordenes abiertas por armar y enviar. Retail, e-commerce, salida de lote y envio son las acciones.", pt: "Pedidos abertos para montar e enviar. Varejo, e-commerce, saida de lote e envio sao as acoes." }
     },
     {
       id: "ship",
+      primary: "shipments",
+      actions: ["shiplog"],
+      subs: ["shipments"],
       icon: "ship",
       label: { en: "Shipping", es: "Envios", pt: "Envios" },
       title: { en: "Shipping", es: "Envios", pt: "Envios" },
-      intro: { en: "Log a shipment and read what ShipStation already synced.", es: "Registre un envio y lea lo que ShipStation ya sincronizo.", pt: "Registre um envio e leia o que o ShipStation ja sincronizou." },
-      sections: [
-        { h: { en: "Outbound", es: "Salida", pt: "Saida" }, tools: ["shiplog", "shipments"] }
-      ]
+      intro: { en: "Shipments ShipStation already synced. The shipping log is the action.", es: "Envios que ShipStation ya sincronizo. El registro de envios es la accion.", pt: "Envios que o ShipStation ja sincronizou. O registro de envios e a acao." }
     },
     {
       id: "qa",
+      primary: "qacheck",
+      actions: ["trQa", "quality"],
+      subs: ["qacheck", "sqftasks", "trace", "trLabels", "fglots", "compliance", "shortdated"],
+      short: { qacheck: { en: "Checklists", es: "Listas", pt: "Listas" } },
       icon: "shield-check",
       label: { en: "Quality", es: "Calidad", pt: "Qualidade" },
       title: { en: "Quality", es: "Calidad", pt: "Qualidade" },
-      intro: { en: "Lot trace, holds, labels, and the quality records this team already keeps.", es: "Rastreo de lote, retenciones, etiquetas y los registros de calidad que este equipo ya usa.", pt: "Rastreio de lote, retencoes, etiquetas e os registros de qualidade que esta equipe ja usa." },
-      sections: [
-        { h: { en: "Lot trace", es: "Rastreo de lote", pt: "Rastreio de lote" }, tools: ["trace", "trQa", "trLabels", "fglots"] },
-        { h: { en: "Quality records", es: "Registros de calidad", pt: "Registros de qualidade" }, tools: ["qacheck", "quality", "compliance", "sqftasks", "shortdated"] }
-      ]
+      intro: { en: "Today's quality checklists. Hold and the CCP log are the actions. SQF tasks and trace are tabs.", es: "Listas de calidad de hoy. Retener y el registro CCP son las acciones. Tareas SQF y rastreo son pestanas.", pt: "Listas de qualidade de hoje. Reter e o registro CCP sao as acoes. Tarefas SQF e rastreio sao abas." }
     },
     {
       id: "ops",
+      primary: "maintenance",
+      actions: [],
+      subs: ["maintenance", "people", "improve", "rd", "acct", "services", "reference", "board", "settings", "health"],
       icon: "settings",
       label: { en: "Ops", es: "Ops", pt: "Ops" },
       title: { en: "Ops", es: "Ops", pt: "Ops" },
-      intro: { en: "People, maintenance, documents, and system setup.", es: "Personal, mantenimiento, documentos y ajustes del sistema.", pt: "Pessoas, manutencao, documentos e ajustes do sistema." },
-      sections: [
-        { h: { en: "Team", es: "Equipo", pt: "Equipe" }, tools: ["people", "improve", "rd", "acct"] },
-        { h: { en: "Maintenance", es: "Mantenimiento", pt: "Manutencao" }, tools: ["maintenance", "services"] },
-        { h: { en: "Docs", es: "Docs", pt: "Docs" }, tools: ["reference"] },
-        { h: { en: "System", es: "Sistema", pt: "Sistema" }, tools: ["board", "settings", "health"] }
-      ]
+      intro: { en: "Open maintenance requests. People, docs, and system setup are tabs.", es: "Solicitudes de mantenimiento abiertas. Personal, documentos y sistema son pestanas.", pt: "Pedidos de manutencao abertos. Pessoas, documentos e sistema sao abas." }
     }
   ];
 
@@ -471,12 +469,12 @@
     toast(Lmissing());
   }
 
-  function cardHtml(id) {
+  function cardHtml(id, label) {
     var tool = TOOLS[id];
     if (!tool) return "";
     return '<button type="button" class="dept-card" data-dept-tool="' + esc(id) + '">' +
       '<i class="dept-ico" data-lucide="' + esc(tool.icon) + '"></i>' +
-      '<span class="dept-card-copy"><strong>' + esc(tx(tool.title)) + '</strong>' +
+      '<span class="dept-card-copy"><strong>' + esc(label || tx(tool.title)) + '</strong>' +
       '<span>' + esc(tx(tool.blurb)) + '</span></span></button>';
   }
 
@@ -1806,33 +1804,54 @@
     if (backStack.length) return backStack[backStack.length - 1];
     return { kind: "home", id: barCurrent || "home" };
   }
-  function toolIdForGo(goId) {
+  function toolIdForField(field, id) {
     var keys = Object.keys(TOOLS);
     var i;
     for (i = 0; i < keys.length; i++) {
-      if (TOOLS[keys[i]].go === goId) return keys[i];
+      if (TOOLS[keys[i]][field] === id) return keys[i];
     }
     return "";
   }
-  function noteInvFromGo(goId) {
-    if (barCurrent !== "inv") return;
-    var toolId = toolIdForGo(goId);
-    invHere = INV_SUB_SET[toolId] ? toolId : "";
+  function toolIdForGo(goId) { return toolIdForField("go", goId); }
+  function shellDept() {
+    var dept = deptById(barCurrent);
+    if (!dept || !dept.primary || !dept.subs) return null;
+    return dept;
   }
-  function invSubEntry(entry) {
-    if (!entry || barCurrent !== "inv") return false;
-    if (entry.kind === "go") return !!INV_SUB_SET[toolIdForGo(entry.id)];
-    return entry.kind === "trace" && entry.id === "move";
+  function toolInSubs(dept, toolId) {
+    return !!(dept && toolId && dept.subs.indexOf(toolId) >= 0);
+  }
+  function noteShell(kind, id) {
+    var dept = shellDept();
+    if (!dept) { shellHere = ""; return; }
+    var field = kind === "trace" ? "trace" : (kind === "mod" ? "fn" : "go");
+    var toolId = toolIdForField(field, id);
+    shellHere = toolInSubs(dept, toolId) ? toolId : "";
+  }
+  function subEntry(entry) {
+    var dept = shellDept();
+    if (!entry || !dept) return false;
+    var field = entry.kind === "trace" ? "trace" : (entry.kind === "mod" ? "fn" : (entry.kind === "go" ? "go" : ""));
+    if (!field) return false;
+    return toolInSubs(dept, toolIdForField(field, entry.id));
+  }
+  function toolStop(toolId) {
+    var tool = TOOLS[toolId];
+    if (!tool) return null;
+    if (tool.go) return { kind: "go", id: tool.go };
+    if (tool.trace) return { kind: "trace", id: tool.trace };
+    if (tool.fn) return { kind: "mod", id: tool.fn };
+    return null;
   }
   // Remember the screen we are leaving so Back can return to it.
   // Leaving a department home replaces the trail with that home.
   // Demand tabs are siblings: switching them does not add a step.
-  // Inventory subtabs are siblings too.
+  // Department subtabs are siblings too.
   function pushBefore(next) {
     if (backRestoring || !next) return;
     if (sameStop(backHere, next)) return;
     if (backHere && backHere.kind === "go" && next.kind === "go" && DEMAND_TABS[backHere.id] && DEMAND_TABS[next.id]) return;
-    if (invSubEntry(backHere) && invSubEntry(next)) return;
+    if (subEntry(backHere) && subEntry(next)) return;
     if (backHere && backHere.kind === "trace" && next.kind === "trace") return;
     if (!backHere) {
       backStack = [{ kind: "home", id: barCurrent || "home" }];
@@ -1855,21 +1874,28 @@
   function isDashboard(view) {
     return !!(view && view.querySelector(".df-lead"));
   }
-  // Back on the Floor that only reopens Inventory is a loop. Keep Back when
-  // it returns to some other department.
+  function onPrimary(view, dept) {
+    if (!view || !dept) return false;
+    if (dept.floorSel) return !!view.querySelector(dept.floorSel);
+    return shellHere === dept.primary;
+  }
+  // Back on the primary view that only reopens that view is a loop.
+  // Keep Back when it returns to some other screen.
   function floorBackHidden(view) {
-    if (!view || barCurrent !== "inv" || !view.querySelector("#dashBody")) return false;
+    var dept = shellDept();
+    if (!dept || !onPrimary(view, dept)) return false;
     var dest = currentReturn();
     if (!dest) return false;
-    if (dest.kind === "home" && dest.id === "inv") return true;
-    if (dest.kind === "go" && dest.id === "dash") return true;
+    if (dest.kind === "home" && dest.id === dept.id) return true;
+    var stop = toolStop(dept.primary);
+    if (stop && sameStop(dest, stop)) return true;
     return false;
   }
-  function invShellEl(view) {
-    return view ? view.querySelector("#inv-shell") : null;
+  function deptShellEl(view) {
+    return view ? view.querySelector("#dept-shell") : null;
   }
   function backIsPlaced(view, bar) {
-    var shell = invShellEl(view);
+    var shell = deptShellEl(view);
     if (shell) return shell.nextSibling === bar;
     return view.firstChild === bar;
   }
@@ -1974,13 +2000,14 @@
     if (button.querySelector("i.dept-back-ico")) {
       try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
     }
-    var shell = invShellEl(view);
+    var shell = deptShellEl(view);
     if (!backIsPlaced(view, bar)) view.insertBefore(bar, shell ? shell.nextSibling : view.firstChild);
   }
   function wrapFn(obj, name, next) {
     if (!obj || typeof obj[name] !== "function" || obj[name].__deptBack) return;
     var orig = obj[name];
     var wrapped = function () {
+      noteShell(next.kind, next.id);
       if (!backRestoring) {
         pushBefore(next);
         backHere = next;
@@ -1995,7 +2022,7 @@
       var origGo = window.UI_go;
       var go = function (tab) {
         var nextId = String(tab || "");
-        noteInvFromGo(nextId);
+        noteShell("go", nextId);
         if (!backRestoring) {
           if (nextId === "home") {
             /* Dashboard is a home. The wrapper clears the trail after render. */
@@ -2019,7 +2046,7 @@
       var origTrace = TRACE.go;
       var traceGo = function (tab) {
         var next = { kind: "trace", id: String(tab || "") };
-        if (barCurrent === "inv" && next.id === "move") invHere = "trMove";
+        noteShell("trace", next.id);
         if (!backRestoring) {
           pushBefore(next);
           backHere = next;
@@ -2109,6 +2136,8 @@
     if (!stack) return;
     var h = stack.offsetHeight || 0;
     if (h) document.documentElement.style.setProperty("--dept-stack-h", h + "px");
+    var shell = document.getElementById("dept-shell");
+    if (shell) measureShell(shell);
   }
 
   function showHome(id) {
@@ -2126,16 +2155,18 @@
     closeDrawer();
     backHere = { kind: "home", id: id };
     backStack = [];
-    if (dept.live && typeof window.UI_go === "function") {
+    if (dept.primary && TOOLS[dept.primary]) {
       homeId = "";
+      shellHere = dept.primary;
       markBar();
       paintDeptActive();
       backRestoring = true;
-      window.UI_go(dept.live);
-      backRestoring = false;
+      try { runTool(TOOLS[dept.primary]); } finally { backRestoring = false; }
       backHere = { kind: "home", id: id };
       backStack = [];
+      shellHere = dept.primary;
       try { window.scrollTo(0, 0); } catch (e) {}
+      dressShell();
       syncOffset();
       return;
     }
@@ -2162,17 +2193,17 @@
     }
   }
 
-  // Inventory subtabs replace each other. Back from one returns to the Floor.
-  function openInvSub(id) {
+  // Subtabs replace each other. Back from one returns to the primary view.
+  function openSub(id) {
+    var dept = shellDept();
     var tool = TOOLS[id];
-    if (!tool || !INV_SUB_SET[id]) return;
+    if (!dept || !tool || !toolInSubs(dept, id)) return;
     if (backBlocked()) { toast(Lbusy()); return; }
     homeId = "";
     paintTries = 0;
     closeDrawer();
-    barCurrent = "inv";
-    invHere = id;
-    backHere = { kind: "home", id: "inv" };
+    shellHere = id;
+    backHere = { kind: "home", id: dept.id };
     backStack = [];
     markBar();
     paintDeptActive();
@@ -2180,23 +2211,27 @@
     try { window.scrollTo(0, 0); } catch (e) {}
   }
 
-  function invSubLabel(id) {
-    if (INV_SUB_SHORT[id]) return tx(INV_SUB_SHORT[id]);
+  function subLabel(dept, id) {
+    if (dept.short && dept.short[id]) return tx(dept.short[id]);
     var tool = TOOLS[id];
     return tool ? tx(tool.title) : id;
   }
-  function invSubsHtml() {
-    return '<div class="ordtabs inv-subs" role="tablist">' + INV_SUBS.map(function (id) {
-      var on = invHere === id;
-      return '<button type="button" class="' + (on ? "active" : "") + '" role="tab" data-inv-sub="' + esc(id) + '"' +
-        (on ? ' aria-selected="true"' : ' aria-selected="false"') + '>' + esc(invSubLabel(id)) + "</button>";
+  function subsHtml(dept) {
+    return '<div class="ordtabs dept-subs" role="tablist">' + dept.subs.map(function (id) {
+      var on = shellHere === id;
+      return '<button type="button" class="' + (on ? "active" : "") + '" role="tab" data-dept-sub="' + esc(id) + '"' +
+        (on ? ' aria-selected="true"' : ' aria-selected="false"') + '>' + esc(subLabel(dept, id)) + "</button>";
     }).join("") + "</div>";
   }
-  function invActionsHtml() {
-    return '<div class="inv-actions"><h2 class="dept-sec">' + esc(tx({ en: "Actions", es: "Acciones", pt: "Acoes" })) + '</h2><div class="inv-action-row">' +
-      INV_ACTIONS.map(cardHtml).join("") + "</div></div>";
+  function actionsHtml(dept) {
+    if (!dept.actions || !dept.actions.length) return "";
+    return '<div class="dept-actions"><h2 class="dept-sec">' + esc(tx({ en: "Actions", es: "Acciones", pt: "Acoes" })) + '</h2><div class="dept-action-row">' +
+      dept.actions.map(function (id) {
+        var label = dept.actionShort && dept.actionShort[id] ? tx(dept.actionShort[id]) : "";
+        return cardHtml(id, label);
+      }).join("") + "</div></div>";
   }
-  function measureInvShell(shell) {
+  function measureShell(shell) {
     if (!shell) {
       document.documentElement.style.removeProperty("--inv-shell-h");
       return;
@@ -2204,34 +2239,36 @@
     var h = shell.offsetHeight || 0;
     if (h) document.documentElement.style.setProperty("--inv-shell-h", h + "px");
   }
-  function dressInvShell() {
+  function dressShell() {
     var view = document.getElementById("view");
     if (!view) return;
-    var show = barCurrent === "inv" && !view.querySelector("#dept-home");
-    var floor = !!(show && view.querySelector("#dashBody"));
-    document.body.classList.toggle("inv-floor", floor);
-    var existing = document.getElementById("inv-shell");
+    var dept = shellDept();
+    var show = !!(dept && !view.querySelector("#dept-home"));
+    var floor = !!(show && onPrimary(view, dept));
+    document.body.classList.toggle("inv-floor", !!(floor && dept.floorClass === "inv-floor"));
+    var existing = document.getElementById("dept-shell");
     if (!show) {
       if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
-      measureInvShell(null);
+      measureShell(null);
       return;
     }
     var langNow = lang();
     var floorFlag = floor ? "1" : "0";
-    if (existing && existing.getAttribute("data-lang") === langNow && existing.getAttribute("data-here") === invHere && existing.getAttribute("data-floor") === floorFlag && view.firstChild === existing) {
-      measureInvShell(existing);
+    if (existing && existing.getAttribute("data-lang") === langNow && existing.getAttribute("data-dept") === dept.id && existing.getAttribute("data-here") === shellHere && existing.getAttribute("data-floor") === floorFlag && view.firstChild === existing) {
+      measureShell(existing);
       return;
     }
     if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
     var shell = document.createElement("div");
-    shell.id = "inv-shell";
+    shell.id = "dept-shell";
     shell.setAttribute("data-lang", langNow);
-    shell.setAttribute("data-here", invHere);
+    shell.setAttribute("data-dept", dept.id);
+    shell.setAttribute("data-here", shellHere);
     shell.setAttribute("data-floor", floorFlag);
-    shell.innerHTML = invSubsHtml() + (floor ? invActionsHtml() : "");
+    shell.innerHTML = subsHtml(dept) + (floor ? actionsHtml(dept) : "");
     view.insertBefore(shell, view.firstChild);
     try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
-    measureInvShell(shell);
+    measureShell(shell);
   }
 
   function onBarClick(e) {
@@ -2241,14 +2278,14 @@
   }
 
   function onViewClick(e) {
-    var sub = e.target && e.target.closest ? e.target.closest("[data-inv-sub]") : null;
+    var sub = e.target && e.target.closest ? e.target.closest("[data-dept-sub]") : null;
     if (sub) {
-      openInvSub(sub.getAttribute("data-inv-sub"));
+      openSub(sub.getAttribute("data-dept-sub"));
       return;
     }
     var btn = e.target && e.target.closest ? e.target.closest("[data-dept-tool]") : null;
     if (!btn) return;
-    openTool(btn.getAttribute("data-dept-tool"), !!btn.closest("#inv-shell"));
+    openTool(btn.getAttribute("data-dept-tool"), !!btn.closest("#dept-shell"));
   }
 
   function noteDashboard() {
@@ -2260,21 +2297,14 @@
       markBar();
       paintDeptActive();
     }
-    var lead = view.querySelector(".df-lead");
-    if (!lead || lead.querySelector("#dept-daily-link")) return;
-    var btn = document.createElement("button");
-    btn.id = "dept-daily-link";
-    btn.type = "button";
-    btn.textContent = tx({ en: "Daily metrics", es: "Metricas del dia", pt: "Metricas do dia" });
-    btn.addEventListener("click", function () { openTool("daily"); });
-    lead.appendChild(btn);
+    shellHere = "desk";
   }
 
   function onView() {
     if (painting) return;
     if (lang() !== shownLang) renderBar();
     noteDashboard();
-    dressInvShell();
+    dressShell();
     if (!homeId) { syncBackBar(); return; }
     var view = document.getElementById("view");
     if (!view) return;
@@ -2420,26 +2450,29 @@
       "body.boardmode #dept-backbar{position:fixed;top:8px;left:8px;z-index:90;display:inline-flex;width:auto;max-width:calc(100vw - 16px);margin:0;padding:0;background:transparent}",
       "body.boardmode #dept-back{background:rgba(255,255,255,.96);box-shadow:0 2px 8px rgba(0,0,0,.28)}",
       "@media print{#dept-backbar{display:none!important}}",
-      "#inv-shell{position:sticky;top:var(--dept-stack-h,0px);z-index:45;background:#eef1f5;margin:-4px -6px 8px;padding:8px 6px 6px}",
-      "#inv-shell .inv-subs{flex-wrap:wrap;margin:0}",
-      "#inv-shell .inv-actions{margin-top:8px}",
-      "#inv-shell .dept-sec{margin:0 0 4px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#5c6b7c;font-weight:800}",
-      "#inv-shell .inv-action-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}",
-      "#inv-shell .dept-card{flex:1 0 168px;max-width:280px;display:flex;flex-direction:row;align-items:flex-start;gap:8px;text-align:left;background:#fff;border:1px solid var(--line,#d7dde6);border-radius:8px;padding:6px 8px;cursor:pointer;min-height:0;box-shadow:none;font-family:inherit;color:inherit;width:auto}",
-      "#inv-shell .dept-card:hover{border-color:var(--blue,#006DB6)}",
-      "#inv-shell .dept-card:focus-visible{outline:3px solid var(--blue,#006DB6);outline-offset:2px}",
-      "#inv-shell .dept-ico{color:var(--orange,#F26B21);width:18px;height:18px;margin:1px 0 0;flex:none}",
-      "#inv-shell .dept-ico svg{width:18px;height:18px;stroke-width:1.75}",
-      "#inv-shell .dept-card-copy{min-width:0}",
-      "#inv-shell .dept-card strong{display:block;font-size:13px;color:var(--navy,#04223B);margin:0 0 1px}",
-      "#inv-shell .dept-card-copy>span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:11px;color:#3d4c5e;line-height:1.25;font-weight:500}",
-      "body.inv-floor #inv-shell{order:-2}",
+      "#dept-shell{position:sticky;top:var(--dept-stack-h,0px);z-index:45;background:#eef1f5;margin:-4px -6px 8px;padding:8px 6px 6px}",
+      "#dept-shell .dept-subs{flex-wrap:wrap;margin:0}",
+      "#dept-shell .dept-actions{margin-top:8px}",
+      "#dept-shell .dept-sec{margin:0 0 4px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#5c6b7c;font-weight:800}",
+      "#dept-shell .dept-action-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}",
+      "#dept-shell .dept-card{flex:1 0 168px;max-width:280px;display:flex;flex-direction:row;align-items:flex-start;gap:8px;text-align:left;background:#fff;border:1px solid var(--line,#d7dde6);border-radius:8px;padding:6px 8px;cursor:pointer;min-height:0;box-shadow:none;font-family:inherit;color:inherit;width:auto}",
+      "#dept-shell .dept-card:hover{border-color:var(--blue,#006DB6)}",
+      "#dept-shell .dept-card:focus-visible{outline:3px solid var(--blue,#006DB6);outline-offset:2px}",
+      "#dept-shell .dept-ico{color:var(--orange,#F26B21);width:18px;height:18px;margin:1px 0 0;flex:none}",
+      "#dept-shell .dept-ico svg{width:18px;height:18px;stroke-width:1.75}",
+      "#dept-shell .dept-card-copy{min-width:0}",
+      "#dept-shell .dept-card strong{display:block;font-size:13px;color:var(--navy,#04223B);margin:0 0 1px}",
+      "#dept-shell .dept-card-copy>span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:11px;color:#3d4c5e;line-height:1.25;font-weight:500}",
+      "body.inv-floor #dept-shell{order:-2}",
       "body.inv-floor #view{display:flex;flex-direction:column;gap:6px}",
       "body.inv-floor #view>.secalert{order:-1}",
       "body.inv-floor #view>.card:has(#dashBody){order:-1;display:flex;flex-direction:column}",
       "body.inv-floor .ivx-dashcard>#ivx-root{order:-1}",
-      "body:has(#inv-shell) #dept-backbar{top:calc(var(--dept-stack-h, 0px) + var(--inv-shell-h, 0px))}",
-      "@media print{#inv-shell{display:none!important}}",
+      "#view:has(>.df-lead)>#dept-shell{grid-column:1 / -1}",
+      "#view:has(#dept-shell[data-dept='demand']) .dmd-family{display:none!important}",
+      "body.boardmode #dept-shell{display:none!important}",
+      "body:has(#dept-shell) #dept-backbar{top:calc(var(--dept-stack-h, 0px) + var(--inv-shell-h, 0px))}",
+      "@media print{#dept-shell{display:none!important}}",
       "@media(max-width:1100px){#view:has(>.df-lead){grid-template-columns:repeat(2,minmax(0,1fr))}#dept-home.dept-floor,#dept-home .dept-statrow{grid-template-columns:repeat(2,minmax(0,1fr))}#dept-home .dept-span2{grid-column:1 / -1}}",
       "@media(max-width:700px){#view:has(>.df-lead){grid-template-columns:1fr}#dept-home.dept-floor,#dept-home .dept-statrow{grid-template-columns:1fr}#dept-home .dept-span2{grid-column:1 / -1}}",
       "@media(max-width:1360px){#deptbar .dept-tab{font-size:12px;gap:4px;padding:8px 4px}#deptbar .dept-tab .dept-tab-ico,#deptbar .dept-tab svg.dept-tab-ico{width:16px;height:16px}}",
@@ -2553,6 +2586,9 @@
     }
     window.SMK_VIEW_LOCKS = window.SMK_VIEW_LOCKS || [];
     window.SMK_VIEW_LOCKS.push(function () { return !!homeId; });
+    noteDashboard();
+    dressShell();
+    syncBackBar();
   }
 
   window.DEPT = {
