@@ -32,10 +32,10 @@ eq(dash.indexOf("pill partial") >= 0 && dash.indexOf("pill status") >= 0, "dashb
 eq(html.indexOf("po-status.js?b=3") >= 0, "po-status cache bust");
 eq(html.indexOf("dashboard.js?b=3") >= 0, "dashboard cache bust");
 eq(html.indexOf("app.js?b=191") >= 0, "app cache bust");
-eq(html.indexOf("dept-homes.js?b=21") >= 0, "dept-homes cache bust");
+eq(html.indexOf("dept-homes.js?b=22") >= 0, "dept-homes cache bust");
 eq(html.indexOf("styles.css?b=61") >= 0, "styles cache bust");
 eq(html.indexOf("demand-autoclose.js?b=3") >= 0, "target autoclose buster unchanged");
-eq(sw.indexOf('const CACHE = "smackin-inv-v247"') >= 0, "cache bump");
+eq(sw.indexOf('const CACHE = "smackin-inv-v249"') >= 0, "cache bump");
 eq(sw.indexOf("smackin-inv-v246") < 0, "old cache gone");
 eq(auto.indexOf("/target/i") >= 0, "target autoclose still skips Target");
 eq(auto.indexOf("Partially received") < 0 && auto.indexOf("[[STATUS:") < 0, "autoclose untouched");

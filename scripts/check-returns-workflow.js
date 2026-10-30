@@ -21,7 +21,7 @@ var sw = fs.readFileSync(path.join(root, "service-worker.js"), "utf8");
 assert(wfSrc.indexOf("\u2014") < 0, "em dash in returns-workflow.js");
 assert(html.indexOf('src="returns-workflow.js?b=1"') >= 0, "script tag");
 assert(html.indexOf("app.js?b=") < html.indexOf("returns-workflow.js?b="), "loads after app");
-assert(sw.indexOf('const CACHE = "smackin-inv-v247"') >= 0 && sw.indexOf("./returns-workflow.js") >= 0, "cache");
+assert(sw.indexOf('const CACHE = "smackin-inv-v249"') >= 0 && sw.indexOf("./returns-workflow.js") >= 0, "cache");
 assert(appSrc.indexOf("RETURNS_WF.view") >= 0, "returns view delegates");
 assert(appSrc.indexOf('items:["returns","dash"') >= 0, "inventory nav owns returns");
 assert(appSrc.indexOf('items:["receive","recvlog","returns","qa"]') >= 0, "receiving shortcut");

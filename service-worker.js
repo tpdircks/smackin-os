@@ -1,11 +1,11 @@
 /* Minimal offline cache for the app shell so scanners load fast and keep
    working through brief wifi drops. Data still requires connectivity in
    cloud mode; local mode works fully offline. */
-const CACHE = "smackin-inv-v248";
+const CACHE = "smackin-inv-v249";
 const ASSETS = [
   "./", "./index.html", "./styles.css", "./ui-polish.css", "./ui-polish.js", "./stock-alerts.js", "./dept-homes.js", "./dashboard.js", "./demand-wos.js", "./vendor-seed.js", "./vendor-lead.js", "./mixing-recipes.js", "./wip-production.js",
-  "./config.js", "./seed-data.js", "./skus.js", "./demand.js", "./demand-autoclose.js", "./demand-close-cleanup.js", "./kits.js", "./ecom.js", "./recipes.js", "./production-orders.js", "./shortdated.js", "./launch-schedule.js", "./allen-reorder.js", "./db.js", "./gusto-roster.js", "./app.js", "./returns-workflow.js", "./trace.js", "./trace-recall.js", "./receiving-sop.js", "./batch-record.js", "./sqf-tasks.js", "./qa-checklists.js", "./fulfillment-analytics.js", "./data/wip-fulfillment-errors.json", "./shipping-sync.js", "./shipping-lanes.js", "./outbound-folders.js", "./sps-feed.js",
-  "./slc-count-latest.js", "./inv-sync-1027d.js", "./slc-count-panel.js", "./inventory-visual.js", "./inventory-visual.css",
+  "./config.js", "./auth-gate.js", "./seed-data.js", "./skus.js", "./demand.js", "./demand-autoclose.js", "./demand-close-cleanup.js", "./kits.js", "./ecom.js", "./recipes.js", "./production-orders.js", "./work-orders.js", "./shortdated.js", "./launch-schedule.js", "./allen-reorder.js", "./db.js", "./gusto-roster.js", "./app.js", "./returns-workflow.js", "./trace.js", "./trace-recall.js", "./receiving-sop.js", "./pmac-log.js", "./po-format.js", "./mfg-history.js", "./mfg-upload.js", "./data-health.js", "./services.js", "./sps-map.js", "./po-status.js", "./batch-record.js", "./sqf-tasks.js", "./qa-checklists.js", "./fulfillment-analytics.js", "./data/wip-fulfillment-errors.json", "./shipping-sync.js", "./shipping-lanes.js", "./outbound-folders.js", "./sps-feed.js",
+  "./inventory-visual.js", "./inventory-visual.css",
   "./facility.html", "./manifest.webmanifest"
 ];
 self.addEventListener("install", e => {

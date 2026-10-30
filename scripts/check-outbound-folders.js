@@ -64,7 +64,7 @@ assert(src.indexOf("window.OUTBOUND_FOLDERS") >= 0 || src.indexOf("OUTBOUND_FOLD
 var html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
 assert(html.indexOf("outbound-folders.js") >= 0, "index script");
 var sw = fs.readFileSync(path.join(__dirname, "..", "service-worker.js"), "utf8");
-assert(sw.indexOf('const CACHE = "smackin-inv-v247"') >= 0 && sw.indexOf("./outbound-folders.js") >= 0 && sw.indexOf("./wip-production.js") >= 0, "cache bump");
+assert(sw.indexOf('const CACHE = "smackin-inv-v249"') >= 0 && sw.indexOf("./outbound-folders.js") >= 0 && sw.indexOf("./wip-production.js") >= 0, "cache bump");
 assert(sw.indexOf('const CACHE = "smackin-inv-v241"') < 0, "old cache gone");
 
 if (failed) {
