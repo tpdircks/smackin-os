@@ -20,11 +20,11 @@ function read(rel) { return fs.readFileSync(path.join(root, rel), "utf8"); }
 var sw = read("service-worker.js");
 var html = read("index.html");
 var sql = read("wip_production_daily.sql");
-eq(sw.indexOf('const CACHE = "smackin-inv-v263"') >= 0, "cache bump");
+eq(sw.indexOf('const CACHE = "smackin-inv-v264"') >= 0, "cache bump");
 eq(sw.indexOf('"./wip-production.js"') >= 0, "sw asset");
-eq(html.indexOf('mfg-history.js?b=4') >= 0, "history cache bust");
+eq(html.indexOf('mfg-history.js?b=5') >= 0, "history cache bust");
 eq(html.indexOf('wip-production.js?b=1') >= 0, "seed script");
-eq(html.indexOf("mfg-history.js?b=4") < html.indexOf("wip-production.js?b=1"), "script order");
+eq(html.indexOf("mfg-history.js?b=5") < html.indexOf("wip-production.js?b=1"), "script order");
 eq(sql.indexOf("wip_production_daily") >= 0, "sql table");
 eq(sql.indexOf("enable row level security") >= 0, "sql rls");
 eq(sql.toLowerCase().indexOf("drop table") < 0, "sql does not drop");
