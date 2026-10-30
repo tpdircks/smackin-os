@@ -235,10 +235,10 @@ DB.importDemand(remapCases.map(function (row, i) {
   var sw = read("service-worker.js");
   var sync = read("supabase/functions/sps-sync/index.js");
   eq(html.indexOf('src="demand.js?b=4"') >= 0, "demand cache bust");
-  eq(html.indexOf('src="sps-map.js?b=5"') >= 0, "sps-map cache bust");
+  eq(html.indexOf('src="sps-map.js?b=6"') >= 0, "sps-map cache bust");
   eq(html.indexOf('src="db.js?b=94"') >= 0, "db cache bust");
   eq(html.indexOf('src="demand-flavor-remap.js?b=1"') >= 0, "flavor remap script");
-  eq(sw.indexOf('const CACHE = "smackin-inv-v258"') >= 0, "cache v258");
+  eq(sw.indexOf('const CACHE = "smackin-inv-v259"') >= 0, "cache v258");
   eq(sw.indexOf("smackin-inv-v257") < 0, "old cache gone");
   eq(sw.indexOf("./demand-flavor-remap.js") >= 0, "flavor remap asset");
   eq(sync.indexOf('Deno.env.get("SPS_FOLDER") || "testout"') >= 0, "SPS_FOLDER default stays testout");

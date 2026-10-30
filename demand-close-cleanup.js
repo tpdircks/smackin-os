@@ -9,7 +9,7 @@
    open. This module persists the close. It does not de-dupe lines. Target
    per-DC rows share a PO and each keeps its own case count.
 
-   Close an Open, non-Target PO (every demand_lines row for that PO) when:
+   Close an Open, non-Target, non-SPS PO (every demand_lines row for that PO) when:
      1. orders has at least one row whose customer_po matches, and every
         matching row is Complete. A mix of Complete and anything else stays
         Open, with a review:mixed-orders note.
@@ -18,6 +18,11 @@
         2026-10-15 closes on 2026-10-29. 2026-10-16 stays open.
         A blank due date is not past-due. Those lines stay Open with a Due?
         note.
+
+   SPS lines (source SPS, SPS Feed, SPS-FEED, SPS-TEST) are not closed here.
+   A due date or an orders row marked Complete is not an SPS Order Complete
+   signal. sps-map.js writes Complete only when the Fulfillment Order
+   document status is Complete. Existing Shipped rows are not rewritten.
 
    PO match: trim, compare the letters and digits, and also the DEMAND.orderNum
    form (text before a dash, then a leading 10001 stripped). Target is never
@@ -66,6 +71,14 @@
 
   function isTargetPartner(p) {
     return /target/i.test(String(p || ""));
+  }
+
+  function isSpsLine(r) {
+    if (!r) return false;
+    if (String(r.source || "") === "SPS") return true;
+    if (String(r.imported_by || "") === "SPS Feed") return true;
+    var batch = String(r.batch_id || "");
+    return batch === "SPS-FEED" || batch === "SPS-TEST";
   }
 
   function dueISO(d) {
@@ -189,6 +202,7 @@
 
       var target = false;
       Object.keys(partners).forEach(function (p) { if (isTargetPartner(p)) target = true; });
+      var sps = lines.some(isSpsLine);
 
       var seenOrder = {};
       var matchList = [];
@@ -240,6 +254,7 @@
 
       var reason = "";
       if (target) report.leftTarget.push(summary);
+      else if (sps) report.leftOpen.push(summary);
       else if (allComplete) {
         reason = "orders-complete";
         report.closeComplete.push(summary);
@@ -248,9 +263,10 @@
         reason = "past-due";
         report.closePastDue.push(summary);
       } else report.leftOpen.push(summary);
-      if (!target && !reason && !mixed && blank) report.dueUnknown.push(summary);
+      if (!target && !sps && !reason && !mixed && blank) report.dueUnknown.push(summary);
 
       lines.forEach(function (r) {
+        if (target || sps) return;
         var tag = "";
         var nextStatus = "Open";
         if (reason === "orders-complete") {
@@ -432,6 +448,7 @@
     mountainToday: mountainToday,
     daysBefore: daysBefore,
     isTargetPartner: isTargetPartner,
+    isSpsLine: isSpsLine,
     summaryLine: summaryLine,
     run: run
   };

@@ -23,12 +23,14 @@ eq(src.indexOf("flavor_code|due_date|cases") < 0, "no collapsed dedupe key");
 eq(src.indexOf("demand_lines") >= 0, "writes demand_lines");
 eq(src.indexOf("production-orders") < 0 && src.indexOf("production_orders") < 0, "does not touch production orders");
 eq(prod.indexOf("demand-close") < 0, "production-orders.js unchanged by this module");
-eq(sw.indexOf('const CACHE = "smackin-inv-v258"') >= 0, "cache bump");
+eq(sw.indexOf('const CACHE = "smackin-inv-v259"') >= 0, "cache bump");
 eq(sw.indexOf('"./demand-close-cleanup.js"') >= 0, "sw asset");
-eq(html.indexOf('demand-close-cleanup.js?b=1') >= 0, "script tag");
-eq(html.indexOf("demand-autoclose.js?b=3") >= 0, "autoclose cache bust");
-eq(html.indexOf("demand-autoclose.js?b=3") < html.indexOf("demand-close-cleanup.js?b=1"), "script order");
+eq(html.indexOf('demand-close-cleanup.js?b=2') >= 0, "script tag");
+eq(html.indexOf("demand-autoclose.js?b=4") >= 0, "autoclose cache bust");
+eq(html.indexOf("demand-autoclose.js?b=4") < html.indexOf("demand-close-cleanup.js?b=2"), "script order");
 eq(auto.indexOf("/target/i") >= 0, "autoclose leaves Target open");
+eq(auto.indexOf('String(r.source || "") === "SPS"') >= 0, "autoclose leaves SPS open");
+eq(src.indexOf("function isSpsLine") >= 0, "cleanup skips SPS");
 eq(auto.indexOf("DE-DUPLICATED") >= 0, "dedupe warning kept");
 
 var ctx = { window: {}, console: console };
@@ -53,9 +55,12 @@ eq(/^\d{4}-\d{2}-\d{2}$/.test(D.mountainToday(new Date("2026-10-29T20:00:00Z")))
 var TODAY = "2026-10-29";
 
 function line(id, partner, po, due, extra) {
-  var row = { id: id, source: "SPS", partner: partner, po: po, due_date: due, status: "Open", notes: "", bags: 10, cases: 1, dc: extra && extra.dc || "" };
+  var row = { id: id, source: "Faire", partner: partner, po: po, due_date: due, status: "Open", notes: "", bags: 10, cases: 1, dc: extra && extra.dc || "" };
   if (extra) Object.keys(extra).forEach(function (k) { row[k] = extra[k]; });
   return row;
+}
+function spsLine(id, partner, po, due, extra) {
+  return line(id, partner, po, due, Object.assign({ source: "SPS" }, extra || {}));
 }
 function order(po, status) { return { customer_po: po, status: status }; }
 
@@ -67,7 +72,7 @@ function posOf(list) {
 
 // Per-DC Target lines stay separate and stay Open. No 856 path in this pass.
 var targetLines = [];
-for (var i = 0; i < 4; i++) targetLines.push(line("t" + i, "Target", "10002057571", "09/14/2026", { dc: "D" + i, bags: 72, cases: 1 }));
+for (var i = 0; i < 4; i++) targetLines.push(spsLine("t" + i, "Target", "10002057571", "09/14/2026", { dc: "D" + i, bags: 72, cases: 1 }));
 var targetPlan = D.plan(targetLines, [order("10002057571", "Complete")], TODAY);
 eq(targetPlan.ship.length === 0, "target not shipped");
 eq(targetPlan.notes.length === 0, "target not noted");
@@ -115,10 +120,10 @@ eq(mixed.report.closePastDue.length === 0, "mixed beats past-due");
 
 // Past-due: 14 days ships, 13 days stays, blank due stays.
 var past = D.plan([
-  line("d1", "McLane", "MI10105790", "10/15/2026"),
-  line("d2", "McLane", "MG10198555", "10/16/2026"),
-  line("d3", "KeHE", "3942350", "10/07/2026"),
-  line("d4", "Scheels", "023399086", "")
+  line("d1", "McLane", "MI10105790", "10/15/2026", { source: "ShipStation" }),
+  line("d2", "McLane", "MG10198555", "10/16/2026", { source: "ShipStation" }),
+  line("d3", "KeHE", "3942350", "10/07/2026", { source: "TikTok" }),
+  line("d4", "Scheels", "023399086", "", { source: "Shopify" })
 ], [
   order("3942350", "Open"),
   order("023399086", "Open")
@@ -132,9 +137,9 @@ eq(past.notes[0].status == null, "blank due stays open");
 
 // Second pass is a no-op once notes and status are applied.
 var againLines = past.ship.map(function (p) {
-  return { id: p.id, source: "SPS", partner: "McLane", po: p.po, due_date: "10/01/2026", status: "Shipped", notes: p.notes, bags: 1, cases: 1 };
+  return { id: p.id, source: "ShipStation", partner: "McLane", po: p.po, due_date: "10/01/2026", status: "Shipped", notes: p.notes, bags: 1, cases: 1 };
 }).concat(past.notes.map(function (p) {
-  return { id: p.id, source: "SPS", partner: "Scheels", po: "023399086", due_date: "", status: "Open", notes: p.notes, bags: 1, cases: 1 };
+  return { id: p.id, source: "Shopify", partner: "Scheels", po: "023399086", due_date: "", status: "Open", notes: p.notes, bags: 1, cases: 1 };
 }));
 var again = D.plan(againLines, [order("023399086", "Open")], TODAY);
 eq(again.ship.length === 0 && again.notes.length === 0, "second pass no-op");
@@ -146,6 +151,18 @@ var future = D.plan(
   TODAY
 );
 eq(future.ship.length === 1 && future.report.closeComplete.length === 1, "future complete still closes");
+
+// SPS stays Open through a complete orders row and a long-past due date.
+// Finished SPS is Complete only from the Order document, not from this pass.
+var spsHold = D.plan([
+  spsLine("s1", "McLane", "MO10106510", "10/01/2026"),
+  spsLine("s2", "Scheels", "023315762", "11/20/2026")
+], [
+  order("MO10106510", "Complete"),
+  order("023315762", "Complete")
+], TODAY);
+eq(spsHold.ship.length === 0 && spsHold.notes.length === 0, "SPS not closed by orders or due date");
+eq(posOf(spsHold.report.leftOpen).sort().join(",") === "023315762,MO10106510", "SPS left open");
 
 var counts = D.summaryLine(past.report);
 eq(counts.beforeOpenPOs === 4, "before pos");

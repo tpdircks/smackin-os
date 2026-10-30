@@ -123,7 +123,8 @@ function fileRows(body) {
     var path = String(r.path || r.Path || "");
     var url = safeSpsUrl(r.url || r.Url || "");
     if (!path || !url) return;
-    out.push({ path: path, url: url });
+    var status = SPS.canonDocStatus(r.status || r.Status || r.documentStatus || r.DocumentStatus || r.workflowStatus || r.WorkflowStatus || "");
+    out.push({ path: path, url: url, status: status });
   });
   return out;
 }
@@ -194,7 +195,8 @@ async function priorEntries(pos) {
     return {
       json: rawDoc(row.payload),
       receivedAt: row.received_at,
-      filePath: (row.payload && row.payload.file_path) || ""
+      filePath: (row.payload && row.payload.file_path) || "",
+      docStatus: (row.payload && (row.payload.doc_status || row.payload.docStatus)) || ""
     };
   });
 }
@@ -223,8 +225,6 @@ async function upsertOrder(state, folder, flagInfo) {
       headers: { Prefer: "return=minimal" },
       body: row
     });
-    var drop = found.filter(function (r) { return String(r.id) !== String(keeper.id); }).map(function (r) { return r.id; });
-    if (drop.length) await deleteFeedOrders(drop);
     return { wrote: true, id: keeper.id };
   }
   var other = await rest("orders?select=id&" + pgEq("customer_po", state.po) + "&entered_by=neq." + encodeURIComponent("SPS Feed") + "&limit=1");
@@ -262,14 +262,10 @@ async function replaceDemand(state, folder) {
 function txPathFilter(path) {
   return "payload->>file_path=eq." + encodeURIComponent(String(path));
 }
+// Disabled 2026-10-30 until Troy approves a delete. Duplicate SPS Feed rows stay.
+// Complete orders stay in history. This function must not delete order rows.
 async function deleteFeedOrders(ids) {
-  var clean = (ids || []).map(function (id) { return String(id); }).filter(function (id) { return /^\d+$/.test(id); });
-  if (!clean.length) return 0;
-  await rest("orders?id=in.(" + clean.join(",") + ")&entered_by=eq." + encodeURIComponent("SPS Feed"), {
-    method: "DELETE",
-    headers: { Prefer: "return=minimal" }
-  });
-  return clean.length;
+  return 0;
 }
 function stateFor(interpreted, partner, po) {
   var hits = [];
@@ -292,9 +288,8 @@ async function listFeedOrders() {
   }
   return rows;
 }
-// Collapse duplicate SPS Feed orders for the same partner + PO. The surviving
-// row is the 850. Its fields are rebuilt from every stored document, then the
-// extra SPS Feed rows are deleted.
+// Refresh the 850 keeper for a duplicate partner + PO from stored documents.
+// Extra SPS Feed rows are left in place until Troy approves a delete.
 async function mergeDuplicateOrders(folder) {
   var rows = await listFeedOrders();
   var groups = {};
@@ -324,8 +319,6 @@ async function mergeDuplicateOrders(folder) {
         body: row
       });
     }
-    var drop = group.filter(function (r) { return String(r.id) !== String(keeper.id); }).map(function (r) { return r.id; });
-    removed += await deleteFeedOrders(drop);
     groupsMerged++;
   }
   return { groups: groupsMerged, removed: removed };
@@ -334,10 +327,10 @@ async function processFile(token, file, folder) {
   var existingTx = await rest("sps_transactions?select=id&" + txPathFilter(file.path) + "&limit=1");
   if (existingTx && existingTx.length) return { flagged: false };
   var doc = await spsGet(file.url, token);
-  var mapped = SPS.mapDocument(doc);
+  var mapped = SPS.mapDocument(doc, file.status || "");
   var prior = (await priorEntries(mapped.pos || [])).filter(function (entry) { return entry.filePath !== file.path; });
   var before = SPS.interpret(prior);
-  var after = SPS.interpret(prior.concat([{ json: doc }]));
+  var after = SPS.interpret(prior.concat([{ json: doc, docStatus: file.status || "" }]));
   var keys = (mapped.pos && mapped.pos.length ? mapped.pos : [""]).map(function (po) { return SPS.stateKey(mapped.partnerId, po); });
   var prev = unionFlags(before.states, keys);
   var now = unionFlags(after.states, keys);
@@ -351,7 +344,7 @@ async function processFile(token, file, folder) {
     var one = SPS.flagsOf(state);
     var orderResult = await upsertOrder(state, folder, one);
     if (orderResult.skipped) boardNotes.push("PO " + state.po + " is already on the orders board, so that row was left as-is.");
-    if (mapped.docType === "850") await replaceDemand(state, folder);
+    if ((state.orderLines || []).length) await replaceDemand(state, folder);
   }
   if (mapped.docType === "856" && mapped.shipment) {
     var shipId = await uuidNamed("ship|" + file.path);
@@ -379,6 +372,7 @@ async function processFile(token, file, folder) {
         file_path: file.path,
         file_url: file.url,
         folder: folder,
+        doc_status: SPS.canonDocStatus(file.status) || SPS.canonDocStatus(mapped.docStatus) || "",
         flags: introduced,
         flag_detail: now.details.concat(boardNotes),
         po_numbers: mapped.pos || [],

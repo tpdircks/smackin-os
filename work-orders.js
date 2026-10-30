@@ -412,7 +412,10 @@
     opts = opts || {};
     var per = opts.bagsPerCase || BAGS_PER_CASE;
     var codeMap = opts.codeMap || {};
-    var open = (lines || []).filter(function (r) { return (r.status || "Open") === "Open"; });
+    var open = (lines || []).filter(function (r) {
+      if (root.SPSMap && typeof root.SPSMap.countsForBuild === "function") return root.SPSMap.countsForBuild(r);
+      return (r.status || "Open") === "Open";
+    });
     var by = {};
     open.forEach(function (r) {
       var flavor = trim(r.flavor);
