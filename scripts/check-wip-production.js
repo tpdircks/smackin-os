@@ -20,7 +20,7 @@ function read(rel) { return fs.readFileSync(path.join(root, rel), "utf8"); }
 var sw = read("service-worker.js");
 var html = read("index.html");
 var sql = read("wip_production_daily.sql");
-eq(sw.indexOf('const CACHE = "smackin-inv-v250"') >= 0, "cache bump");
+eq(sw.indexOf('const CACHE = "smackin-inv-v251"') >= 0, "cache bump");
 eq(sw.indexOf('"./wip-production.js"') >= 0, "sw asset");
 eq(html.indexOf('mfg-history.js?b=4') >= 0, "history cache bust");
 eq(html.indexOf('wip-production.js?b=1') >= 0, "seed script");
