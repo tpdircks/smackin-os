@@ -17,21 +17,22 @@
     "Maple Brown Sugar": "S09", "Lemon Pepper": "S10", "Sour Cream & Onion": "S11",
     "Cheeseburger": "L25", "PCA Pizza": "L20", "Variety Pack": "VP48"
   };
+  // Same description rules as demand.js. GRL / PRM are whole words. ORIG stays last so it cannot steal a flavor above.
   var DESC_RULES = [
     [/cinnamon|churro/i, "Cinnamon Churro"],
-    [/garlic|parm|\bgrlc\b|prmsn/i, "Garlic Parmesan"],
+    [/garlic|parm|\bgrlc\b|prmsn|\bgrl\b|\bprm\b/i, "Garlic Parmesan"],
     [/backyard|bbq|barbe|\bbyrd\b/i, "Backyard BBQ"],
     [/dill|pickle|\bdll\b|\bpckl\b/i, "Dill Pickle"],
-    [/crack|\bcrck\b|black pepper/i, "Cracked Pepper"],
-    [/cheddar|jalap|\bchd\b/i, "Cheddar Jalapeno"],
-    [/ranch/i, "Ranch"],
-    [/maple|brown sugar/i, "Maple Brown Sugar"],
+    [/crack|\bcrck\b|black pepper|\bcrckd\b|\bcrk\b|\bpeppr\b/i, "Cracked Pepper"],
+    [/cheddar|jalap|\bchd\b|\bched\b|\bchdr\b|\bjala?\b|\bjlp\b/i, "Cheddar Jalapeno"],
+    [/ranch|\brnch\b/i, "Ranch"],
+    [/maple|brown sugar|\bmple\b|\bbrwn sug/i, "Maple Brown Sugar"],
     [/lemon/i, "Lemon Pepper"],
     [/sour cream|onion|s&o|sco/i, "Sour Cream & Onion"],
     [/cheeseburger/i, "Cheeseburger"],
     [/pizza|deep dish|pca/i, "PCA Pizza"],
     [/4\s*-?\s*var|variety/i, "Variety Pack"],
-    [/original|\bog\b/i, "OG Original"]
+    [/original|\bog\b|\borig\b/i, "OG Original"]
   ];
   var BAGS_PER_CASE = 72;
   var VARIETY_4PACK = ["Cinnamon Churro", "Garlic Parmesan", "Cheddar Jalapeno", "Backyard BBQ"];

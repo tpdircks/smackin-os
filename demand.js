@@ -7,23 +7,25 @@
   // Target "Vendor Style" code -> flavor
   const STYLE_MAP = { "101":"Cinnamon Churro","102":"Garlic Parmesan","103":"Backyard BBQ","104":"Dill Pickle","105":"Cracked Pepper","106":"OG Original","107":"Cheddar Jalapeno","108":"Ranch","109":"Maple Brown Sugar","110":"Lemon Pepper","111":"Sour Cream & Onion","135":"Cheeseburger" };
   // description keyword -> flavor (fallback + non-Target). Descriptions come from SPS 850 exports and are often
-  // abbreviated (e.g. "CRCK PEP", "DLL PCKL", "GRLC PRM") — patterns include both the full word and the common
-  // abbreviation so similar shorthand keeps resolving without a code change.
+  // abbreviated (e.g. "CRCK PEP", "CRCKD PEPPR", "DLL PCKL", "GRLC PRM", "GRL PRM", "CHED/JALA", "RNCH", "MPLE BRWN SUG", "ORIG") —
+  // patterns include both the full word and the common abbreviation so similar shorthand keeps resolving without a code change.
+  // GRL and PRM are whole words so they do not eat GRLC / PRMSN. ORIG stays last so that short token cannot steal
+  // Lemon Pepper, Dill Pickle, BBQ, or any more specific flavor above.
   const DESC_RULES = [
     [/cinnamon|churro/i, "Cinnamon Churro"],
-    [/garlic|parm|\bgrlc\b|prmsn/i, "Garlic Parmesan"],
+    [/garlic|parm|\bgrlc\b|prmsn|\bgrl\b|\bprm\b/i, "Garlic Parmesan"],
     [/backyard|bbq|barbe|\bbyrd\b/i, "Backyard BBQ"],
     [/dill|pickle|\bdll\b|\bpckl\b/i, "Dill Pickle"],
-    [/crack|\bcrck\b|black pepper/i, "Cracked Pepper"],
-    [/cheddar|jalap|\bchd\b/i, "Cheddar Jalapeno"],
-    [/ranch/i, "Ranch"],
-    [/maple|brown sugar/i, "Maple Brown Sugar"],
+    [/crack|\bcrck\b|black pepper|\bcrckd\b|\bcrk\b|\bpeppr\b/i, "Cracked Pepper"],
+    [/cheddar|jalap|\bchd\b|\bched\b|\bchdr\b|\bjala?\b|\bjlp\b/i, "Cheddar Jalapeno"],
+    [/ranch|\brnch\b/i, "Ranch"],
+    [/maple|brown sugar|\bmple\b|\bbrwn sug/i, "Maple Brown Sugar"],
     [/lemon/i, "Lemon Pepper"],
     [/sour cream|onion|s&o|sco/i, "Sour Cream & Onion"],
     [/cheeseburger/i, "Cheeseburger"],
     [/pizza|deep dish|pca/i, "PCA Pizza"],
     [/4\s*-?\s*var|variety/i, "Variety Pack"],
-    [/original|\bog\b/i, "OG Original"]
+    [/original|\bog\b|\borig\b/i, "OG Original"]
   ];
   const BAGS_PER_CASE = 72;
   // "SEEDS SUNFLWR 4VAR 48PC" (UPC 850047865830, SKU SS-VP-48 "Retail Display 48CT (4oz)") is a fixed 4-flavor
