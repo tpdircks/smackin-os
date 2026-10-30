@@ -107,7 +107,9 @@
       ".mfg-up-msg{margin-top:14px;font-size:13.5px;line-height:1.5;padding:12px 14px;border-radius:9px;display:none}",
       ".mfg-up-msg.err{display:block;background:#fef2f2;color:#b52024;border:1px solid #fecaca}",
       ".mfg-up-msg.ok{display:block;background:#ecfdf5;color:#047857;border:1px solid #a7f3d0}",
-      ".mfg-up-msg.info{display:block;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}"
+      ".mfg-up-msg.info{display:block;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}",
+      ".mfg-sync-line{margin:8px 0 12px;font-size:13.5px;line-height:1.45;color:#334155}",
+      ".mfg-link-name{font-weight:700;color:#1F3864}"
     ].join("");
     (document.head || document.documentElement).appendChild(s);
   }
@@ -128,8 +130,10 @@
       '<button class="primary" id="mfg-import-btn">Import new rows</button> ' +
       '<button class="ghost" id="mfg-cancel-btn">Cancel</button></div>' +
       '</div>' +
+      '<div id="mfg-link-slot"></div>' +
       '<div class="card"><h2 class="sub2">What\'s on record now</h2><p class="muted" id="mfg-counts">Checking…</p></div>';
     wire();
+    mountLink($("mfg-link-slot"));
     showCounts();
   }
   function showCounts() {
@@ -209,7 +213,109 @@
     }).catch(function (e) { msg("err", "Could not check existing rows: " + esc((e && e.message) || e)); $("mfg-import-btn").disabled = false; });
   }
 
-  window.MFGUPLOAD = { open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); markActive(); render(); } };
+  // Live link to Allen's SharePoint tracker. Sync now calls prod-tracking-sync.
+  // Mixing Detail stays in that file and is not imported from here.
+  var TRACKER_NAME = "1736 - Production Tracking_v12";
+  var TRACKER_URL = "https://netorgft5175778.sharepoint.com/:x:/r/sites/Production/_layouts/15/Doc.aspx?sourcedoc=%7B1AA0318A-B5BA-499E-97E3-0F3D300DF8AE%7D&file=1736%20-%20Production%20Tracking_v12.xlsm&fromShare=true&action=default&mobileredirect=true";
+
+  function when(iso) {
+    if (!iso) return "";
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return String(iso).replace("T", " ").slice(0, 16);
+    try { return d.toLocaleString(); } catch (e) { return String(iso).replace("T", " ").slice(0, 16); }
+  }
+  function linkHtml() {
+    return '<div class="card mfg-link-card"><h2 class="sub2">Live tracker</h2>' +
+      '<p class="hint">Smackin OS is linked to Allen\'s <a class="mfg-link-name" href="' + esc(TRACKER_URL) + '" target="_blank" rel="noopener">' + esc(TRACKER_NAME) + '</a> on the Production SharePoint site. Sync reads the Detail sheet into P-Mac history. Mixing Detail is in the same workbook and is not imported yet.</p>' +
+      '<p class="mfg-sync-line">Checking last sync...</p>' +
+      '<button class="primary mfg-sync-btn" type="button">Sync now</button></div>';
+  }
+  function describeSync(sync) {
+    if (!sync) return "No sync yet. Sync now pulls the Detail sheet once prod-tracking-sync is deployed and Graph or Storage is available.";
+    var bits = [];
+    if (sync.at) bits.push("Last sync " + when(sync.at) + ".");
+    if (sync.message) bits.push(String(sync.message));
+    else if (sync.ok && sync.inserted != null) {
+      bits.push("Added " + fmt(Number(sync.inserted) || 0) + " new P-Mac rows. " + fmt(Number(sync.skipped) || 0) + " were already on record.");
+    } else if (sync.ok === false) bits.push("The latest run did not finish.");
+    return bits.join(" ");
+  }
+  function paintSync(root, sync) {
+    var line = root && root.querySelector(".mfg-sync-line");
+    if (line) line.textContent = describeSync(sync);
+  }
+  function loadSyncStatus(root) {
+    var c = client();
+    if (!c) { paintSync(root, null); return; }
+    c.from("kv_status").select("key,value").in("key", ["pmac:last_sync"]).then(function (r) {
+      if (!root || !root.isConnected) return;
+      var sync = null;
+      var rows = (r && r.data) || [];
+      rows.forEach(function (row) {
+        if (row.key !== "pmac:last_sync" || !row.value) return;
+        try { sync = JSON.parse(row.value); } catch (e) { sync = null; }
+      });
+      if (r && r.error) paintSync(root, { ok: false, message: "Could not read the last sync." });
+      else paintSync(root, sync);
+    }).catch(function () {
+      paintSync(root, { ok: false, message: "Could not read the last sync." });
+    });
+  }
+  function mountLink(root) {
+    if (!root) return;
+    styleOnce();
+    root.innerHTML = linkHtml();
+    var btn = root.querySelector(".mfg-sync-btn");
+    if (btn) btn.onclick = function () { syncNow(root); };
+    loadSyncStatus(root);
+  }
+  function syncNow(root) {
+    var btn = root.querySelector(".mfg-sync-btn");
+    var line = root.querySelector(".mfg-sync-line");
+    if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) {
+      if (line) line.textContent = "Cloud is not connected yet. Wait until the badge says CLOUD, then sync.";
+      return;
+    }
+    if (btn) btn.disabled = true;
+    if (line) line.textContent = "Syncing the Detail sheet from Allen's tracker...";
+    var url = String(cfg.SUPABASE_URL).replace(/\/+$/, "") + "/functions/v1/prod-tracking-sync";
+    fetch(url, {
+      method: "POST",
+      headers: {
+        apikey: cfg.SUPABASE_ANON_KEY,
+        Authorization: "Bearer " + cfg.SUPABASE_ANON_KEY,
+        "Content-Type": "application/json"
+      },
+      body: "{}"
+    }).then(function (res) {
+      return res.text().then(function (text) {
+        var body = null;
+        try { body = JSON.parse(text); } catch (e) { body = null; }
+        if (res.status === 404) throw new Error("prod-tracking-sync is not deployed yet.");
+        if (!res.ok) throw new Error((body && (body.message || body.error)) || ("Sync failed (" + res.status + ")."));
+        return body || {};
+      });
+    }).then(function (body) {
+      if (body && body.skipped === "busy") {
+        if (line) line.textContent = "A sync is already running. Try again in a few minutes.";
+      } else {
+        paintSync(root, body);
+        if (body && body.ok && body.inserted && document.getElementById("mfg-hist-active") && !document.getElementById("mfg-counts")) {
+          if (line) line.textContent = line.textContent + " Open Production History again to include the new rows.";
+        }
+      }
+      if (btn) btn.disabled = false;
+      showCounts();
+    }).catch(function (err) {
+      if (line) line.textContent = (err && err.message) ? String(err.message) : "Sync failed.";
+      if (btn) btn.disabled = false;
+    });
+  }
+
+  window.MFGUPLOAD = {
+    open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); markActive(); render(); },
+    mountLink: mountLink
+  };
 
   // ---- nav injection ----------------------------------------------------
   function markActive() { try { var nav = $("nav"); if (!nav) return; nav.querySelectorAll(".navitem.active").forEach(function (b) { b.classList.remove("active"); }); var m = $("mfg-up-nav"); if (m) m.classList.add("active"); } catch (e) {} }

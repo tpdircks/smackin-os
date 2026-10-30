@@ -7,3 +7,7 @@ entrypoint = "./functions/sps-sync/index.js"
 [functions.shipping-sync]
 verify_jwt = false
 entrypoint = "./functions/shipping-sync/index.js"
+
+[functions.prod-tracking-sync]
+verify_jwt = false
+entrypoint = "./functions/prod-tracking-sync/index.js"

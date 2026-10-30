@@ -121,8 +121,8 @@ var html = read("index.html");
 var sw = read("service-worker.js");
 eq(html.indexOf('src="demand-flavor-remap.js?b=1"') >= 0, "script tag");
 eq(sw.indexOf('"./demand-flavor-remap.js"') >= 0, "sw asset");
-eq(sw.indexOf('const CACHE = "smackin-inv-v263"') >= 0, "cache");
-eq(read("build-id.txt").trim() === "smackin-inv-v263", "build id");
+eq(sw.indexOf('const CACHE = "smackin-inv-v264"') >= 0, "cache");
+eq(read("build-id.txt").trim() === "smackin-inv-v264", "build id");
 
 var probeRows = LIVE.map(function (r) { return { id: r[0], flavor: r[1], flavor_code: "", status: r[0] === "13" ? "Complete" : (r[0] === "1" || r[0] === "3" ? "Open" : "Shipped") }; });
 probeRows.push({ id: "keep", flavor: "UNMAPPED: SUNFLOWER SEED 4OZ", flavor_code: "", status: "Open" });

@@ -27,7 +27,7 @@ eq(src.indexOf("create table if not exists public.production_orders") >= 0, "fal
 eq(src.indexOf("work_orders (") < 0, "no new work_orders table");
 eq(paper.indexOf("window.PROD_ORDERS") >= 0, "paper orders kept");
 eq(app.indexOf("production orders to Mixing") >= 0, "legacy marker");
-eq(sw.indexOf('const CACHE = "smackin-inv-v263"') >= 0, "cache v254");
+eq(sw.indexOf('const CACHE = "smackin-inv-v264"') >= 0, "cache v254");
 eq(sw.indexOf('const CACHE = "smackin-inv-v249"') < 0, "old cache gone");
 eq(sw.indexOf('"./work-orders.js"') >= 0, "sw asset");
 eq(sw.indexOf('"./inventory-visual.js"') >= 0 && sw.indexOf('"./inventory-visual.css"') >= 0, "visual assets stay cached");

@@ -336,7 +336,8 @@
     var days = distinctDays(rows);
     var perDay = days ? tot / days : 0;
 
-    var html = '<div class="card"><h2>Production History</h2>' +
+    var html = (dept === "pmac" ? '<div id="mfg-hist-link"></div>' : "") +
+      '<div class="card"><h2>Production History</h2>' +
       '<p class="hint">Allen\'s Mixing &amp; P-Mac history, loaded from the production trackers. ' + fmt(PM.length) + ' P-Mac runs and ' + fmt(MX.length) + ' Mixing runs on record.</p>' +
       segHtml() +
       '<div class="mfgcards">' +
@@ -357,6 +358,9 @@
     host.innerHTML = html;
     host.setAttribute("data-mfg", "1");
     var flag = document.createElement("span"); flag.id = "mfg-hist-active"; flag.style.display = "none"; host.appendChild(flag);
+    if (dept === "pmac" && window.MFGUPLOAD && window.MFGUPLOAD.mountLink) {
+      try { window.MFGUPLOAD.mountLink(document.getElementById("mfg-hist-link")); } catch (e2) {}
+    }
     try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
   }
 
