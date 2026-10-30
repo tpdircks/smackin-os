@@ -309,12 +309,11 @@
     el.innerHTML = shell(mode, rows);
     if (mode === "home") {
       var home = view.querySelector('#dept-home[data-dept="mixing"]');
-      var lead = home && home.querySelector(".dept-lead");
-      if (lead && lead.nextSibling) home.insertBefore(el, lead.nextSibling);
-      else if (home) home.appendChild(el);
-      else return;
+      if (!home) return;
+      // Action tools are already in the home. Recipe cards are reference, so they go last.
+      home.appendChild(el);
     } else {
-      view.insertBefore(el, view.firstChild);
+      view.appendChild(el);
     }
     bind(el);
   }

@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-/* The app loads one inventory apply module. Older inv-sync files must not ship. */
+/* The 10/27 sheet sync stays in the repo and is not loaded.
+   A loaded apply module can overwrite a newer hand count.
+   Older inv-sync files must not ship. */
 "use strict";
 
 var fs = require("fs");
@@ -30,23 +32,32 @@ var htmlFiles = fs.readdirSync(root).filter(function (name) { return /\.html$/.t
 htmlFiles.forEach(function (name) {
   var html = read(name);
   var tags = html.match(/inv-sync-[^"']+\.js/g) || [];
-  tags.forEach(function (tag) {
-    assert(tag === "inv-sync-1027d.js", name + " loads " + tag);
-  });
+  if (name === "index.html") {
+    assert(tags.length === 0, "index does not load a sheet sync");
+  } else {
+    tags.forEach(function (tag) {
+      assert(tag === "inv-sync-1027d.js", name + " loads " + tag);
+    });
+  }
   obsolete.forEach(function (rel) {
     assert(html.indexOf(rel) < 0, name + " references " + rel);
   });
 });
 
 var index = read("index.html");
-assert(index.indexOf('src="inv-sync-1027d.js?b=2"') >= 0, "current apply script");
-assert(index.indexOf('src="slc-count-latest.js?b=1"') < index.indexOf('src="inv-sync-1027d.js?b=2"'), "count file loads first");
-assert(index.indexOf('src="slc-count-panel.js?b=4"') >= 0, "panel cache bust");
+assert(index.indexOf("inv-sync-1027d.js") < 0, "index does not load the apply module");
+assert(index.indexOf("slc-count-latest.js") < 0, "index does not load the count file");
+assert(index.indexOf("slc-count-panel.js") < 0, "index does not load the count panel");
+assert(fs.existsSync(path.join(root, "inv-sync-1027d.js")), "apply file kept");
+assert(fs.existsSync(path.join(root, "slc-count-latest.js")), "count file kept");
+assert(fs.existsSync(path.join(root, "slc-count-panel.js")), "panel file kept");
 
 var sw = read("service-worker.js");
-assert(sw.indexOf('const CACHE = "smackin-inv-v247"') >= 0, "cache v247");
+assert(sw.indexOf('const CACHE = "smackin-inv-v250"') >= 0, "cache v250");
 assert(sw.indexOf("smackin-inv-v242") < 0, "old cache gone");
-assert(sw.indexOf("./inv-sync-1027d.js") >= 0, "sw precaches the apply module");
+assert(sw.indexOf("./inv-sync-1027d.js") < 0, "sw does not precache the apply module");
+assert(sw.indexOf("./slc-count-latest.js") < 0, "sw does not precache the count file");
+assert(sw.indexOf("./slc-count-panel.js") < 0, "sw does not precache the count panel");
 obsolete.forEach(function (rel) { assert(sw.indexOf(rel) < 0, "sw lists " + rel); });
 
 var apply = read("inv-sync-1027d.js");
