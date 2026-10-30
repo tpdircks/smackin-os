@@ -1,12 +1,14 @@
 /* ============================================================================
-   Lot Trace & Scan  (trace.js)  b=14
+   Lot Trace & Scan  (trace.js)  b=18
    One scan chain from the dock to the customer, built for SQF traceability.
 
      RECEIVE   raw material in -> our own RM label per pallet/box/roll (supplier lot, exp)
      QA HOLD   food-contact materials start on HOLD until QA releases (COA checked)
      MIXING    scan seed + seasoning + malto labels -> batch code -> BN bin tags
      P-MAC     scan bin tag + film roll -> bag code (batch + machine + week)
-               -> finished pallet label FG (lot, flavor, size, bags) -> STAGING
+               -> finished pallet label FG (lot, flavor, size, bags, best-by) -> STAGING
+               Best-by is the date printed on the bag (trace_labels.exp).
+               Prefill only when kv_status has a confirmed fg_shelf_life rule.
      MOVE      scan any label, scan a location (put-away / moves)
      USE       hand-log a pull (e-commerce is the default) or scan a finished pallet
                to the line, e-commerce, samples or scrap. One save = one lot,
@@ -28,7 +30,7 @@
    Seed / Seasoning lot registries, so nothing is typed twice.
 
    Stock on-hand is NOT changed by this module (Adriana's counts stay the source of
-   truth until the scan data is proven). WRITE_STOCK can be flipped later.
+   truth until the scan data is proven). WRITE_STOCK stays off.
    Nav item is injected with a MutationObserver (no timers). Keyboard-wedge scanners
    (NETUM NT-1228BL etc.) type the code + Enter into the focused scan box.
    ==========================================================================*/
@@ -38,6 +40,7 @@
   var cfg = window.SMACKIN_CONFIG || {};
   var LS = "trace-local-v1";          // local fallback store
   var LS_ST = "trace-station-v1";     // per-device station settings (operator, machine, tab)
+  var WRITE_STOCK = false;            // do not write stock, racks, or Adriana's counts
 
   // ---- flavor master (Allen's Updated Flavor Codes, 2026-08-04) ----------------
   // alg: A1 = none, A2 = milk, A3 = multiple (detail listed)
@@ -146,7 +149,10 @@
       alreadyOut: "Nothing left to hold on this lot.",
       shipBlocked: "Not shipped. Take the held pallet off this outbound pallet first.",
       heldList: "Lots on hold",
-      palletHeldInherit: "This lot has product on hold. The new pallet is on hold too."
+      palletHeldInherit: "This lot has product on hold. The new pallet is on hold too.",
+      bestBy: "Best-by",
+      bestByNotSet: "Not set. Type the date printed on the bag.",
+      bestByBlank: "Best-by is blank. Save without the date printed on the bag?"
     },
     es: {
       title: "Rastreo de Lotes y Escaneo (SQF)", navLbl: "Rastreo de Lotes", grpQ: "Calidad",
@@ -207,10 +213,23 @@
       alreadyOut: "No queda nada que retener en este lote.",
       shipBlocked: "No se envió. Quite primero la tarima retenida de esta tarima de salida.",
       heldList: "Lotes retenidos",
-      palletHeldInherit: "Este lote tiene producto retenido. La tarima nueva también queda retenida."
+      palletHeldInherit: "Este lote tiene producto retenido. La tarima nueva también queda retenida.",
+      bestBy: "Consumir antes",
+      bestByNotSet: "No definido. Escriba la fecha impresa en la bolsa.",
+      bestByBlank: "Consumir antes esta vacio. ¿Guardar sin la fecha impresa en la bolsa?"
+    },
+    pt: {
+      bestBy: "Validade",
+      bestByNotSet: "Nao definido. Digite a data impressa no saco.",
+      bestByBlank: "Validade esta em branco. Salvar sem a data impressa no saco?"
     }
   };
-  function lang() { var b = document.getElementById("lang-es"); return b && b.classList.contains("active") ? "es" : "en"; }
+  function lang() {
+    var pt = document.getElementById("lang-pt");
+    if (pt && pt.classList.contains("active")) return "pt";
+    var es = document.getElementById("lang-es");
+    return es && es.classList.contains("active") ? "es" : "en";
+  }
   function L(k) { var d = T[lang()]; return d[k] != null ? d[k] : (T.en[k] != null ? T.en[k] : k); }
   function LT(o) { return lang() === "es" ? o.es : o.en; }
 
@@ -538,6 +557,55 @@
         if (ACTIVE && !RENDERING && (ST.tab === "use" || ST.tab === "ship")) render();
       });
     }
+    kickShelf();
+  }
+  function kickShelf() {
+    if (ST.tab !== "pmac" && !(ST.tab === "recv" && W.recv && W.recv.type === "FG")) return;
+    if (!window.FGLOTS || typeof FGLOTS.ensureRule !== "function") return;
+    var before = typeof FGLOTS.ruleStatus === "function" ? FGLOTS.ruleStatus() : "idle";
+    if (before === "ready" || before === "missing") return;
+    FGLOTS.ensureRule().then(function () {
+      var after = typeof FGLOTS.ruleStatus === "function" ? FGLOTS.ruleStatus() : "";
+      if (before === after) return;
+      if (!ACTIVE || RENDERING) return;
+      if (ST.tab === "pmac" || (ST.tab === "recv" && W.recv && W.recv.type === "FG")) render();
+    });
+  }
+  function shelfField(touched, typed, size, flavor) {
+    if (window.FGLOTS && typeof FGLOTS.bestByField === "function") {
+      return FGLOTS.bestByField({
+        typed: typed || "",
+        touched: !!touched,
+        packDate: today(),
+        size: size,
+        flavor: flavor,
+        rule: typeof FGLOTS.currentRule === "function" ? FGLOTS.currentRule() : null,
+        lang: lang()
+      });
+    }
+    var value = touched ? (typed || "") : "";
+    return { value: value, prefill: "", code: value ? "printed" : "not_set", guidance: L("bestByNotSet"), months: null };
+  }
+  function bestByBox(id, touched, typed, size, flavor) {
+    var field = shelfField(touched, typed, size, flavor);
+    return '<div style="grid-column:1/-1"><label>' + esc(L("bestBy")) + '</label><input id="' + id + '" type="date" value="' + esc(field.value || "") + '" oninput="TRACE.bestByInput(\'' + id + '\', this.value)"><p class="hint" style="margin:6px 0 0">' + esc(field.guidance || L("bestByNotSet")) + "</p></div>";
+  }
+  function fgExpForSave(typed, packDate, size, flavor, touched, lot) {
+    if (window.FGLOTS && typeof FGLOTS.fgLabelExp === "function") {
+      var pack = FGLOTS.fgLabelExp({
+        typed: typed,
+        packDate: packDate,
+        size: size,
+        flavor: flavor,
+        touched: !!touched,
+        lot: lot || "",
+        rule: typeof FGLOTS.currentRule === "function" ? FGLOTS.currentRule() : null
+      });
+      pack.stockWritten = WRITE_STOCK;
+      return pack;
+    }
+    var exp = ymd(typed);
+    return { exp: exp || null, source: exp ? "printed" : "blank", override: false, suggested: "", events: [], writes: [], stockWritten: WRITE_STOCK };
   }
   function scanBox(handler, ph) {
     return '<label>' + esc(L("scan")) + '</label><input id="trc-scan" class="trc-scan" autocomplete="off" placeholder="' + esc(ph || L("scanPh")) + '" onkeydown="if(event.key===\'Enter\'){event.preventDefault();TRACE.' + handler + '(this.value);this.value=\'\';}">';
@@ -577,6 +645,7 @@
       h += '<div><label>' + esc(L("size")) + '</label>' + sel("trc-r-size", ["4oz", "1.5oz", "2.75oz"], r.size || "4oz") + '</div>';
       h += '<div><label>' + esc(L("lotCode")) + '</label><input id="trc-r-lot" value="' + esc(r.lot || "") + '" placeholder="L2031/3X9.35"></div>';
       h += '<div><label>' + esc(L("loc")) + '</label><input id="trc-r-loc" value="' + esc(r.loc || "STAGING") + '"></div>';
+      h += bestByBox("trc-r-exp", !!r.expTouched, r.exp || "", r.size || "4oz", r.flavor || "");
     } else {
       h += '<div><label>' + esc(L("supplier")) + '</label><input id="trc-r-sup" list="trc-sups" value="' + esc(r.supplier || "") + '"><datalist id="trc-sups">' + sups.map(function (n) { return '<option value="' + esc(n) + '">'; }).join("") + '</datalist></div>';
       if (!r.existing) h += '<div><label>' + esc(L("po")) + '</label><input id="trc-r-po" value="' + esc(r.po || "") + '"></div>';
@@ -622,6 +691,12 @@
     if (!(qty > 0)) { flash(L("qtyEach") + "?", "err"); render(); return; }
     if ((r.type === "SEAS" || r.type === "FILM" || r.type === "FG") && !r.flavor) { flash(L("flavor") + "?", "err"); render(); return; }
     var fl = flavorBy(r.flavor);
+    var fgPack = null;
+    if (r.type === "FG") {
+      fgPack = fgExpForSave(r.exp, today(), r.size || "4oz", r.flavor, r.expTouched, lot);
+      if (!fgPack.exp && !window.confirm(L("bestByBlank"))) { render(); return; }
+      if (WRITE_STOCK || fgPack.stockWritten) { flash("Stock writes are off.", "err"); render(); return; }
+    }
     var pw = openPrintWin();
     var rows = [], evs = [], lpns = [], stamp = nowISO();
     for (var i = 0; i < units; i++) {
@@ -630,19 +705,26 @@
       var issue = String(r.issue || "").trim();
       var status = isFG ? inheritFgStatus(lot) : (issue ? "HOLD" : (ty.food && !r.rel ? "HOLD" : "RELEASED"));
       var data = { issues: issue ? [{ txt: issue, by: opName(), at: stamp }] : [], unit: (i + 1) + " of " + units, legacy: !!(r.existing || isFG), alg: fl ? fl.alg : "", algTxt: fl ? fl.algTxt : "", released_by: status === "RELEASED" && ty.food ? opName() : "" };
+      if (isFG && fgPack) {
+        data.best_by_source = fgPack.source;
+        if (fgPack.suggested) data.best_by_suggested = fgPack.suggested;
+      }
       if (isFG && (status === "HOLD" || status === "REJECTED")) inheritHoldData(lot, data, status);
       rows.push({
         lpn: lpn, kind: isFG ? "FG" : "RM", mtype: r.type,
         item: r.item || (isFG && fl ? fl.name : "") || LT(ty), flavor_code: fl ? fl.code : "", flavor: fl ? fl.name : "",
         size: isFG ? (r.size || "4oz") : "", lot: isFG ? lot : lot, supplier: isFG ? "" : (r.supplier || ""), supplier_lot: isFG ? "" : lot,
-        seed_code: r.type === "SEED" ? String(r.seedCode || "").toUpperCase().trim() : "", exp: isFG ? null : (r.exp || null),
+        seed_code: r.type === "SEED" ? String(r.seedCode || "").toUpperCase().trim() : "", exp: isFG ? (fgPack ? fgPack.exp : null) : (r.exp || null),
         qty: qty, qty_left: qty, uom: r.uom || ty.uom, status: status, location: isFG ? (r.loc || "STAGING").toUpperCase() : "RECEIVING",
         parents: [], po: r.existing || isFG ? "" : (r.po || ""), station: "RECEIVING",
         data: data,
         created_by: opName(), created_at: stamp
       });
-      evs.push({ type: isFG ? "LEGACY_FG" : (r.existing ? "LEGACY_RM" : "RECEIVE"), lpn: lpn, qty: qty, uom: r.uom || ty.uom, to_loc: rows[i].location, ref: rows[i].po, lot: lot, data: { supplier: r.supplier || "", mtype: r.type } });
+      evs.push({ type: isFG ? "LEGACY_FG" : (r.existing ? "LEGACY_RM" : "RECEIVE"), lpn: lpn, qty: qty, uom: r.uom || ty.uom, to_loc: rows[i].location, ref: rows[i].po, lot: lot, data: { supplier: r.supplier || "", mtype: r.type, exp: isFG && fgPack ? fgPack.exp : (r.exp || null), best_by_source: isFG && fgPack ? fgPack.source : "" } });
       lpns.push(lpn);
+    }
+    if (r.type === "FG" && fgPack && fgPack.override && fgPack.events.length) {
+      evs.push({ type: "BEST_BY", lpn: lpns[0], lot: lot, qty: qty * units, uom: r.uom || ty.uom, data: fgPack.events[0].data });
     }
     insLabels(rows).then(function (res) {
       if (!res.ok) { closeWin(pw); flash("Save failed: " + res.msg, "err"); render(); return; }
@@ -866,11 +948,15 @@
     h += '<div class="trc-grid" style="margin-top:12px"><div><label>' + esc(L("binLoaded")) + '</label><div style="font-size:20px;font-weight:800">' + esc(p.batch || "-") + '</div><div class="muted">' + esc(fl ? fl.code + " " + fl.name : "") + (p.openBins.length ? " &middot; " + p.openBins.length + " bin(s) on this pallet" : "") + '</div></div>';
     h += '<div><label>' + esc(L("filmLoaded")) + '</label><div style="font-size:20px;font-weight:800">' + esc(p.film || "-") + '</div><div class="muted">' + esc(p.filmLot || "") + '</div></div></div>';
     var bcode = bagCode(p, m);
+    if (W.pmLot && bcode !== W.pmLot) { W.pmExp = ""; W.pmExpTouched = false; }
+    W.pmLot = bcode;
     h += '<label>' + esc(L("setPrinter")) + '</label><div class="trc-big">' + esc(bcode || "-") + '</div>';
     var packSt = bcode ? inheritFgStatus(bcode) : "ACTIVE";
     if (packSt === "HOLD" || packSt === "REJECTED") h += '<div class="trc-holdban"><span class="trc-badge-hold">' + esc(packSt) + '</span> ' + esc(bcode) + '<span class="sub">' + esc(packSt === "REJECTED" ? L("rejectBanner") : L("holdBanner")) + " " + esc(L("palletHeldInherit")) + '</span></div>';
     if (fl) h += '<p><b>Allergen:</b> ' + esc(fl.alg) + ' ' + esc(fl.algTxt) + ' &middot; <b>' + esc(L("size")) + ':</b> ' + esc(size) + '</p>';
-    h += '<div class="trc-grid"><div><label>' + esc(L("bags")) + '</label><input id="trc-p-bags" type="number" min="1" placeholder="e.g. 2500" value="' + esc(W.pmBags || "") + '"></div></div>';
+    h += '<div class="trc-grid"><div><label>' + esc(L("bags")) + '</label><input id="trc-p-bags" type="number" min="1" placeholder="e.g. 2500" value="' + esc(W.pmBags || "") + '"></div>';
+    h += bestByBox("trc-p-exp", !!W.pmExpTouched, W.pmExp || "", size, p.flavor || "");
+    h += '</div>';
     h += '<div class="trc-row"><button class="primary" onclick="TRACE.pmFinish()">' + esc(L("finishPallet")) + '</button><button class="ghost" style="margin-top:14px" onclick="TRACE.pmChange()">' + esc(L("codeChange")) + '</button><button class="ghost" style="margin-top:14px" onclick="TRACE.pmScrap()">' + esc(L("scrapBags")) + '</button></div>';
     if (p.changes && p.changes.length) h += '<p class="muted sm">Code changes today: ' + p.changes.filter(function (c) { return dLocal(c.at) === today(); }).map(function (c) { return esc(c.from + " -> " + c.to + " @ " + new Date(c.at).toLocaleTimeString()); }).join(" &middot; ") + '</p>';
     h += '</div>';
@@ -890,7 +976,12 @@
           var ans = window.prompt("CODE CHANGE: new batch " + l.lot + ".\nHow many bags of " + bagCode(p, m) + " are on the pallet right now?\n(They get their own pallet label first. Type 0 if none.)", "0");
           if (ans == null) { flash("Code change cancelled.", "warn"); render(); return; }
           var pre = Math.floor(num(ans));
-          var go = pre > 0 ? finishPallet(m, pre) : Promise.resolve(null);
+          var pack = null;
+          if (pre > 0) {
+            pack = fgExpForSave(val("trc-p-exp") || W.pmExp || "", today(), sizeForMachine(m), p.flavor, W.pmExpTouched, bagCode(p, m));
+            if (!pack.exp && !window.confirm(L("bestByBlank"))) { flash("Code change cancelled.", "warn"); render(); return; }
+          }
+          var go = pre > 0 ? finishPallet(m, pre, null, pack) : Promise.resolve(null);
           go.then(function () {
             var from = bagCode(p, m);
             p.changes = (p.changes || []).concat([{ from: from, to: l.lot + String(m).slice(-1) + "." + isoWeek(), at: nowISO() }]).slice(-40);
@@ -951,17 +1042,21 @@
       savePm(m); flash("Code change recorded " + from + " -> " + bagCode(p, m), "warn"); render();
     });
   }
-  function finishPallet(m, bags, pw) {
+  function finishPallet(m, bags, pw, pack) {
     var p = pmState(m), fl = flavorBy(p.flavor), lot = bagCode(p, m);
+    if (!pack) pack = fgExpForSave("", today(), sizeForMachine(m), p.flavor, false, lot);
     var parents = (p.openBins || []).concat(p.openFilms && p.openFilms.length ? p.openFilms : (p.film ? [p.film] : []));
     parents = parents.filter(function (x, i, a) { return x && a.indexOf(x) === i; });
     var fgStatus = inheritFgStatus(lot);
-    var fgData = { machine: m, week: isoWeek(), date: today(), alg: fl ? fl.alg : "", algTxt: fl ? fl.algTxt : "", batch: p.batch };
+    var fgData = { machine: m, week: isoWeek(), date: today(), alg: fl ? fl.alg : "", algTxt: fl ? fl.algTxt : "", batch: p.batch, best_by_source: pack.source };
+    if (pack.suggested) fgData.best_by_suggested = pack.suggested;
     if (fgStatus === "HOLD" || fgStatus === "REJECTED") inheritHoldData(lot, fgData, fgStatus);
-    var row = { lpn: newLpn("FG"), kind: "FG", mtype: "FG", item: (fl ? fl.name : p.flavor) + " " + sizeForMachine(m), flavor_code: p.flavor, flavor: fl ? fl.name : "", size: sizeForMachine(m), lot: lot, supplier: "", supplier_lot: "", seed_code: "", exp: null, qty: bags, qty_left: bags, uom: "bags", status: fgStatus, location: "STAGING", parents: parents, po: "", station: "PMAC " + m, data: fgData, created_by: opName(), created_at: nowISO() };
+    var row = { lpn: newLpn("FG"), kind: "FG", mtype: "FG", item: (fl ? fl.name : p.flavor) + " " + sizeForMachine(m), flavor_code: p.flavor, flavor: fl ? fl.name : "", size: sizeForMachine(m), lot: lot, supplier: "", supplier_lot: "", seed_code: "", exp: pack.exp || null, qty: bags, qty_left: bags, uom: "bags", status: fgStatus, location: "STAGING", parents: parents, po: "", station: "PMAC " + m, data: fgData, created_by: opName(), created_at: nowISO() };
+    var evs = [{ type: "PACK", lpn: row.lpn, qty: bags, uom: "bags", ref: "PMAC " + m, lot: lot, to_loc: "STAGING", data: { parents: parents, exp: pack.exp || null, best_by_source: pack.source } }];
+    if (pack.override && pack.events && pack.events.length) evs.push({ type: "BEST_BY", lpn: row.lpn, qty: bags, uom: "bags", ref: "PMAC " + m, lot: lot, data: pack.events[0].data });
     return insLabels([row]).then(function (res) {
       if (!res.ok) { closeWin(pw); flash("Save failed: " + res.msg, "err"); return null; }
-      return addEvents([{ type: "PACK", lpn: row.lpn, qty: bags, uom: "bags", ref: "PMAC " + m, lot: lot, to_loc: "STAGING", data: { parents: parents } }]).then(function (res2) {
+      return addEvents(evs).then(function (res2) {
         if (!savedOk(res2)) { flash("Pallet saved, pack event failed: " + ((res2 && res2.msg) || ""), "warn"); return row; }
         // the bin in the hopper and the film on the machine keep feeding the next pallet
         p.openBins = (p.openBins || []).slice(-1); p.openFilms = p.film ? [p.film] : [];
@@ -978,7 +1073,10 @@
     if (!p.batch) { flash("Scan a bin tag first.", "err"); render(); return; }
     if (!(bags > 0)) { flash(L("bags") + "?", "err"); render(); return; }
     if (!p.film && !window.confirm("No film roll scanned on this machine. Finish anyway? (SQF needs the film linked)")) return;
-    finishPallet(m, bags, openPrintWin()).then(function (row) { if (row) W.pmBags = ""; render(); });
+    var pack = fgExpForSave(val("trc-p-exp") || W.pmExp || "", today(), sizeForMachine(m), p.flavor, W.pmExpTouched, bagCode(p, m));
+    if (!pack.exp && !window.confirm(L("bestByBlank"))) { render(); return; }
+    if (pack.stockWritten || WRITE_STOCK) { flash("Stock writes are off.", "err"); return; }
+    finishPallet(m, bags, openPrintWin(), pack).then(function (row) { if (row) { W.pmBags = ""; W.pmExp = ""; W.pmExpTouched = false; render(); } });
   }
   function pmScrap() {
     if (needOp()) return;
@@ -2325,6 +2423,7 @@
       top = "FINISHED BAGS / BOLSAS TERMINADAS";
       body = '<div class="big">' + esc(l.flavor || l.item) + ' &middot; ' + esc(l.size || "") + '</div><div class="lot">LOT ' + esc(l.lot) + '</div>' +
         '<div class="qty">' + fmt(l.qty) + ' BAGS / BOLSAS</div>' +
+        '<div class="kv"><b>Best-by / Consumir antes:</b> ' + esc(l.exp ? String(l.exp).slice(0, 10) : "Not set / No definido") + '</div>' +
         (d.alg ? '<div class="alg">Allergen ' + esc(d.alg) + (d.algTxt ? ": " + esc(d.algTxt) : "") + '</div>' : "") +
         '<div class="kv"><b>Packed:</b> ' + esc(d.date || dLocal(l.created_at)) + (d.machine ? ' &nbsp; <b>P-Mac</b> ' + esc(d.machine) : "") + ' &nbsp; <b>By:</b> ' + esc(l.created_by || "") + '</div>' +
         (upStatus(l.status) === "REJECTED"
@@ -2401,6 +2500,10 @@
       else flash("Batch Tracking Record is still loading. Refresh the page.", "warn");
     },
     setMachine: function (v) { ST.machine = v; saveST(); render(); },
+    bestByInput: function (id, v) {
+      if (id === "trc-p-exp") { W.pmExp = v; W.pmExpTouched = true; }
+      if (id === "trc-r-exp") { W.recv.exp = v; W.recv.expTouched = true; }
+    },
     pmScan: pmScan, pmChange: pmChange, pmFinish: pmFinish, pmScrap: pmScrap,
     moveScan: moveScan, useDest: useDest, useScan: useScan, useManual: useManual, useSize: useSize, useKey: useKey, useLotInput: useLotInput, useFlavorPick: useFlavorPick, usePickLot: usePickLot,
     shipField: shipField, shipScan: shipScan, shipRemove: shipRemove, shipFinish: shipFinish,
