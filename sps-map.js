@@ -39,7 +39,7 @@
   var BAGS_PER_CASE = 72;
   var VARIETY_4PACK = ["Cinnamon Churro", "Garlic Parmesan", "Cheddar Jalapeno", "Backyard BBQ"];
   var BAGS_PER_VARIETY = 12;
-  var DOC_LABEL = { "850": "850 Purchase Order", "856": "856 Ship Notice", "810": "810 Invoice" };
+  var DOC_LABEL = { "850": "850 Purchase Order", "855": "855 Order Ack", "856": "856 Ship Notice", "810": "810 Invoice" };
   var FLAG_LABEL = {
     total_x100: "Invoice total is 100× the line sum. The line sum was stored.",
     total_mismatch: "Invoice total does not equal the line sum. The line sum was stored.",
@@ -180,9 +180,65 @@
     return n;
   }
 
+  // Fulfillment UI statuses verified 2026-10-30 on commerce.spscommerce.com/fulfillment
+  // (Troy Dircks / SMACKIN' Sunflower Seeds). Saved is an outbound draft. Accepted
+  // means the partner accepted it. There is no "Sent" status. Workflow Done shows
+  // the Order document as Complete.
+  var DOC_STATUS = {
+    "accepted": "Accepted",
+    "accepted manually": "Accepted Manually",
+    "cancelled": "Cancelled",
+    "canceled": "Cancelled",
+    "changed": "Changed",
+    "complete": "Complete",
+    "done": "Complete",
+    "error": "Error",
+    "in transit": "In Transit",
+    "new": "New",
+    "not accepted": "Not Accepted",
+    "open": "Open",
+    "partially accepted": "Partially Accepted",
+    "preview": "Preview",
+    "rejected": "Rejected",
+    "saved": "Saved",
+    "template": "Template"
+  };
+  function canonDocStatus(v) {
+    var s = String(v == null ? "" : v).replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
+    return DOC_STATUS[s] || "";
+  }
+  function statusFrom(obj) {
+    if (!obj || typeof obj !== "object" || Array.isArray(obj)) return "";
+    var keys = ["FulfillmentStatus", "DocumentStatus", "WorkflowStatus", "Status"];
+    for (var i = 0; i < keys.length; i++) {
+      if (obj[keys[i]] == null || typeof obj[keys[i]] === "object") continue;
+      var c = canonDocStatus(obj[keys[i]]);
+      if (c) return c;
+    }
+    return "";
+  }
+  function blankWorkflow() { return { order: "", ack: "", shipment: "", invoice: "" }; }
+  function statusSlot(docType) {
+    if (docType === "850") return "order";
+    if (docType === "855") return "ack";
+    if (docType === "856") return "shipment";
+    if (docType === "810") return "invoice";
+    return "";
+  }
+  function rememberStatus(state, slot, status) {
+    var c = canonDocStatus(status);
+    if (!state || !slot || !c) return;
+    if (!state.workflow) state.workflow = blankWorkflow();
+    state.workflow[slot] = c;
+  }
+  function takeStatus(entry, mapped) {
+    return canonDocStatus(entry && entry.docStatus) || canonDocStatus(mapped && mapped.docStatus) || "";
+  }
+
   function docKind(json) {
     var h = (json && json.Header) || {};
     if (h.OrderHeader) return "850";
+    if (h.OrderAckHeader || h.OrderAcknowledgmentHeader || h.OrderAcknowledgementHeader) return "855";
     if (h.ShipmentHeader) return "856";
     if (h.InvoiceHeader) return "810";
     return "unknown";
@@ -238,7 +294,27 @@
       statedTotal: summary.TotalAmount == null || summary.TotalAmount === "" ? null : num(summary.TotalAmount),
       computedTotal: round2(computed),
       lineCount: summary.TotalLineItemNumber != null ? num(summary.TotalLineItemNumber) : lines.length,
-      lines: lines, shipment: null, invoice: null, reject: null
+      lines: lines, shipment: null, invoice: null, reject: null,
+      docStatus: statusFrom(oh) || statusFrom(h) || statusFrom(json)
+    };
+  }
+
+  function map855(json) {
+    var h = json.Header || {};
+    var ah = h.OrderAckHeader || h.OrderAcknowledgmentHeader || h.OrderAcknowledgementHeader || {};
+    var ship = addrView(addr(h.Address, "ST"));
+    var partnerId = String(ah.TradingPartnerId || "").trim();
+    var po = String(ah.PurchaseOrderNumber || "").trim();
+    return {
+      docType: "855", label: DOC_LABEL["855"],
+      partnerId: partnerId, partner: partnerFromId(partnerId, ship && ship.name),
+      pos: po ? [po] : [],
+      vendor: "", poDate: String(ah.PurchaseOrderDate || ""), purpose: "", poType: "", termsDays: null,
+      shipTo: ship, billTo: null, dates: {}, headerNotes: joinNotes(h.Notes),
+      totalQty: null, totalUom: "", weight: null, volume: null,
+      statedTotal: null, computedTotal: null, lineCount: 0,
+      lines: [], shipment: null, invoice: null, reject: null,
+      docStatus: statusFrom(ah) || statusFrom(h) || statusFrom(json)
     };
   }
 
@@ -299,7 +375,8 @@
         cartons: num(qw.LadingQuantity),
         sscc: sscc
       },
-      invoice: null, reject: null
+      invoice: null, reject: null,
+      docStatus: statusFrom(sh) || statusFrom(h) || statusFrom(json)
     };
   }
 
@@ -348,6 +425,7 @@
       statedTotal: stated,
       computedTotal: lineSum,
       lineCount: lines.length, lines: lines, shipment: null,
+      docStatus: statusFrom(ih) || statusFrom(h) || statusFrom(json),
       invoice: {
         number: String(ih.InvoiceNumber || "").trim(),
         date: invDate,
@@ -363,18 +441,22 @@
     };
   }
 
-  function mapDocument(json) {
+  function mapDocument(json, docStatus) {
     var kind = docKind(json || {});
-    if (kind === "850") return map850(json);
-    if (kind === "856") return map856(json);
-    if (kind === "810") return map810(json);
-    return {
+    var mapped;
+    if (kind === "850") mapped = map850(json);
+    else if (kind === "855") mapped = map855(json);
+    else if (kind === "856") mapped = map856(json);
+    else if (kind === "810") mapped = map810(json);
+    else mapped = {
       docType: "unknown", label: "Unknown", partnerId: "", partner: "", pos: [],
       vendor: "", poDate: "", purpose: "", poType: "", termsDays: null,
       shipTo: null, billTo: null, dates: {}, headerNotes: "", totalQty: null, totalUom: "",
       weight: null, volume: null, statedTotal: null, computedTotal: null, lineCount: 0,
-      lines: [], shipment: null, invoice: null, reject: null
+      lines: [], shipment: null, invoice: null, reject: null, docStatus: ""
     };
+    mapped.docStatus = canonDocStatus(docStatus) || canonDocStatus(mapped.docStatus) || statusFrom(json);
+    return mapped;
   }
 
   function stateKey(partnerId, po) { return String(partnerId || "") + "\u001f" + String(po || ""); }
@@ -384,7 +466,8 @@
       vendor: "", poDate: "", purpose: "", poType: "", termsDays: null,
       shipTo: null, billTo: null, dates: {}, headerNotes: "",
       totalQty: null, totalUom: "", weight: null, volume: null,
-      lines: {}, orderLines: [], invoices: [], shipments: []
+      lines: {}, orderLines: [], invoices: [], shipments: [],
+      workflow: blankWorkflow()
     };
   }
   function lineSlot(state, upc, buyer) {
@@ -452,13 +535,14 @@
   function interpret(entries) {
     var states = {};
     (entries || []).forEach(function (entry) {
-      var mapped = entry && entry.mapped ? entry.mapped : mapDocument(entry && entry.json);
+      var mapped = entry && entry.mapped ? entry.mapped : mapDocument(entry && entry.json, entry && entry.docStatus);
       if (mapped.reject && mapped.docType === "810") {
         var poR = (mapped.pos && mapped.pos[0]) || "";
         var keyR = stateKey(mapped.partnerId, poR);
         if (!states[keyR]) states[keyR] = blankState(mapped, poR);
         states[keyR].rejected = true;
         if (mapped.invoice) states[keyR].invoices.push(Object.assign({ rejected: true }, mapped.invoice));
+        rememberStatus(states[keyR], "invoice", takeStatus(entry, mapped));
         return;
       }
       var pos = mapped.pos && mapped.pos.length ? mapped.pos : [""];
@@ -466,6 +550,7 @@
         var key = stateKey(mapped.partnerId, po);
         if (!states[key]) states[key] = blankState(mapped, po);
         applyMapped(states[key], mapped);
+        rememberStatus(states[key], statusSlot(mapped.docType), takeStatus(entry, mapped));
       });
     });
     return { states: states };
@@ -558,9 +643,77 @@
     };
   }
 
+  // Order document Complete is the only live close. An 856 or 810 file, a BOL,
+  // or an invoice Accepted status does not close the order while the Order
+  // document is still Open (or has no status). testout is never live demand.
+  function orderIsComplete(state) {
+    var w = (state && state.workflow) || {};
+    return w.order === "Complete";
+  }
+  function boardStatus(state, folder) {
+    if (folder !== "out") return "Test";
+    if (orderIsComplete(state)) return "Complete";
+    return "Open";
+  }
+  function stageNote(state) {
+    if (orderIsComplete(state)) return "";
+    var w = (state && state.workflow) || {};
+    var parts = [];
+    if (w.ack === "Accepted" || w.ack === "Accepted Manually") parts.push("Ack Accepted");
+    else if (w.ack) parts.push("Ack " + w.ack);
+    if (w.shipment === "Saved") parts.push("ASN Saved");
+    else if (w.shipment === "Accepted" || w.shipment === "Accepted Manually") parts.push("ASN Accepted");
+    else if (w.shipment) parts.push("ASN " + w.shipment);
+    if (w.invoice === "Accepted" || w.invoice === "Accepted Manually") parts.push("Invoice Accepted");
+    else if (w.invoice === "Saved" || w.invoice === "New" || w.invoice === "Open" || w.invoice === "Preview" || w.invoice === "In Transit" || w.invoice === "Partially Accepted") parts.push("Invoice pending");
+    else if (w.invoice) parts.push("Invoice " + w.invoice);
+    if (w.order && w.order !== "Open" && w.order !== "New" && w.order !== "Complete") parts.push("Order " + w.order);
+    return parts.join(" · ");
+  }
+  // Build Need skips these only when a real Fulfillment status was stored.
+  // A mailbox 856/810 with no status is not tagged, so those Open lines still count.
+  function stageId(state) {
+    if (orderIsComplete(state)) return "complete";
+    var w = (state && state.workflow) || {};
+    var invoiceLater = {
+      "Saved": 1, "New": 1, "Open": 1, "Preview": 1, "In Transit": 1,
+      "Partially Accepted": 1, "Accepted": 1, "Accepted Manually": 1, "Complete": 1
+    };
+    if (invoiceLater[w.invoice]) return "invoice-pending";
+    if (w.shipment === "Accepted" || w.shipment === "Accepted Manually" || w.shipment === "Complete") return "asn-accepted";
+    if (w.shipment === "Saved" || w.shipment === "Preview" || w.shipment === "Template") return "asn-saved";
+    if (w.ack === "Accepted" || w.ack === "Accepted Manually") return "ack-accepted";
+    return "open";
+  }
+  function stageBits(state) {
+    var id = stageId(state);
+    var human = stageNote(state);
+    return " [[SPSSTAGE:" + id + "]]" + (human ? "[[SPSNOTE:" + human + "]]" : "");
+  }
+  var BUILD_SKIP = { "asn-accepted": 1, "invoice-pending": 1, "complete": 1 };
+  function countsForBuild(line) {
+    if (!line || String(line.status || "Open") !== "Open") return false;
+    var sps = String(line.source || "") === "SPS" || String(line.imported_by || "") === "SPS Feed" || String(line.batch_id || "") === "SPS-FEED";
+    if (!sps) return true;
+    var m = String(line.notes || "").match(/\[\[SPSSTAGE:([a-z0-9-]+)\]\]/);
+    if (!m) return true;
+    return !BUILD_SKIP[m[1]];
+  }
+  function stageLabel(line) {
+    var m = String(line && line.notes || "").match(/\[\[SPSNOTE:([\s\S]*?)\]\]/);
+    return m ? m[1].trim() : "";
+  }
+  function isSpsOrder(o) {
+    if (!o) return false;
+    var by = String(o.entered_by || "");
+    if (by === "SPS Feed" || by === "SPS Sync") return true;
+    return /\[\[SPS\]\]/.test(String(o.notes || ""));
+  }
+
   function buildDemand(state, folder) {
     var live = folder === "out";
     var rows = [];
+    var bits = stageBits(state);
     (state.orderLines || []).forEach(function (line) {
       var math = casesBags(line);
       var dc = (state.shipTo && (state.shipTo.location || state.shipTo.name)) || "";
@@ -574,14 +727,14 @@
         uom: line.uom || "",
         unit_price: line.unitPrice || 0,
         due_date: mdY(state.dates && state.dates.requestedDelivery) || mdY(state.dates && state.dates.requestedShip) || "",
-        status: live ? "Open" : "Test",
+        status: boardStatus(state, folder),
         imported_by: "SPS Feed"
       };
       rows.push(Object.assign({}, base, {
         _key: "line|" + (line.lineNo || "") + "|" + (line.upc || line.buyerItem || ""),
         flavor: math.flavor, flavor_code: math.code,
         qty: line.qty || 0, cases: math.cases, bags: math.bags,
-        notes: "[[SPSFEED:" + (line.lineNo || "") + ":" + (line.upc || "") + "]] " +
+        notes: "[[SPSFEED:" + (line.lineNo || "") + ":" + (line.upc || "") + "]]" + bits + " " +
           (line.description || "") + (line.buyerItem ? " · buyer " + line.buyerItem : "") +
           (line.retail != null ? " · retail " + money(line.retail) : "")
       }));
@@ -592,7 +745,7 @@
             _key: "comp|" + (line.lineNo || "") + "|" + flavor,
             flavor: flavor, flavor_code: FLAVOR_CODES[flavor] || "",
             uom: "Bags", qty: 0, cases: compBags / BAGS_PER_CASE, bags: compBags, unit_price: 0,
-            notes: "[[SPSFEED:comp:" + flavor + "]] Variety Pack component"
+            notes: "[[SPSFEED:comp:" + flavor + "]]" + bits + " Variety Pack component"
           }));
         });
       }
@@ -610,6 +763,8 @@
       lines.push("Ship to " + (state.shipTo.name || "") + (state.shipTo.location ? " (" + state.shipTo.location + ")" : ""));
     }
     if (state.dates && state.dates.requestedDelivery) lines.push("Requested delivery " + mdY(state.dates.requestedDelivery));
+    var stage = stageNote(state);
+    if (stage) lines.push(stage);
     var inv = (state.invoices || []).filter(function (x) { return x && !x.rejected; }).slice(-1)[0];
     if (inv) {
       var bit = "Invoice " + (inv.number || "");
@@ -627,11 +782,11 @@
     return (text.trim() + "\n" + block).trim();
   }
 
-  function lifecycle(state, flagInfo) {
-    var hard = flagInfo.flags || [];
-    if ((state.invoices || []).some(function (i) { return i && !i.rejected; }) && !hard.length && !state.rejected) return "Complete";
-    if ((state.shipments || []).length || (state.invoices || []).length) return "Shipped";
-    return "Open";
+  // Second arg used to be flag info. Flags do not close an order. Folder
+  // "out" is live. Anything else, including testout, is Test.
+  function lifecycle(state, folder) {
+    if (folder && typeof folder !== "string") folder = "out";
+    return boardStatus(state, folder || "out");
   }
 
   function buildOrder(state, folder, existingNotes, flagInfo) {
@@ -639,7 +794,7 @@
     var live = folder === "out";
     var inv = (state.invoices || []).filter(function (x) { return x && !x.rejected; }).slice(-1)[0];
     var ship = (state.shipments || []).slice(-1)[0];
-    var life = lifecycle(state, flagInfo);
+    var life = boardStatus(state, folder);
     return {
       customer: state.partner || "",
       customer_po: state.po || "",
@@ -649,8 +804,9 @@
       ship_date: mdY(ship && ship.shipDate) || mdY(state.dates && state.dates.requestedShip) || "",
       tracking: live && ship && ship.bol ? ship.bol : "",
       carrier: ship && ship.carrier ? ship.carrier : "",
-      // Test-folder copies stay off the open orders list. Live documents use the real lifecycle.
-      status: live ? life : "Complete",
+      // Test stays Test. Live stays Open until the Order document is Complete.
+      // BOL on tracking does not change this status.
+      status: life,
       notes: mergeNotes(existingNotes, noteBlock(state, flagInfo, folder)),
       entered_by: "SPS Feed"
     };
@@ -659,6 +815,11 @@
   function buildShipment(mapped, id, folder) {
     var s = mapped.shipment || {};
     var live = folder === "out";
+    var asnStatus = canonDocStatus(mapped && mapped.docStatus);
+    var logStatus = "Test";
+    if (live) {
+      logStatus = (asnStatus === "Accepted" || asnStatus === "Accepted Manually" || asnStatus === "Complete") ? "Shipped" : "Pending";
+    }
     var bits = (mapped.lines || []).map(function (l) {
       return (l.upc || l.buyerItem || "item") + " × " + (l.qty || 0) + (l.uom ? " " + l.uom : "") + (l.po ? " (PO " + l.po + ")" : "");
     });
@@ -674,7 +835,7 @@
       requested_by: "SPS Feed",
       contents: bits.join("; ").slice(0, 1800),
       lot: s.id || "",
-      status: live ? "Shipped" : "Test",
+      status: logStatus,
       cost: 0,
       notes: ("[[SPS]]\nASN " + (s.id || "") + (s.bol ? " · BOL " + s.bol : "") +
         (s.cartons != null ? " · cartons " + s.cartons : "") +
@@ -714,6 +875,15 @@
     buildOrder: buildOrder,
     buildDemand: buildDemand,
     buildShipment: buildShipment,
+    canonDocStatus: canonDocStatus,
+    boardStatus: boardStatus,
+    lifecycle: lifecycle,
+    stageNote: stageNote,
+    stageId: stageId,
+    stageLabel: stageLabel,
+    countsForBuild: countsForBuild,
+    isSpsOrder: isSpsOrder,
+    orderIsComplete: orderIsComplete,
     partnerFromId: partnerFromId,
     normUpc: normUpc,
     flagLabel: flagLabel,

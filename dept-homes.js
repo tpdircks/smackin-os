@@ -778,12 +778,15 @@
     });
   }
   function orderShipped(o) {
+    if (window.SPSMap && typeof SPSMap.isSpsOrder === "function" && SPSMap.isSpsOrder(o)) return false;
     var t = String((o && o.tracking) || "").trim();
     return !!t && !/^ip$/i.test(t) && /(1z|\d{3,}|pick|deliver|ship|xpo|estes|fedex|ups|odfl|r\+l|saia|old dominion)/i.test(t);
   }
   function openToShip() {
     return arr(function () { return DB.orders(); }).filter(function (o) {
-      return (o.status || "Open") !== "Complete" && !orderShipped(o);
+      var st = String((o && o.status) || "Open");
+      if (st === "Complete" || st === "Test") return false;
+      return !orderShipped(o);
     }).sort(function (a, b) { return String(b.created_at || "").localeCompare(String(a.created_at || "")); });
   }
   function pulledRows() {
@@ -846,6 +849,7 @@
   }
   function openDemand() {
     return arr(function () { return DB.demandLines ? DB.demandLines() : []; }).filter(function (r) {
+      if (window.SPSMap && typeof SPSMap.countsForBuild === "function") return SPSMap.countsForBuild(r);
       return (r.status || "Open") === "Open";
     }).slice().sort(function (a, b) {
       return (dueISO(a.due_date) || "9999").localeCompare(dueISO(b.due_date) || "9999") || String(a.partner || "").localeCompare(String(b.partner || ""));
@@ -1456,7 +1460,7 @@
       stat(fmt(tracked.length), tx({ en: "Orders with tracking", es: "Ordenes con rastreo", pt: "Pedidos com rastreio" }))
     ]) +
       panel(tx({ en: "Open to ship", es: "Por enviar", pt: "Para enviar" }),
-        open.length ? sub("Orders that are not Complete and do not have a carrier tracking number yet.") + dfTable(
+        open.length ? sub("Orders that are not Complete. An SPS BOL or ASN does not take an Open order off this list.") + dfTable(
           [{ h: "Customer" }, { h: "PO / order" }, { h: "Ship date" }, { h: "Status" }],
           open.map(function (o) {
             return [

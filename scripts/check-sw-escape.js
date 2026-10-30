@@ -11,7 +11,7 @@ var fail = [];
 function eq(cond, msg) { if (!cond) fail.push(msg); }
 function read(rel) { return fs.readFileSync(path.join(root, rel), "utf8"); }
 
-var BUILD = "smackin-inv-v258";
+var BUILD = "smackin-inv-v259";
 var sw = read("service-worker.js");
 var html = read("index.html");
 var boot = read("sw-boot.js");
@@ -24,9 +24,9 @@ eq(sw.indexOf("smackin-inv-v256") < 0, "old cache gone");
 eq(buildId === BUILD, "build-id.txt matches");
 eq(escapeSrc.indexOf('var EMBEDDED = "' + BUILD + '"') >= 0, "escape embedded");
 eq(html.indexOf('var EMBEDDED = "' + BUILD + '"') >= 0, "inline embedded");
-eq(html.indexOf('sw-escape.js?b=3') >= 0, "escape script");
+eq(html.indexOf('sw-escape.js?b=4') >= 0, "escape script");
 eq(html.indexOf('sw-boot.js?b=2') >= 0, "boot script");
-eq(html.indexOf('app.js?b=192') >= 0, "app cache bust");
+eq(html.indexOf('app.js?b=193') >= 0, "app cache bust");
 eq(boot.indexOf('updateViaCache: "none"') >= 0, "boot skips http cache");
 eq(boot.indexOf("__smackinSwEscapeLock") >= 0, "boot yields to reset");
 eq(app.indexOf('register("service-worker.js", { updateViaCache: "none" })') >= 0, "app register no cache");
@@ -51,7 +51,7 @@ eq(escape.EMBEDDED === BUILD, "export embedded");
 eq(escape.versionNum("smackin-inv-v253") === 253, "version parse");
 eq(escape.chooseTarget(BUILD, "smackin-inv-v254") === BUILD, "older probe does not downgrade");
 eq(escape.chooseTarget(BUILD, "smackin-inv-v260") === "smackin-inv-v260", "newer probe wins");
-eq(escape.parseId("\nsmackin-inv-v258\n") === BUILD, "parse id");
+eq(escape.parseId("\nsmackin-inv-v259\n") === BUILD, "parse id");
 eq(escape.isSmackinReg({
   scope: "https://tpdircks.github.io/smackin-os/",
   active: { scriptURL: "https://tpdircks.github.io/smackin-os/service-worker.js" }
@@ -82,10 +82,10 @@ eq(decided({
   embedded: BUILD, remote: BUILD, caches: ["smackin-inv-v253", BUILD], online: true, busted: ""
 }) === "drop-old", "current cache is not unregistered");
 eq(decided({
-  embedded: "smackin-inv-v258", remote: "smackin-inv-v260", caches: ["smackin-inv-v258"], online: true, busted: ""
+  embedded: "smackin-inv-v259", remote: "smackin-inv-v260", caches: ["smackin-inv-v259"], online: true, busted: ""
 }) === "reset", "newer build-id resets");
 eq(decided({
-  embedded: "smackin-inv-v258", remote: "", caches: ["smackin-inv-v260"], online: true, busted: ""
+  embedded: "smackin-inv-v259", remote: "", caches: ["smackin-inv-v260"], online: true, busted: ""
 }) === "stay", "newer cache is not downgraded");
 eq(decided({
   embedded: BUILD, remote: "", caches: ["smackin-inv-v253"], online: false, probeFailed: true, busted: ""

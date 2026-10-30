@@ -3,7 +3,7 @@
    cannot hide it. A hard refresh does not need this file: index.html has
    the same check inline, which runs even if this request is swallowed. */
 (function (root) {
-  var EMBEDDED = "smackin-inv-v258";
+  var EMBEDDED = "smackin-inv-v259";
   var BUILD_RE = /smackin-inv-v(\d+)/;
 
   function versionNum(id) {

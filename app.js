@@ -72,7 +72,7 @@
       dmHint:"Every open order due to ship, live. Drop your SPS + ShipIQ exports under Import Orders to refresh; mark a PO Shipped once it leaves.",
       dsHint:"What to produce by flavor: open demand vs finished bags on hand (from Stock Build). Updates as orders ship.",
       diHint:"Drop the same SPS 850 and ShipIQ CSV exports you pull for the weekly report. The app parses them into the live board. Re-dropping an updated export for a PO replaces its lines.",
-      dmPartner:"Customer", dmPO:"PO #", dmFlavor:"Flavor", dmCases:"Cases", dmBags:"Bags", dmDue:"Due", dmStatusH:"Status", dmDCs:"DCs", dmLoadH:"Load", dmShip:"Ship", dmShipQ:"Mark this whole PO shipped?", dmOpen:"Open", dmShipped:"Shipped", dmAll:"All", dmNone:"No demand loaded yet. Go to Import Orders to drop your SPS + ShipIQ exports.", dmAllPartners:"All customers", dmAllFlavors:"All flavors", dmTot:"Totals", dmPOs:"POs", dmDueUnknown:"no date",
+      dmPartner:"Customer", dmPO:"PO #", dmFlavor:"Flavor", dmCases:"Cases", dmBags:"Bags", dmDue:"Due", dmStatusH:"Status", dmDCs:"DCs", dmLoadH:"Load", dmShip:"Ship", dmShipQ:"Mark this whole PO shipped?", dmOpen:"Open", dmShipped:"Shipped", dmComplete:"Complete", dmAll:"All", dmNone:"No demand loaded yet. Go to Import Orders to drop your SPS + ShipIQ exports.", dmAllPartners:"All customers", dmAllFlavors:"All flavors", dmTot:"Totals", dmPOs:"POs", dmDueUnknown:"no date",
       dsFlavor:"Flavor", dsDemandCs:"Demand (cs)", dsDemandBags:"Demand (bags)", dsOnHand:"On hand (cs)", dsToProduce:"To produce (cs)", dsPallets:"Pallets", dsFilm:"Film (bags)", dsCovered:"Covered", dsProduce:"Produce", dsBlocked:"Film short", dsNone:"No open demand. Import orders to see the schedule.", dsGrand:"TOTAL",
       diDrop:"Drop SPS 850 + ShipIQ CSV files", diSelected:"file(s) ready", diParse:"Preview", diCommit:"Load into board", diClear:"Clear all demand", diLabel:"Label (e.g. week of)", diWarn:"Warnings", diRecon:"Reconciliation: SPS cases vs ShipIQ cartons", diNoFiles:"Choose CSV files first", diUnknown:"skipped (not SPS/ShipIQ)", diCommitted:"loaded into the board", diConfirmClear:"Delete ALL demand lines? This cannot be undone.", diParsedFiles:"Parsed files", diLinesW:"lines", diReplace:"Re-importing replaces open lines for these POs.",
       ecdHint:"Drop a ShipStation \u201cProduct Sales\u201d CSV export (SKU, Description, QtySold) to see e-commerce bags-needed per flavor. Packs / variety bundles explode into component bags automatically.", ecdDrop:"Drop ShipStation Product Sales CSV", ecdPeriod:"Period (days)", ecdCommit:"Load", ecdClear:"Clear snapshot", ecdConfirmClear:"Delete the current e-com demand snapshot? This cannot be undone.", ecdPreview:"Preview", ecdFlavor:"Flavor", ecd4oz:"4oz bags", ecd15oz:"1.5oz bags", ecdTotal:"Total bags", ecdAvgDay:"Avg / day", ecdUnmapped:"Unmapped SKUs", ecdUnmappedHint:"These SKUs weren\u2019t confidently mapped to a flavor \u2014 review and tell Claude how to map them.", ecdSku:"SKU", ecdDesc:"Description", ecdQty:"Qty sold", ecdNone:"No e-com demand loaded yet. Drop a ShipStation Product Sales CSV above.", ecdLoaded:"loaded into the e-com snapshot", ecdSnapshot:"Current e-com snapshot", ecdSourceLabel:"Source label (e.g. period covered)", ecdNotCsv:"Not a recognized ShipStation Product Sales CSV (need SKU / Description / QtySold columns)", ecdRows:"rows", ecdBagsFrom:"bags mapped", ecdUnmappedUnits:"units unmapped",
@@ -230,7 +230,7 @@
       dmHint:"Cada pedido abierto por enviar, en vivo. Suba sus exportaciones SPS + ShipIQ en Importar Pedidos para actualizar; marque una PO como Enviada cuando salga.",
       dsHint:"Que producir por sabor: demanda abierta vs bolsas terminadas en mano (de Construir Inventario). Se actualiza al enviar pedidos.",
       diHint:"Suba las mismas exportaciones CSV de SPS 850 y ShipIQ que saca para el reporte semanal. La app las convierte en el tablero en vivo. Volver a subir una exportacion actualizada de una PO reemplaza sus lineas.",
-      dmPartner:"Cliente", dmPO:"PO #", dmFlavor:"Sabor", dmCases:"Cajas", dmBags:"Bolsas", dmDue:"Vence", dmStatusH:"Estado", dmDCs:"CDs", dmLoadH:"Carga", dmShip:"Enviar", dmShipQ:"Marcar toda esta PO como enviada?", dmOpen:"Abierto", dmShipped:"Enviado", dmAll:"Todos", dmNone:"Aun no hay demanda cargada. Vaya a Importar Pedidos para subir sus exportaciones SPS + ShipIQ.", dmAllPartners:"Todos los clientes", dmAllFlavors:"Todos los sabores", dmTot:"Totales", dmPOs:"POs", dmDueUnknown:"sin fecha",
+      dmPartner:"Cliente", dmPO:"PO #", dmFlavor:"Sabor", dmCases:"Cajas", dmBags:"Bolsas", dmDue:"Vence", dmStatusH:"Estado", dmDCs:"CDs", dmLoadH:"Carga", dmShip:"Enviar", dmShipQ:"Marcar toda esta PO como enviada?", dmOpen:"Abierto", dmShipped:"Enviado", dmComplete:"Completo", dmAll:"Todos", dmNone:"Aun no hay demanda cargada. Vaya a Importar Pedidos para subir sus exportaciones SPS + ShipIQ.", dmAllPartners:"Todos los clientes", dmAllFlavors:"Todos los sabores", dmTot:"Totales", dmPOs:"POs", dmDueUnknown:"sin fecha",
       dsFlavor:"Sabor", dsDemandCs:"Demanda (cj)", dsDemandBags:"Demanda (bolsas)", dsOnHand:"En mano (cj)", dsToProduce:"Por producir (cj)", dsPallets:"Paletas", dsFilm:"Pelicula (bolsas)", dsCovered:"Cubierto", dsProduce:"Producir", dsBlocked:"Falta pelicula", dsNone:"Sin demanda abierta. Importe pedidos para ver el programa.", dsGrand:"TOTAL",
       diDrop:"Suba archivos CSV SPS 850 + ShipIQ", diSelected:"archivo(s) listos", diParse:"Vista previa", diCommit:"Cargar al tablero", diClear:"Borrar toda la demanda", diLabel:"Etiqueta (ej. semana de)", diWarn:"Advertencias", diRecon:"Reconciliacion: cajas SPS vs cartones ShipIQ", diNoFiles:"Elija archivos CSV primero", diUnknown:"omitido (no es SPS/ShipIQ)", diCommitted:"cargado al tablero", diConfirmClear:"Borrar TODAS las lineas de demanda? No se puede deshacer.", diParsedFiles:"Archivos procesados", diLinesW:"lineas", diReplace:"Reimportar reemplaza las lineas abiertas de estas POs.",
       ecdHint:"Suba una exportacion CSV \u201cProduct Sales\u201d de ShipStation (SKU, Description, QtySold) para ver las bolsas necesarias por sabor en e-commerce. Los paquetes / surtidos se descomponen en bolsas automaticamente.", ecdDrop:"Suba el CSV Product Sales de ShipStation", ecdPeriod:"Periodo (dias)", ecdCommit:"Cargar", ecdClear:"Borrar snapshot", ecdConfirmClear:"Borrar el snapshot actual de demanda e-com? No se puede deshacer.", ecdPreview:"Vista previa", ecdFlavor:"Sabor", ecd4oz:"Bolsas 4oz", ecd15oz:"Bolsas 1.5oz", ecdTotal:"Total bolsas", ecdAvgDay:"Prom / dia", ecdUnmapped:"SKUs sin mapear", ecdUnmappedHint:"Estos SKUs no se pudieron mapear con confianza a un sabor \u2014 revise y digale a Claude como mapearlos.", ecdSku:"SKU", ecdDesc:"Descripcion", ecdQty:"Cantidad vendida", ecdNone:"Aun no hay demanda e-com cargada. Suba un CSV Product Sales de ShipStation arriba.", ecdLoaded:"cargado al snapshot e-com", ecdSnapshot:"Snapshot e-com actual", ecdSourceLabel:"Etiqueta de origen (ej. periodo cubierto)", ecdNotCsv:"No es un CSV Product Sales de ShipStation reconocido (se necesitan columnas SKU / Description / QtySold)", ecdRows:"filas", ecdBagsFrom:"bolsas mapeadas", ecdUnmappedUnits:"unidades sin mapear",
@@ -387,7 +387,7 @@
       dmHint:"Cada pedido aberto a enviar, ao vivo. Envie suas exportacoes SPS + ShipIQ em Importar Pedidos para atualizar; marque uma PO como Enviada quando sair.",
       dsHint:"O que produzir por sabor: demanda aberta vs bolsas prontas em estoque (de Construir Estoque). Atualiza ao enviar pedidos.",
       diHint:"Envie as mesmas exportacoes CSV de SPS 850 e ShipIQ que voce puxa para o relatorio semanal. O app as converte no painel ao vivo. Reenviar uma exportacao atualizada de uma PO substitui suas linhas.",
-      dmPartner:"Cliente", dmPO:"PO #", dmFlavor:"Sabor", dmCases:"Caixas", dmBags:"Bolsas", dmDue:"Vence", dmStatusH:"Status", dmDCs:"CDs", dmLoadH:"Carga", dmShip:"Enviar", dmShipQ:"Marcar toda esta PO como enviada?", dmOpen:"Aberto", dmShipped:"Enviado", dmAll:"Todos", dmNone:"Nenhuma demanda carregada ainda. Va em Importar Pedidos para enviar suas exportacoes SPS + ShipIQ.", dmAllPartners:"Todos os clientes", dmAllFlavors:"Todos os sabores", dmTot:"Totais", dmPOs:"POs", dmDueUnknown:"sem data",
+      dmPartner:"Cliente", dmPO:"PO #", dmFlavor:"Sabor", dmCases:"Caixas", dmBags:"Bolsas", dmDue:"Vence", dmStatusH:"Status", dmDCs:"CDs", dmLoadH:"Carga", dmShip:"Enviar", dmShipQ:"Marcar toda esta PO como enviada?", dmOpen:"Aberto", dmShipped:"Enviado", dmComplete:"Completo", dmAll:"Todos", dmNone:"Nenhuma demanda carregada ainda. Va em Importar Pedidos para enviar suas exportacoes SPS + ShipIQ.", dmAllPartners:"Todos os clientes", dmAllFlavors:"Todos os sabores", dmTot:"Totais", dmPOs:"POs", dmDueUnknown:"sem data",
       dsFlavor:"Sabor", dsDemandCs:"Demanda (cx)", dsDemandBags:"Demanda (bolsas)", dsOnHand:"Em estoque (cx)", dsToProduce:"A produzir (cx)", dsPallets:"Paletes", dsFilm:"Filme (bolsas)", dsCovered:"Coberto", dsProduce:"Produzir", dsBlocked:"Falta filme", dsNone:"Sem demanda aberta. Importe pedidos para ver o programa.", dsGrand:"TOTAL",
       diDrop:"Envie arquivos CSV SPS 850 + ShipIQ", diSelected:"arquivo(s) prontos", diParse:"Previa", diCommit:"Carregar no painel", diClear:"Limpar toda a demanda", diLabel:"Rotulo (ex. semana de)", diWarn:"Avisos", diRecon:"Reconciliacao: caixas SPS vs cartoes ShipIQ", diNoFiles:"Escolha arquivos CSV primeiro", diUnknown:"ignorado (nao e SPS/ShipIQ)", diCommitted:"carregado no painel", diConfirmClear:"Excluir TODAS as linhas de demanda? Nao pode ser desfeito.", diParsedFiles:"Arquivos processados", diLinesW:"linhas", diReplace:"Reimportar substitui as linhas abertas destas POs.",
       ecdHint:"Envie uma exportacao CSV \u201cProduct Sales\u201d do ShipStation (SKU, Description, QtySold) para ver as bolsas necessarias por sabor no e-commerce. Pacotes / variedades sao decompostos em bolsas automaticamente.", ecdDrop:"Envie o CSV Product Sales do ShipStation", ecdPeriod:"Periodo (dias)", ecdCommit:"Carregar", ecdClear:"Limpar snapshot", ecdConfirmClear:"Excluir o snapshot atual de demanda e-com? Nao pode ser desfeito.", ecdPreview:"Previa", ecdFlavor:"Sabor", ecd4oz:"Bolsas 4oz", ecd15oz:"Bolsas 1.5oz", ecdTotal:"Total de bolsas", ecdAvgDay:"Media / dia", ecdUnmapped:"SKUs nao mapeados", ecdUnmappedHint:"Estes SKUs nao puderam ser mapeados com confianca a um sabor \u2014 revise e diga ao Claude como mapea-los.", ecdSku:"SKU", ecdDesc:"Descricao", ecdQty:"Qtd vendida", ecdNone:"Nenhuma demanda e-com carregada ainda. Envie um CSV Product Sales do ShipStation acima.", ecdLoaded:"carregado no snapshot e-com", ecdSnapshot:"Snapshot e-com atual", ecdSourceLabel:"Rotulo de origem (ex. periodo coberto)", ecdNotCsv:"Nao e um CSV Product Sales do ShipStation reconhecido (precisa das colunas SKU / Description / QtySold)", ecdRows:"linhas", ecdBagsFrom:"bolsas mapeadas", ecdUnmappedUnits:"unidades nao mapeadas",
@@ -887,7 +887,7 @@
   const ORDERS_SEEN_KEY = "smackin_orders_seen_v1";
   let ordersSeen = (function(){ try { return localStorage.getItem(ORDERS_SEEN_KEY) || ""; } catch(e){ return ""; } })();
   function markOrdersSeen(){ ordersSeen = new Date().toISOString(); try { localStorage.setItem(ORDERS_SEEN_KEY, ordersSeen); } catch(e){} }
-  function newOrdersCount(){ return DB.orders().filter(o => (o.created_at || "") > ordersSeen && (o.status || "Open") !== "Complete" && !orderShipped(o)).length; }
+  function newOrdersCount(){ return DB.orders().filter(o => (o.created_at || "") > ordersSeen && orderWaiting(o)).length; }
   const CATS = ["all","bag4","bag15","film4","film15","seasoning","seed","bucket","packaging","display","mastercase","supply"];
   const CATLBL = { all:"All", bag4:"Bags 4oz", bag15:"Bags 1.5oz", film4:"Film 4oz", film15:"Film 1.5oz",
     seasoning:"Seasoning", seed:"Seed/Base", bucket:"Buckets", packaging:"Packaging", display:"Displays", mastercase:"Sleeves", supply:"Supplies" };
@@ -1226,7 +1226,7 @@
         if (held) push("out", plural(held, "item") + " in QA-Hold / Quarantine to review");
       } else if (tab === "orders") {
         const nw = (typeof newOrdersCount === "function") ? newOrdersCount() : 0;
-        const openUn = DB.orders().filter(o => (o.status || "Open") !== "Complete" && !orderShipped(o)).length;
+        const openUn = DB.orders().filter(orderWaiting).length;
         if (nw) push("out", plural(nw, "new order") + " to review");
         if (openUn) push("low", plural(openUn, "open order") + " not yet shipped");
       } else if (demandFam.indexOf(tab) >= 0) {
@@ -1316,18 +1316,37 @@
       '<button class="primary" onclick="UI.saveAdjust()">' + L("saveCounts") + '</button></div>';
   }
   function orderIsComplete(o) { return (o.status || "Open") === "Complete"; }
+  function spsOrder(o) { return !!(window.SPSMap && typeof SPSMap.isSpsOrder === "function" && SPSMap.isSpsOrder(o)); }
+  function demandCountsForBuild(r) {
+    if (window.SPSMap && typeof SPSMap.countsForBuild === "function") return SPSMap.countsForBuild(r);
+    return (r.status || "Open") === "Open";
+  }
   // ---- order state for color coding (green=shipped, tan=in process, red=issue) ----
-  function orderShipped(o) { const t = (o.tracking || "").trim();
-    return !!t && !/^ip$/i.test(t) && /(1z|\d{3,}|pick|deliver|ship|xpo|estes|fedex|ups|odfl|r\+l|saia|old dominion)/i.test(t); }
+  // SPS stays on the open list while its status is Open, even when a BOL or ASN is stored.
+  function orderShipped(o) {
+    if (spsOrder(o)) return false;
+    const t = ((o && o.tracking) || "").trim();
+    return !!t && !/^ip$/i.test(t) && /(1z|\d{3,}|pick|deliver|ship|xpo|estes|fedex|ups|odfl|r\+l|saia|old dominion)/i.test(t);
+  }
+  function orderWaiting(o) {
+    const st = String((o && o.status) || "Open");
+    if (st === "Complete" || st === "Test") return false;
+    return !orderShipped(o);
+  }
   function orderIssue(o) { const x = ((o.notes || "") + " " + (o.tracking || "")).toLowerCase();
     return /\b(issue|problem|hold|damage|short|delay|delayed|back ?order|missing|wrong|re ?ship|refus|lost|rejected)\b/.test(x); }
   function orderStateClass(o) { return orderIssue(o) ? "o-issue" : (orderShipped(o) ? "o-ship" : "o-ip"); }
   function viewOrders() {
     const all = DB.orders().slice().sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
-    // Green = shipped (has a real tracking/PRO #) -> auto-drops off the Open board and moves to Shipped,
-    // matching SPS (once it leaves the SPS open set it's done). No manual "mark complete" needed.
-    const openList = all.filter(o => !orderIsComplete(o) && !orderShipped(o));
-    const compList = all.filter(o => orderIsComplete(o) || orderShipped(o));
+    // Non-SPS: a real tracking number leaves the Open list. SPS Open stays Open
+    // when a BOL, tracking number, or ASN is present. Complete leaves Open.
+    // Test stays off both lists.
+    const openList = all.filter(orderWaiting);
+    const compList = all.filter(o => {
+      const st = String(o.status || "Open");
+      if (st === "Test") return false;
+      return orderIsComplete(o) || orderShipped(o);
+    });
     const list = orderView === "complete" ? compList : openList;
     const toggle = '<div class="ordtabs">' +
       '<button class="' + (orderView === "open" ? "active" : "") + '" onclick="UI.ordView(\'open\')">' + L("ordOpen") + ' (' + openList.length + ')</button>' +
@@ -3898,7 +3917,7 @@
     const fsel = '<select onchange="UI.dmdSet(\'flavor\',this.value)"><option value="">' + L("dmAllFlavors") + '</option>' +
       flavors.map(f => '<option' + (f === dmdFlavor ? ' selected' : '') + '>' + esc(f) + '</option>').join("") + '</select>';
     const ssel = '<select onchange="UI.dmdSet(\'status\',this.value)">' +
-      ['Open', 'Shipped', 'All'].map(s => '<option value="' + s + '"' + (s === dmdStatus ? ' selected' : '') + '>' + L(s === "Open" ? "dmOpen" : s === "Shipped" ? "dmShipped" : "dmAll") + '</option>').join("") + '</select>';
+      ['Open', 'Shipped', 'Complete', 'All'].map(s => '<option value="' + s + '"' + (s === dmdStatus ? ' selected' : '') + '>' + L(s === "Open" ? "dmOpen" : s === "Shipped" ? "dmShipped" : s === "Complete" ? "dmComplete" : "dmAll") + '</option>').join("") + '</select>';
     const head = '<div class="card"><div class="suprow"><h2 style="flex:1;margin:0">' + L("demand") + ' ' + freshChip(dhMax(DB.demandLines ? DB.demandLines() : []), 1) + '</h2>' +
       (all.some(r => /^UNMAPPED/i.test(String(r.flavor || ""))) ? '<button class="ghost sm" style="color:#C55A11;border-color:#C55A11" onclick="UI.demandRemap()">&#128260; Re-map ' + all.filter(r => /^UNMAPPED/i.test(String(r.flavor || ""))).length + ' unmapped</button> ' : "") +
       '<button class="ghost sm" onclick="UI_go(\'demandimport\')">&#8635; ' + L("demandimport") + '</button></div>' +
@@ -3909,8 +3928,9 @@
       '<div class="row" style="margin-top:10px">' + psel + fsel + ssel + '</div></div>';
     const body = rows.length ? rows.map(r => {
       const open = (r.status || "Open") === "Open";
-      const shipBtn = open ? '<button class="ghost sm" onclick="UI.dmShip(\'' + r.source + '\',\'' + esc(r.po) + '\')">' + L("dmShip") + '</button>'
-        : '<span class="muted sm">' + L("dmShipped") + '</span>';
+      const stage = open && window.SPSMap && typeof SPSMap.stageLabel === "function" ? SPSMap.stageLabel(r) : "";
+      const shipBtn = open ? '<button class="ghost sm" onclick="UI.dmShip(\'' + r.source + '\',\'' + esc(r.po) + '\')">' + L("dmShip") + '</button>' + (stage ? '<div class="muted sm">' + esc(stage) + '</div>' : '')
+        : '<span class="muted sm">' + esc(r.status || L("dmShipped")) + '</span>';
       const dc = (r.dc || (r.notes || "")) ? esc(r.dc || "") : "";
       return '<tr><td>' + esc(r.partner) + '</td><td><b>' + esc(r.po) + '</b>' + (r.load ? ' <span class="muted sm">L' + esc(r.load) + '</span>' : '') + '</td>' +
         '<td>' + esc(r.flavor) + '</td><td class="right"><b>' + fmt(r.cases) + '</b></td><td class="right muted">' + fmt(r.bags) + '</td>' +
@@ -3929,7 +3949,7 @@
   function computeBuildNeed(scope) {
     // Two drivers: (1) open customer orders, (2) minimum stock levels (Stock Build goals).
     // scope "buildnow" = ASAP customers only (exclude scheduled Target/McLane/Bass Pro).
-    let open = (DB.demandLines ? DB.demandLines() : []).filter(r => (r.status || "Open") === "Open");
+    let open = (DB.demandLines ? DB.demandLines() : []).filter(demandCountsForBuild);
     if (scope === "buildnow") open = open.filter(r => !isSchedPartner(r.partner));
     const dem = {};
     open.forEach(r => { const f = r.flavor; if (!dem[f]) dem[f] = { code: r.flavor_code, cases: 0, bags: 0 }; dem[f].cases += Number(r.cases) || 0; dem[f].bags += Number(r.bags) || 0; });
@@ -4016,7 +4036,7 @@
     const today = dqToday();
     const unit = isFul ? L("dqCases") : L("dqBags");
     const P = v => isFul ? v.cases : v.bags;
-    const openAll = (DB.demandLines ? DB.demandLines() : []).filter(r => (r.status || "Open") === "Open");
+    const openAll = (DB.demandLines ? DB.demandLines() : []).filter(demandCountsForBuild);
     // Today's target = ASAP customers (build-on-receipt) + stock replenishment, net on-hand. Scheduled customers are held out.
     const bn = computeBuildNeed("buildnow");
     const buildNowBags = openAll.filter(r => !isSchedPartner(r.partner)).reduce((s, r) => s + (Number(r.bags) || 0), 0);
@@ -4082,7 +4102,7 @@
   }
   function viewDemand() { return deptDemandBoard(dmdDept, true); }
   function viewDemandSched() {
-    const open = (DB.demandLines ? DB.demandLines() : []).filter(r => (r.status || "Open") === "Open");
+    const open = (DB.demandLines ? DB.demandLines() : []).filter(demandCountsForBuild);
     if (!open.length) return '<div class="card"><h2>' + L("demandsched") + '</h2><p class="muted">' + L("dsNone") + '</p>' +
       '<button class="primary" onclick="UI_go(\'demandimport\')">' + L("demandimport") + '</button></div>';
     const byF = {};
