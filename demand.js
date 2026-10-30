@@ -7,10 +7,12 @@
   // Target "Vendor Style" code -> flavor
   const STYLE_MAP = { "101":"Cinnamon Churro","102":"Garlic Parmesan","103":"Backyard BBQ","104":"Dill Pickle","105":"Cracked Pepper","106":"OG Original","107":"Cheddar Jalapeno","108":"Ranch","109":"Maple Brown Sugar","110":"Lemon Pepper","111":"Sour Cream & Onion","135":"Cheeseburger" };
   // description keyword -> flavor (fallback + non-Target). Descriptions come from SPS 850 exports and are often
-  // abbreviated (e.g. "CRCK PEP", "CRCKD PEPPR", "DLL PCKL", "GRLC PRM", "GRL PRM", "CHED/JALA", "RNCH", "MPLE BRWN SUG", "ORIG") —
-  // patterns include both the full word and the common abbreviation so similar shorthand keeps resolving without a code change.
+  // abbreviated (e.g. "CRCK PEP", "CRCKD PEPPR", "DLL PCKL", "GRLC PRM", "GRL PRM", "CHED/JALA", "RNCH", "MPLE BRWN SUG", "ORIG").
+  // Patterns include both the full word and the common abbreviation so similar shorthand keeps resolving without a code change.
   // GRL and PRM are whole words so they do not eat GRLC / PRMSN. ORIG stays last so that short token cannot steal
   // Lemon Pepper, Dill Pickle, BBQ, or any more specific flavor above.
+  // Distributor lines also wrap the flavor in brand and pack noise ("SMACKIN' SEEDS SNFL ... 4Z", "SNFLWR SDS",
+  // "4OZ"). cleanFlavorText strips that, and a stored "UNMAPPED:" label, before these rules run.
   const DESC_RULES = [
     [/cinnamon|churro/i, "Cinnamon Churro"],
     [/garlic|parm|\bgrlc\b|prmsn|\bgrl\b|\bprm\b/i, "Garlic Parmesan"],
@@ -60,16 +62,35 @@
     return function (name) { const k = String(name).trim().toLowerCase(); return idx[k] != null ? idx[k] : -1; };
   }
 
-  // Normalize a description for matching: collapse punctuation/dashes/extra whitespace so abbreviations like
-  // "CRCK-PEP" / "CRCK.PEP" / "CRCK  PEP" all match the same as "CRCK PEP" (keeps "&" intact for the S&O rule).
-  function normDesc(s) { return String(s || "").replace(/[._\-]+/g, " ").replace(/\s+/g, " ").trim(); }
+  // Prepare a description, or a stored "UNMAPPED: ..." flavor, for the rules.
+  // Drop the unmapped prefix, pack sizes (4Z, 4OZ, 1.5OZ), and brand/seed noise
+  // (SMACKIN, SMACKN, SUNFLOWER, SNFL, SNFLWR, SEED, SEEDS, SDS, SD). Collapse
+  // punctuation so "CRCK-PEP", "CRCK.PEP", and "CHED/JALA" match the spaced form.
+  // "&" stays so the S&O rule still hits. Noise is removed before the rules so a
+  // short token cannot hide inside SNFLWR or 4OZ, and a saved UNMAPPED label can
+  // be parsed again.
+  function cleanFlavorText(s) {
+    let t = String(s || "");
+    t = t.replace(/^(?:unmapped:\s*)+/i, "");
+    t = t.replace(/['\u2019]/g, "");
+    t = t.replace(/\b\d+(?:\.\d+)?\s*(?:oz|z)\b/ig, " ");
+    t = t.replace(/\b(?:smackin|smackn|sunflower|sunflwr|snflwr|seeds|snfl|seed|sds|sd)\b/ig, " ");
+    t = t.replace(/[._\-\/]+/g, " ").replace(/\s+/g, " ").trim();
+    return t;
+  }
 
   function flavorFromStyleOrDesc(style, desc) {
     style = String(style || "").trim();
     if (STYLE_MAP[style]) return STYLE_MAP[style];
-    const d = normDesc(desc);
+    const d = cleanFlavorText(desc);
     for (const rule of DESC_RULES) { if (rule[0].test(d)) return rule[1]; }
     return null;
+  }
+
+  function resolveFlavor(text) {
+    const name = flavorFromStyleOrDesc("", text);
+    if (!name) return null;
+    return { flavor: name, flavor_code: FLAVOR_CODES[name] || "" };
   }
 
   function isBucketOrVariety(desc) { return /bucket|variety|1\.5\s*oz|1\.5oz|54ct|display/i.test(String(desc || "")); }
@@ -229,5 +250,5 @@
     return "unknown";
   }
 
-  root.DEMAND = { parseCSV, parseSPS, parseShipIQ, aggregate, orderNum, cleanPartner, detectType, FLAVOR_CODES, STYLE_MAP, BAGS_PER_CASE, VARIETY_4PACK_COMPONENTS, isVarietyFourPack };
+  root.DEMAND = { parseCSV, parseSPS, parseShipIQ, aggregate, orderNum, cleanPartner, detectType, FLAVOR_CODES, STYLE_MAP, BAGS_PER_CASE, VARIETY_4PACK_COMPONENTS, isVarietyFourPack, cleanFlavorText, resolveFlavor, flavorFromStyleOrDesc };
 })(window);
