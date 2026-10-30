@@ -79,6 +79,48 @@ assert(sqf.parseOwners("Ken/Brittney\nKen is helping manage this project").join(
 assert(sqf.titleSection("management responsibility") === "Management Responsibility", "title section");
 assert(sqf.titleSection("loading/unloading") === "Loading/Unloading", "slash section");
 assert(sqf.moduleOf("2.3.2.10") === 2 && sqf.moduleOf("11.1.2.4") === 11, "module");
+assert(c.undated === 41, "undated open " + c.undated);
+assert(seed.filter(sqf.isUndatedOpen).length === 41, "undated helper");
+var wallsBefore = walls.action_notes;
+var wallsStatus = walls.status;
+var selected = sqf.redatePlan(seed, ["11.1.2.4", "11.2.3.2"], "2027-01-31");
+assert(selected.ok && selected.rows.length === 2, "selected redate count");
+assert(selected.rows[0].status === "open" && selected.rows[0].action_notes === wallsBefore, "selected keeps notes and status");
+assert(walls.due_date === "2026-10-23" && walls.status === wallsStatus && walls.action_notes === wallsBefore, "plan does not mutate the seed");
+var openClauses = seed.filter(sqf.isOpenWork).map(function (r) { return r.clause; });
+var allOpen = sqf.redatePlan(seed, openClauses, "2027-01-31");
+assert(allOpen.rows.length === 69, "all open is not done " + allOpen.rows.length);
+assert(allOpen.rows.every(function (r) { return r.due_date === "2027-01-31" && r.status !== "done"; }), "open rows keep status");
+assert(sqf.redatePlan(seed, [], "2027-01-31").rows.length === 0, "empty selection");
+assert(sqf.redatePlan(seed, ["11.1.2.4"], "Jan 2027").ok === false, "bad date rejected");
+var payload = sqf.redatePayload("2027-01-31", "monica", "2026-10-30T00:00:00.000Z");
+assert(Object.keys(payload).join(",") === "due_date,updated_by,updated_at", "payload is due date only");
+var copy = JSON.parse(JSON.stringify(walls));
+copy.owners = walls.owners.slice();
+var stamped = sqf.applyDueOnly(copy, "2027-01-31", "ui", "2026-10-30T00:00:00.000Z");
+assert(stamped.due_date === "2027-01-31" && stamped.status === "open" && stamped.action_notes === wallsBefore, "apply due only");
+
+var AS30 = "2026-10-30";
+var PAST_IDS = ["11.1.6.4", "11.1.7.6", "11.6.4.4", "11.6.4.5", "2.3.2.6", "11.1.7.2", "11.1.7.3", "11.1.7.5", "11.1.8.1", "11.2.1.6", "11.4.1.2", "11.4.1.3", "11.4.1.4", "11.1.5.1", "11.1.5.2", "11.1.2.4", "11.1.2.7", "11.1.2.8", "11.2.1.2", "11.6.4.2", "2.3.4.2"];
+var past30 = sqf.filterRows(seed, { past: true }, AS30);
+assert(past30.length === PAST_IDS.length, "oct 30 past due count " + past30.length);
+PAST_IDS.forEach(function (id) {
+  assert(past30.some(function (r) { return r.clause === id && r.status === "open"; }), "past due clause " + id);
+});
+var ordered = sqf.displaySort(seed, AS30);
+var headIds = ordered.slice(0, PAST_IDS.length).map(function (r) { return r.clause; });
+PAST_IDS.forEach(function (id) { assert(headIds.indexOf(id) >= 0, "past due sorts first " + id); });
+assert(!sqf.isPastDue(ordered[PAST_IDS.length], AS30), "row after past due is not past due");
+var mb = sqf.filterRows(seed, { owner: "mb" }, AS30);
+assert(mb.length === 42, "monica or brittney open " + mb.length);
+assert(mb.every(function (r) {
+  return r.status !== "done" && ((r.owners || []).indexOf("Monica") >= 0 || (r.owners || []).indexOf("Brittney") >= 0);
+}), "mb filter is open work for those owners");
+var keptDates = {};
+PAST_IDS.forEach(function (id) { keptDates[id] = row(id).due_date; });
+var janPlan = sqf.redatePlan(seed, PAST_IDS, "2027-01-31");
+assert(janPlan.rows.length === 21 && janPlan.rows.every(function (r) { return r.status === "open" && r.due_date === "2027-01-31"; }), "jan plan for the 21");
+PAST_IDS.forEach(function (id) { assert(row(id).due_date === keptDates[id] && row(id).due_date !== "2027-01-31", "seed date unchanged " + id); });
 
 var past = sqf.filterRows(seed, { past: true }, asOf);
 assert(past.length === 21, "past filter " + past.length);
@@ -90,7 +132,7 @@ assert(src.indexOf("\u2014") < 0, "em dash in sqf-tasks.js");
 var homes = fs.readFileSync(path.join(__dirname, "..", "dept-homes.js"), "utf8");
 assert(homes.indexOf("sqftasks") >= 0 && homes.indexOf('fn: "sqf"') >= 0, "dept home tool");
 var sw = fs.readFileSync(path.join(__dirname, "..", "service-worker.js"), "utf8");
-assert(sw.indexOf('smackin-inv-v257') >= 0 && sw.indexOf("./sqf-tasks.js") >= 0, "cache bump");
+assert(sw.indexOf('smackin-inv-v258') >= 0 && sw.indexOf("./sqf-tasks.js") >= 0, "cache bump");
 
 if (failed) {
   console.error(failed + " failed");

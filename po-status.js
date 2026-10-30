@@ -178,6 +178,13 @@
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c];
     });
   }
+  function noteClass(label) {
+    var s = String(label || "").toLowerCase();
+    if (s.indexOf("awaiting payment") >= 0) return "fc-pay";
+    if (s.indexOf("pre-production") >= 0 || s.indexOf("preproduction") >= 0) return "fc-pre";
+    if (s.indexOf("closed") >= 0) return "fc-closed";
+    return "fc-note";
+  }
   function statusLabel(notes) {
     var m = /\[\[STATUS:\s*([^\]\r\n]+?)\s*\]\]/i.exec(String(notes || ""));
     if (!m) return "";
@@ -374,14 +381,14 @@
     statusPill: function (notes) {
       var label = statusLabel(notes);
       if (!label) return "";
-      return ' <span class="pill status" title="Purchasing status from notes">' + escHtml(label) + '</span>';
+      return ' <span class="pill status fc-chip ' + noteClass(label) + '" title="Purchasing status">' + escHtml(label) + '</span>';
     },
     pill: function (po) {
       var st = statusOf(po);
-      if (st.status === "partial") return ' <span class="pill partial" title="Partially Received">Partially received</span>';
+      if (st.status === "partial") return ' <span class="pill partial fc-chip fc-partial" title="Partially Received">Partially received</span>';
       return st.status === "closed"
-        ? ' <span class="pill ok" title="' + escHtml(st.reason) + '">Closed' + (st.reason && st.reason !== "Received" ? " &middot; " + escHtml(st.reason) : "") + '</span>'
-        : ' <span class="pill low">Open</span>';
+        ? ' <span class="pill ok fc-chip fc-closed" title="' + escHtml(st.reason) + '">Closed' + (st.reason && st.reason !== "Received" ? " &middot; " + escHtml(st.reason) : "") + '</span>'
+        : ' <span class="pill low fc-chip fc-open">Open</span>';
     },
     toggleHtml: function (list) {
       var c = this.counts(list);

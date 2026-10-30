@@ -113,7 +113,7 @@
       ".df-meta{font-size:12px;color:#3d4c5e;font-weight:600}",
       ".df-more{display:block;width:100%;margin-top:8px;background:#fff;border:1px solid var(--line,#d7dde6);border-radius:8px;padding:8px 12px;font-family:inherit;font-weight:700;font-size:13px;color:var(--navy,#1F3864);cursor:pointer}",
       ".df-note{font-size:13px;color:#3d4c5e;margin:0 0 12px}",
-      "@media(max-width:900px){.df-grid{grid-template-columns:1fr}.df-head{flex-direction:column}.df-links{justify-content:flex-start}}"
+      "@media(max-width:900px){.df-grid{grid-template-columns:1fr}.df-head{flex-direction:column}.df-links{justify-content:flex-start}.fc-kpis{grid-template-columns:1fr}}"
     ].join("");
     document.head.appendChild(s);
   }
@@ -244,11 +244,11 @@
       var id = r.oid ? '<div class="df-meta">' + esc(r.oid) + '</div>' : "";
       var when = slcClock(r.at);
       var src = (r.source ? esc(r.source) : "") + (when ? (r.source ? " · " : "") + esc(when) : "");
-      return '<tr' + hide + '><td><div class="df-name">' + esc(r.customer || "—") + '</div>' +
+      return '<tr' + hide + '><td><div class="df-name">' + esc(r.customer || "-") + '</div>' +
         (src ? '<div class="df-meta">' + src + '</div>' : "") + '</td>' +
-        '<td><b>' + esc(r.po || "—") + '</b>' + id + '</td>' +
+        '<td><b>' + esc(r.po || "-") + '</b>' + id + '</td>' +
         '<td>' + statusPill(r.status) + '</td>' +
-        '<td>' + esc(r.ship || "—") + '</td>' +
+        '<td>' + esc(r.ship || "-") + '</td>' +
         '<td>' + (r.flavors ? esc(r.flavors) : '<span class="df-meta">No flavor lines on the demand board</span>') + '</td></tr>';
     }).join("");
     var more = list.length > SHOW_CAP
@@ -387,13 +387,13 @@
       var totNum = parseFloat(String(r.total == null ? "" : r.total).replace(/[^0-9.\-]/g, ""));
       if (totNum > 0) tot = '<div class="df-meta">$' + totNum.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</div>';
       var pills = "";
-      if (r.partial) pills += ' <span class="pill partial">Partially received</span>';
-      if (r.statusLabel) pills += ' <span class="pill status">' + esc(r.statusLabel) + '</span>';
-      return '<tr' + hide + '><td><b>' + esc(r.num || "—") + '</b>' + pills + tot + '</td>' +
-        '<td>' + esc(r.vendor || "—") + '</td>' +
-        '<td>' + esc(r.date || "—") + '</td>' +
+      if (r.partial) pills += ' <span class="pill partial fc-chip fc-partial">Partially received</span>';
+      if (r.statusLabel) pills += ' <span class="pill status fc-chip ' + chipKind(r.statusLabel) + '">' + esc(r.statusLabel) + '</span>';
+      return '<tr' + hide + '><td><b>' + esc(r.num || "-") + '</b>' + pills + tot + '</td>' +
+        '<td>' + esc(r.vendor || "-") + '</td>' +
+        '<td>' + esc(r.date || "-") + '</td>' +
         '<td>' + lineBits(r.lines) + '</td>' +
-        '<td>' + esc(r.expect || "—") + '</td></tr>';
+        '<td>' + esc(r.expect || "-") + '</td></tr>';
     }).join("");
     var more = list.length > SHOW_CAP
       ? '<button type="button" class="df-more" onclick="DASHBOARD.more(this)">Show all ' + list.length + '</button>'
@@ -457,6 +457,80 @@
     return '<div class="card" id="df-' + kind + '">' + head(title, go("dash", "Inventory →") + go("alerts", "Alerts →")) + body + '</div>';
   }
 
+  function chipKind(label) {
+    var s = String(label || "").toLowerCase();
+    if (s.indexOf("awaiting payment") >= 0) return "fc-pay";
+    if (s.indexOf("pre-production") >= 0 || s.indexOf("preproduction") >= 0) return "fc-pre";
+    if (s.indexOf("closed") >= 0) return "fc-closed";
+    return "fc-note";
+  }
+  function dueISO(d) {
+    if (!d) return "";
+    d = String(d).trim();
+    var m = d.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return m[1] + "-" + m[2] + "-" + m[3];
+    m = d.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+    if (!m) return "";
+    var y = m[3];
+    if (y.length === 2) y = "20" + y;
+    return y + "-" + ("0" + m[1]).slice(-2) + "-" + ("0" + m[2]).slice(-2);
+  }
+  function pastDueGroups() {
+    var today = slcDay(new Date().toISOString());
+    var lines = [];
+    try { lines = (DB.demandLines ? DB.demandLines() : []) || []; } catch (e) { lines = []; }
+    var by = {};
+    lines.forEach(function (r) {
+      if (!r || (r.status || "Open") !== "Open") return;
+      var due = dueISO(r.due_date);
+      if (!due || due >= today) return;
+      var k = String(r.source || "") + "|" + String(r.po || "");
+      var g = by[k];
+      if (!g) g = by[k] = { partner: r.partner || "", po: r.po || "", due: due, cases: 0, lines: 0 };
+      if (due < g.due) g.due = due;
+      g.cases += Number(r.cases) || 0;
+      g.lines += 1;
+    });
+    return Object.keys(by).map(function (k) { return by[k]; }).sort(function (a, b) {
+      if (a.due !== b.due) return a.due < b.due ? -1 : 1;
+      return String(a.partner).localeCompare(String(b.partner));
+    });
+  }
+  function kpiBtn(id, n, label, tone) {
+    return '<button type="button" class="fc-kpi ' + (tone || "ok") + '" onclick="DASHBOARD.goCard(\'' + id + '\')"><b>' +
+      fmt(n) + "</b><span>" + esc(label) + "</span></button>";
+  }
+  function pastDueCard(list) {
+    var title = tx({ en: "Past-due demand", es: "Demanda vencida", pt: "Demanda vencida" });
+    var body;
+    if (!cloud()) {
+      body = '<p class="df-empty">' + tx({
+        en: "Past-due orders load from the cloud database.",
+        es: "Las ordenes vencidas cargan de la nube.",
+        pt: "Os pedidos vencidos carregam da nuvem."
+      }) + "</p>";
+    } else if (!list.length) {
+      body = '<p class="df-empty">' + tx({
+        en: "No open demand is past its due date.",
+        es: "Ninguna demanda abierta esta vencida.",
+        pt: "Nenhuma demanda aberta esta vencida."
+      }) + "</p>";
+    } else {
+      var rows = list.slice(0, 8).map(function (g) {
+        return '<tr class="df-row-out"><td><b>' + esc(g.po || "-") + '</b><div class="df-meta">' + esc(g.partner || "") + "</div></td>" +
+          "<td>" + esc(g.due) + '</td><td class="right"><b>' + fmt(g.cases) + '</b></td><td class="right">' + g.lines + "</td></tr>";
+      }).join("");
+      var extra = list.length > 8 ? '<p class="df-sub">' + (list.length - 8) + " more on the order board.</p>" : "";
+      body = '<p class="df-sub">' + tx({
+        en: list.length + " open " + (list.length === 1 ? "PO is" : "POs are") + " past the due date. Complete them on the order board.",
+        es: list.length + " OC abiertas vencidas. Completelas en el tablero.",
+        pt: list.length + " OCs abertas vencidas. Conclua no painel."
+      }) + '</p><div class="df-scroll"><table class="df"><thead><tr><th>PO</th><th>Due</th><th class="right">Cases</th><th class="right">Lines</th></tr></thead><tbody>' +
+        rows + "</tbody></table></div>" + extra;
+    }
+    return '<div class="card" id="df-pastdue">' + head(title, go("demandboard", tx({ en: "Order board", es: "Tablero", pt: "Painel" }))) + body + "</div>";
+  }
+
   function html() {
     styleOnce();
     var today = slcDay(new Date().toISOString());
@@ -474,28 +548,52 @@
       pt: "Este navegador nao esta na base compartilhada. O que aparece abaixo nao e dado ao vivo da planta."
     }) + '</div>';
 
+    var late = [];
+    try { late = pastDueGroups(); } catch (e4) { late = []; }
+    var watch = inbound.filter(function (r) { return r.partial || (r.expect && r.expect < today); });
+    var counts = '<div class="fc-kpis">' +
+      kpiBtn("df-out", split.out.length, tx({ en: "Out of stock", es: "Agotado", pt: "Esgotado" }), split.out.length ? "bad" : "ok") +
+      kpiBtn("df-pastdue", late.length, tx({ en: "Past-due demand", es: "Demanda vencida", pt: "Demanda vencida" }), late.length ? "bad" : "ok") +
+      kpiBtn("df-inbound", watch.length || inbound.length, watch.length
+        ? tx({ en: "Inbound to watch", es: "Entrada a revisar", pt: "Entrada para ver" })
+        : tx({ en: "Inbound open", es: "Entrada abierta", pt: "Entrada aberta" }), watch.length ? "warn" : "ok") +
+      "</div>";
+
     var inboundBody;
     if (!cloud()) {
       inboundBody = '<p class="df-empty">' + tx({ en: "Open purchase orders load from the cloud database.", es: "Las ordenes de compra abiertas cargan de la nube.", pt: "As ordens de compra abertas carregam da nuvem." }) + '</p>';
     } else if (!inbound.length) {
       inboundBody = '<p class="df-empty">' + tx({ en: "No open inbound POs. Nothing is waiting on a supplier right now.", es: "No hay ordenes de compra abiertas.", pt: "Nao ha ordens de compra abertas." }) + '</p>';
     } else {
-      inboundBody = '<p class="df-sub">' + inbound.length + (inbound.length === 1 ? " open PO" : " open POs") + '. Received and closed POs stay off this list.</p>' + inboundTable(inbound);
+      inboundBody = '<p class="df-sub">' + tx({
+        en: inbound.length + " open. Partially Received, Awaiting Payment, and Pre-Production show as chips. Closed POs stay off this list.",
+        es: inbound.length + " abiertas. Recibido parcial, pago pendiente y preproduccion se ven como etiquetas. Las cerradas no salen.",
+        pt: inbound.length + " abertas. Recebido parcial, pagamento pendente e pre-producao aparecem como etiquetas. As fechadas ficam de fora."
+      }) + "</p>" + inboundTable(inbound);
     }
 
-    var note = '<p class="df-note">Pulled means the order was saved into Smackin OS that SLC day. The ship date on the row is not the pull day. Flavor totals come from the demand board for that PO. Inbound is supplier POs that are still open.</p>';
+    var note = '<p class="df-note">Pulled means the order was saved into Smackin OS that SLC day. The ship date on the row is not the pull day. Flavor totals come from the demand board for that PO.</p>';
 
     return banner +
       '<div class="card df-lead"><h2>' + tx({ en: "Dashboard", es: "Panel", pt: "Painel" }) + '</h2>' +
-      '<p class="hint">Out of stock, low stock, orders already pulled into Smackin OS, and inbound supply still open.</p></div>' +
-      '<div class="df-grid">' + stockCard("out", split.out) + stockCard("low", split.low) + '</div>' +
-      '<div class="df-grid">' + orderCard("yest", yday, pulled, pulled) + orderCard("today", today, pulled, pulled) + '</div>' +
-      '<div class="card" id="df-inbound">' + head(tx({ en: "Inbound — ordered and still open", es: "Entrada — pedido y aun abierto", pt: "Entrada — pedido e ainda aberto" }), go("purchasing", "Purchasing →") + go("expreceipts", "Expected receipts →")) + inboundBody + '</div>' +
+      '<p class="hint">' + tx({
+        en: "Start here: stockouts, past-due demand, and inbound that still needs a receive or a status check.",
+        es: "Empiece aqui: agotados, demanda vencida y entrada que aun hay que recibir o revisar.",
+        pt: "Comece aqui: esgotados, demanda vencida e entrada que ainda precisa de recebimento ou revisao."
+      }) + "</p>" + counts + "</div>" +
+      stockCard("out", split.out) +
+      pastDueCard(late) +
+      '<div class="card" id="df-inbound">' + head(tx({ en: "Inbound still open", es: "Entrada aun abierta", pt: "Entrada ainda aberta" }), go("purchasing", "Purchasing") + go("expreceipts", tx({ en: "Receive", es: "Recibir", pt: "Receber" }))) + inboundBody + "</div>" +
+      '<div id="df-also">' + stockCard("low", split.low) + orderCard("today", today, pulled, pulled) + orderCard("yest", yday, pulled, pulled) + "</div>" +
       note;
   }
 
   window.DASHBOARD = {
     html: html,
+    goCard: function (id) {
+      var el = document.getElementById(id);
+      if (el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    },
     more: function (btn) {
       var card = btn && btn.parentNode;
       if (!card) return;

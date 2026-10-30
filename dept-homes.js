@@ -191,7 +191,7 @@
       icon: "layout-dashboard",
       label: { en: "Dashboard", es: "Panel", pt: "Painel" },
       title: { en: "Dashboard", es: "Panel", pt: "Painel" },
-      intro: { en: "Facility snapshot: stock, orders pulled today, and open inbound POs.", es: "Resumen de la planta: stock, ordenes tomadas hoy y compras abiertas.", pt: "Resumo da planta: estoque, pedidos puxados hoje e compras abertas." },
+      intro: { en: "Start with stockouts, past-due demand, and inbound that still needs a look.", es: "Empiece por agotados, demanda vencida y la entrada que aun hay que revisar.", pt: "Comece por esgotados, demanda vencida e a entrada que ainda precisa de olho." },
       sections: [
         { h: { en: "Facility", es: "Planta", pt: "Planta" }, tools: ["desk", "daily"] }
       ]
@@ -216,7 +216,7 @@
       title: { en: "Purchasing", es: "Compras", pt: "Compras" },
       intro: { en: "Purchase orders, what is due in, and the inbound SPS feed.", es: "Ordenes de compra, lo que debe llegar y el feed SPS de entrada.", pt: "Ordens de compra, o que deve chegar e o feed SPS de entrada." },
       sections: [
-        { h: { en: "Purchase orders", es: "Ordenes de compra", pt: "Ordens de compra" }, tools: ["purchasing", "expreceipts", "reorder15"] },
+        { h: { en: "Buy and receive", es: "Comprar y recibir", pt: "Comprar e receber" }, tools: ["purchasing", "expreceipts", "reorder15"] },
         { h: { en: "Inbound", es: "Entrada", pt: "Entrada" }, tools: ["sps"] }
       ]
     },
@@ -227,7 +227,8 @@
       title: { en: "Receiving", es: "Recibo", pt: "Recebimento" },
       intro: { en: "Check product in, log the paperwork, and work quarantine. Returns opens Adriana's Inventory screen.", es: "Reciba producto, registre el papeleo y trabaje cuarentena. Devoluciones abre la pantalla de Inventario.", pt: "Receba produto, registre os documentos e trabalhe a quarentena. Devolucoes abre a tela de Estoque." },
       sections: [
-        { h: { en: "Inbound", es: "Entrada", pt: "Entrada" }, tools: ["receive", "recvlog", "returns", "quarantine", "trRecv"] }
+        { h: { en: "Dock", es: "Muelle", pt: "Cais" }, tools: ["receive", "recvlog", "returns"] },
+        { h: { en: "Checks", es: "Revisiones", pt: "Checagens" }, tools: ["quarantine", "trRecv"] }
       ]
     },
     {
@@ -274,7 +275,8 @@
       title: { en: "Fulfillment", es: "Fulfillment", pt: "Fulfillment" },
       intro: { en: "Retail and e-commerce builds, lot trace use, and lot trace ship. Shipping has its own tab.", es: "Produccion retail y e-commerce, salida de lote y envio de lote. Envios tiene su propia pestana.", pt: "Producao de varejo e e-commerce, saida de lote e envio de lote. Envios tem sua propria aba." },
       sections: [
-        { h: { en: "Line", es: "Linea", pt: "Linha" }, tools: ["retailprod", "ecomprod", "trUse", "trShip", "fglots", "produce", "prodlog", "fulfilldaily"] },
+        { h: { en: "Today", es: "Hoy", pt: "Hoje" }, tools: ["fulfilldaily", "retailprod", "ecomprod", "prodlog"] },
+        { h: { en: "Line", es: "Linea", pt: "Linha" }, tools: ["trUse", "trShip", "fglots", "produce"] },
         { h: { en: "Lookup and stock", es: "Busqueda y stock", pt: "Busca e estoque" }, tools: ["skulookup", "flavinv", "stockbuild"] },
         { h: { en: "Orders", es: "Ordenes", pt: "Pedidos" }, tools: ["orders", "orderdocs"] },
         { h: { en: "Errors and returns", es: "Errores y devoluciones", pt: "Erros e devolucoes" }, tools: ["fulfillerr"] }
@@ -539,6 +541,17 @@
     return '<div class="card dept-span' + (span || 2) + '"><div class="df-head"><h2 class="sub2">' + title + "</h2>" +
       jump(toolId) + "</div>" + body + "</div>";
   }
+  function foldPanel(title, body, span, toolId) {
+    return '<details class="card dept-fold dept-span' + (span || 2) + '"><summary><span class="sub2">' + title + "</span>" +
+      jump(toolId) + "</summary>" + body + "</details>";
+  }
+  function poNoteClass(label) {
+    var s = String(label || "").toLowerCase();
+    if (s.indexOf("awaiting payment") >= 0) return "fc-pay";
+    if (s.indexOf("pre-production") >= 0 || s.indexOf("preproduction") >= 0) return "fc-pre";
+    if (s.indexOf("closed") >= 0) return "fc-closed";
+    return "fc-note";
+  }
   function sub(text) {
     return '<p class="df-sub">' + esc(text) + "</p>";
   }
@@ -688,8 +701,8 @@
         var extra = r.lines.length > 3 ? '<div class="df-meta">+' + (r.lines.length - 3) + " more</div>" : "";
         return [
           "<b>" + esc(r.num || "-") + "</b>" +
-            (r.partial ? ' <span class="pill partial">Partially received</span>' : "") +
-            (r.statusLabel ? ' <span class="pill status">' + esc(r.statusLabel) + '</span>' : "") +
+            (r.partial ? ' <span class="pill partial fc-chip fc-partial">Partially received</span>' : "") +
+            (r.statusLabel ? ' <span class="pill status fc-chip ' + poNoteClass(r.statusLabel) + '">' + esc(r.statusLabel) + "</span>" : "") +
             (r.legacy ? '<div class="df-meta">Legacy PO</div>' : ""),
           esc(r.vendor || "-"),
           esc(r.expect || "-"),
@@ -1060,7 +1073,7 @@
         split.low.length ? sub("Above zero and under the reorder point.") + dfTable(cols, stockRows(split.low, "low"))
           : empty(tx({ en: "Nothing is under its reorder point.", es: "Nada esta bajo su punto de reorden.", pt: "Nada esta abaixo do ponto de reposicao." })),
         2, "dash") +
-      panel(tx({ en: "Finished goods on hand", es: "Producto terminado", pt: "Produto acabado" }),
+      foldPanel(tx({ en: "Finished goods on hand", es: "Producto terminado", pt: "Produto acabado" }),
         fg.rows.length ? dfTable(
           [{ h: "Item" }, { h: "Size" }, { h: "On hand", right: true }],
           fg.rows.map(function (r) {
@@ -1093,7 +1106,7 @@
     if (seas.exp) note += " · " + seas.exp + " expired";
     if (seas.quar) note += " · " + seas.quar + " in quarantine";
     note += ". " + recipes + " batch recipes on file.";
-    return panel(tx({ en: "Seasoning lots", es: "Lotes de sazon", pt: "Lotes de tempero" }),
+    return foldPanel(tx({ en: "Seasoning lots", es: "Lotes de sazon", pt: "Lotes de tempero" }),
       sub(note) + (seas.lots.length ? dfTable(
         [{ h: "Product" }, { h: "Lot" }, { h: "Exp" }, { h: "Lb", right: true }],
         seas.lots.map(function (l) {
@@ -1118,7 +1131,7 @@
     var skuN = (window.SMACKIN_SKUS || []).length;
     var catN = 0;
     try { catN = DB.skuCatalog ? Object.keys(DB.skuCatalog() || {}).length : 0; } catch (e) { catN = 0; }
-    return panel(tx({ en: "Seed lots", es: "Lotes de semilla", pt: "Lotes de semente" }),
+    return foldPanel(tx({ en: "Seed lots", es: "Lotes de semilla", pt: "Lotes de semente" }),
       seed.lots.length ? sub(fmt(seed.lbs) + " lb logged." + (seed.quar ? " " + seed.quar + " in quarantine." : "")) + dfTable(
         [{ h: "Product" }, { h: "Lot" }, { h: "Received" }, { h: "Lb", right: true }],
         seed.lots.map(function (l) {
@@ -1132,7 +1145,7 @@
         })
       ) : empty(tx({ en: "No seed lots yet.", es: "Aun no hay lotes de semilla.", pt: "Ainda nao ha lotes de semente." })),
       2, "seed") +
-      panel(tx({ en: "SKU catalog", es: "Catalogo SKU", pt: "Catalogo SKU" }),
+      foldPanel(tx({ en: "SKU catalog", es: "Catalogo SKU", pt: "Catalogo SKU" }),
         sub(skuN + " finished SKUs in the pack list. " + catN + " extra SKUs saved on the catalog."),
         2, "skus");
   }
@@ -1176,6 +1189,13 @@
       bags += Number(r.bags) || 0;
       if (/^UNMAPPED/i.test(String(r.flavor || ""))) unmapped++;
     });
+    var todayD = slcToday();
+    var latePo = {};
+    open.forEach(function (r) {
+      var due = dueISO(r.due_date);
+      if (due && due < todayD) latePo[String(r.source || "") + "|" + String(r.po || "")] = 1;
+    });
+    var lateN = Object.keys(latePo).length;
     var poN = Object.keys(pos).length;
     var ecom = ecomShort();
     var shortN = ecom.filter(function (x) { return x.short > 0; }).length;
@@ -1189,13 +1209,13 @@
     });
     var deptKeys = Object.keys(byDept);
     return statRow([
+      stat(fmt(lateN), tx({ en: "Past due POs", es: "OC vencidas", pt: "OCs vencidas" }), lateN ? "bad" : ""),
       stat(fmt(poN), tx({ en: "Open demand POs", es: "OC de demanda abiertas", pt: "OCs de demanda abertas" })),
       stat(fmt(cases), tx({ en: "Open cases", es: "Cajas abiertas", pt: "Caixas abertas" })),
-      stat(fmt(bags), tx({ en: "Open bags", es: "Bolsas abiertas", pt: "Sacos abertos" })),
       stat(fmt(shortN), tx({ en: "E-com flavors short", es: "Sabores e-com cortos", pt: "Sabores e-com em falta" }), shortN ? "warn" : "")
     ]) +
       panel(tx({ en: "Open demand", es: "Demanda abierta", pt: "Demanda aberta" }),
-        open.length ? sub((unmapped ? unmapped + " unmapped lines. " : "") + "Sorted by due date.") + dfTable(
+        open.length ? sub((unmapped ? unmapped + " unmapped lines. " : "") + "Past due first.") + dfTable(
           [{ h: "Partner" }, { h: "PO" }, { h: "Flavor" }, { h: "Cases", right: true }, { h: "Due" }],
           open.map(function (r) {
             var due = dueISO(r.due_date) || String(r.due_date || "");
@@ -1210,7 +1230,7 @@
           })
         ) : empty(tx({ en: "No open demand lines.", es: "No hay lineas de demanda abiertas.", pt: "Nao ha linhas de demanda abertas." })),
         2, "demandboard") +
-      panel(tx({ en: "E-com queue vs bags on hand", es: "Cola e-com vs bolsas", pt: "Fila e-com vs sacos" }),
+      foldPanel(tx({ en: "E-com queue vs bags on hand", es: "Cola e-com vs bolsas", pt: "Fila e-com vs sacos" }),
         ecom.length ? dfTable(
           [{ h: "Flavor" }, { h: "On hand", right: true }, { h: "Queue", right: true }, { h: "Short", right: true }],
           ecom.map(function (x) {
@@ -1218,7 +1238,7 @@
           })
         ) : empty(tx({ en: "No e-com demand snapshot loaded.", es: "No hay demanda e-com cargada.", pt: "Nao ha demanda e-com carregada." })),
         2, "ecomdemand") +
-      panel(tx({ en: "Logged today", es: "Registrado hoy", pt: "Registrado hoje" }) + " · " + esc(screenDay()),
+      foldPanel(tx({ en: "Logged today", es: "Registrado hoy", pt: "Registrado hoje" }) + " · " + esc(screenDay()),
         deptKeys.length ? dfTable(
           [{ h: "Department" }, { h: "Bags", right: true }, { h: "Cases", right: true }],
           deptKeys.map(function (k) {
@@ -1393,7 +1413,7 @@
         sub("Saved into Smackin OS on " + today + " (SLC).") +
         (tRows.length ? pullTable(tRows) : empty(tx({ en: "No orders pulled today yet.", es: "Ninguna orden entrada hoy.", pt: "Nenhum pedido entrou hoje." }))),
         2, "orders") +
-      panel(tx({ en: "Pulled yesterday", es: "Entradas ayer", pt: "Entraram ontem" }),
+      foldPanel(tx({ en: "Pulled yesterday", es: "Entradas ayer", pt: "Entraram ontem" }),
         yRows.length ? pullTable(yRows) : empty(tx({ en: "No orders pulled yesterday.", es: "Ninguna orden entrada ayer.", pt: "Nenhum pedido entrou ontem." })),
         2, "orders") +
       panel(tx({ en: "Open orders", es: "Ordenes abiertas", pt: "Pedidos abertos" }),
@@ -2186,10 +2206,10 @@
       "main{padding:4px 6px 12px!important}",
       "main,#view{max-width:none!important;width:100%!important;flex:none!important}",
       "#view:has(>.df-lead){display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;align-items:stretch}",
-      "#view:has(>.df-lead)>.df-banner,#view:has(>.df-lead)>.df-lead,#view:has(>.df-lead)>#df-inbound,#view:has(>.df-lead)>.df-note{grid-column:1 / -1}",
+      "#view:has(>.df-lead)>.df-banner,#view:has(>.df-lead)>.df-lead,#view:has(>.df-lead)>#df-out,#view:has(>.df-lead)>#df-pastdue,#view:has(>.df-lead)>#df-inbound,#view:has(>.df-lead)>#df-also,#view:has(>.df-lead)>.df-note{grid-column:1 / -1}",
       "#view:has(>.df-lead)>.df-grid{display:contents}",
       "#view .df-grid{gap:6px;margin:0}",
-      "#view .df-grid>.card,#view #df-inbound,#view .df-lead{padding:8px 10px;border-radius:8px;margin:0}",
+      "#view .df-grid>.card,#view #df-inbound,#view #df-out,#view #df-pastdue,#view #df-also>.card,#view .df-lead{padding:8px 10px;border-radius:8px;margin:0}",
       "#view .df-lead h2{font-size:16px;margin:0}",
       "#view .df-head{margin:0 0 4px;gap:6px}",
       "#view .df-head h2{font-size:15px}",

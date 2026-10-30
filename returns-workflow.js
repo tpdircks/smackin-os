@@ -71,7 +71,9 @@
       reversed: "Return removed and its stock move was reversed.",
       shortStop: "Those units are no longer all in the recorded location. Nothing was changed.",
       delShort: "Log removed. Only the units still in the recorded location were taken back out.",
-      cleanupNote: "Live qty sitting in RETURNS. This is not a stock adjustment. Count corrections no longer write to RETURNS, QUARANTINE, QA-HOLD, or RETURNS-HOLD. Adriana has to confirm which of these rows are real returns and which are bad count loads before anyone moves them."
+      cleanupNote: "Live qty sitting in RETURNS. This is not a stock adjustment. Count corrections no longer write to RETURNS, QUARANTINE, QA-HOLD, or RETURNS-HOLD. Adriana has to confirm which of these rows are real returns and which are bad count loads before anyone moves them.",
+      dispHelp: "Hold keeps it off the floor. Release sends sellable units to RECEIVING. Scrap does not add stock. Other needs notes.",
+      queueLead: "These are on hold. Release, scrap, or mark other. Hold is already the state."
     },
     es: {
       title: "Devoluciones",
@@ -107,7 +109,9 @@
       reversed: "Devolucion eliminada y su movimiento de stock fue revertido.",
       shortStop: "Esas unidades ya no estan todas en la ubicacion registrada. No se cambio nada.",
       delShort: "Registro eliminado. Solo salieron las unidades que aun estaban en la ubicacion registrada.",
-      cleanupNote: "Cantidad viva en RETURNS. No es un ajuste. Los conteos ya no escriben en RETURNS, QUARANTINE, QA-HOLD ni RETURNS-HOLD. Adriana confirma que filas son devoluciones reales antes de moverlas."
+      cleanupNote: "Cantidad viva en RETURNS. No es un ajuste. Los conteos ya no escriben en RETURNS, QUARANTINE, QA-HOLD ni RETURNS-HOLD. Adriana confirma que filas son devoluciones reales antes de moverlas.",
+      dispHelp: "Retener lo deja fuera del piso. Liberar manda lo vendible a RECEIVING. Desechar no suma stock. Otro necesita notas.",
+      queueLead: "Estas estan retenidas. Libere, deseche o marque otro. Retener ya es el estado."
     },
     pt: {
       title: "Devolucoes",
@@ -143,7 +147,9 @@
       reversed: "Devolucao removida e o movimento de estoque foi revertido.",
       shortStop: "Essas unidades nao estao mais todas no local registrado. Nada mudou.",
       delShort: "Registro removido. So saiu o que ainda estava no local registrado.",
-      cleanupNote: "Quantidade viva em RETURNS. Nao e um ajuste. Contagens nao gravam mais em RETURNS, QUARANTINE, QA-HOLD ou RETURNS-HOLD. Adriana confirma quais linhas sao devolucoes reais antes de mover."
+      cleanupNote: "Quantidade viva em RETURNS. Nao e um ajuste. Contagens nao gravam mais em RETURNS, QUARANTINE, QA-HOLD ou RETURNS-HOLD. Adriana confirma quais linhas sao devolucoes reais antes de mover.",
+      dispHelp: "Reter deixa fora do piso. Liberar manda o que vende para RECEIVING. Descartar nao soma estoque. Outro precisa de notas.",
+      queueLead: "Estas estao retidas. Libere, descarte ou marque outro. Reter ja e o estado."
     }
   };
 
@@ -374,6 +380,13 @@
       return '<option value="' + esc(v) + '"' + (v === cur ? " selected" : "") + ">" + esc(t) + "</option>";
     }).join("");
   }
+  function dispButtons(selectId, current) {
+    var labels = { Hold: tx("hold"), Release: tx("release"), Scrap: tx("scrap"), Other: tx("other") };
+    return '<div class="rw-dispbtns">' + DISPS.map(function (d) {
+      var on = d === current ? " on" : "";
+      return '<button type="button" class="rw-disp rw-' + d.toLowerCase() + on + '" data-rw="pick-disp" data-for="' + selectId + '" data-val="' + d + '">' + esc(labels[d]) + "</button>";
+    }).join("") + '</div><select id="' + selectId + '" class="rw-disp-select" tabindex="-1" aria-hidden="true">' + opt(DISPS, current, labels) + "</select>";
+  }
   function dispLabel(v) {
     if (v === "Hold") return tx("hold");
     if (v === "Release") return tx("release");
@@ -425,19 +438,23 @@
       '<div class="kpi' + (open.length ? " alert" : "") + '"><div class="n">' + open.length + '</div><div class="l">' + esc(tx("open")) + "</div></div></div>";
     var form = editId ? editCard(editId) : logCard(reasons);
     var queue = '<div class="card"><h2 class="sub2">' + esc(tx("open")) + " (" + open.length + ")</h2>" +
+      '<p class="hint">' + esc(tx("queueLead")) + "</p>" +
       (open.length ? openTable(open) : '<p class="muted">No open holds.</p>') + "</div>";
     var hist = '<div class="card"><h2 class="sub2">' + esc(tx("history")) + " (" + all.length + ")</h2>" +
       '<label>Search</label><input id="rw-q" autocomplete="off" value="' + esc(logQ) + '" placeholder="Product, customer, order">' +
       histTable(shown) + "</div>";
     var clean = cleanupCard();
     return '<div id="rw-root">' + schemaBanner + bannerHtml +
-      '<div class="card"><h2>' + esc(tx("title")) + "</h2><p class=\"hint\">" + esc(tx("own")) + "</p>" + kpis +
+      '<div class="card"><h2>' + esc(tx("title")) + "</h2><p class=\"hint\">" + esc(tx("own")) + "</p></div>" +
+      form + queue +
+      '<div class="card fc-ref"><h2 class="sub2">' + esc(tx("avail")) + "</h2>" + kpis +
       '<p class="hint">' + esc(tx("availNote")) + "</p></div>" +
-      form + queue + hist + clean + "</div>";
+      hist + clean + "</div>";
   }
   function logCard(reasons) {
-    var dispOpts = opt(DISPS, "Hold", { Hold: tx("hold"), Release: tx("release"), Scrap: tx("scrap"), Other: tx("other") });
     return '<div class="card"><h2 class="sub2">' + esc(tx("log")) + "</h2>" +
+      dispButtons("rw-disp", "Hold") +
+      '<p class="hint">' + esc(tx("dispHelp")) + "</p>" +
       '<div class="row" style="gap:8px;margin-bottom:8px">' +
       '<button type="button" class="' + (channel === "major" ? "primary" : "ghost") + ' sm" data-rw="channel" data-val="major">Major</button>' +
       '<button type="button" class="' + (channel === "ecom" ? "primary" : "ghost") + ' sm" data-rw="channel" data-val="ecom">E-com</button></div>' +
@@ -448,8 +465,7 @@
       '<div><label>Tracking</label><input id="rw-track" autocomplete="off"></div>' +
       '<div><label>Date</label><input id="rw-date" type="date" value="' + today() + '"></div></div>' +
       '<div class="row"><div><label>Reason</label><select id="rw-reason">' + reasons.map(function (r) { return "<option>" + esc(r) + "</option>"; }).join("") + "</select></div>" +
-      '<div><label>' + esc(tx("condition")) + '</label><select id="rw-cond"><option value=""></option>' + CONDITIONS.map(function (c) { return "<option>" + esc(c) + "</option>"; }).join("") + "</select></div>" +
-      '<div><label>Disposition</label><select id="rw-disp">' + dispOpts + "</select></div></div>" +
+      '<div><label>' + esc(tx("condition")) + '</label><select id="rw-cond"><option value=""></option>' + CONDITIONS.map(function (c) { return "<option>" + esc(c) + "</option>"; }).join("") + "</select></div></div>" +
       '<div class="row"><div><label>' + esc(tx("notes")) + '</label><input id="rw-notes" autocomplete="off" placeholder="Required for Other"></div>' +
       '<div><label>' + esc(tx("dest")) + ' (Other)</label><select id="rw-dest">' +
       '<option value="">' + esc(tx("destNone")) + "</option>" +
@@ -473,11 +489,11 @@
     var disp = canonDisp(row.disposition) || (isOpenRow(row) ? "Hold" : "Release");
     return '<div class="card"><h2 class="sub2">Edit return</h2><p class="hint">Saving reverses the stock move this row recorded, then applies the new disposition. Other locations are not touched.</p>' +
       "<p><b>" + esc(row.product || row.item_code || "") + "</b> x" + fmt(row.qty) + "</p>" +
+      dispButtons("rw-edit-disp", disp) +
       '<div class="row"><div><label>Qty</label><input id="rw-edit-qty" type="number" min="0" value="' + esc(row.qty) + '"></div>' +
       '<div><label>' + esc(tx("condition")) + '</label><select id="rw-edit-cond"><option value=""></option>' + CONDITIONS.map(function (c) {
         return '<option' + (c === row.condition ? " selected" : "") + ">" + esc(c) + "</option>";
-      }).join("") + "</select></div>" +
-      '<div><label>Disposition</label><select id="rw-edit-disp">' + opt(DISPS, disp, { Hold: tx("hold"), Release: tx("release"), Scrap: tx("scrap"), Other: tx("other") }) + "</select></div></div>" +
+      }).join("") + "</select></div></div>" +
       '<div class="row"><div><label>' + esc(tx("notes")) + '</label><input id="rw-edit-notes" value="' + esc(row.notes || "") + '"></div>' +
       '<div><label>' + esc(tx("dest")) + ' (Other)</label><select id="rw-edit-dest"><option value="">' + esc(tx("destNone")) + '</option><option value="RECEIVING">RECEIVING (sellable)</option><option value="QUARANTINE">QUARANTINE (held)</option><option value="QA-HOLD">QA-HOLD (held)</option><option value="RETURNS-HOLD">RETURNS-HOLD (held)</option></select></div></div>' +
       '<button type="button" class="primary" data-rw="edit-save">Save edit</button> ' +
@@ -495,11 +511,12 @@
         }).join("") + "</select></td>" +
         "<td><input data-rw-notes=\"" + id + "\" value=\"" + esc(r.notes || "") + "\" placeholder=\"Notes\"></td>" +
         "<td><select data-rw-dest=\"" + id + "\"><option value=\"\">" + esc(tx("destNone")) + "</option><option value=\"RECEIVING\">RECEIVING</option><option value=\"QUARANTINE\">QUARANTINE</option><option value=\"QA-HOLD\">QA-HOLD</option></select></td>" +
-        "<td><button type=\"button\" class=\"ghost sm\" data-rw=\"shift\" data-how=\"Release\" data-id=\"" + id + "\">" + esc(tx("release")) + "</button> " +
-        "<button type=\"button\" class=\"ghost sm\" data-rw=\"shift\" data-how=\"Scrap\" data-id=\"" + id + "\">" + esc(tx("scrap")) + "</button> " +
-        "<button type=\"button\" class=\"ghost sm\" data-rw=\"shift\" data-how=\"Other\" data-id=\"" + id + "\">" + esc(tx("other")) + "</button></td></tr>";
+        "<td><div class=\"rw-shift\"><span class=\"fc-chip fc-partial rw-held\">" + esc(tx("held")) + "</span>" +
+        "<button type=\"button\" class=\"primary sm\" data-rw=\"shift\" data-how=\"Release\" data-id=\"" + id + "\">" + esc(tx("release")) + "</button>" +
+        "<button type=\"button\" class=\"ghost sm\" data-rw=\"shift\" data-how=\"Scrap\" data-id=\"" + id + "\">" + esc(tx("scrap")) + "</button>" +
+        "<button type=\"button\" class=\"ghost sm\" data-rw=\"shift\" data-how=\"Other\" data-id=\"" + id + "\">" + esc(tx("other")) + "</button></div></td></tr>";
     }).join("");
-    return '<div class="tblwrap"><table><thead><tr><th>Date</th><th>Item</th><th class="right">Held</th><th>Qty</th><th>' + esc(tx("condition")) + "</th><th>" + esc(tx("notes")) + "</th><th>" + esc(tx("dest")) + "</th><th></th></tr></thead><tbody>" + body + "</tbody></table></div>";
+    return '<div class="tblwrap"><table class="rw-open"><thead><tr><th>Date</th><th>Item</th><th class="right">Held</th><th>Qty</th><th>' + esc(tx("condition")) + "</th><th>" + esc(tx("notes")) + "</th><th>" + esc(tx("dest")) + "</th><th></th></tr></thead><tbody>" + body + "</tbody></table></div>";
   }
   function histTable(shown) {
     if (!shown.length) return '<p class="muted">No returns logged yet.</p>';
@@ -877,6 +894,15 @@
     if (!t || !root.document || !root.document.getElementById("rw-root")) return;
     var act = t.getAttribute("data-rw");
     if (act === "channel") { channel = t.getAttribute("data-val") === "ecom" ? "ecom" : "major"; render(); return; }
+    if (act === "pick-disp") {
+      var sel = root.document.getElementById(t.getAttribute("data-for") || "");
+      if (sel) sel.value = t.getAttribute("data-val") || "";
+      var wrap = t.parentNode;
+      if (wrap) Array.prototype.forEach.call(wrap.querySelectorAll(".rw-disp"), function (b) {
+        b.classList.toggle("on", b === t);
+      });
+      return;
+    }
     if (act === "add-line") {
       var box = root.document.getElementById("rw-lines");
       if (box) box.insertAdjacentHTML("beforeend", lineHtml());

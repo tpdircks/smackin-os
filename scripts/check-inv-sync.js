@@ -53,7 +53,7 @@ assert(fs.existsSync(path.join(root, "slc-count-latest.js")), "count file kept")
 assert(fs.existsSync(path.join(root, "slc-count-panel.js")), "panel file kept");
 
 var sw = read("service-worker.js");
-assert(sw.indexOf('const CACHE = "smackin-inv-v257"') >= 0, "cache v254");
+assert(sw.indexOf('const CACHE = "smackin-inv-v258"') >= 0, "cache v254");
 assert(sw.indexOf("smackin-inv-v242") < 0, "old cache gone");
 assert(sw.indexOf("./inv-sync-1027d.js") < 0, "sw does not precache the apply module");
 assert(sw.indexOf("./slc-count-latest.js") < 0, "sw does not precache the count file");

@@ -124,6 +124,12 @@
       loading: "Loading checklists...",
       recent: "Saved in this screen",
       empty: "No checklists saved in Smackin OS yet. Older paper scans are not loaded here.",
+      dashTitle: "Saved forms",
+      dashEmpty: "0 saved forms across pre-op, metal, GMP, and pouch. An empty list stays visible here.",
+      dashSaved: "Saved",
+      dashComplete: "Marked complete",
+      dashByDay: "By day and form",
+      dashNone: "No date",
       newForm: "New",
       open: "Open",
       back: "Back to list",
@@ -235,6 +241,12 @@
       loading: "Cargando listas...",
       recent: "Guardados en esta pantalla",
       empty: "Aun no hay listas guardadas en Smackin OS. Los escaneos de papel antiguos no se cargan aqui.",
+      dashTitle: "Formas guardadas",
+      dashEmpty: "0 formas guardadas entre preoperacional, detector de metal, GMP y bolsas. La lista vacia se queda visible.",
+      dashSaved: "Guardadas",
+      dashComplete: "Marcadas completas",
+      dashByDay: "Por dia y forma",
+      dashNone: "Sin fecha",
       newForm: "Nueva",
       open: "Abrir",
       back: "Volver a la lista",
@@ -346,6 +358,12 @@
       loading: "Carregando listas...",
       recent: "Salvos nesta tela",
       empty: "Ainda nao ha listas salvas no Smackin OS. Escaneamentos de papel antigos nao sao carregados aqui.",
+      dashTitle: "Formularios salvos",
+      dashEmpty: "0 formularios salvos entre pre-op, detector de metal, GMP e sache. A lista vazia continua visivel.",
+      dashSaved: "Salvos",
+      dashComplete: "Marcados completos",
+      dashByDay: "Por dia e formulario",
+      dashNone: "Sem data",
       newForm: "Nova",
       open: "Abrir",
       back: "Voltar a lista",
@@ -1058,12 +1076,67 @@
     out.sort();
     return out.map(function (f) { return '<option value="' + esc(f) + '"></option>'; }).join("");
   }
-  function bannerHtml() {
-    var html = '<div class="qa-banner" role="note">' + esc(tx("paper")) + "</div>";
+  function completion(list) {
+    var byType = { preop: 0, metal: 0, gmp: 0, pouch: 0 };
+    var completeByType = { preop: 0, metal: 0, gmp: 0, pouch: 0 };
+    var days = {};
+    var total = 0;
+    var done = 0;
+    (list || []).forEach(function (r) {
+      var t = r && r.form_type;
+      if (TYPES.indexOf(t) < 0) return;
+      total++;
+      byType[t]++;
+      var finished = r.status === "complete";
+      if (finished) { completeByType[t]++; done++; }
+      var d = String(r.form_date || "").slice(0, 10);
+      if (!days[d]) days[d] = { date: d, preop: 0, metal: 0, gmp: 0, pouch: 0, total: 0, complete: 0 };
+      days[d][t]++;
+      days[d].total++;
+      if (finished) days[d].complete++;
+    });
+    var dayList = Object.keys(days).sort(function (a, b) {
+      if (a === b) return 0;
+      if (!a) return 1;
+      if (!b) return -1;
+      return a < b ? 1 : -1;
+    });
+    return {
+      total: total,
+      complete: done,
+      byType: byType,
+      completeByType: completeByType,
+      days: dayList.map(function (d) { return days[d]; })
+    };
+  }
+  function alertHtml() {
+    var html = "";
     if (loadError) html += '<div class="qa-error" role="alert">' + esc(loadError) + "</div>";
     if (saveError) html += '<div class="qa-error" role="alert">' + esc(saveError) + "</div>";
     if (cacheMode === "local") html += '<div class="qa-error" role="alert">' + esc(tx("localBanner")) + "</div>";
     return html;
+  }
+  function paperHtml() {
+    return '<p class="hint">' + esc(tx("paper")) + '</p><p class="hint">' + esc(tx("noScans")) + "</p>";
+  }
+  function dashHtml(list) {
+    var s = completion(list);
+    var note = s.total ? "" : '<p class="qa-empty">' + esc(tx("dashEmpty")) + "</p>";
+    var kpis = '<div class="qa-kpis">' +
+      '<div><strong>' + s.total + "</strong><span>" + esc(tx("dashSaved")) + "</span></div>" +
+      '<div><strong>' + s.complete + "</strong><span>" + esc(tx("dashComplete")) + "</span></div>" +
+      TYPES.map(function (t) {
+        return '<div><strong>' + s.byType[t] + "</strong><span>" + esc(tx(t)) + " · " + s.completeByType[t] + " " + esc(tx("complete").toLowerCase()) + "</span></div>";
+      }).join("") + "</div>";
+    var head = "<tr><th>" + esc(tx("date")) + "</th>" + TYPES.map(function (t) { return "<th>" + esc(tx(t)) + "</th>"; }).join("") + "<th>" + esc(tx("dashSaved")) + "</th><th>" + esc(tx("dashComplete")) + "</th></tr>";
+    var shown = s.days.slice(0, 14);
+    var body = shown.map(function (d) {
+      return "<tr><td>" + esc(d.date || tx("dashNone")) + "</td>" + TYPES.map(function (t) { return "<td>" + d[t] + "</td>"; }).join("") + "<td><b>" + d.total + "</b></td><td>" + d.complete + "</td></tr>";
+    }).join("");
+    if (!body) body = "<tr><td>" + esc(tx("dashNone")) + "</td>" + TYPES.map(function () { return "<td>0</td>"; }).join("") + "<td><b>0</b></td><td>0</td></tr>";
+    return '<h2 class="sub2">' + esc(tx("dashTitle")) + "</h2>" + note + kpis +
+      '<p class="muted sm">' + esc(tx("dashByDay")) + "</p>" +
+      '<div class="tblwrap"><table><thead>' + head + "</thead><tbody>" + body + "</tbody></table></div>";
   }
   function typeButtons() {
     return '<div class="qa-types">' + TYPES.map(function (t) {
@@ -1088,9 +1161,9 @@
             '</td><td><button type="button" class="ghost sm" data-act="reopen" data-id="' + esc(r.id) + '">' + esc(tx("open")) + "</button></td></tr>";
         }).join("") + "</tbody></table></div>";
     }
-    return '<div class="card"><h2>' + esc(tx("title")) + "</h2>" + bannerHtml() +
-      '<p class="hint">' + esc(tx("noScans")) + "</p>" + typeButtons() +
-      '<h2 class="sub2">' + esc(tx("recent")) + "</h2>" + chips + body + "</div>";
+    return '<div class="card"><h2>' + esc(tx("title")) + "</h2>" + alertHtml() + typeButtons() + chips +
+      dashHtml(rows) +
+      '<h2 class="sub2">' + esc(tx("recent")) + "</h2>" + body + paperHtml() + "</div>";
   }
   function actionsHtml() {
     return '<div class="qa-actions"><button type="button" class="ghost" data-act="back">' + esc(tx("back")) + '</button>' +
@@ -1123,11 +1196,11 @@
         "<td><input data-k=\"dev\" data-i=\"" + i + "\" data-f=\"verification\" value=\"" + esc(r.verification) + "\" autocomplete=\"off\"></td>" +
         '<td><button type="button" class="ghost sm" data-act="del-dev" data-i="' + i + '">' + esc(tx("remove")) + "</button></td></tr>";
     }).join("");
-    return '<div class="card"><div class="row">' +
+    return '<div class="card">' + actionsHtml() + '<div class="row">' +
       '<div><label>' + esc(tx("weekOf")) + '</label><input data-k="top" data-f="form_date" type="date" value="' + esc(rec.form_date) + '"><p class="hint">' + esc(tx("weekHint")) + "</p></div>" +
       '<div><label>' + esc(tx("operator")) + '</label><input data-k="top" data-f="operator" value="' + esc(rec.operator) + '" autocomplete="off"></div>' +
       '<div style="flex:2"><label>' + esc(tx("supervisor")) + '</label><input data-k="top" data-f="reviewer" value="' + esc(rec.reviewer) + '" autocomplete="off"></div>' +
-      "</div>" + actionsHtml() + '<p class="hint">' + esc(tx("weekHint2")) + "</p></div>" +
+      '</div><p class="hint">' + esc(tx("weekHint2")) + "</p></div>" +
       '<div class="card"><p>' + esc(tx("legendEn")) + '</p><p class="qa-es">' + esc(tx("legendEs")) + '</p>' +
       '<div class="qa-scroll"><table class="qa-pre"><thead>' + head + "</thead><tbody>" + body + initRow + timeRow + "</tbody></table></div></div>" +
       '<div class="card"><h2 class="sub2">' + esc(tx("deviation")) + '</h2><div class="tblwrap"><table><thead><tr><th>' + esc(tx("date")) + "</th><th>" + esc(tx("deviation")) + "</th><th>" + esc(tx("action")) + "</th><th>" + esc(tx("verification")) + "</th><th></th></tr></thead><tbody>" +
@@ -1145,14 +1218,14 @@
         "<td><input data-k=\"metal\" data-i=\"" + i + "\" data-f=\"initials\" value=\"" + esc(r.initials) + "\" autocomplete=\"off\"></td>" +
         '<td><button type="button" class="ghost sm" data-act="del-line" data-i="' + i + '">' + esc(tx("remove")) + "</button></td></tr>";
     }).join("");
-    return '<div class="card"><p class="hint">' + esc(tx("every2")) + '</p><div class="row">' +
+    return '<div class="card">' + actionsHtml() + '<div class="row">' +
       '<div><label>' + esc(tx("date")) + '</label><input data-k="top" data-f="form_date" type="date" value="' + esc(rec.form_date) + '"></div>' +
       '<div><label>' + esc(tx("line")) + '</label><input data-k="top" data-f="machine" value="' + esc(rec.machine) + '" autocomplete="off"></div>' +
       '<div><label>' + esc(tx("operator")) + '</label><input data-k="top" data-f="operator" value="' + esc(rec.operator) + '" autocomplete="off"></div>' +
       "</div><div class=\"row\">" +
       '<div><label>' + esc(tx("verifiedBy")) + '</label><input data-k="top" data-f="reviewer" value="' + esc(rec.reviewer) + '" autocomplete="off"></div>' +
       '<div><label>' + esc(tx("verifiedDate")) + '</label><input data-k="metalhead" data-f="verified_date" type="date" value="' + esc(rec.header.verified_date || "") + '"></div>' +
-      "</div>" + actionsHtml() + "</div>" +
+      '</div><p class="hint">' + esc(tx("every2")) + "</p></div>" +
       '<div class="card"><div class="tblwrap"><table><thead><tr><th>' + esc(tx("time")) + "</th><th>" + esc(tx("fe")) + "</th><th>" + esc(tx("nf")) + "</th><th>" + esc(tx("ss")) + "</th><th>" + esc(tx("corrective")) + "</th><th>" + esc(tx("initialsCol")) + "</th><th></th></tr></thead><tbody>" +
       body + "</tbody></table></div><button type=\"button\" class=\"ghost\" data-act=\"add-line\">" + esc(tx("addRow")) + "</button></div>";
   }
@@ -1165,12 +1238,12 @@
       return "<tr><td>" + text + "</td><td>" + ynSelect('data-k="gmp" data-i="' + i + '" data-f="mark"', r.mark, true) + "</td>" +
         "<td><input data-k=\"gmp\" data-i=\"" + i + "\" data-f=\"note\" value=\"" + esc(r.note) + "\" autocomplete=\"off\"></td></tr>";
     }).join("");
-    return '<div class="card"><p class="hint">' + esc(tx("gmpPolicy")) + '</p><div class="row">' +
+    return '<div class="card">' + actionsHtml() + '<div class="row">' +
       '<div><label>' + esc(tx("date")) + '</label><input data-k="top" data-f="form_date" type="date" value="' + esc(rec.form_date) + '"></div>' +
       '<div><label>' + esc(tx("area")) + "</label>" + areaSelect(rec.machine) + "</div>" +
       '<div><label>' + esc(tx("operator")) + '</label><input data-k="top" data-f="operator" value="' + esc(rec.operator) + '" autocomplete="off"></div>' +
       '<div><label>' + esc(tx("reviewer")) + '</label><input data-k="top" data-f="reviewer" value="' + esc(rec.reviewer) + '" autocomplete="off"></div>' +
-      "</div>" + actionsHtml() + "</div>" +
+      '</div><p class="hint">' + esc(tx("gmpPolicy")) + "</p></div>" +
       '<div class="card"><div class="tblwrap"><table><thead><tr><th>' + esc(tx("item")) + "</th><th>" + esc(tx("mark")) + "</th><th>" + esc(tx("notes")) + "</th></tr></thead><tbody>" +
       body + "</tbody></table></div></div>";
   }
@@ -1186,18 +1259,18 @@
         "<td><input data-k=\"pouch\" data-i=\"" + i + "\" data-f=\"notes\" value=\"" + esc(r.notes) + "\" autocomplete=\"off\"></td>" +
         '<td><button type="button" class="ghost sm" data-act="del-line" data-i="' + i + '">' + esc(tx("remove")) + "</button></td></tr>";
     }).join("");
-    return '<datalist id="qa-flavors">' + flavorOpts() + '</datalist><div class="card"><p class="hint">' + esc(tx("pouchRefine")) + '</p><div class="row">' +
+    return '<datalist id="qa-flavors">' + flavorOpts() + '</datalist><div class="card">' + actionsHtml() + '<div class="row">' +
       '<div><label>' + esc(tx("date")) + '</label><input data-k="top" data-f="form_date" type="date" value="' + esc(rec.form_date) + '"></div>' +
       '<div><label>' + esc(tx("line")) + '</label><input data-k="top" data-f="machine" value="' + esc(rec.machine) + '" autocomplete="off"></div>' +
       '<div><label>' + esc(tx("operator")) + '</label><input data-k="top" data-f="operator" value="' + esc(rec.operator) + '" autocomplete="off"></div>' +
       '<div><label>' + esc(tx("reviewer")) + '</label><input data-k="top" data-f="reviewer" value="' + esc(rec.reviewer) + '" autocomplete="off"></div>' +
-      "</div>" + actionsHtml() + "</div>" +
+      '</div><p class="hint">' + esc(tx("pouchRefine")) + "</p></div>" +
       '<div class="card"><div class="qa-scroll"><table class="qa-pre"><thead><tr><th>' + esc(tx("hour")) + "</th><th>" + esc(tx("flavor")) + "</th><th>" + esc(tx("seal")) + "</th><th>" + esc(tx("weight")) + "</th><th>" + esc(tx("code")) + "</th><th>" + esc(tx("film")) + "</th><th>" + esc(tx("initialsCol")) + "</th><th>" + esc(tx("notes")) + "</th><th></th></tr></thead><tbody>" +
       body + '</tbody></table></div><button type="button" class="ghost" data-act="add-line">' + esc(tx("addRow")) + "</button></div>";
   }
   function editHtml(rec) {
     var body = rec.form_type === "metal" ? metalHtml(rec) : rec.form_type === "gmp" ? gmpHtml(rec) : rec.form_type === "pouch" ? pouchHtml(rec) : preopHtml(rec);
-    return '<div class="card"><h2>' + esc(tx(rec.form_type)) + "</h2>" + bannerHtml() +
+    return '<div class="card"><h2>' + esc(tx(rec.form_type)) + "</h2>" + alertHtml() +
       '<p class="hint">' + esc(tx("status")) + ": " + esc(rec.status === "complete" ? tx("complete") : tx("draft")) +
       (rec.local_only ? " · " + esc(tx("localTag")) : "") + "</p></div>" + body;
   }
@@ -1421,7 +1494,7 @@
     if (!doc || doc.getElementById("qa-style")) return;
     var s = doc.createElement("style");
     s.id = "qa-style";
-    s.textContent = "#qa-root .qa-banner{background:#FFF6E9;color:#7a4d05;border-radius:8px;padding:10px 12px;font-weight:700;margin:8px 0}#qa-root .qa-error{background:#FBE3E0;color:#7d1b12;border-radius:8px;padding:10px 12px;font-weight:700;margin:8px 0}#qa-root .qa-types{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px;margin:10px 0}#qa-root .qa-types button{text-align:left;background:#fff;border:1px solid #d7dde6;border-radius:10px;padding:10px 12px;cursor:pointer;font-family:inherit;color:#04223B}#qa-root .qa-types button strong{display:block;margin-bottom:4px}#qa-root .qa-types button span{display:block;font-size:12px;color:#3d4c5e;font-weight:600}#qa-root .qa-types button:hover{border-color:#006DB6}#qa-root .qa-chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}#qa-root .qa-chips button{border:1px solid #d7dde6;background:#fff;border-radius:20px;padding:5px 10px;font-weight:700;font-size:13px;cursor:pointer;color:#243044;font-family:inherit}#qa-root .qa-chips button.on{background:#04223B;color:#fff;border-color:#04223B}#qa-root .qa-es{display:block;color:#3d4c5e;font-size:12px;font-weight:600;margin-top:3px}#qa-root .qa-scroll{overflow:auto}#qa-root table.qa-pre{min-width:980px}#qa-root .qa-mark{min-width:44px;min-height:36px;font-weight:800;border-radius:8px;border:1px solid #d7dde6;background:#fff;cursor:pointer;font-size:16px}#qa-root .qa-mark.pass{background:#E0F4E8;color:#1d5631}#qa-root .qa-mark.fail{background:#FBE3E0;color:#7d1b12}#qa-root .qa-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}#qa-root .qa-actions button{margin-top:0}#qa-root td,#qa-root th{vertical-align:top}";
+    s.textContent = "#qa-root .qa-banner{background:#FFF6E9;color:#7a4d05;border-radius:8px;padding:10px 12px;font-weight:700;margin:8px 0}#qa-root .qa-error{background:#FBE3E0;color:#7d1b12;border-radius:8px;padding:10px 12px;font-weight:700;margin:8px 0}#qa-root .qa-types{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px;margin:10px 0}#qa-root .qa-types button{text-align:left;background:#fff;border:1px solid #d7dde6;border-radius:10px;padding:10px 12px;cursor:pointer;font-family:inherit;color:#04223B}#qa-root .qa-types button strong{display:block;margin-bottom:4px}#qa-root .qa-types button span{display:block;font-size:12px;color:#3d4c5e;font-weight:600}#qa-root .qa-types button:hover{border-color:#006DB6}#qa-root .qa-chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}#qa-root .qa-chips button{border:1px solid #d7dde6;background:#fff;border-radius:20px;padding:5px 10px;font-weight:700;font-size:13px;cursor:pointer;color:#243044;font-family:inherit}#qa-root .qa-chips button.on{background:#04223B;color:#fff;border-color:#04223B}#qa-root .qa-es{display:block;color:#3d4c5e;font-size:12px;font-weight:600;margin-top:3px}#qa-root .qa-scroll{overflow:auto}#qa-root table.qa-pre{min-width:980px}#qa-root .qa-mark{min-width:44px;min-height:36px;font-weight:800;border-radius:8px;border:1px solid #d7dde6;background:#fff;cursor:pointer;font-size:16px}#qa-root .qa-mark.pass{background:#E0F4E8;color:#1d5631}#qa-root .qa-mark.fail{background:#FBE3E0;color:#7d1b12}#qa-root .qa-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}#qa-root .qa-actions button{margin-top:0;min-height:44px;font-weight:800}#qa-root td,#qa-root th{vertical-align:top}#qa-root .qa-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:8px 0}#qa-root .qa-kpis div{background:#04223B;color:#fff;border-radius:10px;padding:10px 12px}#qa-root .qa-kpis strong{display:block;font-size:22px}#qa-root .qa-kpis span{font-size:12px;font-weight:700}#qa-root .qa-empty{font-weight:800;color:#04223B;margin:6px 0}";
     doc.head.appendChild(s);
   }
   function onScreen() { return !!(doc && doc.getElementById("qa-root")); }
@@ -1472,6 +1545,7 @@
     mondayOf: mondayOf,
     hasFail: hasFail,
     resultOf: resultOf,
+    completion: completion,
     TYPES: TYPES,
     PREOP: PREOP,
     GMP: GMP,

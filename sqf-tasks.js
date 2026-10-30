@@ -73,7 +73,22 @@
       completed: "Completed",
       close: "Close",
       seeded: "Imported {n} SQF tasks",
-      dry: "Dry run only. Nothing was written."
+      dry: "Dry run only. Nothing was written.",
+      undated: "Undated open",
+      target: "New due date",
+      redateSelected: "Set selected",
+      redateOpen: "Set all open",
+      selectShown: "Select shown",
+      clearSelected: "Clear selection",
+      redateHint: "Select past due or undated, then set the due date. Selecting does not change anything until you set the date. Notes and status stay as they are. All open means not done.",
+      selectPast: "Select past due",
+      selectUndated: "Select undated",
+      mb: "Monica or Brittney",
+      redateNeed: "Pick a due date first.",
+      redateNone: "No tasks to re-date.",
+      redateAsk: "Set {n} tasks to {d}? Notes and status stay the same.",
+      redateDone: "Due date set on {n} tasks.",
+      redatePartial: "Due date set on {n} of {t} tasks."
     },
     es: {
       title: "Tareas SQF",
@@ -128,7 +143,22 @@
       completed: "Completado",
       close: "Cerrar",
       seeded: "Se importaron {n} tareas SQF",
-      dry: "Solo simulacion. No se escribio nada."
+      dry: "Solo simulacion. No se escribio nada.",
+      undated: "Abiertos sin fecha",
+      target: "Nueva fecha",
+      redateSelected: "Fecha a los marcados",
+      redateOpen: "Fecha a todos los abiertos",
+      selectShown: "Marcar los visibles",
+      clearSelected: "Quitar marcas",
+      redateHint: "Marque vencidos o sin fecha, luego ponga la fecha. Marcar no cambia nada hasta que ponga la fecha. Las notas y el estado se quedan. Todos los abiertos significa que no estan hechos.",
+      selectPast: "Marcar vencidos",
+      selectUndated: "Marcar sin fecha",
+      mb: "Monica o Brittney",
+      redateNeed: "Elija una fecha primero.",
+      redateNone: "No hay tareas para fechar.",
+      redateAsk: "Poner {n} tareas en {d}? Las notas y el estado se quedan igual.",
+      redateDone: "Fecha puesta en {n} tareas.",
+      redatePartial: "Fecha puesta en {n} de {t} tareas."
     },
     pt: {
       title: "Tarefas SQF",
@@ -183,7 +213,22 @@
       completed: "Concluido",
       close: "Fechar",
       seeded: "{n} tarefas SQF importadas",
-      dry: "Somente simulacao. Nada foi gravado."
+      dry: "Somente simulacao. Nada foi gravado.",
+      undated: "Abertas sem data",
+      target: "Nova data",
+      redateSelected: "Data nas marcadas",
+      redateOpen: "Data em todas as abertas",
+      selectShown: "Marcar as visiveis",
+      clearSelected: "Limpar marcas",
+      redateHint: "Marque vencidas ou sem data, depois coloque a data. Marcar nao muda nada ate colocar a data. Notas e status ficam. Todas as abertas significa que nao estao feitas.",
+      selectPast: "Marcar vencidas",
+      selectUndated: "Marcar sem data",
+      mb: "Monica ou Brittney",
+      redateNeed: "Escolha uma data primeiro.",
+      redateNone: "Nao ha tarefas para datar.",
+      redateAsk: "Colocar {n} tarefas em {d}? Notas e status ficam iguais.",
+      redateDone: "Data colocada em {n} tarefas.",
+      redatePartial: "Data colocada em {n} de {t} tarefas."
     }
   };
 
@@ -201,7 +246,10 @@
   var editClause = null;
   var expanded = {};
   var loadError = "";
-  var filters = { owner: "", section: "", status: "", module: "", past: false, q: "" };
+  var filters = { owner: "", section: "", status: "", module: "", past: false, undated: false, q: "" };
+  var picked = {};
+  var targetDate = "";
+  var redateBusy = false;
   var seedPromise = null;
 
   function tx(key) {
@@ -387,26 +435,74 @@
     if (!row || row.status === "done" || !row.due_date) return false;
     return String(row.due_date).slice(0, 10) < today;
   }
+  function isOpenWork(row) {
+    return !!row && row.status !== "done";
+  }
+  function isUndatedOpen(row) {
+    return isOpenWork(row) && !row.due_date;
+  }
   function counts(list, today) {
-    var c = { open: 0, past: 0, in_progress: 0, done: 0, blocked: 0, total: (list || []).length };
+    var c = { open: 0, past: 0, undated: 0, in_progress: 0, done: 0, blocked: 0, total: (list || []).length };
     (list || []).forEach(function (r) {
       if (r.status === "open") c.open++;
       else if (r.status === "in_progress") c.in_progress++;
       else if (r.status === "done") c.done++;
       else if (r.status === "blocked") c.blocked++;
       if (isPastDue(r, today)) c.past++;
+      if (isUndatedOpen(r)) c.undated++;
     });
     return c;
+  }
+  function redatePlan(list, clauses, date) {
+    var iso = String(date || "").slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return { ok: false, error: "date", date: "", rows: [] };
+    var want = {};
+    (clauses || []).forEach(function (c) { if (c) want[String(c)] = 1; });
+    var out = [];
+    (list || []).forEach(function (r) {
+      if (!r || !want[String(r.clause)]) return;
+      out.push({
+        clause: r.clause,
+        due_date: iso,
+        status: r.status,
+        action_notes: r.action_notes || "",
+        due_raw: r.due_raw || null,
+        completed_date: r.completed_date || null,
+        owners: (r.owners || []).slice()
+      });
+    });
+    return { ok: true, date: iso, rows: out };
+  }
+  function redatePayload(date, by, at) {
+    return { due_date: date, updated_by: by, updated_at: at };
+  }
+  function applyDueOnly(row, date, by, at) {
+    if (!row) return null;
+    row.due_date = date;
+    if (by) row.updated_by = by;
+    if (at) row.updated_at = at;
+    return {
+      due_date: row.due_date,
+      status: row.status,
+      action_notes: row.action_notes || "",
+      due_raw: row.due_raw || null,
+      completed_date: row.completed_date || null
+    };
   }
   function filterRows(list, f, today) {
     f = f || {};
     var q = String(f.q || "").toLowerCase().trim();
     return (list || []).filter(function (r) {
-      if (f.owner && (r.owners || []).indexOf(f.owner) < 0) return false;
+      if (f.owner === "mb") {
+        var names = r.owners || [];
+        if (names.indexOf("Monica") < 0 && names.indexOf("Brittney") < 0) return false;
+        if (r.status === "done") return false;
+      } else if (f.owner && (r.owners || []).indexOf(f.owner) < 0) return false;
       if (f.section && r.section !== f.section) return false;
       if (f.status && r.status !== f.status) return false;
       if (f.module && String(r.module) !== String(f.module)) return false;
       if (f.past && !isPastDue(r, today)) return false;
+      if (f.undated && !isUndatedOpen(r)) return false;
       if (q) {
         var blob = [r.clause, r.section, r.requirement, r.owner_raw, (r.owners || []).join(" "), r.action_notes, r.due_raw, r.evidence_note].join(" ").toLowerCase();
         if (blob.indexOf(q) < 0) return false;
@@ -426,6 +522,20 @@
         var d = (pa[i] || 0) - (pb[i] || 0);
         if (d) return d;
       }
+      return 0;
+    });
+  }
+  function displaySort(list, today) {
+    return (list || []).slice().sort(function (a, b) {
+      function rank(r) {
+        if (isPastDue(r, today)) return 0;
+        if (isUndatedOpen(r)) return 1;
+        if (isOpenWork(r)) return 2;
+        return 3;
+      }
+      var d = rank(a) - rank(b);
+      if (d) return d;
+      if (rank(a) === 0) return String(a.due_date || "").localeCompare(String(b.due_date || ""));
       return 0;
     });
   }
@@ -621,6 +731,11 @@
       "#sqf-root .sqf-kpis button strong,#sqf-root .sqf-kpis div strong{display:block;font-size:22px;font-weight:800}",
       "#sqf-root .sqf-kpis button span,#sqf-root .sqf-kpis div span{font-size:12px;opacity:.85}",
       "#sqf-root .sqf-kpis button.sqf-past{background:#B52024}",
+      "#sqf-root .sqf-kpis button.sqf-undated{background:#E39412;color:#1a1204}",
+      "#sqf-root .sqf-redate{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin-top:12px}",
+      "#sqf-root .sqf-redate > div{min-width:180px}",
+      "#sqf-root .sqf-redate button{min-height:44px;font-weight:800}",
+      "#sqf-root .sqf-ref{margin-top:8px}",
       "#sqf-root .sqf-kpis button.on{outline:3px solid #F26B21}",
       "#sqf-root .sqf-chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}",
       "#sqf-root .sqf-chips button{border:1px solid #d7dde6;background:#fff;border-radius:20px;padding:5px 10px;font-weight:700;font-size:13px;cursor:pointer;color:#243044;font-family:inherit}",
@@ -647,6 +762,9 @@
     doc.head.appendChild(s);
   }
 
+  function targetValue() {
+    return targetDate || auditDate();
+  }
   function countdownLine() {
     var iso = auditDate();
     var n = daysUntil(iso, todayDenver());
@@ -665,7 +783,7 @@
     var host = doc.getElementById("view");
     if (!host) return;
     var today = todayDenver();
-    var all = sortRows(rows || []);
+    var all = displaySort(sortRows(rows || []), today);
     var c = counts(all, today);
     var shown = filterRows(all, filters, today);
     var secs = sectionsOf(all);
@@ -673,6 +791,7 @@
     var qPos = focusQ ? (doc.activeElement.selectionStart || 0) : 0;
 
     var chips = '<button type="button" data-sqf="owner" data-val="" class="' + (filters.owner ? "" : "on") + '">' + esc(tx("anyOwner")) + "</button>" +
+      '<button type="button" data-sqf="owner" data-val="mb" class="' + (filters.owner === "mb" ? "on" : "") + '">' + esc(tx("mb")) + "</button>" +
       OWNERS.map(function (name) {
         return '<button type="button" data-sqf="owner" data-val="' + esc(name) + '" class="' + (filters.owner === name ? "on" : "") + '">' + esc(name) + "</button>";
       }).join("");
@@ -688,7 +807,8 @@
       return '<button type="button" data-sqf="kpi" data-val="' + key + '" class="' + on + '"><strong>' + num + "</strong><span>" + esc(label) + "</span></button>";
     };
     var pastOn = filters.past ? "sqf-past on" : "sqf-past";
-    var openOn = filters.status === "open" && !filters.past ? "on" : "";
+    var undatedOn = filters.undated ? "sqf-undated on" : "sqf-undated";
+    var openOn = filters.status === "open" && !filters.past && !filters.undated ? "on" : "";
     var progOn = filters.status === "in_progress" ? "on" : "";
     var doneOn = filters.status === "done" ? "on" : "";
 
@@ -703,7 +823,9 @@
       var req = openFull ? esc(r.requirement || "") : '<span class="sqf-clip">' + esc(clip(r.requirement || "", 180)) + "</span>";
       var notes = openFull ? esc(r.action_notes || "") : '<span class="sqf-clip sqf-notes">' + esc(clip(r.action_notes || "", 160)) + "</span>";
       var toggle = '<button type="button" class="ghost sm" data-sqf="expand" data-clause="' + esc(r.clause) + '">' + esc(openFull ? tx("hide") : tx("full")) + "</button>";
+      var on = picked[r.clause] ? " checked" : "";
       return '<tr class="' + (late ? "sqf-late" : "") + '">' +
+        '<td><input type="checkbox" data-sqf="pick" data-clause="' + esc(r.clause) + '"' + on + "></td>" +
         "<td><b>" + esc(r.clause) + "</b><div class=\"muted sm\">M" + esc(r.module || "") + "</div></td>" +
         "<td>" + esc(r.section || "") + "</td>" +
         "<td>" + req + "<div>" + toggle + "</div></td>" +
@@ -715,24 +837,32 @@
     }).join("");
 
     var table = shown.length
-      ? '<div class="tblwrap"><table><thead><tr><th>' + esc(tx("clause")) + "</th><th>" + esc(tx("section")) + "</th><th>" + esc(tx("requirement")) + "</th><th>" + esc(tx("owners")) + "</th><th>" + esc(tx("notes")) + "</th><th>" + esc(tx("due")) + "</th><th>" + esc(tx("status")) + '</th><th data-nosort></th></tr></thead><tbody>' + body + "</tbody></table></div>"
+      ? '<div class="tblwrap"><table><thead><tr><th></th><th>' + esc(tx("clause")) + "</th><th>" + esc(tx("section")) + "</th><th>" + esc(tx("requirement")) + "</th><th>" + esc(tx("owners")) + "</th><th>" + esc(tx("notes")) + "</th><th>" + esc(tx("due")) + "</th><th>" + esc(tx("status")) + '</th><th data-nosort></th></tr></thead><tbody>' + body + "</tbody></table></div>"
       : "<p class=\"muted\">" + esc(loadError || tx("empty")) + "</p>";
 
     var localNote = isCloud() ? "" : '<p class="hint">' + esc(tx("localNote")) + "</p>";
 
+    var selectedN = Object.keys(picked).length;
     host.innerHTML = '<div id="sqf-root">' +
       '<div class="card"><h2>' + esc(tx("title")) + "</h2>" +
-      '<p class="hint">' + esc(tx("hint")) + "</p>" +
-      '<p class="sqf-src"><a class="polink" href="' + DRIVE_URL + '" target="_blank" rel="noopener">' + esc(tx("source")) + "</a></p>" +
-      "<p><b>" + esc(countdownLine()) + "</b></p>" +
-      localNote +
       '<div class="sqf-kpis">' +
       kpi("days", String(daysUntil(auditDate(), today)), prettyDate(auditDate()), "") +
       kpi("open", c.open, tx("open"), openOn) +
       kpi("past", c.past, tx("past"), pastOn) +
+      kpi("undated", c.undated, tx("undated"), undatedOn) +
       kpi("progress", c.in_progress, tx("progress"), progOn) +
       kpi("done", c.done, tx("done"), doneOn) +
-      "</div></div>" +
+      "</div>" +
+      '<div class="sqf-redate">' +
+      "<div><label>" + esc(tx("target")) + '</label><input id="sqf-target" data-sqf="target" type="date" value="' + esc(targetValue()) + '"></div>' +
+      '<button type="button" class="primary" data-sqf="redate" data-mode="selected">' + esc(tx("redateSelected")) + (selectedN ? " (" + selectedN + ")" : "") + "</button>" +
+      '<button type="button" class="primary" data-sqf="redate" data-mode="open">' + esc(tx("redateOpen")) + "</button>" +
+      '<button type="button" class="ghost" data-sqf="pick-past">' + esc(tx("selectPast")) + "</button>" +
+      '<button type="button" class="ghost" data-sqf="pick-undated">' + esc(tx("selectUndated")) + "</button>" +
+      '<button type="button" class="ghost" data-sqf="pick-shown">' + esc(tx("selectShown")) + "</button>" +
+      '<button type="button" class="ghost" data-sqf="clear-picked">' + esc(tx("clearSelected")) + "</button>" +
+      "</div>" +
+      '<p class="hint">' + esc(tx("redateHint")) + "</p></div>" +
       '<div class="card"><div class="sqf-chips">' + chips + "</div>" +
       '<div class="sqf-filters">' +
       "<div><label>" + esc(tx("section")) + '</label><select data-sqf="section">' + secOpts + "</select></div>" +
@@ -744,6 +874,9 @@
       "<p class=\"muted sm\">" + esc(tx("showing").replace("{n}", String(shown.length)).replace("{t}", String(all.length))) + "</p>" +
       '<div class="sqf-tools"><button type="button" class="ghost sm" data-sqf="csv">' + esc(tx("exportCsv")) + '</button><button type="button" class="ghost sm" data-sqf="xlsx">' + esc(tx("exportXlsx")) + "</button></div></div>" +
       '<div class="card">' + table + "</div>" +
+      '<div class="card sqf-ref"><p class="hint">' + esc(tx("hint")) + "</p>" +
+      '<p class="sqf-src"><a class="polink" href="' + DRIVE_URL + '" target="_blank" rel="noopener">' + esc(tx("source")) + "</a></p>" +
+      "<p><b>" + esc(countdownLine()) + "</b></p>" + localNote + "</div>" +
       drawerHtml() +
       "</div>";
 
@@ -911,6 +1044,87 @@
     a.remove();
   }
 
+  function redate(mode) {
+    if (redateBusy || !doc) return;
+    var input = doc.getElementById("sqf-target");
+    var date = input && input.value ? input.value : targetValue();
+    targetDate = date;
+    var clauses = mode === "selected"
+      ? Object.keys(picked)
+      : (rows || []).filter(isOpenWork).map(function (r) { return r.clause; });
+    var plan = redatePlan(rows, clauses, date);
+    if (!plan.ok) { toast(tx("redateNeed")); return; }
+    if (!plan.rows.length) { toast(tx("redateNone")); return; }
+    var ask = tx("redateAsk").replace("{n}", String(plan.rows.length)).replace("{d}", usDate(plan.date));
+    if (!root.confirm(ask)) return;
+    var before = {};
+    var oldDue = {};
+    plan.rows.forEach(function (hit) { before[hit.clause] = hit; });
+    var now = new Date().toISOString();
+    var by = who();
+    plan.rows.forEach(function (hit) {
+      var row = findRow(hit.clause);
+      if (!row) return;
+      oldDue[hit.clause] = row.due_date || null;
+      applyDueOnly(row, plan.date, by, now);
+    });
+    function undo() {
+      Object.keys(oldDue).forEach(function (clause) {
+        var row = findRow(clause);
+        if (row) row.due_date = oldDue[clause];
+      });
+    }
+    function finish(n, total) {
+      redateBusy = false;
+      plan.rows.forEach(function (hit) { delete picked[hit.clause]; });
+      var msg = n === total
+        ? tx("redateDone").replace("{n}", String(n))
+        : tx("redatePartial").replace("{n}", String(n)).replace("{t}", String(total));
+      toast(msg);
+      render();
+    }
+    if (!isCloud()) {
+      lsSet(rows);
+      finish(plan.rows.length, plan.rows.length);
+      return;
+    }
+    var c = client();
+    if (!c) { undo(); toast(tx("saveErr")); render(); return; }
+    redateBusy = true;
+    var payload = redatePayload(plan.date, by, now);
+    c.from("sqf_tasks").update(payload).in("clause", plan.rows.map(function (h) { return h.clause; })).select("clause,status,action_notes,due_date").then(function (res) {
+      if (res && res.error) {
+        undo();
+        redateBusy = false;
+        toast(res.error.message || tx("saveErr"));
+        render();
+        return;
+      }
+      var got = (res && res.data) || [];
+      var bad = false;
+      got.forEach(function (r) {
+        var hit = before[r.clause];
+        if (!hit) return;
+        if (r.status !== hit.status) bad = true;
+        if ((r.action_notes || "") !== (hit.action_notes || "")) bad = true;
+        if (String(r.due_date || "").slice(0, 10) !== plan.date) bad = true;
+      });
+      if (bad || !got.length) {
+        undo();
+        redateBusy = false;
+        toast(tx("saveErr"));
+        render();
+        return;
+      }
+      finish(got.length, plan.rows.length);
+    }).catch(function (e) {
+      undo();
+      redateBusy = false;
+      toast((e && e.message) || tx("saveErr"));
+      render();
+    });
+  }
+
   function onClick(e) {
     var t = e.target && e.target.closest ? e.target.closest("[data-sqf]") : null;
     if (!t || !doc.getElementById("sqf-root")) return;
@@ -922,10 +1136,11 @@
     }
     if (act === "kpi") {
       var key = t.getAttribute("data-val");
-      if (key === "open") { filters.status = filters.status === "open" && !filters.past ? "" : "open"; filters.past = false; }
-      else if (key === "past") { filters.past = !filters.past; if (filters.past) filters.status = ""; }
-      else if (key === "progress") { filters.status = filters.status === "in_progress" ? "" : "in_progress"; filters.past = false; }
-      else if (key === "done") { filters.status = filters.status === "done" ? "" : "done"; filters.past = false; }
+      if (key === "open") { filters.status = filters.status === "open" && !filters.past && !filters.undated ? "" : "open"; filters.past = false; filters.undated = false; }
+      else if (key === "past") { filters.past = !filters.past; if (filters.past) { filters.status = ""; filters.undated = false; } }
+      else if (key === "undated") { filters.undated = !filters.undated; if (filters.undated) { filters.past = false; filters.status = ""; } }
+      else if (key === "progress") { filters.status = filters.status === "in_progress" ? "" : "in_progress"; filters.past = false; filters.undated = false; }
+      else if (key === "done") { filters.status = filters.status === "done" ? "" : "done"; filters.past = false; filters.undated = false; }
       render();
       return;
     }
@@ -960,6 +1175,33 @@
     }
     if (act === "csv") { exportList("csv"); return; }
     if (act === "xlsx") { exportList("xlsx"); return; }
+    if (act === "pick") {
+      var id = t.getAttribute("data-clause");
+      if (!id) return;
+      if (t.checked) picked[id] = 1;
+      else delete picked[id];
+      render();
+      return;
+    }
+    if (act === "pick-past") {
+      var todayPast = todayDenver();
+      (rows || []).forEach(function (r) { if (isPastDue(r, todayPast)) picked[r.clause] = 1; });
+      render();
+      return;
+    }
+    if (act === "pick-undated") {
+      (rows || []).forEach(function (r) { if (isUndatedOpen(r)) picked[r.clause] = 1; });
+      render();
+      return;
+    }
+    if (act === "pick-shown") {
+      var todayPick = todayDenver();
+      filterRows(sortRows(rows || []), filters, todayPick).forEach(function (r) { picked[r.clause] = 1; });
+      render();
+      return;
+    }
+    if (act === "clear-picked") { picked = {}; render(); return; }
+    if (act === "redate") { redate(t.getAttribute("data-mode") || "selected"); return; }
   }
 
   function onChange(e) {
@@ -969,7 +1211,9 @@
     if (act === "section") filters.section = t.value;
     else if (act === "status") filters.status = t.value;
     else if (act === "module") filters.module = t.value;
-    else if (act === "past") filters.past = !!t.checked;
+    else if (act === "past") { filters.past = !!t.checked; if (filters.past) filters.undated = false; }
+    else if (act === "target") { targetDate = t.value || ""; return; }
+    else if (act === "pick") return;
     else return;
     render();
   }
@@ -1058,6 +1302,12 @@
     raw: function () { return RAW; },
     counts: counts,
     isPastDue: isPastDue,
+    isUndatedOpen: isUndatedOpen,
+    isOpenWork: isOpenWork,
+    redatePlan: redatePlan,
+    displaySort: displaySort,
+    redatePayload: redatePayload,
+    applyDueOnly: applyDueOnly,
     filterRows: filterRows,
     SOURCE_FILE_ID: SOURCE_FILE_ID
   };
