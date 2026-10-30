@@ -341,7 +341,8 @@ async function processFile(token, file, folder) {
   var keys = (mapped.pos && mapped.pos.length ? mapped.pos : [""]).map(function (po) { return SPS.stateKey(mapped.partnerId, po); });
   var prev = unionFlags(before.states, keys);
   var now = unionFlags(after.states, keys);
-  var introduced = now.flags.filter(function (f) { return prev.flags.indexOf(f) < 0; });
+  var own = unionFlags(SPS.interpret([{ json: doc }]).states, keys);
+  var introduced = SPS.fileFlags(prev.flags, now.flags, own.flags);
   if (mapped.reject && introduced.indexOf("rejected") < 0) introduced.push("rejected");
   var boardNotes = [];
   for (var i = 0; i < keys.length; i++) {

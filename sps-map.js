@@ -153,6 +153,20 @@
     return out;
   }
   function round2(n) { return Math.round(Number(n) * 100) / 100; }
+  // X12 810 TDS01 (Summary.TotalAmount) is N2: two implied decimal places.
+  // McLane files arrive as that integer (641448 means $6,414.48) while
+  // InvoiceLine.PurchasePrice is already dollars. Scale only when the raw
+  // value is the line sum times 100. A total that already matches the lines,
+  // or that matches neither, is left unchanged so a real mismatch still flags.
+  // 850 TotalAmount is a different element and is already in dollars.
+  function decode810Total(raw, lineSum) {
+    if (raw == null || raw === "") return null;
+    var n = num(raw);
+    if (n == null) return null;
+    var scaled = round2(n / 100);
+    if (lineSum != null && !near(n, lineSum) && near(scaled, lineSum)) return scaled;
+    return n;
+  }
 
   function docKind(json) {
     var h = (json && json.Header) || {};
@@ -308,6 +322,8 @@
     var terms = (Array.isArray(h.PaymentTerms) && h.PaymentTerms[0]) || {};
     var invDate = String(ih.InvoiceDate || "");
     var due = String(terms.TermsNetDueDate || "") || addDays(invDate, num(terms.TermsNetDueDays));
+    var lineSum = reject ? null : round2(computed);
+    var stated = reject ? null : decode810Total(summary && summary.TotalAmount, lineSum);
     return {
       docType: "810", label: DOC_LABEL["810"],
       partnerId: partnerId, partner: partnerFromId(partnerId, ship && ship.name),
@@ -317,8 +333,8 @@
       shipTo: ship, billTo: addrView(addr(h.Address, "BT")),
       dates: {}, headerNotes: joinNotes(h.Notes),
       totalQty: null, totalUom: "", weight: null, volume: null,
-      statedTotal: !reject && summary && summary.TotalAmount != null && summary.TotalAmount !== "" ? num(summary.TotalAmount) : null,
-      computedTotal: reject ? null : round2(computed),
+      statedTotal: stated,
+      computedTotal: lineSum,
       lineCount: lines.length, lines: lines, shipment: null,
       invoice: {
         number: String(ih.InvoiceNumber || "").trim(),
@@ -328,8 +344,8 @@
         due: due,
         poDate: String(ih.PurchaseOrderDate || ""),
         cartonCount: !reject && summary ? num(summary.TotalCartonCount) : null,
-        stated: !reject && summary && summary.TotalAmount != null && summary.TotalAmount !== "" ? num(summary.TotalAmount) : null,
-        computed: reject ? null : round2(computed)
+        stated: stated,
+        computed: lineSum
       },
       reject: reject
     };
@@ -493,7 +509,21 @@
         details.push(who + " order price " + money(l.price) + " vs invoice price " + money(l.invoicePrice) + ".");
       }
     });
-    return { flags: uniq(flags), details: details };
+    return { flags: uniq(flags), details: uniq(details) };
+  }
+
+  // Flags written on one stored file. Cross-document issues count only when
+  // this file introduces them. A flag this file produces by itself (810 total,
+  // rejected) is kept when an earlier copy already raised it, so a duplicate
+  // invoice is not stored live with an empty flag list and the same note.
+  function fileFlags(prevFlags, nowFlags, ownFlags) {
+    var prev = prevFlags || [];
+    var now = nowFlags || [];
+    var out = now.filter(function (f) { return prev.indexOf(f) < 0; });
+    (ownFlags || []).forEach(function (f) {
+      if (now.indexOf(f) >= 0 && out.indexOf(f) < 0) out.push(f);
+    });
+    return out;
   }
 
   function casesBags(line) {
@@ -668,6 +698,7 @@
     mapDocument: mapDocument,
     interpret: interpret,
     flagsOf: flagsOf,
+    fileFlags: fileFlags,
     buildOrder: buildOrder,
     buildDemand: buildDemand,
     buildShipment: buildShipment,
