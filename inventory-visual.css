@@ -1,0 +1,112 @@
+/* Smackin' OS - Inventory visual floor view (inventory-visual.css)
+   Pairs with inventory-visual.js. Presentation only. */
+
+/* ---- Inventory Overview: cards mode hides the dense table (kept in DOM) ---- */
+.ivx-dashcard.ivx-cardsmode > .catbar,
+.ivx-dashcard.ivx-cardsmode > .colctl,
+.ivx-dashcard.ivx-cardsmode > #dashSearch,
+.ivx-dashcard.ivx-cardsmode > table { display: none !important; }
+
+#ivx-root { margin: 14px 0 6px; }
+.ivx-head .ivx-title { margin: 0; font-size: 20px; }
+.ivx-head .hint { margin: 2px 0 10px; }
+
+/* top actions: big, thumb friendly */
+.ivx-actions { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin: 0 0 12px; }
+.ivx-action { min-height: 52px; padding: 10px 12px; border-radius: 12px; border: 2px solid var(--blue, #006DB6);
+  background: #fff; color: var(--navy, #04223B); font: 700 16px Barlow, system-ui, sans-serif; cursor: pointer; }
+.ivx-action:hover { background: var(--light, #E1EEF7); }
+.ivx-action.ivx-primary { background: var(--orange, #F26B21); border-color: var(--orange, #F26B21); color: #fff; }
+.ivx-action.ivx-primary:hover { background: var(--orange-d, #D9550D); }
+
+/* sticky filter bar */
+.ivx-bar { position: sticky; top: 0; z-index: 5; background: #fff; padding: 8px 0 10px; border-bottom: 1px solid var(--line, #d7dde6);
+  display: flex; flex-direction: column; gap: 6px; }
+.ivx-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.ivx-chip { min-height: 40px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line, #d7dde6); background: var(--grey, #F2F2F2);
+  color: var(--ink, #303030); font: 600 15px Barlow, system-ui, sans-serif; cursor: pointer; }
+.ivx-chip.on { background: var(--navy, #04223B); border-color: var(--navy, #04223B); color: #fff; }
+.ivx-mode { margin-left: auto; display: inline-flex; gap: 4px; }
+#ivx-q { width: 100%; max-width: 520px; min-height: 46px; font-size: 17px; padding: 8px 12px; border-radius: 10px; }
+
+/* groups */
+.ivx-group { margin-top: 16px; }
+.ivx-ghead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin: 0 0 8px; }
+.ivx-ghead h2 { margin: 0; font-size: 19px; }
+.ivx-gsum { color: #5b6573; font-size: 15px; }
+.ivx-gsum b { color: var(--navy, #04223B); }
+.ivx-empty { padding: 16px 0; }
+
+/* card grid */
+.ivx-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.ivx-card { background: #fff; border: 1px solid var(--line, #d7dde6); border-left: 6px solid var(--green, #00A341); border-radius: 14px;
+  padding: 12px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 1px 3px rgba(4, 34, 59, .06); }
+.ivx-card.st-low { border-left-color: var(--amber, #E08A1E); }
+.ivx-card.st-out { border-left-color: var(--red, #B52024); }
+.ivx-cardhead { display: flex; gap: 12px; align-items: center; }
+.ivx-img { width: 76px; height: 76px; flex: none; object-fit: contain; border-radius: 12px; background: var(--light, #E1EEF7); }
+.ivx-cardtitle h3 { margin: 0; font-size: 18px; line-height: 1.15; color: var(--navy, #04223B); }
+.ivx-cardtotal { font-size: 14px; color: #5b6573; margin-top: 2px; }
+.ivx-cardtotal b { font-size: 18px; color: var(--navy, #04223B); }
+
+/* one row per size / item */
+.ivx-row { border-top: 1px dashed var(--line, #d7dde6); padding-top: 8px; }
+.ivx-rowtop { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ivx-size { background: var(--navy, #04223B); color: #fff; font-weight: 700; font-size: 13px; padding: 2px 8px; border-radius: 6px; }
+.ivx-code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; color: #5b6573; }
+.ivx-rowtop .pill { margin-left: auto; }
+.ivx-total { margin: 4px 0 2px; }
+.ivx-total b { font-size: 30px; font-weight: 800; color: var(--navy, #04223B); letter-spacing: -.5px; }
+.ivx-total span { color: #5b6573; font-size: 15px; }
+.ivx-row.st-out .ivx-total b { color: var(--red, #B52024); }
+.ivx-row.st-low .ivx-total b { color: var(--amber, #E08A1E); }
+.ivx-heldnote { font-size: 13px; color: #B25C00; margin-bottom: 4px; }
+
+/* location chips */
+.ivx-locs { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.ivx-loc { display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 4px 10px; border-radius: 10px;
+  border: 1px solid #b9cfe2; background: var(--light, #E1EEF7); color: var(--navy, #04223B); font: 600 14px Barlow, system-ui, sans-serif; cursor: pointer; }
+.ivx-loc b { font-weight: 800; }
+.ivx-loc.hold { background: var(--amberbg, #FFF6E9); border-color: #f0c88d; color: #8a4b00; }
+.ivx-loc.ivx-more { background: #fff; border-style: dashed; }
+.ivx-locname { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; }
+.ivx-lots { font-size: 11px; color: #5b6573; font-weight: 600; }
+.ivx-hidden { display: none; }
+.ivx-locs.ivx-showall .ivx-hidden { display: contents; }
+.ivx-locs.ivx-showall .ivx-more { display: none; }
+
+/* per-row actions */
+.ivx-rowbtns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.ivx-btn { min-height: 44px; border-radius: 10px; border: 1px solid var(--blue, #006DB6); background: #fff; color: var(--blue, #006DB6);
+  font: 700 15px Barlow, system-ui, sans-serif; cursor: pointer; }
+.ivx-btn:hover, .ivx-loc:hover { filter: brightness(.96); }
+.ivx-btn:focus-visible, .ivx-loc:focus-visible, .ivx-chip:focus-visible, .ivx-action:focus-visible { outline: 3px solid var(--yellow, #F2C61E); outline-offset: 1px; }
+
+@media (max-width: 640px) {
+  .ivx-grid { grid-template-columns: 1fr; }
+  .ivx-actions { grid-template-columns: repeat(2, 1fr); }
+  .ivx-mode { margin-left: 0; }
+  .ivx-total b { font-size: 34px; }
+}
+
+/* ---- Receive / Adjust / Move / Count / Put-away: simpler data entry ---- */
+body.ivx-recv #view input:not([type=checkbox]):not([type=radio]):not([type=file]),
+body.ivx-recv #view select,
+body.ivx-form #view input:not([type=checkbox]):not([type=radio]):not([type=file]),
+body.ivx-form #view select { min-height: 48px; font-size: 17px; }
+body.ivx-recv #r-code, body.ivx-recv #r-qty,
+body.ivx-form #m-code, body.ivx-form #m-qty, body.ivx-form #c-code, body.ivx-form #c-qty, body.ivx-form #p-code, body.ivx-form #p-qty {
+  font-size: 20px; font-weight: 700; border: 2px solid var(--blue, #006DB6); }
+body.ivx-recv #view .card > button.primary,
+body.ivx-form #view .card > button.primary {
+  position: sticky; bottom: 10px; z-index: 4; width: 100%; min-height: 56px; font-size: 19px; font-weight: 800;
+  border-radius: 12px; box-shadow: 0 6px 18px rgba(4, 34, 59, .22); margin-top: 14px; }
+body.ivx-form #adjBody input.adjq { min-height: 46px; font-size: 18px; width: 120px; }
+body.ivx-form #adjBody input.adjq:not(:placeholder-shown) { border: 2px solid var(--orange, #F26B21); background: #FFF6EE; }
+body.ivx-recv #view .cambtn, body.ivx-form #view .cambtn { min-height: 48px; min-width: 56px; }
+
+/* ---- Returns (returns-workflow.js): bigger fields only, layout untouched ---- */
+body.ivx-ret #rw-root input:not([type=checkbox]):not([type=radio]):not([type=file]),
+body.ivx-ret #rw-root select,
+body.ivx-ret #rw-root textarea { min-height: 46px; font-size: 17px; }
+body.ivx-ret #rw-root button.primary { min-height: 52px; font-size: 18px; font-weight: 800; border-radius: 12px; }
