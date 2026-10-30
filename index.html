@@ -12,12 +12,13 @@
   <link rel="stylesheet" href="styles.css?b=61">
   <link rel="stylesheet" href="ui-polish.css?b=1">
   <link rel="stylesheet" href="inventory-visual.css?b=2">
+  <link rel="stylesheet" href="floor-clarity.css?b=1">
   <script>
   /* Hard-refresh escape. Runs from this document, so Ctrl+Shift+R or
      Cmd+Shift+R can drop a stale smackin-inv worker even when that worker
      swallows sw-escape.js. Only an older smackin-inv cache is removed. */
   (function () {
-    var EMBEDDED = "smackin-inv-v255";
+    var EMBEDDED = "smackin-inv-v256";
     function ver(id) {
       var m = /smackin-inv-v(\d+)/.exec(String(id || ""));
       return m ? parseInt(m[1], 10) : 0;
@@ -110,7 +111,7 @@
   <script src="db.js?b=93"></script>
   <script src="gusto-roster.js?b=1"></script>
   <script src="app.js?b=192"></script>
-  <script src="returns-workflow.js?b=1"></script>
+  <script src="returns-workflow.js?b=2"></script>
   <script src="trace.js?b=17"></script>
   <script src="receiving-sop.js?b=1"></script>
   <script src="trace-recall.js?b=1"></script>
@@ -125,8 +126,8 @@
   <script src="services.js?b=2"></script>
   <script src="sps-map.js?b=4"></script>
   <script src="sps-feed.js?b=5"></script>
-  <script src="po-status.js?b=3"></script>
-  <script src="dashboard.js?b=3"></script>
+  <script src="po-status.js?b=4"></script>
+  <script src="dashboard.js?b=4"></script>
   <script src="shipping-sync.js?b=5"></script>
   <script src="shipping-lanes.js?b=1"></script>
   <script src="outbound-folders.js?b=1"></script>
@@ -135,7 +136,7 @@
   <script src="sqf-tasks.js?b=1"></script>
   <script src="qa-checklists.js?b=1"></script>
   <script src="fulfillment-analytics.js?b=2"></script>
-  <script src="dept-homes.js?b=22"></script>
+  <script src="dept-homes.js?b=23"></script>
   <script src="demand-wos.js?b=1"></script>
   <script src="vendor-seed.js?b=2"></script>
   <script src="vendor-lead.js?b=3"></script>
@@ -143,6 +144,7 @@
   <script src="batch-record.js?b=1"></script>
   <script src="work-orders.js?b=1"></script>
   <script src="inventory-visual.js?b=2"></script>
+  <script src="floor-clarity.js?b=1"></script>
   <script src="sw-boot.js?b=2"></script>
 </body>
 </html>
