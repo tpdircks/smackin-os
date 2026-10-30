@@ -6360,6 +6360,6 @@
     if (!ordersSeen) markOrdersSeen(); // first run: existing orders are not "new"
     DB.onChange(renderExternal);
     render();
-    if ("serviceWorker" in navigator) { try { navigator.serviceWorker.register("service-worker.js"); } catch (e) {} }
+    if ("serviceWorker" in navigator && !window.__smackinSwEscapeLock) { try { navigator.serviceWorker.register("service-worker.js", { updateViaCache: "none" }); } catch (e) {} }
   });
 })();
