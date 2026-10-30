@@ -100,6 +100,28 @@ copy.owners = walls.owners.slice();
 var stamped = sqf.applyDueOnly(copy, "2027-01-31", "ui", "2026-10-30T00:00:00.000Z");
 assert(stamped.due_date === "2027-01-31" && stamped.status === "open" && stamped.action_notes === wallsBefore, "apply due only");
 
+var AS30 = "2026-10-30";
+var PAST_IDS = ["11.1.6.4", "11.1.7.6", "11.6.4.4", "11.6.4.5", "2.3.2.6", "11.1.7.2", "11.1.7.3", "11.1.7.5", "11.1.8.1", "11.2.1.6", "11.4.1.2", "11.4.1.3", "11.4.1.4", "11.1.5.1", "11.1.5.2", "11.1.2.4", "11.1.2.7", "11.1.2.8", "11.2.1.2", "11.6.4.2", "2.3.4.2"];
+var past30 = sqf.filterRows(seed, { past: true }, AS30);
+assert(past30.length === PAST_IDS.length, "oct 30 past due count " + past30.length);
+PAST_IDS.forEach(function (id) {
+  assert(past30.some(function (r) { return r.clause === id && r.status === "open"; }), "past due clause " + id);
+});
+var ordered = sqf.displaySort(seed, AS30);
+var headIds = ordered.slice(0, PAST_IDS.length).map(function (r) { return r.clause; });
+PAST_IDS.forEach(function (id) { assert(headIds.indexOf(id) >= 0, "past due sorts first " + id); });
+assert(!sqf.isPastDue(ordered[PAST_IDS.length], AS30), "row after past due is not past due");
+var mb = sqf.filterRows(seed, { owner: "mb" }, AS30);
+assert(mb.length === 42, "monica or brittney open " + mb.length);
+assert(mb.every(function (r) {
+  return r.status !== "done" && ((r.owners || []).indexOf("Monica") >= 0 || (r.owners || []).indexOf("Brittney") >= 0);
+}), "mb filter is open work for those owners");
+var keptDates = {};
+PAST_IDS.forEach(function (id) { keptDates[id] = row(id).due_date; });
+var janPlan = sqf.redatePlan(seed, PAST_IDS, "2027-01-31");
+assert(janPlan.rows.length === 21 && janPlan.rows.every(function (r) { return r.status === "open" && r.due_date === "2027-01-31"; }), "jan plan for the 21");
+PAST_IDS.forEach(function (id) { assert(row(id).due_date === keptDates[id] && row(id).due_date !== "2027-01-31", "seed date unchanged " + id); });
+
 var past = sqf.filterRows(seed, { past: true }, asOf);
 assert(past.length === 21, "past filter " + past.length);
 var monica = sqf.filterRows(seed, { owner: "Monica", module: "2" }, asOf);

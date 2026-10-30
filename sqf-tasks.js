@@ -80,7 +80,10 @@
       redateOpen: "Set all open",
       selectShown: "Select shown",
       clearSelected: "Clear selection",
-      redateHint: "Sets the due date only. Notes and status stay as they are. All open means not done.",
+      redateHint: "Select past due or undated, then set the due date. Selecting does not change anything until you set the date. Notes and status stay as they are. All open means not done.",
+      selectPast: "Select past due",
+      selectUndated: "Select undated",
+      mb: "Monica or Brittney",
       redateNeed: "Pick a due date first.",
       redateNone: "No tasks to re-date.",
       redateAsk: "Set {n} tasks to {d}? Notes and status stay the same.",
@@ -147,7 +150,10 @@
       redateOpen: "Fecha a todos los abiertos",
       selectShown: "Marcar los visibles",
       clearSelected: "Quitar marcas",
-      redateHint: "Solo cambia la fecha. Las notas y el estado se quedan. Todos los abiertos significa que no estan hechos.",
+      redateHint: "Marque vencidos o sin fecha, luego ponga la fecha. Marcar no cambia nada hasta que ponga la fecha. Las notas y el estado se quedan. Todos los abiertos significa que no estan hechos.",
+      selectPast: "Marcar vencidos",
+      selectUndated: "Marcar sin fecha",
+      mb: "Monica o Brittney",
       redateNeed: "Elija una fecha primero.",
       redateNone: "No hay tareas para fechar.",
       redateAsk: "Poner {n} tareas en {d}? Las notas y el estado se quedan igual.",
@@ -214,7 +220,10 @@
       redateOpen: "Data em todas as abertas",
       selectShown: "Marcar as visiveis",
       clearSelected: "Limpar marcas",
-      redateHint: "So muda a data. Notas e status ficam. Todas as abertas significa que nao estao feitas.",
+      redateHint: "Marque vencidas ou sem data, depois coloque a data. Marcar nao muda nada ate colocar a data. Notas e status ficam. Todas as abertas significa que nao estao feitas.",
+      selectPast: "Marcar vencidas",
+      selectUndated: "Marcar sem data",
+      mb: "Monica ou Brittney",
       redateNeed: "Escolha uma data primeiro.",
       redateNone: "Nao ha tarefas para datar.",
       redateAsk: "Colocar {n} tarefas em {d}? Notas e status ficam iguais.",
@@ -484,7 +493,11 @@
     f = f || {};
     var q = String(f.q || "").toLowerCase().trim();
     return (list || []).filter(function (r) {
-      if (f.owner && (r.owners || []).indexOf(f.owner) < 0) return false;
+      if (f.owner === "mb") {
+        var names = r.owners || [];
+        if (names.indexOf("Monica") < 0 && names.indexOf("Brittney") < 0) return false;
+        if (r.status === "done") return false;
+      } else if (f.owner && (r.owners || []).indexOf(f.owner) < 0) return false;
       if (f.section && r.section !== f.section) return false;
       if (f.status && r.status !== f.status) return false;
       if (f.module && String(r.module) !== String(f.module)) return false;
@@ -509,6 +522,20 @@
         var d = (pa[i] || 0) - (pb[i] || 0);
         if (d) return d;
       }
+      return 0;
+    });
+  }
+  function displaySort(list, today) {
+    return (list || []).slice().sort(function (a, b) {
+      function rank(r) {
+        if (isPastDue(r, today)) return 0;
+        if (isUndatedOpen(r)) return 1;
+        if (isOpenWork(r)) return 2;
+        return 3;
+      }
+      var d = rank(a) - rank(b);
+      if (d) return d;
+      if (rank(a) === 0) return String(a.due_date || "").localeCompare(String(b.due_date || ""));
       return 0;
     });
   }
@@ -756,7 +783,7 @@
     var host = doc.getElementById("view");
     if (!host) return;
     var today = todayDenver();
-    var all = sortRows(rows || []);
+    var all = displaySort(sortRows(rows || []), today);
     var c = counts(all, today);
     var shown = filterRows(all, filters, today);
     var secs = sectionsOf(all);
@@ -764,6 +791,7 @@
     var qPos = focusQ ? (doc.activeElement.selectionStart || 0) : 0;
 
     var chips = '<button type="button" data-sqf="owner" data-val="" class="' + (filters.owner ? "" : "on") + '">' + esc(tx("anyOwner")) + "</button>" +
+      '<button type="button" data-sqf="owner" data-val="mb" class="' + (filters.owner === "mb" ? "on" : "") + '">' + esc(tx("mb")) + "</button>" +
       OWNERS.map(function (name) {
         return '<button type="button" data-sqf="owner" data-val="' + esc(name) + '" class="' + (filters.owner === name ? "on" : "") + '">' + esc(name) + "</button>";
       }).join("");
@@ -829,6 +857,8 @@
       "<div><label>" + esc(tx("target")) + '</label><input id="sqf-target" data-sqf="target" type="date" value="' + esc(targetValue()) + '"></div>' +
       '<button type="button" class="primary" data-sqf="redate" data-mode="selected">' + esc(tx("redateSelected")) + (selectedN ? " (" + selectedN + ")" : "") + "</button>" +
       '<button type="button" class="primary" data-sqf="redate" data-mode="open">' + esc(tx("redateOpen")) + "</button>" +
+      '<button type="button" class="ghost" data-sqf="pick-past">' + esc(tx("selectPast")) + "</button>" +
+      '<button type="button" class="ghost" data-sqf="pick-undated">' + esc(tx("selectUndated")) + "</button>" +
       '<button type="button" class="ghost" data-sqf="pick-shown">' + esc(tx("selectShown")) + "</button>" +
       '<button type="button" class="ghost" data-sqf="clear-picked">' + esc(tx("clearSelected")) + "</button>" +
       "</div>" +
@@ -1153,6 +1183,17 @@
       render();
       return;
     }
+    if (act === "pick-past") {
+      var todayPast = todayDenver();
+      (rows || []).forEach(function (r) { if (isPastDue(r, todayPast)) picked[r.clause] = 1; });
+      render();
+      return;
+    }
+    if (act === "pick-undated") {
+      (rows || []).forEach(function (r) { if (isUndatedOpen(r)) picked[r.clause] = 1; });
+      render();
+      return;
+    }
     if (act === "pick-shown") {
       var todayPick = todayDenver();
       filterRows(sortRows(rows || []), filters, todayPick).forEach(function (r) { picked[r.clause] = 1; });
@@ -1264,6 +1305,7 @@
     isUndatedOpen: isUndatedOpen,
     isOpenWork: isOpenWork,
     redatePlan: redatePlan,
+    displaySort: displaySort,
     redatePayload: redatePayload,
     applyDueOnly: applyDueOnly,
     filterRows: filterRows,
