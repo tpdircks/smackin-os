@@ -2,10 +2,15 @@
    Smackin' OS - Department homes (dept-homes.js)
    Top department bar and a full-page home for each team. Tool cards sit
    directly under the title so a create or update screen is one tap away.
-   Live counts and lists from DB follow those cards. Demand is the
+   Live counts and lists from DB follow those cards. Demand is one
    exception: the live floor (Now Running / In Process) is first, then
-   the demand tools and lists. Each card opens a screen that already
-   exists (UI_go, Lot Trace, or a module open()).
+   the demand tools and lists. Inventory is the other: the tab opens the
+   Floor (on-hand by flavor, with bag photos). Subtabs switch Inventory
+   jobs. Overview is that Floor. Returns, finished bags, locations, and
+   the catalog and reports are the other subtabs. A short Actions row on
+   Overview is only Receive, Adjust, Count, Move, and Alerts.
+   Each card opens a screen that already exists (UI_go, Lot Trace, or a
+   module open()).
    Tabs, equal width, left to right: Dashboard, Demand, Purchasing,
    Receiving, Inventory, Mixing, P-Mac, Fulfillment, Shipping, Quality,
    and Ops (Team, Maintenance, Docs, and System). Each tab is a Lucide
@@ -16,7 +21,8 @@
    #view gets one Back control (same place, same wording) to the previous
    screen or the department home. It is a compact chip in the same
    language as the department tabs: navy label, Lucide chevron.
-   Dashboard and department homes do not.
+   Dashboard and department homes do not. The Inventory Floor does not,
+   when Back would only reopen that Floor.
    No writes. No timers.
    ========================================================================== */
 (function () {
@@ -33,11 +39,21 @@
   var backHere = null;
   var backRestoring = false;
   var backPressBusy = false;
+  var backLeaving = false;
   var DEMAND_TABS = { demand: 1, demandboard: 1, demandsched: 1, demandimport: 1, ecomdemand: 1, forecast: 1 };
   // A department tap blurs the field before click, so remember the mid-entry
   // check from the press itself. Touch sends a later mousedown after the blur.
   var pressBusy = false;
   var touchArmed = false;
+  // Which Inventory subtab is showing. Empty on an action screen (Adjust, and the rest).
+  var invHere = "";
+  var INV_SUBS = ["dash", "returns", "finbags", "locations", "facility", "seed", "skus", "printlabels", "analytics", "trMove"];
+  var INV_ACTIONS = ["receive", "adjust", "count", "move", "alerts"];
+  var INV_SUB_SET = {};
+  INV_SUBS.forEach(function (id) { INV_SUB_SET[id] = 1; });
+  var INV_SUB_SHORT = {
+    trMove: { en: "Lot move", es: "Mover lote", pt: "Mover lote" }
+  };
 
   var TAB_DEPT = {
     home: "home", daily: "home",
@@ -233,10 +249,11 @@
     },
     {
       id: "inv",
+      live: "dash",
       icon: "boxes",
       label: { en: "Inventory", es: "Inventario", pt: "Estoque" },
       title: { en: "Inventory", es: "Inventario", pt: "Estoque" },
-      intro: { en: "Counts, adjustments, moves, locations, seed, SKUs, labels, and reports.", es: "Conteos, ajustes, movimientos, ubicaciones, semilla, SKUs, etiquetas y reportes.", pt: "Contagens, ajustes, movimentos, locais, semente, SKUs, etiquetas e relatorios." },
+      intro: { en: "On-hand by flavor. Actions are receive, adjust, count, move, and alerts. Other jobs are the tabs.", es: "Existencias por sabor. Las acciones son recibir, ajustar, contar, mover y alertas. Lo demas son las pestanas.", pt: "Estoque por sabor. As acoes sao receber, ajustar, contar, mover e alertas. O resto sao as abas." },
       sections: [
         { h: { en: "Returns", es: "Devoluciones", pt: "Devolucoes" }, tools: ["returns"] },
         { h: { en: "Counts", es: "Conteos", pt: "Contagens" }, tools: ["dash", "adjust", "count", "alerts", "finbags", "move", "trMove"] },
@@ -1789,13 +1806,33 @@
     if (backStack.length) return backStack[backStack.length - 1];
     return { kind: "home", id: barCurrent || "home" };
   }
+  function toolIdForGo(goId) {
+    var keys = Object.keys(TOOLS);
+    var i;
+    for (i = 0; i < keys.length; i++) {
+      if (TOOLS[keys[i]].go === goId) return keys[i];
+    }
+    return "";
+  }
+  function noteInvFromGo(goId) {
+    if (barCurrent !== "inv") return;
+    var toolId = toolIdForGo(goId);
+    invHere = INV_SUB_SET[toolId] ? toolId : "";
+  }
+  function invSubEntry(entry) {
+    if (!entry || barCurrent !== "inv") return false;
+    if (entry.kind === "go") return !!INV_SUB_SET[toolIdForGo(entry.id)];
+    return entry.kind === "trace" && entry.id === "move";
+  }
   // Remember the screen we are leaving so Back can return to it.
   // Leaving a department home replaces the trail with that home.
   // Demand tabs are siblings: switching them does not add a step.
+  // Inventory subtabs are siblings too.
   function pushBefore(next) {
     if (backRestoring || !next) return;
     if (sameStop(backHere, next)) return;
     if (backHere && backHere.kind === "go" && next.kind === "go" && DEMAND_TABS[backHere.id] && DEMAND_TABS[next.id]) return;
+    if (invSubEntry(backHere) && invSubEntry(next)) return;
     if (backHere && backHere.kind === "trace" && next.kind === "trace") return;
     if (!backHere) {
       backStack = [{ kind: "home", id: barCurrent || "home" }];
@@ -1817,6 +1854,24 @@
   }
   function isDashboard(view) {
     return !!(view && view.querySelector(".df-lead"));
+  }
+  // Back on the Floor that only reopens Inventory is a loop. Keep Back when
+  // it returns to some other department.
+  function floorBackHidden(view) {
+    if (!view || barCurrent !== "inv" || !view.querySelector("#dashBody")) return false;
+    var dest = currentReturn();
+    if (!dest) return false;
+    if (dest.kind === "home" && dest.id === "inv") return true;
+    if (dest.kind === "go" && dest.id === "dash") return true;
+    return false;
+  }
+  function invShellEl(view) {
+    return view ? view.querySelector("#inv-shell") : null;
+  }
+  function backIsPlaced(view, bar) {
+    var shell = invShellEl(view);
+    if (shell) return shell.nextSibling === bar;
+    return view.firstChild === bar;
   }
   function removeBackBar(view) {
     var bar = view && view.querySelector("#dept-backbar");
@@ -1867,12 +1922,14 @@
     backPressBusy = false;
     if (blocked) { toast(Lbusy()); return; }
     var prev = backStack.length ? backStack.pop() : { kind: "home", id: barCurrent || "home" };
-    restoreStop(prev);
+    // Back already decided an empty scan box is not an unfinished entry.
+    backLeaving = true;
+    try { restoreStop(prev); } finally { backLeaving = false; }
   }
   function syncBackBar() {
     var view = document.getElementById("view");
     if (!view || painting || homeId) return;
-    if (view.querySelector("#dept-home") || isDashboard(view)) {
+    if (view.querySelector("#dept-home") || isDashboard(view) || floorBackHidden(view)) {
       removeBackBar(view);
       if (!backHere) backHere = { kind: "home", id: barCurrent || "home" };
       return;
@@ -1883,7 +1940,7 @@
     }
     var phrase = backPhrase(currentReturn());
     var bar = view.querySelector("#dept-backbar");
-    if (bar && bar.getAttribute("data-label") === phrase && view.firstChild === bar) return;
+    if (bar && bar.getAttribute("data-label") === phrase && backIsPlaced(view, bar)) return;
     if (!bar) {
       bar = document.createElement("div");
       bar.id = "dept-backbar";
@@ -1917,7 +1974,8 @@
     if (button.querySelector("i.dept-back-ico")) {
       try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
     }
-    if (view.firstChild !== bar) view.insertBefore(bar, view.firstChild);
+    var shell = invShellEl(view);
+    if (!backIsPlaced(view, bar)) view.insertBefore(bar, shell ? shell.nextSibling : view.firstChild);
   }
   function wrapFn(obj, name, next) {
     if (!obj || typeof obj[name] !== "function" || obj[name].__deptBack) return;
@@ -1937,6 +1995,7 @@
       var origGo = window.UI_go;
       var go = function (tab) {
         var nextId = String(tab || "");
+        noteInvFromGo(nextId);
         if (!backRestoring) {
           if (nextId === "home") {
             /* Dashboard is a home. The wrapper clears the trail after render. */
@@ -1960,6 +2019,7 @@
       var origTrace = TRACE.go;
       var traceGo = function (tab) {
         var next = { kind: "trace", id: String(tab || "") };
+        if (barCurrent === "inv" && next.id === "move") invHere = "trMove";
         if (!backRestoring) {
           pushBefore(next);
           backHere = next;
@@ -2052,12 +2112,13 @@
   }
 
   function showHome(id) {
-    var blocked = pressBusy || entryInProgress();
+    var blocked = !backLeaving && (pressBusy || entryInProgress());
     pressBusy = false;
     touchArmed = false;
     if (blocked) { toast(Lbusy()); return; }
     var dept = deptById(id);
     if (!dept || dept.passthrough) return;
+    if (id !== "inv") document.body.classList.remove("inv-floor");
     releaseOtherViews();
     leaveBoardMode();
     barCurrent = id;
@@ -2086,15 +2147,91 @@
     syncOffset();
   }
 
-  function openTool(id) {
+  function openTool(id, fromShell) {
     var tool = TOOLS[id];
     if (!tool) return;
-    if (entryInProgress() && !document.getElementById("dept-home")) { toast(Lbusy()); return; }
+    var blocked = fromShell ? backBlocked() : (entryInProgress() && !document.getElementById("dept-home"));
+    if (blocked) { toast(Lbusy()); return; }
     homeId = "";
     paintTries = 0;
     closeDrawer();
     markBar();
     runTool(tool);
+    if (fromShell) {
+      try { window.scrollTo(0, 0); } catch (e) {}
+    }
+  }
+
+  // Inventory subtabs replace each other. Back from one returns to the Floor.
+  function openInvSub(id) {
+    var tool = TOOLS[id];
+    if (!tool || !INV_SUB_SET[id]) return;
+    if (backBlocked()) { toast(Lbusy()); return; }
+    homeId = "";
+    paintTries = 0;
+    closeDrawer();
+    barCurrent = "inv";
+    invHere = id;
+    backHere = { kind: "home", id: "inv" };
+    backStack = [];
+    markBar();
+    paintDeptActive();
+    runTool(tool);
+    try { window.scrollTo(0, 0); } catch (e) {}
+  }
+
+  function invSubLabel(id) {
+    if (INV_SUB_SHORT[id]) return tx(INV_SUB_SHORT[id]);
+    var tool = TOOLS[id];
+    return tool ? tx(tool.title) : id;
+  }
+  function invSubsHtml() {
+    return '<div class="ordtabs inv-subs" role="tablist">' + INV_SUBS.map(function (id) {
+      var on = invHere === id;
+      return '<button type="button" class="' + (on ? "active" : "") + '" role="tab" data-inv-sub="' + esc(id) + '"' +
+        (on ? ' aria-selected="true"' : ' aria-selected="false"') + '>' + esc(invSubLabel(id)) + "</button>";
+    }).join("") + "</div>";
+  }
+  function invActionsHtml() {
+    return '<div class="inv-actions"><h2 class="dept-sec">' + esc(tx({ en: "Actions", es: "Acciones", pt: "Acoes" })) + '</h2><div class="inv-action-row">' +
+      INV_ACTIONS.map(cardHtml).join("") + "</div></div>";
+  }
+  function measureInvShell(shell) {
+    if (!shell) {
+      document.documentElement.style.removeProperty("--inv-shell-h");
+      return;
+    }
+    var h = shell.offsetHeight || 0;
+    if (h) document.documentElement.style.setProperty("--inv-shell-h", h + "px");
+  }
+  function dressInvShell() {
+    var view = document.getElementById("view");
+    if (!view) return;
+    var show = barCurrent === "inv" && !view.querySelector("#dept-home");
+    var floor = !!(show && view.querySelector("#dashBody"));
+    document.body.classList.toggle("inv-floor", floor);
+    var existing = document.getElementById("inv-shell");
+    if (!show) {
+      if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+      measureInvShell(null);
+      return;
+    }
+    var langNow = lang();
+    var floorFlag = floor ? "1" : "0";
+    if (existing && existing.getAttribute("data-lang") === langNow && existing.getAttribute("data-here") === invHere && existing.getAttribute("data-floor") === floorFlag && view.firstChild === existing) {
+      measureInvShell(existing);
+      return;
+    }
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+    var shell = document.createElement("div");
+    shell.id = "inv-shell";
+    shell.setAttribute("data-lang", langNow);
+    shell.setAttribute("data-here", invHere);
+    shell.setAttribute("data-floor", floorFlag);
+    shell.innerHTML = invSubsHtml() + (floor ? invActionsHtml() : "");
+    view.insertBefore(shell, view.firstChild);
+    try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
+    measureInvShell(shell);
   }
 
   function onBarClick(e) {
@@ -2104,9 +2241,14 @@
   }
 
   function onViewClick(e) {
+    var sub = e.target && e.target.closest ? e.target.closest("[data-inv-sub]") : null;
+    if (sub) {
+      openInvSub(sub.getAttribute("data-inv-sub"));
+      return;
+    }
     var btn = e.target && e.target.closest ? e.target.closest("[data-dept-tool]") : null;
     if (!btn) return;
-    openTool(btn.getAttribute("data-dept-tool"));
+    openTool(btn.getAttribute("data-dept-tool"), !!btn.closest("#inv-shell"));
   }
 
   function noteDashboard() {
@@ -2132,6 +2274,7 @@
     if (painting) return;
     if (lang() !== shownLang) renderBar();
     noteDashboard();
+    dressInvShell();
     if (!homeId) { syncBackBar(); return; }
     var view = document.getElementById("view");
     if (!view) return;
@@ -2277,6 +2420,26 @@
       "body.boardmode #dept-backbar{position:fixed;top:8px;left:8px;z-index:90;display:inline-flex;width:auto;max-width:calc(100vw - 16px);margin:0;padding:0;background:transparent}",
       "body.boardmode #dept-back{background:rgba(255,255,255,.96);box-shadow:0 2px 8px rgba(0,0,0,.28)}",
       "@media print{#dept-backbar{display:none!important}}",
+      "#inv-shell{position:sticky;top:var(--dept-stack-h,0px);z-index:45;background:#eef1f5;margin:-4px -6px 8px;padding:8px 6px 6px}",
+      "#inv-shell .inv-subs{flex-wrap:wrap;margin:0}",
+      "#inv-shell .inv-actions{margin-top:8px}",
+      "#inv-shell .dept-sec{margin:0 0 4px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#5c6b7c;font-weight:800}",
+      "#inv-shell .inv-action-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}",
+      "#inv-shell .dept-card{flex:1 0 168px;max-width:280px;display:flex;flex-direction:row;align-items:flex-start;gap:8px;text-align:left;background:#fff;border:1px solid var(--line,#d7dde6);border-radius:8px;padding:6px 8px;cursor:pointer;min-height:0;box-shadow:none;font-family:inherit;color:inherit;width:auto}",
+      "#inv-shell .dept-card:hover{border-color:var(--blue,#006DB6)}",
+      "#inv-shell .dept-card:focus-visible{outline:3px solid var(--blue,#006DB6);outline-offset:2px}",
+      "#inv-shell .dept-ico{color:var(--orange,#F26B21);width:18px;height:18px;margin:1px 0 0;flex:none}",
+      "#inv-shell .dept-ico svg{width:18px;height:18px;stroke-width:1.75}",
+      "#inv-shell .dept-card-copy{min-width:0}",
+      "#inv-shell .dept-card strong{display:block;font-size:13px;color:var(--navy,#04223B);margin:0 0 1px}",
+      "#inv-shell .dept-card-copy>span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:11px;color:#3d4c5e;line-height:1.25;font-weight:500}",
+      "body.inv-floor #inv-shell{order:-2}",
+      "body.inv-floor #view{display:flex;flex-direction:column;gap:6px}",
+      "body.inv-floor #view>.secalert{order:-1}",
+      "body.inv-floor #view>.card:has(#dashBody){order:-1;display:flex;flex-direction:column}",
+      "body.inv-floor .ivx-dashcard>#ivx-root{order:-1}",
+      "body:has(#inv-shell) #dept-backbar{top:calc(var(--dept-stack-h, 0px) + var(--inv-shell-h, 0px))}",
+      "@media print{#inv-shell{display:none!important}}",
       "@media(max-width:1100px){#view:has(>.df-lead){grid-template-columns:repeat(2,minmax(0,1fr))}#dept-home.dept-floor,#dept-home .dept-statrow{grid-template-columns:repeat(2,minmax(0,1fr))}#dept-home .dept-span2{grid-column:1 / -1}}",
       "@media(max-width:700px){#view:has(>.df-lead){grid-template-columns:1fr}#dept-home.dept-floor,#dept-home .dept-statrow{grid-template-columns:1fr}#dept-home .dept-span2{grid-column:1 / -1}}",
       "@media(max-width:1360px){#deptbar .dept-tab{font-size:12px;gap:4px;padding:8px 4px}#deptbar .dept-tab .dept-tab-ico,#deptbar .dept-tab svg.dept-tab-ico{width:16px;height:16px}}",

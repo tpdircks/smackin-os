@@ -16,7 +16,7 @@ var app = read("app.js");
 var html = read("index.html");
 var sw = read("service-worker.js");
 
-eq(sw.indexOf('const CACHE = "smackin-inv-v260"') >= 0, "cache bump");
+eq(sw.indexOf('const CACHE = "smackin-inv-v261"') >= 0, "cache bump");
 eq(html.indexOf("receiving-sop.js?b=2") >= 0, "sop cache bust");
 eq(html.indexOf("app.js?b=194") >= 0, "app cache bust");
 eq(src.indexOf("\u2014") < 0 && src.indexOf("\u2013") < 0, "receiving-sop dash");
