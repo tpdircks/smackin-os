@@ -27,8 +27,8 @@ eq(src.indexOf("create table if not exists public.production_orders") >= 0, "fal
 eq(src.indexOf("work_orders (") < 0, "no new work_orders table");
 eq(paper.indexOf("window.PROD_ORDERS") >= 0, "paper orders kept");
 eq(app.indexOf("production orders to Mixing") >= 0, "legacy marker");
-eq(sw.indexOf('const CACHE = "smackin-inv-v249"') >= 0, "cache v249");
-eq(sw.indexOf("smackin-inv-v248") < 0, "old cache gone");
+eq(sw.indexOf('const CACHE = "smackin-inv-v250"') >= 0, "cache v250");
+eq(sw.indexOf('const CACHE = "smackin-inv-v249"') < 0, "old cache gone");
 eq(sw.indexOf('"./work-orders.js"') >= 0, "sw asset");
 eq(sw.indexOf('"./inventory-visual.js"') >= 0 && sw.indexOf('"./inventory-visual.css"') >= 0, "visual assets stay cached");
 eq(sw.indexOf("./slc-count-panel.js") < 0 && sw.indexOf("./slc-count-latest.js") < 0 && sw.indexOf("./inv-sync-1027d.js") < 0, "sheet sync is not precached");

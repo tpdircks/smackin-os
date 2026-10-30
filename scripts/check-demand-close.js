@@ -23,7 +23,7 @@ eq(src.indexOf("flavor_code|due_date|cases") < 0, "no collapsed dedupe key");
 eq(src.indexOf("demand_lines") >= 0, "writes demand_lines");
 eq(src.indexOf("production-orders") < 0 && src.indexOf("production_orders") < 0, "does not touch production orders");
 eq(prod.indexOf("demand-close") < 0, "production-orders.js unchanged by this module");
-eq(sw.indexOf('const CACHE = "smackin-inv-v249"') >= 0, "cache bump");
+eq(sw.indexOf('const CACHE = "smackin-inv-v250"') >= 0, "cache bump");
 eq(sw.indexOf('"./demand-close-cleanup.js"') >= 0, "sw asset");
 eq(html.indexOf('demand-close-cleanup.js?b=1') >= 0, "script tag");
 eq(html.indexOf("demand-autoclose.js?b=3") >= 0, "autoclose cache bust");
