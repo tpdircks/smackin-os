@@ -13,13 +13,16 @@
 //   PMAC_STORAGE_BUCKET, PMAC_STORAGE_OBJECT.
 // Fallback when those secrets are missing: Storage bucket production-tracking,
 //   object 1736-Production-Tracking_v12.xlsm.
+// After a successful upload or Graph download, those bytes are upserted into
+// that bucket with the service role. The publishable/anon key cannot write
+// the bucket, so a client-side storage upload is not the refresh path.
 // Manual push: POST JSON { "workbook_base64": "..." } or the raw workbook bytes.
 // Writes kv_status keys pmac:last_sync and pmac:source. Lock key pmac:lock.
 // Inserts missing pmac_history rows only. Dedupe key matches mfg-upload.js:
 //   run_date|norm(operator)|flavor_code|machine|total_pkgs|box_count
 // verify_jwt is false. Callers still must send the publishable key, anon key, or service role.
 
-import { SOURCE, notConnectedMessage, parseDetailSheet, planInserts } from "./parse.js";
+import { SOURCE, notConnectedMessage, parseDetailSheet, planInserts, shouldPersistWorkbook } from "./parse.js";
 
 var PUBLISHABLE = "sb_publishable_KlPxfCQUmxbIAVc2p_M5Lw_ligy0COY";
 var LOCK_MS = 4 * 60 * 1000;
@@ -224,16 +227,44 @@ async function graphBytes() {
   if (!res.ok) throw new Error("Microsoft Graph download failed (" + res.status + ").");
   return { bytes: new Uint8Array(await res.arrayBuffer()), source: "graph" };
 }
-async function storageBytes() {
+function storageObjectUrl() {
   var base = env("SUPABASE_URL").replace(/\/+$/, "");
+  var bucket = encodeURIComponent(storageBucket());
+  var object = storageObject().split("/").filter(Boolean).map(encodeURIComponent).join("/");
+  return base + "/storage/v1/object/" + bucket + "/" + object;
+}
+function serviceKey() {
   var key = env("SUPABASE_SERVICE_ROLE_KEY");
-  var bucket = storageBucket();
-  var object = storageObject();
-  var url = base + "/storage/v1/object/" + encodeURIComponent(bucket) + "/" + object.split("/").filter(Boolean).map(encodeURIComponent).join("/");
-  var res = await fetch(url, { headers: { apikey: key, Authorization: "Bearer " + key } });
+  if (!env("SUPABASE_URL") || !key) throw new Error("Supabase service role is not available in the function environment");
+  return key;
+}
+async function storageBytes() {
+  var key = serviceKey();
+  var res = await fetch(storageObjectUrl(), { headers: { apikey: key, Authorization: "Bearer " + key } });
   if (res.status === 400 || res.status === 404) return { missing: true };
   if (!res.ok) throw new Error("storage " + res.status + " " + (await res.text()).slice(0, 180));
   return { bytes: new Uint8Array(await res.arrayBuffer()), source: "storage" };
+}
+// Replace the canonical object. POST + x-upsert covers a missing object and a
+// replacement. The service role bypasses storage RLS, so the bucket stays
+// closed to the publishable key. Raw bytes, not multipart, so the stored file
+// is the workbook itself.
+async function storeWorkbook(bytes) {
+  if (!bytes || !bytes.byteLength) throw new Error("Refusing to store an empty workbook.");
+  var key = serviceKey();
+  var res = await fetch(storageObjectUrl(), {
+    method: "POST",
+    headers: {
+      apikey: key,
+      Authorization: "Bearer " + key,
+      "Content-Type": "application/vnd.ms-excel.sheet.macroenabled.12",
+      "cache-control": "no-cache",
+      "x-upsert": "true"
+    },
+    body: bytes
+  });
+  var text = await res.text();
+  if (!res.ok) throw new Error("storage write " + res.status + " " + text.slice(0, 180));
 }
 async function loadExisting() {
   var all = [];
@@ -346,8 +377,26 @@ Deno.serve(async function (req) {
       duplicates_removed: removed,
       message: summaryMessage(pack, inserted, plan.already, removed, plan.repeated)
     };
+    if (shouldPersistWorkbook(pack.source)) {
+      try {
+        await storeWorkbook(pack.bytes);
+      } catch (storeErr) {
+        status.ok = false;
+        status.storage_saved = false;
+        status.storage_error = redact(storeErr && storeErr.message);
+        status.message = status.message + " Storage was not updated: " + status.storage_error;
+        await setKv("pmac:last_sync", status);
+        console.log("prod-tracking-sync source=" + pack.source + " rows=" + status.rows + " inserted=" + inserted + " storage_saved=false");
+        return json(Object.assign({ ok: false }, status), 500);
+      }
+      status.storage_saved = true;
+      status.storage_bytes = pack.bytes.byteLength;
+      status.storage_bucket = storageBucket();
+      status.storage_object = storageObject();
+      status.message = status.message + " Saved the workbook to Storage.";
+    }
     await setKv("pmac:last_sync", status);
-    console.log("prod-tracking-sync source=" + pack.source + " rows=" + status.rows + " inserted=" + inserted);
+    console.log("prod-tracking-sync source=" + pack.source + " rows=" + status.rows + " inserted=" + inserted + (status.storage_saved ? " storage_saved=true" : ""));
     return json(Object.assign({ ok: true }, status));
   } catch (err) {
     var message = redact(err && err.message);
