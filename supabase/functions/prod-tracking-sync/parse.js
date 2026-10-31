@@ -18,6 +18,12 @@ export var SOURCE = {
   storageObject: "1736-Production-Tracking_v12.xlsm"
 };
 
+// The 5-minute job reads Storage. An upload or a Graph download has to be
+// written back or that copy stays on the previous seed.
+export function shouldPersistWorkbook(source) {
+  return source === "upload" || source === "graph";
+}
+
 var DATE_NUM_FMT = {
   14: 1, 15: 1, 16: 1, 17: 1, 22: 1,
   27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1, 36: 1,

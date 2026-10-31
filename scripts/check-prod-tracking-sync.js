@@ -192,6 +192,8 @@ async function main() {
   eq(mod.SOURCE.sheet === "Detail" && mod.SOURCE.mixing === "deferred", "detail only");
   eq(mod.SOURCE.sourcedoc === "1AA0318A-B5BA-499E-97E3-0F3D300DF8AE", "sourcedoc");
   eq(mod.SOURCE.storageBucket === "production-tracking" && mod.SOURCE.storageObject === "1736-Production-Tracking_v12.xlsm", "storage path");
+  eq(mod.shouldPersistWorkbook("upload") === true && mod.shouldPersistWorkbook("graph") === true, "persist upload and graph");
+  eq(mod.shouldPersistWorkbook("storage") === false && mod.shouldPersistWorkbook("cron") === false && mod.shouldPersistWorkbook("") === false, "storage read is not written back");
   var miss = mod.notConnectedMessage("production-tracking/1736-Production-Tracking_v12.xlsm");
   eq(miss.indexOf("missing_secrets") >= 0 && miss.indexOf("missing_file") >= 0, "missing message");
   eq(miss.indexOf("MS_TENANT_ID") >= 0 && miss.indexOf("MS_CLIENT_ID") >= 0 && miss.indexOf("MS_CLIENT_SECRET") >= 0, "secret names");
@@ -206,6 +208,15 @@ async function main() {
   eq(fn.indexOf("/sites/Production/Shared Documents/Production Files/1736 - Production Tracking_v12.xlsm") >= 0, "comment path");
   eq(fn.indexOf("Mixing Detail is in the same workbook and is NOT imported") >= 0, "mixing deferred comment");
   eq(fn.indexOf("MS_TENANT_ID") >= 0 && fn.indexOf("MS_CLIENT_SECRET") >= 0, "secrets documented");
+  var storeAt = fn.indexOf("async function storeWorkbook");
+  var storeFn = fn.slice(storeAt, fn.indexOf("async function loadExisting"));
+  var keyFn = fn.slice(fn.indexOf("function serviceKey"), fn.indexOf("async function storageBytes"));
+  eq(storeAt > 0 && storeFn.indexOf("serviceKey()") >= 0 && keyFn.indexOf("SUPABASE_SERVICE_ROLE_KEY") >= 0, "store uses service role");
+  eq(storeFn.indexOf('"x-upsert": "true"') >= 0, "store upserts the existing object");
+  eq(storeFn.indexOf("SUPABASE_ANON_KEY") < 0 && storeFn.indexOf("PUBLISHABLE") < 0, "store does not use the public key");
+  eq(storeFn.indexOf("application/vnd.ms-excel.sheet.macroenabled.12") >= 0, "workbook content type");
+  eq(fn.indexOf("shouldPersistWorkbook(pack.source)") >= 0 && fn.indexOf("Saved the workbook to Storage.") >= 0, "successful fresh sync saves storage");
+  eq(fn.indexOf("create policy") < 0 && fn.indexOf("storage.objects") < 0, "does not open the bucket");
 
   var upload = read("mfg-upload.js");
   eq(upload.indexOf("/functions/v1/prod-tracking-sync") >= 0, "sync url");
