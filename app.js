@@ -1087,7 +1087,7 @@
     const rows = src.map(s => '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 2px;border-bottom:1px solid #EEF2F7">' +
       '<span style="font-size:13px;font-weight:600">' + esc(s.n) + '</span>' + freshChip(s.iso, s.warn) + '</div>').join("");
     const banner = stale ? '<div style="margin:8px 0 4px;font-size:12px;font-weight:700;color:#B52024">&#9888; ' + stale + ' feed' + (stale > 1 ? "s" : "") + ' stale &mdash; do not treat as live until refreshed</div>' : '<div style="margin:8px 0 4px;font-size:12px;font-weight:700;color:#2E9E5B">&#10003; All feeds current</div>';
-    return '<div class="card"><div class="suprow"><h2 class="sub2" style="margin:0">&#128225; Data Freshness</h2><span class="muted sm">days since each feed last updated</span></div>' + banner + rows + '</div>';
+    return '<div class="card" data-slot="health"><div class="suprow"><h2 class="sub2" style="margin:0">&#128225; Data Freshness</h2><span class="muted sm">days since each feed last updated</span></div>' + banner + rows + '</div>';
   }
   // Clean short label for a seed item: prefer the trailing "(...)" descriptor so
   // Extreme / 7% Salt / Brown / White / Tote stay distinct (their base names collide).
@@ -1119,7 +1119,7 @@
     }).join("");
     const rows = its.map(i => '<tr data-txt="' + esc(((i.name || "") + " " + (i.code || "") + " " + (CATLBL[i.category] || i.category || "")).toLowerCase().replace(/"/g, "")) + '">' + cols.map(c => COL_DEF[c].td(i)).join("") + '</tr>').join("");
     const cbar = CATS.map(c => '<button class="' + (c === catFilter ? "active" : "") + '" onclick="UI.cat(\'' + c + '\')">' + (CATLBL[c] || c) + "</button>").join("");
-    return dataHealthCard() + '<div class="card"><h2>' + L("dash") + '</h2><p class="hint">' + L("dashHint") + '</p>' +
+    return dataHealthCard() + '<div class="card" data-slot="floor"><h2>' + L("dash") + '</h2><p class="hint">' + L("dashHint") + '</p>' +
       '<div class="kpis"><div class="kpi"><div class="n">' + DB.items().length + '</div><div class="l">' + L("totalItems") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(bag4) + '</div><div class="l">' + L("bag4") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(bag15) + '</div><div class="l">' + L("bag15") + '</div></div>' +
@@ -1418,7 +1418,7 @@
         '<td>' + act + ' <button class="ghost sm" title="' + L("editRow") + '" onclick="UI.ordEdit(\'' + o.id + '\')">&#9998;</button></td></tr>';
     }).join("") : '<tr><td colspan="6" class="muted">' + emptyLane + '</td></tr>';
     const spsBtn = lane === "retail" ? '<button class="ghost sm" onclick="UI.ordSpsToggle()">&#8635; Sync SPS Open</button> ' : "";
-    return '<div class="card"><div class="suprow"><h2>' + L(lane === "ecom" ? "ordEcomTitle" : "ordRetailTitle") + ' ' + freshChip(dhMax(mine), 1) + '</h2>' +
+    return '<div class="card" data-slot="lane"><div class="suprow"><h2>' + L(lane === "ecom" ? "ordEcomTitle" : "ordRetailTitle") + ' ' + freshChip(dhMax(mine), 1) + '</h2>' +
       '<div>' + spsBtn +
       '<button class="primary sm" onclick="UI.ordAddToggle()">' + L("ordAdd") + '</button></div></div>' +
       channels +
@@ -1640,11 +1640,11 @@
         '<td class="right">' + money(s.total) + '</td><td class="right muted">' + (s.item_count || 0) + '</td>' +
         '<td>' + dl + '</td><td><button class="ghost sm" title="' + L("poEmail") + '" onclick="UI.poEmailFromList(\'' + s.id + '\')">&#9993;</button> <button class="ghost sm danger" onclick="UI.spoDelete(\'' + s.id + '\')">&#10005;</button></td></tr>';
     }).join("") : '<tr><td colspan="7" class="muted">' + L("spoNone") + '</td></tr>';
-    return '<div class="card"><div class="spohead"><h2>' + L("purchPOs") + '</h2>' +
+    return '<div class="card" data-slot="poadd"><div class="spohead"><h2>' + L("purchPOs") + '</h2>' +
       '<span><button class="primary sm" onclick="UI.poCreateOpen()">' + L("poCreate") + '</button> <button class="ghost sm" onclick="UI.nonPoOpen()">' + L("nonPoBtn") + '</button></span></div>' +
       '<p class="hint">' + L("spoHint") + '</p>' +
       '<p class="hint">Purchasing status: set it on the PO, or put [[STATUS:Awaiting Payment]] in the notes.</p>' + form + '</div>' +
-      '<div class="card"><h2 class="sub2">' + L("spoList") + ' (' + list.length + ')</h2>' + (window.POSTATUS ? POSTATUS.toggleHtml(_spoAll) : "") +
+      '<div class="card" data-slot="polist"><h2 class="sub2">' + L("spoList") + ' (' + list.length + ')</h2>' + (window.POSTATUS ? POSTATUS.toggleHtml(_spoAll) : "") +
       '<input id="spoSearch" autocomplete="off" oninput="UI.spoSearch(this.value)" placeholder="' + L("spoSearchP") + '" style="margin-bottom:10px">' +
       '<table><thead><tr>' +
       '<th class="sortable" onclick="UI.spoSortBy(\'vendor\')">' + L("spoVendor") + spoArrow("vendor") + '</th>' +
@@ -2698,7 +2698,7 @@
         '<td class="right">' + (bins ? esc(String(bins)) + ' bins' : '') + '</td>' +
         '<td class="sm">' + esc(o._stage) + '</td></tr>';
     }).join("");
-    return '<div class="card"><div class="suprow"><h2 class="sub2" style="margin:0;flex:1">&#128221; Allen\'s Orders (double-check)</h2>' +
+    return '<div class="card" data-slot="allen"><div class="suprow"><h2 class="sub2" style="margin:0;flex:1">&#128221; Allen\'s Orders (double-check)</h2>' +
       '<a class="order sm" onclick="UI_go(\'prodorders\')" style="cursor:pointer">Open &rarr;</a></div>' +
       '<p class="hint" style="margin:2px 0 8px">Authoritative work orders from Allen &mdash; verify the board below against these.</p>' +
       '<div class="tblwrap"><table><thead><tr><th></th><th>Flavor</th><th class="right">Bins</th><th>Stage</th></tr></thead><tbody>' + rows + '</tbody></table></div></div>';
@@ -3511,9 +3511,9 @@
         '<td><select onchange="UI.itemSupplier(\'' + i.id + '\',this.value)">' + supOpts(i.supplier) + '</select></td>' +
         '<td>' + chip + '</td></tr>';
     }).join("");
-    return '<div class="card"><h2 style="margin:0 0 4px">' + L("purchasing") + '</h2>' +
+    return '<div class="card" data-slot="tabs"><h2 style="margin:0 0 4px">' + L("purchasing") + '</h2>' +
       toggle + '<p class="hint" style="margin-top:10px">' + L("rsHint") + '</p></div>' +
-      '<div class="card"><h2 class="sub2">' + L("purchSetup") + ' &middot; ' + needCount + ' ' + L("rsNeedShort") + '</h2>' +
+      '<div class="card" data-slot="setup"><h2 class="sub2">' + L("purchSetup") + ' &middot; ' + needCount + ' ' + L("rsNeedShort") + '</h2>' +
       '<div class="catbar">' + cbar + '</div>' +
       '<input id="rsSearch" autocomplete="off" oninput="UI.rsSearch(this.value)" placeholder="' + L("rsSearchP") + '" style="margin-bottom:10px">' +
       '<table><thead><tr><th>' + L("item") + '</th><th class="right">' + L("onhand") + '</th><th>' + L("rsReorderPt") + '</th><th>' + L("alSupplier") + '</th><th>' + L("status") + '</th></tr></thead><tbody id="rsBody">' + rows + '</tbody></table></div>';
@@ -3557,7 +3557,7 @@
     var deptMap = { mix: "Mixing", pmac: "P-Mac", ful: "Fulfillment", retail: "Retail", ecom: "E-Commerce" };
     var dmax = deptKeys.length ? deptTot[deptKeys[0]] : 1;
     var deptBars = deptKeys.map(function(k){ var v = deptTot[k], p = Math.max(2, v / dmax * 100); return '<div style="display:flex;align-items:center;gap:10px;margin:3px 0"><div style="width:120px;flex:none;font-size:12.5px;font-weight:600;text-align:right">' + esc(deptMap[k] || k) + '</div><div style="flex:1;background:#EEF2F7;border-radius:5px;height:19px"><div style="width:' + p + '%;height:100%;border-radius:5px;background:#4C8FD6"></div></div><div style="width:70px;flex:none;font-size:12px;font-weight:700;text-align:right">' + fmt(v) + '</div></div>'; }).join("");
-    return '<div class="card"><div class="suprow"><h2 style="margin:0">&#128200; Production Trend &mdash; Last 14 Days</h2><span class="muted sm">Logged output</span></div>' +
+    return '<div class="card" data-slot="trend"><div class="suprow"><h2 style="margin:0">&#128200; Production Trend &mdash; Last 14 Days</h2><span class="muted sm">Logged output</span></div>' +
       '<div class="kpis"><div class="kpi"><div class="n">' + fmt(total) + '</div><div class="l">Cases (14 days)</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(avg) + '</div><div class="l">Avg / active day</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(active) + '</div><div class="l">Days with output</div></div></div>' +
@@ -3704,14 +3704,14 @@
     const tbtn = (v, lbl) => '<button class="' + (tab === v ? "active" : "") + '" onclick="UI.purchView(\'' + v + '\')">' + lbl + '</button>';
     const toggle = '<div class="ordtabs" style="margin:0">' + tbtn("po", L("purchPOs")) + tbtn("buy", L("purchBuyList")) + tbtn("setup", L("purchSetup")) + '</div>';
     if (tab === "setup") return viewReorderSetup(toggle);
-    if (tab === "po") return '<div class="card">' + toggle + '</div>' + viewSupplierPos();
+    if (tab === "po") return '<div class="card" data-slot="tabs">' + toggle + '</div>' + viewSupplierPos();
 
     // --- Buy List tab: low-stock reorder suggestions + receivable draft POs ---
-    let html = '<div class="card">' + toggle + '<p class="hint" style="margin-top:10px">' + L("purchHint") + '</p></div>';
+    let html = '<div class="card" data-slot="tabs">' + toggle + '<p class="hint" style="margin-top:10px">' + L("purchHint") + '</p></div>';
     const low = DB.items().filter(i => statusOf(i) !== "ok" && i.supplier);
     if (low.length) {
       const bySup = {}; low.forEach(i => { (bySup[i.supplier] = bySup[i.supplier] || []).push(i); });
-      html += '<div class="card"><h2 class="sub2">' + L("reorderSug") + '</h2>';
+      html += '<div class="card" data-slot="buy"><h2 class="sub2">' + L("reorderSug") + '</h2>';
       Object.keys(bySup).forEach(sk => {
         const sup = (DB.suppliers().find(s => s.id === sk)) || { name: sk, order_url: "#" };
         const rows = bySup[sk].map(i => '<tr><td><b>' + i.name + '</b><div class="muted sm">' + i.code + '</div></td>' +
@@ -3725,10 +3725,10 @@
       });
       html += '</div>';
     } else {
-      html += '<div class="card"><p class="ok pill big">' + L("allgood") + '</p></div>';
+      html += '<div class="card" data-slot="buy"><p class="ok pill big">' + L("allgood") + '</p></div>';
     }
     const pos = DB.purchaseOrders();
-    html += '<div class="card"><h2 class="sub2">' + L("purchOrders") + '</h2>';
+    html += '<div class="card" data-slot="drafts"><h2 class="sub2">' + L("purchOrders") + '</h2>';
     html += pos.length ? pos.map(poCard).join("") : '<p class="muted">' + L("noPOs") + '</p>';
     html += '</div>';
     return html;
@@ -3820,7 +3820,7 @@
         '<td class="muted sm">' + esc(c.operator || "") + '</td>' +
         '<td class="muted sm">' + (c.created_at ? String(c.created_at).slice(0, 16).replace("T", " ") : "") + '</td></tr>').join("")
       : '<tr><td colspan="5" class="muted">' + L("conNone") + '</td></tr>';
-    return '<div class="card"><h2>' + L(titleKey) + '</h2><p class="hint">' + L("conHint") + '</p>' +
+    return '<div class="card" data-slot="consume"><h2>' + L(titleKey) + '</h2><p class="hint">' + L("conHint") + '</p>' +
       itemScan("con-code", "con-qty") +
       '<div class="row"><div><label>' + L("qty") + '</label><input id="con-qty" type="number" min="0" step="any" inputmode="decimal" placeholder="' + L("enter") + '"></div>' +
       '<div><label>' + L("conLot") + '</label><input id="con-lot" autocomplete="off" placeholder="LOT..."></div></div>' +
@@ -4055,7 +4055,7 @@
   function buildNeedCard(audience, scope) {
     const n = computeBuildNeed(scope);
     const prod = audience !== "ful";
-    if (n.needCount === 0) return '<div class="card"><h2>&#127981; ' + L("bnTitle") + '</h2><p style="color:#2E7D32;font-weight:600;margin:4px 0">&#10003; ' + L("bnAllCovered") + '</p></div>';
+    if (n.needCount === 0) return '<div class="card" data-slot="build"><h2>&#127981; ' + L("bnTitle") + '</h2><p style="color:#2E7D32;font-weight:600;margin:4px 0">&#10003; ' + L("bnAllCovered") + '</p></div>';
     const show = n.list.filter(x => x.toProduce > 0);
     const rows = show.map(x => '<tr><td>' + esc(x.flavor) + (x.code ? ' <span class="muted sm">' + esc(x.code) + '</span>' : '') + (x.driver ? ' <span class="tag" style="font-size:10px">' + L(x.driver === "order" ? "bnDriverOrder" : "bnDriverStock") + '</span>' : '') + '</td>' +
       '<td class="right muted">' + fmt(x.bags) + '</td><td class="right muted">' + fmt(x.onHandBags) + '</td>' +
@@ -4065,7 +4065,7 @@
     const kpi = '<div class="kpis"><div class="kpi"><div class="n">' + fmt(n.T.toProduceBags) + '</div><div class="l">' + L("bnToProduceBags") + '</div></div>' +
       (prod ? '' : '<div class="kpi"><div class="n">' + fmt(n.T.toProduceCases) + '</div><div class="l">' + L("bnToProduceCs") + '</div></div>') +
       '<div class="kpi"><div class="n">' + n.needCount + '</div><div class="l">' + L("bnFlavors") + '</div></div></div>';
-    return '<div class="card"><div class="suprow"><h2 style="flex:1;margin:0">&#127981; ' + L("bnTitle") + '</h2><a class="ghost sm" onclick="UI_go(\'demand\')">' + L("demand") + ' &#8250;</a></div>' +
+    return '<div class="card" data-slot="build"><div class="suprow"><h2 style="flex:1;margin:0">&#127981; ' + L("bnTitle") + '</h2><a class="ghost sm" onclick="UI_go(\'demand\')">' + L("demand") + ' &#8250;</a></div>' +
       '<p class="hint">' + L(prod ? "bnHintProd" : "bnHintFul") + '</p>' + kpi +
       '<div class="tblwrap"><table class="sortable"><thead>' + th + '</thead><tbody>' + rows + '</tbody></table></div></div>';
   }
@@ -4086,7 +4086,7 @@
   // E-Com "Make Next" card for Mixing / P-Mac: unshipped ShipStation queue (per flavor) vs on-hand.
   function ecMakeNextCard() {
     const snap = (DB.ecomDemand ? DB.ecomDemand() : []);
-    if (!snap.length) return '<div class="card"><h2>&#128722; ' + L("mnTitle") + '</h2><p class="hint">' + L("mnNone") + '</p></div>';
+    if (!snap.length) return '<div class="card" data-slot="makenext"><h2>&#128722; ' + L("mnTitle") + '</h2><p class="hint">' + L("mnNone") + '</p></div>';
     const q = {}; snap.forEach(r => { q[r.flavor] = (q[r.flavor] || 0) + (Number(r.bags) || 0); });
     const items = DB.items().filter(i => i.category === "bag4" || i.category === "bag15");
     const ohByF = {}; items.forEach(i => { ohByF[i.flavor] = (ohByF[i.flavor] || 0) + (Number(availOf(i.id)) || 0); });
@@ -4103,7 +4103,7 @@
     const kpis = '<div class="kpis"><div class="kpi"><div class="n">' + toMake.length + '</div><div class="l">' + L("mnFlavorsShort") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(totShort) + '</div><div class="l">' + L("mnToMake") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(totQueue) + '</div><div class="l">' + L("mnQueue") + '</div></div></div>';
-    return '<div class="card"><div class="suprow"><h2 style="flex:1;margin:0">&#128722; ' + L("mnTitle") + '</h2>' + (upd ? '<span class="muted sm">' + L("mnUpdated") + ' ' + esc(upd) + '</span>' : '') + '</div>' +
+    return '<div class="card" data-slot="makenext"><div class="suprow"><h2 style="flex:1;margin:0">&#128722; ' + L("mnTitle") + '</h2>' + (upd ? '<span class="muted sm">' + L("mnUpdated") + ' ' + esc(upd) + '</span>' : '') + '</div>' +
       '<p class="hint">' + L("mnHint") + '</p>' + kpis +
       '<div class="tblwrap"><table class="sortable"><thead><tr><th>' + L("dqFlavor") + '</th><th class="right">' + L("mnOnHand") + '</th><th class="right">' + L("mnDemand") + '</th><th class="right">' + L("mnShort") + '</th><th data-nosort>' + L("status") + '</th></tr></thead><tbody>' + body + '</tbody></table></div></div>';
   }
@@ -4132,13 +4132,13 @@
         '<div class="muted sm">' + pct + '% ' + L("dqPct") + ' &middot; ' + fmt(rem) + ' ' + L("dqRemaining") + '</div>' + bar(pct) + '</div>';
     }
     const driverTag = '<span class="tag">' + (driver === "orders" ? L("dqBuildNow") : L("dqStock")) + '</span>';
-    const todayCard = '<div class="card"><div class="suprow"><h2 style="flex:1;margin:0">' + L("dqToday") + ' &mdash; ' + today + '</h2>' + driverTag + '</div>' +
+    const todayCard = '<div class="card" data-slot="today"><div class="suprow"><h2 style="flex:1;margin:0">' + L("dqToday") + ' &mdash; ' + today + '</h2>' + driverTag + '</div>' +
       '<p class="hint">' + L(isFul ? "dqHintFul" : "dqHintProd") + '</p>' +
       '<div class="kpis"><div class="kpi ok" style="text-align:left;min-width:160px"><div class="l" style="font-weight:700">' + L("dqTarget") + '</div><div class="n">' + fmt(tgt) + '</div><div class="muted sm">' + unit + (shifts > 1 ? ' &middot; ' + L("dqShiftSplit") : '') + '</div></div>' + shiftCards + '</div></div>';
     const flavOpts = '<option value="">' + L("dqAll") + '</option>' + DMD_FLAVOR_ORDER.map(f => '<option>' + esc(f) + '</option>').join("");
     const shiftSel = shifts > 1 ? '<div><label>' + L("dqShift") + '</label><select id="pl-shift"><option value="1">' + L("dqS1") + '</option><option value="2">' + L("dqS2") + '</option></select></div>' : '';
     const qtyField = isFul ? '<div><label>' + L("dqCases") + '</label><input id="pl-cases" type="number" min="0" placeholder="0"></div>' : '<div><label>' + L("dqBags") + '</label><input id="pl-bags" type="number" min="0" placeholder="0"></div>';
-    const logCard = '<div class="card"><h2 class="sub2">' + L("dqLog") + '</h2><p class="hint">' + L("dqLogHint") + '</p>' +
+    const logCard = '<div class="card" data-slot="log"><h2 class="sub2">' + L("dqLog") + '</h2><p class="hint">' + L("dqLogHint") + '</p>' +
       '<div class="row">' + shiftSel + '<div><label>' + L("dqFlavor") + '</label><select id="pl-flavor">' + flavOpts + '</select></div>' + qtyField + '<div style="align-self:end">' + (isFul ? opField("Jesus") : opFieldArea("op", dept, dept === "pmac" ? "Wilson Delgado" : "Leo Ontiveros")) + '</div></div>' +
       '<button class="primary" onclick="UI.prodLog(\'' + dept + '\')">' + L("dqLogBtn") + '</button></div>';
     // Scheduled orders: Target / McLane / Bass Pro — held to their routed/scheduled ship dates, not part of today's build.
@@ -4147,7 +4147,7 @@
     sched.forEach(r => { const k = r.partner || "?"; if (!schByCust[k]) schByCust[k] = { bags: 0, cases: 0, due: null }; schByCust[k].bags += Number(r.bags) || 0; schByCust[k].cases += Number(r.cases) || 0; if (r.due_date && (!schByCust[k].due || dueISO(r.due_date) < dueISO(schByCust[k].due))) schByCust[k].due = r.due_date; });
     const schTotBags = sched.reduce((s, r) => s + (Number(r.bags) || 0), 0), schTotCases = sched.reduce((s, r) => s + (Number(r.cases) || 0), 0);
     const schRows = Object.keys(schByCust).sort().map(k => { const v = schByCust[k]; return '<tr><td>' + esc(k) + '</td><td class="right"><b>' + fmt(isFul ? v.cases : v.bags) + '</b></td><td class="sm">' + (v.due ? esc(v.due) : '<span class="muted">' + L("dqTBD") + '</span>') + '</td></tr>'; }).join("");
-    const scheduledCard = schRows ? '<div class="card"><h2 class="sub2">' + L("dqScheduled") + '</h2><p class="hint">' + L("dqScheduledHint") + '</p><div class="tblwrap"><table><thead><tr><th>' + L("dmPartner") + '</th><th class="right">' + unit + '</th><th>' + L("dqShipDate") + '</th></tr></thead><tbody>' + schRows +
+    const scheduledCard = schRows ? '<div class="card" data-slot="scheduled"><h2 class="sub2">' + L("dqScheduled") + '</h2><p class="hint">' + L("dqScheduledHint") + '</p><div class="tblwrap"><table><thead><tr><th>' + L("dmPartner") + '</th><th class="right">' + unit + '</th><th>' + L("dqShipDate") + '</th></tr></thead><tbody>' + schRows +
       '<tr style="background:#F0F0F0"><td><b>' + L("dqTotal") + '</b></td><td class="right"><b>' + fmt(isFul ? schTotCases : schTotBags) + '</b></td><td></td></tr></tbody></table></div></div>' : '';
     const wk = dqWeekDates();
     const hdr = '<tr><th>' + L("dqShift") + '</th>' + wk.map(d => { const dt = new Date(d + "T00:00:00"); return '<th class="right">' + dqDowLocal(d) + '<br><span class="muted sm">' + (dt.getMonth() + 1) + '/' + dt.getDate() + '</span></th>'; }).join("") + '<th class="right">' + L("dqTotal") + '</th></tr>';
@@ -4160,7 +4160,7 @@
       bodyRows += '<tr><td><b>' + (isFul ? L("dqTargetShort") : (sh === 1 ? L("dqS1") : L("dqS2"))) + '</b></td>' + cells + '<td class="right"><b>' + fmt(rowTot) + '</b></td></tr>';
     });
     const totRow = '<tr style="background:#F0F0F0"><td><b>' + L("dqTotal") + '</b></td>' + colTot.map(v => '<td class="right"><b>' + (v ? fmt(v) : "&mdash;") + '</b></td>').join("") + '<td class="right"><b>' + fmt(grand) + '</b></td></tr>';
-    const resultsCard = '<div class="card"><h2 class="sub2">' + L("dqResults") + '</h2><p class="hint">' + L("dqResultsHint") + ' (' + unit + ')</p><div class="tblwrap"><table><thead>' + hdr + '</thead><tbody>' + bodyRows + totRow + '</tbody></table></div>' + dqTodayLog(dept, isFul) + '</div>';
+    const resultsCard = '<div class="card" data-slot="results"><h2 class="sub2">' + L("dqResults") + '</h2><p class="hint">' + L("dqResultsHint") + ' (' + unit + ')</p><div class="tblwrap"><table><thead>' + hdr + '</thead><tbody>' + bodyRows + totRow + '</tbody></table></div>' + dqTodayLog(dept, isFul) + '</div>';
     return (withTabs ? dqTabs(dept) : '') + (isFul ? '' : prodOrdersDeptCard(dept)) + (isFul ? '' : ecMakeNextCard()) + todayCard + logCard + scheduledCard + resultsCard + buildNeedCard(isFul ? "ful" : "prod", "buildnow");
   }
   function dqTodayLog(dept, isFul) {

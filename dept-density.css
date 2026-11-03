@@ -198,3 +198,31 @@
   .df-board .df-head { flex-direction: column; }
   .df-board .df-links { justify-content: flex-start; }
 }
+
+/* Primary department screens. The Dashboard keeps .df-board. */
+.dept-board[data-dept-board] > .dept-section > .card,
+.dept-board[data-dept-board] .dept-grid > .card,
+.dept-board[data-dept-board] > .dept-span-full > .card {
+  margin: 0;
+  min-width: 0;
+}
+.dept-board[data-dept-board] > .dept-section > .card {
+  max-height: min(460px, calc(100vh - 240px));
+  overflow: auto;
+}
+.dept-board[data-dept-board="inv"] > .dept-section.dept-span-full > .card,
+.dept-board[data-dept-board="ful"] > .dept-section > .card,
+.dept-board[data-dept-board="purch"] > .dept-section > .card[data-slot="polist"],
+.dept-board[data-dept-board="purch"] > .dept-section > .card[data-slot="setup"] {
+  max-height: calc(100vh - 300px);
+}
+body.inv-floor #view > .dept-board { width: 100%; }
+@media (max-width: 899px) {
+  .dept-board[data-dept-board] > .dept-section > .card,
+  .dept-board[data-dept-board="inv"] > .dept-section.dept-span-full > .card,
+  .dept-board[data-dept-board="ful"] > .dept-section > .card,
+  .dept-board[data-dept-board="purch"] > .dept-section > .card[data-slot="polist"],
+  .dept-board[data-dept-board="purch"] > .dept-section > .card[data-slot="setup"] {
+    max-height: none;
+  }
+}
