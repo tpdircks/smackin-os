@@ -668,10 +668,20 @@ window.DB = (function () {
     return SEAS_LB_PER_BAG_FALLBACK;
   }
   const _flNorm = s => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-  // Open SPS demand bags for a flavor (wholesale backlog snapshot).
+  // Same Open set as the Demand board. Blank status counts as Open.
+  // Ack and ASN stay Open. Complete, Shipped, and Test do not.
+  // Invoice Accepted stays Open until the Order document itself is Complete.
+  // Production build need is stricter (it drops ASN and invoice stages) and is not used here.
+  function demandLineIsOpen(d) {
+    return String((d && d.status) || "Open") === "Open";
+  }
+  // Open SPS demand bags for a flavor (wholesale backlog for Purchasing reorder).
   function flavorDemandBags(flavorName) {
     const k = _flNorm(flavorName); let t = 0;
-    (cache.demandLines || []).forEach(d => { if (_flNorm(d.flavor) === k) t += Number(d.bags) || 0; });
+    (cache.demandLines || []).forEach(d => {
+      if (!demandLineIsOpen(d) || _flNorm(d.flavor) !== k) return;
+      t += Number(d.bags) || 0;
+    });
     return t;
   }
   // E-com bags for a flavor from the ShipStation snapshot: period total, and a real weekly rate (avg_day*7).
