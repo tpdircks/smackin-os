@@ -1,0 +1,27 @@
+// Checks the WOS freshness guard in demand-wos.js. Run: node scripts/check-demand-wos.js
+var assert = require("assert");
+var fs = require("fs");
+var W = require("../demand-wos.js");
+var items = [{ id: "BAG4-S03", category: "bag4", flavor: "Backyard BBQ" }, { id: "BAG15-S03", category: "bag15", flavor: "Backyard BBQ" }];
+var oh = function (id) { return id === "BAG4-S03" ? 50000 : 2000; };
+var june = [{ flavor: "Backyard BBQ", size: "4oz", forecast_bags: 17763, source_month: "2026-06" }];
+var m = W.build({ forecast: june, items: items, onHand: oh, today: "2026-11-03" });
+assert.strictEqual(m.current, false, "June snapshot is stale in November");
+assert.strictEqual(m.rows[0].wos, null, "no WOS from stale snapshot");
+assert.strictEqual(m.rows[0].suggested, null, "no suggestion from stale snapshot");
+var oct = [{ flavor: "Backyard BBQ", size: "4oz", forecast_bags: 10000, source_month: "2026-10" }];
+m = W.build({ forecast: oct, items: items, onHand: oh, today: "2026-11-03" });
+assert.strictEqual(m.current, true, "October snapshot is current");
+assert.strictEqual(m.rows[0].wos, 5, "WOS = on hand / weekly");
+m = W.build({ forecast: june, series: [{ sku: "BACKYARD BBQ-4OZ", anchor: "2026-01-01", weeks: [1, 2, 3] }], items: items, onHand: oh, today: "2026-11-03" });
+assert.strictEqual(m.current, false, "old series is not used");
+m = W.build({ forecast: [], items: items, onHand: oh, today: "2026-11-03" });
+assert.strictEqual(m.rows.length, 0, "no built-in samples");
+var cov = W.buildCoverage({ items: items, onHand: oh, demand: [{ flavor: "Backyard BBQ", bags: 23688, status: "Open", due_date: "11/02/2026" }, { flavor: "Backyard BBQ", bags: 999, status: "Complete" }] });
+assert.strictEqual(cov[0].open, 23688, "only Open SPS lines count");
+assert.strictEqual(cov[0].after4, 26312);
+assert.strictEqual(cov[0].due, "2026-11-02");
+var src = fs.readFileSync(__dirname + "/../demand-wos.js", "utf8");
+assert(!/[\u2013\u2014]/.test(src), "no em or en dashes");
+assert(fs.readFileSync(__dirname + "/../index.html", "utf8").indexOf("demand-wos.js?b=2") >= 0, "cache-bust");
+console.log("check-demand-wos OK");

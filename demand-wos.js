@@ -7,8 +7,16 @@
    60-day forecast: 8 x the live demand_forecast weekly snapshot
    (the same weekly bags Forecast vs Target already shows).
    An imported weekly series, saved in kv_status, replaces that
-   snapshot for the SKUs it lists. Built-in FORECAST samples are
-   used only when the live snapshot and the import are both empty.
+   snapshot for the SKUs it lists.
+
+   Freshness guard (2026-11-03): a forecast only drives WOS when it is
+   current. Snapshot: its source_month must end within STALE_DAYS of
+   today. Imported series: its last week must reach today (no repeating
+   an old last week forever). When nothing is current, WOS, gap, pacing
+   need and suggested production are hidden, and the card shows live on
+   hand against open SPS orders instead, labeled as operational and not
+   a forecast. Built-in samples were removed so they can never read as
+   live numbers.
 
    Calculator math (WIP Calculator tab):
      gap = fcst60 - on hand
@@ -26,18 +34,7 @@
   var WEEKS_IN_60 = 8;
   var FLAVORS = ["OG Original", "Cinnamon Churro", "Backyard BBQ", "Garlic Parmesan", "Dill Pickle", "Cracked Pepper", "Cheddar Jalapeno", "Ranch", "Maple Brown Sugar", "Lemon Pepper", "Sour Cream & Onion", "Cheeseburger", "PCA Pizza", "Variety Pack"];
 
-  // Fully specified FORECAST curves from the WIP brief. Last week repeats.
-  var SAMPLE_WEEKS = [
-    { flavor: "Variety Pack", size: "1.5oz", anchor: "2026-01-01", weeks: [11804, 11804, 11804, 11804, 18765, 18765, 18765, 18765, 24023, 24023, 24023, 24023, 24023, 28641] },
-    { flavor: "Backyard BBQ", size: "4oz", anchor: "2026-01-01", weeks: [4330, 4330, 4330, 4330, 6883, 6883, 6883, 6883, 8811, 8811, 8811, 8811, 8811, 10505] }
-  ];
-  // Calculator on-hand samples. Used only when that SKU has no bag item.
-  var SAMPLE_ON_HAND = {
-    "SOUR CREAM & ONION-1.5OZ": 15000,
-    "SOUR CREAM & ONION-4OZ": 11560,
-    "BACKYARD BBQ-1.5OZ": 28750,
-    "BACKYARD BBQ-4OZ": 17964
-  };
+  var STALE_DAYS = 45;
 
   function norm(s) {
     return String(s || "").toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9.]+/g, " ").replace(/\s+/g, " ").trim();
@@ -120,6 +117,23 @@
     if (wos <= 4) return "amber";
     return "green";
   }
+  // End of a YYYY-MM month as a day number, or null.
+  function monthEndDay(ym) {
+    var m = /^(\d{4})-(\d{2})/.exec(String(ym || "").trim());
+    if (!m) return null;
+    return Date.UTC(+m[1], +m[2], 1) / 86400000 - 1;
+  }
+  function snapshotFresh(sourceMonth, today) {
+    var end = monthEndDay(sourceMonth);
+    if (end == null) return false;
+    return toDay(today) - end <= STALE_DAYS;
+  }
+  function seriesFresh(s, today) {
+    var a = parseISO(s && s.anchor);
+    if (a == null || !s.weeks || !s.weeks.length) return false;
+    var endDay = a / 86400000 + s.weeks.length * 7;
+    return endDay > toDay(today);
+  }
   function indexForecast(rows) {
     var map = {};
     (rows || []).forEach(function (r) {
@@ -179,13 +193,15 @@
     var pacing = clampPacing(ctx.pacing);
     var fc = indexForecast(ctx.forecast);
     var series = indexSeries(ctx.series);
-    var samples = indexSeries(SAMPLE_WEEKS);
+    var month = "";
+    Object.keys(fc).forEach(function (k) { if (!month && fc[k].source_month) month = fc[k].source_month; });
+    var snapOk = snapshotFresh(month, ctx.today);
+    var staleSeries = 0;
     var keys = {};
     Object.keys(fc).forEach(function (k) { keys[k] = 1; });
     Object.keys(series).forEach(function (k) { keys[k] = 1; });
-    if (!Object.keys(keys).length) Object.keys(samples).forEach(function (k) { keys[k] = 1; });
     var rows = Object.keys(keys).map(function (k) {
-      var base = fc[k] || series[k] || samples[k];
+      var base = fc[k] || series[k];
       var flavor = base.flavor;
       var size = base.size;
       var sku = skuKey(flavor, size);
@@ -193,32 +209,33 @@
       var fcstSource = "none";
       var sourceMonth = fc[k] ? (fc[k].source_month || "") : "";
       var weekly = 0;
-      if (series[k]) {
+      var fresh = false;
+      if (series[k] && seriesFresh(series[k], ctx.today)) {
         fcstRaw = sumNextDays(series[k].anchor, series[k].weeks, ctx.today, 60);
         fcstSource = "series";
         weekly = weekValue(series[k].weeks, 0);
+        fresh = true;
       } else if (fc[k]) {
+        if (series[k]) staleSeries++;
         weekly = fc[k].weekly;
         fcstRaw = weekly * WEEKS_IN_60;
         fcstSource = "snapshot";
-      } else if (samples[k]) {
-        fcstRaw = sumNextDays(samples[k].anchor, samples[k].weeks, ctx.today, 60);
-        fcstSource = "sample";
+        fresh = snapshotFresh(sourceMonth, ctx.today);
+      } else if (series[k]) {
+        staleSeries++;
+        fcstSource = "series";
       }
       var live = liveOnHand(ctx.items, ctx.onHand, flavor, size);
-      var onHandSource = "none";
-      var onHandRaw = 0;
-      if (live != null) { onHandRaw = live; onHandSource = "live"; }
-      else if (SAMPLE_ON_HAND[sku] != null) { onHandRaw = SAMPLE_ON_HAND[sku]; onHandSource = "sample"; }
-      var fcst = round0(fcstRaw);
-      var oh = round0(onHandRaw);
-      var paced = round0(fcst * pacing);
-      var wos = fcst > 0 ? oh / (fcst / WEEKS_IN_60) : null;
+      var onHandSource = live != null ? "live" : "none";
+      var oh = round0(live != null ? live : 0);
+      var fcst = fresh ? round0(fcstRaw) : null;
+      var paced = fresh ? round0(fcst * pacing) : null;
+      var wos = fresh && fcst > 0 ? oh / (fcst / WEEKS_IN_60) : null;
       return {
         sku: sku, flavor: flavor, size: size,
         onHand: oh, onHandSource: onHandSource,
-        fcst: fcst, fcstSource: fcstSource, sourceMonth: sourceMonth, weekly: weekly,
-        gap: fcst - oh, paced: paced, suggested: paced - oh, wos: wos, band: wosBand(wos)
+        fcst: fcst, fcstSource: fcstSource, sourceMonth: sourceMonth, weekly: weekly, fresh: fresh,
+        gap: fresh ? fcst - oh : null, paced: paced, suggested: fresh ? paced - oh : null, wos: wos, band: wosBand(wos)
       };
     });
     rows.sort(function (a, b) {
@@ -227,7 +244,61 @@
       if (a.size !== b.size) return a.size === "1.5oz" ? -1 : 1;
       return a.sku < b.sku ? -1 : a.sku > b.sku ? 1 : 0;
     });
-    return { pacing: pacing, rows: rows };
+    var freshRows = rows.filter(function (r) { return r.fresh; }).length;
+    return { pacing: pacing, rows: rows, sourceMonth: month, snapshotFresh: snapOk, staleSeries: staleSeries, freshRows: freshRows, current: freshRows > 0 };
+  }
+  // Operational view used when no forecast is current: live on hand vs open SPS order bags, by flavor.
+  // SPS lines carry flavor but not size, so open bags are shown at flavor level.
+  function buildCoverage(ctx) {
+    ctx = ctx || {};
+    var map = {};
+    function row(flavor) {
+      var k = norm(flavor);
+      if (!map[k]) map[k] = { flavor: flavor, oh4: null, oh15: null, open: 0, lines: 0, due: "" };
+      return map[k];
+    }
+    (ctx.demand || []).forEach(function (d) {
+      if (!d || String(d.status || "Open") !== "Open") return;
+      var f = canonicalFlavor(d.flavor);
+      if (!f || /^unmapped/i.test(f)) return;
+      var r = row(f);
+      r.open += Number(d.bags) || 0;
+      r.lines++;
+      var due = dueISO(d.due_date);
+      if (due && (!r.due || due < r.due)) r.due = due;
+    });
+    var seen = {};
+    (ctx.items || []).forEach(function (it) {
+      if (!it || (it.category !== "bag4" && it.category !== "bag15") || !it.flavor) return;
+      var f = canonicalFlavor(it.flavor);
+      var size = it.category === "bag4" ? "4oz" : "1.5oz";
+      if (seen[f + "|" + size]) return;
+      seen[f + "|" + size] = 1;
+      var v = liveOnHand(ctx.items, ctx.onHand, f, size);
+      var r = row(f);
+      if (size === "4oz") r.oh4 = round0(v || 0); else r.oh15 = round0(v || 0);
+    });
+    var rows = Object.keys(map).map(function (k) {
+      var r = map[k];
+      r.after4 = r.oh4 == null ? null : r.oh4 - r.open;
+      return r;
+    }).filter(function (r) { return r.open > 0 || (r.oh4 || 0) > 0 || (r.oh15 || 0) > 0; });
+    rows.sort(function (a, b) {
+      if (b.open !== a.open) return b.open - a.open;
+      var d = flavorRank(a.flavor) - flavorRank(b.flavor);
+      if (d) return d;
+      return a.flavor < b.flavor ? -1 : 1;
+    });
+    return rows;
+  }
+  // SPS due dates arrive as MM/DD/YYYY or YYYY-MM-DD. Returns YYYY-MM-DD or "".
+  function dueISO(v) {
+    var s = String(v || "").trim();
+    if (!s) return "";
+    var m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(s);
+    if (m) return m[3] + "-" + ("0" + m[1]).slice(-2) + "-" + ("0" + m[2]).slice(-2);
+    m = /^(\d{4}-\d{2}-\d{2})/.exec(s);
+    return m ? m[1] : "";
   }
 
   function splitCsv(line) {
@@ -303,14 +374,16 @@
 
   var api = {
     build: build,
+    buildCoverage: buildCoverage,
+    snapshotFresh: snapshotFresh,
+    seriesFresh: seriesFresh,
+    STALE_DAYS: STALE_DAYS,
     parseSeries: parseSeries,
     parseSku: parseSku,
     skuKey: skuKey,
     sumNextDays: sumNextDays,
     wosBand: wosBand,
-    clampPacing: clampPacing,
-    SAMPLE_WEEKS: SAMPLE_WEEKS,
-    SAMPLE_ON_HAND: SAMPLE_ON_HAND
+    clampPacing: clampPacing
   };
   root.DEMAND_WOS = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
@@ -377,7 +450,9 @@
     var onHand = function (id) {
       try { return DB.onHand ? DB.onHand(id) : 0; } catch (e2) { return 0; }
     };
-    return { forecast: forecast, items: items, onHand: onHand, series: readStoredSeries(), pacing: readPacing(), today: null };
+    var demand = [];
+    try { demand = (DB.demandLines && DB.demandLines()) || []; } catch (e3) { demand = []; }
+    return { forecast: forecast, items: items, onHand: onHand, demand: demand, series: readStoredSeries(), pacing: readPacing(), today: null };
   }
   function injectStyle() {
     if (document.getElementById("wos-style")) return;
@@ -403,67 +478,125 @@
       "#wos-extend{margin-top:10px}",
       "#wos-extend summary{cursor:pointer;font-weight:800;font-size:13px;color:var(--navy,#04223B)}",
       "#wos-import{width:100%;min-height:88px;margin-top:8px;font-family:ui-monospace,monospace;font-size:12px}",
-      "#wos-root .wos-neg{color:#1d5631}"
+      "#wos-root .wos-neg{color:#1d5631}",
+      ".wos-stale{margin:8px 0;padding:8px 10px;border-radius:6px;background:#FFF6E9;color:#7a4d05;font-size:12.5px;border:1px solid #f0d9a8}"
     ].join("");
     document.head.appendChild(s);
   }
   function fcstTitle(r) {
     if (r.fcstSource === "series") return "Imported weekly series, next 60 days from today. The last week repeats.";
-    if (r.fcstSource === "sample") return "Built-in FORECAST sample. Live snapshot is empty.";
     if (r.fcstSource === "snapshot") return "8 weeks of the WIP forecast snapshot" + (r.sourceMonth ? " (" + r.sourceMonth + ")" : "") + ".";
     return "";
   }
   function ohTitle(r) {
     if (r.onHandSource === "live") return "Live finished bags on hand.";
-    if (r.onHandSource === "sample") return "Sample on hand. No finished bag item for this SKU yet.";
     return "No finished bag item, so on hand is 0.";
   }
+  function cell(v, cls) {
+    return '<td class="right' + (cls || "") + '">' + (v == null ? '<span class="muted">n/a</span>' : fmt(v)) + '</td>';
+  }
   function rowHtml(r) {
-    var tag = "";
-    if (r.fcstSource === "series") tag = '<span class="wos-tag">SERIES</span>';
-    else if (r.fcstSource === "sample") tag = '<span class="wos-tag">SAMPLE</span>';
-    var ohExtra = r.onHandSource === "sample" ? '<span class="wos-tag">SAMPLE</span>' : (r.onHandSource === "none" ? '<div class="muted sm">no bag item</div>' : "");
-    var sugCls = r.suggested < 0 ? " wos-neg" : "";
+    var tag = r.fcstSource === "series" && r.fresh ? '<span class="wos-tag">SERIES</span>' : "";
+    var ohExtra = r.onHandSource === "none" ? '<div class="muted sm">no bag item</div>' : "";
+    var sugCls = r.suggested != null && r.suggested < 0 ? " wos-neg" : "";
     return '<tr data-sku="' + esc(r.sku) + '">' +
       '<td class="sku">' + esc(r.sku) + tag + '</td>' +
       '<td class="right" title="' + esc(ohTitle(r)) + '">' + fmt(r.onHand) + ohExtra + '</td>' +
-      '<td class="right" title="' + esc(fcstTitle(r)) + '">' + fmt(r.fcst) + '</td>' +
-      '<td class="right">' + fmt(r.gap) + '</td>' +
+      '<td class="right" title="' + esc(fcstTitle(r)) + '">' + (r.fcst == null ? '<span class="muted">n/a</span>' : fmt(r.fcst)) + '</td>' +
+      cell(r.gap) +
       '<td class="right"><span class="wos-pill wos-' + r.band + '">' + fmtWos(r.wos) + '</span></td>' +
-      '<td class="right">' + fmt(r.paced) + '</td>' +
-      '<td class="right' + sugCls + '"><b>' + fmt(r.suggested) + '</b></td>' +
+      cell(r.paced) +
+      '<td class="right' + sugCls + '"><b>' + (r.suggested == null ? '<span class="muted">n/a</span>' : fmt(r.suggested)) + '</b></td>' +
       '</tr>';
   }
+  function staleText(model) {
+    var src = model.sourceMonth ? "The forecast snapshot is " + model.sourceMonth + "." : "There is no forecast snapshot.";
+    return src + " It is not current, so WOS, gap, pacing need and suggested production are hidden until a current forecast is loaded." +
+      (model.staleSeries ? " The imported weekly series ends before today, so it is not used." : "");
+  }
+  function coverageHtml(rows) {
+    if (!rows.length) return '<p class="muted sm">No open SPS order lines and no finished bag stock to show.</p>';
+    var tOpen = 0, t4 = 0, t15 = 0;
+    var body = rows.map(function (r) {
+      tOpen += r.open; t4 += r.oh4 || 0; t15 += r.oh15 || 0;
+      var after = r.after4 == null ? '<span class="muted">n/a</span>' : fmt(r.after4);
+      var afterCls = r.after4 != null && r.after4 < 0 ? ' style="color:#7d1b12;font-weight:800"' : "";
+      return '<tr><td class="sku">' + esc(r.flavor) + '</td>' + cell(r.oh4) + cell(r.oh15) +
+        '<td class="right">' + fmt(r.open) + (r.lines ? '<div class="muted sm">' + r.lines + ' line' + (r.lines === 1 ? "" : "s") + '</div>' : "") + '</td>' +
+        '<td class="right">' + esc(r.due || "") + '</td>' +
+        '<td class="right"' + afterCls + '>' + after + '</td></tr>';
+    }).join("");
+    return '<div class="tblwrap"><table><thead><tr><th>Flavor</th><th class="right">On Hand 4 oz</th><th class="right">On Hand 1.5 oz</th>' +
+      '<th class="right">SPS Open Bags</th><th class="right">Earliest Due</th><th class="right">4 oz After Open Orders</th></tr></thead><tbody>' + body +
+      '<tr class="wos-total"><td>TOTAL</td><td class="right">' + fmt(t4) + '</td><td class="right">' + fmt(t15) + '</td><td class="right">' + fmt(tOpen) + '</td><td></td><td></td></tr>' +
+      '</tbody></table></div>';
+  }
   function fill(rootEl) {
-    var model = build(context());
+    var ctx = context();
+    var model = build(ctx);
     var body = rootEl.querySelector("#wos-body");
     var meta = rootEl.querySelector("#wos-meta");
+    var stale = rootEl.querySelector("#wos-stale");
+    var cov = rootEl.querySelector("#wos-coverage");
+    var main = rootEl.querySelector("#wos-main");
     if (!body) return model;
-    if (!model.rows.length) {
-      body.innerHTML = '<tr><td colspan="7" class="muted">No forecast snapshot yet. Import a weekly series below, or refresh the WIP forecast.</td></tr>';
+    if (stale) {
+      stale.style.display = model.current ? "none" : "";
+      stale.innerHTML = model.current ? "" : '<b>Forecast is stale.</b> ' + esc(staleText(model));
+    }
+    if (main) main.style.display = model.current ? "" : "none";
+    if (cov) {
+      cov.style.display = model.current ? "none" : "";
+      if (!model.current) {
+        cov.innerHTML = '<h3 style="font-size:14px;margin:6px 0">Operational cover: live on hand vs open SPS orders</h3>' +
+          '<p class="hint">Not a forecast. Open SPS order bags are a backlog of purchase orders, not a weekly rate, so this does not give weeks of supply. SPS lines carry flavor but not size, so open bags are shown per flavor; retail SPS orders are 4 oz. E-commerce demand is not included.</p>' +
+          coverageHtml(buildCoverage(ctx));
+      }
+    }
+    var rows = model.rows.filter(function (r) { return r.fresh; });
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="7" class="muted">No current forecast. Import a weekly series that reaches today, or refresh the WIP forecast.</td></tr>';
     } else {
       var gOh = 0, gFc = 0, gGap = 0, gPace = 0, gSug = 0, reds = 0;
-      model.rows.forEach(function (r) {
+      rows.forEach(function (r) {
         gOh += r.onHand; gFc += r.fcst; gGap += r.gap; gPace += r.paced; gSug += r.suggested;
         if (r.band === "red") reds++;
       });
-      body.innerHTML = model.rows.map(rowHtml).join("") +
+      body.innerHTML = rows.map(rowHtml).join("") +
         '<tr class="wos-total"><td>TOTAL</td><td class="right">' + fmt(gOh) + '</td><td class="right">' + fmt(gFc) + '</td><td class="right">' + fmt(gGap) + '</td><td class="right">' + reds + ' under 2</td><td class="right">' + fmt(gPace) + '</td><td class="right">' + fmt(gSug) + '</td></tr>';
     }
     if (meta) {
       var seriesN = readStoredSeries().length;
-      var month = "";
-      model.rows.forEach(function (r) { if (!month && r.sourceMonth) month = r.sourceMonth; });
-      meta.textContent = (month ? "Snapshot " + month + ". " : "") +
-        (seriesN ? seriesN + " imported SKU" + (seriesN === 1 ? "" : "s") + " use a weekly series. " : "") +
+      meta.textContent = (model.sourceMonth ? "Snapshot " + model.sourceMonth + (model.snapshotFresh ? "" : " (stale)") + ". " : "No snapshot. ") +
+        (seriesN ? seriesN + " imported SKU" + (seriesN === 1 ? "" : "s") + (model.staleSeries ? ", " + model.staleSeries + " ended before today" : "") + ". " : "") +
         "Pacing " + model.pacing + ".";
     }
+    markForecastView(model);
     return model;
+  }
+  // Stale banner on the Forecast vs Target header card, so the WIP columns there do not read as current.
+  function markForecastView(model) {
+    var view = document.getElementById("view");
+    if (!view) return;
+    var old = view.querySelector("#fc-stale-note");
+    if (model.snapshotFresh || !model.sourceMonth) { if (old && old.parentNode) old.parentNode.removeChild(old); return; }
+    if (old) return;
+    var first = view.querySelector(".card");
+    if (!first || first.id === "wos-root") return;
+    var p = document.createElement("p");
+    p.id = "fc-stale-note";
+    p.className = "wos-stale";
+    p.innerHTML = "<b>Stale snapshot.</b> The WIP forecast columns below are from " + esc(model.sourceMonth) + " and are not a current forecast. Use them for reference only.";
+    first.appendChild(p);
   }
   function shell() {
     var gate = canCloudWrite();
     return '<div class="suprow"><h2 style="margin:0">60-Day Need / Weeks of Supply</h2></div>' +
-      '<p class="hint">Live on hand from finished bags. 60-day forecast is 8 weeks of the WIP snapshot (the same weekly bags as the table under this one). Gap = forecast minus on hand. Pacing-adjusted need = forecast x pacing. Suggested production = pacing-adjusted need minus on hand. Proj. WOS = on hand / (forecast / 8): red under 2, amber 2 to 4, green over 4.</p>' +
+      '<p id="wos-stale" class="wos-stale" style="display:none"></p>' +
+      '<div id="wos-coverage" style="display:none"></div>' +
+      '<div id="wos-main">' +
+      '<p class="hint">Live on hand from finished bags. 60-day forecast is 8 weeks of a current WIP snapshot, or an imported weekly series that reaches today. Gap = forecast minus on hand. Pacing-adjusted need = forecast x pacing. Suggested production = pacing-adjusted need minus on hand. Proj. WOS = on hand / (forecast / 8): red under 2, amber 2 to 4, green over 4. A snapshot more than ' + STALE_DAYS + ' days past its month is treated as stale and hidden.</p>' +
+      '</div>' +
       '<div id="wos-tools">' +
       '<label>Pacing <input id="wos-pacing" type="number" min="0" max="3" step="0.05" value="' + esc(String(readPacing())) + '" aria-label="Forecast pacing"></label>' +
       '<span id="wos-save" class="muted sm"></span>' +
@@ -473,9 +606,9 @@
       '<th>SKU</th><th class="right">On Hand</th><th class="right">60-day Forecast</th><th class="right">Gap</th>' +
       '<th class="right">Proj. WOS</th><th class="right">Pacing-adjusted Need</th><th class="right">Suggested Production</th>' +
       '</tr></thead><tbody id="wos-body"></tbody></table></div>' +
-      '<details id="wos-extend"><summary>Extend weekly forecast</summary>' +
-      '<p class="hint" style="margin-top:8px">Paste CSV or JSON. Columns: sku, anchor (YYYY-MM-DD), then one number per week. The last week repeats. Saving replaces the imported series and overrides the live snapshot for those SKUs only. Other SKUs stay on the snapshot. Built-in samples (used only when the snapshot is empty):</p>' +
-      '<pre class="sm" style="white-space:pre-wrap;margin:0 0 8px">VARIETY PACK-1.5OZ,2026-01-01,11804,11804,11804,11804,18765,18765,18765,18765,24023,24023,24023,24023,24023,28641\nBACKYARD BBQ-4OZ,2026-01-01,4330,4330,4330,4330,6883,6883,6883,6883,8811,8811,8811,8811,8811,10505</pre>' +
+      '<details id="wos-extend"><summary>Load a current weekly forecast</summary>' +
+      '<p class="hint" style="margin-top:8px">Paste CSV or JSON. Columns: sku, anchor (YYYY-MM-DD), then one number per week. A series is used only while its last week reaches today. Saving replaces the imported series and overrides the snapshot for those SKUs only. Example format:</p>' +
+      '<pre class="sm" style="white-space:pre-wrap;margin:0 0 8px">BACKYARD BBQ-4OZ,2026-11-02,1000,1000,1000,1000,1000,1000,1000,1000,1000</pre>' +
       '<textarea id="wos-import" placeholder="sku,anchor,w1,w2,..."></textarea>' +
       '<div style="margin-top:8px"><button type="button" class="primary sm" id="wos-save-series"' + (gate ? "" : " disabled") + '>Save weekly series</button> ' +
       '<button type="button" class="ghost sm" id="wos-clear-series"' + (gate ? "" : " disabled") + '>Clear imported series</button></div>' +
@@ -544,7 +677,7 @@
     });
     var clearBtn = rootEl.querySelector("#wos-clear-series");
     if (clearBtn) clearBtn.addEventListener("click", function () {
-      writeSeries([], "Imported series cleared. Every SKU is back on the live snapshot.");
+      writeSeries([], "Imported series cleared.");
     });
   }
   function mount(view) {
