@@ -331,7 +331,8 @@
     var existing = document.getElementById("r-coa");
     if (!existing) {
       var hold = document.createElement("div");
-      hold.innerHTML = fieldHtml("r-coa", "", "", "", "");
+      var kept = root.__smkRecvCoa || {};
+      hold.innerHTML = fieldHtml("r-coa", kept.answer || "", kept.note || "", "", "");
       var exp = document.getElementById("r-exp");
       var expBox = exp && exp.closest ? exp.closest(".rx-field") : null;
       if (expBox && expBox.parentNode === row) row.insertBefore(hold.firstChild, expBox.nextSibling);
@@ -351,9 +352,10 @@
     var editing = logFormIsEdit();
     var match = editing ? matchLogFromForm() : null;
     var it = match ? itemById(match.item_id) : null;
-    if (it && !isCoaItem(it) && !(match && normAnswer(match.coa_received))) return;
+    var kept = !editing && root.__smkLogCoa ? root.__smkLogCoa : {};
+    if (it && !isCoaItem(it) && !(match && normAnswer(match.coa_received)) && !normAnswer(kept.answer)) return;
     var hold = document.createElement("div");
-    hold.innerHTML = fieldHtml("rl-coa", match ? match.coa_received : "", match ? match.coa_note : "", match ? match.id : "", match ? match.item_id : "");
+    hold.innerHTML = fieldHtml("rl-coa", match ? match.coa_received : (kept.answer || ""), match ? match.coa_note : (kept.note || ""), match ? match.id : "", match ? match.item_id : "");
     var exp = document.getElementById("rl-exp");
     var expBox = exp && exp.closest ? exp.closest(".rx-field") : null;
     var anchor = expBox || row;
@@ -674,7 +676,7 @@
             if (made && root.DB && root.DB.onHand) afterQty = Number(root.DB.onHand(made.id)) || 0;
             var landed = !!(p && (p.used || afterQty > beforeQty + 0.0001));
             if (!landed && locEl) locEl.value = prevLoc;
-            if (p && p.answer && landed && !p.used && made && isCoaItem(made)) {
+            if (!root.__smkRecvLogTried && p && p.answer && landed && !p.used && made && isCoaItem(made)) {
               if (p.holdWanted && root.DB && root.DB.addReceivingLog) {
                 var today = new Date().toISOString().slice(0, 10);
                 await root.DB.addReceivingLog({

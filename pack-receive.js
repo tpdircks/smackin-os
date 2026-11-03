@@ -228,7 +228,7 @@
       box = document.createElement("div");
       box.id = "pk-exp-field";
       box.innerHTML = '<label for="pk-exp">' + esc(tx("exp")) + '</label>' +
-        '<input id="pk-exp" type="date" autocomplete="off">' +
+        '<input id="pk-exp" type="date" autocomplete="off" value="' + esc(root.__smkPkExp || "") + '">' +
         '<p class="hint" style="margin:4px 0 0">' + esc(tx("expHint")) + "</p>";
       row.parentNode.insertBefore(box, row.nextSibling);
     }

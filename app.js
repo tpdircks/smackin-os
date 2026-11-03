@@ -20,7 +20,7 @@
       labelsHint:"Print barcodes on your thermal label printer. Location labels are permanent; a pallet LPN is one barcode per incoming pallet.",
       dashHint:"Live on hand across every location. Filter by category.",
       receiveHint:"Scan an item, enter qty + details, then pick where it goes (scan the slot or tap Section-Bay-Level) - it lands there in one step. Leave the location blank to hold at Receiving. Receive puts stock on hand. If you enter a supplier, the Receiving Log opens already filled in so you only finish the trailer and SOP checks once.",rniNewBtn:"New item (not in list)",rniCancelBtn:"Use existing item",rniTitle:"Create a new item",rniCode:"Item code / SKU",rniName:"Item name",rniNamePh:"e.g. Kraft box 12x9",rniUnit:"Unit",rniHint:"This adds a brand-new item to the master, then receives it below.",rniNeed:"Enter a code and name for the new item",
-      rSupplier:"Supplier", rInvoice:"Invoice / PO #", rCategory:"Category", rPallets:"Pallets", rCondition:"Condition", rStatus:"Status", rDeliveryHdr:"Delivery & paperwork (saved to Receiving Log)", rAttachDoc:"Attach paperwork (packing slip / BOL / invoice)", rCarrier:"Carrier", rProNum:"Tracking / PRO", rQtyOrd:"Qty ordered", rLogNotes:"Notes", rMergeHint:"Receive puts stock on hand. Enter a supplier and this receipt is saved to the Receiving Log, then the log opens already filled in so you only finish the trailer and SOP checks once. Carrier, PRO, and a file are optional.", rLogOpened:"Receiving Log is open. Finish the trailer and SOP checks.", rLogFail:"Stock is on hand. The Receiving Log row did not save. Open Receiving Log and enter the shipment once.", rlFromDock:"Stock is on hand. This row is filled in from Receive. Finish the trailer and SOP checks. You do not need to retype the shipment.",
+      rSupplier:"Supplier", rInvoice:"Invoice / PO #", rCategory:"Category", rPallets:"Pallets", rCondition:"Condition", rStatus:"Status", rDeliveryHdr:"Delivery & paperwork (saved to Receiving Log)", rAttachDoc:"Attach paperwork (packing slip / BOL / invoice)", rCarrier:"Carrier", rProNum:"Tracking / PRO", rQtyOrd:"Qty ordered", rLogNotes:"Notes", rMergeHint:"Receive puts stock on hand. Enter a supplier and this receipt is saved to the Receiving Log, then the log opens already filled in so you only finish the trailer and SOP checks once. Carrier, PRO, and a file are optional.", rLogOpened:"Receiving Log is open. Finish the trailer and SOP checks.", rLogFail:"Not saved. The Receiving Log did not confirm a row, so this form was kept. Fix the error and submit again.", rLogStockOnly:"Stock for this receipt is already on hand. This click saves the Receiving Log only.", rlFromDock:"Stock is on hand. This row is filled in from Receive. Finish the trailer and SOP checks. You do not need to retype the shipment.",
       putHint:"Scan the item, then scan the slot barcode OR tap Section - Bay - Level. Moves from Receiving in real time.",
       puDest:"Destination", puSection:"Section", puBay:"Bay", puLevel:"Level", puZones:"Floor / zones", puScanLoc:"A-05-L3 / scan slot barcode",
       moveHint:"Scan item, pick from and to (slot, WIP, Pack-Out, Shipping...).",
@@ -178,7 +178,7 @@
       labelsHint:"Imprima codigos en su impresora termica. Las de ubicacion son permanentes; el LPN es un codigo por pallet entrante.",
       dashHint:"Disponible en vivo en todas las ubicaciones. Filtre por categoria.",
       receiveHint:"Escanee un articulo, ingrese cant. + detalles, luego elija a donde va (escanee el slot o toque Seccion-Bahia-Nivel) - llega ahi en un paso. Deje la ubicacion en blanco para dejarlo en Recibo. Recibir pone el stock en mano. Si ingresa un proveedor, el Registro de Recibo se abre ya lleno para que solo termine las revisiones del trailer y del SOP una vez.",rniNewBtn:"Articulo nuevo (no en la lista)",rniCancelBtn:"Usar articulo existente",rniTitle:"Crear un articulo nuevo",rniCode:"Codigo / SKU",rniName:"Nombre del articulo",rniNamePh:"ej. Caja Kraft 12x9",rniUnit:"Unidad",rniHint:"Esto agrega un articulo nuevo al maestro y luego lo recibe abajo.",rniNeed:"Ingrese codigo y nombre del articulo nuevo",
-      rSupplier:"Proveedor", rInvoice:"Factura / OC #", rCategory:"Categoria", rPallets:"Pallets", rCondition:"Condicion", rStatus:"Estado", rDeliveryHdr:"Entrega y documentos (se guarda en el Registro de Recepcion)", rAttachDoc:"Adjuntar documentos (packing slip / BOL / factura)", rCarrier:"Transportista", rProNum:"Rastreo / PRO", rQtyOrd:"Cant. pedida", rLogNotes:"Notas", rMergeHint:"Recibir pone el stock en mano. Ingrese un proveedor y este recibo se guarda en el Registro de Recibo. Luego el registro se abre ya lleno para que solo termine las revisiones del trailer y del SOP una vez. Transportista, PRO y archivo son opcionales.", rLogOpened:"El Registro de Recibo esta abierto. Termine las revisiones del trailer y del SOP.", rLogFail:"El stock ya esta en mano. No se guardo la fila del Registro de Recibo. Abra el Registro de Recibo e ingrese el envio una vez.", rlFromDock:"El stock ya esta en mano. Esta fila viene de Recibir. Termine las revisiones del trailer y del SOP. No necesita volver a escribir el envio.",
+      rSupplier:"Proveedor", rInvoice:"Factura / OC #", rCategory:"Categoria", rPallets:"Pallets", rCondition:"Condicion", rStatus:"Estado", rDeliveryHdr:"Entrega y documentos (se guarda en el Registro de Recepcion)", rAttachDoc:"Adjuntar documentos (packing slip / BOL / factura)", rCarrier:"Transportista", rProNum:"Rastreo / PRO", rQtyOrd:"Cant. pedida", rLogNotes:"Notas", rMergeHint:"Recibir pone el stock en mano. Ingrese un proveedor y este recibo se guarda en el Registro de Recibo. Luego el registro se abre ya lleno para que solo termine las revisiones del trailer y del SOP una vez. Transportista, PRO y archivo son opcionales.", rLogOpened:"El Registro de Recibo esta abierto. Termine las revisiones del trailer y del SOP.", rLogFail:"No guardado. El Registro de Recibo no confirmo una fila, asi que el formulario se conservo. Corrija el error y envie de nuevo.", rLogStockOnly:"El stock de este recibo ya esta en mano. Este clic solo guarda el Registro de Recibo.", rlFromDock:"El stock ya esta en mano. Esta fila viene de Recibir. Termine las revisiones del trailer y del SOP. No necesita volver a escribir el envio.",
       putHint:"Escanee el articulo, luego escanee el codigo del slot O toque Seccion - Bahia - Nivel. Sale de Recibo en tiempo real.",
       puDest:"Destino", puSection:"Seccion", puBay:"Bahia", puLevel:"Nivel", puZones:"Piso / zonas", puScanLoc:"A-05-L3 / escanee slot",
       moveHint:"Escanee articulo, elija desde y hacia (slot, WIP, Empaque, Embarque...).",
@@ -335,7 +335,7 @@
       labelsHint:"Imprima codigos na sua impressora termica. As de local sao permanentes; o LPN e um codigo por palete recebido.",
       dashHint:"Estoque ao vivo em todos os locais. Filtre por categoria.",
       receiveHint:"Escaneie um item, digite qtd. + detalhes, depois escolha para onde vai (escaneie o slot ou toque Secao-Baia-Nivel) - chega la em um passo. Deixe o local em branco para segurar no Recebimento. Receber coloca o estoque em maos. Se voce informar o fornecedor, o Registro de Recebimento abre ja preenchido para voce so terminar as checagens do trailer e do SOP uma vez.",rniNewBtn:"Item novo (nao esta na lista)",rniCancelBtn:"Usar item existente",rniTitle:"Criar um item novo",rniCode:"Codigo / SKU",rniName:"Nome do item",rniNamePh:"ex. Caixa Kraft 12x9",rniUnit:"Unidade",rniHint:"Isto adiciona um item novo ao mestre e depois o recebe abaixo.",rniNeed:"Insira codigo e nome do item novo",
-      rSupplier:"Fornecedor", rInvoice:"Fatura / OC #", rCategory:"Categoria", rPallets:"Paletes", rCondition:"Condicao", rStatus:"Status", rDeliveryHdr:"Entrega e documentos (salvo no Registro de Recebimento)", rAttachDoc:"Anexar documentos (packing slip / BOL / nota)", rCarrier:"Transportadora", rProNum:"Rastreio / PRO", rQtyOrd:"Qtd pedida", rLogNotes:"Notas", rMergeHint:"Receber coloca o estoque em maos. Informe um fornecedor e este recebimento e salvo no Registro de Recebimento. Depois o registro abre ja preenchido para voce so terminar as checagens do trailer e do SOP uma vez. Transportadora, PRO e arquivo sao opcionais.", rLogOpened:"O Registro de Recebimento esta aberto. Termine as checagens do trailer e do SOP.", rLogFail:"O estoque ja esta em maos. A linha do Registro de Recebimento nao foi salva. Abra o Registro de Recebimento e lance o envio uma vez.", rlFromDock:"O estoque ja esta em maos. Esta linha veio de Receber. Termine as checagens do trailer e do SOP. Voce nao precisa digitar o envio de novo.",
+      rSupplier:"Fornecedor", rInvoice:"Fatura / OC #", rCategory:"Categoria", rPallets:"Paletes", rCondition:"Condicao", rStatus:"Status", rDeliveryHdr:"Entrega e documentos (salvo no Registro de Recebimento)", rAttachDoc:"Anexar documentos (packing slip / BOL / nota)", rCarrier:"Transportadora", rProNum:"Rastreio / PRO", rQtyOrd:"Qtd pedida", rLogNotes:"Notas", rMergeHint:"Receber coloca o estoque em maos. Informe um fornecedor e este recebimento e salvo no Registro de Recebimento. Depois o registro abre ja preenchido para voce so terminar as checagens do trailer e do SOP uma vez. Transportadora, PRO e arquivo sao opcionais.", rLogOpened:"O Registro de Recebimento esta aberto. Termine as checagens do trailer e do SOP.", rLogFail:"Nao salvo. O Registro de Recebimento nao confirmou uma linha, entao o formulario foi mantido. Corrija o erro e envie de novo.", rLogStockOnly:"O estoque deste recebimento ja esta em maos. Este clique so grava o Registro de Recebimento.", rlFromDock:"O estoque ja esta em maos. Esta linha veio de Receber. Termine as checagens do trailer e do SOP. Voce nao precisa digitar o envio de novo.",
       putHint:"Escaneie o item, depois escaneie o codigo do slot OU toque Secao - Baia - Nivel. Sai de Recebimento em tempo real.",
       puDest:"Destino", puSection:"Secao", puBay:"Baia", puLevel:"Nivel", puZones:"Piso / zonas", puScanLoc:"A-05-L3 / escaneie slot",
       moveHint:"Escaneie item, escolha de e para (slot, WIP, Empacotamento, Expedicao...).",
@@ -859,6 +859,11 @@
   let recvFile = null;                        // Receiving Log paperwork upload state
   let shipEditId = null, recvEditId = null, orderEditId = null, seasEditId = null, seedEditId = null;  // inline-edit: id of record being edited
   let recvFromDock = false;
+  let recvKeep = null;       // Receive form values. A render must not drop them before a confirmed save.
+  let recvLogKeep = null;    // Dock Log receipt draft. Same rule.
+  let recvStockGuard = false; // Stock already posted for this receipt; the retry saves the log only.
+  let recvBusy = false;
+  let recvSkipCapture = false; // Successful save renders a blank form. Do not copy the old inputs back.
   let pmoSel = "", pmoRecent = [];   // P-Mac bag-output: selected bag item + recent adds this session
   let navCollapsed = (function () { try { return new Set(JSON.parse(localStorage.getItem("smk-navcollapsed") || "[]")); } catch (e) { return new Set(); } })();  // collapsed nav groups
   let ciView = "active", ciAddOpen = false, ciEditId = null;  // Continuous Improvement view/edit state
@@ -898,7 +903,13 @@
   const $ = id => document.getElementById(id);
   const fmt = n => (Math.round(n * 100) / 100).toLocaleString();
   const selOpts = (arr, sel) => (arr || []).map(o => '<option' + (o === sel ? ' selected' : '') + '>' + o + '</option>').join("");
-  function toast(m) { const t = $("toast"); t.textContent = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 1700); }
+  let toastTimer = null;
+  function toast(m, ms) {
+    const t = $("toast"); if (!t) return;
+    t.textContent = m; t.classList.add("show");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove("show"), ms || 1700);
+  }
   function heldOf(id) { return DB.heldOnHand ? DB.heldOnHand(id) : 0; }
   function availOf(id) { return DB.availableOnHand ? DB.availableOnHand(id) : DB.onHand(id); }
   function statusOf(it) { const oh = availOf(it.id); if (oh <= 0) return "out"; if (oh < it.reorder) return "low"; return "ok"; }
@@ -945,7 +956,12 @@
     if (unlocked) return true;
     const v = await pinPrompt();
     if (v === null) return false;
-    if (v === EDIT_PIN || v === PURCH_PIN) { unlocked = true; try { sessionStorage.setItem("smk_unlocked", "1"); } catch (e) {} toast(L("unlocked")); render(); return true; }
+    if (v === EDIT_PIN || v === PURCH_PIN) {
+      unlocked = true; try { sessionStorage.setItem("smk_unlocked", "1"); } catch (e) {} toast(L("unlocked"));
+      // A full render here rebuilds the open receipt and drops every field before the save reads them.
+      if (!$("r-qty") && !$("rl-supplier") && !$("svc-date")) render();
+      return true;
+    }
     toast(L("pinWrong")); return false;
   }
 
@@ -980,7 +996,7 @@
   }
   // Reusable tap-or-scan location picker (Section/Bay/Level chips + scan field + zone chips).
   // Writes the composed code into the field with id=fid. Shared by Receive + Put-Away.
-  function locPickerBlock(fid) {
+  function locPickerBlock(fid, current) {
     const cfg = DB.config || { sections: ["A","B","C","D"], baysPerSection: 28, levels: ["L1","L2","L3","L4"],
       zones: ["RECEIVING","ST-01","ST-02","ST-03","ST-04","ST-05","ST-06","ST-07","ST-08","WIP","PACKOUT","CAGE","QUARANTINE"], docks: [] };
     const secChip = s => '<button class="pchip' + (puSec === s ? " on" : "") + '" data-k="sec" data-v="' + s + '" onclick="UI.puPick(\'sec\',\'' + s + '\')">' + s + '</button>';
@@ -990,9 +1006,11 @@
       bayChips += '<button class="pchip bay' + (puBay === bb ? " on" : "") + '" data-k="bay" data-v="' + bb + '" onclick="UI.puPick(\'bay\',\'' + bb + '\')">' + bb + '</button>'; }
     const zones = (cfg.zones || []).concat((cfg.docks || []).map(d => "DOCK-" + d));
     const zoneChips = zones.map(z => '<button class="pchip zone" onclick="UI.puZone(\'' + z + '\')">' + esc(z) + '</button>').join("");
-    const preview = (puSec && puBay && puLevel) ? (puSec + "-" + puBay + "-" + puLevel) : "—";
+    const composed = (puSec && puBay && puLevel) ? (puSec + "-" + puBay + "-" + puLevel) : "";
+    const shown = composed || current || "";
+    const preview = shown || "—";
     return '<div class="pudest"><label>' + L("puDest") + '</label>' +
-      '<div class="scanrow"><input id="' + fid + '" list="dl-locs" autocomplete="off" value="' + esc(preview === "—" ? "" : preview) + '" placeholder="' + L("puScanLoc") + '" oninput="UI.puSync()">' +
+      '<div class="scanrow"><input id="' + fid + '" list="dl-locs" autocomplete="off" value="' + esc(shown) + '" placeholder="' + L("puScanLoc") + '" oninput="UI.puSync()">' +
       '<button type="button" class="cambtn" onclick="UI.cam(\'' + fid + '\')">' + L("camera") + '</button></div>' +
       '<div class="pupreview">&#8594; <b id="pu-code">' + preview + '</b> <span id="pu-warn" class="sm" style="color:var(--red);font-weight:700"></span></div>' +
       '<div class="pgrp"><span class="plab">' + L("puSection") + '</span><div class="pchips">' + cfg.sections.map(secChip).join("") + '</div></div>' +
@@ -1000,9 +1018,9 @@
       '<div class="pgrp"><span class="plab">' + L("puLevel") + '</span><div class="pchips">' + (cfg.levels || ["L1","L2","L3","L4"]).map(lvlChip).join("") + '</div></div>' +
       '<div class="pgrp"><span class="plab">' + L("puZones") + '</span><div class="pchips">' + zoneChips + '</div></div></div>';
   }
-  function itemScan(id, nextId) {
+  function itemScan(id, nextId, value) {
     return '<div class="scan"><label>' + L("scanItem") + '</label>' +
-      '<div class="scanrow"><input id="' + id + '" list="dl-items" autocomplete="off" autofocus ' +
+      '<div class="scanrow"><input id="' + id + '" list="dl-items" autocomplete="off" autofocus value="' + esc(value || "") + '" ' +
       'placeholder="B4-S01 / SEED-WHITE / 850047865199" ' +
       'oninput="UI.lookup(\'' + id + '\',\'' + id + '-f\')" ' +
       'onkeydown="if(event.key===\'Enter\'){event.preventDefault();var n=document.getElementById(\'' + (nextId||"") + '\');if(n)n.focus();}">' +
@@ -2109,6 +2127,84 @@
       '<input id="shlSearch" autocomplete="off" oninput="UI.shlSearch(this.value)" placeholder="' + L("shlSearchP") + '" style="margin-bottom:10px">' +
       table + '</div>';
   }
+  function fieldVal(id) {
+    const e = $(id);
+    if (!e) return "";
+    if (String(e.type || "").toLowerCase() === "checkbox") return e.checked ? "1" : "";
+    return e.value || "";
+  }
+  function radioVal(name) {
+    const el = document.querySelector('input[name="' + name + '"]:checked');
+    return el ? (el.value || "") : "";
+  }
+  function captureReceiveForm() {
+    return {
+      code: fieldVal("r-code"), qty: fieldVal("r-qty"), pal: fieldVal("r-pal"), lot: fieldVal("r-lot"),
+      sup: fieldVal("r-sup"), inv: fieldVal("r-inv"), cat: fieldVal("r-cat"),
+      cond: fieldVal("r-cond") || "Good", stat: fieldVal("r-stat") || "Received",
+      carrier: fieldVal("r-carrier"), tracking: fieldVal("r-tracking"), qord: fieldVal("r-qord"),
+      notes: fieldVal("r-notes"), loc: fieldVal("r-loc"), op: fieldVal("op"),
+      newcode: fieldVal("r-newcode"), newname: fieldVal("r-newname"), newcat: fieldVal("r-newcat"),
+      newunit: fieldVal("r-newunit"), exp: fieldVal("r-exp") || fieldVal("pk-exp"),
+      coa: fieldVal("r-coa"), coaNote: fieldVal("r-coa-note"),
+      newItem: !!recvNewItem
+    };
+  }
+  function captureLogForm() {
+    const ed = {
+      recv_date: fieldVal("rl-date"), supplier: fieldVal("rl-supplier"), po_num: fieldVal("rl-po"),
+      carrier: fieldVal("rl-carrier"), tracking: fieldVal("rl-tracking"),
+      condition: fieldVal("rl-condition") || "Good", contents: fieldVal("rl-contents"),
+      lot: fieldVal("rl-lot"), qty_ordered: fieldVal("rl-qord"), qty_received: fieldVal("rl-qrec"),
+      received_by: fieldVal("rl-by"), notes: fieldVal("rl-notes"), item_id: fieldVal("rsop-item"),
+      seal_number: fieldVal("rsop-seal"), temperature_f: fieldVal("rsop-temp"),
+      deviation_actions: fieldVal("rsop-dev"), expires_on: fieldVal("rl-exp"),
+      coa_received: fieldVal("rl-coa"), coa_note: fieldVal("rl-coa-note"),
+      checklist: {
+        received_time: fieldVal("rsop-time"),
+        temp_not_measured: fieldVal("rsop-temp-nm") === "1",
+        allergen: radioVal("rsop_allergen")
+      },
+      _op: fieldVal("op")
+    };
+    ["chk_trailer_sealed", "chk_trailer_clean", "chk_coa_label", "chk_approved_supplier", "chk_carrier_sanitation", "chk_material_condition"].forEach(function (k) {
+      ed[k] = radioVal("rsop_" + k);
+    });
+    return ed;
+  }
+  function logDraftFromReceive(snap, it) {
+    snap = snap || {};
+    let contents = "";
+    let itemId = "";
+    if (it) { contents = it.name || ""; itemId = it.id || it.code || ""; }
+    else if (snap.code) {
+      try {
+        const found = DB.itemByCode(snap.code);
+        if (found) { contents = found.name || ""; itemId = found.id || found.code || ""; }
+      } catch (e) {}
+    }
+    if (!contents && snap.newname) contents = snap.newname;
+    return {
+      recv_date: new Date().toISOString().slice(0, 10),
+      supplier: snap.sup || "", po_num: snap.inv || "", carrier: snap.carrier || "",
+      tracking: snap.tracking || "", condition: snap.cond || "Good", contents: contents,
+      lot: snap.lot || "", qty_ordered: snap.qord || "", qty_received: snap.qty || "",
+      received_by: snap.op || "", notes: snap.notes || "",
+      item_id: itemId || snap.newcode || snap.code || "",
+      expires_on: snap.exp || "", coa_received: snap.coa || "", coa_note: snap.coaNote || "",
+      checklist: {}, _op: snap.op || ""
+    };
+  }
+  function rememberReceiveDraft(snap) {
+    if (!snap) return;
+    recvKeep = snap;
+    window.__smkRecvExp = snap.exp || "";
+    window.__smkPkExp = snap.exp || window.__smkPkExp || "";
+    window.__smkRecvCoa = { answer: snap.coa || "", note: snap.coaNote || "" };
+  }
+  function rememberLogCoa(row) {
+    window.__smkLogCoa = { answer: (row && row.coa_received) || "", note: (row && row.coa_note) || "" };
+  }
   function normRecvLot(lot) {
     if (window.RECVSOP && RECVSOP.normLot) return RECVSOP.normLot(lot);
     return String(lot || "").toUpperCase().replace(/\s+/g, "");
@@ -2152,8 +2248,13 @@
   }
   function viewReceivingLog() {
     const today = new Date().toISOString().slice(0, 10);
-    const ed = recvEditId ? (DB.receivingLog().find(s => String(s.id) === String(recvEditId)) || {}) : {};
-    const editing = !!(recvEditId && ed.id);
+    let ed = {};
+    let editing = false;
+    if (recvEditId) {
+      const found = DB.receivingLog().find(s => String(s.id) === String(recvEditId));
+      if (found && found.id) { ed = found; editing = true; }
+    }
+    if (!editing && recvLogKeep) ed = Object.assign({}, recvLogKeep);
     const rsopFields = (window.RECVSOP && RECVSOP.fieldsHtml) ? RECVSOP.fieldsHtml(ed) : "";
     const rsopTools = (window.RECVSOP && RECVSOP.toolsHtml) ? RECVSOP.toolsHtml() : "";
     const rsopHold = (window.RECVSOP && RECVSOP.holdHtml) ? RECVSOP.holdHtml() : "";
@@ -2165,7 +2266,7 @@
       '<div class="spodrop"><input type="file" id="rl-input" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.docx" style="display:none" onchange="UI.rlFile(this)">' +
       '<label for="rl-input" class="spodroplabel">&#128193; ' + L("rlDrop") + '</label></div>' +
       (recvFile ? '<p class="hint">&#128206; ' + esc(recvFile.name) + ' <button class="ghost sm" onclick="UI.rlClear()">' + L("spoCancel") + '</button></p>' : '') +
-      '<div class="row"><div><label>' + L("rlDate") + '</label><input id="rl-date" type="date" value="' + (editing && ed.recv_date ? (ed.recv_date + "").slice(0, 10) : today) + '"></div>' +
+      '<div class="row"><div><label>' + L("rlDate") + '</label><input id="rl-date" type="date" value="' + (ed.recv_date ? String(ed.recv_date).slice(0, 10) : today) + '"></div>' +
       '<div><label>' + L("rlSupplier") + '</label><input id="rl-supplier" autocomplete="off" value="' + av(ed.supplier) + '"></div>' +
       '<div><label>' + L("rlPO") + '</label><input id="rl-po" autocomplete="off" value="' + av(ed.po_num) + '"></div></div>' +
       '<div class="row"><div><label>' + L("rlCarrier") + '</label><select id="rl-carrier"><option value=""' + (!ed.carrier ? ' selected' : '') + '></option>' + selOpt(SHIP_CARRIERS, ed.carrier, "") + '</select></div>' +
@@ -2178,7 +2279,7 @@
       '<div><label>' + L("rlReceivedBy") + '</label><input id="rl-by" list="dl-rl-by" autocomplete="off" value="' + av(ed.received_by) + '"></div></div>' +
       '<div><label>' + L("rlNotes") + ' <span class="muted">(opt.)</span></label><input id="rl-notes" autocomplete="off" value="' + av(ed.notes) + '"></div>' +
       rsopFields +
-      opField("Adriana") +
+      opField(ed._op || "Adriana") +
       '<button class="primary" onclick="UI.rlSave()">' + (editing ? L("saveChanges") : L("rlSave")) + '</button>' +
       (editing ? ' <button class="ghost" style="margin-top:14px" onclick="UI.rlEditCancel()">' + L("ordCancel") + '</button>' : '') + '</div>';
     const byDl = '<datalist id="dl-rl-by">' + RECV_LOG_RECEIVERS.map(n => '<option value="' + n + '"></option>').join("") + '</datalist>';
@@ -2216,7 +2317,8 @@
       th("condition", L("rlCondition")) + th("received_by", L("rlReceivedBy")) + '<th>' + L("rlDoc") + '</th>' + '<th></th>' +
       '</tr></thead><tbody id="rlBody">' + rows + '</tbody></table>' : '<p class="muted">' + L("rlNone") + '</p>';
     return byDl + '<div class="card"><h2>' + L("recvlog") + '</h2><p class="hint">' + L("rlHint") + '</p>' +
-      (recvFromDock ? '<p class="hint">' + L("rlFromDock") + '</p>' : '') + form + '</div>' +
+      (recvFromDock ? '<p class="hint">' + L("rlFromDock") + '</p>' : '') +
+      (recvStockGuard && !editing ? '<p class="rsop-draft">' + L("rLogStockOnly") + '</p>' : '') + form + '</div>' +
       rsopHold +
       '<div class="card"><h2 class="sub2">' + L("rlArchive") + ' (' + list.length + ')</h2>' +
       rsopTools +
@@ -2224,37 +2326,40 @@
       table + '</div>';
   }
   function viewReceive() {
+    const k = recvKeep || {};
+    const av = x => esc(x == null ? "" : x);
     const newPanel = recvNewItem
       ? '<div class="locact"><h3 class="sub2">' + L("rniTitle") + '</h3>' +
-        '<div class="row"><div><label>' + L("rniCode") + '</label><input id="r-newcode" autocomplete="off" placeholder="BOX-1234"></div>' +
-        '<div style="flex:2"><label>' + L("rniName") + '</label><input id="r-newname" autocomplete="off" placeholder="' + L("rniNamePh") + '"></div></div>' +
-        '<div class="row"><div><label>' + L("rCategory") + '</label><select id="r-newcat">' + selOpts(DB.recvCategories) + '</select></div>' +
-        '<div><label>' + L("rniUnit") + '</label><input id="r-newunit" list="dl-units" autocomplete="off" placeholder="ea / case / lbs"></div></div>' +
+        '<div class="row"><div><label>' + L("rniCode") + '</label><input id="r-newcode" autocomplete="off" placeholder="BOX-1234" value="' + av(k.newcode) + '"></div>' +
+        '<div style="flex:2"><label>' + L("rniName") + '</label><input id="r-newname" autocomplete="off" placeholder="' + L("rniNamePh") + '" value="' + av(k.newname) + '"></div></div>' +
+        '<div class="row"><div><label>' + L("rCategory") + '</label><select id="r-newcat">' + selOpts(DB.recvCategories, k.newcat) + '</select></div>' +
+        '<div><label>' + L("rniUnit") + '</label><input id="r-newunit" list="dl-units" autocomplete="off" placeholder="ea / case / lbs" value="' + av(k.newunit) + '"></div></div>' +
         '<p class="hint" style="margin:6px 0 0">' + L("rniHint") + '</p></div>' +
         '<datalist id="dl-units"><option value="ea"><option value="case"><option value="box"><option value="bag"><option value="lbs"><option value="pallet"><option value="roll"></datalist>'
       : "";
     const newToggle = '<div style="margin:8px 0 2px"><button class="ghost sm" onclick="UI.recvToggleNew()">' +
       (recvNewItem ? '✕ ' + L("rniCancelBtn") : '➕ ' + L("rniNewBtn")) + '</button></div>';
     return '<div class="card"><h2>' + L("receive") + '</h2><p class="hint">' + L("receiveHint") + '</p>' +
-      (recvNewItem ? "" : itemScan("r-code", "r-qty")) + newToggle + newPanel +
-      '<div class="row"><div><label>' + L("qty") + '</label><input id="r-qty" type="number" min="0" placeholder="' + L("enter") + '"></div>' +
-      '<div><label>' + L("rPallets") + ' <span class="muted">(opt.)</span></label><input id="r-pal" type="number" min="0" step="0.1" placeholder="0"></div>' +
-      '<div><label>' + L("lot") + ' <span class="muted">(opt.)</span></label><input id="r-lot" autocomplete="off" placeholder="LOT-0701"></div></div>' +
-      '<div class="row"><div><label>' + L("rSupplier") + '</label><select id="r-sup"><option value=""></option>' + selOpts(DB.recvSuppliers) + '</select></div>' +
-      '<div><label>' + L("rInvoice") + ' <span class="muted">(opt.)</span></label><input id="r-inv" autocomplete="off" placeholder="INV-..."></div>' +
-      '<div><label>' + L("rCategory") + '</label><select id="r-cat"><option value=""></option>' + selOpts(DB.recvCategories) + '</select></div></div>' +
-      '<div class="row"><div><label>' + L("rCondition") + '</label><select id="r-cond">' + selOpts(DB.conditions) + '</select></div>' +
-      '<div><label>' + L("rStatus") + '</label><select id="r-stat">' + selOpts(DB.recvStatuses) + '</select></div></div>' +
+      (recvStockGuard ? '<p class="rsop-draft">' + L("rLogStockOnly") + '</p>' : '') +
+      (recvNewItem ? "" : itemScan("r-code", "r-qty", k.code)) + newToggle + newPanel +
+      '<div class="row"><div><label>' + L("qty") + '</label><input id="r-qty" type="number" min="0" placeholder="' + L("enter") + '" value="' + av(k.qty) + '"></div>' +
+      '<div><label>' + L("rPallets") + ' <span class="muted">(opt.)</span></label><input id="r-pal" type="number" min="0" step="0.1" placeholder="0" value="' + av(k.pal) + '"></div>' +
+      '<div><label>' + L("lot") + ' <span class="muted">(opt.)</span></label><input id="r-lot" autocomplete="off" placeholder="LOT-0701" value="' + av(k.lot) + '"></div></div>' +
+      '<div class="row"><div><label>' + L("rSupplier") + '</label><select id="r-sup"><option value=""></option>' + selOpts(DB.recvSuppliers, k.sup) + '</select></div>' +
+      '<div><label>' + L("rInvoice") + ' <span class="muted">(opt.)</span></label><input id="r-inv" autocomplete="off" placeholder="INV-..." value="' + av(k.inv) + '"></div>' +
+      '<div><label>' + L("rCategory") + '</label><select id="r-cat"><option value=""></option>' + selOpts(DB.recvCategories, k.cat) + '</select></div></div>' +
+      '<div class="row"><div><label>' + L("rCondition") + '</label><select id="r-cond">' + selOpts(DB.conditions, k.cond) + '</select></div>' +
+      '<div><label>' + L("rStatus") + '</label><select id="r-stat">' + selOpts(DB.recvStatuses, k.stat) + '</select></div></div>' +
       '<h3 class="sub2" style="margin-top:12px">' + L("rDeliveryHdr") + '</h3>' +
       '<div class="spodrop"><input type="file" id="r-doc-input" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.docx" style="display:none" onchange="UI.rlFile(this)"><label for="r-doc-input" class="spodroplabel">&#128193; ' + L("rAttachDoc") + '</label></div>' +
       (recvFile ? '<p class="hint">&#128206; ' + esc(recvFile.name) + ' <button class="ghost sm" onclick="UI.rlClear()">' + L("spoCancel") + '</button></p>' : '') +
-      '<div class="row"><div><label>' + L("rCarrier") + ' <span class="muted">(opt.)</span></label><select id="r-carrier"><option value=""></option>' + selOpts(SHIP_CARRIERS) + '</select></div>' +
-      '<div><label>' + L("rProNum") + ' <span class="muted">(opt.)</span></label><input id="r-tracking" autocomplete="off" placeholder="PRO / 1Z..."></div>' +
-      '<div><label>' + L("rQtyOrd") + ' <span class="muted">(opt.)</span></label><input id="r-qord" type="number" min="0" placeholder="0"></div></div>' +
-      '<div><label>' + L("rLogNotes") + ' <span class="muted">(opt.)</span></label><input id="r-notes" autocomplete="off"></div>' +
+      '<div class="row"><div><label>' + L("rCarrier") + ' <span class="muted">(opt.)</span></label><select id="r-carrier"><option value=""' + (!k.carrier ? ' selected' : '') + '></option>' + selOpts(SHIP_CARRIERS, k.carrier) + '</select></div>' +
+      '<div><label>' + L("rProNum") + ' <span class="muted">(opt.)</span></label><input id="r-tracking" autocomplete="off" placeholder="PRO / 1Z..." value="' + av(k.tracking) + '"></div>' +
+      '<div><label>' + L("rQtyOrd") + ' <span class="muted">(opt.)</span></label><input id="r-qord" type="number" min="0" placeholder="0" value="' + av(k.qord) + '"></div></div>' +
+      '<div><label>' + L("rLogNotes") + ' <span class="muted">(opt.)</span></label><input id="r-notes" autocomplete="off" value="' + av(k.notes) + '"></div>' +
       '<p class="hint" style="margin:6px 0 0">' + L("rMergeHint") + '</p>' +
-      locPickerBlock("r-loc") +
-      opField("Adriana") + '<button class="primary" onclick="UI.receive()">' + L("submitReceive") + '</button></div>';
+      locPickerBlock("r-loc", k.loc) +
+      opField(k.op || "Adriana") + '<button class="primary" onclick="UI.receive()">' + L("submitReceive") + '</button></div>';
   }
   function viewPut() {
     return '<div class="card"><h2>' + L("putaway") + '</h2><p class="hint">' + L("putHint") + '</p>' +
@@ -5116,81 +5221,123 @@
       if (!v) { o.innerHTML = ""; return; } const it = DB.itemByCode(v);
       if (it) { o.className = "found"; o.innerHTML = "&#10003; " + L("found") + ": <b>" + it.name + "</b> &middot; " + L("onhand") + " " + fmt(DB.onHand(it.id)) + " " + it.unit; }
       else { o.className = "found notfound"; o.innerHTML = "&#10007; " + L("notfound"); } },
-    recvToggleNew() { recvNewItem = !recvNewItem; render(); },
+    recvToggleNew() {
+      if ($("r-qty")) rememberReceiveDraft(captureReceiveForm());
+      recvNewItem = !recvNewItem;
+      if (recvKeep) recvKeep.newItem = recvNewItem;
+      render();
+    },
     async receive() {
-      const v = id => { const e = $(id); return e ? (e.value || "") : ""; };
-      // Capture form values first. createItem and receive re-render and wipe the inputs.
-      const q = parseFloat(v("r-qty")); const lot = v("r-lot").trim();
-      const loc = v("r-loc").trim().toUpperCase();
-      const meta = { supplier: v("r-sup"), invoice: v("r-inv").trim(), category: v("r-cat"),
-        pallets: v("r-pal"), condition: v("r-cond") || "Good", status: v("r-stat") || "Received", location: loc || "" };
-      const op = $("op") ? $("op").value : opVal();
-      const rlCarrier = v("r-carrier");
-      const rlTrack = v("r-tracking").trim();
-      const rlQord = v("r-qord").trim();
-      const rlNotes = v("r-notes").trim();
-      const file = recvFile;
-      const newCode = recvNewItem ? v("r-newcode").trim() : "";
-      const newName = recvNewItem ? v("r-newname").trim() : "";
-      const newCat = recvNewItem ? v("r-newcat") : "";
-      const newUnit = recvNewItem ? (v("r-newunit").trim() || "ea") : "";
-      const scanCode = v("r-code");
-      if (!(q > 0)) return toast(L("enter"));
-      if (loc && !validLoc(loc)) return toast(L("badloc"));
-      if (loc && BLOCKED_SLOTS.has(loc)) return toast("⛔ " + L("locBlocked"));
-      let it;
-      if (recvNewItem) {
-        if (!newCode || !newName) return toast(L("rniNeed"));
-        const cr = await DB.createItem({ code: newCode, name: newName, category: newCat, unit: newUnit }, op);
-        if (cr.ok === false) return toast(cr.msg || "error");
-        it = cr.item;
-      } else {
-        it = DB.itemByCode(scanCode);
-      }
-      if (!it) return toast(L("notfound"));
-      const r = await DB.receive(it, q, lot, op, meta);
-      // Supplier alone writes the Receiving Log. Carrier, PRO, and a file still do too.
-      // Stock receive above is unchanged. Open that row so the SOP checks are finished once.
-      const supplier = String(meta.supplier || "").trim();
-      const wantLog = !!(supplier || rlCarrier || rlTrack || file);
-      let logId = "";
-      let logErr = "";
-      if (wantLog) {
-        const next = {
-          recv_date: new Date().toISOString().slice(0, 10), supplier: supplier, po_num: meta.invoice || "",
-          carrier: rlCarrier, tracking: rlTrack, contents: it.name || "", lot: lot || "",
-          qty_ordered: rlQord, qty_received: q, condition: meta.condition || "Good",
-          received_by: op, notes: rlNotes, item_id: it.id || it.code || ""
-        };
-        try {
-          const existing = lot ? findRecvByLot(lot) : null;
-          const saved = existing
-            ? await DB.updateReceivingLog(existing.id, dockRecvRec(existing, next), file, op)
-            : await DB.addReceivingLog(next, file, op);
-          if (saved && saved.ok === false) logErr = saved.msg || L("rLogFail");
-          else {
-            logId = (saved && saved.id) || (existing && existing.id) || "";
-            if (!logId && lot) {
-              const again = findRecvByLot(lot);
-              if (again) logId = again.id;
-            }
-            recvFile = null;
+      if (recvBusy) return;
+      recvBusy = true;
+      window.__smkRecvLogTried = false;
+      try {
+        const snap = captureReceiveForm();
+        rememberReceiveDraft(snap);
+        const q = parseFloat(snap.qty); const lot = String(snap.lot || "").trim();
+        const loc = String(snap.loc || "").trim().toUpperCase();
+        const meta = { supplier: snap.sup || "", invoice: String(snap.inv || "").trim(), category: snap.cat || "",
+          pallets: snap.pal || "", condition: snap.cond || "Good", status: snap.stat || "Received", location: loc || "" };
+        const op = snap.op || opVal();
+        const rlCarrier = snap.carrier || "";
+        const rlTrack = String(snap.tracking || "").trim();
+        const rlQord = String(snap.qord || "").trim();
+        const rlNotes = String(snap.notes || "").trim();
+        const file = recvFile;
+        const newCode = recvNewItem ? String(snap.newcode || "").trim() : "";
+        const newName = recvNewItem ? String(snap.newname || "").trim() : "";
+        const newCat = recvNewItem ? (snap.newcat || "") : "";
+        const newUnit = recvNewItem ? (String(snap.newunit || "").trim() || "ea") : "";
+        const scanCode = snap.code || "";
+        if (!(q > 0)) return toast(L("enter"), 4000);
+        if (loc && !validLoc(loc)) return toast(L("badloc"), 4000);
+        if (loc && BLOCKED_SLOTS.has(loc)) return toast("⛔ " + L("locBlocked"), 4000);
+        let it;
+        if (recvNewItem) {
+          if (!newCode || !newName) return toast(L("rniNeed"), 4000);
+          const cr = await DB.createItem({ code: newCode, name: newName, category: newCat, unit: newUnit }, op);
+          if (cr.ok === false) return toast(cr.msg || "error", 6000);
+          it = cr.item;
+        } else {
+          it = DB.itemByCode(scanCode);
+        }
+        if (!it) return toast(L("notfound"), 4000);
+        const supplier = String(meta.supplier || "").trim();
+        const needLog = !!(supplier || rlCarrier || rlTrack || file);
+        if (needLog) {
+          recvLogKeep = logDraftFromReceive(snap, it);
+          window.__smkLogExp = snap.exp || "";
+          rememberLogCoa(logDraftFromReceive(snap, it));
+        }
+        let placed = "";
+        let stockLoc = loc || "";
+        if (needLog && recvStockGuard) {
+          placed = L("rLogStockOnly");
+        } else {
+          let r;
+          try { r = await DB.receive(it, q, lot, op, meta); }
+          catch (e) { return toast(String(e && e.message || e), 7000); }
+          if (!r || r.ok === false) return toast((r && r.msg) || "Not saved", 7000);
+          stockLoc = (r && r.location) || stockLoc;
+          if (needLog) recvStockGuard = true;
+          placed = "+" + fmt(q) + " " + it.name + (stockLoc ? " → " + stockLoc : "");
+        }
+        // Supplier alone writes the Receiving Log. Carrier, PRO, and a file still do too.
+        // Stock receive above is unchanged. Open that row so the SOP checks are finished once.
+        const wantLog = !!(supplier || rlCarrier || rlTrack || file);
+        if (wantLog) {
+          window.__smkRecvLogTried = true;
+          const next = {
+            recv_date: new Date().toISOString().slice(0, 10), supplier: supplier, po_num: meta.invoice || "",
+            carrier: rlCarrier, tracking: rlTrack, contents: it.name || "", lot: lot || "",
+            qty_ordered: rlQord, qty_received: q, condition: meta.condition || "Good",
+            received_by: op, notes: rlNotes, item_id: it.id || it.code || ""
+          };
+          let saved = null;
+          try {
+            const existing = lot ? findRecvByLot(lot) : null;
+            saved = existing
+              ? await DB.updateReceivingLog(existing.id, dockRecvRec(existing, next), file, op)
+              : await DB.addReceivingLog(next, file, op);
+          } catch (e) {
+            recvLogKeep = logDraftFromReceive(snap, it);
+            return toast(placed + ". " + (e && e.message ? e.message : L("rLogFail")), 7000);
           }
-        } catch (e) { logErr = L("rLogFail"); }
+          const logId = (saved && saved.ok !== false && saved.id) ? saved.id : "";
+          if (!logId) {
+            recvLogKeep = logDraftFromReceive(snap, it);
+            return toast(placed + ". " + ((saved && saved.msg) || L("rLogFail")), 7000);
+          }
+          recvStockGuard = false;
+          recvKeep = null;
+          recvLogKeep = null;
+          recvFile = null;
+          window.__smkRecvExp = "";
+          window.__smkPkExp = "";
+          window.__smkLogExp = "";
+          window.__smkRecvCoa = null;
+          window.__smkLogCoa = null;
+          recvSkipCapture = true;
+          puSec = ""; puBay = ""; puLevel = ""; recvNewItem = false;
+          recvEditId = logId;
+          recvFromDock = true;
+          toast(placed + ". " + L("rLogOpened"), 4000);
+          go("recvlog");
+          focusRecvSop();
+          return;
+        }
+        recvStockGuard = false;
+        recvKeep = null;
+        window.__smkRecvExp = "";
+        window.__smkPkExp = "";
+        window.__smkRecvCoa = null;
+        recvSkipCapture = true;
+        puSec = ""; puBay = ""; puLevel = ""; recvNewItem = false;
+        toast(placed, 3000);
+        go("receive");
+      } finally {
+        recvBusy = false;
       }
-      puSec = ""; puBay = ""; puLevel = ""; recvNewItem = false;
-      const placed = "+" + fmt(q) + " " + it.name + (r && r.location ? " → " + r.location : "");
-      if (logId) {
-        recvEditId = logId;
-        recvFromDock = true;
-        toast(placed + ". " + L("rLogOpened"));
-        go("recvlog");
-        focusRecvSop();
-        return;
-      }
-      if (logErr) toast(placed + ". " + logErr);
-      else toast(placed);
-      go("receive");
     },
     // ---- Put-Away location picker (tap Section/Bay/Level, or scan/type the slot) ----
     _puField() { return $("r-loc") || $("p-loc"); },
@@ -5703,49 +5850,67 @@
     rlSort(key) { if (recvSortKey === key) recvSortDir = -recvSortDir; else { recvSortKey = key; recvSortDir = (key === "recv_date") ? -1 : 1; } render(); },
     rlSearch(val) { const q = (val || "").toLowerCase().trim();
       document.querySelectorAll("#rlBody tr").forEach(tr => { const t = tr.getAttribute("data-txt") || ""; tr.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
-    rlEdit(id) { recvEditId = id; recvFromDock = false; recvFile = null; render(); window.scrollTo(0, 0); },
-    rlEditCancel() { recvEditId = null; recvFromDock = false; recvFile = null; render(); },
+    rlEdit(id) { recvEditId = id; recvFromDock = false; recvFile = null; recvLogKeep = null; recvSkipCapture = true; render(); window.scrollTo(0, 0); },
+    rlEditCancel() { recvEditId = null; recvFromDock = false; recvFile = null; recvLogKeep = null; recvSkipCapture = true; render(); },
     async rlSave() {
-      const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
-      const supplier = v("rl-supplier"); if (!supplier) return toast(L("rlSupplier"));
-      const by = opVal();
-      let rec = { recv_date: v("rl-date"), supplier: supplier, po_num: v("rl-po"),
-        carrier: v("rl-carrier"), tracking: v("rl-tracking"), contents: v("rl-contents"), lot: v("rl-lot"),
-        qty_ordered: v("rl-qord"), qty_received: v("rl-qrec"), condition: v("rl-condition"),
-        received_by: v("rl-by"), notes: v("rl-notes") };
-      let gate = { ok: true, rec: rec };
-      if (window.RECVSOP && RECVSOP.prepare) {
-        if (RECVSOP.ensureLoaded) { try { await RECVSOP.ensureLoaded(); } catch (e) {} }
-        gate = RECVSOP.prepare(rec, { id: recvEditId });
-        if (!gate.ok) {
-          if (RECVSOP.showError) RECVSOP.showError(gate.msg);
-          return toast(gate.msg || "Check the receiving checklist");
-        }
-        rec = gate.rec;
-      }
-      let res;
+      if (recvBusy) return;
+      recvBusy = true;
       try {
-        if (recvEditId) { res = await DB.updateReceivingLog(recvEditId, rec, recvFile, by); }
-        else { res = await DB.addReceivingLog(rec, recvFile, by); }
-      } catch (e) { return toast(String(e && e.message || e)); }
-      if (res && res.ok === false) return toast(res.msg || "error");
-      let note = "";
-      let held = false;
-      if (window.RECVSOP && RECVSOP.afterSave) {
-        try {
-          const holdRes = await RECVSOP.afterSave({ id: (res && res.id) || recvEditId, rec: rec, op: by });
-          held = !!(holdRes && holdRes.held);
-          note = (holdRes && holdRes.note) || "";
-        } catch (e) {
-          toast("Receipt saved. HOLD Log write failed. " + String(e && e.message || e));
-          recvEditId = null; recvFromDock = false; recvFile = null; render(); return;
+        const snap = $("rl-supplier") ? captureLogForm() : (recvLogKeep || {});
+        recvLogKeep = snap;
+        window.__smkLogExp = snap.expires_on || "";
+        rememberLogCoa(snap);
+        const supplier = String(snap.supplier || "").trim();
+        if (!supplier) return toast(L("rlSupplier") + " - not saved. The form was kept.", 5000);
+        const by = snap._op || opVal();
+        let rec = { recv_date: snap.recv_date, supplier: supplier, po_num: snap.po_num,
+          carrier: snap.carrier, tracking: snap.tracking, contents: snap.contents, lot: snap.lot,
+          qty_ordered: snap.qty_ordered, qty_received: snap.qty_received, condition: snap.condition,
+          received_by: snap.received_by, notes: snap.notes };
+        let gate = { ok: true, rec: rec };
+        if (window.RECVSOP && RECVSOP.prepare) {
+          if (RECVSOP.ensureLoaded) { try { await RECVSOP.ensureLoaded(); } catch (e) {} }
+          gate = RECVSOP.prepare(rec, { id: recvEditId });
+          if (!gate.ok) {
+            if (RECVSOP.showError) RECVSOP.showError(gate.msg);
+            return toast((gate.msg || "Check the receiving checklist") + " Not saved.", 7000);
+          }
+          rec = gate.rec;
         }
+        let res;
+        try {
+          if (recvEditId) { res = await DB.updateReceivingLog(recvEditId, rec, recvFile, by); }
+          else { res = await DB.addReceivingLog(rec, recvFile, by); }
+        } catch (e) { return toast(String(e && e.message || e), 7000); }
+        const savedId = (res && res.ok !== false && (res.id || recvEditId)) ? (res.id || recvEditId) : "";
+        if (!savedId) return toast((res && res.msg) || L("rLogFail"), 7000);
+        let note = "";
+        let held = false;
+        if (window.RECVSOP && RECVSOP.afterSave) {
+          try {
+            const holdRes = await RECVSOP.afterSave({ id: savedId, rec: rec, op: by });
+            held = !!(holdRes && holdRes.held);
+            note = (holdRes && holdRes.note) || "";
+          } catch (e) {
+            recvEditId = null; recvFromDock = false; recvFile = null; recvLogKeep = null; recvStockGuard = false;
+            window.__smkLogCoa = null;
+            recvSkipCapture = true;
+            toast("Receipt saved. HOLD Log write failed. " + String(e && e.message || e), 7000);
+            render(); return;
+          }
+        }
+        const wasEdit = !!recvEditId;
+        recvEditId = null; recvFromDock = false; recvFile = null; recvLogKeep = null; recvStockGuard = false;
+        window.__smkLogExp = "";
+        window.__smkLogCoa = null;
+        recvSkipCapture = true;
+        let msg = (wasEdit ? L("saved") : L("rlLogged"));
+        if (held) msg += ". ON HOLD";
+        if (note) msg += ". " + note;
+        toast(msg + " ✓", 3000); render();
+      } finally {
+        recvBusy = false;
       }
-      const wasEdit = !!recvEditId; recvEditId = null; recvFromDock = false; recvFile = null;
-      let msg = (wasEdit ? L("saved") : L("rlLogged"));
-      if (held) msg += ". ON HOLD";
-      if (note) msg += ". " + note;
-      toast(msg + " ✓"); render();
     },
     async rlDelete(id) { if (!confirm(L("rlConfirmDel"))) return; await DB.deleteReceivingLog(id, opVal()); toast("✓"); render(); },
     // ---- Continuous Improvement ----
@@ -6427,6 +6592,9 @@
     // PO create / non-PO / reorder-draft forms: inputs exist only in the DOM until saved.
     if (poFormOpen) return true;
     if (active === "purchasing" && (spoView === "create" || spoView === "nonpo" || purchMode === "new")) return true;
+    // Receive and Log receipt keep their values until a confirmed save. A background
+    // refresh used to rebuild the form when the click moved focus onto the button.
+    if ($("r-qty") || $("rl-supplier")) return true;
     const busy = window.SMK_BUSY || [];
     for (let i = 0; i < busy.length; i++) { try { if (busy[i]()) return true; } catch (e) {} }
     // Any other view: if the user is focused in a text field, they're mid-entry -- don't clobber.
@@ -6469,6 +6637,21 @@
     const fld = card.querySelector("select, input"); if (fld) try { fld.focus(); } catch (e) {}
   }
   function render() {
+    if (!recvSkipCapture) {
+      if ($("r-qty")) {
+        rememberReceiveDraft(captureReceiveForm());
+        if (recvKeep && (recvKeep.sup || recvKeep.lot || recvKeep.qty || recvKeep.code || recvKeep.notes || recvFile)) {
+          recvLogKeep = logDraftFromReceive(recvKeep);
+          window.__smkLogExp = recvKeep.exp || "";
+          rememberLogCoa(recvLogKeep);
+        }
+      } else if ($("rl-supplier")) {
+        recvLogKeep = captureLogForm();
+        window.__smkLogExp = recvLogKeep.expires_on || "";
+        rememberLogCoa(recvLogKeep);
+      }
+    }
+    recvSkipCapture = false;
     pendingExternalRender = false;
     _deadCache = null; // recompute dead-stock flags fresh each render
     renderNav(); refreshDatalists();

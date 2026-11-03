@@ -313,7 +313,8 @@
     var existing = document.getElementById("r-exp");
     if (!existing) {
       var hold = document.createElement("div");
-      hold.innerHTML = fieldHtml("r-exp", "", "");
+      var kept = dateISO(root.__smkRecvExp || "");
+      hold.innerHTML = fieldHtml("r-exp", kept, "");
       row.appendChild(hold.firstChild);
       existing = document.getElementById("r-exp");
     }
@@ -330,9 +331,10 @@
     var editing = logFormIsEdit();
     var match = editing ? matchLogFromForm() : null;
     var it = match ? itemById(match.item_id) : null;
-    if (it && !isRawItem(it) && !(match && dateISO(match.expires_on))) return;
+    var kept = !editing ? dateISO(root.__smkLogExp || "") : "";
+    if (it && !isRawItem(it) && !(match && dateISO(match.expires_on)) && !kept) return;
     var hold = document.createElement("div");
-    hold.innerHTML = fieldHtml("rl-exp", match ? dateISO(match.expires_on) : "", match ? match.id : "", match ? match.item_id : "");
+    hold.innerHTML = fieldHtml("rl-exp", match ? dateISO(match.expires_on) : kept, match ? match.id : "", match ? match.item_id : "");
     row.parentNode.insertBefore(hold.firstChild, row.nextSibling);
   }
 

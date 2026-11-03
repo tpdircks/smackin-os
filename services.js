@@ -16,6 +16,7 @@
   var BUCKET = "supplier-pos";
   var LS = "services-local";
   var sb = null, cache = null, loading = false, pendFile = null, editId = null, search = "", svcOpen = false;
+  var draft = null, svcSkipCapture = false;
   var TYPES = ["Uniform Cleaning", "Pest Control", "Waste / Recycling", "Equipment Service", "Cleaning / Janitorial", "Calibration", "Landscaping", "Other"];
 
   function isCloud() { return !!(window.DB && window.DB.mode === "cloud" && window.supabase && cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY); }
@@ -52,9 +53,24 @@
     (document.head || document.documentElement).appendChild(s);
   }
 
+  function captureDraft() {
+    if (!$("svc-date")) return;
+    draft = {
+      svc_date: ($("svc-date") || {}).value || "",
+      service_type: ($("svc-type") || {}).value || "",
+      provider: (($("svc-provider") || {}).value || "").trim(),
+      invoice_num: (($("svc-inv") || {}).value || "").trim(),
+      num_services: ($("svc-num") || {}).value || "",
+      total_cost: ($("svc-cost") || {}).value || "",
+      notes: (($("svc-notes") || {}).value || "").trim(),
+      entered_by: (($("svc-by") || {}).value || "").trim()
+    };
+  }
   function render() {
     styleOnce();
     var host = $("view"); if (!host) return;
+    if (!svcSkipCapture) captureDraft();
+    svcSkipCapture = false;
     if (!cache) {
       host.innerHTML = '<div class="card"><h2>Services Provided</h2><p class="muted">Loading…</p></div>';
       load().then(function () { if (host.getAttribute("data-svc") === "1") render(); }).catch(function (e) {
@@ -64,7 +80,9 @@
     }
     var ed = editId ? (cache.find(function (x) { return String(x.id) === String(editId); }) || {}) : {};
     var editing = !!(editId && ed.id);
+    var src = editing ? ed : (draft || {});
     var av = function (x) { return esc(x == null ? "" : x); };
+    var shownNum = function (v) { return v != null && v !== "" ? v : ""; };
     var opt = function (cur) {
       var chosen = cur || "Uniform Cleaning";
       return TYPES.map(function (t) { return '<option' + (t === chosen ? " selected" : "") + '>' + t + '</option>'; }).join("");
@@ -74,15 +92,15 @@
       '<div class="spodrop"><input type="file" id="svc-file" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.docx" style="display:none" onchange="SERVICES.file(this)">' +
       '<label for="svc-file" class="spodroplabel">&#128193; Attach invoice (optional)</label></div>' +
       (pendFile ? '<p class="hint">&#128206; ' + esc(pendFile.name) + ' <button class="ghost sm" onclick="SERVICES.clearFile()">Cancel</button></p>' : '') +
-      '<div class="row"><div><label>Date</label><input id="svc-date" type="date" value="' + (editing && ed.svc_date ? (ed.svc_date + "").slice(0, 10) : todayISO()) + '"></div>' +
-      '<div><label>Service type</label><select id="svc-type">' + opt(ed.service_type) + '</select></div></div>' +
-      '<div class="row"><div><label>Provider / vendor</label><input id="svc-provider" autocomplete="off" value="' + av(ed.provider) + '"></div>' +
-      '<div><label>Invoice #</label><input id="svc-inv" autocomplete="off" value="' + av(ed.invoice_num) + '"></div></div>' +
-      '<div class="row"><div><label># of services</label><input id="svc-num" type="number" min="0" step="1" oninput="SERVICES.calc()" value="' + (editing && ed.num_services != null ? num(ed.num_services) : "") + '"></div>' +
-      '<div><label>Total cost</label><input id="svc-cost" type="number" min="0" step="0.01" placeholder="0.00" oninput="SERVICES.calc()" value="' + (editing && ed.total_cost != null ? num(ed.total_cost) : "") + '"></div>' +
+      '<div class="row"><div><label>Date</label><input id="svc-date" type="date" value="' + (src.svc_date ? String(src.svc_date).slice(0, 10) : todayISO()) + '"></div>' +
+      '<div><label>Service type</label><select id="svc-type">' + opt(src.service_type) + '</select></div></div>' +
+      '<div class="row"><div><label>Provider / vendor</label><input id="svc-provider" autocomplete="off" value="' + av(src.provider) + '"></div>' +
+      '<div><label>Invoice #</label><input id="svc-inv" autocomplete="off" value="' + av(src.invoice_num) + '"></div></div>' +
+      '<div class="row"><div><label># of services</label><input id="svc-num" type="number" min="0" step="1" oninput="SERVICES.calc()" value="' + shownNum(src.num_services) + '"></div>' +
+      '<div><label>Total cost</label><input id="svc-cost" type="number" min="0" step="0.01" placeholder="0.00" oninput="SERVICES.calc()" value="' + shownNum(src.total_cost) + '"></div>' +
       '<div><label>Unit cost (auto)</label><div class="svc-unit" id="svc-unit">&mdash;</div></div></div>' +
-      '<div><label>Notes (optional)</label><input id="svc-notes" autocomplete="off" value="' + av(ed.notes) + '"></div>' +
-      '<div><label>Entered by</label><input id="svc-by" autocomplete="off" placeholder="Your name" value="' + av(ed.entered_by) + '"></div>' +
+      '<div><label>Notes (optional)</label><input id="svc-notes" autocomplete="off" value="' + av(src.notes) + '"></div>' +
+      '<div><label>Entered by</label><input id="svc-by" autocomplete="off" placeholder="Your name" value="' + av(src.entered_by) + '"></div>' +
       '<button class="primary" onclick="SERVICES.save()">' + (editing ? "Save changes" : "Add service") + '</button>' +
       (editing ? ' <button class="ghost" style="margin-top:14px" onclick="SERVICES.cancel()">Cancel</button>' : '') + '</div>';
 
@@ -117,34 +135,41 @@
   }
 
   function save() {
+    captureDraft();
+    var src = draft || {};
     var rec = {
-      svc_date: ($("svc-date") || {}).value || todayISO(),
-      service_type: ($("svc-type") || {}).value || "Other",
-      provider: (($("svc-provider") || {}).value || "").trim(),
-      invoice_num: (($("svc-inv") || {}).value || "").trim(),
-      num_services: num(($("svc-num") || {}).value),
-      total_cost: num(($("svc-cost") || {}).value),
-      notes: (($("svc-notes") || {}).value || "").trim(),
-      entered_by: (($("svc-by") || {}).value || "").trim()
+      svc_date: src.svc_date || todayISO(),
+      service_type: src.service_type || "Other",
+      provider: src.provider || "",
+      invoice_num: src.invoice_num || "",
+      num_services: num(src.num_services),
+      total_cost: num(src.total_cost),
+      notes: src.notes || "",
+      entered_by: src.entered_by || ""
     };
     rec.unit_cost = rec.num_services > 0 ? Math.round((rec.total_cost / rec.num_services) * 100) / 100 : 0;
     var c = client();
     if (!c) {
       if (window.DB && window.DB.mode === "cloud") { toast("Not connected to cloud. Not saved."); return; }
       var arr = lsGet();
-      if (editId) { var i = arr.findIndex(function (x) { return String(x.id) === String(editId); }); if (i >= 0) arr[i] = Object.assign(arr[i], rec); }
-      else { rec.id = uid(); rec.created_at = new Date().toISOString(); arr.unshift(rec); }
-      lsSet(arr); cache = arr; editId = null; pendFile = null; toast("Saved (this device)"); render(); return;
+      if (editId) {
+        var i = arr.findIndex(function (x) { return String(x.id) === String(editId); });
+        if (i < 0) { toast("Not saved. That service row is not on this device. The form was kept."); return; }
+        arr[i] = Object.assign(arr[i], rec);
+      } else { rec.id = uid(); rec.created_at = new Date().toISOString(); arr.unshift(rec); }
+      lsSet(arr); cache = arr; editId = null; pendFile = null; draft = null; svcSkipCapture = true; toast("Saved (this device)"); render(); return;
     }
     toast("Saving…");
     uploadThen(c, rec).then(function (rec2) {
-      var q = editId ? c.from("services_log").update(rec2).eq("id", editId) : c.from("services_log").insert(rec2);
+      var q = editId ? c.from("services_log").update(rec2).eq("id", editId).select("id") : c.from("services_log").insert(rec2).select("id");
       return q.then(function (r) {
-        if (r && r.error) { toast("Error: " + r.error.message); return; }
-        cache = null; editId = null; pendFile = null;
+        if (r && r.error) { toast("Not saved. " + r.error.message + " The form was kept."); return; }
+        var id = (r && r.data && r.data[0] && r.data[0].id) || (editId || "");
+        if (!id) { toast("Not saved. Services did not confirm a row. The form was kept."); return; }
+        cache = null; editId = null; pendFile = null; draft = null; svcSkipCapture = true;
         return load().then(function () { toast("Saved"); render(); });
       });
-    }).catch(function (e) { toast("Error: " + (e && e.message ? e.message : e)); });
+    }).catch(function (e) { toast("Not saved. " + (e && e.message ? e.message : e) + " The form was kept."); });
   }
 
   function uploadThen(c, rec) {
@@ -165,8 +190,8 @@
     save: save, calc: calc,
     file: function (inp) { pendFile = inp.files && inp.files[0] ? inp.files[0] : null; render(); },
     clearFile: function () { pendFile = null; render(); },
-    edit: function (id) { editId = id; pendFile = null; render(); window.scrollTo({ top: 0, behavior: "smooth" }); },
-    cancel: function () { editId = null; pendFile = null; render(); },
+    edit: function (id) { editId = id; pendFile = null; draft = null; svcSkipCapture = true; render(); window.scrollTo({ top: 0, behavior: "smooth" }); },
+    cancel: function () { editId = null; pendFile = null; draft = null; svcSkipCapture = true; render(); },
     del: function (id) {
       if (!confirm("Remove this service entry?")) return;
       var c = client();
