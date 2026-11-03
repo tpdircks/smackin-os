@@ -141,11 +141,11 @@ assert(homes.indexOf('trace: "elog"') >= 0, "dept tool");
 assert(homes.indexOf('"trace", "trElog", "trLabels"') >= 0, "quality tab");
 assert(homes.indexOf('"fglots", "trElog"') >= 0, "fulfillment tab");
 assert(index.indexOf('src="ecom-lot-log.js?b=1"') >= 0 && index.indexOf("ecom-lot-log.js") < index.indexOf("trace.js"), "script order");
-assert(index.indexOf('src="trace.js?b=19"') >= 0, "trace cache bust");
+assert(index.indexOf('src="trace.js?b=20"') >= 0, "trace cache bust");
 assert(index.indexOf('src="trace-recall.js?b=2"') >= 0, "recall cache bust");
 assert(index.indexOf('src="dept-homes.js?b=30"') >= 0, "dept homes cache bust");
-assert(sw.indexOf('const CACHE = "smackin-inv-v269"') >= 0 && sw.indexOf("./ecom-lot-log.js") >= 0, "cache and asset");
-assert(read("build-id.txt").trim() === "smackin-inv-v269", "build id");
+assert(sw.indexOf('const CACHE = "smackin-inv-v270"') >= 0 && sw.indexOf("./ecom-lot-log.js") >= 0, "cache and asset");
+assert(read("build-id.txt").trim() === "smackin-inv-v270", "build id");
 
 if (failed) {
   console.error(failed + " failed");

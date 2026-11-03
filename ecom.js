@@ -6,7 +6,7 @@
     "Cheeseburger", "PCA Pizza", "Good Good Salt & Vinegar", "Honey BBQ (A-Rod)", "Salsa", "Taco", "Guacamole",
     "Chili Cheese Dog", "Blueberry Pie", "Birthday Cake", "Mexican Street Corn", "Nashville Hot",
     "Bacon Mac & Cheese", "Korean BBQ (King of Juco)", "S'mores", "Teriyaki (Ana Bruni)", "Sweet Thai Chili",
-    "Loaded Potato", "Spicy Queso", "Chili Lime", "Ketchup"
+    "Loaded Potato", "Spicy Queso", "Chili Lime", "Ketchup", "Cotton Candy"
   ];
   const CORE11 = FLAVORS.slice(0, 11);
   const DESC_RULES = [
@@ -35,6 +35,7 @@
     [/spicy queso/i, "Spicy Queso"],
     [/chili lime/i, "Chili Lime"],
     [/ketchup/i, "Ketchup"],
+    [/cotton candy/i, "Cotton Candy"],
     [/s'?mores/i, "S'mores"],
     [/teriyaki/i, "Teriyaki (Ana Bruni)"],
     [/sour cream/i, "Sour Cream & Onion"],
