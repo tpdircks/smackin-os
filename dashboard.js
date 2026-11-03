@@ -13,7 +13,8 @@
      - Inbound: open and partially received supplier_pos (po-status.js) plus
        legacy purchase_orders still ordered or partial. Closed, received, and
        cancelled POs are out. [[STATUS:...]] notes show as a pill on the PO.
-   No writes. No timers.
+   Layout is a section board (dept-density.css): stock, pulled orders,
+   inbound, and ops pulse. Same data as before. No writes. No refresh timer.
    ========================================================================== */
 (function () {
   "use strict";
@@ -104,7 +105,7 @@
       ".df-pill{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.3px;padding:2px 7px;border-radius:999px;color:#fff;vertical-align:middle}",
       ".df-out{background:#B52024}.df-low{background:#E39412;color:#1a1204}.df-open{background:#1F3864}.df-ship{background:#2E6FB5}.df-done{background:#5e6b7a}",
       "table.df{width:100%;border-collapse:collapse}",
-      "table.df.df-wide{min-width:760px}",
+      "table.df.df-wide{min-width:0}",
       "table.df th{font-size:12px;text-align:left;color:#3d4c5e;font-weight:800;padding:6px 8px;border-bottom:1px solid var(--line,#d7dde6);position:sticky;top:0;background:#fff}",
       "table.df td{padding:7px 8px;border-bottom:1px solid #eef2f6;vertical-align:top;font-size:14px}",
       "table.df tr.df-row-out td{background:#F8D0CC}",
@@ -252,18 +253,18 @@
 
   function orderTable(list, capId) {
     if (!list.length) return "";
-    var head = '<table class="df df-wide"><thead><tr><th>Customer</th><th>PO / order</th><th>Status</th><th>Ship / due</th><th>Flavors</th></tr></thead><tbody>';
+    var head = '<table class="df df-wide"><thead><tr><th>Customer</th><th>Status</th><th>Ship / flavors</th></tr></thead><tbody>';
     var body = list.map(function (r, i) {
       var hide = i >= SHOW_CAP ? ' data-df-extra="1" hidden' : "";
-      var id = r.oid ? '<div class="df-meta">' + esc(r.oid) + '</div>' : "";
+      var id = r.oid ? " · " + esc(r.oid) : "";
       var when = slcClock(r.at);
       var src = (r.source ? esc(r.source) : "") + (when ? (r.source ? " · " : "") + esc(when) : "");
       return '<tr' + hide + '><td><div class="df-name">' + esc(r.customer || "-") + '</div>' +
-        (src ? '<div class="df-meta">' + src + '</div>' : "") + '</td>' +
-        '<td><b>' + esc(r.po || "-") + '</b>' + id + '</td>' +
+        '<div class="df-meta"><b>' + esc(r.po || "-") + '</b>' + id + (src ? " · " + src : "") + '</div></td>' +
         '<td>' + statusPill(r.status) + '</td>' +
-        '<td>' + esc(r.ship || "-") + '</td>' +
-        '<td>' + (r.flavors ? esc(r.flavors) : '<span class="df-meta">No flavor lines on the demand board</span>') + '</td></tr>';
+        '<td><div>' + esc(r.ship || "-") + '</div>' +
+        (r.flavors ? '<div class="df-meta">' + esc(r.flavors) + '</div>' : '<div class="df-meta">No flavor lines on the demand board</div>') +
+        '</td></tr>';
     }).join("");
     var more = list.length > SHOW_CAP
       ? '<button type="button" class="df-more" onclick="DASHBOARD.more(this)">' + tx({ en: "Show all " + list.length, es: "Ver los " + list.length, pt: "Ver todos os " + list.length }) + '</button>'
@@ -394,18 +395,17 @@
 
   function inboundTable(list) {
     if (!list.length) return "";
-    var head = '<table class="df df-wide"><thead><tr><th>PO</th><th>Vendor</th><th>Ordered</th><th>Still open</th><th>Expected</th></tr></thead><tbody>';
+    var head = '<table class="df df-wide"><thead><tr><th>PO</th><th>Still open</th><th>Expected</th></tr></thead><tbody>';
     var body = list.map(function (r, i) {
       var hide = i >= SHOW_CAP ? ' data-df-extra="1" hidden' : "";
       var tot = "";
       var totNum = parseFloat(String(r.total == null ? "" : r.total).replace(/[^0-9.\-]/g, ""));
-      if (totNum > 0) tot = '<div class="df-meta">$' + totNum.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</div>';
+      if (totNum > 0) tot = " · $" + totNum.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       var pills = "";
       if (r.partial) pills += ' <span class="pill partial fc-chip fc-partial">Partially received</span>';
       if (r.statusLabel) pills += ' <span class="pill status fc-chip ' + chipKind(r.statusLabel) + '">' + esc(r.statusLabel) + '</span>';
-      return '<tr' + hide + '><td><b>' + esc(r.num || "-") + '</b>' + pills + tot + '</td>' +
-        '<td>' + esc(r.vendor || "-") + '</td>' +
-        '<td>' + esc(r.date || "-") + '</td>' +
+      return '<tr' + hide + '><td><b>' + esc(r.num || "-") + '</b>' + pills +
+        '<div class="df-meta">' + esc(r.vendor || "-") + (r.date ? " · " + esc(r.date) : "") + tot + '</div></td>' +
         '<td>' + lineBits(r.lines) + '</td>' +
         '<td>' + esc(r.expect || "-") + '</td></tr>';
     }).join("");
@@ -465,9 +465,9 @@
         en: "Retail " + retail.length + " · E-Commerce " + ecom.length + ". These are not added together.",
         es: "Retail " + retail.length + " · E-Commerce " + ecom.length + ". No se suman.",
         pt: "Varejo " + retail.length + " · E-Commerce " + ecom.length + ". Nao se somam."
-      }) + '</p>' +
-        '<p class="df-sub">Retail</p>' + (retail.length ? orderTable(retail, "df-" + which + "-retail") : '<p class="df-empty">' + tx({ en: "No retail orders pulled.", es: "Ninguna orden retail.", pt: "Nenhum pedido de varejo." }) + '</p>') +
-        '<p class="df-sub">E-Commerce</p>' + (ecom.length ? orderTable(ecom, "df-" + which + "-ecom") : '<p class="df-empty">' + tx({ en: "No e-commerce orders pulled.", es: "Ninguna orden e-commerce.", pt: "Nenhum pedido de e-commerce." }) + '</p>');
+      }) + '</p><div class="df-lanes">' +
+        '<div class="df-lane"><p class="df-sub">Retail</p>' + (retail.length ? orderTable(retail, "df-" + which + "-retail") : '<p class="df-empty">' + tx({ en: "No retail orders pulled.", es: "Ninguna orden retail.", pt: "Nenhum pedido de varejo." }) + '</p>') + '</div>' +
+        '<div class="df-lane"><p class="df-sub">E-Commerce</p>' + (ecom.length ? orderTable(ecom, "df-" + which + "-ecom") : '<p class="df-empty">' + tx({ en: "No e-commerce orders pulled.", es: "Ninguna orden e-commerce.", pt: "Nenhum pedido de e-commerce." }) + '</p>') + '</div></div>';
     }
     return '<div class="card">' + head(title + ' <span class="df-meta">' + esc(pretty(day)) + '</span>', go("ordersretail", "Retail") + go("ordersecom", "E-Commerce") + go("demandboard", "Demand")) + body + '</div>';
   }
@@ -602,18 +602,49 @@
 
     var note = '<p class="df-note">Pulled means the order was saved into Smackin OS that SLC day. The ship date on the row is not the pull day. Flavor totals come from the demand board for that PO.</p>';
 
-    return banner +
-      '<div class="card df-lead"><h2>' + tx({ en: "Dashboard", es: "Panel", pt: "Painel" }) + '</h2>' +
+    function section(area, title, inner) {
+      return '<section class="dept-section" data-area="' + area + '"><h3 class="dept-sec">' + title + "</h3>" + inner + "</section>";
+    }
+
+    var lead = '<div class="card df-lead"><div class="df-lead-copy"><h2>' + tx({ en: "Dashboard", es: "Panel", pt: "Painel" }) + '</h2>' +
       '<p class="hint">' + tx({
         en: "Start here: stockouts, past-due demand, and inbound that still needs a receive or a status check.",
         es: "Empiece aqui: agotados, demanda vencida y entrada que aun hay que recibir o revisar.",
         pt: "Comece aqui: esgotados, demanda vencida e entrada que ainda precisa de recebimento ou revisao."
-      }) + "</p>" + counts + "</div>" +
-      stockCard("out", split.out) +
-      pastDueCard(late) +
-      '<div class="card" id="df-inbound">' + head(tx({ en: "Inbound still open", es: "Entrada aun abierta", pt: "Entrada ainda aberta" }), go("purchasing", "Purchasing") + go("expreceipts", tx({ en: "Receive", es: "Recibir", pt: "Receber" }))) + inboundBody + "</div>" +
-      '<div id="df-also">' + stockCard("low", split.low) + orderCard("today", today, pulled, pulled) + orderCard("yest", yday, pulled, pulled) + "</div>" +
-      note;
+      }) + "</p></div>" + counts + "</div>";
+
+    var stock = section("stock", tx({ en: "Stock exceptions", es: "Excepciones de stock", pt: "Excecoes de estoque" }),
+      '<div class="dept-grid">' + stockCard("out", split.out) + stockCard("low", split.low) + "</div>");
+    var orders = section("orders", tx({ en: "Orders pulled", es: "Ordenes entradas", pt: "Pedidos entradas" }),
+      '<div class="dept-grid">' + orderCard("yest", yday, pulled, pulled) + orderCard("today", today, pulled, pulled) + "</div>");
+    var inbound = section("inbound", tx({ en: "Inbound / Purchasing", es: "Entrada / Compras", pt: "Entrada / Compras" }),
+      '<div class="card" id="df-inbound">' + head(tx({ en: "Inbound still open", es: "Entrada aun abierta", pt: "Entrada ainda aberta" }), go("purchasing", "Purchasing") + go("expreceipts", tx({ en: "Receive", es: "Recibir", pt: "Receber" }))) + inboundBody + "</div>");
+    var pulse = section("pulse", tx({ en: "Ops pulse", es: "Pulso operativo", pt: "Pulso operacional" }),
+      pastDueCard(late) + note);
+
+    scheduleFit();
+    return banner +
+      '<div class="dept-board df-board" id="df-board">' + lead + stock + orders + inbound + pulse + "</div>";
+  }
+
+  function fitBoard() {
+    var board = document.getElementById("df-board");
+    if (!board || !board.getBoundingClientRect) return;
+    var top = board.getBoundingClientRect().top;
+    if (!(top > 48)) top = 48;
+    board.style.setProperty("--df-top", Math.round(top + 16) + "px");
+  }
+  function scheduleFit() {
+    var run = function () { try { fitBoard(); } catch (eFit) {} };
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(function () { run(); requestAnimationFrame(run); });
+    } else {
+      setTimeout(run, 0);
+    }
+  }
+  if (!window.__dfFit) {
+    window.__dfFit = true;
+    window.addEventListener("resize", scheduleFit);
   }
 
   window.DASHBOARD = {
