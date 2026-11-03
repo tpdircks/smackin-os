@@ -1,5 +1,5 @@
 /* ============================================================================
-   Lot Trace & Scan  (trace.js)  b=19
+   Lot Trace & Scan  (trace.js)  b=20
    One scan chain from the dock to the customer, built for SQF traceability.
 
      RECEIVE   raw material in -> our own RM label per pallet/box/roll (supplier lot, exp)
@@ -50,7 +50,10 @@
   var WRITE_STOCK = false;            // do not write stock, racks, or Adriana's counts
 
   // ---- flavor master (Allen's Updated Flavor Codes, 2026-08-04) ----------------
-  // alg: A1 = none, A2 = milk, A3 = multiple (detail listed)
+  // L53-L59 plus L60, L61, L63 from Lot Codes.xlsx (Troy, ~2026-09-30).
+  // alg: A1 = none, A2 = milk, A3 = multiple (detail listed). Blank alg = not on the sheet.
+  // L54 is Strawberry Cheesecake-Flash. Sweet Thai Chili stays L39. L19 stays Honey Sriracha.
+  // A01, A18, and A23 stay as legacy codes. L62 (second French Onion Soup) is omitted.
   var FLAVORS = [
     ["S01", "OG Original", "A1", ""], ["S02", "Cinnamon Churro", "A2", "Milk"], ["S03", "Backyard BBQ", "A2", "Milk"],
     ["S04", "Garlic Parmesan", "A2", "Milk"], ["S05", "Dill Pickle", "A1", ""], ["S06", "Cracked Pepper", "A1", ""],
@@ -69,6 +72,11 @@
     ["L45", "Honey Mustard", "A1", ""], ["L46", "Dill Ranch", "A2", "Milk"], ["L47", "Dijon Ranch", "A2", "Milk"],
     ["L48", "Fried Chicken", "A1", ""], ["L49", "Flame Grilled Steak", "A1", ""], ["L50", "Jalapeno Ranch", "A2", "Milk"],
     ["L51", "Pumpkin Spice", "", ""], ["L52", "French Onion Soup", "", ""],
+    ["L53", "Loaded Nacho - Pablo", "A3", "Milk, Soy"], ["L54", "Strawberry Cheesecake-Flash", "A2", "Milk"],
+    ["L55", "Bacon Jalapeno", "A2", "Milk"], ["L56", "Cotton Candy", "A1", ""],
+    ["L57", "Birthday Cake", "A2", "Milk"], ["L58", "Nashville Hot", "A1", ""],
+    ["L59", "Mexican Street Corn", "A2", "Milk"],
+    ["L60", "Brisket", "", ""], ["L61", "Glazed Donut", "", ""], ["L63", "Beer Brat", "", ""],
     ["A01", "Nashville Hot", "A1", ""], ["A18", "Birthday Cake", "A3", "Milk, Wheat, Soy, Egg"], ["A23", "Mexican Street Corn", "A2", "Milk"]
   ].map(function (f) { return { code: f[0], name: f[1], alg: f[2], algTxt: f[3] }; });
   function flavorBy(code) { code = String(code || "").toUpperCase(); for (var i = 0; i < FLAVORS.length; i++) if (FLAVORS[i].code === code) return FLAVORS[i]; return null; }

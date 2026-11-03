@@ -38,6 +38,9 @@
     L42: "Cheddar Sour Cream", L43: "Funnel Cake", L44: "Chipotle Ranch", L45: "Honey Mustard",
     L46: "Dill Ranch", L47: "Dijon Ranch", L48: "Fried Chicken", L49: "Flame Grilled Steak",
     L50: "Jalapeno Ranch", L51: "Pumpkin Spice", L52: "French Onion Soup",
+    L53: "Loaded Nacho - Pablo", L54: "Strawberry Cheesecake-Flash", L55: "Bacon Jalapeno",
+    L56: "Cotton Candy", L57: "Birthday Cake", L58: "Nashville Hot",
+    L59: "Mexican Street Corn", L60: "Brisket", L61: "Glazed Donut", L63: "Beer Brat",
     A01: "Nashville Hot", A18: "Birthday Cake", A23: "Mexican Street Corn"
   };
 

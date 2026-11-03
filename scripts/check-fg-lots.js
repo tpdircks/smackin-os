@@ -3,6 +3,7 @@
 
 var fs = require("fs");
 var path = require("path");
+var vm = require("vm");
 var fg = require("../fg-lots.js");
 
 var failed = 0;
@@ -124,6 +125,63 @@ assert(fg.healthLine({ count: 0, latest: "", fg: 0 }, "en").indexOf("none") >= 0
 assert(fg.healthLine({ count: 4, latest: "2026-10-30T18:02:00Z", fg: 3 }, "en").indexOf("trace_labels: 4") >= 0, "live count");
 assert(fg.healthLine({ count: null }, "en").indexOf("could not read") >= 0, "read failure");
 
+var LOT_ADDED = [
+  ["L53", "Loaded Nacho - Pablo", "A3", "Milk, Soy"],
+  ["L54", "Strawberry Cheesecake-Flash", "A2", "Milk"],
+  ["L55", "Bacon Jalapeno", "A2", "Milk"],
+  ["L56", "Cotton Candy", "A1", ""],
+  ["L57", "Birthday Cake", "A2", "Milk"],
+  ["L58", "Nashville Hot", "A1", ""],
+  ["L59", "Mexican Street Corn", "A2", "Milk"],
+  ["L60", "Brisket", "", ""],
+  ["L61", "Glazed Donut", "", ""],
+  ["L63", "Beer Brat", "", ""]
+];
+var traceSrc = read("trace.js");
+var flavStart = traceSrc.indexOf("var FLAVORS = [");
+var flavEnd = traceSrc.indexOf("].map(function (f)", flavStart);
+assert(flavStart >= 0 && flavEnd > flavStart, "trace flavor table");
+var traceFlavors = vm.runInNewContext(traceSrc.slice(flavStart + "var FLAVORS = ".length, flavEnd + 1));
+function traceBy(code) {
+  for (var i = 0; i < traceFlavors.length; i++) if (traceFlavors[i][0] === code) return traceFlavors[i];
+  return null;
+}
+var seenCode = {};
+traceFlavors.forEach(function (row) {
+  assert(!seenCode[row[0]], "duplicate flavor code " + row[0]);
+  seenCode[row[0]] = 1;
+});
+assert(traceBy("L19") && traceBy("L19")[1] === "Honey Sriracha" && traceBy("L19")[2] === "A1", "L19 stays Honey Sriracha");
+assert(traceBy("L39") && traceBy("L39")[1] === "Sweet Thai Chili", "L39 stays Sweet Thai Chili");
+assert(traceBy("S01") && traceBy("S01")[1] === "OG Original", "S01 stays");
+assert(traceBy("L52") && traceBy("L52")[1] === "French Onion Soup" && traceBy("L52")[2] === "", "L52 allergen stays blank");
+assert(traceBy("A18") && traceBy("A18")[2] === "A3" && traceBy("A18")[3] === "Milk, Wheat, Soy, Egg", "A18 legacy Birthday Cake");
+assert(traceBy("A01") && traceBy("A01")[1] === "Nashville Hot", "A01 legacy stays");
+assert(traceBy("A23") && traceBy("A23")[1] === "Mexican Street Corn", "A23 legacy stays");
+assert(!traceBy("L62"), "L62 French Onion duplicate is not added");
+LOT_ADDED.forEach(function (row) {
+  var hit = traceBy(row[0]);
+  assert(hit && hit[1] === row[1] && hit[2] === row[2] && hit[3] === row[3], "trace " + row[0] + " " + (hit && hit.join("|")));
+  assert(fg.flavorName(row[0]) === row[1], "fg-lots " + row[0]);
+});
+assert(fg.flavorName("L19") === "Honey Sriracha", "fg-lots L19");
+assert(fg.flavorName("L39") === "Sweet Thai Chili", "fg-lots L39");
+assert(fg.flavorName("L62") === "L62", "fg-lots has no L62 name");
+assert(traceBy("L5641".slice(0, 3))[1] === "Cotton Candy", "lot prefix L56 resolves Cotton Candy");
+assert(traceBy("L1941".slice(0, 3))[1] === "Honey Sriracha", "lot prefix L19 resolves Honey Sriracha");
+
+var ecomCtx = { console: console };
+ecomCtx.window = ecomCtx;
+ecomCtx.globalThis = ecomCtx;
+vm.createContext(ecomCtx);
+vm.runInContext(read("ecom.js"), ecomCtx, { filename: "ecom.js" });
+assert(ecomCtx.ECOM.FLAVORS[0] === "OG Original" && ecomCtx.ECOM.FLAVORS[10] === "Sour Cream & Onion", "core 11 unchanged");
+assert(ecomCtx.ECOM.FLAVORS.indexOf("Cotton Candy") > 10, "Cotton Candy is not a core flavor");
+var candy = ecomCtx.ECOM.mapRow("SS-X-4OZ-12", "Cotton Candy (12 Bag)", 2);
+assert(candy && candy.length === 1 && candy[0].flavor === "Cotton Candy" && candy[0].size === "4oz" && candy[0].bags === 24, "ShipStation desc maps Cotton Candy");
+var churro = ecomCtx.ECOM.mapRow("SS-CC-4OZ-6", "", 1);
+assert(churro && churro[0].flavor === "Cinnamon Churro", "CC sku stays Cinnamon Churro");
+
 var src = read("fg-lots.js");
 var trace = read("trace.js");
 var homes = read("dept-homes.js");
@@ -151,14 +209,14 @@ assert(homes.indexOf('"produce", "fglots"') >= 0, "fulfillment subtab");
 assert(homes.indexOf('subs: ["pmac", "fglots"') >= 0, "pmac subtab");
 assert(homes.indexOf('"trLabels", "fglots"') >= 0, "quality subtab");
 assert(health.indexOf('t: "trace_labels"') >= 0, "data health source");
-assert(html.indexOf('src="fg-lots.js?b=1"') >= 0 && html.indexOf("fg-lots.js") < html.indexOf("trace.js"), "script order");
-assert(html.indexOf('src="trace.js?b=19"') >= 0, "trace cache bust");
+assert(html.indexOf('src="fg-lots.js?b=2"') >= 0 && html.indexOf("fg-lots.js") < html.indexOf("trace.js"), "script order");
+assert(html.indexOf('src="trace.js?b=20"') >= 0, "trace cache bust");
 assert(html.indexOf('src="dept-homes.js?b=30"') >= 0, "dept homes cache bust");
 assert(html.indexOf('src="data-health.js?b=5"') >= 0, "data health cache bust");
-assert(sw.indexOf('const CACHE = "smackin-inv-v269"') >= 0 && sw.indexOf("./fg-lots.js") >= 0, "cache and asset");
-assert(read("build-id.txt").trim() === "smackin-inv-v269", "build id");
-assert(html.indexOf('var EMBEDDED = "smackin-inv-v269"') >= 0, "index embedded");
-assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v269"') >= 0, "escape embedded");
+assert(sw.indexOf('const CACHE = "smackin-inv-v270"') >= 0 && sw.indexOf("./fg-lots.js") >= 0, "cache and asset");
+assert(read("build-id.txt").trim() === "smackin-inv-v270", "build id");
+assert(html.indexOf('var EMBEDDED = "smackin-inv-v270"') >= 0, "index embedded");
+assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v270"') >= 0, "escape embedded");
 
 if (failed) {
   console.error(failed + " failed");
