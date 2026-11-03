@@ -1,35 +1,34 @@
 /* slc-count-latest.js
    Newest finished-bag block from Adriana's Inventory SLC 2026 sheet.
    File id: 1I-Bz0Eg80AQt8lI88OoP8racbBCAGvznzZX8p-GI17w
-   Count date on the bag tabs: 2026-10-27.
-   Limited Flavors 1.5 oz newest column-A date is 2026-10-26 (no 10/27 block).
+   Count date on the 4 oz and 1.5 oz bag tabs: 2026-11-02 (sheet header 11/2/26).
+   4 oz block rows 29084-29158. 1.5 oz block rows 8614-8652.
    4oz core: column F on the S-id header row.
    4oz LTO: sum of column F for that flavor (several lot lines, each with its own column F).
-   1.5oz and 2.75oz: header current total. On this block column F equals that total.
-   Limited 1.5oz: column E current total, summed when several lines share one OS code.
-   Warehouse tab is supplies. Only sheet id 160086 is included, mapped to BOX-160086.
-   Its count is column E (current quantity). Column F there is per pallet.
+   1.5oz: header current total (column G).
+   No 11/02 bag value is above 100,000.
+   The 2.75 oz, Limited Flavors 1.5 oz and Warehouse rows below are the earlier
+   10/26-10/27 rows, kept for reference. inv-sync-1102.js does not apply them.
    Rows with code null are on the sheet and have no OS code. They are not guessed.
-   Paper stays the source until a reviewer applies a bag row from the panel.
 */
 window.SLC_COUNT = {
-  "date": "2026-10-27",
+  "date": "2026-11-02",
   "source": "1I-Bz0Eg80AQt8lI88OoP8racbBCAGvznzZX8p-GI17w",
   "sheet": "Inventory SLC 2026",
   "blocks": {
     "Inventory Bags 4 oz": {
       "rows": [
-        29009,
-        29083
+        29084,
+        29158
       ],
-      "date": "2026-10-27"
+      "date": "2026-11-02"
     },
     "Inventory Bags 1.5 oz": {
       "rows": [
-        8575,
-        8613
+        8614,
+        8652
       ],
-      "date": "2026-10-27"
+      "date": "2026-11-02"
     },
     "Inventory Bags 2.75 oz": {
       "rows": [
@@ -57,139 +56,142 @@ window.SLC_COUNT = {
   "rows": [
     {
       "code": "B4-S01",
-      "desc": "OG Original",
-      "sheetQty": 14300,
+      "desc": "OG\" ORIGINAL",
+      "sheetQty": 6400,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29009
+        29084
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B4-S02",
-      "desc": "Cinnamon Churro",
-      "sheetQty": 8600,
+      "desc": "CINNAMON CHURRO",
+      "sheetQty": 8000,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29012
+        29087
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": [
         "multi-lot"
       ]
     },
     {
       "code": "B4-S03",
-      "desc": "Backyard BBQ",
-      "sheetQty": 8100,
+      "desc": "BBQ",
+      "sheetQty": 1800,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29015
+        29090
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B4-S04",
-      "desc": "Garlic Parmesan",
-      "sheetQty": 16700,
+      "desc": "GARLIC PARMESAN",
+      "sheetQty": 28000,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29018
+        29093
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": [
         "multi-lot"
       ]
     },
     {
       "code": "B4-S05",
-      "desc": "Dill Pickle",
-      "sheetQty": 900,
+      "desc": "DILL PICKLE",
+      "sheetQty": 0,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29021
+        29096
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B4-S06",
-      "desc": "Cracked Pepper",
-      "sheetQty": 5900,
+      "desc": "CRACKED PEPPER",
+      "sheetQty": 5400,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29024
+        29099
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B4-S07",
-      "desc": "Cheddar Jalapeno",
-      "sheetQty": 29100,
+      "desc": "CHEDDAR JALAPENO",
+      "sheetQty": 22700,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29027
+        29102
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B4-S08",
-      "desc": "Ranch",
-      "sheetQty": 18400,
+      "desc": "RANCH",
+      "sheetQty": 12600,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29030
+        29105
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B4-S09",
-      "desc": "Maple Brown Sugar",
-      "sheetQty": 10800,
+      "desc": "MAPLE BROWN SUGAR",
+      "sheetQty": 11500,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29033
+        29108
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B4-S10",
-      "desc": "Lemon Pepper",
-      "sheetQty": 7600,
+      "desc": "LEMON PEPPER",
+      "sheetQty": 7000,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29037
+        29112
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B4-S11",
-      "desc": "Sour Cream & Onion",
-      "sheetQty": 7600,
+      "desc": "SOUR CREAM & ONION",
+      "sheetQty": 7200,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29040
+        29115
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "TMP-B4-BACONJALAPENO",
       "desc": "BACON JALAPENO SPORTS",
-      "sheetQty": 4200,
+      "sheetQty": 26400,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29043
+        29118,
+        29119
       ],
-      "sheetDate": "2026-10-27",
-      "flags": []
+      "sheetDate": "2026-11-02",
+      "flags": [
+        "multi-lot"
+      ]
     },
     {
       "code": "B4-L13",
@@ -197,53 +199,53 @@ window.SLC_COUNT = {
       "sheetQty": 0,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29044
+        29120
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B4-L10",
       "desc": "BIRTHDAY CAKE",
-      "sheetQty": 21900,
+      "sheetQty": 20800,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29045
+        29121
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B4-L09",
       "desc": "BLUEBERRY PIE",
-      "sheetQty": 6300,
+      "sheetQty": 6800,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29046
+        29122
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "TMP-B4-CHEDDARSOURCREAM",
       "desc": "CHEDDAR SOUR CREAM",
-      "sheetQty": 3200,
+      "sheetQty": 2300,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29047
+        29123
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B4-L01",
       "desc": "CHEESEBURGUER",
-      "sheetQty": 17800,
+      "sheetQty": 13700,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29048
+        29124
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
@@ -252,53 +254,50 @@ window.SLC_COUNT = {
       "sheetQty": 1700,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29049
+        29125
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "TMP-B4-CHIPOTLERANCH",
       "desc": "CHIPOTLE RANCH",
-      "sheetQty": 10900,
+      "sheetQty": 7500,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29050,
-        29051,
-        29052
+        29126,
+        29127,
+        29128
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": [
-        "summed"
+        "multi-lot"
       ]
     },
     {
       "code": "B4-L19",
       "desc": "COTTON CANDY",
-      "sheetQty": 59300,
+      "sheetQty": 57700,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29053,
-        29054
+        29129,
+        29130
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": [
-        "summed"
+        "multi-lot"
       ]
     },
     {
       "code": "B4-L02",
       "desc": "DEEP DISH PIZZA",
-      "sheetQty": 14100,
+      "sheetQty": 13400,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29055,
-        29056
+        29131
       ],
-      "sheetDate": "2026-10-27",
-      "flags": [
-        "summed"
-      ]
+      "sheetDate": "2026-11-02",
+      "flags": []
     },
     {
       "code": "TMP-B4-DILLRANCH",
@@ -306,9 +305,9 @@ window.SLC_COUNT = {
       "sheetQty": 100,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29057
+        29132
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
@@ -317,20 +316,20 @@ window.SLC_COUNT = {
       "sheetQty": 200,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29058
+        29133
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B4-L03",
       "desc": "GOOD GOOD VINEGAR SALT",
-      "sheetQty": 1900,
+      "sheetQty": 1200,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29059
+        29134
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
@@ -339,24 +338,24 @@ window.SLC_COUNT = {
       "sheetQty": 8600,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29060,
-        29061,
-        29062
+        29135,
+        29136,
+        29137
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": [
-        "summed"
+        "multi-lot"
       ]
     },
     {
       "code": "B4-L04",
       "desc": "HONEY BBQ",
-      "sheetQty": 8700,
+      "sheetQty": 8200,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29063
+        29138
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
@@ -365,67 +364,67 @@ window.SLC_COUNT = {
       "sheetQty": 100,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29064
+        29139
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B4-L14",
       "desc": "KING OF JUCO  - KOREAN BBQ",
-      "sheetQty": 12000,
+      "sheetQty": 11400,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29065
+        29140
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "TMP-B4-LOADEDNACHO",
       "desc": "LOADED NACHO  SPORTS",
-      "sheetQty": 24800,
+      "sheetQty": 49000,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29066,
-        29067
+        29141,
+        29142
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": [
-        "summed"
+        "multi-lot"
       ]
     },
     {
       "code": "B4-L18",
       "desc": "LOADED POTATO",
-      "sheetQty": 300,
+      "sheetQty": 230,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29068
+        29143
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B4-L11",
       "desc": "MEXICAN STREET CORN",
-      "sheetQty": 500,
+      "sheetQty": 0,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29069
+        29144
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B4-L12",
       "desc": "NASHVILLE HOT",
-      "sheetQty": 10300,
+      "sheetQty": 10100,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29070
+        29145
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
@@ -434,12 +433,12 @@ window.SLC_COUNT = {
       "sheetQty": 10200,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29071,
-        29072
+        29146,
+        29147
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": [
-        "summed"
+        "multi-lot"
       ]
     },
     {
@@ -448,26 +447,26 @@ window.SLC_COUNT = {
       "sheetQty": 2500,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29073,
-        29074
+        29148,
+        29149
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": [
-        "summed"
+        "multi-lot"
       ]
     },
     {
       "code": "TMP-B4-STRAWBERRYCHEESECAKE",
       "desc": "STRAWBERRY CHEESECAKE SPORTS",
-      "sheetQty": 20400,
+      "sheetQty": 48200,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29075,
-        29076
+        29150,
+        29151
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": [
-        "summed"
+        "multi-lot"
       ]
     },
     {
@@ -476,9 +475,9 @@ window.SLC_COUNT = {
       "sheetQty": 0,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29077
+        29152
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
@@ -487,147 +486,147 @@ window.SLC_COUNT = {
       "sheetQty": 2200,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29078
+        29153
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B4-L16",
       "desc": "TERIYAKI - ANA BRUNI",
-      "sheetQty": 5000,
+      "sheetQty": 4300,
       "sheet": "Inventory Bags 4 oz",
       "sheetRows": [
-        29079,
-        29080
+        29154,
+        29155
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": [
-        "summed"
+        "multi-lot"
       ]
     },
     {
       "code": "B15-S01",
-      "desc": "OG Original",
-      "sheetQty": 14500,
+      "desc": "OG\" ORIGINAL",
+      "sheetQty": 14000,
       "sheet": "Inventory Bags 1.5 oz",
       "sheetRows": [
-        8575
+        8614
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B15-S02",
-      "desc": "Cinnamon Churro",
-      "sheetQty": 17250,
+      "desc": "CINNAMON CHURRO",
+      "sheetQty": 16500,
       "sheet": "Inventory Bags 1.5 oz",
       "sheetRows": [
-        8578
+        8617
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B15-S03",
-      "desc": "Backyard BBQ",
+      "desc": "BBQ",
       "sheetQty": 28750,
       "sheet": "Inventory Bags 1.5 oz",
       "sheetRows": [
-        8581,
-        8582
+        8620,
+        8621
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": [
         "summed"
       ]
     },
     {
       "code": "B15-S04",
-      "desc": "Garlic Parmesan",
-      "sheetQty": 26250,
+      "desc": "GARLIC PARMESAN",
+      "sheetQty": 26000,
       "sheet": "Inventory Bags 1.5 oz",
       "sheetRows": [
-        8585
+        8624
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B15-S05",
-      "desc": "Dill Pickle",
-      "sheetQty": 3250,
+      "desc": "DILL PICKLE",
+      "sheetQty": 2500,
       "sheet": "Inventory Bags 1.5 oz",
       "sheetRows": [
-        8589
+        8628
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B15-S06",
-      "desc": "Cracked Pepper",
-      "sheetQty": 7000,
+      "desc": "CRACKED PEPPER",
+      "sheetQty": 6750,
       "sheet": "Inventory Bags 1.5 oz",
       "sheetRows": [
-        8592
+        8631
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B15-S07",
-      "desc": "Cheddar Jalapeno",
+      "desc": "CHEDDAR JALAPENO",
       "sheetQty": 25500,
       "sheet": "Inventory Bags 1.5 oz",
       "sheetRows": [
-        8595
+        8634
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B15-S08",
-      "desc": "Ranch",
+      "desc": "RANCH",
       "sheetQty": 11250,
       "sheet": "Inventory Bags 1.5 oz",
       "sheetRows": [
-        8599
+        8638
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B15-S09",
-      "desc": "Maple Brown Sugar",
-      "sheetQty": 31000,
+      "desc": "MAPLE BROWN SUGAR",
+      "sheetQty": 29250,
       "sheet": "Inventory Bags 1.5 oz",
       "sheetRows": [
-        8603
+        8642
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B15-S10",
-      "desc": "Lemon Pepper",
-      "sheetQty": 9250,
+      "desc": "LEMON PEPPER",
+      "sheetQty": 9000,
       "sheet": "Inventory Bags 1.5 oz",
       "sheetRows": [
-        8606
+        8645
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
       "code": "B15-S11",
-      "desc": "Sour Cream & Onion",
-      "sheetQty": 15000,
+      "desc": "SOUR CREAM & ONION",
+      "sheetQty": 14750,
       "sheet": "Inventory Bags 1.5 oz",
       "sheetRows": [
-        8609
+        8648
       ],
-      "sheetDate": "2026-10-27",
+      "sheetDate": "2026-11-02",
       "flags": []
     },
     {
