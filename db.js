@@ -315,7 +315,14 @@ window.DB = (function () {
       cache.suppliers = su.data || [];
       cache.stock = (st.data || []).map(r => ({
         item_id: r.item_id, location: r.location, qty: Number(r.qty), lot: r.lot,
-        expires_on: r.expires_on ? String(r.expires_on).slice(0, 10) : null
+        expires_on: r.expires_on ? String(r.expires_on).slice(0, 10) : null,
+        coa_received: coaNorm(r.coa_received),
+        coa_note: r.coa_note || "",
+        coa_by: r.coa_by || "",
+        coa_at: r.coa_at || null,
+        coa_released_by: r.coa_released_by || "",
+        coa_released_at: r.coa_released_at || null,
+        coa_release_note: r.coa_release_note || ""
       }));
       cache.log = (lg.data || []).map(r => ({ t: r.ts, a: r.action, d: r.detail, u: r.operator }));
       cache.seasLots = (sl && sl.data ? sl.data : []).map(r => ({
@@ -386,7 +393,14 @@ window.DB = (function () {
         deviation_actions: r.deviation_actions || "",
         checklist: (r.checklist && typeof r.checklist === "object") ? r.checklist : {},
         on_hold: !!r.on_hold,
-        expires_on: r.expires_on ? String(r.expires_on).slice(0, 10) : null
+        expires_on: r.expires_on ? String(r.expires_on).slice(0, 10) : null,
+        coa_received: coaNorm(r.coa_received),
+        coa_note: r.coa_note || "",
+        coa_by: r.coa_by || "",
+        coa_at: r.coa_at || null,
+        coa_released_by: r.coa_released_by || "",
+        coa_released_at: r.coa_released_at || null,
+        coa_release_note: r.coa_release_note || ""
       }));
       cache.improvements = (imp && imp.data ? imp.data : []).map(r => ({
         id: r.id, title: r.title, ci_type: r.ci_type, area: r.area, owner: r.owner,
@@ -2342,6 +2356,373 @@ window.DB = (function () {
     if (!opts.quiet) emit();
     return { ok: true, stock: stockScope.length, log: recvScope.length };
   }
+
+  // Dock COA presence. yes / no / na. The PDF stays in the Vendor COA folder.
+  // Seed, seasoning, and maltodextrin with No go on QA Hold (hold_log + on_hold,
+  // and RECEIVING qty moves to QA-HOLD). Oil and stevia are recorded only.
+  // A missing coa_* column returns { missing: true } and does not throw.
+  const COA_HOLD_REASON = "COA not received at the dock";
+  function coaNorm(v) {
+    const s = String(v == null ? "" : v).trim().toLowerCase().replace(/[^a-z]/g, "");
+    if (s === "y" || s === "yes") return "yes";
+    if (s === "n" || s === "no") return "no";
+    if (s === "na" || s === "notapplicable") return "na";
+    return "";
+  }
+  function coaCat(cat) {
+    return String(cat || "").toLowerCase().replace(/[\s_-]+/g, "");
+  }
+  function coaBlob(it) {
+    return coaCat([it && it.id, it && it.code, it && it.name, it && it.flavor].join(" "));
+  }
+  function coaIsMalto(it) {
+    if (!it) return false;
+    const c = coaCat(it.category);
+    if (c === "adhesion" || c === "maltodextrin" || c === "malto") return true;
+    const h = coaBlob(it);
+    return h.indexOf("maltodextrin") >= 0 || h.indexOf("malto") >= 0 || h.indexOf("adhesion") >= 0 || h.indexOf("clintose") >= 0;
+  }
+  function coaIsOilStevia(it) {
+    if (!it) return false;
+    const c = coaCat(it.category);
+    if (c === "oil" || c === "stevia") return true;
+    const id = coaCat(it.code || it.id);
+    if (id === "oil" || id === "stevia") return true;
+    return coaCat(it.name) === "oil" || coaCat(it.name) === "stevia";
+  }
+  function coaTracked(it) {
+    if (!it) return false;
+    if (coaIsMalto(it) || coaIsOilStevia(it)) return true;
+    const c = coaCat(it.category);
+    return c === "seed" || c === "seeds" || c === "seasoning" || c === "oil" || c === "stevia" || c === "adhesion";
+  }
+  function coaHighRisk(it) {
+    return !!(coaTracked(it) && !coaIsOilStevia(it));
+  }
+  function coaMissing(error) {
+    const msg = (error && (error.message || error.details || error.hint)) || error || "";
+    return /coa_received|coa_note|coa_by|coa_at|coa_release|schema cache|PGRST204/i.test(String(msg));
+  }
+  function coaNoteTrim(v) {
+    return String(v == null ? "" : v).trim().slice(0, 160);
+  }
+  function coaUuid(s) {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(s || ""));
+  }
+  function coaIds(itemId) {
+    const ids = new Set();
+    if (itemId) ids.add(itemId);
+    const item = itemId ? (cache.items.find(i => i.id === itemId || i.code === itemId) || null) : null;
+    if (item) {
+      if (item.id) ids.add(item.id);
+      if (item.code) ids.add(item.code);
+    }
+    return { ids: ids, item: item };
+  }
+  function coaApply(row, patch) {
+    if (!row || !patch) return;
+    Object.keys(patch).forEach(k => { row[k] = patch[k]; });
+  }
+  function coaStockScope(itemId, lot, location) {
+    const found = coaIds(itemId);
+    const key = rawLotKey(lot);
+    const rows = cache.stock.filter(r => {
+      if (!found.ids.has(r.item_id)) return false;
+      if (rawLotKey(r.lot) !== key) return false;
+      if (!key) return r.location === "QA-HOLD" || r.location === "RECEIVING" || (!!location && r.location === location);
+      return true;
+    });
+    return { found: found, rows: rows, key: key };
+  }
+  // opts: { itemId, lot, location, coaReceived, coaNote, coaBy, coaAt, recvId, stockOnly, clearRelease, quiet }
+  // Blank coaReceived clears the answer. clearRelease drops a previous Quality release
+  // when the dock marks No again. A missing column does not block the receipt.
+  async function setRawCoa(opts) {
+    opts = opts || {};
+    const found = coaIds(opts.itemId);
+    const item = found.item;
+    if (item && !coaTracked(item) && !opts.recvId) return { ok: false, skipped: true };
+    const value = coaNorm(opts.coaReceived);
+    if (opts.coaReceived && !value) return { ok: false, msg: "COA received must be Yes, No, or N/A" };
+    const note = coaNoteTrim(opts.coaNote);
+    const by = String(opts.coaBy || "").trim().slice(0, 80);
+    let at = opts.coaAt || null;
+    if (value && !at) at = new Date().toISOString();
+    if (!value) at = null;
+    const patch = {
+      coa_received: value || null,
+      coa_note: note,
+      coa_by: value ? by : "",
+      coa_at: value ? at : null
+    };
+    if (opts.clearRelease) {
+      patch.coa_released_by = "";
+      patch.coa_released_at = null;
+      patch.coa_release_note = "";
+    }
+    const scoped = (item && coaTracked(item)) ? coaStockScope(opts.itemId, opts.lot, opts.location) : { rows: [] };
+    const stockScope = opts.skipStock ? [] : scoped.rows;
+    let recvScope = [];
+    if (!opts.stockOnly) {
+      if (opts.recvId) recvScope = (cache.receivingLog || []).filter(r => String(r.id) === String(opts.recvId));
+      else if (scoped.key && item && coaTracked(item)) recvScope = (cache.receivingLog || []).filter(r => found.ids.has(r.item_id) && rawLotKey(r.lot) === scoped.key);
+    }
+    if (mode === "cloud") {
+      for (const r of stockScope) {
+        const res = await sb.from("stock").update(patch).eq("item_id", r.item_id).eq("location", r.location).eq("lot", r.lot == null ? "" : r.lot);
+        if (res && res.error) {
+          if (coaMissing(res.error)) return { ok: false, missing: true, msg: res.error.message || "" };
+          return { ok: false, msg: res.error.message || "COA answer was not saved" };
+        }
+      }
+      for (const r of recvScope) {
+        const res = await sb.from("receiving_log").update(patch).eq("id", r.id);
+        if (res && res.error) {
+          if (coaMissing(res.error)) return { ok: false, missing: true, msg: res.error.message || "" };
+          return { ok: false, msg: res.error.message || "COA answer was not saved" };
+        }
+      }
+    }
+    stockScope.forEach(r => coaApply(r, patch));
+    recvScope.forEach(r => coaApply(r, patch));
+    if (mode !== "cloud") local.save();
+    if (!opts.quiet) emit();
+    return { ok: true, stock: stockScope.length, log: recvScope.length };
+  }
+  // Does not write coa_received. No stays No.
+  async function stampRawCoaRelease(opts) {
+    opts = opts || {};
+    const extra = coaNoteTrim(opts.releaseNote);
+    const releaseNote = !extra || extra.toLowerCase() === "quality released" ? "Quality released" : ("Quality released. " + extra);
+    const patch = {
+      coa_released_by: String(opts.by || "").trim().slice(0, 80),
+      coa_released_at: opts.at || new Date().toISOString(),
+      coa_release_note: releaseNote
+    };
+    const scoped = coaStockScope(opts.itemId, opts.lot, opts.location);
+    const stockScope = scoped.rows;
+    let recvScope = [];
+    if (opts.recvId) recvScope = (cache.receivingLog || []).filter(r => String(r.id) === String(opts.recvId));
+    else if (scoped.key) recvScope = (cache.receivingLog || []).filter(r => scoped.found.ids.has(r.item_id) && rawLotKey(r.lot) === scoped.key && coaNorm(r.coa_received) === "no");
+    if (mode === "cloud") {
+      for (const r of stockScope) {
+        const res = await sb.from("stock").update(patch).eq("item_id", r.item_id).eq("location", r.location).eq("lot", r.lot == null ? "" : r.lot);
+        if (res && res.error) {
+          if (coaMissing(res.error)) return { ok: false, missing: true, msg: res.error.message || "" };
+          return { ok: false, msg: res.error.message || "Quality release was not saved" };
+        }
+      }
+      for (const r of recvScope) {
+        const res = await sb.from("receiving_log").update(patch).eq("id", r.id);
+        if (res && res.error) {
+          if (coaMissing(res.error)) return { ok: false, missing: true, msg: res.error.message || "" };
+          return { ok: false, msg: res.error.message || "Quality release was not saved" };
+        }
+      }
+    }
+    stockScope.forEach(r => coaApply(r, patch));
+    recvScope.forEach(r => coaApply(r, patch));
+    if (mode !== "cloud") local.save();
+    if (!opts.quiet) emit();
+    return { ok: true, kept: "no", release_note: releaseNote };
+  }
+  async function shiftLot(itemId, from, to, lot, op, action) {
+    if (!from || !to || from === to) return { ok: true, moved: 0 };
+    const found = coaIds(itemId);
+    const key = rawLotKey(lot);
+    const rows = cache.stock.filter(r => found.ids.has(r.item_id) && r.location === from && rawLotKey(r.lot) === key && Number(r.qty) > 0.0001);
+    if (!rows.length) return { ok: true, moved: 0 };
+    const deltas = [];
+    let qty = 0;
+    rows.forEach(r => {
+      const q = Number(r.qty);
+      qty += q;
+      deltas.push({ item_id: r.item_id, location: from, delta: -q, lot: r.lot || null });
+      deltas.push({ item_id: r.item_id, location: to, delta: q, lot: r.lot || null });
+    });
+    const name = found.item ? (found.item.name || found.item.id) : itemId;
+    await applyDeltas(deltas, { a: action, d: name + " lot " + (lot || "") + " " + from + " -> " + to, u: op || "", t: new Date().toISOString() });
+    return { ok: true, moved: qty };
+  }
+  function coaHoldMatch(h, opts) {
+    if (!h || h.status !== "held") return false;
+    if (opts.recvId && h.receiving_log_id && String(h.receiving_log_id) === String(opts.recvId)) return true;
+    return !!(opts.lot && rawLotKey(h.lot) === rawLotKey(opts.lot) && String(h.hold_reason || "").indexOf(COA_HOLD_REASON) === 0);
+  }
+  function coaHoldStore() {
+    try { return JSON.parse(localStorage.getItem("smk-hold-log-v1") || "[]"); } catch (e) { return []; }
+  }
+  function coaHoldSave(rows) {
+    try { localStorage.setItem("smk-hold-log-v1", JSON.stringify(rows || [])); } catch (e) {}
+  }
+  async function listHeld() {
+    if (mode !== "cloud") return coaHoldStore().filter(h => h && h.status === "held");
+    const res = await sb.from("hold_log").select("id,status,hold_reason,receiving_log_id,lot").eq("status", "held").limit(500);
+    if (res && res.error) return [];
+    return (res && res.data) || [];
+  }
+  async function closeCoaHolds(opts, note, by) {
+    const now = new Date().toISOString();
+    const patch = {
+      status: "released",
+      disposition: "released",
+      disposition_at: now,
+      disposition_note: note,
+      disposition_by: by || "",
+      updated_at: now
+    };
+    const held = await listHeld();
+    const mine = held.filter(h => coaHoldMatch(h, opts));
+    if (mode !== "cloud") {
+      const all = coaHoldStore();
+      all.forEach(h => { if (coaHoldMatch(h, opts)) Object.assign(h, patch); });
+      coaHoldSave(all);
+      return mine;
+    }
+    for (const h of mine) {
+      const res = await sb.from("hold_log").update(patch).eq("id", h.id);
+      if (res && res.error) return { ok: false, msg: res.error.message || "hold_log" };
+    }
+    return mine;
+  }
+  async function ensureCoaHoldLog(opts, reason, by) {
+    const row = {
+      hold_at: new Date().toISOString(),
+      held_by: by || "",
+      item_id: opts.itemId || null,
+      item_name: opts.itemName || "",
+      lot: String(opts.lot || "").trim(),
+      hold_qty: opts.qty == null || opts.qty === "" || isNaN(Number(opts.qty)) ? null : Number(opts.qty),
+      hold_reason: reason,
+      receiving_log_id: coaUuid(opts.recvId) ? opts.recvId : null,
+      status: "held"
+    };
+    const held = await listHeld();
+    const open = held.filter(h => coaHoldMatch(h, opts));
+    if (mode !== "cloud") {
+      const all = coaHoldStore();
+      if (open.length) {
+        all.forEach(h => { if (String(h.id) === String(open[0].id)) h.hold_reason = reason; });
+        coaHoldSave(all);
+        open[0].hold_reason = reason;
+        return open[0];
+      }
+      row.id = "HLD-" + Date.now().toString(36);
+      all.unshift(row);
+      coaHoldSave(all);
+      return row;
+    }
+    if (open.length) {
+      const upd = await sb.from("hold_log").update({
+        hold_reason: reason,
+        hold_qty: row.hold_qty,
+        item_name: row.item_name || undefined,
+        updated_at: new Date().toISOString()
+      }).eq("id", open[0].id).select("*");
+      if (upd && upd.error) return { ok: false, msg: upd.error.message || "hold_log" };
+      return (upd.data && upd.data[0]) || open[0];
+    }
+    const ins = await sb.from("hold_log").insert(row).select("*");
+    if (ins && ins.error) return { ok: false, msg: ins.error.message || "hold_log" };
+    return (ins.data && ins.data[0]) || row;
+  }
+  async function writeOnHold(id, on, condition) {
+    if (!id) return { ok: true };
+    const patch = { on_hold: !!on };
+    if (condition) patch.condition = condition;
+    if (mode === "cloud") {
+      const res = await sb.from("receiving_log").update(patch).eq("id", id);
+      if (res && res.error) return { ok: false, msg: res.error.message || "on_hold" };
+    }
+    (cache.receivingLog || []).forEach(r => {
+      if (String(r.id) === String(id)) coaApply(r, patch);
+    });
+    return { ok: true };
+  }
+  // Puts a No answer on the existing HOLD Log and moves dock qty to QA-HOLD.
+  async function placeRawCoaHold(opts) {
+    opts = opts || {};
+    const by = String(opts.by || "").trim();
+    const reason = COA_HOLD_REASON + (coaNoteTrim(opts.note) ? ". " + coaNoteTrim(opts.note) : "");
+    let moved = { ok: true, moved: 0 };
+    try { moved = await shiftLot(opts.itemId, "RECEIVING", "QA-HOLD", opts.lot, by, "QA Hold"); }
+    catch (e) { return { ok: false, msg: String(e && e.message || e) }; }
+    if (opts.recvId) {
+      const row = (cache.receivingLog || []).find(r => String(r.id) === String(opts.recvId));
+      const cond = row && (!row.condition || row.condition === "Good") ? "Hold" : "";
+      const flagged = await writeOnHold(opts.recvId, true, cond);
+      if (flagged && flagged.ok === false) return flagged;
+    }
+    const hold = await ensureCoaHoldLog(opts, reason, by);
+    if (hold && hold.ok === false) return hold;
+    if (mode !== "cloud") local.save();
+    if (!opts.quiet) emit();
+    return { ok: true, moved: moved.moved || 0, hold: hold };
+  }
+  // Dock answer changed off No. Closes the COA hold without a Quality release stamp.
+  async function clearRawCoaHold(opts) {
+    opts = opts || {};
+    const closed = await closeCoaHolds(opts, "COA answer corrected", opts.by || "");
+    if (closed && closed.ok === false) return closed;
+    const still = (await listHeld()).some(h => opts.lot && rawLotKey(h.lot) === rawLotKey(opts.lot) && h.status === "held");
+    if (!still && opts.recvId) {
+      const flagged = await writeOnHold(opts.recvId, false, "");
+      if (flagged && flagged.ok === false) return flagged;
+    }
+    if (!still) {
+      try { await shiftLot(opts.itemId, "QA-HOLD", "RECEIVING", opts.lot, opts.by || "", "QA Hold cleared"); }
+      catch (e) { return { ok: false, msg: String(e && e.message || e) }; }
+    }
+    if (mode !== "cloud") local.save();
+    if (!opts.quiet) emit();
+    return { ok: true };
+  }
+  // Quality release. coa_received is not changed.
+  async function releaseRawCoa(opts) {
+    opts = opts || {};
+    const by = String(opts.by || "").trim();
+    if (!by) return { ok: false, msg: "Your name is required" };
+    if (!opts.skipHoldWrite) {
+      const note = coaNoteTrim(opts.note);
+      const closed = await closeCoaHolds(opts, !note || note.toLowerCase() === "quality released" ? "Quality released" : ("Quality released. " + note), by);
+      if (closed && closed.ok === false) return closed;
+    }
+    const still = (await listHeld()).some(h => opts.lot && rawLotKey(h.lot) === rawLotKey(opts.lot) && h.status === "held");
+    if (!still && opts.recvId && !opts.skipHoldWrite) {
+      const flagged = await writeOnHold(opts.recvId, false, "");
+      if (flagged && flagged.ok === false) return flagged;
+    }
+    const priorLog = (cache.receivingLog || []).find(r => opts.recvId && String(r.id) === String(opts.recvId));
+    const priorStock = coaStockScope(opts.itemId, opts.lot, opts.location).rows.find(r => coaNorm(r.coa_received));
+    const kept = {
+      coaReceived: (priorLog && priorLog.coa_received) || (priorStock && priorStock.coa_received) || "no",
+      coaNote: (priorLog && priorLog.coa_note) || (priorStock && priorStock.coa_note) || "",
+      coaBy: (priorLog && priorLog.coa_by) || (priorStock && priorStock.coa_by) || "",
+      coaAt: (priorLog && priorLog.coa_at) || (priorStock && priorStock.coa_at) || null
+    };
+    if (!still) {
+      try { await shiftLot(opts.itemId, "QA-HOLD", "RECEIVING", opts.lot, by, "QA Hold released"); }
+      catch (e) { return { ok: false, msg: String(e && e.message || e) }; }
+    }
+    const loc = still ? (opts.location || "QA-HOLD") : "RECEIVING";
+    if (coaNorm(kept.coaReceived)) {
+      const again = await setRawCoa({
+        itemId: opts.itemId, lot: opts.lot, recvId: opts.recvId, location: loc,
+        coaReceived: kept.coaReceived, coaNote: kept.coaNote, coaBy: kept.coaBy, coaAt: kept.coaAt,
+        quiet: true
+      });
+      if (again && again.missing) return again;
+    }
+    return stampRawCoaRelease({
+      itemId: opts.itemId,
+      lot: opts.lot,
+      recvId: opts.recvId,
+      by: by,
+      releaseNote: opts.note || "",
+      location: loc,
+      quiet: opts.quiet
+    });
+  }
   async function deleteFulfillmentDaily(id, op) {
     if (mode === "cloud") { await must(sb.from("fulfillment_daily").delete().eq("id", id), "fulfillment_daily"); await cloud.loadAll(); }
     else { cache.fulfillmentDaily = (cache.fulfillmentDaily || []).filter(x => String(x.id) !== String(id)); local.save(); }
@@ -2368,6 +2749,7 @@ window.DB = (function () {
     pallets, palletByLpn, mintPallet, putawayPallet, pickPallet, newLpn, isLpn,
     shippingLog, addShipping, setShippingStatus, updateShipping, deleteShipping,
     receivingLog, addReceivingLog, updateReceivingLog, deleteReceivingLog, setRawExpires,
+    setRawCoa, placeRawCoaHold, clearRawCoaHold, releaseRawCoa,
     improvements, addImprovement, updateImprovement, setImprovementStatus, deleteImprovement,
     maintenance, addMaintenance, updateMaintenance, setMaintenanceStatus, deleteMaintenance,
     fulfillmentDaily, saveFulfillmentDaily, deleteFulfillmentDaily,

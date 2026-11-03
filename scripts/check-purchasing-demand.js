@@ -88,11 +88,11 @@ DB.init().then(function () {
 
   var html = read("index.html");
   var sw = read("service-worker.js");
-  eq(read("build-id.txt").trim() === "smackin-inv-v274", "build id");
-  eq(sw.indexOf('const CACHE = "smackin-inv-v274"') >= 0, "cache bump");
-  eq(html.indexOf('var EMBEDDED = "smackin-inv-v274"') >= 0, "index embedded");
-  eq(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v274"') >= 0, "escape embedded");
-  eq(html.indexOf('src="db.js?b=96"') >= 0, "db cache bust");
+  eq(read("build-id.txt").trim() === "smackin-inv-v275", "build id");
+  eq(sw.indexOf('const CACHE = "smackin-inv-v275"') >= 0, "cache bump");
+  eq(html.indexOf('var EMBEDDED = "smackin-inv-v275"') >= 0, "index embedded");
+  eq(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v275"') >= 0, "escape embedded");
+  eq(html.indexOf('src="db.js?b=97"') >= 0, "db cache bust");
   eq(html.indexOf("sw-escape.js?b=14") >= 0, "escape cache bust");
   eq(read("supabase/functions/sps-sync/index.js").indexOf('Deno.env.get("SPS_FOLDER") || "testout"') >= 0, "folder stays testout");
 
