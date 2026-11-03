@@ -158,7 +158,7 @@
     compliance: { go: "compliance", icon: "shield-check", title: { en: "Compliance / SQF", es: "Cumplimiento / SQF", pt: "Conformidade / SQF" }, blurb: { en: "Certifications, the SQF calendar, and controlled documents.", es: "Certificaciones, el calendario SQF y documentos controlados.", pt: "Certificacoes, o calendario SQF e documentos controlados." } },
     sqftasks: { fn: "sqf", icon: "list-checks", title: { en: "SQF Tasks", es: "Tareas SQF", pt: "Tarefas SQF" }, blurb: { en: "Outstanding SQF clauses, owners, and due dates. This list is the live copy.", es: "Clausulas SQF pendientes, responsables y fechas. Esta lista es la copia viva.", pt: "Clausulas SQF pendentes, responsaveis e datas. Esta lista e a copia viva." } },
     maintenance: { go: "maintenance", icon: "hard-hat", title: { en: "Maintenance", es: "Mantenimiento", pt: "Manutencao" }, blurb: { en: "Requests, repairs, and projects.", es: "Solicitudes, reparaciones y proyectos.", pt: "Pedidos, reparos e projetos." } },
-    services: { fn: "svc", icon: "hand-platter", title: { en: "Services", es: "Services", pt: "Services" }, blurb: { en: "Outsourced services and invoices: uniforms, pest, waste, equipment.", es: "Servicios externos y facturas: uniformes, plagas, basura, equipo.", pt: "Servicos externos e faturas: uniformes, pragas, residuos, equipamento." } },
+    services: { fn: "svc", icon: "hand-platter", title: { en: "Services", es: "Servicios", pt: "Servicos" }, blurb: { en: "Uniform cleaning and other service invoices: pest, waste, equipment. Not a material receipt.", es: "Limpieza de uniformes y otras facturas de servicio: plagas, basura, equipo. No es un recibo de material.", pt: "Lavagem de uniformes e outras faturas de servico: pragas, residuos, equipamento. Nao e um recebimento de material." } },
     produce: { go: "produce", icon: "factory", title: { en: "Produce", es: "Producir", pt: "Produzir" }, blurb: { en: "Record finished 4oz bags off the line.", es: "Registre bolsas 4oz terminadas de la linea.", pt: "Registre sacos 4oz prontos da linha." } },
     retailprod: { go: "retailprod", icon: "store", title: { en: "Retail Production", es: "Produccion Retail", pt: "Producao Varejo" }, blurb: { en: "Scan or pick a retail pallet and add it to stock.", es: "Escanee o elija una paleta retail y sumela al inventario.", pt: "Escaneie ou escolha um palete de varejo e some ao estoque." } },
     ecomprod: { go: "ecomprod", icon: "laptop", title: { en: "E-Commerce", es: "E-Commerce", pt: "E-Commerce" }, blurb: { en: "Scan or pick an e-commerce item and add what you built.", es: "Escanee o elija un item de e-commerce y sume lo producido.", pt: "Escaneie ou escolha um item de e-commerce e some o que produziu." } },
@@ -246,14 +246,20 @@
     {
       id: "recv",
       primary: "recvlog",
-      actions: ["receive", "trRecv"],
-      actionShort: { trRecv: { en: "Lot station", es: "Estacion de lote", pt: "Estacao de lote" } },
-      subs: ["recvlog", "returns", "quarantine"],
-      short: { recvlog: { en: "Dock", es: "Muelle", pt: "Cais" } },
+      actions: ["receive", "services", "trRecv"],
+      actionShort: {
+        trRecv: { en: "Lot station", es: "Estacion de lote", pt: "Estacao de lote" },
+        services: { en: "Services", es: "Servicios", pt: "Servicos" }
+      },
+      subs: ["recvlog", "services", "returns", "quarantine"],
+      short: {
+        recvlog: { en: "Dock", es: "Muelle", pt: "Cais" },
+        services: { en: "Services", es: "Servicios", pt: "Servicos" }
+      },
       icon: "package-check",
       label: { en: "Receiving", es: "Recibo", pt: "Receber" },
       title: { en: "Receiving", es: "Recibo", pt: "Recebimento" },
-      intro: { en: "Dock log of inbound lots. Receive and the lot station are the actions.", es: "Registro del muelle de lotes de entrada. Recibir y la estacion de lote son las acciones.", pt: "Registro do cais dos lotes de entrada. Receber e a estacao de lote sao as acoes." }
+      intro: { en: "Dock log of inbound lots. Receive, Services, and the lot station are the actions. Services is uniform cleaning and other service invoices.", es: "Registro del muelle de lotes de entrada. Recibir, Servicios y la estacion de lote son las acciones. Servicios es limpieza de uniformes y otras facturas de servicio.", pt: "Registro do cais dos lotes de entrada. Receber, Servicos e a estacao de lote sao as acoes. Servicos e lavagem de uniformes e outras faturas de servico." }
     },
     {
       id: "inv",
@@ -351,7 +357,7 @@
       id: "ops",
       primary: "maintenance",
       actions: [],
-      subs: ["maintenance", "people", "improve", "rd", "acct", "services", "reference", "settings", "health"],
+      subs: ["maintenance", "people", "improve", "rd", "acct", "reference", "settings", "health"],
       icon: "settings",
       label: { en: "Ops", es: "Ops", pt: "Ops" },
       title: { en: "Ops", es: "Ops", pt: "Ops" },
@@ -411,7 +417,7 @@
 
   function deptOfNav(btn) {
     if (!btn) return "";
-    if (btn.id === "svc-nav") return "ops";
+    if (btn.id === "svc-nav") return "recv";
     if (btn.id === "dh-nav") return "ops";
     if (btn.id === "sf-nav") return "purch";
     if (btn.id === "shs-nav") return "ship";
