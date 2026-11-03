@@ -1,0 +1,200 @@
+/* Smackin' OS - shared department density
+   Reuse on Purchasing, Inventory, Mixing, P-Mac, and Fulfillment:
+     <div class="dept-board">
+       <section class="dept-section">
+         <h3 class="dept-sec">Section</h3>
+         <div class="dept-grid"> ...cards... </div>
+       </section>
+     </div>
+   .dept-span-full stretches one child across the board.
+   Dashboard adds .df-board for its four sections. Do not restyle other
+   departments from this file beyond these utilities. */
+
+.dept-board {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px 10px;
+  align-items: start;
+}
+.dept-board > .dept-span-full { grid-column: 1 / -1; }
+
+.dept-section {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  container-type: inline-size;
+}
+.dept-section > .dept-sec {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0 2px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: #5c6b7c;
+  line-height: 1.2;
+}
+.dept-section > .dept-sec::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #d5dee8;
+}
+.dept-section > .dept-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  min-width: 0;
+}
+@container (min-width: 780px) {
+  .dept-section > .dept-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 900px) {
+  .dept-board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Dashboard placement of the shared board. */
+.df-board {
+  --df-top: 230px;
+}
+.df-board > .df-lead { grid-area: lead; }
+.df-board > .dept-section[data-area="stock"] { grid-area: stock; }
+.df-board > .dept-section[data-area="orders"] { grid-area: orders; }
+.df-board > .dept-section[data-area="inbound"] { grid-area: inbound; }
+.df-board > .dept-section[data-area="pulse"] { grid-area: pulse; }
+
+.df-board {
+  grid-template-areas:
+    "lead"
+    "stock"
+    "orders"
+    "inbound"
+    "pulse";
+}
+
+@media (min-width: 900px) {
+  .df-board {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "lead lead"
+      "stock orders"
+      "inbound pulse";
+  }
+}
+
+@media (min-width: 1200px) {
+  .df-board {
+    grid-template-columns: minmax(250px, 0.86fr) minmax(460px, 1.45fr) minmax(250px, 0.9fr);
+    grid-template-rows: auto minmax(0, 1.2fr) minmax(0, 0.8fr);
+    grid-template-areas:
+      "lead lead lead"
+      "stock orders inbound"
+      "stock orders pulse";
+    align-items: stretch;
+    height: calc(100vh - var(--df-top));
+    max-height: calc(100vh - var(--df-top));
+  }
+  .df-board > .dept-section[data-area="stock"],
+  .df-board > .dept-section[data-area="orders"],
+  .df-board > .dept-section[data-area="inbound"],
+  .df-board > .dept-section[data-area="pulse"] {
+    min-height: 0;
+    overflow: auto;
+  }
+}
+
+.df-board > .df-lead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+.df-board .df-lead-copy { flex: 1 1 220px; min-width: 0; }
+.df-board .df-lead h2 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.15;
+  color: var(--navy, #04223B);
+}
+.df-board .df-lead .hint {
+  margin: 2px 0 0;
+  font-size: 12px;
+  line-height: 1.35;
+}
+.df-board .fc-kpis {
+  flex: 1 1 380px;
+  max-width: 560px;
+  margin-top: 0;
+  gap: 6px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.df-board .fc-kpi {
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+.df-board .fc-kpi b { font-size: 20px; }
+.df-board .fc-kpi span {
+  margin-top: 1px;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.df-board .card {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  box-shadow: none;
+  min-width: 0;
+  container-type: inline-size;
+}
+.df-board .df-head { margin: 0 0 4px; gap: 6px; flex-direction: row; }
+.df-board h2.sub2 {
+  font-size: 14px;
+  margin: 0;
+  padding-bottom: 2px;
+  border-bottom-width: 1px;
+}
+.df-board .df-links { gap: 8px; justify-content: flex-end; }
+.df-board .df-links a { font-size: 12px; }
+.df-board .df-sub { margin: 0 0 4px; font-size: 12px; line-height: 1.3; }
+.df-board .df-empty { margin: 2px 0; font-size: 13px; }
+.df-board .df-note { margin: 0; font-size: 12px; line-height: 1.35; }
+.df-board .df-scroll { max-height: 132px; }
+.df-board table.df { table-layout: fixed; }
+.df-board table.df th:first-child,
+.df-board table.df td:first-child { width: 42%; }
+.df-board table.df.df-wide { min-width: 0; }
+.df-board .pill { white-space: normal; }
+.df-board table.df th,
+.df-board table.df td {
+  padding: 4px 6px;
+}
+.df-board table.df td,
+.df-board table.df th { font-size: 12px; }
+.df-board table.df th { white-space: nowrap; }
+.df-board .df-pill { white-space: nowrap; }
+.df-board table.df td { overflow-wrap: break-word; }
+.df-board .df-more { margin-top: 6px; padding: 6px 10px; }
+
+.df-lanes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+}
+@container (min-width: 860px) {
+  .df-lanes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .df-board .fc-kpis { max-width: none; }
+  .df-board .df-head { flex-direction: column; }
+  .df-board .df-links { justify-content: flex-start; }
+}
