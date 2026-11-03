@@ -163,6 +163,7 @@
     retailprod: { go: "retailprod", icon: "store", title: { en: "Retail Production", es: "Produccion Retail", pt: "Producao Varejo" }, blurb: { en: "Scan or pick a retail pallet and add it to stock.", es: "Escanee o elija una paleta retail y sumela al inventario.", pt: "Escaneie ou escolha um palete de varejo e some ao estoque." } },
     ecomprod: { go: "ecomprod", icon: "laptop", title: { en: "E-Commerce", es: "E-Commerce", pt: "E-Commerce" }, blurb: { en: "Scan or pick an e-commerce item and add what you built.", es: "Escanee o elija un item de e-commerce y sume lo producido.", pt: "Escaneie ou escolha um item de e-commerce e some o que produziu." } },
     trUse: { trace: "use", icon: "log-out", title: { en: "E-com lot pull", es: "Salida e-com", pt: "E-com lot pull" }, blurb: { en: "Log bags pulled for e-commerce. One save is the whole lot.", es: "Registre las bolsas tomadas para e-commerce. Un guardado es todo el lote.", pt: "Registre as bolsas separadas para e-commerce. Um salvamento e o lote inteiro." } },
+    trElog: { trace: "elog", icon: "calendar-days", title: { en: "E-com lot log", es: "Registro de lotes e-com", pt: "Registro de lotes e-com" }, blurb: { en: "Pulls logged to e-com on a day, and which lots were still in pick.", es: "Salidas a e-com en un dia, y que lotes seguian en pick.", pt: "Saidas para e-com num dia, e quais lotes ainda estavam no pick." } },
     trShip: { trace: "ship", icon: "truck", title: { en: "Ship", es: "Enviar", pt: "Ship" }, blurb: { en: "Build an outbound pallet: enter the PO and scan each pallet you pull.", es: "Arme una tarima de salida: escriba la orden y escanee cada tarima.", pt: "Monte um palete de saida: escreva a OC e leia cada palete." } },
     skulookup: { go: "skulookup", icon: "scan-search", title: { en: "SKU Lookup", es: "Buscar SKU", pt: "SKU Lookup" }, blurb: { en: "Look up an e-commerce SKU, its picture, and what is inside.", es: "Busque un SKU de e-commerce, su imagen y que contiene.", pt: "Busque um SKU de e-commerce, a imagem e o que tem dentro." } },
     prodlog: { go: "prodlog", icon: "notebook-pen", title: { en: "Daily Production", es: "Produccion Diaria", pt: "Producao Diaria" }, blurb: { en: "Today's retail pallets, lots, and the metal detector counter.", es: "Paletas retail de hoy, lotes y el contador del detector de metal.", pt: "Paletes de varejo de hoje, lotes e o contador do detector de metal." } },
@@ -311,13 +312,14 @@
         trShip: { en: "Ship", es: "Enviar", pt: "Enviar" },
         trUse: { en: "Lot pull", es: "Salida lote", pt: "Saida lote" }
       },
-      subs: ["ordersRetail", "ordersEcom", "fulfilldaily", "prodlog", "skulookup", "orderdocs", "flavinv", "stockbuild", "produce", "fglots", "fulfillerr"],
+      subs: ["ordersRetail", "ordersEcom", "fulfilldaily", "prodlog", "skulookup", "orderdocs", "flavinv", "stockbuild", "produce", "fglots", "trElog", "fulfillerr"],
       short: {
         ordersRetail: { en: "Retail", es: "Retail", pt: "Varejo" },
         ordersEcom: { en: "E-Commerce", es: "E-Commerce", pt: "E-Commerce" },
         fulfilldaily: { en: "Daily log", es: "Diario", pt: "Diario" },
         prodlog: { en: "Pallet log", es: "Paletas", pt: "Paletes" },
-        skulookup: { en: "SKU lookup", es: "Buscar SKU", pt: "Buscar SKU" }
+        skulookup: { en: "SKU lookup", es: "Buscar SKU", pt: "Buscar SKU" },
+        trElog: { en: "E-com lots", es: "Lotes e-com", pt: "Lotes e-com" }
       },
       icon: "package",
       label: { en: "Fulfillment", es: "Fulfillment", pt: "Fulfillment" },
@@ -338,12 +340,12 @@
       id: "qa",
       primary: "qacheck",
       actions: ["trQa", "quality"],
-      subs: ["qacheck", "sqftasks", "trace", "trLabels", "fglots", "compliance", "shortdated"],
-      short: { qacheck: { en: "Checklists", es: "Listas", pt: "Listas" } },
+      subs: ["qacheck", "sqftasks", "trace", "trElog", "trLabels", "fglots", "compliance", "shortdated"],
+      short: { qacheck: { en: "Checklists", es: "Listas", pt: "Listas" }, trElog: { en: "E-com lots", es: "Lotes e-com", pt: "Lotes e-com" } },
       icon: "shield-check",
       label: { en: "Quality", es: "Calidad", pt: "Qualidade" },
       title: { en: "Quality", es: "Calidad", pt: "Qualidade" },
-      intro: { en: "Today's quality checklists. Hold and the CCP log are the actions. SQF tasks and trace are tabs.", es: "Listas de calidad de hoy. Retener y el registro CCP son las acciones. Tareas SQF y rastreo son pestanas.", pt: "Listas de qualidade de hoje. Reter e o registro CCP sao as acoes. Tarefas SQF e rastreio sao abas." }
+      intro: { en: "Today's quality checklists. Hold and the CCP log are the actions. SQF tasks, trace, and the e-com lot log are tabs.", es: "Listas de calidad de hoy. Retener y el registro CCP son las acciones. Tareas SQF, rastreo y el registro de lotes e-com son pestanas.", pt: "Listas de qualidade de hoje. Reter e o registro CCP sao as acoes. Tarefas SQF, rastreio e o registro de lotes e-com sao abas." }
     },
     {
       id: "ops",
@@ -426,7 +428,9 @@
       "trc-nav-pmac": "pmac",
       "trc-nav-move": "inv",
       "trc-nav-trace": "qa",
-      "trc-nav-labels": "qa"
+      "trc-nav-labels": "qa",
+      "trc-nav-elog-ful": "ful",
+      "trc-nav-elog-qa": "qa"
     };
     if (trcHome[btn.id]) return trcHome[btn.id];
     if (btn.getAttribute("data-trc") === "1") {

@@ -1,5 +1,5 @@
 /* ============================================================================
-   Lot Trace & Scan  (trace.js)  b=18
+   Lot Trace & Scan  (trace.js)  b=19
    One scan chain from the dock to the customer, built for SQF traceability.
 
      RECEIVE   raw material in -> our own RM label per pallet/box/roll (supplier lot, exp)
@@ -12,8 +12,12 @@
      MOVE      scan any label, scan a location (put-away / moves)
      USE       hand-log a pull (e-commerce is the default) or scan a finished pallet
                to the line, e-commerce, samples or scrap. One save = one lot,
-               total bags across every box in that pull. Lot picks follow FEFO:
-               the oldest dated on-hand lot is filled in, and a later lot asks first.
+               total bags across every box in that pull. The hand log requires
+               a From location (staging, packout, or a rack) and stores it on
+               the event. Marking a lot out of pick writes ECOM_OUT and ends
+               that lot's e-com window only. Another lot of the same flavor
+               does not. Lot picks follow FEFO: the oldest dated on-hand lot
+               is filled in, and a later lot asks first.
      SHIP      build an outbound pallet for a PO: scan pallets, bags -> OB label w/ lots.
                Scanning a later-dated lot asks before that pallet is added.
      TRACE     type/scan any LPN, lot, supplier lot, PO or seed code -> back + forward
@@ -22,7 +26,9 @@
                Rejected cannot be pulled or shipped until Release.
                Recall PDF / Excel exports that chain for a mock recall. SPS and
                ShipStation are attached only when a customer PO or an e-com
-               pull window already in the data can link them.
+               pull window already in the data can link them. An e-com window
+               runs from the pull day through the out-of-pick day. More than
+               one lot of a flavor can be open at once.
 
    Data: Supabase tables trace_labels + trace_events (open RLS like the rest of the
    app). If the tables are missing it runs in LOCAL mode (this device only) and says so.
@@ -30,7 +36,8 @@
    Seed / Seasoning lot registries, so nothing is typed twice.
 
    Stock on-hand is NOT changed by this module (Adriana's counts stay the source of
-   truth until the scan data is proven). WRITE_STOCK stays off.
+   truth until the scan data is proven). WRITE_STOCK stays off. An out-of-pick
+   mark is a trace event only. It does not move inventory.
    Nav item is injected with a MutationObserver (no timers). Keyboard-wedge scanners
    (NETUM NT-1228BL etc.) type the code + Enter into the focused scan box.
    ==========================================================================*/
@@ -129,6 +136,22 @@
       manTitle: "Log bags pulled", manHint: "One save for the whole pull of one lot. If that lot is in several boxes, add the bags together and enter the total. Do not save a row for each box. Type the lot code printed on the bags (example L2031/3X9.35).", manSave: "Save pull", lotPh: "Type lot on bags", lotEmpty: "Empty. Type the lot printed on the bags.", flavorBlank: "Follows the lot", bagTotal: "Bags (total, all boxes)", pullDate: "Date", pullFuture: "Date cannot be in the future.", scanFold: "Scan a pallet label instead", note: "Note / reference", byHand: "by hand", manOddLot: "This does not look like a normal bag code (example L2031/3X9.35). Save it anyway?",
       fefoHint: "Tap the oldest lot, or type the code on the bags.", fefoUse: "Use this", fefoNone: "No on-hand lots for this flavor yet. Type the code on the bags.", fefoNoDate: "No expiration on these lots. Type the code on the bags.", fefoOldest: "Oldest lot on hand.", fefoUnknown: "date unknown", fefoExp: "exp", fefoPacked: "packed", fefoWeek: "packed week", fefoExpired: "EXPIRED", fefoBags: "bags", fefoLater: "Earlier lot", fefoStill: "still has", fefoPicked: "You picked", fefoSaveAsk: "Save this later lot anyway?", fefoAddAsk: "Add this later lot anyway?", fefoAlso: "more earlier lots also have bags.", fefoShipTitle: "Pull the oldest lot first", fefoCancel: "Not saved. Pull the older lot first.",
       navUse: "E-com lot pull", ecomLink: "Log e-com lot pull", ecomLinkHint: "Opens the pull log. Add every box of that lot into one bag total.",
+      tElog: "E-com log", navElog: "E-com lot log", elogMissing: "E-com lot log did not load. Refresh the page.",
+      fromLbl: "From", fromRack: "Rack", fromRackPh: "Rack, e.g. A-05-L3",
+      fromNeed: "Choose where the bags came from (staging, packout, or a rack).",
+      fromRackNeed: "Type the rack the bags came from.",
+      fromHint: "Required before save. This does not move inventory.",
+      outTitle: "Lot out of pick",
+      outHint: "Ends this lot's e-com window on the date above. Another lot of the same flavor does not end it. This does not move inventory.",
+      outSave: "Mark out of pick", outNeedLot: "Type the lot that left e-com pick.",
+      outAsk: "Mark this lot out of e-com pick on this date? This does not move inventory.",
+      outNone: "No open e-com pull is on file for this lot.",
+      outEarly: "That date is before this lot was pulled to e-com.",
+      outSize: "That size does not match the open e-com pull.",
+      outSaved: "Out of pick. The e-com window includes this day and stops after it.",
+      ecomWinTitle: "E-commerce window",
+      ecomWinHint: "Orders for this flavor and size shipped while this lot was in pick are in scope. The lot stays in pick until it is marked out of pick. Another lot of the same flavor does not end it. Match ShipStation by ship date. Those rows are date and flavor possibles, not a scanned lot.",
+      ecomWinOpen: "still in pick", ecomWinOut: "out of pick",
       issue: "Issue found (blank if none). Anything here keeps it ON HOLD", noteIssue: "Note issue (stay on hold)", issueCol: "Issue",
       issuePrompt: "Describe the issue. Examples: No CA warning / Wrong ingredient statement / Spec issue / Shiny film / Swirl design", holdQ: "is released. Put it ON HOLD?",
       lotHold: "ON HOLD. Do not pull or ship this lot until QA releases it.",
@@ -193,6 +216,22 @@
       manTitle: "Registrar bolsas tomadas", manHint: "Un solo guardado para toda la salida de un lote. Si ese lote viene en varias cajas, sume las bolsas y escriba el total. No guarde una fila por caja. Escriba el código de lote impreso en las bolsas (ejemplo L2031/3X9.35).", manSave: "Guardar salida", lotPh: "Escriba el lote", lotEmpty: "Vacío. Escriba el lote impreso en las bolsas.", flavorBlank: "Sigue el lote", bagTotal: "Bolsas (total, todas las cajas)", pullDate: "Fecha", pullFuture: "La fecha no puede ser futura.", scanFold: "Escanear una etiqueta de tarima", note: "Nota / referencia", byHand: "a mano", manOddLot: "Esto no parece un código de bolsa normal (ejemplo L2031/3X9.35). ¿Guardar de todos modos?",
       fefoHint: "Toque el lote más viejo, o escriba el código de las bolsas.", fefoUse: "Usar este", fefoNone: "No hay lotes disponibles de este sabor. Escriba el código de las bolsas.", fefoNoDate: "Estos lotes no tienen vencimiento. Escriba el código de las bolsas.", fefoOldest: "Lote más viejo disponible.", fefoUnknown: "fecha desconocida", fefoExp: "vence", fefoPacked: "empacado", fefoWeek: "semana emp", fefoExpired: "VENCIDO", fefoBags: "bolsas", fefoLater: "Lote más viejo", fefoStill: "todavía tiene", fefoPicked: "Usted eligió", fefoSaveAsk: "¿Guardar este lote más nuevo de todos modos?", fefoAddAsk: "¿Agregar este lote más nuevo de todos modos?", fefoAlso: "lotes más viejos también tienen bolsas.", fefoShipTitle: "Tome primero el lote más viejo", fefoCancel: "No se guardó. Tome primero el lote más viejo.",
       navUse: "Salida e-com", ecomLink: "Registrar salida e-com", ecomLinkHint: "Abre el registro. Sume todas las cajas de ese lote en un total.",
+      tElog: "Registro e-com", navElog: "Registro de lotes e-com", elogMissing: "El registro e-com no cargo. Actualice la pagina.",
+      fromLbl: "Desde", fromRack: "Rack", fromRackPh: "Rack, ej. A-05-L3",
+      fromNeed: "Elija de donde salieron las bolsas (staging, packout o un rack).",
+      fromRackNeed: "Escriba el rack de donde salieron las bolsas.",
+      fromHint: "Obligatorio antes de guardar. Esto no mueve inventario.",
+      outTitle: "Lote fuera de pick",
+      outHint: "Termina la ventana e-com de este lote en la fecha de arriba. Otro lote del mismo sabor no la termina. Esto no mueve inventario.",
+      outSave: "Marcar fuera de pick", outNeedLot: "Escriba el lote que salio del pick e-com.",
+      outAsk: "¿Marcar este lote fuera de pick e-com en esta fecha? Esto no mueve inventario.",
+      outNone: "No hay una salida e-com abierta para este lote.",
+      outEarly: "Esa fecha es anterior a la salida de este lote a e-com.",
+      outSize: "Ese tamano no coincide con la salida e-com abierta.",
+      outSaved: "Fuera de pick. La ventana e-com incluye este dia y se detiene despues.",
+      ecomWinTitle: "Ventana de e-commerce",
+      ecomWinHint: "Los pedidos de este sabor y tamano enviados mientras este lote estaba en pick entran. El lote sigue en pick hasta marcarlo fuera de pick. Otro lote del mismo sabor no lo termina. Compare ShipStation por fecha de envio. Esas filas son posibles por fecha y sabor, no un lote escaneado.",
+      ecomWinOpen: "sigue en pick", ecomWinOut: "fuera de pick",
       issue: "Problema encontrado (vacío si no hay). Si escribe algo queda RETENIDO", noteIssue: "Anotar problema (sigue retenido)", issueCol: "Problema",
       issuePrompt: "Describa el problema. Ejemplos: Sin advertencia de California / Ingredientes incorrectos / Problema de especificación / Película brillante / Diseño de remolino", holdQ: "está liberado. ¿Retenerlo?",
       lotHold: "RETENIDO. No tome ni envíe este lote hasta que Calidad lo libere.",
@@ -221,7 +260,21 @@
     pt: {
       bestBy: "Validade",
       bestByNotSet: "Nao definido. Digite a data impressa no saco.",
-      bestByBlank: "Validade esta em branco. Salvar sem a data impressa no saco?"
+      bestByBlank: "Validade esta em branco. Salvar sem a data impressa no saco?",
+      tElog: "Registro e-com", navElog: "Registro de lotes e-com",
+      fromLbl: "De", fromRack: "Rack", fromNeed: "Escolha de onde sairam as bolsas (staging, packout ou um rack).",
+      fromRackNeed: "Digite o rack de onde sairam as bolsas.",
+      fromHint: "Obrigatorio antes de salvar. Isto nao move estoque.",
+      outTitle: "Lote fora do pick",
+      outHint: "Encerra a janela e-com deste lote na data acima. Outro lote do mesmo sabor nao encerra. Isto nao move estoque.",
+      outSave: "Marcar fora do pick", outNeedLot: "Digite o lote que saiu do pick e-com.",
+      outAsk: "Marcar este lote fora do pick e-com nesta data? Isto nao move estoque.",
+      outSaved: "Fora do pick. A janela e-com inclui este dia e para depois.",
+      outNone: "Nao ha uma saida e-com aberta para este lote.",
+      outEarly: "Essa data e anterior a saida deste lote para e-com.",
+      outSize: "Esse tamanho nao combina com a saida e-com aberta.",
+      fromRackPh: "Rack, ex. A-05-L3",
+      ecomWinOpen: "ainda no pick", ecomWinOut: "fora do pick"
     }
   };
   function lang() {
@@ -265,6 +318,32 @@
       if (!isNaN(dt.getTime())) return dt.toISOString();
     }
     return String((e && e.ts) || "");
+  }
+  function eventFlavor(e) {
+    var d = (e && e.data) || {};
+    var fc = d.flavor_code || "";
+    var size = d.size || "";
+    var name = d.flavor || "";
+    var l = e && e.lpn && S.labels[e.lpn];
+    if (l) {
+      if (!fc) fc = l.flavor_code || "";
+      if (!size) size = l.size || "";
+      if (!name) name = l.flavor || "";
+    }
+    var sample = fgForLot(e && e.lot)[0];
+    if (sample) {
+      if (!fc) fc = sample.flavor_code || "";
+      if (!size) size = sample.size || "";
+      if (!name) name = sample.flavor || "";
+    }
+    var known = flavorBy(fc);
+    if (known) name = known.name;
+    return { fc: fc, size: size, name: name };
+  }
+  function ecomWindows(events) {
+    var api = window.ECOMLOG;
+    if (!api || typeof api.buildWindows !== "function") return [];
+    return api.buildWindows(events || S.events, { flavorOf: eventFlavor, pullInstant: pullInstant, stamp: tsLocal });
   }
   function isoWeek(d) {
     d = d ? new Date(d) : new Date();
@@ -414,7 +493,7 @@
     mix: { flavor: "", prefix: "", inputs: [], bins: 1, lastBins: [] },
     pm: {},            // per machine: { batch, bins:[], film, filmLpn, pendingBins:[], codeChanges:[] }
     move: { lpn: "" },
-    use: { dest: "ECOM", ref: "", msize: "4oz" },
+    use: { dest: "ECOM", ref: "", msize: "4oz", mfrom: "", mrack: "" },
     ship: { po: "", customer: "", lines: [] },
     trace: { q: "", drillStart: null },
     labels: { kind: "", status: "", q: "" },
@@ -499,7 +578,18 @@
     try { var n = $("nav"), bd = $("navBackdrop"); if (n) n.classList.remove("open"); if (bd) bd.classList.remove("show"); } catch (e) {}
     load().then(render);
   }
-  function markActive() { try { var nav = $("nav"); if (!nav) return; nav.querySelectorAll(".navitem.active").forEach(function (b) { b.classList.remove("active"); }); if (!ACTIVE) return; var m = $("trc-nav-" + ST.tab); if (m) m.classList.add("active"); } catch (e) {} }
+  function markActive() {
+    try {
+      var nav = $("nav");
+      if (!nav) return;
+      nav.querySelectorAll(".navitem.active").forEach(function (b) { b.classList.remove("active"); });
+      if (!ACTIVE) return;
+      var hits = nav.querySelectorAll('[data-trc-tab="' + ST.tab + '"]');
+      if (hits.length) { for (var i = 0; i < hits.length; i++) hits[i].classList.add("active"); return; }
+      var m = $("trc-nav-" + ST.tab);
+      if (m) m.classList.add("active");
+    } catch (e) {}
+  }
 
   var RENDERING = false;
   var recvHoldRev = -1;
@@ -512,7 +602,7 @@
   function renderNow(host) {
     LOT_ACTS = [];
     var focusId = document.activeElement && document.activeElement.id;
-    var tabs = [["recv", "tRecv"], ["qa", "tQa"], ["mix", "tMix"], ["pmac", "tPmac"], ["move", "tMove"], ["use", "tUse"], ["ship", "tShip"], ["trace", "tTrace"], ["labels", "tLabels"]];
+    var tabs = [["recv", "tRecv"], ["qa", "tQa"], ["mix", "tMix"], ["pmac", "tPmac"], ["move", "tMove"], ["use", "tUse"], ["elog", "tElog"], ["ship", "tShip"], ["trace", "tTrace"], ["labels", "tLabels"]];
     var holdN = allLabels().filter(function (l) { return l.status === "HOLD"; }).length;
     var h = '<div id="trc-root">';
     h += '<div class="card trc-noprint"><h2 style="margin-top:0">' + esc(L("title")) + '</h2>';
@@ -526,7 +616,7 @@
     h += '</div>';
     if (W.msg && Date.now() - W.msg.t < 20000) h += '<div class="trc-msg ' + W.msg.kind + ' trc-noprint">' + esc(W.msg.txt) + '</div>';
     if (W.pendingPrint && W.pendingPrint.length) h += '<div class="trc-msg warn trc-noprint">' + W.pendingPrint.length + ' label(s) ready. <button class="primary sm" onclick="TRACE.printPending()">' + esc(L("print")) + '</button></div>';
-    var fn = { recv: vRecv, qa: vQa, mix: vMix, pmac: vPmac, move: vMove, use: vUse, ship: vShip, trace: vTrace, labels: vLabels }[ST.tab] || vRecv;
+    var fn = { recv: vRecv, qa: vQa, mix: vMix, pmac: vPmac, move: vMove, use: vUse, elog: vElog, ship: vShip, trace: vTrace, labels: vLabels }[ST.tab] || vRecv;
     h += fn();
     h += '</div>';
     var sc = host.scrollTop;
@@ -545,6 +635,7 @@
     else if (inForm) f = $(focusId);
     else if (ST.tab === "use" && opName() && $("trc-u-mlot")) f = $("trc-u-mlot");
     else if (ST.tab === "use" && !opName()) f = $("trc-op");
+    else if (ST.tab === "elog" && $("trc-elog-from")) f = $("trc-elog-from");
     else f = $("trc-scan");
     if (f) { try { f.focus(); } catch (e) {} }
     var fold = document.querySelector("#trc-root details.trc-scanfold");
@@ -1717,6 +1808,28 @@
     if ($("trc-u-mbags")) W.use.mbags = val("trc-u-mbags");
     if ($("trc-u-mdate")) W.use.mdate = val("trc-u-mdate");
     if ($("trc-u-msize")) W.use.msize = val("trc-u-msize");
+    if ($("trc-u-rack")) W.use.mrack = val("trc-u-rack");
+  }
+  function chosenFrom() {
+    var kind = String((W.use && W.use.mfrom) || "");
+    var api = window.ECOMLOG;
+    var clean = api && typeof api.cleanFrom === "function" ? function (v) { return api.cleanFrom(v); } : function (v) { return String(v || "").trim().toUpperCase(); };
+    if (kind === "STAGING" || kind === "PACKOUT") return kind;
+    if (kind === "RACK") return clean(W.use.mrack);
+    return "";
+  }
+  function fromPickerHtml(u) {
+    var kind = u.mfrom || "";
+    var h = '<div class="trc-size-row" id="trc-u-from"><span class="trc-size-lbl">' + esc(L("fromLbl")) + "</span>";
+    [["STAGING", "STAGING"], ["PACKOUT", "PACKOUT"], ["RACK", L("fromRack")]].forEach(function (p) {
+      h += '<button type="button" class="trc-size' + (kind === p[0] ? " on" : "") + '" onclick="TRACE.useFrom(\'' + p[0] + '\')">' + esc(p[1]) + "</button>";
+    });
+    h += "</div>";
+    if (kind === "RACK") {
+      h += '<div class="trc-grid"><div><label>' + esc(L("fromRack")) + '</label><input id="trc-u-rack" value="' + esc(u.mrack || "") + '" placeholder="' + esc(L("fromRackPh")) + '" autocomplete="off" autocapitalize="characters" spellcheck="false"></div></div>';
+    }
+    h += '<p class="' + (kind ? "hint" : "trc-lot-empty") + '">' + esc(kind ? L("fromHint") : L("fromNeed")) + "</p>";
+    return h;
   }
   function vUse() {
     var u = W.use;
@@ -1750,16 +1863,21 @@
       h += '<button type="button" class="trc-size' + (u.msize === sz ? " on" : "") + '" onclick="TRACE.useSize(\'' + sz + '\')">' + esc(sz) + '</button>';
     });
     h += '</div>';
+    h += fromPickerHtml(u);
     h += '<button type="button" class="primary trc-save" onclick="TRACE.useManual()">' + esc(L("manSave")) + '</button></div>';
+    h += '<div class="card"><h2 class="sub2">' + esc(L("outTitle")) + '</h2><p class="hint">' + esc(L("outHint")) + '</p>';
+    h += '<button type="button" class="ghost trc-save" onclick="TRACE.useOut()">' + esc(L("outSave")) + '</button></div>';
     h += '<details class="card trc-scanfold"' + (u.scanOpen ? " open" : "") + '><summary>' + esc(L("scanFold")) + '</summary>';
     h += '<div class="trc-grid" style="margin-top:10px"><div><label>' + esc(L("qtyTake")) + '</label><input id="trc-u-qty" type="number" min="1" value="' + esc(u.qty || "") + '"></div>';
     h += '<div><label>' + esc(L("note")) + '</label><input id="trc-u-ref" value="' + esc(u.ref || "") + '"></div></div>';
     h += scanBox("useScan");
     h += '</details>';
-    var recent = S.events.filter(function (e) { return e.type === "USE"; }).slice(-20).reverse();
-    h += '<div class="card"><h2 class="sub2">Recent</h2><table class="trc"><thead><tr><th>When</th><th>Label</th><th>Lot</th><th>Bags</th><th>To</th><th>By</th></tr></thead><tbody>' + recent.map(function (e) {
+    var recent = S.events.filter(function (e) { return e.type === "USE" || e.type === "ECOM_OUT"; }).slice(-20).reverse();
+    h += '<div class="card"><h2 class="sub2">Recent</h2><table class="trc"><thead><tr><th>When</th><th>Label</th><th>Lot</th><th>Bags</th><th>From / To</th><th>By</th></tr></thead><tbody>' + recent.map(function (e) {
       var when = tsLocal(pullInstant(e)).slice(5);
-      return '<tr><td>' + esc(when) + '</td><td>' + (e.lpn ? esc(e.lpn) : '<i>' + esc(L("byHand")) + '</i>') + '</td><td>' + esc(e.lot) + (e.data && (e.data.flavor || e.data.flavor_code) ? '<br><span class="muted sm">' + esc(e.data.flavor || e.data.flavor_code) + ' ' + esc(e.data.size || "") + '</span>' : "") + '</td><td>' + fmt(e.qty) + '</td><td>' + esc(e.to_loc) + (e.ref ? " &middot; " + esc(e.ref) : "") + '</td><td>' + esc(e.operator) + '</td></tr>';
+      var bags = e.type === "ECOM_OUT" ? "-" : fmt(e.qty);
+      var dest = e.type === "ECOM_OUT" ? L("ecomWinOut") : (e.to_loc || "");
+      return '<tr><td>' + esc(when) + '</td><td>' + (e.lpn ? esc(e.lpn) : '<i>' + esc(L("byHand")) + '</i>') + '</td><td>' + esc(e.lot) + (e.data && (e.data.flavor || e.data.flavor_code) ? '<br><span class="muted sm">' + esc(e.data.flavor || e.data.flavor_code) + ' ' + esc(e.data.size || "") + '</span>' : "") + '</td><td>' + bags + '</td><td>' + esc(e.from_loc || (e.data && e.data.from_loc) || "") + " &rarr; " + esc(dest) + (e.ref ? " &middot; " + esc(e.ref) : "") + '</td><td>' + esc(e.operator) + '</td></tr>';
     }).join("") + '</tbody></table></div>';
     return h;
   }
@@ -1832,6 +1950,13 @@
     if (!(bags > 0)) { flash(L("bagTotal") + "?", "err"); u.focusId = "trc-u-mbags"; render(); return; }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(pullDate)) { flash(L("pullDate") + "?", "err"); u.focusId = "trc-u-mdate"; render(); return; }
     if (pullDate > today()) { flash(L("pullFuture"), "err"); u.focusId = "trc-u-mdate"; render(); return; }
+    var fromLoc = chosenFrom();
+    if (!fromLoc) {
+      flash(u.mfrom === "RACK" ? L("fromRackNeed") : L("fromNeed"), "err");
+      u.focusId = u.mfrom === "RACK" ? "trc-u-rack" : "trc-u-mlot";
+      render();
+      return;
+    }
     var fl = flavorBy(fc);
     if (!fl && !picked) { flash(L("flavor") + "?", "err"); u.focusId = "trc-u-mflav"; render(); return; }
     // Normal bag codes (L2031/3X9.35) save with no extra confirm. Odd codes still ask.
@@ -1841,9 +1966,9 @@
     var ask = fefoAsk(lot, fefoFc, size, "use");
     if (ask && !window.confirm(ask.text)) { flash(L("fefoCancel"), "warn"); u.focusId = "trc-u-mlot"; render(); return; }
     var ts = tsForPullDate(pullDate);
-    var useData = { flavor_code: fefoFc, flavor: fl ? fl.name : "", size: size, manual: true, pull_date: pullDate };
+    var useData = { flavor_code: fefoFc, flavor: fl ? fl.name : "", size: size, manual: true, pull_date: pullDate, from_loc: fromLoc, from_kind: u.mfrom || "" };
     Object.assign(useData, fefoOverride(ask));
-    addEvents([{ type: "USE", ts: ts, lpn: null, qty: bags, uom: "bags", to_loc: u.dest, ref: u.ref || "", lot: lot, data: useData }]).then(function (res) {
+    addEvents([{ type: "USE", ts: ts, lpn: null, qty: bags, uom: "bags", from_loc: fromLoc, to_loc: u.dest, ref: u.ref || "", lot: lot, data: useData }]).then(function (res) {
       if (res && res.ok === false) { flash("Save failed: " + res.msg, "err"); render(); return; }
       flash(bags + " bags " + lot + " -> " + u.dest + " (" + L("byHand") + ")", "ok");
       u.mflav = fl ? fl.code : (picked || fc);
@@ -1858,6 +1983,46 @@
     });
   }
   function useDest(v) { captureUse(); W.use.dest = v || "ECOM"; render(); }
+  function useFrom(v) { captureUse(); W.use.mfrom = v || ""; render(); }
+  function useOut() {
+    captureUse();
+    var u = W.use;
+    saveEcomOut(cleanScan(u.mlot), u.mflav || "", u.msize || "4oz", (u.mdate || today()).slice(0, 10));
+  }
+  // Log only. WRITE_STOCK stays false. No label update and no inventory move.
+  function saveEcomOut(lot, fc, size, pullDate) {
+    if (needOp()) return;
+    lot = cleanScan(lot).toUpperCase().replace(/\s+/g, "");
+    size = size || "4oz";
+    pullDate = String(pullDate || today()).slice(0, 10);
+    if (!lot) { flash(L("outNeedLot"), "err"); render(); return; }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(pullDate)) { flash(L("pullDate") + "?", "err"); render(); return; }
+    if (pullDate > today()) { flash(L("pullFuture"), "err"); render(); return; }
+    var openAll = ecomWindows(S.events).filter(function (w) { return w.open && normLot(w.lot) === normLot(lot); });
+    var wins = openAll.filter(function (w) { return !w.size || w.size === size; });
+    if (openAll.length && !wins.length) { flash(L("outSize"), "err"); render(); return; }
+    if (wins.some(function (w) { return pullDate < w.pulledDay; })) { flash(L("outEarly"), "err"); render(); return; }
+    var ask = lot + "\n" + pullDate + "\n\n" + L("outAsk");
+    if (!wins.length) ask += "\n\n" + L("outNone");
+    if (!window.confirm(ask)) return;
+    var fl = flavorBy(fc) || flavorBy(lot.slice(0, 3));
+    var data = {
+      flavor_code: fl ? fl.code : (fc || lot.slice(0, 3)),
+      flavor: fl ? fl.name : "",
+      size: size,
+      manual: true,
+      pull_date: pullDate,
+      finished_date: pullDate,
+      out_of_pick: true,
+      finished: true,
+      from_loc: "ECOM"
+    };
+    addEvents([{ type: "ECOM_OUT", ts: tsForPullDate(pullDate), lpn: null, qty: null, from_loc: "ECOM", to_loc: null, lot: lot, data: data }]).then(function (res) {
+      if (res && res.ok === false) { flash("Save failed: " + res.msg, "err"); render(); return; }
+      flash(L("outSaved"), "ok");
+      render();
+    });
+  }
   function useScan(code) {
     code = cleanScan(code).toUpperCase(); if (!code) return;
     if (needOp()) return;
@@ -1872,12 +2037,14 @@
       if (!(take > 0)) { flash(code + " is empty", "err"); render(); return; }
       var ask = fefoAsk(l.lot, l.flavor_code, l.size, "use");
       if (ask && !window.confirm(ask.text)) { flash(L("fefoCancel"), "warn"); render(); return; }
-      var scanData = { flavor: l.flavor_code, flavor_code: l.flavor_code, size: l.size, pull_date: today() };
+      var fromLoc = (window.ECOMLOG && typeof ECOMLOG.cleanFrom === "function" ? ECOMLOG.cleanFrom(l.location) : String(l.location || "").trim().toUpperCase()) || chosenFrom();
+      if (!fromLoc) { flash(L("fromNeed"), "err"); render(); return; }
+      var scanData = { flavor: l.flavor_code, flavor_code: l.flavor_code, size: l.size, pull_date: today(), from_loc: fromLoc };
       Object.assign(scanData, fefoOverride(ask));
       var left = l.qty_left - take;
       updLabel(l.lpn, { qty_left: left, status: left <= 0 ? "EMPTY" : l.status }).then(function (res) {
         if (!savedOk(res)) { flash("Save failed: " + ((res && res.msg) || ""), "err"); render(); return; }
-        return addEvents([{ type: "USE", lpn: l.lpn, qty: take, uom: "bags", from_loc: l.location, to_loc: W.use.dest, ref: W.use.ref || "", lot: l.lot, data: scanData }]);
+        return addEvents([{ type: "USE", lpn: l.lpn, qty: take, uom: "bags", from_loc: fromLoc, to_loc: W.use.dest, ref: W.use.ref || "", lot: l.lot, data: scanData }]);
       }).then(function (res2) {
         if (!res2) return;
         if (!savedOk(res2)) { flash("Pallet updated, pull log failed: " + ((res2 && res2.msg) || ""), "warn"); render(); return; }
@@ -1971,6 +2138,14 @@
       printLabels([row], pw); flash("Outbound pallet " + row.lpn + " for PO " + s.po + ": " + total + " bags, lots " + row.lot, "ok");
       W.ship.lines = []; render();
     });
+  }
+
+  function vElog() {
+    var api = window.ECOMLOG;
+    if (!api || typeof api.viewHtml !== "function") {
+      return '<div class="card"><h2 class="sub2">' + esc(L("tElog")) + "</h2><p>" + esc(L("elogMissing")) + "</p></div>";
+    }
+    return api.viewHtml({ events: S.events, today: today(), flavorOf: eventFlavor, pullInstant: pullInstant, stamp: tsLocal });
   }
 
   // =========================== TRACE ===========================
@@ -2216,30 +2391,7 @@
         unaccounted: packed - shipped - line - ecom - other - scrap - left, posText: posText
       };
     });
-    function evFlav(e) {
-      var d = e.data || {}, fc = d.flavor_code || "", size = d.size || "", name = d.flavor || "";
-      var l = e.lpn && S.labels[e.lpn];
-      if (l) { if (!fc) fc = l.flavor_code || ""; if (!size) size = l.size || ""; if (!name) name = l.flavor || ""; }
-      var sample = fgForLot(e.lot)[0];
-      if (sample) { if (!fc) fc = sample.flavor_code || ""; if (!size) size = sample.size || ""; if (!name) name = sample.flavor || ""; }
-      var known = flavorBy(fc);
-      if (known) name = known.name;
-      return { fc: fc, size: size, name: name };
-    }
-    var ecomAll = S.events.filter(function (e) { return e.type === "USE" && e.to_loc === "ECOM"; }).sort(function (a, b) { return pullInstant(a).localeCompare(pullInstant(b)); });
-    var windows = ecomAll.filter(function (e) { return lotSet[normLot(e.lot)]; }).map(function (e) {
-      var f = evFlav(e);
-      var nxt = ecomAll.filter(function (x) {
-        var g = evFlav(x);
-        return pullInstant(x) > pullInstant(e) && normLot(x.lot) !== normLot(e.lot) && g.fc === f.fc && (!f.size || !g.size || g.size === f.size);
-      })[0];
-      var pulled = tsLocal(pullInstant(e));
-      var ends = nxt ? tsLocal(pullInstant(nxt)) : "";
-      return {
-        lot: e.lot || "", flavor: f.name, flavorCode: f.fc, size: f.size, pulled: pulled, pulledDay: pulled.slice(0, 10),
-        bags: num(e.qty), by: e.operator || "", ends: ends, endsDay: ends.slice(0, 10), nextLot: nxt ? (nxt.lot || "") : "", open: !nxt
-      };
-    });
+    var windows = ecomWindows(S.events).filter(function (w) { return lotSet[normLot(w.lot)]; });
     var pallets = fg.map(function (l) {
       var d = l.data || {};
       var hold = "";
@@ -2320,17 +2472,17 @@
     h += '<h3>' + esc(L("back")) + '</h3><div class="trc-tree">' + esc(shown.map(function (l) { return backTree(l.lpn); }).join("\n")) + '</div>';
     h += '<h3>' + esc(L("fwd")) + '</h3><div class="trc-tree">' + esc(shown.map(function (l) { return fwdTree(l.lpn); }).join("\n")) + '</div>';
     }
-    var qU = String(t.q || "").toUpperCase();
-    var lotFlav = {};
-    allLabels().forEach(function (l) { if (l.kind === "FG" && l.lot) lotFlav[l.lot] = { fc: l.flavor_code, size: l.size }; });
-    function evFlav(e) { var d = e.data || {}; if (d.flavor_code) return { fc: d.flavor_code, size: d.size || "" }; var l = e.lpn && S.labels[e.lpn]; return l ? { fc: l.flavor_code, size: l.size } : (lotFlav[e.lot] || { fc: String(e.lot || "").slice(0, 3), size: "" }); }
-    var ecomAll = S.events.filter(function (e) { return e.type === "USE" && e.to_loc === "ECOM"; }).sort(function (a, b) { return pullInstant(a).localeCompare(pullInstant(b)); });
-    var ecom = ecomAll.filter(function (e) { return lots[e.lot] || String(e.lot || "").toUpperCase() === qU || shown.some(function (l) { return l.lot === e.lot; }); });
+    var qU = normLot(t.q);
+    var ecom = ecomWindows(S.events).filter(function (w) {
+      var n = normLot(w.lot);
+      if (!n) return false;
+      if (lots[w.lot] || lots[n] || n === qU) return true;
+      return shown.some(function (l) { return normLot(l.lot) === n; });
+    });
     if (ecom.length) {
-      h += '<h3>E-commerce window</h3><p class="hint">E-com orders for this flavor and size shipped from the first pull of this lot until the next pull of a different lot are in scope. Match them in ShipStation by ship date.</p><table class="trc"><thead><tr><th>Pulled</th><th>Lot</th><th>Bags</th><th>By</th><th>Window ends</th></tr></thead><tbody>' + ecom.map(function (e) {
-        var f = evFlav(e);
-        var nxt = ecomAll.filter(function (x) { var g = evFlav(x); return pullInstant(x) > pullInstant(e) && x.lot !== e.lot && g.fc === f.fc && (!f.size || !g.size || g.size === f.size); })[0];
-        return '<tr><td>' + esc(tsLocal(pullInstant(e))) + '</td><td>' + esc(e.lot) + (e.lpn ? "" : ' <span class="muted sm">(' + esc(L("byHand")) + ')</span>') + '</td><td>' + fmt(e.qty) + '</td><td>' + esc(e.operator) + '</td><td>' + (nxt ? esc(tsLocal(pullInstant(nxt))) + ' <span class="muted sm">(next lot ' + esc(nxt.lot) + ')</span>' : '<i>still open</i>') + '</td></tr>';
+      h += '<h3>' + esc(L("ecomWinTitle")) + '</h3><p class="hint">' + esc(L("ecomWinHint")) + '</p><table class="trc"><thead><tr><th>Pulled</th><th>Lot</th><th>Bags</th><th>By</th><th>Window ends</th></tr></thead><tbody>' + ecom.map(function (w) {
+        var end = w.open ? '<i>' + esc(L("ecomWinOpen")) + '</i>' : esc(w.finished || w.ends) + ' <span class="muted sm">(' + esc(L("ecomWinOut")) + ')</span>';
+        return '<tr><td>' + esc(w.pulled) + '</td><td>' + esc(w.lot) + '</td><td>' + fmt(w.bags) + '</td><td>' + esc(w.by) + '</td><td>' + end + '</td></tr>';
       }).join("") + '</tbody></table>';
     }
     if (res.events.length) h += '<h3>Events referencing ' + esc(t.q) + '</h3><table class="trc"><tbody>' + res.events.slice(-60).map(function (e) { return '<tr><td>' + esc(tsLocal(e.ts)) + '</td><td>' + esc(e.type) + '</td><td>' + esc(e.lpn || "") + '</td><td>' + esc(e.lot || "") + '</td><td>' + (e.qty == null ? "" : fmt(e.qty) + ' ' + esc(e.uom || "")) + '</td><td>' + esc(e.operator || "") + '</td></tr>'; }).join("") + '</tbody></table>';
@@ -2505,7 +2657,7 @@
       if (id === "trc-r-exp") { W.recv.exp = v; W.recv.expTouched = true; }
     },
     pmScan: pmScan, pmChange: pmChange, pmFinish: pmFinish, pmScrap: pmScrap,
-    moveScan: moveScan, useDest: useDest, useScan: useScan, useManual: useManual, useSize: useSize, useKey: useKey, useLotInput: useLotInput, useFlavorPick: useFlavorPick, usePickLot: usePickLot,
+    moveScan: moveScan, useDest: useDest, useFrom: useFrom, useScan: useScan, useManual: useManual, useOut: useOut, ecomOut: saveEcomOut, useSize: useSize, useKey: useKey, useLotInput: useLotInput, useFlavorPick: useFlavorPick, usePickLot: usePickLot,
     shipField: shipField, shipScan: shipScan, shipRemove: shipRemove, shipFinish: shipFinish,
     traceQ: traceQ, drill: drill, printEvidence: printEvidence, recallExport: recallExport, lotAct: lotAct,
     traceOf: function (lpn) { ST.tab = "trace"; W.trace.q = lpn; markActive(); render(); },
@@ -2521,18 +2673,18 @@
   };
 
   // ---- nav: one module, a button in the department that uses it ----------------
-  // Fulfillment (next to E-Commerce): E-com lot pull + Ship.
+  // Fulfillment (next to E-Commerce): E-com lot pull, the day log, and Ship.
   // Manufacturing: Receive, QA Hold, Mixing, P-Mac, Move.
-  // Quality: Trace + Labels, for Brittney / SQF.
+  // Quality: the day log, Trace, and Labels, so Quality can open the log without hunting.
   // A collapsed department hides its stations with the group. A role that hides
   // the department entirely still gets those stations at the top of the menu.
   var NAV_HOMES = [
     { id: "ful", anchors: ["ecomprod", "retailprod"], labels: ["Fulfillment"],
-      tabs: [["use", "navUse", "log-out"], ["ship", "tShip", "truck"]] },
+      tabs: [["use", "navUse", "log-out"], ["elog", "navElog", "calendar-days"], ["ship", "tShip", "truck"]] },
     { id: "mfg", anchors: ["pmac", "mixing"], labels: ["Manufacturing", "Manufactura", "Manufatura"],
       tabs: [["recv", "tRecv", "package-plus"], ["qa", "tQa", "shield-alert"], ["mix", "tMix", "cooking-pot"], ["pmac", "tPmac", "package-open"], ["move", "tMove", "arrow-left-right"]] },
     { id: "qa", anchors: ["compliance"], labels: ["Quality", "Calidad", "Qualidade"],
-      tabs: [["trace", "tTrace", "git-branch"], ["labels", "tLabels", "tags"]] }
+      tabs: [["elog", "navElog", "calendar-days"], ["trace", "tTrace", "git-branch"], ["labels", "tLabels", "tags"]] }
   ];
   function navStyleOnce() {
     if ($("trc-navstyle")) return;
@@ -2544,7 +2696,8 @@
   }
   function navButtonHtml(t, homeId) {
     var on = ACTIVE && ST.tab === t[0];
-    return '<button type="button" class="navitem' + (on ? " active" : "") + '" id="trc-nav-' + t[0] + '" data-trc="1" data-trc-home="' + homeId + '" onclick="TRACE.go(\'' + t[0] + '\',event)"><i class="navico" data-lucide="' + t[2] + '"></i><span>' + esc(L(t[1])) + '</span></button>';
+    var id = t[0] === "elog" ? "trc-nav-elog-" + homeId : "trc-nav-" + t[0];
+    return '<button type="button" class="navitem' + (on ? " active" : "") + '" id="' + id + '" data-trc="1" data-trc-tab="' + t[0] + '" data-trc-home="' + homeId + '" onclick="TRACE.go(\'' + t[0] + '\',event)"><i class="navico" data-lucide="' + t[2] + '"></i><span>' + esc(L(t[1])) + '</span></button>';
   }
   function findHome(nav, home) {
     var anchor = null;
@@ -2644,7 +2797,7 @@
     var mo = new MutationObserver(function () {
       injectNav();
       // A background app render wiped our view while it is active: redraw from memory once.
-      if (ACTIVE) { var v = $("view"); if (v && !v.querySelector("#trc-root")) { markActive(); render(); } else { var a = $("trc-nav-" + ST.tab); if (a && !a.classList.contains("active")) markActive(); } }
+      if (ACTIVE) { var v = $("view"); if (v && !v.querySelector("#trc-root")) { markActive(); render(); } else { var a = document.querySelector('#nav [data-trc-tab="' + ST.tab + '"]') || $("trc-nav-" + ST.tab); if (a && !a.classList.contains("active")) markActive(); } }
     });
     mo.observe(document.documentElement, { childList: true, subtree: true });
   } catch (e) {}

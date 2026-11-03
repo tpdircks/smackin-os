@@ -13,7 +13,9 @@
      outbound pallet. Those documents do not store the bag lot.
    - ShipStation: the sync leaves lot blank. A row is a candidate only when
      its ship date falls in an e-com pull window and the item text matches
-     that flavor. It is not a confirmed lot link.
+     that flavor. A window runs from the pull day through the out-of-pick
+     day. Another lot of the same flavor does not close it. It is not a
+     confirmed lot link.
    ========================================================================== */
 (function (root) {
   "use strict";
@@ -446,7 +448,7 @@
       "Finished pallets, Hold, and Rejected are the Lot Trace pallet status at the time of this export. Every finished pallet of a matched lot is included, not only the one label that was scanned.",
       "Use and Ship events are Lot Trace. Pulls logged by hand are listed. They do not reduce pallet qty left, so the mass balance E-com column matches the Trace screen and the By hand column is separate.",
       "SPS documents and order-board rows are linked only by the customer PO on a Ship event or outbound pallet. Those records do not include the bag lot code.",
-      "ShipStation leaves lot blank. Rows marked Candidate match an e-com pull window and the flavor name in the item text. A ship date is a whole day, so a window that ends the next morning does not include that next calendar day.",
+      "ShipStation leaves lot blank. Rows marked Candidate match an e-com pull window and the flavor name in the item text. The window includes the pull day through the day the lot is marked out of pick. The next calendar day is not included. More than one lot of the same flavor can match the same ship day.",
       "Where a section says none recorded, that link is not in the data. This packet does not guess past what was stored."
     ];
   }
@@ -624,7 +626,7 @@
     else view.customers.forEach(function (r) { customers.push([r.destination, r.po, r.qty === "" ? "" : num(r.qty), r.source]); });
     var windows = [["Lot", "Flavor", "Size", "Pulled", "Bags", "By", "Window ends", "Next lot", "Open"]];
     if (!view.windows.length) windows = sheetEmpty(windows[0]);
-    else view.windows.forEach(function (r) { windows.push([r.lot, r.flavor, r.size, r.pulled, num(r.bags), r.by, r.open ? "" : r.ends, r.nextLot, r.open ? "yes" : ""]); });
+    else view.windows.forEach(function (r) { windows.push([r.lot, r.flavor, r.size, r.pulled, num(r.bags), r.by, r.open ? "" : r.ends, r.open ? "" : (r.nextLot || r.endedBy || ""), r.open ? "yes" : ""]); });
     var sps = [["Type", "Partner", "PO", "Status", "Received", "Ship to", "Ship date", "BOL", "Invoice", "Lines", "Link"]];
     if (!view.sps.length) sps = sheetEmpty(sps[0]);
     else view.sps.forEach(function (r) { sps.push([r.type, r.partner, r.pos, r.status, r.received, r.shipTo, r.shipDate, r.bol, r.invoice, r.lines, r.link]); });
@@ -839,7 +841,7 @@
       pdf.h2("E-com pull windows");
       pdf.table(
         [{ t: "Lot", w: 80 }, { t: "Flavor", w: 80 }, { t: "Pulled", w: 70 }, { t: "Bags", w: 36 }, { t: "Ends", w: 80 }, { t: "Next lot", w: 70 }],
-        view.windows.map(function (r) { return [r.lot, (r.flavor || "") + (r.size ? " " + r.size : ""), r.pulled, r.bags, r.open ? "still open" : r.ends, r.nextLot]; })
+        view.windows.map(function (r) { return [r.lot, (r.flavor || "") + (r.size ? " " + r.size : ""), r.pulled, r.bags, r.open ? "still in pick" : r.ends, r.open ? "" : (r.nextLot || r.endedBy || "")]; })
       );
     }
     if (view.qa.length) {
