@@ -178,6 +178,8 @@ window.DB = (function () {
     return out;
   }
 
+  // Lot expiration remembered across a local move. Not a quantity.
+  const lotExpMemo = {};
   // ---------- LOCAL backend ----------
   const local = {
     loadOrSeed() {
@@ -191,8 +193,20 @@ window.DB = (function () {
     save() { try { localStorage.setItem(KEY, JSON.stringify(cache)); } catch (e) {} },
     delta(item_id, location, d, lot) {
       lot = lot || null;
+      // Local mode copies a raw-material expiration onto a new row of the same
+      // lot. Cloud moves are stamped after DB.move. fn_apply_delta only changes
+      // qty, so this memo does not change quantities.
+      const memoKey = item_id + "\n" + (lot || "");
       let row = cache.stock.find(r => r.item_id === item_id && r.location === location && (r.lot || null) === lot);
-      if (!row) { row = { item_id, location, qty: 0, lot }; cache.stock.push(row); }
+      if (row && row.expires_on) lotExpMemo[memoKey] = row.expires_on;
+      else if (!lotExpMemo[memoKey]) {
+        const sib = cache.stock.find(r => r.item_id === item_id && (r.lot || null) === lot && r.expires_on);
+        if (sib) lotExpMemo[memoKey] = sib.expires_on;
+      }
+      if (!row) {
+        row = { item_id, location, qty: 0, lot, expires_on: lotExpMemo[memoKey] || null };
+        cache.stock.push(row);
+      }
       row.qty = Number(row.qty) + d;
       if (row.qty <= 0) cache.stock = cache.stock.filter(r => r !== row);
     },
@@ -299,7 +313,10 @@ window.DB = (function () {
       ]);
       cache.items = it.data || [];
       cache.suppliers = su.data || [];
-      cache.stock = (st.data || []).map(r => ({ item_id: r.item_id, location: r.location, qty: Number(r.qty), lot: r.lot }));
+      cache.stock = (st.data || []).map(r => ({
+        item_id: r.item_id, location: r.location, qty: Number(r.qty), lot: r.lot,
+        expires_on: r.expires_on ? String(r.expires_on).slice(0, 10) : null
+      }));
       cache.log = (lg.data || []).map(r => ({ t: r.ts, a: r.action, d: r.detail, u: r.operator }));
       cache.seasLots = (sl && sl.data ? sl.data : []).map(r => ({
         id: r.id, flavor_code: r.flavor_code, product: r.product, lot: r.lot,
@@ -368,7 +385,8 @@ window.DB = (function () {
         chk_carrier_sanitation: r.chk_carrier_sanitation || "", chk_material_condition: r.chk_material_condition || "",
         deviation_actions: r.deviation_actions || "",
         checklist: (r.checklist && typeof r.checklist === "object") ? r.checklist : {},
-        on_hold: !!r.on_hold
+        on_hold: !!r.on_hold,
+        expires_on: r.expires_on ? String(r.expires_on).slice(0, 10) : null
       }));
       cache.improvements = (imp && imp.data ? imp.data : []).map(r => ({
         id: r.id, title: r.title, ci_type: r.ci_type, area: r.area, owner: r.owner,
@@ -2241,6 +2259,79 @@ window.DB = (function () {
     emit(); return { ok: true, ecom_total: ecomTotal, amazon_units: amzUnits, amazon_bags: amzBags };
   }
   function L_ecomLabel(n) { return n + " e-com labels"; }
+
+  // Raw-material expiration only. Seasoning, seed, oil, and stevia.
+  // Finished goods keep trace_labels.exp. This never changes qty.
+  function rawExpiresCategory(cat) {
+    const c = String(cat || "").toLowerCase().replace(/[\s_-]+/g, "");
+    return c === "seed" || c === "seeds" || c === "seasoning" || c === "oil" || c === "stevia";
+  }
+  function rawLotKey(lot) {
+    return String(lot || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  }
+  function rawExpiresMissing(error) {
+    const msg = (error && (error.message || error.details)) || "";
+    return /expires_on|schema cache/i.test(String(msg));
+  }
+  // opts: { itemId, lot, location, expiresOn, recvId, stockOnly, quiet }
+  // expiresOn "" clears the date. A missing column returns { missing: true }
+  // and does not throw, so Receive still saves the receipt.
+  async function setRawExpires(opts) {
+    opts = opts || {};
+    const item = opts.itemId ? (cache.items.find(i => i.id === opts.itemId || i.code === opts.itemId) || null) : null;
+    if (item && !rawExpiresCategory(item.category)) return { ok: false, skipped: true };
+    let value = null;
+    if (opts.expiresOn) {
+      const m = String(opts.expiresOn).match(/^(\d{4}-\d{2}-\d{2})/);
+      if (!m) return { ok: false, msg: "Enter a date" };
+      value = m[1];
+    } else if (opts.expiresOn !== "" && opts.expiresOn !== null) {
+      return { ok: false, msg: "Enter a date" };
+    }
+    const ids = new Set();
+    if (item) { ids.add(item.id); if (item.code) ids.add(item.code); }
+    else if (opts.itemId) ids.add(opts.itemId);
+    const lotKey = rawLotKey(opts.lot);
+    const canStock = !!(item && rawExpiresCategory(item.category));
+    if (!canStock && !opts.recvId) return { ok: false, skipped: true };
+    const stockScope = canStock ? cache.stock.filter(r => {
+      if (!ids.has(r.item_id)) return false;
+      if (rawLotKey(r.lot) !== lotKey) return false;
+      // A blank lot is one pile. Do not stamp every unlotted location.
+      if (!lotKey) return !!opts.location && r.location === opts.location;
+      return true;
+    }) : [];
+    let recvScope = [];
+    if (!opts.stockOnly) {
+      if (opts.recvId) {
+        recvScope = (cache.receivingLog || []).filter(r => String(r.id) === String(opts.recvId));
+      } else if (lotKey && canStock) {
+        recvScope = (cache.receivingLog || []).filter(r => ids.has(r.item_id) && rawLotKey(r.lot) === lotKey);
+      }
+    }
+    if (mode === "cloud") {
+      for (const r of stockScope) {
+        const res = await sb.from("stock").update({ expires_on: value }).eq("item_id", r.item_id).eq("location", r.location).eq("lot", r.lot == null ? "" : r.lot);
+        if (res && res.error) {
+          if (rawExpiresMissing(res.error)) return { ok: false, missing: true, msg: res.error.message || "" };
+          return { ok: false, msg: res.error.message || "Expiration date was not saved" };
+        }
+      }
+      for (const r of recvScope) {
+        const res = await sb.from("receiving_log").update({ expires_on: value }).eq("id", r.id);
+        if (res && res.error) {
+          if (rawExpiresMissing(res.error)) return { ok: false, missing: true, msg: res.error.message || "" };
+          return { ok: false, msg: res.error.message || "Expiration date was not saved" };
+        }
+      }
+    }
+    stockScope.forEach(r => { r.expires_on = value; });
+    recvScope.forEach(r => { r.expires_on = value; });
+    if (lotKey && value) lotExpMemo[(item ? item.id : opts.itemId) + "\n" + (opts.lot || "")] = value;
+    if (mode !== "cloud") local.save();
+    if (!opts.quiet) emit();
+    return { ok: true, stock: stockScope.length, log: recvScope.length };
+  }
   async function deleteFulfillmentDaily(id, op) {
     if (mode === "cloud") { await must(sb.from("fulfillment_daily").delete().eq("id", id), "fulfillment_daily"); await cloud.loadAll(); }
     else { cache.fulfillmentDaily = (cache.fulfillmentDaily || []).filter(x => String(x.id) !== String(id)); local.save(); }
@@ -2266,7 +2357,7 @@ window.DB = (function () {
     deadStock, flagDeadStock, clearDeadStock,
     pallets, palletByLpn, mintPallet, putawayPallet, pickPallet, newLpn, isLpn,
     shippingLog, addShipping, setShippingStatus, updateShipping, deleteShipping,
-    receivingLog, addReceivingLog, updateReceivingLog, deleteReceivingLog,
+    receivingLog, addReceivingLog, updateReceivingLog, deleteReceivingLog, setRawExpires,
     improvements, addImprovement, updateImprovement, setImprovementStatus, deleteImprovement,
     maintenance, addMaintenance, updateMaintenance, setMaintenanceStatus, deleteMaintenance,
     fulfillmentDaily, saveFulfillmentDaily, deleteFulfillmentDaily,
