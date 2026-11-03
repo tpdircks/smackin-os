@@ -65,7 +65,10 @@
     var ed = editId ? (cache.find(function (x) { return String(x.id) === String(editId); }) || {}) : {};
     var editing = !!(editId && ed.id);
     var av = function (x) { return esc(x == null ? "" : x); };
-    var opt = function (cur) { return TYPES.map(function (t) { return '<option' + (t === (cur || "") ? " selected" : "") + '>' + t + '</option>'; }).join(""); };
+    var opt = function (cur) {
+      var chosen = cur || "Uniform Cleaning";
+      return TYPES.map(function (t) { return '<option' + (t === chosen ? " selected" : "") + '>' + t + '</option>'; }).join("");
+    };
     var form = '<div class="ordform">' +
       (editing ? '<p class="hint">&#9998; Editing an entry' + (ed.file_name ? ' &middot; current file kept unless you attach a new one' : '') + '</p>' : '') +
       '<div class="spodrop"><input type="file" id="svc-file" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.docx" style="display:none" onchange="SERVICES.file(this)">' +
@@ -100,7 +103,7 @@
     }).join("");
     var table = list.length ? '<table><thead><tr><th>Date</th><th>Service</th><th>Provider</th><th>Invoice #</th><th class="right">#</th><th class="right">Total</th><th class="right">Unit</th><th>Notes</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>' : '<p class="muted">No services logged yet.</p>';
 
-    host.innerHTML = '<div class="card"><h2>Services Provided</h2><p class="hint">Log outsourced services (uniform cleaning, pest control, waste pickup, equipment service…) and attach the invoice. Keeps services separate from received materials.</p>' + form + '</div>' +
+    host.innerHTML = '<div class="card"><h2>Services Provided</h2><p class="hint">Uniform cleaning and other service invoices (pest control, waste pickup, equipment service). Attach the invoice here. This does not write a material receipt on the Dock log.</p>' + form + '</div>' +
       '<div class="card"><h2 class="sub2">Service log (' + list.length + ')' + (totCost ? ' &middot; ' + money(totCost) : '') + '</h2>' +
       '<input id="svc-search" autocomplete="off" oninput="SERVICES.search(this.value)" placeholder="Search service, provider, invoice…" style="margin-bottom:10px">' +
       table + '</div>';
@@ -206,9 +209,17 @@
       }).subscribe();
     } catch (e) {}
   }
+  function stayingOnServices(t) {
+    if (!t) return false;
+    if (t.id === "svc-nav") return true;
+    if (t.getAttribute("data-dept-sub") === "services") return true;
+    if (t.getAttribute("data-dept-tool") === "services") return true;
+    return false;
+  }
   document.addEventListener("click", function (e) {
-    var t = e.target && e.target.closest ? e.target.closest("#nav .navitem") : null;
-    if (t && t.id !== "svc-nav") svcOpen = false;
+    var t = e.target && e.target.closest ? e.target.closest("#nav .navitem, [data-dept-sub], [data-dept-tool], #deptbar [data-dept], #dept-back") : null;
+    if (!t || stayingOnServices(t)) return;
+    svcOpen = false;
   }, true);
   document.addEventListener("visibilitychange", function () {
     if (document.visibilityState !== "visible" || !svcOpen) return;

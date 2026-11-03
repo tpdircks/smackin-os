@@ -80,7 +80,13 @@
       tempReq: "Enter a temperature F, or check Not measured when there is no thermometer.",
       devReq: "Deviation Actions is required when a check is N or UA, or when the seal is Broken.",
       algReq: "Allergen needs Y, N, or Unknown.",
-      tempWarn: "Recorded {n} F. Receiving dry range in the SOP is 80 to 110 F. Shipping dry range is 40 to 110 F. This value is saved either way. Tell Monica if those ranges should match."
+      tempWarn: "Recorded {n} F. Receiving dry range in the SOP is 80 to 110 F. Shipping dry range is 40 to 110 F. This value is saved either way. Tell Monica if those ranges should match.",
+      notSaved: "Not saved. Nothing is in the receiving log until Log receipt succeeds.",
+      editNotSaved: "Not saved. Save changes to update this row.",
+      fileNotLogged: "Attached, not logged:",
+      stillNeed: "Still needed:",
+      checksOpen: "Checklist answers are still open.",
+      recvFileNote: "Not saved. This file is not a saved receipt. Submit Receive with a supplier to write the log. Uniforms and other service invoices use the Services tab."
     },
     es: {
       title: "WHSE_FORM_1.0 Registro de recibo",
@@ -120,7 +126,13 @@
       tempReq: "Ingrese la temperatura F, o marque No medida si no hay termometro.",
       devReq: "Las acciones de desviacion son obligatorias cuando una revision es N o UA, o cuando el sello esta Roto.",
       algReq: "Alergeno necesita Y, N o Desconocido.",
-      tempWarn: "Registrado {n} F. El rango seco de recibo en el SOP es 80 a 110 F. El rango seco de envio es 40 a 110 F. Este valor se guarda igual. Avise a Monica si esos rangos deben coincidir."
+      tempWarn: "Registrado {n} F. El rango seco de recibo en el SOP es 80 a 110 F. El rango seco de envio es 40 a 110 F. Este valor se guarda igual. Avise a Monica si esos rangos deben coincidir.",
+      notSaved: "No guardado. Nada entra al registro de recibo hasta que Registrar recibo termine.",
+      editNotSaved: "No guardado. Guarde los cambios para actualizar esta fila.",
+      fileNotLogged: "Adjunto, no registrado:",
+      stillNeed: "Todavia falta:",
+      checksOpen: "Faltan respuestas de la lista.",
+      recvFileNote: "No guardado. Este archivo no es un recibo guardado. Envie Recibir con un proveedor para escribir el registro. Los uniformes y otras facturas de servicio van en la pestana Services."
     },
     pt: {
       title: "WHSE_FORM_1.0 Registro de recebimento",
@@ -160,7 +172,13 @@
       tempReq: "Informe a temperatura F, ou marque Nao medida se nao ha termometro.",
       devReq: "As acoes de desvio sao obrigatorias quando uma checagem e N ou UA, ou quando o lacre esta Quebrado.",
       algReq: "Alergeno precisa de Y, N ou Desconhecido.",
-      tempWarn: "Registrado {n} F. A faixa seca de recebimento no SOP e 80 a 110 F. A faixa seca de envio e 40 a 110 F. Este valor e salvo mesmo assim. Avise a Monica se essas faixas devem coincidir."
+      tempWarn: "Registrado {n} F. A faixa seca de recebimento no SOP e 80 a 110 F. A faixa seca de envio e 40 a 110 F. Este valor e salvo mesmo assim. Avise a Monica se essas faixas devem coincidir.",
+      notSaved: "Nao salvo. Nada entra no registro de recebimento ate Registrar recebimento terminar.",
+      editNotSaved: "Nao salvo. Salve as alteracoes para atualizar esta linha.",
+      fileNotLogged: "Anexado, nao registrado:",
+      stillNeed: "Ainda falta:",
+      checksOpen: "Faltam respostas da lista.",
+      recvFileNote: "Nao salvo. Este arquivo nao e um recibo salvo. Envie Receber com um fornecedor para gravar o registro. Uniformes e outras faturas de servico ficam na aba Services."
     }
   };
 
@@ -329,6 +347,19 @@
     if (failingChecks(input).length && !String(input.deviation_actions || "").trim()) errors.push(tx("devReq"));
     if (input.duplicate) errors.push(tx("dup") + (input.duplicate === true ? "" : " (" + input.duplicate + ")"));
     return errors;
+  }
+  var DRAFT_KEYS = ["supplier", "contents", "lot", "qty", "by"];
+  var DRAFT_INPUT = { supplier: "rl-supplier", contents: "rl-contents", lot: "rl-lot", qty: "rl-qrec", by: "rl-by" };
+  function draftGaps(input) {
+    input = input || {};
+    var gaps = [];
+    if (!String(input.supplier || "").trim()) gaps.push("supplier");
+    if (!String(input.contents || "").trim()) gaps.push("contents");
+    if (!normLot(input.lot)) gaps.push("lot");
+    var qty = input.qty_received;
+    if (qty == null || String(qty).trim() === "" || isNaN(Number(qty))) gaps.push("qty");
+    if (!String(input.received_by || "").trim()) gaps.push("by");
+    return gaps;
   }
   function lotBlocked(list, lot) {
     var key = normLot(lot);
@@ -836,6 +867,136 @@
     });
   }
   function kick() { ensureLoaded(false); }
+  var drafting = false;
+  function formValue(id) {
+    if (!doc) return "";
+    var el = doc.getElementById(id);
+    return el ? el.value : "";
+  }
+  function fieldLabel(id) {
+    if (!doc) return "";
+    var el = doc.getElementById(id);
+    var wrap = el && el.parentNode;
+    var lab = wrap && wrap.querySelector ? wrap.querySelector("label") : null;
+    if (!lab) return "";
+    return String(lab.textContent || "").replace(/\(opt\.\)/ig, "").replace(/\s+/g, " ").trim();
+  }
+  function checklistOpen() {
+    if (!doc) return false;
+    var box = doc.getElementById("rsop-checks");
+    if (!box) return false;
+    var sets = box.querySelectorAll("fieldset");
+    var i, r, radios, picked;
+    for (i = 0; i < sets.length; i++) {
+      radios = sets[i].querySelectorAll("input[type=radio]");
+      if (!radios.length) continue;
+      picked = false;
+      for (r = 0; r < radios.length; r++) if (radios[r].checked) picked = true;
+      if (!picked) return true;
+    }
+    return false;
+  }
+  function fileChip(inputId) {
+    if (!doc) return null;
+    var input = doc.getElementById(inputId);
+    var drop = input && input.closest ? input.closest(".spodrop") : null;
+    var chip = drop && drop.nextElementSibling;
+    if (!chip || !chip.classList || !chip.classList.contains("hint") || !chip.querySelector("button")) return null;
+    return chip;
+  }
+  function markFileChip(inputId) {
+    var chip = fileChip(inputId);
+    if (!chip) return false;
+    var mark = chip.querySelector("[data-rsop-file]");
+    if (!mark) {
+      mark = doc.createElement("strong");
+      mark.setAttribute("data-rsop-file", "1");
+      mark.className = "rsop-file-unsaved";
+      chip.insertBefore(mark, chip.firstChild);
+    }
+    var phrase = tx("fileNotLogged") + " ";
+    if (mark.textContent !== phrase) mark.textContent = phrase;
+    return true;
+  }
+  function paintLogDraft() {
+    if (!doc) return;
+    var supplier = doc.getElementById("rl-supplier");
+    if (!supplier) return;
+    var form = supplier.closest ? supplier.closest(".ordform") : null;
+    if (!form) return;
+    var gaps = draftGaps({
+      supplier: formValue("rl-supplier"),
+      contents: formValue("rl-contents"),
+      lot: formValue("rl-lot"),
+      qty_received: formValue("rl-qrec"),
+      received_by: formValue("rl-by")
+    });
+    var gapSet = {};
+    gaps.forEach(function (key) { gapSet[key] = 1; });
+    DRAFT_KEYS.forEach(function (key) {
+      var el = doc.getElementById(DRAFT_INPUT[key]);
+      if (!el || !el.classList) return;
+      el.classList.toggle("rsop-missing", !!gapSet[key]);
+    });
+    var names = [];
+    DRAFT_KEYS.forEach(function (key) {
+      if (!gapSet[key]) return;
+      var name = fieldLabel(DRAFT_INPUT[key]);
+      if (name) names.push(name);
+    });
+    var need = names.length ? (tx("stillNeed") + " " + names.join(", ") + ".") : "";
+    if (checklistOpen()) need += (need ? " " : "") + tx("checksOpen");
+    var editing = !!doc.querySelector("[onclick*='rlEditCancel']");
+    var lead = editing ? tx("editNotSaved") : tx("notSaved");
+    var box = doc.getElementById("rsop-draft");
+    if (box && !form.contains(box) && box.parentNode) box.parentNode.removeChild(box);
+    if (!box || !form.contains(box)) {
+      box = doc.createElement("div");
+      box.id = "rsop-draft";
+      box.className = "rsop-draft";
+      box.setAttribute("role", "status");
+      box.innerHTML = '<div class="rsop-draft-lead"></div><div class="rsop-draft-need"></div>';
+      form.insertBefore(box, form.firstChild);
+    }
+    var leadEl = box.querySelector(".rsop-draft-lead");
+    var needEl = box.querySelector(".rsop-draft-need");
+    if (leadEl && leadEl.textContent !== lead) leadEl.textContent = lead;
+    if (needEl) {
+      needEl.hidden = !need;
+      if (needEl.textContent !== need) needEl.textContent = need;
+    }
+    markFileChip("rl-input");
+  }
+  function paintRecvDraft() {
+    if (!doc) return;
+    var chip = fileChip("r-doc-input");
+    var old = doc.getElementById("rsop-recv-draft");
+    if (!chip) {
+      if (old && old.parentNode) old.parentNode.removeChild(old);
+      return;
+    }
+    markFileChip("r-doc-input");
+    if (!old) {
+      old = doc.createElement("p");
+      old.id = "rsop-recv-draft";
+      old.className = "rsop-draft";
+      old.setAttribute("role", "status");
+      chip.parentNode.insertBefore(old, chip.nextSibling);
+    }
+    var note = tx("recvFileNote");
+    if (old.textContent !== note) old.textContent = note;
+  }
+  function paintDraft() {
+    if (!doc || drafting) return;
+    if (!doc.getElementById("rl-supplier") && !doc.getElementById("r-doc-input")) return;
+    drafting = true;
+    try {
+      paintLogDraft();
+      paintRecvDraft();
+    } finally {
+      drafting = false;
+    }
+  }
   function styleOnce() {
     if (!doc || doc.getElementById("rsop-style")) return;
     var s = doc.createElement("style");
@@ -853,7 +1014,12 @@
       "#rsop-holdbox .rsop-scroll{overflow:auto}",
       "#rsop-holdbox select,#rsop-holdbox input{width:auto;min-width:140px}",
       "#rsop-holdbox .rsop-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center}",
-      "#rsop-holdbox button.primary{margin-top:0}"
+      "#rsop-holdbox button.primary{margin-top:0}",
+      ".rsop-draft{background:#fff6e0;border:1px solid #c47d00;border-radius:8px;padding:8px 10px;margin:0 0 10px;color:#1a1204}",
+      ".rsop-draft-lead{font-weight:800}",
+      ".rsop-draft-need{margin-top:4px;font-weight:700}",
+      ".rsop-file-unsaved{color:#8a4b00;margin-right:4px}",
+      "input.rsop-missing{outline:2px solid #c47d00;background:#fff8ec}"
     ].join("");
     doc.head.appendChild(s);
   }
@@ -885,7 +1051,8 @@
     holdMessage: holdMessage,
     openHolds: openHolds,
     ensureLoaded: ensureLoaded,
-    normLot: normLot
+    normLot: normLot,
+    draftGaps: draftGaps
   };
   root.RECVSOP = api;
 
@@ -935,6 +1102,25 @@
     if (root.DB && root.DB.onChange) {
       root.DB.onChange(function () { ensureLoaded(false); });
     }
+    doc.addEventListener("input", function (e) {
+      var id = e.target && e.target.id;
+      if (!id || id.indexOf("rl-") !== 0) return;
+      paintDraft();
+    });
+    doc.addEventListener("change", function (e) {
+      var t = e.target;
+      if (!t) return;
+      var id = t.id || "";
+      var name = t.name || "";
+      if (id.indexOf("rl-") === 0 || id.indexOf("rsop-") === 0 || String(name).indexOf("rsop_") === 0) paintDraft();
+    });
+    if (typeof MutationObserver === "function") {
+      var draftObs = new MutationObserver(function () {
+        if (drafting) return;
+        paintDraft();
+      });
+      draftObs.observe(doc.documentElement || doc.body, { childList: true, subtree: true });
+    }
     if (doc.readyState === "loading") doc.addEventListener("DOMContentLoaded", boot);
     else boot();
   }
@@ -952,6 +1138,7 @@
       receivingCsv: receivingCsv,
       holdCsv: holdCsv,
       normLot: normLot,
+      draftGaps: draftGaps,
       dispPhrase: dispPhrase,
       RECV_HEAD: RECV_HEAD,
       HOLD_HEAD: HOLD_HEAD
