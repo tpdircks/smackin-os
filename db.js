@@ -992,6 +992,16 @@ window.DB = (function () {
     if (mode === "cloud") {
       const ins = await must(sb.from("receiving_log").insert(row).select("id"), "receiving_log");
       newId = ins && ins.data && ins.data[0] ? ins.data[0].id : null;
+      if (!newId) {
+        const again = await sb.from("receiving_log").select("id")
+          .eq("supplier", row.supplier || "")
+          .eq("lot", row.lot || "")
+          .eq("entered_by", row.entered_by || "")
+          .order("created_at", { ascending: false })
+          .limit(1);
+        newId = again && again.data && again.data[0] ? again.data[0].id : null;
+      }
+      if (!newId) return { ok: false, msg: "Receiving log did not confirm a saved row. The form was kept." };
       await cloud.addLog(logEntry);
       await cloud.loadAll();
     } else {
@@ -1024,7 +1034,8 @@ window.DB = (function () {
     }, extraRecv(rec), filePatch);
     const logEntry = { a: "Receiving edited", d: (patch.supplier || "") + (patch.po_num ? " PO " + patch.po_num : ""), u: op, t: new Date().toISOString() };
     if (mode === "cloud") {
-      await must(sb.from("receiving_log").update(patch).eq("id", id), "receiving_log");
+      const upd = await must(sb.from("receiving_log").update(patch).eq("id", id).select("id"), "receiving_log");
+      if (!upd || !upd.data || !upd.data.length) return { ok: false, msg: "Receiving log update did not confirm. The form was kept." };
       await cloud.addLog(logEntry);
       await cloud.loadAll();
     } else {

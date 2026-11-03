@@ -32,7 +32,7 @@ assert(src.indexOf("SUP-LABPAP") >= 0 && src.indexOf("SUP-LABOB") >= 0, "label p
 assert(src.indexOf('{ code: "SUP-LABOB"') < 0, "does not sync a missing SUP-LABOB id");
 assert(html.indexOf('src="inv-sync-packaging-1102.js?b=1"') >= 0, "index loads the sync");
 assert(html.indexOf('src="inv-sync-1102.js?b=1"') < html.indexOf('src="inv-sync-packaging-1102.js?b=1"'), "bag sync stays first");
-assert(html.indexOf('src="pack-receive.js?b=1"') > html.indexOf('src="raw-exp.js'), "receive helper follows raw expiration");
+assert(html.indexOf('src="pack-receive.js?b=2"') > html.indexOf('src="raw-exp.js'), "receive helper follows raw expiration");
 assert(sw.indexOf('"./inv-sync-packaging-1102.js"') >= 0, "sw precaches the sync");
 assert(sw.indexOf('"./pack-receive.js"') >= 0, "sw precaches receive helper");
 assert(ux.indexOf("3021") >= 0 && ux.indexOf("S-14632") >= 0, "supplier aliases");

@@ -19,7 +19,7 @@
      Cmd+Shift+R can drop a stale smackin-inv worker even when that worker
      swallows sw-escape.js. Only an older smackin-inv cache is removed. */
   (function () {
-    var EMBEDDED = "smackin-inv-v275";
+    var EMBEDDED = "smackin-inv-v276";
     function ver(id) {
       var m = /smackin-inv-v(\d+)/.exec(String(id || ""));
       return m ? parseInt(m[1], 10) : 0;
@@ -65,7 +65,7 @@
     }).catch(function () {});
   })();
   </script>
-  <script src="sw-escape.js?b=14"></script>
+  <script src="sw-escape.js?b=15"></script>
 </head>
 <body>
   <header>
@@ -109,10 +109,10 @@
   <script src="shortdated.js?b=1"></script>
   <script src="launch-schedule.js?b=1"></script>
   <script src="allen-reorder.js?b=1"></script>
-  <script src="db.js?b=97"></script>
+  <script src="db.js?b=98"></script>
   <script src="gusto-roster.js?b=1"></script>
   <script src="order-lanes.js?b=1"></script>
-  <script src="app.js?b=197"></script>
+  <script src="app.js?b=198"></script>
   <script src="returns-workflow.js?b=2"></script>
   <script src="fg-lots.js?b=2"></script>
   <script src="ecom-lot-log.js?b=1"></script>
@@ -128,7 +128,7 @@
   <script src="wip-production.js?b=1"></script>
   <script src="mfg-upload.js?b=3"></script>
   <script src="data-health.js?b=5"></script>
-  <script src="services.js?b=3"></script>
+  <script src="services.js?b=4"></script>
   <script src="sps-map.js?b=6"></script>
   <script src="sps-feed.js?b=5"></script>
   <script src="slc-count-latest.js?b=2"></script>
@@ -153,9 +153,9 @@
   <script src="work-orders.js?b=3"></script>
   <script src="inventory-visual.js?b=4"></script>
   <script src="dept-boards.js?b=1"></script>
-  <script src="raw-exp.js?b=1"></script>
-  <script src="raw-coa.js?b=1"></script>
-  <script src="pack-receive.js?b=1"></script>
+  <script src="raw-exp.js?b=2"></script>
+  <script src="raw-coa.js?b=2"></script>
+  <script src="pack-receive.js?b=2"></script>
   <script src="floor-clarity.js?b=1"></script>
   <script src="sw-boot.js?b=2"></script>
 </body>
