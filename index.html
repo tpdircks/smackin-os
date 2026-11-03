@@ -18,7 +18,7 @@
      Cmd+Shift+R can drop a stale smackin-inv worker even when that worker
      swallows sw-escape.js. Only an older smackin-inv cache is removed. */
   (function () {
-    var EMBEDDED = "smackin-inv-v265";
+    var EMBEDDED = "smackin-inv-v266";
     function ver(id) {
       var m = /smackin-inv-v(\d+)/.exec(String(id || ""));
       return m ? parseInt(m[1], 10) : 0;
@@ -64,7 +64,7 @@
     }).catch(function () {});
   })();
   </script>
-  <script src="sw-escape.js?b=8"></script>
+  <script src="sw-escape.js?b=9"></script>
 </head>
 <body>
   <header>
@@ -108,7 +108,7 @@
   <script src="shortdated.js?b=1"></script>
   <script src="launch-schedule.js?b=1"></script>
   <script src="allen-reorder.js?b=1"></script>
-  <script src="db.js?b=94"></script>
+  <script src="db.js?b=95"></script>
   <script src="gusto-roster.js?b=1"></script>
   <script src="order-lanes.js?b=1"></script>
   <script src="app.js?b=196"></script>
@@ -148,6 +148,7 @@
   <script src="batch-record.js?b=1"></script>
   <script src="work-orders.js?b=3"></script>
   <script src="inventory-visual.js?b=3"></script>
+  <script src="raw-exp.js?b=1"></script>
   <script src="floor-clarity.js?b=1"></script>
   <script src="sw-boot.js?b=2"></script>
 </body>
