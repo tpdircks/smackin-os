@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-/* The 10/27 sheet sync stays in the repo and is not loaded.
-   A loaded apply module can overwrite a newer hand count.
-   Older inv-sync files must not ship. */
+/* The 11/02 sheet sync is the only apply module, and index.html loads it.
+   A hand count still wins: the pass writes only over a sheet-sync post, and
+   never below the qty in RETURNS or a hold location.
+   Older inv-sync files must not ship. The count panel stays unloaded. */
 "use strict";
 
 var fs = require("fs");
@@ -19,24 +20,25 @@ function read(rel) { return fs.readFileSync(path.join(root, rel), "utf8"); }
 var obsolete = [
   "inv-sync-0928.js", "inv-sync-1002.js", "inv-sync-1006.js", "inv-sync-1009.js",
   "inv-sync-1013.js", "inv-sync-1014.js", "inv-sync-1015.js", "inv-sync-1020.js",
-  "inv-sync-1023.js", "inv-sync-1027.js", "inv-sync-1027b.js", "inv-sync-1027c.js"
+  "inv-sync-1023.js", "inv-sync-1027.js", "inv-sync-1027b.js", "inv-sync-1027c.js",
+  "inv-sync-1027d.js"
 ];
 obsolete.forEach(function (rel) {
   assert(!fs.existsSync(path.join(root, rel)), rel + " still in the app");
 });
 
 var syncFiles = fs.readdirSync(root).filter(function (name) { return /^inv-sync-.*\.js$/.test(name); });
-assert(syncFiles.length === 1 && syncFiles[0] === "inv-sync-1027d.js", "sync files " + syncFiles.join(","));
+assert(syncFiles.length === 1 && syncFiles[0] === "inv-sync-1102.js", "sync files " + syncFiles.join(","));
 
 var htmlFiles = fs.readdirSync(root).filter(function (name) { return /\.html$/.test(name); });
 htmlFiles.forEach(function (name) {
   var html = read(name);
   var tags = html.match(/inv-sync-[^"']+\.js/g) || [];
   if (name === "index.html") {
-    assert(tags.length === 0, "index does not load a sheet sync");
+    assert(tags.length === 1 && tags[0] === "inv-sync-1102.js", "index loads only the 11/02 sync " + tags.join(","));
   } else {
     tags.forEach(function (tag) {
-      assert(tag === "inv-sync-1027d.js", name + " loads " + tag);
+      assert(false, name + " loads " + tag);
     });
   }
   obsolete.forEach(function (rel) {
@@ -45,24 +47,30 @@ htmlFiles.forEach(function (name) {
 });
 
 var index = read("index.html");
-assert(index.indexOf("inv-sync-1027d.js") < 0, "index does not load the apply module");
-assert(index.indexOf("slc-count-latest.js") < 0, "index does not load the count file");
+var dbAt = index.indexOf('src="db.js');
+var countAt = index.indexOf('src="slc-count-latest.js');
+var applyAt = index.indexOf('src="inv-sync-1102.js');
+assert(countAt > 0 && applyAt > countAt, "count file loads before the apply module");
+assert(dbAt > 0 && countAt > dbAt, "apply loads after db.js");
+assert(index.indexOf("inv-sync-1027d.js") < 0, "index does not load the 10/27 module");
 assert(index.indexOf("slc-count-panel.js") < 0, "index does not load the count panel");
-assert(fs.existsSync(path.join(root, "inv-sync-1027d.js")), "apply file kept");
+assert(fs.existsSync(path.join(root, "inv-sync-1102.js")), "apply file present");
 assert(fs.existsSync(path.join(root, "slc-count-latest.js")), "count file kept");
 assert(fs.existsSync(path.join(root, "slc-count-panel.js")), "panel file kept");
 
 var sw = read("service-worker.js");
-assert(sw.indexOf('const CACHE = "smackin-inv-v266"') >= 0, "cache v254");
+assert(sw.indexOf('const CACHE = "smackin-inv-v267"') >= 0, "cache v267");
 assert(sw.indexOf("smackin-inv-v242") < 0, "old cache gone");
-assert(sw.indexOf("./inv-sync-1027d.js") < 0, "sw does not precache the apply module");
-assert(sw.indexOf("./slc-count-latest.js") < 0, "sw does not precache the count file");
+assert(sw.indexOf("\"./inv-sync-1102.js\"") >= 0, "sw precaches the apply module");
+assert(sw.indexOf("\"./slc-count-latest.js\"") >= 0, "sw precaches the count file");
 assert(sw.indexOf("./slc-count-panel.js") < 0, "sw does not precache the count panel");
 obsolete.forEach(function (rel) { assert(sw.indexOf(rel) < 0, "sw lists " + rel); });
 
-var apply = read("inv-sync-1027d.js");
-assert(apply.indexOf("inv-sync-2026-10-27d-cloud") >= 0, "new local flag");
-assert(apply.indexOf("inv-sync-2026-10-23") < 0, "old 10/23 flag absent");
+var apply = read("inv-sync-1102.js");
+assert(apply.indexOf("inv-sync-2026-11-02-cloud") >= 0, "new local flag");
+assert(apply.indexOf("inv-sync-2026-10-27d") < 0, "old 10/27d flag absent");
+assert(apply.indexOf('COUNT_DATE = "2026-11-02"') >= 0, "11/02 count date");
+assert(apply.indexOf("below returns or hold qty") >= 0, "returns and hold guard");
 assert(apply.indexOf("await DB.adjustTotal(it, sheetQty, NOTE)") >= 0, "awaited adjust");
 assert(apply.indexOf("function isSyncOperator") >= 0, "manual operator guard");
 assert(apply.indexOf("A hand count wins") >= 0, "hand count rule");
@@ -70,7 +78,7 @@ assert(apply.indexOf("if (!choice.write)") >= 0, "skips when a hand count owns t
 assert(apply.indexOf("var TARGET") < 0, "no baked target table");
 assert(apply.indexOf('SHEETS = { "Inventory Bags 4 oz": 1, "Inventory Bags 1.5 oz": 1 }') >= 0, "bag sheets only");
 assert(apply.indexOf("DT275") < 0 && apply.indexOf("BOX-") < 0, "does not name excluded skus");
-["11850", "28000", "36000", "29100", "16700"].forEach(function (n) {
+["11850", "28000", "36000", "29100", "16700", "22700", "57700", "49000", "48200"].forEach(function (n) {
   assert(apply.indexOf(n) < 0, "old or sheet qty baked in module " + n);
 });
 
@@ -83,10 +91,11 @@ var ctx = { window: {} };
 vm.createContext(ctx);
 vm.runInContext(read("slc-count-latest.js"), ctx);
 var rows = ctx.window.SLC_COUNT.rows.filter(function (row) {
-  return row && row.code && row.sheetDate === "2026-10-27" &&
+  return row && row.code && row.sheetDate === "2026-11-02" &&
     (row.sheet === "Inventory Bags 4 oz" || row.sheet === "Inventory Bags 1.5 oz");
 });
-assert(rows.length === 49, "10/27 bag rows " + rows.length);
+assert(ctx.window.SLC_COUNT.date === "2026-11-02", "count file date");
+assert(rows.length === 49, "11/02 bag rows " + rows.length);
 assert(rows.every(function (row) { return row.sheetQty === row.sheetQty && row.sheetQty >= 0 && row.sheetQty <= 100000; }), "qty bounds");
 assert(rows.every(function (row) { return String(row.code).indexOf("DT275") !== 0 && String(row.code).indexOf("BOX-") !== 0; }), "filter excludes dt and box");
 
@@ -112,7 +121,7 @@ function harness(opts) {
         onHand: function () { return onHandQty; },
         kvSet: function (key, val) {
           puts.push({ key: key, val: val });
-          if (key === "inv-sync-2026-10-27d") kv.value = String(val);
+          if (key === "inv-sync-2026-11-02") kv.value = String(val);
           return Promise.resolve({ ok: true });
         },
         kvCloudOn: function () { return true; },
@@ -135,7 +144,7 @@ function harness(opts) {
       if (url.indexOf("/stock") >= 0) {
         return Promise.resolve({
           ok: true,
-          json: function () { return Promise.resolve(opts.stock || [{ location: "RETURNS", qty: onHandQty }]); }
+          json: function () { return Promise.resolve(opts.stock || [{ location: "RECEIVING", qty: onHandQty }]); }
         });
       }
       if (url.indexOf("transactions") >= 0) {
@@ -150,7 +159,7 @@ function harness(opts) {
     console: console,
     encodeURIComponent: encodeURIComponent
   };
-  if (opts.flag) store["inv-sync-2026-10-27d-cloud"] = opts.flag;
+  if (opts.flag) store["inv-sync-2026-11-02-cloud"] = opts.flag;
   ctx.DB = ctx.window.DB;
   vm.createContext(ctx);
   vm.runInContext(apply, ctx);
@@ -164,11 +173,11 @@ async function settle(ms) {
 }
 
 var one = {
-  date: "2026-10-27",
-  rows: [{ code: "B4-S07", sheet: "Inventory Bags 4 oz", sheetDate: "2026-10-27", sheetQty: 29100, desc: "Cheddar Jalapeno" }]
+  date: "2026-11-02",
+  rows: [{ code: "B4-S07", sheet: "Inventory Bags 4 oz", sheetDate: "2026-11-02", sheetQty: 29100, desc: "Cheddar Jalapeno" }]
 };
 var item = { id: "BAG4-S07", code: "B4-S07", flavor: "Cheddar Jalapeno" };
-var syncHist = [{ operator: null, detail: "Cheddar Jalapeno @ RETURNS: 29,100 -> 36,000" }];
+var syncHist = [{ operator: null, detail: "Cheddar Jalapeno @ RECEIVING: 29,100 -> 36,000" }];
 
 (async function () {
   var flagged = harness({ slc: one, item: item, onHand: 36000, flag: "done:already" });
@@ -188,25 +197,25 @@ var syncHist = [{ operator: null, detail: "Cheddar Jalapeno @ RETURNS: 29,100 ->
   await settle(2000);
   assert(skipped.adjusts.length === 0, "matching on-hand is not written");
   assert(skipped.kv.value.indexOf("done:") === 0, "matching run still finishes once");
-  assert(skipped.store["inv-sync-2026-10-27d-cloud"], "local done flag set");
+  assert(skipped.store["inv-sync-2026-11-02-cloud"], "local done flag set");
 
   var applyOnce = harness({ slc: one, item: item, onHand: 36000, history: syncHist });
   await settle(2000);
   assert(applyOnce.adjusts.length === 1, "one adjust");
-  assert(applyOnce.adjusts[0] && applyOnce.adjusts[0].qty === 29100 && applyOnce.adjusts[0].note === "inv-sync-1027d", "writes the sheet total");
+  assert(applyOnce.adjusts[0] && applyOnce.adjusts[0].qty === 29100 && applyOnce.adjusts[0].note === "inv-sync-1102", "writes the sheet total");
   assert(applyOnce.kv.value.indexOf("done:") === 0, "cloud done flag");
-  var reportPut = applyOnce.puts.filter(function (p) { return p.key === "inv-sync-2026-10-27d-report"; })[0];
+  var reportPut = applyOnce.puts.filter(function (p) { return p.key === "inv-sync-2026-11-02-report"; })[0];
   var report = reportPut ? JSON.parse(reportPut.val) : null;
   assert(report && report.rows.length === 1 && report.rows[0].before === 36000 && report.rows[0].after === 29100, "report keeps the previous on-hand");
 
   var manual = harness({
     slc: one, item: item, onHand: 35000,
-    history: [{ operator: "Jesus", detail: "Cheddar Jalapeno @ RETURNS: 36,000 -> 35,000" }]
+    history: [{ operator: "Jesus", detail: "Cheddar Jalapeno @ RECEIVING: 36,000 -> 35,000" }]
   });
   await settle(2000);
   assert(manual.adjusts.length === 0, "a named count is not overwritten");
   assert(manual.kv.value.indexOf("done:") === 0, "manual skip still finishes the one pass");
-  var manualReport = JSON.parse(manual.puts.filter(function (p) { return p.key === "inv-sync-2026-10-27d-report"; })[0].val);
+  var manualReport = JSON.parse(manual.puts.filter(function (p) { return p.key === "inv-sync-2026-11-02-report"; })[0].val);
   assert(manualReport.kept.length === 1 && manualReport.kept[0].operator === "Jesus", "manual is reported, not applied");
 
   var moved = harness({
@@ -219,9 +228,9 @@ var syncHist = [{ operator: null, detail: "Cheddar Jalapeno @ RETURNS: 29,100 ->
   var buried = harness({
     slc: one, item: item, onHand: 36000,
     history: [
-      { operator: null, detail: "Cheddar Jalapeno @ RETURNS: 1 -> 100" },
-      { operator: "Jesus", detail: "Cheddar Jalapeno @ RETURNS: 10 -> 5" },
-      { operator: null, detail: "Cheddar Jalapeno @ RETURNS: 29,100 -> 36,000" }
+      { operator: null, detail: "Cheddar Jalapeno @ RECEIVING: 1 -> 100" },
+      { operator: "Jesus", detail: "Cheddar Jalapeno @ RECEIVING: 10 -> 5" },
+      { operator: null, detail: "Cheddar Jalapeno @ RECEIVING: 29,100 -> 36,000" }
     ]
   });
   await settle(2000);
@@ -229,10 +238,20 @@ var syncHist = [{ operator: null, detail: "Cheddar Jalapeno @ RETURNS: 29,100 ->
 
   var oldSheet = harness({
     slc: one, item: item, onHand: 36000,
-    history: [{ operator: "Adri Inv 9/21", detail: "Cheddar Jalapeno @ RETURNS: 1 -> 36,000" }]
+    history: [{ operator: "Adri Inv 9/21", detail: "Cheddar Jalapeno @ RECEIVING: 1 -> 36,000" }]
   });
   await settle(2000);
   assert(oldSheet.adjusts.length === 1, "an old sheet-sync label is not a hand count");
+
+  var returnsPile = harness({
+    slc: one, item: item, onHand: 36000, history: syncHist,
+    stock: [{ location: "RETURNS", qty: 36000 }]
+  });
+  await settle(2000);
+  assert(returnsPile.adjusts.length === 0, "a count below the RETURNS qty is not written");
+  assert(returnsPile.kv.value.indexOf("done:") === 0, "returns hold still finishes the pass");
+  var rpReport = JSON.parse(returnsPile.puts.filter(function (p) { return p.key === "inv-sync-2026-11-02-report"; })[0].val);
+  assert(rpReport.kept.length === 1 && rpReport.kept[0].reason === "below returns or hold qty" && rpReport.kept[0].held === 36000, "returns hold is reported");
 
   var later = harness({ slc: one, item: item, onHand: 35000, kv: "done:earlier", history: syncHist });
   await settle(80);

@@ -1,6 +1,6 @@
-/* inv-sync-1027d.js
+/* inv-sync-1102.js
    The only inventory apply module loaded by the app.
-   One shared cloud pass for the 2026-10-27 standard 4 oz and 1.5 oz rows in
+   One shared cloud pass for the 2026-11-02 standard 4 oz and 1.5 oz rows in
    slc-count-latest.js. Quantities are read from that file. This module does
    not keep an older count, and it does not run again after the shared done
    flag is set. A new browser reads that flag and does not write.
@@ -8,17 +8,21 @@
    location is still the post from a sheet sync (blank operator, inv-sync-*,
    or an older sheet-sync label). A person's name on that post, or a qty
    that post does not explain, is left alone.
+   A sheet total below the qty already sitting in RETURNS or a hold location
+   is not written. That row is reported for Adriana. RETURNS and holds are
+   never moved by this pass.
    Each allowed adjust is awaited and checked with a fresh stock read. */
 (function () {
   "use strict";
-  var LOCAL_FLAG = "inv-sync-2026-10-27d-cloud";
-  var CLOUD_KEY = "inv-sync-2026-10-27d";
-  var REPORT_KEY = "inv-sync-2026-10-27d-report";
-  var NOTE = "inv-sync-1027d";
-  var COUNT_DATE = "2026-10-27";
+  var LOCAL_FLAG = "inv-sync-2026-11-02-cloud";
+  var CLOUD_KEY = "inv-sync-2026-11-02";
+  var REPORT_KEY = "inv-sync-2026-11-02-report";
+  var NOTE = "inv-sync-1102";
+  var COUNT_DATE = "2026-11-02";
   var LOCK_MS = 180000;
   var SHEETS = { "Inventory Bags 4 oz": 1, "Inventory Bags 1.5 oz": 1 };
   var HOLD_QTY = 100000;
+  var SKIP_LOCS = { "RETURNS": 1, "QUARANTINE": 1, "QA-HOLD": 1, "RETURNS-HOLD": 1 };
   var busy = false;
   var myToken = "";
 
@@ -82,6 +86,11 @@
     if (!res.ok) throw new Error("kv read " + res.status);
     var rows = await res.json();
     return parseState(rows && rows[0] ? String(rows[0].value) : "");
+  }
+  function skipQty(rows) {
+    return (rows || []).reduce(function (sum, row) {
+      return sum + (SKIP_LOCS[String(row.location || "").toUpperCase()] ? (Number(row.qty) || 0) : 0);
+    }, 0);
   }
   function sumQty(rows) {
     return (rows || []).reduce(function (sum, row) { return sum + (Number(row.qty) || 0); }, 0);
@@ -207,7 +216,7 @@
       if (!(state.phase === "lock" && state.token === myToken)) return false;
 
       var list = currentRows();
-      if (!list.length) throw new Error("no 10/27 bag rows");
+      if (!list.length) throw new Error("no 11/02 bag rows");
       var changed = [];
       var kept = [];
       var missed = [];
@@ -222,10 +231,15 @@
         if (!it) { missed.push(row.code); continue; }
         var stock = await alignedStock(it);
         var before = sumQty(stock);
+        var held = skipQty(stock);
+        if (before !== sheetQty && sheetQty < held) {
+          kept.push({ code: row.code, qty: before, reason: "below returns or hold qty", operator: "", held: held, sheet: sheetQty });
+          continue;
+        }
         var choice = await ownership(it, stock, sheetQty);
         if (!choice.write) {
           if (choice.reason && choice.reason !== "match") kept.push({
-            code: row.code, qty: before, reason: choice.reason, operator: choice.operator || ""
+            code: row.code, qty: before, reason: choice.reason, operator: choice.operator || "", sheet: sheetQty
           });
           continue;
         }
@@ -235,7 +249,7 @@
         changed.push({ code: row.code, before: before, after: after });
       }
       if (missed.length) {
-        console.warn("[inv-sync 10/27d] missing", missed);
+        console.warn("[inv-sync 11/02] missing", missed);
         await releaseIfHeld();
         return false;
       }
@@ -246,10 +260,10 @@
       var fin = await DB.kvSet(CLOUD_KEY, done);
       if (!fin || !fin.ok) throw new Error("could not save the done flag");
       rememberLocal(done);
-      console.log("[inv-sync 10/27d] applied", changed.length, "kept", kept.length, "of", list.length);
+      console.log("[inv-sync 11/02] applied", changed.length, "kept", kept.length, "of", list.length);
       return true;
     } catch (e) {
-      console.warn("[inv-sync 10/27d]", e);
+      console.warn("[inv-sync 11/02]", e);
       try { await releaseIfHeld(); } catch (err) {}
       myToken = "";
       return false;
