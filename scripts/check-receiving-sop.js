@@ -16,8 +16,8 @@ var app = read("app.js");
 var html = read("index.html");
 var sw = read("service-worker.js");
 
-eq(sw.indexOf('const CACHE = "smackin-inv-v274"') >= 0, "cache bump");
-eq(html.indexOf("receiving-sop.js?b=3") >= 0, "sop cache bust");
+eq(sw.indexOf('const CACHE = "smackin-inv-v275"') >= 0, "cache bump");
+eq(html.indexOf("receiving-sop.js?b=4") >= 0, "sop cache bust");
 eq(html.indexOf("services.js?b=3") >= 0, "services cache bust");
 eq(html.indexOf("dept-homes.js?b=31") >= 0, "dept homes cache bust");
 var homes = read("dept-homes.js");

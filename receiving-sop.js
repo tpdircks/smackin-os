@@ -817,7 +817,45 @@
     }
     pokeHoldFlag(h.receiving_log_id, h.lot, !!still);
     paintHolds(true);
+    if (disp === "released" && root.RAW_COA && typeof root.RAW_COA.afterHoldLogReleased === "function") {
+      try {
+        await root.RAW_COA.afterHoldLogReleased({
+          id: h.receiving_log_id,
+          lot: h.lot,
+          itemId: h.item_id,
+          by: who,
+          note: note,
+          reason: h.hold_reason
+        });
+      } catch (e) { toast(String(e && e.message || e)); }
+    }
     toast(disp === "released" && !still ? tx("released") : tx("closed"));
+  }
+  function noteExternalHold(row) {
+    if (!row) return;
+    for (var i = 0; i < holds.length; i++) {
+      if (row.id && String(holds[i].id) === String(row.id)) return;
+    }
+    holds.unshift(row);
+    revision++;
+    if (!cloudMode()) writeLocal(holds);
+    paintHolds();
+  }
+  function noteExternalRelease(recvId, lot) {
+    var key = normLot(lot);
+    holds.forEach(function (h) {
+      if (h.status !== "held") return;
+      var sameReceipt = recvId && String(h.receiving_log_id || "") === String(recvId);
+      var sameCoa = key && normLot(h.lot) === key && String(h.hold_reason || "").indexOf("COA not received at the dock") === 0;
+      if (!sameReceipt && !sameCoa) return;
+      h.status = "released";
+      h.disposition = "released";
+      h.disposition_note = h.disposition_note || "Quality released";
+      h.disposition_at = h.disposition_at || new Date().toISOString();
+    });
+    revision++;
+    if (!cloudMode()) writeLocal(holds);
+    paintHolds(true);
   }
   function paintPreview() {
     if (!doc || !doc.getElementById("rsop-box")) return;
@@ -1050,6 +1088,8 @@
     lotHeld: lotHeld,
     holdMessage: holdMessage,
     openHolds: openHolds,
+    noteExternalHold: noteExternalHold,
+    noteExternalRelease: noteExternalRelease,
     ensureLoaded: ensureLoaded,
     normLot: normLot,
     draftGaps: draftGaps
