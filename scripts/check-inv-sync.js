@@ -28,14 +28,16 @@ obsolete.forEach(function (rel) {
 });
 
 var syncFiles = fs.readdirSync(root).filter(function (name) { return /^inv-sync-.*\.js$/.test(name); });
-assert(syncFiles.length === 1 && syncFiles[0] === "inv-sync-1102.js", "sync files " + syncFiles.join(","));
+syncFiles.sort();
+assert(syncFiles.length === 2 && syncFiles[0] === "inv-sync-1102.js" && syncFiles[1] === "inv-sync-packaging-1102.js", "sync files " + syncFiles.join(","));
 
 var htmlFiles = fs.readdirSync(root).filter(function (name) { return /\.html$/.test(name); });
 htmlFiles.forEach(function (name) {
   var html = read(name);
   var tags = html.match(/inv-sync-[^"']+\.js/g) || [];
   if (name === "index.html") {
-    assert(tags.length === 1 && tags[0] === "inv-sync-1102.js", "index loads only the 11/02 sync " + tags.join(","));
+    tags.sort();
+    assert(tags.length === 2 && tags[0] === "inv-sync-1102.js" && tags[1] === "inv-sync-packaging-1102.js", "index loads the bag sync and the packaging sync " + tags.join(","));
   } else {
     tags.forEach(function (tag) {
       assert(false, name + " loads " + tag);
@@ -59,7 +61,7 @@ assert(fs.existsSync(path.join(root, "slc-count-latest.js")), "count file kept")
 assert(fs.existsSync(path.join(root, "slc-count-panel.js")), "panel file kept");
 
 var sw = read("service-worker.js");
-assert(sw.indexOf('const CACHE = "smackin-inv-v270"') >= 0, "cache v269");
+assert(sw.indexOf('const CACHE = "smackin-inv-v271"') >= 0, "cache v269");
 assert(sw.indexOf("smackin-inv-v242") < 0, "old cache gone");
 assert(sw.indexOf("\"./inv-sync-1102.js\"") >= 0, "sw precaches the apply module");
 assert(sw.indexOf("\"./slc-count-latest.js\"") >= 0, "sw precaches the count file");
