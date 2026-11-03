@@ -125,7 +125,7 @@
       rawsub: "Packaging, seasoning, sunflower seeds, adhesion, then containers.",
       film: "Packaging", seasoning: "Seasoning", seed: "Sunflower Seeds", adhesion: "Adhesion",
       containers: "Containers / Shippers", other: "Other", mastercase: "Master Case",
-      allSizes: "All sizes", instock: "In stock only", search: "Search flavor, code or location",
+      allSizes: "All sizes", instock: "In stock only", search: "Search flavor, code, supplier number, or location",
       receive: "Receive", adjust: "Adjust", move: "Move", count: "Count", returns: "Returns", locations: "Locations",
       adjustCounts: "Adjust counts", movePick: "Move / Pick", cycle: "Cycle count",
       avail: "available", held: "held", more: "more", noLoc: "No location rows", none: "Nothing matches these filters.",
@@ -250,7 +250,8 @@
     if (c === "film4" || c === "film15") return "film";
     if (c === "seasoning") return "seasoning";
     if (c === "seed") return "seed";
-    if (c === "packaging" || c === "bucket" || c === "display" || c === "supply") return "containers";
+    if (c === "packaging" || c === "bucket" || c === "display" || c === "supply" || c === "sticker") return "containers";
+    if (c.indexOf("bucket") >= 0 || c.indexOf("box") >= 0) return "containers";
     return "other";
   }
   function groupOf(it) {
@@ -417,7 +418,8 @@
     if (st.instock && !(info.total > 0)) return false;
     var q = norm(st.q);
     if (q) {
-      var hay = norm([it.name, it.code, it.id, it.flavor, it.category].join(" ") + " " + info.locs.map(function (l) { return l.loc; }).join(" "));
+      var alias = (typeof window !== "undefined" && window.PACK_RECEIVE && window.PACK_RECEIVE.aliasText) ? window.PACK_RECEIVE.aliasText(it) : "";
+      var hay = norm([it.name, it.code, it.id, it.flavor, it.category, alias].join(" ") + " " + info.locs.map(function (l) { return l.loc; }).join(" "));
       if (hay.indexOf(q) < 0) return false;
     }
     return true;
