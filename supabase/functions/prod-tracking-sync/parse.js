@@ -92,6 +92,10 @@ function numKey(v) {
 
 // Same parts as mfg-upload.js keyOf("pmac"). Numeric columns compare as JS
 // numbers so a spreadsheet 700 and a numeric column "700.0" are one key.
+// Shift is not part of the key: the sheet's Shift column is often an XLOOKUP
+// of the operator's current assignment, so it drifts after import. Two Detail
+// lines can still share this key (a second shift with the same counts, or the
+// same line entered twice). Those are separate rows. Match counts, not a set.
 export function pmacKey(r) {
   return [
     String(r.run_date || "").slice(0, 10),
@@ -104,33 +108,45 @@ export function pmacKey(r) {
 }
 
 export function planInserts(existing, rows) {
-  var have = {};
-  var idsByKey = {};
+  var db = {};
   (existing || []).forEach(function (row) {
     var k = pmacKey(row);
-    have[k] = 1;
-    if (row.id != null && /^[0-9]+$/.test(String(row.id))) {
-      if (!idsByKey[k]) idsByKey[k] = [];
-      idsByKey[k].push(String(row.id));
-    }
+    if (!db[k]) db[k] = { ids: [], count: 0 };
+    db[k].count++;
+    if (row.id != null && /^[0-9]+$/.test(String(row.id))) db[k].ids.push(String(row.id));
   });
-  var deleteIds = [];
-  Object.keys(idsByKey).forEach(function (k) {
-    var ids = idsByKey[k].slice().sort(function (a, b) { return Number(a) - Number(b); });
-    for (var i = 1; i < ids.length; i++) deleteIds.push(ids[i]);
-  });
-  var fresh = [];
-  var fileSeen = {};
-  var already = 0;
-  var repeated = 0;
+  var fileCount = {};
   (rows || []).forEach(function (row) {
     var k = pmacKey(row);
-    if (have[k]) { already++; return; }
-    if (fileSeen[k]) { repeated++; return; }
-    fileSeen[k] = 1;
+    fileCount[k] = (fileCount[k] || 0) + 1;
+  });
+  var deleteIds = [];
+  Object.keys(db).forEach(function (k) {
+    var ids = db[k].ids.slice().sort(function (a, b) { return Number(a) - Number(b); });
+    // A key the sheet no longer has keeps its oldest row. A key the sheet has
+    // keeps as many rows as Detail has, oldest ids first.
+    var keep = fileCount[k] == null ? 1 : fileCount[k];
+    var remove = db[k].count - keep;
+    if (remove < 0) remove = 0;
+    if (remove > ids.length) remove = ids.length;
+    for (var i = ids.length - remove; i < ids.length; i++) deleteIds.push(ids[i]);
+  });
+  var remaining = {};
+  Object.keys(db).forEach(function (k) { remaining[k] = db[k].count; });
+  var fresh = [];
+  var already = 0;
+  (rows || []).forEach(function (row) {
+    var k = pmacKey(row);
+    if (remaining[k]) {
+      remaining[k]--;
+      already++;
+      return;
+    }
+    // Later sheet lines with a shared key are inserted, not dropped. That is
+    // what keeps a second shift (or a second identical line) on the next run.
     fresh.push(row);
   });
-  return { fresh: fresh, deleteIds: deleteIds, already: already, repeated: repeated };
+  return { fresh: fresh, deleteIds: deleteIds, already: already, repeated: 0 };
 }
 
 function decodeXml(s) {

@@ -18,8 +18,11 @@
 // the bucket, so a client-side storage upload is not the refresh path.
 // Manual push: POST JSON { "workbook_base64": "..." } or the raw workbook bytes.
 // Writes kv_status keys pmac:last_sync and pmac:source. Lock key pmac:lock.
-// Inserts missing pmac_history rows only. Dedupe key matches mfg-upload.js:
-//   run_date|norm(operator)|flavor_code|machine|total_pkgs|box_count
+// Inserts Detail lines until each dedupe key's row count matches the sheet.
+// The key is not unique on Detail: a second shift, or the same line entered
+// twice, shares run_date|norm(operator)|flavor_code|machine|total_pkgs|box_count
+// with mfg-upload.js. Extra database copies beyond the sheet count are removed,
+// highest id first. A key that is only in the database keeps its oldest row.
 // verify_jwt is false. Callers still must send the publishable key, anon key, or service role.
 
 import { SOURCE, notConnectedMessage, parseDetailSheet, planInserts, shouldPersistWorkbook } from "./parse.js";
@@ -319,7 +322,7 @@ function summaryMessage(pack, inserted, skipped, removed, repeated) {
   else bits.push("Loaded the Detail sheet from SharePoint.");
   bits.push("Added " + inserted + " new P-Mac rows. " + skipped + " were already on record.");
   if (repeated) bits.push("Skipped " + repeated + " repeated rows in the file.");
-  if (removed) bits.push("Removed " + removed + " duplicate rows that shared an existing key.");
+  if (removed) bits.push("Removed " + removed + " database copies beyond the Detail sheet.");
   return bits.join(" ");
 }
 

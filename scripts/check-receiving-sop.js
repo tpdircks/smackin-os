@@ -16,7 +16,7 @@ var app = read("app.js");
 var html = read("index.html");
 var sw = read("service-worker.js");
 
-eq(sw.indexOf('const CACHE = "smackin-inv-v277"') >= 0, "cache bump");
+eq(sw.indexOf('const CACHE = "smackin-inv-v278"') >= 0, "cache bump");
 eq(html.indexOf("receiving-sop.js?b=4") >= 0, "sop cache bust");
 eq(html.indexOf("services.js?b=4") >= 0, "services cache bust");
 eq(html.indexOf("raw-coa.js?b=3") >= 0, "coa script kept");
