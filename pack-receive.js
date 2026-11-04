@@ -85,6 +85,14 @@
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c];
     });
   }
+  // Assigning textContent replaces the text node even when the words match.
+  // paint() runs from a #view observer, so an unconditional write locks Receive
+  // as soon as a packaging item (or anything else that is not raw or a bag) matches.
+  function setText(el, text) {
+    if (!el || el.textContent === text) return false;
+    el.textContent = text;
+    return true;
+  }
   function keyOf(s) {
     return String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
   }
@@ -235,8 +243,8 @@
     box.style.display = "";
     var label = box.querySelector("label");
     var hint = box.querySelector(".hint");
-    if (label) label.textContent = tx("exp");
-    if (hint) hint.textContent = tx("expHint");
+    setText(label, tx("exp"));
+    setText(hint, tx("expHint"));
   }
   function paintScan() {
     var input = document.getElementById("r-code");
@@ -375,7 +383,7 @@
     try { paint(); } catch (e) {}
   }
 
-  var api = { aliasText: aliasText, isPackItem: isPackItem, candidates: candidates, ALIAS: ALIAS };
+  var api = { aliasText: aliasText, isPackItem: isPackItem, candidates: candidates, setText: setText, ALIAS: ALIAS };
   if (typeof module !== "undefined" && module.exports && (typeof root === "undefined" || !root.document)) {
     module.exports = api;
     return;
