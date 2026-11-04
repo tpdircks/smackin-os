@@ -1314,12 +1314,23 @@
         if (e.target && e.target.id === id && active && onScreen()) setTimeout(render, 0);
       }, false);
     });
+    doc.addEventListener("click", function (e) {
+      if (!active) return;
+      var t = e.target && e.target.closest ? e.target.closest("#btr-nav, [data-dept-sub], [data-dept-tool], #nav .navitem, .dept-tab, #dept-back") : null;
+      if (!t) return;
+      if (t.id === "btr-nav") return;
+      if (t.getAttribute && (t.getAttribute("data-dept-tool") === "batchrec" || t.getAttribute("data-dept-sub") === "batchrec")) return;
+      active = false;
+    }, true);
     root.SMK_VIEW_LOCKS = root.SMK_VIEW_LOCKS || [];
     root.SMK_VIEW_LOCKS.push(function () { return active && onScreen(); });
     try {
       var mo = new MutationObserver(function () {
         injectNav();
-        if (active && doc.getElementById("view") && !doc.getElementById("btr-root")) render();
+        var host = doc.getElementById("view");
+        if (!active || !host || doc.getElementById("btr-root")) return;
+        if (host.querySelector("#trc-root, #qa-root, #sqf-root, #fgl-root, #fa-root, #cd-lot, #dept-home")) return;
+        render();
       });
       mo.observe(doc.documentElement, { childList: true, subtree: true });
     } catch (e) {}

@@ -1519,10 +1519,13 @@
   }
   function leaveIfOther(e) {
     if (!active) return;
-    var t = e.target && e.target.closest ? e.target.closest("#qa-nav, [data-dept-tool], #nav .navitem, .dept-tab, #dept-back") : null;
+    // data-dept-sub is the main Quality tab row. The drawer copy is a #nav button.
+    // Trace lives in both. Missing the main tab left this screen active, and its
+    // observer fought TRACE until the page stopped painting.
+    var t = e.target && e.target.closest ? e.target.closest("#qa-nav, [data-dept-tool], [data-dept-sub], #nav .navitem, .dept-tab, #dept-back") : null;
     if (!t) return;
     if (t.id === "qa-nav") return;
-    if (t.getAttribute && t.getAttribute("data-dept-tool") === "qacheck") return;
+    if (t.getAttribute && (t.getAttribute("data-dept-tool") === "qacheck" || t.getAttribute("data-dept-sub") === "qacheck")) return;
     if (cur && cur.dirty) {
       if (!root.confirm(tx("discard"))) {
         e.preventDefault();
@@ -1580,7 +1583,11 @@
     try {
       var mo = new MutationObserver(function () {
         injectNav();
-        if (active && doc.getElementById("view") && !doc.getElementById("qa-root")) render();
+        var host = doc.getElementById("view");
+        if (!active || !host || doc.getElementById("qa-root")) return;
+        // Another screen owns #view. Replacing it here loops with that screen's observer.
+        if (host.querySelector("#trc-root, #sqf-root, #fgl-root, #btr-root, #fa-root, #cd-lot, #dept-home")) return;
+        render();
       });
       mo.observe(doc.documentElement, { childList: true, subtree: true });
     } catch (e) {}

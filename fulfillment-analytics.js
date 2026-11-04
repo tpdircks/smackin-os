@@ -1263,10 +1263,10 @@
     ensureSeed().then(function () { if (active) paint(); });
   }
   function leaveIfOther(e) {
-    var t = e.target && e.target.closest ? e.target.closest("#fa-nav, [data-dept-tool], #nav .navitem, .dept-tab, #dept-back") : null;
+    var t = e.target && e.target.closest ? e.target.closest("#fa-nav, [data-dept-tool], [data-dept-sub], #nav .navitem, .dept-tab, #dept-back") : null;
     if (!t) return;
     if (t.id === "fa-nav") return;
-    if (t.getAttribute && t.getAttribute("data-dept-tool") === "fulfillerr") return;
+    if (t.getAttribute && (t.getAttribute("data-dept-tool") === "fulfillerr" || t.getAttribute("data-dept-sub") === "fulfillerr")) return;
     active = false;
   }
 
@@ -1308,7 +1308,10 @@
     try {
       var mo = new MutationObserver(function () {
         injectNav();
-        if (active && doc.getElementById("view") && !doc.getElementById("fa-root")) render();
+        var host = doc.getElementById("view");
+        if (!active || !host || doc.getElementById("fa-root")) return;
+        if (host.querySelector("#trc-root, #qa-root, #sqf-root, #fgl-root, #btr-root, #cd-lot, #dept-home")) return;
+        render();
       });
       mo.observe(doc.documentElement, { childList: true, subtree: true });
     } catch (e) {}
