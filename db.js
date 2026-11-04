@@ -2369,8 +2369,8 @@ window.DB = (function () {
   }
 
   // Dock COA presence. yes / no / na. The PDF stays in the Vendor COA folder.
-  // Seed, seasoning, and maltodextrin with No go on QA Hold (hold_log + on_hold,
-  // and RECEIVING qty moves to QA-HOLD). Oil and stevia are recorded only.
+  // No on seed, seasoning, maltodextrin, oil, or stevia goes on QA Hold
+  // (hold_log + on_hold, and RECEIVING qty moves to QA-HOLD).
   // A missing coa_* column returns { missing: true } and does not throw.
   const COA_HOLD_REASON = "COA not received at the dock";
   function coaNorm(v) {
@@ -2408,7 +2408,7 @@ window.DB = (function () {
     return c === "seed" || c === "seeds" || c === "seasoning" || c === "oil" || c === "stevia" || c === "adhesion";
   }
   function coaHighRisk(it) {
-    return !!(coaTracked(it) && !coaIsOilStevia(it));
+    return !!coaTracked(it);
   }
   function coaMissing(error) {
     const msg = (error && (error.message || error.details || error.hint)) || error || "";
