@@ -630,7 +630,9 @@ window.DB = (function () {
     // the delta and corrupting counts (e.g. a 20,800->1,500 count fired twice drove the row negative and
     // wiped it). Skip an identical item+location+newQty adjust within 1.5s.
     const itemId = resolveItemId(item);
-    const _k = String(itemId) + "|" + loc + "|" + newQty, _now = Date.now();
+    const _k = (window.RECVMATCH && typeof RECVMATCH.adjustDedupeKey === "function")
+      ? RECVMATCH.adjustDedupeKey(itemId, loc, newQty)
+      : (String(itemId) + "|" + loc + "|" + newQty), _now = Date.now();
     if (_lastAdjust[_k] && _now - _lastAdjust[_k] < 1500) return { ok: true, deduped: true };
     _lastAdjust[_k] = _now;
     const cur = atLoc(itemId, loc);
@@ -2475,7 +2477,14 @@ window.DB = (function () {
     const stockScope = opts.skipStock ? [] : scoped.rows;
     let recvScope = [];
     if (!opts.stockOnly) {
-      if (opts.recvId) recvScope = (cache.receivingLog || []).filter(r => String(r.id) === String(opts.recvId));
+      const tracked = !!(item && coaTracked(item));
+      if (window.RECVMATCH && typeof RECVMATCH.receivingLogCoaScope === "function") {
+        recvScope = RECVMATCH.receivingLogCoaScope(cache.receivingLog, {
+          recvId: opts.recvId || "",
+          itemIds: (opts.recvId || tracked) ? Array.from(found.ids) : [],
+          lot: tracked ? (opts.lot || "") : ""
+        });
+      } else if (opts.recvId) recvScope = (cache.receivingLog || []).filter(r => String(r.id) === String(opts.recvId));
       else if (scoped.key && item && coaTracked(item)) recvScope = (cache.receivingLog || []).filter(r => found.ids.has(r.item_id) && rawLotKey(r.lot) === scoped.key);
     }
     if (mode === "cloud") {
@@ -2513,7 +2522,14 @@ window.DB = (function () {
     const scoped = coaStockScope(opts.itemId, opts.lot, opts.location);
     const stockScope = scoped.rows;
     let recvScope = [];
-    if (opts.recvId) recvScope = (cache.receivingLog || []).filter(r => String(r.id) === String(opts.recvId));
+    if (window.RECVMATCH && typeof RECVMATCH.receivingLogCoaScope === "function") {
+      recvScope = RECVMATCH.receivingLogCoaScope(cache.receivingLog, {
+        recvId: opts.recvId || "",
+        itemIds: (opts.recvId || scoped.key) ? Array.from(scoped.found.ids) : [],
+        lot: scoped.key ? (opts.lot || "") : ""
+      });
+      if (!opts.recvId) recvScope = recvScope.filter(r => coaNorm(r.coa_received) === "no");
+    } else if (opts.recvId) recvScope = (cache.receivingLog || []).filter(r => String(r.id) === String(opts.recvId));
     else if (scoped.key) recvScope = (cache.receivingLog || []).filter(r => scoped.found.ids.has(r.item_id) && rawLotKey(r.lot) === scoped.key && coaNorm(r.coa_received) === "no");
     if (mode === "cloud") {
       for (const r of stockScope) {

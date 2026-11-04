@@ -63,12 +63,38 @@ var logs = [
   { id: "old", lot: "11654", recv_date: "2026-11-01", supplier: "Old", contents: "Old", item_id: "SEAS-OLD", created_at: "2026-11-01" },
   { id: "new", lot: "11654", recv_date: "2026-11-03", supplier: "Savor", contents: "Bacon Mac", item_id: "SEAS-1", created_at: "2026-11-03" }
 ];
-var hit = cd.matchCandidate({ lot: "11654" }, logs);
-assert(hit && hit.id === "new", "match uses the newest receipt for the lot");
+assert(!cd.matchCandidate({ lot: "11654" }, logs), "a lot on two items is not auto-matched");
+var hit = cd.matchCandidate({ lot: "11654", item_id: "SEAS-1" }, logs);
+assert(hit && hit.id === "new", "item pins the newest receipt for that item");
+assert(cd.matchCandidate({ lot: "11654", item_id: "SEAS-OLD" }, logs).id === "old", "the other item keeps its own receipt");
+assert(!cd.matchCandidate({ lot: "11654", item_id: "OTHER" }, logs), "a different item does not take either receipt");
+assert(cd.matchCandidate({ lot: "11654" }, [logs[1]]).id === "new", "one item still matches the newest receipt");
 var patch = cd.linkPatch({ lot: "11654", vendor: "", item_id: "", item_name: "" }, hit, "Brittney", "2026-11-04T00:00:00.000Z");
 assert(patch.receiving_log_id === "new" && patch.vendor === "Savor" && patch.item_name === "Bacon Mac", "match fills vendor and item");
 assert(patch.matched_by === "Brittney", "match records who");
 assert(!cd.matchCandidate({ lot: "" }, logs), "no lot does not match a receipt");
+
+var sharedDocs = [
+  { id: "dill", lot: "J1926", item_id: "SEAS-DILL", receiving_log_id: "dill-1", file_name: "dill.pdf", file_url: "https://example/dill.pdf" },
+  { id: "pep", lot: "J1926", item_id: "SEAS-PEPPER", receiving_log_id: "pep-1", file_name: "pepper.pdf", file_url: "https://example/pepper.pdf" }
+];
+assert(cd.docsFor(sharedDocs, { lot: "J1926", itemId: "SEAS-PEPPER", recvId: "pep-1" }).map(function (d) { return d.id; }).join(",") === "pep", "pepper does not list the dill file");
+assert(cd.docsFor(sharedDocs, { lot: "J1926", itemId: "SEAS-DILL" }).map(function (d) { return d.id; }).join(",") === "dill", "dill lists only its file");
+var pepperItem = { id: "SEAS-PEPPER", code: "SEAS-PEPPER" };
+assert(!cd.docVisibleForItem(sharedDocs[0], pepperItem, ["J1926"]), "floor card hides the other item COA");
+assert(cd.docVisibleForItem(sharedDocs[1], pepperItem, ["J1926"]), "floor card keeps this item COA");
+var recvRows = [
+  { id: "dill-1", item_id: "SEAS-DILL", lot: "J1926", supplier: "Seasoning Co", created_at: "2026-11-04T15:00:00.000Z" },
+  { id: "pep-1", item_id: "SEAS-PEPPER", lot: "J1926", supplier: "Seasoning Co", created_at: "2026-11-04T16:00:00.000Z" }
+];
+assert(cd.pickRecvRow(recvRows, { lot: "J1926", itemId: "SEAS-DILL" }).id === "dill-1", "attach finds the dill receipt");
+assert(!cd.pickRecvRow(recvRows, { lot: "J1926", vendor: "Seasoning Co" }), "shared lot without an item is not guessed");
+var holds = [
+  { id: "dill-1", item_id: "SEAS-DILL", lot: "J1926", coa_received: "no" },
+  { id: "pep-1", item_id: "SEAS-PEPPER", lot: "J1926", coa_received: "yes" }
+];
+assert(cd.openCoaHold(holds, { lot: "J1926", itemId: "SEAS-PEPPER", recvId: "pep-1" }) === false, "pepper is not held because dill is");
+assert(cd.openCoaHold(holds, { lot: "J1926", itemId: "SEAS-DILL", recvId: "dill-1" }) === true, "dill hold stays on dill");
 
 var src = read("coa-docs.js");
 var raw = read("raw-coa.js");
@@ -84,10 +110,10 @@ assert(src.indexOf('accept=".pdf,.png,.jpg,.jpeg"') >= 0, "accept list");
 assert(src.indexOf("slots[slot] = null") >= 0 && src.indexOf("if (!receiveSaved(meta.before, after)) return;") >= 0, "file stays until the receipt is confirmed");
 assert(raw.indexOf('type="file"') < 0, "answer module still has no file input");
 assert(raw.indexOf("shouldHold") >= 0, "hold rule stays");
-assert(sw.indexOf('const CACHE = "smackin-inv-v279"') >= 0 && sw.indexOf("./coa-docs.js") >= 0, "cache and asset");
-assert(html.indexOf("coa-docs.js?b=1") >= 0, "script tag");
-assert(html.indexOf('var EMBEDDED = "smackin-inv-v279"') >= 0, "embedded build");
-assert(read("build-id.txt").trim() === "smackin-inv-v279", "build id");
+assert(sw.indexOf('const CACHE = "smackin-inv-v280"') >= 0 && sw.indexOf("./coa-docs.js") >= 0, "cache and asset");
+assert(html.indexOf("coa-docs.js?b=2") >= 0, "script tag");
+assert(html.indexOf('var EMBEDDED = "smackin-inv-v280"') >= 0, "embedded build");
+assert(read("build-id.txt").trim() === "smackin-inv-v280", "build id");
 assert(sql.indexOf("create table if not exists public.coa_docs") >= 0, "troy sql");
 assert(sql.indexOf("supplier-pos") >= 0 && sql.indexOf("coa_") >= 0, "sql names the bucket and prefix");
 assert(homes.indexOf('fn: "coa"') >= 0 && homes.indexOf('"coalib"') >= 0, "quality tab");
