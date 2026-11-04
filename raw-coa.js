@@ -1,14 +1,14 @@
 /* ============================================================================
    Smackin' OS - dock COA check (raw-coa.js)
-   Seed, seasoning, maltodextrin, oil, and stevia. The COA file stays in
-   Brittney's Vendor COA folder. This screen only records whether the COA
-   was in hand at the dock: Yes, No, or N/A, plus a short note.
+   Seed, seasoning, maltodextrin, oil, and stevia. This screen records
+   whether the COA was in hand at the dock: Yes, No, or N/A, plus a short note.
+   The PDF or photo is stored by coa-docs.js.
 
    No on seed, seasoning, or maltodextrin puts the receipt on QA Hold.
    That uses the HOLD Log, receiving_log.on_hold, and the QA-HOLD location.
    Oil and stevia are recorded and are not auto-held. Quality release clears
    the hold and leaves COA = No, with a note that Quality released later.
-   A missing column does not block the receipt. No PDF is stored here.
+   A missing column does not block the receipt. This file does not upload.
    ========================================================================== */
 (function (root) {
   "use strict";
@@ -32,7 +32,7 @@
     en: {
       label: "COA received?",
       note: "Note (optional)",
-      hint: "Yes, No, or N/A. No on seed, seasoning, or maltodextrin puts the lot on QA Hold until Quality releases it. The COA file stays in the Vendor COA folder.",
+      hint: "Yes, No, or N/A. No on seed, seasoning, or maltodextrin puts the lot on QA Hold until Quality releases it. Attach the COA here when you have the file.",
       yes: "Yes", no: "No", na: "N/A",
       hold: "QA Hold",
       release: "Quality release",
@@ -48,7 +48,7 @@
     es: {
       label: "COA recibido?",
       note: "Nota (opcional)",
-      hint: "Si, No o N/A. No en semilla, sazon o maltodextrina pone el lote en QA Hold hasta que Calidad lo libere. El archivo COA queda en la carpeta Vendor COA.",
+      hint: "Si, No o N/A. No en semilla, sazon o maltodextrina pone el lote en QA Hold hasta que Calidad lo libere. Adjunte el COA aqui cuando tenga el archivo.",
       yes: "Si", no: "No", na: "N/A",
       hold: "QA Hold",
       release: "Liberar calidad",
@@ -64,7 +64,7 @@
     pt: {
       label: "COA recebido?",
       note: "Nota (opcional)",
-      hint: "Sim, Nao ou N/A. Nao em semente, tempero ou maltodextrina coloca o lote em QA Hold ate a Qualidade liberar. O arquivo COA fica na pasta Vendor COA.",
+      hint: "Sim, Nao ou N/A. Nao em semente, tempero ou maltodextrina coloca o lote em QA Hold ate a Qualidade liberar. Anexe o COA aqui quando tiver o arquivo.",
       yes: "Sim", no: "Nao", na: "N/A",
       hold: "QA Hold",
       release: "Liberar qualidade",
@@ -748,7 +748,15 @@
     var name = whoEl ? String(whoEl.value || "").trim() : operator();
     if (!name) { toast(tx("needName")); return; }
     var lot = btn.getAttribute("data-lot") || "";
-    if (typeof window !== "undefined" && window.confirm && !window.confirm(tx("releaseAsk") + (lot ? "\n" + lot : ""))) return;
+    var ask = tx("releaseAsk") + (lot ? "\n" + lot : "");
+    if (root.COA_DOCS && typeof root.COA_DOCS.allowRelease === "function") {
+      if (!root.COA_DOCS.allowRelease({
+        itemId: btn.getAttribute("data-item") || "",
+        lot: lot,
+        recvId: btn.getAttribute("data-recv") || "",
+        ask: ask
+      })) return;
+    } else if (typeof window !== "undefined" && window.confirm && !window.confirm(ask)) return;
     var D = root.DB;
     if (!D || typeof D.releaseRawCoa !== "function") return;
     var res;
