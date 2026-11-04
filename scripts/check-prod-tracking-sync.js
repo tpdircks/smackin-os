@@ -176,8 +176,49 @@ async function main() {
     { id: 4, run_date: "2026-09-10", operator: "Alfredo R.", flavor_code: "S02", machine: "42", total_pkgs: 700, box_count: 7 }
   ], parsed.rows);
   eq(plan.fresh.length === 1 && plan.fresh[0].bag_size === "1.5 oz", "only the new bag size is inserted");
-  eq(plan.already === 2, "existing key is not inserted");
-  eq(plan.deleteIds.join(",") === "10", "exact key duplicate keeps the lowest id, got " + plan.deleteIds.join(","));
+  eq(plan.already === 2, "both sheet lines of an existing key are already on record");
+  eq(plan.deleteIds.length === 0, "two sheet lines keep two database rows, got " + plan.deleteIds.join(","));
+  eq(plan.repeated === 0, "a second sheet line is not reported as skipped");
+
+  var short = mod.planInserts([
+    { id: 4, run_date: "2026-09-10", operator: "Alfredo R.", flavor_code: "S02", machine: "42", total_pkgs: 700, box_count: 7 }
+  ], parsed.rows);
+  eq(short.fresh.length === 2 && short.fresh[0].total_pkgs === 700 && short.fresh[1].bag_size === "1.5 oz", "the second copy of a stored key is inserted");
+  eq(short.already === 1 && short.deleteIds.length === 0, "the stored copy covers the first sheet line");
+
+  var crowded = mod.planInserts([
+    { id: 4, run_date: "2026-09-10", operator: "Alfredo R.", flavor_code: "S02", machine: "42", total_pkgs: 700, box_count: 7 },
+    { id: 10, run_date: "2026-09-10", operator: "Alfredo R.", flavor_code: "S02", machine: "42", total_pkgs: 700, box_count: 7 },
+    { id: 11, run_date: "2026-09-10", operator: "Alfredo R.", flavor_code: "S02", machine: "42", total_pkgs: 700, box_count: 7 }
+  ], parsed.rows);
+  eq(crowded.fresh.length === 1 && crowded.fresh[0].bag_size === "1.5 oz", "extra database copies do not hide a new bag");
+  eq(crowded.deleteIds.join(",") === "11", "only the copy beyond the sheet count is removed, got " + crowded.deleteIds.join(","));
+
+  var orphan = mod.planInserts([
+    { id: 1, run_date: "2020-01-01", operator: "Zed", flavor_code: "S01", machine: "1", total_pkgs: 1, box_count: 1 },
+    { id: 2, run_date: "2020-01-01", operator: "Zed", flavor_code: "S01", machine: "1", total_pkgs: 1, box_count: 1 }
+  ], parsed.rows);
+  eq(orphan.deleteIds.join(",") === "2", "a key missing from Detail still keeps the oldest row, got " + orphan.deleteIds.join(","));
+
+  var first = { run_date: "2026-02-09", operator: "Leonel M.", flavor_code: "S05", machine: "2", total_pkgs: 3750, box_count: 15, shift: "1st", bag_size: "1.5 oz" };
+  var second = { run_date: "2026-02-09", operator: "Leonel M.", flavor_code: "S05", machine: "2", total_pkgs: 3750, box_count: 15, shift: "2nd", bag_size: "1.5 oz" };
+  var leonel = mod.planInserts([Object.assign({ id: 3225 }, first)], [first, second]);
+  eq(leonel.fresh.length === 1 && leonel.fresh[0].shift === "2nd", "a second shift with the same packages is inserted");
+  eq(leonel.deleteIds.length === 0, "the 1st shift row stays");
+  var leonelAgain = mod.planInserts([
+    Object.assign({ id: 3225 }, first),
+    Object.assign({ id: 9000 }, second)
+  ], [first, second]);
+  eq(leonelAgain.fresh.length === 0 && leonelAgain.deleteIds.length === 0, "both shifts stay on the next refresh");
+
+  var alex = { run_date: "2025-10-20", operator: "Alex H", flavor_code: "S02", machine: "42", total_pkgs: 3000, box_count: 30, shift: "2nd", bag_size: "4.0 oz" };
+  var alexPlan = mod.planInserts([Object.assign({ id: 2454 }, alex)], [alex, Object.assign({}, alex)]);
+  eq(alexPlan.fresh.length === 1 && alexPlan.fresh[0].operator === "Alex H", "an identical second Detail line is inserted");
+  var alexAgain = mod.planInserts([
+    Object.assign({ id: 2454 }, alex),
+    Object.assign({ id: 8000 }, alex)
+  ], [alex, Object.assign({}, alex)]);
+  eq(alexAgain.fresh.length === 0 && alexAgain.deleteIds.length === 0, "an identical pair is not collapsed later");
   eq(mod.pmacKey({ run_date: "2026-09-10", operator: "Alfredo R.", flavor_code: "L37", machine: "41", total_pkgs: 2000, box_count: 20 }) === "2026-09-10|alfredor|L37|41|2000|20", "sample row key");
 
   var noDetail = files.filter(function (f) { return f.name !== "xl/worksheets/sheet2.xml"; }).map(function (f) {
@@ -223,9 +264,10 @@ async function main() {
   eq(upload.indexOf("Sync now") >= 0 && upload.indexOf("1736 - Production Tracking_v12") >= 0, "upload link");
   eq(upload.indexOf("pmac:last_sync") >= 0, "reads last sync");
   eq(read("mfg-history.js").indexOf("MFGUPLOAD.mountLink") >= 0, "history link");
-  eq(read("index.html").indexOf("mfg-upload.js?b=3") >= 0, "upload cache bust");
+  eq(read("index.html").indexOf("mfg-upload.js?b=4") >= 0, "upload cache bust");
+  eq(read("mfg-upload.js").indexOf('existing[k] = (existing[k] || 0) + 1') >= 0, "upload counts P-Mac lines");
   eq(read("index.html").indexOf("mfg-history.js?b=5") >= 0, "history cache bust");
-  eq(read("service-worker.js").indexOf('const CACHE = "smackin-inv-v277"') >= 0, "cache bump");
+  eq(read("service-worker.js").indexOf('const CACHE = "smackin-inv-v278"') >= 0, "cache bump");
 
   var ui = upload.slice(upload.indexOf("Live link to Allen"));
   eq(ui.indexOf("\u2014") < 0 && ui.indexOf("\u2013") < 0, "upload copy has no em dash");

@@ -191,12 +191,26 @@
     function pull(from) {
       return c.from(table).select(cols).range(from, from + step - 1).then(function (r) {
         if (r && r.error) throw new Error(r.error.message || "could not read existing rows");
-        var d = (r && r.data) || []; d.forEach(function (row) { existing[keyOf(parsed.type, row)] = 1; });
+        var d = (r && r.data) || [];
+        d.forEach(function (row) {
+          var k = keyOf(parsed.type, row);
+          // P-Mac keeps one history row per Detail line, even when two lines
+          // share a key. Mixing stays one row per key.
+          if (parsed.type === "pmac") existing[k] = (existing[k] || 0) + 1;
+          else existing[k] = 1;
+        });
         if (d.length === step) return pull(from + step);
       });
     }
     pull(0).then(function () {
-      var fresh = parsed.rows.filter(function (row) { return !existing[keyOf(parsed.type, row)]; });
+      var fresh = [];
+      parsed.rows.forEach(function (row) {
+        var k = keyOf(parsed.type, row);
+        if (parsed.type === "pmac") {
+          if (existing[k]) { existing[k]--; return; }
+        } else if (existing[k]) return;
+        fresh.push(row);
+      });
       if (!fresh.length) { msg("ok", "All " + fmt(parsed.rows.length) + " rows were already loaded &mdash; nothing new to add."); $("mfg-import-btn").disabled = false; return; }
       msg("info", "Adding <b>" + fmt(fresh.length) + "</b> new rows…");
       var ins = 0;

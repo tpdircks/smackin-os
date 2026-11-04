@@ -39,7 +39,7 @@ eq(html.indexOf("app.js?b=198") >= 0, "app cache bust");
 eq(html.indexOf("dept-homes.js?b=32") >= 0, "dept-homes cache bust");
 eq(html.indexOf("styles.css?b=61") >= 0, "styles cache bust");
 eq(html.indexOf("demand-autoclose.js?b=4") >= 0, "target autoclose buster unchanged");
-eq(sw.indexOf('const CACHE = "smackin-inv-v277"') >= 0, "cache bump");
+eq(sw.indexOf('const CACHE = "smackin-inv-v278"') >= 0, "cache bump");
 eq(sw.indexOf("smackin-inv-v246") < 0, "old cache gone");
 eq(auto.indexOf("/target/i") >= 0, "target autoclose still skips Target");
 eq(auto.indexOf("Partially received") < 0 && auto.indexOf("[[STATUS:") < 0, "autoclose untouched");
