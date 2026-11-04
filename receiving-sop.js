@@ -1,7 +1,8 @@
 /* ============================================================================
    Receiving SOP checklist (receiving-sop.js)
    WHSE_FORM_1.0 Warehouse Receiving Log and WHSE_FORM_3.0 HOLD Log.
-   One receiving row per lot. Any N or UA sets receiving_log.on_hold and
+   One receiving row per item and lot. A different item may share the lot
+   number and keeps its own row. Any N or UA sets receiving_log.on_hold and
    writes hold_log (status held), except Trailer Sealed N. N means an
    unsealed LTL or shared trailer and does not hold the lot. Broken (B)
    holds and needs deviation actions. Release clears the hold. Thrown away,
@@ -45,7 +46,7 @@
     en: {
       title: "WHSE_FORM_1.0 Warehouse Receiving Log",
       paper: "Paper Receiving Log and HOLD Log stay the backup until Troy confirms this screen is the stored record.",
-      oneLot: "One row per lot. A second lot on the same truck gets its own row.",
+      oneLot: "One row per item and lot. A different item can use the same lot and keeps its own row.",
       supplierHint: "Manual Y or N. The approved vendor register is the Drive spreadsheet.",
       allergenHint: "Y means an allergen is present. Segregate the load. N means none known for this load. Unknown means a shared trailer or not enough information. Unknown does not hold the lot. Write a note or deviation if you need more detail.",
       devHint: "Required when a check is N or UA, or when the seal is Broken. N on Trailer Sealed means an unsealed LTL trailer and does not hold the lot by itself. A held lot is written to the HOLD Log and skipped by FEFO and Use.",
@@ -71,10 +72,10 @@
       willHold: "This save puts the lot ON HOLD.",
       stay: "Checks pass. This lot stays on hold until a release is recorded on the HOLD Log.",
       holdFail: "Receipt saved. HOLD Log write failed.",
-      dup: "This lot already has a receiving row. Edit that row. The SOP keeps one row per lot.",
+      dup: "This item and lot already have a receiving row. Edit that row.",
       dateReq: "Date is required.", timeReq: "Time is required.", recvReq: "Receiver is required.",
       supReq: "Supplier is required.", matReq: "Raw material is required.",
-      lotReq: "Lot # is required. One row per lot.", qtyReq: "# of cases is required.",
+      lotReq: "Lot # is required.", qtyReq: "# of cases is required.",
       ynReq: " needs Y or N.", auReq: " needs A or UA.",
       sealReq: "Seal # is required when the trailer is sealed.",
       tempReq: "Enter a temperature F, or check Not measured when there is no thermometer.",
@@ -91,7 +92,7 @@
     es: {
       title: "WHSE_FORM_1.0 Registro de recibo",
       paper: "El papel del registro de recibo y del registro HOLD sigue como respaldo hasta que Troy confirme que esta pantalla es el registro guardado.",
-      oneLot: "Una fila por lote. Un segundo lote en el mismo camion lleva su propia fila.",
+      oneLot: "Una fila por articulo y lote. Otro articulo puede usar el mismo lote y conserva su propia fila.",
       supplierHint: "Y o N manual. El registro de proveedores aprobados es la hoja de Drive.",
       allergenHint: "Y significa que hay alergeno. Separe la carga. N significa que no se conoce ninguno en esta carga. Desconocido significa trailer compartido o informacion insuficiente. Desconocido no retiene el lote. Escriba una nota o desviacion si hace falta mas detalle.",
       devHint: "Obligatorio si alguna revision es N o UA, o si el sello esta Roto. N en Trailer sellado significa un trailer LTL sin sello y no retiene el lote por si solo. Ese lote va al registro HOLD y FEFO y Uso lo saltan.",
@@ -117,10 +118,10 @@
       willHold: "Este guardado pone el lote EN HOLD.",
       stay: "Las revisiones pasan. El lote sigue en hold hasta registrar una liberacion en el registro HOLD.",
       holdFail: "Recibo guardado. No se escribio el registro HOLD.",
-      dup: "Este lote ya tiene una fila de recibo. Edite esa fila. El SOP guarda una fila por lote.",
+      dup: "Este articulo y lote ya tienen una fila de recibo. Edite esa fila.",
       dateReq: "La fecha es obligatoria.", timeReq: "La hora es obligatoria.", recvReq: "Quien recibe es obligatorio.",
       supReq: "El proveedor es obligatorio.", matReq: "La materia prima es obligatoria.",
-      lotReq: "El lote es obligatorio. Una fila por lote.", qtyReq: "El numero de cajas es obligatorio.",
+      lotReq: "El lote es obligatorio.", qtyReq: "El numero de cajas es obligatorio.",
       ynReq: " necesita Y o N.", auReq: " necesita A o UA.",
       sealReq: "El sello es obligatorio cuando el trailer esta sellado.",
       tempReq: "Ingrese la temperatura F, o marque No medida si no hay termometro.",
@@ -137,7 +138,7 @@
     pt: {
       title: "WHSE_FORM_1.0 Registro de recebimento",
       paper: "O papel do registro de recebimento e do registro HOLD continua como copia de apoio ate Troy confirmar que esta tela e o registro guardado.",
-      oneLot: "Uma linha por lote. Um segundo lote no mesmo caminhao tem a propria linha.",
+      oneLot: "Uma linha por item e lote. Outro item pode usar o mesmo lote e fica na propria linha.",
       supplierHint: "Y ou N manual. O cadastro de fornecedores aprovados e a planilha do Drive.",
       allergenHint: "Y significa que ha alergeno. Separe a carga. N significa que nenhum e conhecido nesta carga. Desconhecido significa trailer compartilhado ou informacao insuficiente. Desconhecido nao retem o lote. Escreva uma nota ou desvio se precisar de mais detalhe.",
       devHint: "Obrigatorio se alguma checagem for N ou UA, ou se o lacre estiver Quebrado. N em Trailer lacrado significa um trailer LTL sem lacre e nao retem o lote sozinho. Esse lote vai para o registro HOLD e o FEFO e o Uso pulam ele.",
@@ -163,10 +164,10 @@
       willHold: "Este salvamento coloca o lote EM HOLD.",
       stay: "As checagens passam. O lote continua em hold ate registrar uma liberacao no registro HOLD.",
       holdFail: "Recebimento salvo. O registro HOLD nao foi gravado.",
-      dup: "Este lote ja tem uma linha de recebimento. Edite essa linha. O SOP guarda uma linha por lote.",
+      dup: "Este item e lote ja tem uma linha de recebimento. Edite essa linha.",
       dateReq: "A data e obrigatoria.", timeReq: "A hora e obrigatoria.", recvReq: "Quem recebe e obrigatorio.",
       supReq: "O fornecedor e obrigatorio.", matReq: "A materia-prima e obrigatoria.",
-      lotReq: "O lote e obrigatorio. Uma linha por lote.", qtyReq: "O numero de caixas e obrigatorio.",
+      lotReq: "O lote e obrigatorio.", qtyReq: "O numero de caixas e obrigatorio.",
       ynReq: " precisa de Y ou N.", auReq: " precisa de A ou UA.",
       sealReq: "O lacre e obrigatorio quando o trailer esta lacrado.",
       tempReq: "Informe a temperatura F, ou marque Nao medida se nao ha termometro.",
@@ -475,25 +476,47 @@
     }
     return null;
   }
-  function duplicateOf(lot, id) {
-    var key = normLot(lot);
-    if (!key) return "";
+  function sameReceiptItem(a, b) {
+    if (root.RECVMATCH && typeof root.RECVMATCH.sameDockItem === "function") return root.RECVMATCH.sameDockItem(a, b);
+    var ia = String((a && a.item_id) || "").trim();
+    var ib = String((b && b.item_id) || "").trim();
+    if (ia && ib) return ia === ib;
+    var ca = String((a && (a.contents || a.item_name)) || "").trim().toLowerCase();
+    var cb = String((b && (b.contents || b.item_name)) || "").trim().toLowerCase();
+    if (ca && cb) return ca === cb;
+    return true;
+  }
+  function duplicateOf(lot, id, item) {
     var rows = recvRows();
-    for (var i = 0; i < rows.length; i++) {
-      if (id && String(rows[i].id) === String(id)) continue;
-      if (normLot(rows[i].lot) === key) {
-        return String(rows[i].recv_date || "").slice(0, 10) + (rows[i].supplier ? " " + rows[i].supplier : "");
+    var hit = null;
+    if (root.RECVMATCH && typeof root.RECVMATCH.dockLotClash === "function") {
+      hit = root.RECVMATCH.dockLotClash(rows, lot, id, item || {});
+    } else {
+      var key = normLot(lot);
+      if (!key) return "";
+      for (var i = 0; i < rows.length; i++) {
+        if (id && String(rows[i].id) === String(id)) continue;
+        if (normLot(rows[i].lot) !== key) continue;
+        if (!sameReceiptItem(rows[i], item || {})) continue;
+        hit = rows[i];
+        break;
       }
     }
-    return "";
+    if (!hit) return "";
+    return String(hit.recv_date || "").slice(0, 10) + (hit.supplier ? " " + hit.supplier : "");
   }
-  function openHoldFor(id, lot) {
+  function openHoldFor(id, lot, item) {
     var key = normLot(lot);
+    var self = item || {};
     for (var i = 0; i < holds.length; i++) {
       var h = holds[i];
       if (h.status !== "held") continue;
-      if (id && String(h.receiving_log_id || "") === String(id)) return h;
-      if (key && normLot(h.lot) === key) return h;
+      if (id && h.receiving_log_id && String(h.receiving_log_id) === String(id)) return h;
+      if (id && h.receiving_log_id && String(h.receiving_log_id) !== String(id)) continue;
+      if (!(key && normLot(h.lot) === key)) continue;
+      if ((h.item_id || h.item_name) && !sameReceiptItem({ item_id: h.item_id, contents: h.item_name }, self)) continue;
+      if (!h.item_id && !h.item_name && (self.item_id || self.contents)) continue;
+      return h;
     }
     return null;
   }
@@ -632,13 +655,14 @@
     opts = opts || {};
     if (!doc || !doc.getElementById("rsop-box")) return { ok: true, rec: base };
     var input = readInput(base);
-    var dup = duplicateOf(input.lot, opts.id);
+    var whoItem = { item_id: input.item_code || (base && base.item_id) || "", contents: input.contents };
+    var dup = duplicateOf(input.lot, opts.id, whoItem);
     if (dup) input.duplicate = dup;
     var errors = validate(input);
     if (errors.length) return { ok: false, msg: errors[0] };
     var it = matchItem(input.item_code);
     var fails = failingChecks(input);
-    var open = openHoldFor(opts.id, input.lot);
+    var open = openHoldFor(opts.id, input.lot, whoItem);
     var patch = recordPatch(input);
     var rec = Object.assign({}, base, {
       item_id: it ? (it.id || it.code || input.item_code) : (input.item_code || null),
@@ -656,22 +680,21 @@
     return { ok: true, rec: rec, held: fails.length > 0, open: open, warn: tempWarn(input.temperature_f) };
   }
   function pokeHoldFlag(id, lot, onHold) {
-    var key = normLot(lot);
+    // A shared trailer lot must not flip the other item. Only this receipt id changes.
+    if (!id) return;
     recvRows().forEach(function (row) {
-      if ((id && String(row.id) === String(id)) || (key && normLot(row.lot) === key)) row.on_hold = !!onHold;
+      if (String(row.id) === String(id)) row.on_hold = !!onHold;
     });
     if (!doc) return;
-    var key = normLot(lot);
     var trs = doc.querySelectorAll("#rlBody tr");
     for (var t = 0; t < trs.length; t++) {
-      if ((trs[t].getAttribute("data-lot") || "") !== key) continue;
+      if ((trs[t].getAttribute("data-recv") || "") !== String(id)) continue;
       var flag = trs[t].querySelector(".rsop-holdflag");
-      var blocked = !!lotBlocked(holds, lot);
-      if (blocked && !flag) {
+      if (onHold && !flag) {
         var lotCell = trs[t].children[6];
         if (lotCell) lotCell.insertAdjacentHTML("beforeend", ' <span class="pill out rsop-holdflag">HOLD</span>');
       }
-      if (!blocked && flag && flag.parentNode) flag.parentNode.removeChild(flag);
+      if (!onHold && flag && flag.parentNode) flag.parentNode.removeChild(flag);
     }
   }
   async function writeOnHold(id, onHold) {
@@ -746,7 +769,7 @@
     var rec = info.rec || {};
     var id = info.id;
     var fails = failingChecks(rec);
-    var open = openHoldFor(id, rec.lot);
+    var open = openHoldFor(id, rec.lot, { item_id: rec.item_id, contents: rec.contents });
     if (!fails.length) {
       if (open) return { ok: true, held: true, note: tx("stay") };
       return { ok: true, held: false, note: tempWarn(rec.temperature_f) };
