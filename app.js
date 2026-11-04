@@ -2205,39 +2205,9 @@
   function rememberLogCoa(row) {
     window.__smkLogCoa = { answer: (row && row.coa_received) || "", note: (row && row.coa_note) || "" };
   }
-  function normRecvLot(lot) {
-    if (window.RECVSOP && RECVSOP.normLot) return RECVSOP.normLot(lot);
-    return String(lot || "").toUpperCase().replace(/\s+/g, "");
-  }
-  function findRecvByLot(lot) {
-    const key = normRecvLot(lot);
-    if (!key || !DB.receivingLog) return null;
-    const rows = DB.receivingLog();
-    for (let i = 0; i < rows.length; i++) {
-      if (normRecvLot(rows[i].lot) === key) return rows[i];
-    }
-    return null;
-  }
-  // Keep checklist columns off this patch so a second Receive does not wipe SOP answers.
-  function dockRecvRec(existing, next) {
-    const prev = existing || {};
-    const pick = (a, b) => (a != null && String(a).trim() !== "" ? a : (b == null ? "" : b));
-    return {
-      recv_date: next.recv_date || prev.recv_date || "",
-      supplier: pick(next.supplier, prev.supplier),
-      po_num: pick(next.po_num, prev.po_num),
-      carrier: pick(next.carrier, prev.carrier),
-      tracking: pick(next.tracking, prev.tracking),
-      contents: pick(next.contents, prev.contents),
-      lot: pick(next.lot, prev.lot),
-      qty_ordered: (next.qty_ordered !== "" && next.qty_ordered != null) ? next.qty_ordered : (prev.qty_ordered == null ? "" : prev.qty_ordered),
-      qty_received: next.qty_received,
-      condition: next.condition || prev.condition || "Good",
-      received_by: pick(next.received_by, prev.received_by),
-      notes: pick(next.notes, prev.notes),
-      item_id: pick(next.item_id, prev.item_id)
-    };
-  }
+  // Dock matching is recv-match.js planReceiveSave. A lot updates a row only
+  // for the same item, supplier, and calendar day. Another item on the same
+  // trailer inserts its own receiving_log row and keeps its own COA.
   function focusRecvSop() {
     setTimeout(function () {
       const box = document.getElementById("rsop-seal-fs");
@@ -2296,7 +2266,7 @@
       const ovTxt = ov === null ? '&mdash;' : (ov === 0 ? '0' : (ov > 0 ? '-' + ov : '+' + Math.abs(ov)));
       const doc = s.file_url ? '<a href="' + s.file_url + '" target="_blank" rel="noopener" title="' + esc(s.file_name || '') + '">&#128206;</a>' : '';
       const txt = ((s.recv_date || "") + " " + (s.supplier || "") + " " + (s.po_num || "") + " " + (s.carrier || "") + " " + (s.tracking || "") + " " + (s.contents || "") + " " + (s.lot || "") + " " + (s.condition || "") + " " + (s.received_by || "")).toLowerCase().replace(/"/g, "");
-      return '<tr data-txt="' + txt + '" data-lot="' + esc(String(s.lot || "").toUpperCase().replace(/\s+/g, "")) + '"><td>' + esc((s.recv_date || "").slice(0, 10)) + '</td>' +
+      return '<tr data-txt="' + txt + '" data-lot="' + esc(String(s.lot || "").toUpperCase().replace(/\s+/g, "")) + '" data-item="' + esc(s.item_id || "") + '" data-recv="' + esc(s.id || "") + '"><td>' + esc((s.recv_date || "").slice(0, 10)) + '</td>' +
         '<td><b>' + esc(s.supplier || "") + '</b></td><td>' + esc(s.po_num || "") + '</td>' +
         '<td>' + esc(s.carrier || "") + '</td><td>' + trk + '</td>' +
         '<td>' + esc(s.contents || "") + '</td>' +
@@ -5294,11 +5264,15 @@
             received_by: op, notes: rlNotes, item_id: it.id || it.code || ""
           };
           let saved = null;
+          let plan = null;
           try {
-            const existing = lot ? findRecvByLot(lot) : null;
-            saved = existing
-              ? await DB.updateReceivingLog(existing.id, dockRecvRec(existing, next), file, op)
-              : await DB.addReceivingLog(next, file, op);
+            const rows = DB.receivingLog ? DB.receivingLog() : [];
+            plan = (window.RECVMATCH && RECVMATCH.planReceiveSave)
+              ? RECVMATCH.planReceiveSave(rows, next, {})
+              : { action: "insert", rec: next, warnings: [] };
+            saved = (plan.action === "update" && plan.id)
+              ? await DB.updateReceivingLog(plan.id, plan.rec || next, file, op)
+              : await DB.addReceivingLog(plan.rec || next, file, op);
           } catch (e) {
             recvLogKeep = logDraftFromReceive(snap, it);
             return toast(placed + ". " + (e && e.message ? e.message : L("rLogFail")), 7000);
@@ -5317,11 +5291,16 @@
           window.__smkLogExp = "";
           window.__smkRecvCoa = null;
           window.__smkLogCoa = null;
+          window.__smkLastRecvId = String(logId);
+          window.__smkLastRecvItem = String((next && next.item_id) || "");
           recvSkipCapture = true;
           puSec = ""; puBay = ""; puLevel = ""; recvNewItem = false;
           recvEditId = logId;
           recvFromDock = true;
-          toast(placed + ". " + L("rLogOpened"), 4000);
+          const lotWarn = (plan && plan.warnings && plan.warnings.length && window.RECVMATCH)
+            ? RECVMATCH.lotReuseMessage(plan.warnings, lang)
+            : "";
+          toast((lotWarn ? lotWarn + " " : "") + placed + ". " + L("rLogOpened"), lotWarn ? 7000 : 4000);
           go("recvlog");
           focusRecvSop();
           return;
@@ -5900,6 +5879,8 @@
           }
         }
         const wasEdit = !!recvEditId;
+        window.__smkLastRecvId = String(savedId);
+        window.__smkLastRecvItem = String((rec && rec.item_id) || "");
         recvEditId = null; recvFromDock = false; recvFile = null; recvLogKeep = null; recvStockGuard = false;
         window.__smkLogExp = "";
         window.__smkLogCoa = null;

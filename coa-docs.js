@@ -72,8 +72,9 @@
   }
   function docsFor(rows, q) {
     q = q || {};
-      var lot = normLot(q.lot);
+    var lot = normLot(q.lot);
     var recv = String(q.recvId || "");
+    var item = String(q.itemId || "");
     var out = [];
     var seen = {};
     (rows || []).forEach(function (r) {
@@ -82,6 +83,10 @@
       var byRecv = !!(recv && String(r.receiving_log_id || "") === recv);
       var byLot = !!(lot && normLot(r.lot) === lot);
       if (!byRecv && !byLot) return;
+      // A file tied to one receipt or one item does not show on the other
+      // item that happens to share the trailer lot.
+      if (!byRecv && item && r.item_id && String(r.item_id) !== item) return;
+      if (!byRecv && recv && r.receiving_log_id && String(r.receiving_log_id) !== recv) return;
       if (id && seen[id]) return;
       if (id) seen[id] = 1;
       out.push(r);
@@ -119,7 +124,18 @@
   function matchCandidate(doc, logs) {
     var lot = normLot(doc && doc.lot);
     if (!lot) return null;
+    var item = String((doc && (doc.item_id || doc.itemId)) || "");
     var hits = (logs || []).filter(function (r) { return r && normLot(r.lot) === lot; });
+    if (item) {
+      hits = hits.filter(function (r) { return String(r.item_id || "") === item; });
+    } else {
+      var distinct = {};
+      hits.forEach(function (r) {
+        if (r.item_id) distinct[String(r.item_id)] = 1;
+      });
+      // Two items on one lot: do not attach the file to whichever row is newest.
+      if (Object.keys(distinct).length > 1) return null;
+    }
     if (!hits.length) return null;
     hits.sort(function (a, b) {
       var byDate = String(b.recv_date || "").localeCompare(String(a.recv_date || ""));
@@ -137,6 +153,71 @@
     if (!doc.vendor && log.supplier) patch.vendor = String(log.supplier);
     if (!doc.lot && log.lot) patch.lot = String(log.lot);
     return patch;
+  }
+  function pickRecvRow(rows, meta) {
+    meta = meta || {};
+    if (meta.recvId) {
+      var wanted = String(meta.recvId);
+      for (var i = 0; i < (rows || []).length; i++) {
+        if (rows[i] && String(rows[i].id) === wanted) return rows[i];
+      }
+      return null;
+    }
+    var lot = normLot(meta.lot);
+    if (!lot) return null;
+    var hits = (rows || []).filter(function (r) { return r && normLot(r.lot) === lot; });
+    var item = String(meta.itemId || "");
+    if (item) {
+      hits = hits.filter(function (r) { return String(r.item_id || "") === item; });
+    } else {
+      var distinct = {};
+      hits.forEach(function (r) {
+        if (r.item_id) distinct[String(r.item_id)] = 1;
+      });
+      if (Object.keys(distinct).length > 1) return null;
+    }
+    if (meta.vendor) {
+      var vendor = String(meta.vendor).toLowerCase();
+      var same = hits.filter(function (r) { return String(r.supplier || "").toLowerCase() === vendor; });
+      if (same.length) hits = same;
+    }
+    if (!hits.length) return null;
+    hits.sort(function (a, b) {
+      return String(b.created_at || "").localeCompare(String(a.created_at || ""));
+    });
+    return hits[0];
+  }
+  function docVisibleForItem(doc, item, lots) {
+    if (!doc) return false;
+    var ids = {};
+    if (item && item.id) ids[String(item.id)] = 1;
+    if (item && item.code) ids[String(item.code)] = 1;
+    var tagged = String(doc.item_id || "");
+    if (tagged && !ids[tagged]) return false;
+    if (tagged && ids[tagged]) return true;
+    var want = normLot(doc.lot);
+    if (!want) return false;
+    for (var n = 0; n < (lots || []).length; n++) {
+      if (normLot(lots[n]) === want) return true;
+    }
+    return false;
+  }
+  function openCoaHold(rows, q) {
+    q = q || {};
+    var key = normLot(q.lot);
+    var recvId = String(q.recvId || "");
+    var itemId = String(q.itemId || "");
+    for (var i = 0; i < (rows || []).length; i++) {
+      var r = rows[i];
+      if (!r) continue;
+      if (normAnswer(r.coa_received) !== "no" || r.coa_released_at) continue;
+      if (recvId && String(r.id) === recvId) return true;
+      if (!(key && normLot(r.lot) === key)) continue;
+      if (itemId && r.item_id && String(r.item_id) !== itemId) continue;
+      if (recvId) continue;
+      return true;
+    }
+    return false;
   }
 
   var api = {
@@ -157,6 +238,9 @@
     logSaved: logSaved,
     matchCandidate: matchCandidate,
     linkPatch: linkPatch,
+    pickRecvRow: pickRecvRow,
+    docVisibleForItem: docVisibleForItem,
+    openCoaHold: openCoaHold,
     MAX_BYTES: MAX_BYTES
   };
 
@@ -421,30 +505,22 @@
     return (root.DB && root.DB.receivingLog) ? root.DB.receivingLog() : [];
   }
   function findRecvId(meta) {
-    meta = meta || {};
-    if (meta.recvId) return String(meta.recvId);
-    var lot = normLot(meta.lot);
-    if (!lot) return "";
-    var rows = logs().filter(function (r) { return normLot(r.lot) === lot; });
-    if (meta.vendor) {
-      var vendor = String(meta.vendor).toLowerCase();
-      var same = rows.filter(function (r) { return String(r.supplier || "").toLowerCase() === vendor; });
-      if (same.length) rows = same;
+    meta = Object.assign({}, meta || {});
+    if (!meta.recvId && root.__smkLastRecvId) {
+      var lastItem = String(root.__smkLastRecvItem || "");
+      var item = String(meta.itemId || "");
+      if (!item || !lastItem || item === lastItem) meta.recvId = String(root.__smkLastRecvId);
     }
-    rows.sort(function (a, b) { return String(b.created_at || "").localeCompare(String(a.created_at || "")); });
-    return rows[0] ? String(rows[0].id) : "";
+    if (meta.recvId) {
+      var pinned = pickRecvRow(logs(), { recvId: meta.recvId });
+      if (pinned && pinned.item_id && meta.itemId && String(pinned.item_id) !== String(meta.itemId)) return "";
+      return String(meta.recvId);
+    }
+    var hit = pickRecvRow(logs(), meta);
+    return hit && hit.id ? String(hit.id) : "";
   }
-  function lotHasOpenCoaHold(lot, recvId) {
-    var key = normLot(lot);
-    var rows = logs();
-    for (var i = 0; i < rows.length; i++) {
-      var r = rows[i];
-      var ans = normAnswer(r.coa_received);
-      if (ans !== "no" || r.coa_released_at) continue;
-      if (recvId && String(r.id) === String(recvId)) return true;
-      if (key && normLot(r.lot) === key) return true;
-    }
-    return false;
+  function lotHasOpenCoaHold(lot, recvId, itemId) {
+    return openCoaHold(logs(), { lot: lot, recvId: recvId || "", itemId: itemId || "" });
   }
   function operator() {
     return val("op") || val("rl-by") || "Adriana";
@@ -570,9 +646,9 @@
       return '<a href="' + esc(d.file_url) + '" target="_blank" rel="noopener">' + esc(tx("open")) + " " + esc(name) + "</a>";
     }).join(" ") + "</div>";
   }
-  function warnHtml(lot, recvId, list) {
+  function warnHtml(lot, recvId, list, itemId) {
     if (list && list.length) return "";
-    if (!lotHasOpenCoaHold(lot, recvId)) return "";
+    if (!lotHasOpenCoaHold(lot, recvId, itemId)) return "";
     return '<span class="cd-miss">' + esc(tx("holdMiss")) + "</span>";
   }
   function pickHtml(attrs) {
@@ -647,7 +723,7 @@
     var file = slots[slot];
     var sig = [lang(), file ? file.name + ":" + file.size : "", list.map(function (d) { return d.id || d.file_path; }).join(",")].join("|");
     var pend = file ? '<p class="cd-pend">' + esc(tx("attached")) + " <b>" + esc(file.name) + '</b> <button type="button" class="ghost sm cd-clear" data-cd-clear="' + slot + '">' + esc(tx("remove")) + "</button></p>" : "";
-    var html = pickHtml('data-cd-pick="' + slot + '"') + pend + linkHtml(list) + warnHtml(meta.lot, meta.recvId, list) +
+    var html = pickHtml('data-cd-pick="' + slot + '"') + pend + linkHtml(list) + warnHtml(meta.lot, meta.recvId, list, meta.itemId) +
       '<p class="hint cd-hint">' + esc(tx("attachHint")) + "</p>";
     setBox(box, html, sig);
   }
@@ -659,8 +735,11 @@
       if (!cells || cells.length < 7) return;
       var lot = tr.getAttribute("data-lot") || cells[6].textContent || "";
       var supplier = cells[1] ? cells[1].textContent || "" : "";
-      var list = docsFor(docRows(), { lot: lot });
-      var open = lotHasOpenCoaHold(lot);
+      var itemId = tr.getAttribute("data-item") || "";
+      var recvId = tr.getAttribute("data-recv") || "";
+      var itemName = cells[5] ? String(cells[5].textContent || "").trim() : "";
+      var list = docsFor(docRows(), { lot: lot, itemId: itemId, recvId: recvId });
+      var open = lotHasOpenCoaHold(lot, recvId, itemId);
       var coaLine = tr.querySelector(".rc-log");
       if (!list.length && !open && !coaLine) {
         var gone = cells[6].querySelector(".cd-row");
@@ -674,8 +753,8 @@
         cells[6].appendChild(box);
       }
       var sig = [lang(), normLot(lot), list.map(function (d) { return d.id || d.file_name; }).join(","), open ? "1" : "0"].join("|");
-      var html = linkHtml(list) + warnHtml(lot, "", list) +
-        pickHtml('data-cd-now="1" data-lot="' + esc(lot) + '" data-vendor="' + esc(String(supplier).trim()) + '"');
+      var html = linkHtml(list) + warnHtml(lot, recvId, list, itemId) +
+        pickHtml('data-cd-now="1" data-lot="' + esc(lot) + '" data-item="' + esc(itemId) + '" data-recv="' + esc(recvId) + '" data-name="' + esc(itemName) + '" data-vendor="' + esc(String(supplier).trim()) + '"');
       setBox(box, html, sig);
     });
   }
@@ -698,14 +777,7 @@
     var coaItem = !!(it && root.RAW_COA && root.RAW_COA.isCoaItem && root.RAW_COA.isCoaItem(it));
     var lots = lotsForItem(it);
     var itemId = it ? (it.id || it.code || "") : "";
-    var list = docRows().filter(function (d) {
-      if (!d) return false;
-      if (itemId && d.item_id && String(d.item_id) !== String(it.id) && String(d.item_id) !== String(it.code)) {
-        return lots.some(function (lot) { return normLot(lot) === normLot(d.lot); });
-      }
-      if (itemId && (String(d.item_id) === String(it.id) || String(d.item_id) === String(it.code))) return true;
-      return lots.some(function (lot) { return normLot(lot) === normLot(d.lot); });
-    });
+    var list = docRows().filter(function (d) { return docVisibleForItem(d, it, lots); });
     if (!coaItem && !list.length) {
       var old = host.querySelector(":scope > .cd-floor");
       if (!old) old = host.querySelector(".cd-floor");
@@ -1161,7 +1233,11 @@
     if (!file) return;
     if (rejectFile(file)) { input.value = ""; return; }
     var lot = input.getAttribute("data-lot") || "";
-    var recvGuess = findRecvId({ lot: lot, vendor: input.getAttribute("data-vendor") || "" });
+    var recvGuess = input.getAttribute("data-recv") || findRecvId({
+      lot: lot,
+      vendor: input.getAttribute("data-vendor") || "",
+      itemId: input.getAttribute("data-item") || ""
+    });
     var res = await uploadFile(file, {
       lot: lot,
       vendor: input.getAttribute("data-vendor") || "",

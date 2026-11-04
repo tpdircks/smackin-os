@@ -75,6 +75,13 @@ var hit = rc.resolveCoa(stock[0], maltoSeed, stock, recv);
 assert(hit.received === "no" && hit.note === "missing", "stock answer wins");
 var fromLog = rc.resolveCoa({ item_id: "MALTO", lot: "M-1", qty: 50, coa_received: "" }, maltoSeed, stock, recv);
 assert(fromLog.received === "yes" && fromLog.recvId === "r1", "log answer fills a blank lot");
+var sharedLot = [
+  { id: "dill", item_id: "SEAS-DILL", lot: "J1926", recv_date: "2026-11-04", coa_received: "yes" },
+  { id: "pep", item_id: "SEAS-PEP", lot: "J1926", recv_date: "2026-11-04", coa_received: "no" }
+];
+var pepper = { id: "SEAS-PEP", code: "SEAS-PEP", category: "seasoning", name: "Cracked Pepper" };
+var sharedHit = rc.resolveCoa({ item_id: "SEAS-PEP", lot: "J1926", qty: 12, coa_received: "" }, pepper, [], sharedLot);
+assert(sharedHit.received === "no" && sharedHit.recvId === "pep", "a shared lot does not take the other item COA");
 assert(rc.linesFor(bag, [{ item_id: "B4-S03", location: "QA-HOLD", lot: "F", qty: 4, coa_received: "no" }], []).length === 0, "no finished-goods lines");
 assert(rc.linesFor(maltoSeed, stock, recv).length === 1 && rc.linesFor(maltoSeed, stock, recv)[0].onHold, "floor line shows the hold");
 
@@ -99,13 +106,13 @@ assert(db.indexOf('from: "RECEIVING", to: "QA-HOLD"') < 0, "move is not hardcode
 assert(db.indexOf('"QA-HOLD"') >= 0 && db.indexOf("hold_log") >= 0, "uses QA-HOLD and the hold log");
 assert(db.indexOf("fn_apply_delta") >= 0, "stock moves stay on the existing delta helper");
 assert(src.indexOf("fn_apply_delta") < 0, "ui module does not call the delta rpc");
-assert(sw.indexOf('const CACHE = "smackin-inv-v279"') >= 0 && sw.indexOf("./raw-coa.js") >= 0, "cache and asset");
+assert(sw.indexOf('const CACHE = "smackin-inv-v280"') >= 0 && sw.indexOf("./raw-coa.js") >= 0, "cache and asset");
 assert(html.indexOf("raw-coa.js?b=4") >= 0, "script bust");
-assert(html.indexOf("coa-docs.js?b=1") >= 0, "coa docs script");
-assert(html.indexOf('var EMBEDDED = "smackin-inv-v279"') >= 0, "embedded build");
-assert(read("build-id.txt").trim() === "smackin-inv-v279", "build id");
-assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v279"') >= 0, "escape build");
-assert(html.indexOf("db.js?b=99") >= 0, "db bust");
+assert(html.indexOf("coa-docs.js?b=2") >= 0, "coa docs script");
+assert(html.indexOf('var EMBEDDED = "smackin-inv-v280"') >= 0, "embedded build");
+assert(read("build-id.txt").trim() === "smackin-inv-v280", "build id");
+assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v280"') >= 0, "escape build");
+assert(html.indexOf("db.js?b=100") >= 0, "db bust");
 assert(read("receiving-sop.js").indexOf("afterHoldLogReleased") >= 0, "hold log release notifies COA");
 
 if (failed) {
