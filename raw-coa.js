@@ -4,10 +4,10 @@
    whether the COA was in hand at the dock: Yes, No, or N/A, plus a short note.
    The PDF or photo is stored by coa-docs.js.
 
-   No on seed, seasoning, or maltodextrin puts the receipt on QA Hold.
-   That uses the HOLD Log, receiving_log.on_hold, and the QA-HOLD location.
-   Oil and stevia are recorded and are not auto-held. Quality release clears
-   the hold and leaves COA = No, with a note that Quality released later.
+   No on seed, seasoning, maltodextrin, oil, or stevia puts the receipt
+   on QA Hold. That uses the HOLD Log, receiving_log.on_hold, and the
+   QA-HOLD location. Quality release clears the hold and leaves COA = No,
+   with a note that Quality released later.
    A missing column does not block the receipt. This file does not upload.
    ========================================================================== */
 (function (root) {
@@ -32,7 +32,7 @@
     en: {
       label: "COA received?",
       note: "Note (optional)",
-      hint: "Yes, No, or N/A. No on seed, seasoning, or maltodextrin puts the lot on QA Hold until Quality releases it. Attach the COA here when you have the file.",
+      hint: "Yes, No, or N/A. No on seed, seasoning, maltodextrin, oil, or stevia puts the lot on QA Hold until Quality releases it. Attach the COA here when you have the file.",
       yes: "Yes", no: "No", na: "N/A",
       hold: "QA Hold",
       release: "Quality release",
@@ -48,7 +48,7 @@
     es: {
       label: "COA recibido?",
       note: "Nota (opcional)",
-      hint: "Si, No o N/A. No en semilla, sazon o maltodextrina pone el lote en QA Hold hasta que Calidad lo libere. Adjunte el COA aqui cuando tenga el archivo.",
+      hint: "Si, No o N/A. No en semilla, sazon, maltodextrina, aceite o stevia pone el lote en QA Hold hasta que Calidad lo libere. Adjunte el COA aqui cuando tenga el archivo.",
       yes: "Si", no: "No", na: "N/A",
       hold: "QA Hold",
       release: "Liberar calidad",
@@ -64,7 +64,7 @@
     pt: {
       label: "COA recebido?",
       note: "Nota (opcional)",
-      hint: "Sim, Nao ou N/A. Nao em semente, tempero ou maltodextrina coloca o lote em QA Hold ate a Qualidade liberar. Anexe o COA aqui quando tiver o arquivo.",
+      hint: "Sim, Nao ou N/A. Nao em semente, tempero, maltodextrina, oleo ou stevia coloca o lote em QA Hold ate a Qualidade liberar. Anexe o COA aqui quando tiver o arquivo.",
       yes: "Sim", no: "Nao", na: "N/A",
       hold: "QA Hold",
       release: "Liberar qualidade",
@@ -116,7 +116,7 @@
     return c === "seed" || c === "seeds" || c === "seasoning" || c === "oil" || c === "stevia" || c === "adhesion";
   }
   function isHighRisk(it) {
-    return !!(isCoaItem(it) && !isOilOrStevia(it));
+    return !!isCoaItem(it);
   }
   function normAnswer(v) {
     var s = String(v == null ? "" : v).trim().toLowerCase().replace(/[^a-z]/g, "");
