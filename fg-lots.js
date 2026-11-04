@@ -852,10 +852,10 @@
 
   if (root.document) {
     root.document.addEventListener("click", function (e) {
-      var t = e.target && e.target.closest ? e.target.closest("#nav .navitem, [data-dept-tool], .dept-tab") : null;
+      var t = e.target && e.target.closest ? e.target.closest("#nav .navitem, [data-dept-tool], [data-dept-sub], .dept-tab, #dept-back") : null;
       if (!t) return;
       if (t.id === "fgl-nav") return;
-      if (t.getAttribute && t.getAttribute("data-dept-tool") === "fglots") return;
+      if (t.getAttribute && (t.getAttribute("data-dept-tool") === "fglots" || t.getAttribute("data-dept-sub") === "fglots")) return;
       active = false;
     }, true);
     ["lang-en", "lang-es", "lang-pt"].forEach(function (id) {
@@ -868,7 +868,10 @@
     try {
       var mo = new MutationObserver(function () {
         injectNav();
-        if (active && root.document.getElementById("view") && !root.document.getElementById("fgl-root")) render();
+        var host = root.document.getElementById("view");
+        if (!active || !host || root.document.getElementById("fgl-root")) return;
+        if (host.querySelector("#trc-root, #qa-root, #sqf-root, #btr-root, #fa-root, #cd-lot, #dept-home")) return;
+        render();
       });
       mo.observe(root.document.documentElement, { childList: true, subtree: true });
     } catch (e) {}

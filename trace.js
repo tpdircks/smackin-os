@@ -1,5 +1,5 @@
 /* ============================================================================
-   Lot Trace & Scan  (trace.js)  b=20
+   Lot Trace & Scan  (trace.js)  b=21
    One scan chain from the dock to the customer, built for SQF traceability.
 
      RECEIVE   raw material in -> our own RM label per pallet/box/roll (supplier lot, exp)
@@ -41,7 +41,7 @@
    Nav item is injected with a MutationObserver (no timers). Keyboard-wedge scanners
    (NETUM NT-1228BL etc.) type the code + Enter into the focused scan box.
    ==========================================================================*/
-(function () {
+(function (window) {
   "use strict";
 
   var cfg = window.SMACKIN_CONFIG || {};
@@ -110,6 +110,7 @@
       tRecv: "Receive", tQa: "QA Hold", tMix: "Mixing", tPmac: "P-Mac", tMove: "Move", tUse: "Use", tShip: "Ship", tTrace: "Trace", tLabels: "Labels",
       op: "Operator (your name)", scan: "Scan here", scanPh: "Scan a label (or type it and press Enter)",
       local: "LOCAL MODE: the trace tables are not set up yet, so scans save on this device only.",
+      loadingRows: "Loading trace records...",
       save: "Save", print: "Print labels", reprint: "Reprint", clear: "Clear",
       type: "Material type", item: "Item / description", supplier: "Supplier", po: "PO #", slot: "Supplier lot # (scan or type)",
       exp: "Expiration date", seedCode: "Seed code (internal, e.g. 3X)", flavor: "Flavor", units: "How many labels (pallets / boxes / rolls)",
@@ -190,6 +191,7 @@
       tRecv: "Recibir", tQa: "Retención QA", tMix: "Mezcla", tPmac: "P-Mac", tMove: "Mover", tUse: "Usar", tShip: "Enviar", tTrace: "Rastrear", tLabels: "Etiquetas",
       op: "Operador (su nombre)", scan: "Escanee aquí", scanPh: "Escanee una etiqueta (o escriba y presione Enter)",
       local: "MODO LOCAL: las tablas no están listas; los escaneos se guardan solo en este equipo.",
+      loadingRows: "Cargando registros de rastreo...",
       save: "Guardar", print: "Imprimir etiquetas", reprint: "Reimprimir", clear: "Limpiar",
       type: "Tipo de material", item: "Artículo / descripción", supplier: "Proveedor", po: "Orden de compra #", slot: "Lote del proveedor (escanear o escribir)",
       exp: "Fecha de vencimiento", seedCode: "Código de semilla (interno, ej. 3X)", flavor: "Sabor", units: "Cuántas etiquetas (tarimas / cajas / rollos)",
@@ -266,6 +268,7 @@
       bestByBlank: "Consumir antes esta vacio. ¿Guardar sin la fecha impresa en la bolsa?"
     },
     pt: {
+      loadingRows: "Carregando registros de rastreio...",
       bestBy: "Validade",
       bestByNotSet: "Nao definido. Digite a data impressa no saco.",
       bestByBlank: "Validade esta em branco. Salvar sem a data impressa no saco?",
@@ -377,7 +380,7 @@
     return sb;
   }
   function cloudOk() { return !!(window.DB && window.DB.mode === "cloud" && client()); }
-  function localLoad() { var d = lsGet(LS, { labels: {}, events: [] }); S.labels = d.labels || {}; S.events = d.events || []; }
+  function localLoad() { var d = lsGet(LS, { labels: {}, events: [] }); S.labels = d.labels || {}; S.events = d.events || []; dropIndexes(); }
   function localSave() { lsSet(LS, { labels: S.labels, events: S.events.slice(-20000) }); }
   function normLabel(r) {
     if (!r) return r;
@@ -387,25 +390,125 @@
     r.data = r.data || {}; r.qty = num(r.qty); r.qty_left = num(r.qty_left);
     return r;
   }
+  // Opening Trace used to pull 20k labels and 20k events in one response, then
+  // walk them on the same turn as the click. Page the read, drop it if the
+  // operator leaves, and paint the shell before the first page returns.
+  var TRACE_PAGE = 1000;
+  var TRACE_CAP = 20000;
+  var FOREIGN_IDS = ["qa-root", "sqf-root", "fgl-root", "btr-root", "fa-root", "cd-lot", "dept-home"];
+  var loadGen = 0;
+  var loadAbort = null;
+  var childIndex = null;
+  var eventsByLpn = null;
+  function pageWindow(offset, size) {
+    var n = size > 0 ? Math.floor(size) : TRACE_PAGE;
+    var start = offset > 0 ? Math.floor(offset) : 0;
+    return { from: start, to: start + n - 1 };
+  }
+  function pageDone(count, size) {
+    var n = size > 0 ? size : TRACE_PAGE;
+    return count < n;
+  }
+  function stillCurrent(gen, current) { return gen === current; }
+  function viewIsForeign(ids, dataCd) {
+    ids = ids || [];
+    for (var i = 0; i < FOREIGN_IDS.length; i++) {
+      if (ids.indexOf(FOREIGN_IDS[i]) >= 0) return true;
+    }
+    return dataCd === "1" && ids.indexOf("trc-root") < 0;
+  }
+  // keep: this screen still owns #view.
+  // release: another module painted #view. Drawing again is the hang
+  // (Quality checklists and Trace replace #view forever).
+  // once: the app wiped #view and nobody else claimed it.
+  function reclaimAction(active, hasTraceRoot, foreign) {
+    if (!active) return "idle";
+    if (hasTraceRoot) return "keep";
+    if (foreign) return "release";
+    return "once";
+  }
+  function allowReclaim(state, now) {
+    state = state || { n: 0, t: 0 };
+    var n = (now - state.t > 1000) ? 1 : state.n + 1;
+    return { n: n, t: now, ok: n <= 3 };
+  }
+  function dropIndexes() { childIndex = null; eventsByLpn = null; }
+  function cancelLoad() {
+    loadGen++;
+    if (loadAbort) { try { loadAbort.abort(); } catch (e) {} loadAbort = null; }
+  }
+  function fetchPaged(table, orderCol, gen, signal) {
+    var rows = [];
+    function step(offset) {
+      if (!stillCurrent(gen, loadGen)) return Promise.resolve(null);
+      var win = pageWindow(offset, TRACE_PAGE);
+      var q = client().from(table).select("*").order(orderCol, { ascending: false }).range(win.from, win.to);
+      if (signal && typeof q.abortSignal === "function") q = q.abortSignal(signal);
+      return Promise.resolve(q).then(function (r) {
+        if (!stillCurrent(gen, loadGen)) return null;
+        if (!r || r.error) throw (r && r.error) || new Error("trace read failed");
+        var batch = r.data || [];
+        for (var i = 0; i < batch.length && rows.length < TRACE_CAP; i++) rows.push(batch[i]);
+        if (pageDone(batch.length, TRACE_PAGE) || rows.length >= TRACE_CAP) return rows;
+        return step(offset + batch.length);
+      });
+    }
+    return step(0);
+  }
+  function takeChunk(rows, each, gen) {
+    var list = rows || [];
+    var i = 0;
+    var CHUNK = 500;
+    return new Promise(function (resolve) {
+      function step() {
+        if (!stillCurrent(gen, loadGen)) return resolve(false);
+        var end = Math.min(i + CHUNK, list.length);
+        for (; i < end; i++) each(list[i], i);
+        if (i < list.length) { setTimeout(step, 0); return; }
+        resolve(true);
+      }
+      step();
+    });
+  }
   function load() {
-    if (!cloudOk()) { mode = "local"; localLoad(); S.loaded = true; return Promise.resolve(); }
-    var c = client();
+    if (!cloudOk()) { mode = "local"; localLoad(); S.loaded = true; S.err = ""; return Promise.resolve(true); }
+    var gen = ++loadGen;
+    if (loadAbort) { try { loadAbort.abort(); } catch (e0) {} }
+    loadAbort = typeof AbortController === "function" ? new AbortController() : { abort: function () {}, signal: null };
+    var signal = loadAbort.signal || null;
     return Promise.all([
-      c.from("trace_labels").select("*").order("created_at", { ascending: false }).limit(20000),
-      c.from("trace_events").select("*").order("ts", { ascending: false }).limit(20000)
-    ]).then(function (r) {
-      if (r[0].error || r[1].error) { var e = r[0].error || r[1].error; throw e; }
-      mode = "cloud"; S.labels = {};
-      (r[0].data || []).forEach(function (x) { S.labels[x.lpn] = normLabel(x); });
-      S.events = (r[1].data || []).map(function (e) { if (typeof e.data === "string") { try { e.data = JSON.parse(e.data); } catch (x) { e.data = {}; } } e.data = e.data || {}; return e; }).reverse();
-      S.loaded = true; S.err = "";
-      ensureRt();
+      fetchPaged("trace_labels", "created_at", gen, signal),
+      fetchPaged("trace_events", "ts", gen, signal)
+    ]).then(function (parts) {
+      if (!stillCurrent(gen, loadGen) || !parts || parts[0] == null || parts[1] == null) return false;
+      var labels = {};
+      return takeChunk(parts[0], function (x) {
+        if (x && x.lpn) labels[x.lpn] = normLabel(x);
+      }, gen).then(function (ok) {
+        if (!ok || !stillCurrent(gen, loadGen)) return false;
+        var events = [];
+        return takeChunk(parts[1], function (e) { events.push(normEvent(e)); }, gen).then(function (ok2) {
+          if (!ok2 || !stillCurrent(gen, loadGen)) return false;
+          mode = "cloud";
+          S.labels = labels;
+          S.events = events.reverse();
+          S.loaded = true;
+          S.err = "";
+          dropIndexes();
+          ensureRt();
+          return true;
+        });
+      });
     }).catch(function (e) {
+      if (!stillCurrent(gen, loadGen)) return false;
+      var name = e && (e.name || e.code || "");
+      if (name === "AbortError" || name === "ABORT_ERR") return false;
       S.err = (e && (e.message || e.code)) || String(e);
       // DB is already cloud. Do not downgrade this station to localStorage or the
       // next Use / Mix / Ship stays on this device only.
-      if (window.DB && window.DB.mode === "cloud") { mode = "cloud"; S.loaded = true; return; }
+      if (window.DB && window.DB.mode === "cloud") { mode = "cloud"; S.loaded = true; return true; }
       mode = "local"; localLoad(); S.loaded = true;
+      return true;
     });
   }
   function fetchOne(lpn) {
@@ -413,7 +516,7 @@
     if (S.labels[lpn]) return Promise.resolve(S.labels[lpn]);
     if (mode !== "cloud") return Promise.resolve(null);
     return client().from("trace_labels").select("*").eq("lpn", lpn).limit(1).then(function (r) {
-      var x = r && r.data && r.data[0]; if (x) S.labels[x.lpn] = normLabel(x); return x ? S.labels[x.lpn] : null;
+      var x = r && r.data && r.data[0]; if (x) { S.labels[x.lpn] = normLabel(x); dropIndexes(); } return x ? S.labels[x.lpn] : null;
     }).catch(function () { return null; });
   }
   function normEvent(e) {
@@ -424,11 +527,12 @@
   }
   function insLabels(rows) {
     rows.forEach(function (r) { r.updated_at = nowISO(); if (!r.created_at) r.created_at = nowISO(); });
-    if (mode !== "cloud") { rows.forEach(function (r) { S.labels[r.lpn] = normLabel(r); }); localSave(); return Promise.resolve({ ok: true }); }
+    if (mode !== "cloud") { rows.forEach(function (r) { S.labels[r.lpn] = normLabel(r); }); dropIndexes(); localSave(); return Promise.resolve({ ok: true }); }
     var out = rows.map(function (r) { var o = {}; for (var k in r) o[k] = r[k]; return o; });
     return client().from("trace_labels").insert(out).select().then(function (r) {
       if (!r || r.error || !r.data || r.data.length !== out.length) return { ok: false, msg: (r && r.error && r.error.message) || "not confirmed" };
       r.data.forEach(function (x) { S.labels[x.lpn] = normLabel(x); });
+      dropIndexes();
       return { ok: true };
     }).catch(function (e) { return { ok: false, msg: (e && e.message) || "not saved" }; });
   }
@@ -436,21 +540,23 @@
     patch = Object.assign({}, patch, { updated_at: nowISO() });
     if (mode !== "cloud") {
       var l = S.labels[lpn]; if (l) { for (var k in patch) l[k] = patch[k]; l.updated_at = patch.updated_at; }
-      localSave(); return Promise.resolve({ ok: true });
+      dropIndexes(); localSave(); return Promise.resolve({ ok: true });
     }
     return client().from("trace_labels").update(patch).eq("lpn", lpn).select().then(function (r) {
       if (!r || r.error || !r.data || !r.data.length) return { ok: false, msg: (r && r.error && r.error.message) || "not confirmed" };
       S.labels[lpn] = normLabel(r.data[0]);
+      dropIndexes();
       return { ok: true };
     }).catch(function (e) { return { ok: false, msg: (e && e.message) || "not saved" }; });
   }
   function addEvents(evs) {
     evs.forEach(function (e) { e.ts = e.ts || nowISO(); e.data = e.data || {}; e.operator = e.operator || opName(); });
-    if (mode !== "cloud") { evs.forEach(function (e) { S.events.push(e); }); localSave(); return Promise.resolve({ ok: true }); }
+    if (mode !== "cloud") { evs.forEach(function (e) { S.events.push(e); }); dropIndexes(); localSave(); return Promise.resolve({ ok: true }); }
     var out = evs.map(function (e) { return { ts: e.ts, type: e.type, lpn: e.lpn || null, qty: e.qty == null ? null : Number(e.qty), uom: e.uom || null, from_loc: e.from_loc || null, to_loc: e.to_loc || null, ref: e.ref || null, lot: e.lot || null, operator: e.operator || null, data: e.data || {} }; });
     return client().from("trace_events").insert(out).select().then(function (r) {
       if (!r || r.error || !r.data || r.data.length !== out.length) return { ok: false, msg: (r && r.error && r.error.message) || "not confirmed" };
       r.data.forEach(function (e) { S.events.push(normEvent(e)); });
+      dropIndexes();
       return { ok: true };
     }).catch(function (e) { return { ok: false, msg: (e && e.message) || "not saved" }; });
   }
@@ -468,7 +574,7 @@
       rtTimer = null;
       if (!ACTIVE || typingTrace()) return;
       var tab = ST.tab;
-      load().then(function () { if (!ACTIVE || ST.tab !== tab) return; render(); });
+      load().then(function (ok) { if (!ok || !ACTIVE || ST.tab !== tab) return; render(); });
     }, 500);
   }
   function ensureRt() {
@@ -482,12 +588,37 @@
         .subscribe();
     } catch (e) {}
   }
-  document.addEventListener("visibilitychange", function () {
-    if (document.visibilityState === "visible" && ACTIVE) scheduleTrace();
-  });
   function allLabels() { return Object.keys(S.labels).map(function (k) { return S.labels[k]; }); }
-  function childrenOf(lpn) { return allLabels().filter(function (l) { return (l.parents || []).indexOf(lpn) >= 0; }); }
-  function eventsFor(lpn) { return S.events.filter(function (e) { return e.lpn === lpn; }); }
+  function childrenOf(lpn) {
+    if (!childIndex) {
+      childIndex = {};
+      var keys = Object.keys(S.labels);
+      for (var i = 0; i < keys.length; i++) {
+        var l = S.labels[keys[i]];
+        var parents = (l && l.parents) || [];
+        for (var p = 0; p < parents.length; p++) {
+          var id = parents[p];
+          if (!id) continue;
+          if (!childIndex[id]) childIndex[id] = [];
+          childIndex[id].push(l);
+        }
+      }
+    }
+    return childIndex[lpn] || [];
+  }
+  function eventsFor(lpn) {
+    if (!eventsByLpn) {
+      eventsByLpn = {};
+      for (var i = 0; i < S.events.length; i++) {
+        var e = S.events[i];
+        var k = e && e.lpn ? e.lpn : "";
+        if (!k) continue;
+        if (!eventsByLpn[k]) eventsByLpn[k] = [];
+        eventsByLpn[k].push(e);
+      }
+    }
+    return eventsByLpn[lpn] || [];
+  }
 
   // ---- station state (per device) -------------------------------------------
   var ST = lsGet(LS_ST, { tab: "recv", op: "", mixer: "1", machine: "41", ops: [] });
@@ -582,9 +713,11 @@
   function open(ev) {
     if (ev && ev.preventDefault) ev.preventDefault();
     ACTIVE = true; markActive(); styleOnce();
-    var host = $("view"); if (host) host.innerHTML = '<div id="trc-root"><div class="card"><h2>' + esc(L("title")) + '</h2><p class="muted">Loading...</p></div></div>';
     try { var n = $("nav"), bd = $("navBackdrop"); if (n) n.classList.remove("open"); if (bd) bd.classList.remove("show"); } catch (e) {}
-    load().then(render);
+    var tab = ST.tab;
+    // Paint the search shell on this turn. The paged read must not block it.
+    render();
+    load().then(function (ok) { if (!ok || !ACTIVE || ST.tab !== tab) return; render(); });
   }
   function markActive() {
     try {
@@ -601,6 +734,7 @@
 
   var RENDERING = false;
   var recvHoldRev = -1;
+  var scanKeep = "";
   function render() {
     if (!ACTIVE || RENDERING) return;
     var host = $("view"); if (!host) return;
@@ -610,12 +744,14 @@
   function renderNow(host) {
     LOT_ACTS = [];
     var focusId = document.activeElement && document.activeElement.id;
+    scanKeep = (focusId === "trc-scan" && document.activeElement) ? (document.activeElement.value || "") : "";
     var tabs = [["recv", "tRecv"], ["qa", "tQa"], ["mix", "tMix"], ["pmac", "tPmac"], ["move", "tMove"], ["use", "tUse"], ["elog", "tElog"], ["ship", "tShip"], ["trace", "tTrace"], ["labels", "tLabels"]];
     var holdN = allLabels().filter(function (l) { return l.status === "HOLD"; }).length;
     var h = '<div id="trc-root">';
     h += '<div class="card trc-noprint"><h2 style="margin-top:0">' + esc(L("title")) + '</h2>';
     if (S.err) h += '<div class="trc-local">' + esc(S.err) + '</div>';
     else if (mode !== "cloud") h += '<div class="trc-local">' + esc(L("local")) + '</div>';
+    else if (!S.loaded) h += '<div class="trc-local">' + esc(L("loadingRows")) + '</div>';
     h += '<div class="trc-tabs">' + tabs.map(function (t) {
       var extra = t[0] === "qa" && holdN ? ' (' + holdN + ')' : "";
       return '<button class="' + (ST.tab === t[0] ? "on" : "") + '" onclick="TRACE.tab(\'' + t[0] + '\')">' + esc(L(t[1])) + extra + '</button>';
@@ -706,8 +842,8 @@
     var exp = ymd(typed);
     return { exp: exp || null, source: exp ? "printed" : "blank", override: false, suggested: "", events: [], writes: [], stockWritten: WRITE_STOCK };
   }
-  function scanBox(handler, ph) {
-    return '<label>' + esc(L("scan")) + '</label><input id="trc-scan" class="trc-scan" autocomplete="off" placeholder="' + esc(ph || L("scanPh")) + '" onkeydown="if(event.key===\'Enter\'){event.preventDefault();TRACE.' + handler + '(this.value);this.value=\'\';}">';
+  function scanBox(handler, ph, value) {
+    return '<label>' + esc(L("scan")) + '</label><input id="trc-scan" class="trc-scan" autocomplete="off" placeholder="' + esc(ph || L("scanPh")) + '" value="' + esc(value || "") + '" onkeydown="if(event.key===\'Enter\'){event.preventDefault();TRACE.' + handler + '(this.value);this.value=\'\';}">';
   }
   function needOp() { if (!opName()) { flash(L("needOp"), "err"); render(); var o = $("trc-op"); if (o) o.focus(); return true; } return false; }
   function sel(id, opts, cur, onch) {
@@ -2188,7 +2324,8 @@
     seen = seen || {}; depth = depth || 0; if (seen[lpn] || depth > 8) return ""; seen[lpn] = 1;
     var l = S.labels[lpn]; var pad = new Array(depth + 1).join("    ");
     var out = pad + (depth ? "-> " : "") + describe(l) + "\n";
-    S.events.filter(function (e) { return e.lpn === lpn && (e.type === "USE" || e.type === "SHIP"); }).forEach(function (e) {
+    eventsFor(lpn).forEach(function (e) {
+      if (e.type !== "USE" && e.type !== "SHIP") return;
       out += pad + "    => " + e.type + " " + fmt(e.qty) + " bags to " + (e.to_loc || "") + (e.ref ? " (" + e.ref + ")" : "") + (e.data && e.data.customer ? " " + e.data.customer : "") + "  " + tsLocal(e.ts) + "  by " + (e.operator || "") + "\n";
     });
     childrenOf(lpn).forEach(function (c) { if (c.kind !== "OB") out += fwdTree(c.lpn, depth + 1, seen); });
@@ -2206,7 +2343,7 @@
     });
     Object.keys(fgs).forEach(function (k) {
       var f = fgs[k], b = addLot(f.lot); b.packed += num(f.qty); b.left += num(f.qty_left);
-      S.events.filter(function (e) { return e.lpn === f.lpn; }).forEach(function (e) {
+      eventsFor(f.lpn).forEach(function (e) {
         if (e.type === "SHIP") { b.shipped += num(e.qty); b.pos[e.ref] = (b.pos[e.ref] || 0) + num(e.qty); }
         if (e.type === "USE") { if (e.to_loc === "LINE") b.line += num(e.qty); else if (e.to_loc === "ECOM") b.ecom += num(e.qty); else if (e.to_loc === "SCRAP") b.scrap += num(e.qty); else b.other += num(e.qty); }
       });
@@ -2455,7 +2592,7 @@
   function vTrace() {
     var t = W.trace, res = findMatches(t.q);
     var h = '<div class="card"><h2 class="sub2">' + esc(L("tTrace")) + '</h2><p class="hint">' + esc(L("traceHint")) + '</p>';
-    h += '<div class="trc-noprint">' + scanBox("traceQ") + '</div>';
+    h += '<div class="trc-noprint">' + scanBox("traceQ", "", scanKeep) + '</div>';
     h += '<div class="trc-row trc-noprint" style="margin-top:10px">' + (t.drillStart ? '<span class="trc-timer">Started ' + esc(new Date(t.drillStart).toLocaleTimeString()) + ' (' + drillTxt() + ' so far)</span><button class="ghost" onclick="TRACE.drill(false)">' + esc(L("stopDrill")) + '</button>' : '<button class="ghost" onclick="TRACE.drill(true)">' + esc(L("startDrill")) + '</button>') + (t.q ? '<button class="ghost" onclick="TRACE.printEvidence()">' + esc(L("printEv")) + '</button>' : "") + '</div>';
     h += '<div class="trc-row trc-noprint" style="margin-top:8px"><button type="button" class="primary" onclick="TRACE.recallExport(\'pdf\')">' + esc(L("recallPdf")) + '</button><button type="button" class="ghost" onclick="TRACE.recallExport(\'xlsx\')">' + esc(L("recallXlsx")) + '</button></div>';
     h += '<p class="hint trc-noprint">' + esc(L("recallHint")) + '</p>';
@@ -2633,13 +2770,65 @@
     captureUse();
     if ($("trc-s-po")) { W.ship.po = val("trc-s-po"); W.ship.customer = val("trc-s-cust"); W.ship.qty = val("trc-s-qty"); }
   }
-  document.addEventListener("input", captureAll, true);
-  document.addEventListener("change", captureAll, true);
+  function releaseOnLeave(e) {
+    var t = e.target && e.target.closest ? e.target.closest("#nav .navitem, [data-dept-sub], [data-dept-tool], #deptbar [data-dept], #dept-back") : null;
+    if (!t || !ACTIVE) return;
+    if (t.getAttribute("data-trc") === "1") return;
+    var sub = t.getAttribute("data-dept-sub") || "";
+    var tool = t.getAttribute("data-dept-tool") || "";
+    // The main Quality tabs and the drawer copies both open Trace.
+    // Leaving through either one has to drop this screen before the next paint.
+    if (sub === "trace" || sub === "trElog" || sub === "trLabels") return;
+    if (tool === "trace" || tool === "trElog" || tool === "trLabels") return;
+    ACTIVE = false;
+    cancelLoad();
+  }
+  var reclaimState = { n: 0, t: 0 };
+  function onTraceMutations() {
+    injectNav();
+    if (!ACTIVE) return;
+    var v = $("view");
+    if (!v || !v.querySelector) return;
+    var ids = [];
+    var watch = FOREIGN_IDS.concat(["trc-root"]);
+    for (var i = 0; i < watch.length; i++) {
+      if (v.querySelector("#" + watch[i])) ids.push(watch[i]);
+    }
+    var action = reclaimAction(true, ids.indexOf("trc-root") >= 0, viewIsForeign(ids, v.getAttribute("data-cd")));
+    if (action === "keep") {
+      var a = document.querySelector('#nav [data-trc-tab="' + ST.tab + '"]') || $("trc-nav-" + ST.tab);
+      if (a && !a.classList.contains("active")) markActive();
+      return;
+    }
+    if (action === "release") { ACTIVE = false; cancelLoad(); return; }
+    reclaimState = allowReclaim(reclaimState, Date.now());
+    if (!reclaimState.ok) { ACTIVE = false; cancelLoad(); return; }
+    markActive();
+    render();
+  }
+  function bootDom() {
+    if (typeof document === "undefined" || !document.addEventListener) return;
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible" && ACTIVE) scheduleTrace();
+    });
+    document.addEventListener("input", captureAll, true);
+    document.addEventListener("change", captureAll, true);
+    document.addEventListener("click", releaseOnLeave, true);
+    ["lang-en", "lang-es", "lang-pt"].forEach(function (id) {
+      document.addEventListener("click", function (e) { if (e.target && e.target.id === id && ACTIVE) { setTimeout(render, 0); } }, false);
+    });
+    try {
+      var mo = new MutationObserver(onTraceMutations);
+      mo.observe(document.documentElement, { childList: true, subtree: true });
+    } catch (e) {}
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setTimeout(injectNav, 500); });
+    else setTimeout(injectNav, 500);
+  }
 
   // ---- public API ---------------------------------------------------------------
   window.TRACE = {
     open: open, render: render,
-    tab: function (t) { ST.tab = t; saveST(); W.msg = null; markActive(); load().then(render); },
+    tab: function (t) { ST.tab = t; saveST(); W.msg = null; markActive(); render(); load().then(function (ok) { if (ok && ACTIVE && ST.tab === t) render(); }); },
     go: function (t, ev) { if (ev && ev.preventDefault) ev.preventDefault(); ST.tab = t; saveST(); W.msg = null; open(); },
     toggleGroup: function () { injectNav(); },
     setOp: function (v) { rememberOp(v); render(); },
@@ -2788,27 +2977,20 @@
     } finally { placingNav = false; }
     injectEcomLink();
   }
-  // Leaving: any other nav click ends our view before the app renders its own.
-  document.addEventListener("click", function (e) {
-    var t = e.target && e.target.closest ? e.target.closest("#nav .navitem") : null;
-    if (t && t.getAttribute("data-trc") !== "1" && ACTIVE) { ACTIVE = false; }
-  }, true);
   window.SMK_VIEW_LOCKS = window.SMK_VIEW_LOCKS || [];
   window.SMK_VIEW_LOCKS.push(function () { return ACTIVE; });
   window.SMK_BUSY = window.SMK_BUSY || [];
   window.SMK_BUSY.push(function () { return ACTIVE && typingTrace(); });
-  // Language switch re-renders the app; bring our view back in the new language.
-  ["lang-en", "lang-es", "lang-pt"].forEach(function (id) {
-    document.addEventListener("click", function (e) { if (e.target && e.target.id === id && ACTIVE) { setTimeout(render, 0); } }, false);
-  });
-  try {
-    var mo = new MutationObserver(function () {
-      injectNav();
-      // A background app render wiped our view while it is active: redraw from memory once.
-      if (ACTIVE) { var v = $("view"); if (v && !v.querySelector("#trc-root")) { markActive(); render(); } else { var a = document.querySelector('#nav [data-trc-tab="' + ST.tab + '"]') || $("trc-nav-" + ST.tab); if (a && !a.classList.contains("active")) markActive(); } }
-    });
-    mo.observe(document.documentElement, { childList: true, subtree: true });
-  } catch (e) {}
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setTimeout(injectNav, 500); });
-  else setTimeout(injectNav, 500);
-})();
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports = {
+      pageWindow: pageWindow,
+      pageDone: pageDone,
+      stillCurrent: stillCurrent,
+      reclaimAction: reclaimAction,
+      viewIsForeign: viewIsForeign,
+      allowReclaim: allowReclaim,
+      PAGE: TRACE_PAGE
+    };
+  }
+  bootDom();
+})(typeof window !== "undefined" ? window : globalThis);

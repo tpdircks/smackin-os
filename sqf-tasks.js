@@ -1282,10 +1282,10 @@
   }
 
   function leaveIfOther(e) {
-    var t = e.target && e.target.closest ? e.target.closest("#sqf-nav, [data-dept-tool], #nav .navitem, .dept-tab, #dept-back") : null;
+    var t = e.target && e.target.closest ? e.target.closest("#sqf-nav, [data-dept-tool], [data-dept-sub], #nav .navitem, .dept-tab, #dept-back") : null;
     if (!t) return;
     if (t.id === "sqf-nav") return;
-    if (t.getAttribute && t.getAttribute("data-dept-tool") === "sqftasks") return;
+    if (t.getAttribute && (t.getAttribute("data-dept-tool") === "sqftasks" || t.getAttribute("data-dept-sub") === "sqftasks")) return;
     active = false;
     editClause = null;
   }
@@ -1333,7 +1333,10 @@
     try {
       var mo = new MutationObserver(function () {
         injectNav();
-        if (active && doc.getElementById("view") && !doc.getElementById("sqf-root")) render();
+        var host = doc.getElementById("view");
+        if (!active || !host || doc.getElementById("sqf-root")) return;
+        if (host.querySelector("#trc-root, #qa-root, #fgl-root, #btr-root, #fa-root, #cd-lot, #dept-home")) return;
+        render();
       });
       mo.observe(doc.documentElement, { childList: true, subtree: true });
     } catch (e) {}
