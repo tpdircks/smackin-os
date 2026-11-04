@@ -215,30 +215,18 @@
     if (!it) return true;
     return isCoaItem(it);
   }
-  function logDataLot(lot) {
-    return String(lot || "").toUpperCase().replace(/\s+/g, "");
-  }
   function matchLogFromForm() {
     var D = root.DB;
-    if (!D || !D.receivingLog) return null;
-    var lot = logDataLot(val("rl-lot"));
-    var sup = val("rl-supplier").toLowerCase();
-    var po = val("rl-po");
-    var date = val("rl-date");
-    var rows = D.receivingLog().filter(function (r) {
-      if (logDataLot(r.lot) !== lot) return false;
-      if (sup && String(r.supplier || "").toLowerCase() !== sup) return false;
-      return true;
+    if (!D || !D.receivingLog || !root.RECVMATCH || typeof root.RECVMATCH.pickDockRow !== "function") return null;
+    return root.RECVMATCH.pickDockRow(D.receivingLog(), {
+      recvId: val("rl-id"),
+      lot: val("rl-lot"),
+      itemId: val("rsop-item"),
+      supplier: val("rl-supplier"),
+      po: val("rl-po"),
+      date: val("rl-date"),
+      contents: val("rl-contents")
     });
-    if (date) {
-      var byDate = rows.filter(function (r) { return String(r.recv_date || "").slice(0, 10) === date; });
-      if (byDate.length) rows = byDate;
-    }
-    if (po) {
-      var byPo = rows.filter(function (r) { return String(r.po_num || "") === po; });
-      if (byPo.length) rows = byPo;
-    }
-    return rows[0] || null;
   }
   function findLog(id) {
     var D = root.DB;
@@ -388,15 +376,15 @@
       var lotAttr = tr.getAttribute("data-lot") || "";
       var date = String(cells[0].textContent || "").trim().slice(0, 10);
       var sup = String(cells[1].textContent || "").trim().toLowerCase();
-      var hit = null;
-      for (var i = 0; i < logs.length; i++) {
-        var r = logs[i];
-        if (logDataLot(r.lot) !== lotAttr) continue;
-        if (date && String(r.recv_date || "").slice(0, 10) !== date) continue;
-        if (sup && String(r.supplier || "").trim().toLowerCase() !== sup) continue;
-        hit = r;
-        break;
-      }
+      var hit = (root.RECVMATCH && root.RECVMATCH.pickDockRow)
+        ? root.RECVMATCH.pickDockRow(logs, {
+          recvId: tr.getAttribute("data-recv") || "",
+          itemId: tr.getAttribute("data-item") || "",
+          lot: lotAttr,
+          date: date,
+          supplier: sup
+        })
+        : null;
       if (!hit || !normAnswer(hit.coa_received)) {
         var stale = tr.querySelector(".rc-log");
         if (stale && !normAnswer(hit && hit.coa_received)) stale.remove();
@@ -621,10 +609,15 @@
         var p = pending;
         var res = await orig.apply(root.DB, arguments);
         if (p && res && res.ok !== false && (p.answer || p.allowClear)) {
+          var recvId = (root.RECVMATCH && root.RECVMATCH.stampRecvId)
+            ? root.RECVMATCH.stampRecvId(id, p.recvId)
+            : (p.recvId && String(p.recvId) !== String(id) ? "" : (p.recvId || id));
+          if (!recvId) return res;
           p.used = true;
-          var it = itemById((rec && rec.item_id) || p.itemId) || itemByCode(p.code);
-          var prev = findLog(p.recvId || id);
-          var plan = planFrom(it, p.answer, prev, p.by, (rec && rec.lot != null ? rec.lot : p.lot) || "", p.recvId || id, p.code, p.loc, rec && rec.qty_received, (rec && rec.contents) || "");
+          var savedRow = findLog(id);
+          var it = itemById((savedRow && savedRow.item_id) || (rec && rec.item_id)) || itemByCode(p.code);
+          var prev = savedRow || findLog(recvId);
+          var plan = planFrom(it, p.answer, prev, p.by, (rec && rec.lot != null ? rec.lot : p.lot) || "", recvId, p.code, p.loc, rec && rec.qty_received, (rec && rec.contents) || "");
           plan.note = p.note;
           await stamp(plan);
         }
@@ -788,15 +781,12 @@
     info = info || {};
     var row = findLog(info.id);
     var reason = String(info.reason || "");
-    if (!row && info.lot && root.DB && root.DB.receivingLog) {
-      var key = normLot(info.lot);
-      var logs = root.DB.receivingLog();
-      for (var i = 0; i < logs.length; i++) {
-        if (normLot(logs[i].lot) !== key) continue;
-        if (normAnswer(logs[i].coa_received) !== "no" || logs[i].coa_released_at) continue;
-        row = logs[i];
-        break;
-      }
+    if (!row && info.lot && root.DB && root.DB.receivingLog && root.RECVMATCH && root.RECVMATCH.pickDockRow) {
+      var picked = root.RECVMATCH.pickDockRow(root.DB.receivingLog(), {
+        itemId: info.itemId || "",
+        lot: info.lot
+      });
+      if (picked && normAnswer(picked.coa_received) === "no" && !picked.coa_released_at) row = picked;
     }
     if (!row || normAnswer(row.coa_received) !== "no" || row.coa_released_at) return { ok: true, skipped: true };
     var tied = (info.id && String(row.id) === String(info.id)) || reason.indexOf(COA_HOLD_REASON) === 0;

@@ -2232,6 +2232,7 @@
     const selOpt = (arr, cur, def) => arr.map(t => '<option' + (t === (cur != null && cur !== "" ? cur : def) ? " selected" : "") + '>' + t + '</option>').join("");
     const qv = n => (n != null && n !== "" ? n : "");
     const form = '<div class="ordform">' +
+      (editing && ed.id != null ? '<input type="hidden" id="rl-id" value="' + av(ed.id) + '">' : '') +
       (editing ? '<p class="hint">&#9998; ' + L("editingRow") + (ed.file_name ? ' &middot; ' + L("rlKeepDoc") : '') + '</p>' : '') +
       '<div class="spodrop"><input type="file" id="rl-input" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.docx" style="display:none" onchange="UI.rlFile(this)">' +
       '<label for="rl-input" class="spodroplabel">&#128193; ' + L("rlDrop") + '</label></div>' +

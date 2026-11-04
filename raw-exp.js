@@ -266,30 +266,27 @@
     return res;
   }
 
-  function logDataLot(lot) {
-    return String(lot || "").toUpperCase().replace(/\s+/g, "");
-  }
   function matchLogFromForm() {
     var D = root.DB;
-    if (!D || !D.receivingLog) return null;
-    var lot = logDataLot(val("rl-lot"));
-    var sup = val("rl-supplier").toLowerCase();
-    var po = val("rl-po");
-    var date = val("rl-date");
-    var rows = D.receivingLog().filter(function (r) {
-      if (logDataLot(r.lot) !== lot) return false;
-      if (sup && String(r.supplier || "").toLowerCase() !== sup) return false;
-      return true;
+    if (!D || !D.receivingLog || !root.RECVMATCH || typeof root.RECVMATCH.pickDockRow !== "function") return null;
+    return root.RECVMATCH.pickDockRow(D.receivingLog(), {
+      recvId: val("rl-id"),
+      lot: val("rl-lot"),
+      itemId: val("rsop-item"),
+      supplier: val("rl-supplier"),
+      po: val("rl-po"),
+      date: val("rl-date"),
+      contents: val("rl-contents")
     });
-    if (date) {
-      var byDate = rows.filter(function (r) { return String(r.recv_date || "").slice(0, 10) === date; });
-      if (byDate.length) rows = byDate;
+  }
+  function rowById(id) {
+    var D = root.DB;
+    if (!D || !D.receivingLog || !id) return null;
+    var rows = D.receivingLog();
+    for (var i = 0; i < rows.length; i++) {
+      if (String(rows[i].id) === String(id)) return rows[i];
     }
-    if (po) {
-      var byPo = rows.filter(function (r) { return String(r.po_num || "") === po; });
-      if (byPo.length) rows = byPo;
-    }
-    return rows[0] || null;
+    return null;
   }
 
   function fieldHtml(id, value, recvId, itemId) {
@@ -352,15 +349,15 @@
       var lotAttr = tr.getAttribute("data-lot") || "";
       var date = String(cells[0].textContent || "").trim().slice(0, 10);
       var sup = String(cells[1].textContent || "").trim().toLowerCase();
-      var hit = null;
-      for (var i = 0; i < logs.length; i++) {
-        var r = logs[i];
-        if (logDataLot(r.lot) !== lotAttr) continue;
-        if (date && String(r.recv_date || "").slice(0, 10) !== date) continue;
-        if (sup && String(r.supplier || "").trim().toLowerCase() !== sup) continue;
-        hit = r;
-        break;
-      }
+      var hit = (root.RECVMATCH && root.RECVMATCH.pickDockRow)
+        ? root.RECVMATCH.pickDockRow(logs, {
+          recvId: tr.getAttribute("data-recv") || "",
+          itemId: tr.getAttribute("data-item") || "",
+          lot: lotAttr,
+          date: date,
+          supplier: sup
+        })
+        : null;
       if (!hit) return;
       var it = itemById(hit.item_id);
       var exp = dateISO(hit.expires_on);
@@ -515,14 +512,19 @@
         var p = pending;
         var res = await orig.apply(root.DB, arguments);
         if (p && res && res.ok !== false && (p.exp || p.allowClear)) {
+          var recvId = (root.RECVMATCH && root.RECVMATCH.stampRecvId)
+            ? root.RECVMATCH.stampRecvId(id, p.recvId)
+            : (p.recvId && String(p.recvId) !== String(id) ? "" : (p.recvId || id));
+          if (!recvId) return res;
           p.used = true;
-          var it = itemById(rec && rec.item_id) || itemByCode(p.code);
+          var savedRow = rowById(id);
+          var it = itemById((savedRow && savedRow.item_id) || (rec && rec.item_id)) || itemByCode(p.code);
           await stamp({
-            itemId: it ? it.id : (rec && rec.item_id),
+            itemId: it ? it.id : ((savedRow && savedRow.item_id) || (rec && rec.item_id)),
             lot: (rec && rec.lot != null ? rec.lot : p.lot) || "",
             location: p.loc || "",
             expiresOn: p.exp || "",
-            recvId: p.recvId || id,
+            recvId: recvId,
             quiet: true
           }, false);
         }

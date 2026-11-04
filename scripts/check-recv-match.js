@@ -175,6 +175,26 @@ var byLot = rm.receivingLogCoaScope(stampRows, { itemIds: ["SEAS-DILL"], lot: "J
 assert(byLot.length === 1 && byLot[0].id === "dill-1", "lot fallback stays on the same item");
 assert(rm.receivingLogCoaScope(stampRows, { itemIds: ["SEAS-PEPPER"], lot: "J1926" })[0].id === "pep-1", "punctuation in the lot still matches that item only");
 
+var shared = [
+  dill,
+  { id: "pep-1", item_id: "SEAS-PEPPER", contents: "Cracked Pepper", lot: "j 1926", supplier: "Seasoning Co", recv_date: "2026-11-04", qty_received: 12, coa_received: "no", expires_on: "2027-02-01" }
+];
+assert(rm.sameDockItem(shared[0], { item_id: "SEAS-DILL", contents: "Other name" }) === true, "item id wins over a different name");
+assert(rm.sameDockItem(shared[0], { item_id: "SEAS-PEPPER", contents: "Rocky Mountain Dill Pickle" }) === false, "different item ids are different receipts");
+assert(rm.sameDockItem({ contents: "Cracked Pepper" }, { contents: "cracked pepper" }) === true, "names match when ids are blank");
+assert(rm.dockLotClash(shared, "J1926", "pep-1", { item_id: "SEAS-PEPPER", contents: "Cracked Pepper" }) === null, "editing Pepper is not blocked by Dill");
+assert(rm.dockLotClash([dill], "J-1926", "", { item_id: "SEAS-PEPPER", contents: "Cracked Pepper" }) === null, "a new Pepper row is not a duplicate of Dill");
+assert(rm.dockLotClash(shared, "J-1926", "", { item_id: "SEAS-PEPPER", contents: "Cracked Pepper" }).id === "pep-1", "a second Pepper row still clashes with Pepper");
+assert(rm.dockLotClash(shared, "J1926", "", { item_id: "SEAS-DILL", contents: "Rocky Mountain Dill Pickle" }).id === "dill-1", "the same item and lot still clashes");
+assert(rm.dockLotClash([{ id: "a", item_id: "SEAS-DILL", lot: "J-1926", contents: "Dill" }], "J1926", "", { item_id: "SEAS-DILL", contents: "Dill" }).id === "a", "punctuation still clashes for the same item");
+assert(rm.pickDockRow(shared, { recvId: "pep-1" }).item_id === "SEAS-PEPPER", "the dock form id picks Pepper");
+assert(rm.pickDockRow(shared, { lot: "J1926", supplier: "Seasoning Co", date: "2026-11-04" }) === null, "a shared lot without an item does not guess a row");
+assert(rm.pickDockRow(shared, { lot: "j 1926", itemId: "SEAS-DILL", contents: "Cracked Pepper" }).id === "dill-1", "item id beats a mismatched name");
+assert(rm.pickDockRow(shared, { lot: "J1926", contents: "Cracked Pepper" }).id === "pep-1", "contents pick Pepper when the id is blank");
+assert(rm.stampRecvId("pep-1", "dill-1") === "", "a COA widget aimed at Dill is not written while saving Pepper");
+assert(rm.stampRecvId("pep-1", "pep-1") === "pep-1", "a matching widget stamps that row");
+assert(rm.stampRecvId("pep-1", "") === "pep-1", "the saved row id is used when the widget has no id");
+
 assert(rm.adjustDedupeKey("SEAS-DILL", "A-01-L1", 40) === "SEAS-DILL|A-01-L1|40", "adjust key");
 assert(rm.adjustDedupeKey("SEAS-DILL", "A-01-L1", 40) === rm.adjustDedupeKey("SEAS-DILL", "A-01-L1", 40), "same adjust dedupes");
 assert(rm.adjustDedupeKey("SEAS-PEPPER", "A-01-L1", 40) !== rm.adjustDedupeKey("SEAS-DILL", "A-01-L1", 40), "a different item is a different adjust");
@@ -193,7 +213,13 @@ assert(app.indexOf("coa_docs") < 0, "app.js does not name the COA table");
 assert(db.indexOf("RECVMATCH.adjustDedupeKey") >= 0, "stock adjust uses the shared key");
 assert(db.indexOf("RECVMATCH.receivingLogCoaScope") >= 0, "COA stamp uses the item scope");
 assert(sw.indexOf("./recv-match.js") >= 0, "service worker caches the helper");
-assert(html.indexOf("recv-match.js?b=1") >= 0, "helper script tag");
+assert(html.indexOf("recv-match.js?b=2") >= 0, "helper script tag");
+assert(app.indexOf('id="rl-id"') >= 0, "dock edit pins the receipt id");
+assert(read("raw-coa.js").indexOf("pickDockRow") >= 0 && read("raw-coa.js").indexOf('recvId: val("rl-id")') >= 0, "coa form uses the pinned row");
+assert(read("raw-coa.js").indexOf("stampRecvId") >= 0, "coa stamp refuses a different receipt");
+assert(read("raw-exp.js").indexOf("stampRecvId") >= 0, "expiration stamp refuses a different receipt");
+assert(read("receiving-sop.js").indexOf("dockLotClash") >= 0, "sop duplicate check is item scoped");
+assert(db.indexOf('againQ.eq("item_id", row.item_id)') >= 0, "saved-id lookup stays on the item");
 assert(read("recv-match.js").indexOf("\u2014") < 0 && read("recv-match.js").indexOf("\u2013") < 0, "no em dash");
 
 if (failed) {

@@ -83,6 +83,87 @@
     if (byDate) return byDate;
     return String(b.id || "").localeCompare(String(a.id || ""));
   }
+  // Two ids decide it. Otherwise two names. If either side has no identity,
+  // the rows are treated as the same receipt so an old unnamed lot still clashes.
+  function sameDockItem(a, b) {
+    var ia = itemKey(a && a.item_id);
+    var ib = itemKey(b && b.item_id);
+    if (ia && ib) return ia === ib;
+    var ca = supplierKey(a && (a.contents != null ? a.contents : a.item_name));
+    var cb = supplierKey(b && (b.contents != null ? b.contents : b.item_name));
+    if (ca && cb) return ca === cb;
+    return true;
+  }
+  // Another receiving_log row that should block a new save of this item and lot.
+  // A different item on the same trailer lot is not a clash.
+  function dockLotClash(rows, lot, id, item) {
+    var key = normAlnumLot(lot);
+    if (!key) return null;
+    var self = item || {};
+    for (var i = 0; i < (rows || []).length; i++) {
+      var r = rows[i];
+      if (!r) continue;
+      if (id && String(r.id) === String(id)) continue;
+      if (normAlnumLot(r.lot) !== key) continue;
+      if (!sameDockItem(r, self)) continue;
+      return r;
+    }
+    return null;
+  }
+  function narrowHits(list, pred) {
+    var next = (list || []).filter(pred);
+    return next.length ? next : list;
+  }
+  // The Dock row a form or a log line is talking about.
+  // An explicit receipt id wins. A lot alone never crosses two item ids.
+  function pickDockRow(rows, opts) {
+    opts = opts || {};
+    rows = rows || [];
+    if (opts.recvId != null && String(opts.recvId).trim() !== "") {
+      var wanted = String(opts.recvId);
+      for (var i = 0; i < rows.length; i++) {
+        if (rows[i] && String(rows[i].id) === wanted) return rows[i];
+      }
+      return null;
+    }
+    var hits = rows.filter(function (r) { return !!r; });
+    var lotKey = opts.lot != null && String(opts.lot).trim() !== "" ? normRecvLot(opts.lot) : "";
+    if (lotKey) hits = hits.filter(function (r) { return normRecvLot(r.lot) === lotKey; });
+    var item = itemKey(opts.itemId);
+    if (item) hits = hits.filter(function (r) { return itemKey(r.item_id) === item; });
+    if (opts.supplier) hits = narrowHits(hits, function (r) { return sameSupplier(r.supplier, opts.supplier); });
+    if (opts.date && dayOf(opts.date)) {
+      var day = dayOf(opts.date);
+      hits = narrowHits(hits, function (r) { return dayOf(r.recv_date) === day; });
+    }
+    if (opts.po != null && String(opts.po).trim() !== "") {
+      var po = String(opts.po);
+      hits = narrowHits(hits, function (r) { return String(r.po_num || "") === po; });
+    }
+    if (opts.contents != null && String(opts.contents).trim() !== "") {
+      var name = String(opts.contents).trim().toLowerCase();
+      hits = narrowHits(hits, function (r) { return String(r.contents || "").trim().toLowerCase() === name; });
+    }
+    if (!hits.length) return null;
+    if (hits.length > 1) {
+      var distinct = {};
+      hits.forEach(function (r) {
+        var k = itemKey(r.item_id);
+        if (k) distinct[k] = 1;
+      });
+      if (Object.keys(distinct).length > 1) return null;
+    }
+    return hits.slice().sort(newestFirst)[0];
+  }
+  // COA and expiration stamps follow the row being saved.
+  // A widget still pointing at a different receipt is ignored.
+  function stampRecvId(savedId, widgetRecvId) {
+    var saved = savedId == null ? "" : String(savedId).trim();
+    var widget = widgetRecvId == null ? "" : String(widgetRecvId).trim();
+    if (!saved) return widget;
+    if (!widget || widget === saved) return saved;
+    return "";
+  }
   // opts.editId: the row the user opened with Edit. That is the only update
   // that ignores the lot. Without it, update only the same item + lot +
   // supplier + calendar day. Anything else inserts.
@@ -196,7 +277,11 @@
     planReceiveSave: planReceiveSave,
     lotReuseMessage: lotReuseMessage,
     adjustDedupeKey: adjustDedupeKey,
-    receivingLogCoaScope: receivingLogCoaScope
+    receivingLogCoaScope: receivingLogCoaScope,
+    sameDockItem: sameDockItem,
+    dockLotClash: dockLotClash,
+    pickDockRow: pickDockRow,
+    stampRecvId: stampRecvId
   };
 
   if (typeof module !== "undefined" && module.exports) module.exports = api;

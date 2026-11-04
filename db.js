@@ -995,12 +995,13 @@ window.DB = (function () {
       const ins = await must(sb.from("receiving_log").insert(row).select("id"), "receiving_log");
       newId = ins && ins.data && ins.data[0] ? ins.data[0].id : null;
       if (!newId) {
-        const again = await sb.from("receiving_log").select("id")
+        let againQ = sb.from("receiving_log").select("id")
           .eq("supplier", row.supplier || "")
           .eq("lot", row.lot || "")
-          .eq("entered_by", row.entered_by || "")
-          .order("created_at", { ascending: false })
-          .limit(1);
+          .eq("entered_by", row.entered_by || "");
+        if (row.item_id) againQ = againQ.eq("item_id", row.item_id);
+        if (row.contents) againQ = againQ.eq("contents", row.contents);
+        const again = await againQ.order("created_at", { ascending: false }).limit(1);
         newId = again && again.data && again.data[0] ? again.data[0].id : null;
       }
       if (!newId) return { ok: false, msg: "Receiving log did not confirm a saved row. The form was kept." };
