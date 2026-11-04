@@ -154,6 +154,7 @@
     trLabels: { trace: "labels", icon: "tags", title: { en: "Labels", es: "Etiquetas", pt: "Labels" }, blurb: { en: "Search lot labels and reprint one.", es: "Busque etiquetas de lote y reimprima una.", pt: "Busque etiquetas de lote e reimprima uma." } },
     fglots: { fn: "fglots", icon: "calendar-check", title: { en: "FG Lots / Best-by", es: "Lotes PT / Consumir antes", pt: "Lotes PA / Validade" }, blurb: { en: "Finished lots, best-by, and what is left. Logged bag codes have no quantity.", es: "Lotes terminados, consumir antes y lo que queda. Los codigos anotados no tienen cantidad.", pt: "Lotes acabados, validade e o que resta. Codigos anotados nao tem quantidade." } },
     quality: { go: "quality", icon: "microscope", title: { en: "Quality Logs", es: "Quality Logs", pt: "Quality Logs" }, blurb: { en: "CCP checks: allergen changeover, label verify, metal detector.", es: "Registros CCP: cambio de alergeno, verificacion de etiqueta, detector de metal.", pt: "Registros CCP: troca de alergeno, verificacao de rotulo, detector de metal." } },
+    coalib: { fn: "coa", icon: "file-check", title: { en: "Vendor COAs", es: "COA de proveedores", pt: "COA de fornecedores" }, blurb: { en: "COA PDFs and photos by vendor, lot, and date. Upload from email before the dock receipt exists.", es: "PDF y fotos de COA por proveedor, lote y fecha. Suba el correo antes de que exista el recibo.", pt: "PDFs e fotos de COA por fornecedor, lote e data. Envie o e-mail antes de existir o recebimento." } },
     qacheck: { fn: "qacheck", icon: "clipboard-check", title: { en: "QA Checklists", es: "Listas de calidad", pt: "Listas de qualidade" }, blurb: { en: "Pre-op, GMP, metal detector, and hourly pouch checks. Paper stays the backup until QA confirms digital storage.", es: "Preoperacional, GMP, detector de metal y revision horaria de bolsas. El papel sigue como respaldo hasta que Calidad confirme el almacenamiento digital.", pt: "Pre-op, GMP, detector de metal e checagem horaria de sache. O papel continua como copia de apoio ate a Qualidade confirmar o armazenamento digital." } },
     compliance: { go: "compliance", icon: "shield-check", title: { en: "Compliance / SQF", es: "Cumplimiento / SQF", pt: "Conformidade / SQF" }, blurb: { en: "Certifications, the SQF calendar, and controlled documents.", es: "Certificaciones, el calendario SQF y documentos controlados.", pt: "Certificacoes, o calendario SQF e documentos controlados." } },
     sqftasks: { fn: "sqf", icon: "list-checks", title: { en: "SQF Tasks", es: "Tareas SQF", pt: "Tarefas SQF" }, blurb: { en: "Outstanding SQF clauses, owners, and due dates. This list is the live copy.", es: "Clausulas SQF pendientes, responsables y fechas. Esta lista es la copia viva.", pt: "Clausulas SQF pendentes, responsaveis e datas. Esta lista e a copia viva." } },
@@ -346,8 +347,8 @@
       id: "qa",
       primary: "qacheck",
       actions: ["trQa", "quality"],
-      subs: ["qacheck", "sqftasks", "trace", "trElog", "trLabels", "fglots", "compliance", "shortdated"],
-      short: { qacheck: { en: "Checklists", es: "Listas", pt: "Listas" }, trElog: { en: "E-com lots", es: "Lotes e-com", pt: "Lotes e-com" } },
+      subs: ["qacheck", "coalib", "sqftasks", "trace", "trElog", "trLabels", "fglots", "compliance", "shortdated"],
+      short: { qacheck: { en: "Checklists", es: "Listas", pt: "Listas" }, coalib: { en: "COAs", es: "COAs", pt: "COAs" }, trElog: { en: "E-com lots", es: "Lotes e-com", pt: "Lotes e-com" } },
       icon: "shield-check",
       label: { en: "Quality", es: "Calidad", pt: "Qualidade" },
       title: { en: "Quality", es: "Calidad", pt: "Qualidade" },
@@ -422,7 +423,7 @@
     if (btn.id === "sf-nav") return "purch";
     if (btn.id === "shs-nav") return "ship";
     if (btn.id === "mfg-hist-nav" || btn.id === "mfg-up-nav" || btn.id === "btr-nav") return "mixing";
-    if (btn.id === "sqf-nav") return "qa";
+    if (btn.id === "sqf-nav" || btn.id === "coa-nav") return "qa";
     if (btn.id === "fa-nav") return "ful";
     if (btn.id === "mp-nav-entry" || btn.id === "mp-nav-log") return "mixing";
     var trcHome = {
@@ -499,6 +500,7 @@
     if (fn === "sqf" && window.SQFTASKS && typeof SQFTASKS.open === "function") { SQFTASKS.open(); return; }
     if (fn === "ferr" && window.FULFILL_ANALYTICS && typeof FULFILL_ANALYTICS.open === "function") { FULFILL_ANALYTICS.open(); return; }
     if (fn === "qacheck" && window.QACHECK && typeof QACHECK.open === "function") { QACHECK.open(); return; }
+    if (fn === "coa" && window.COA_DOCS && typeof COA_DOCS.open === "function") { COA_DOCS.open(); return; }
     if (fn === "fglots" && window.FGLOTS && typeof FGLOTS.open === "function") { FGLOTS.open(); return; }
     toast(Lmissing());
   }
