@@ -495,9 +495,13 @@
     { code: "S11", name: "Sour Cream & Onion", bpc: 72 },
     { code: "WM-S02", name: "WM Cinnamon Churro (12pk)", bpc: 12 }, { code: "WM-S03", name: "WM Backyard BBQ (12pk)", bpc: 12 },
     { code: "WM-S04", name: "WM Garlic Parmesan (12pk)", bpc: 12 }, { code: "WM-S07", name: "WM Cheddar Jalapeno (12pk)", bpc: 12 },
+    { code: "KR-S02", name: "Kroger Cinnamon Churro (12pk)", bpc: 12 }, { code: "KR-S03", name: "Kroger Backyard BBQ (12pk)", bpc: 12 },
+    { code: "KR-S04", name: "Kroger Garlic Parmesan (12pk)", bpc: 12 }, { code: "KR-S07", name: "Kroger Cheddar Jalapeno (12pk)", bpc: 12 },
     { code: "DISP", name: "Display (4VAR 48pc)", bpc: 48 }, { code: "BUCK", name: "Bucket (1.5oz)", bpc: 54 },
-    { code: "CAMO", name: "Camo Bucket", bpc: 54 }, { code: "L20", name: "Pizza", bpc: 72 },
-    { code: "L21", name: "Cheeseburger", bpc: 72 }, { code: "L38", name: "Salt & Vinegar", bpc: 72 }, { code: "L34", name: "Honey BBQ", bpc: 72 }
+    { code: "CAMO", name: "Camo Bucket", bpc: 54 }, { code: "MINI", name: "Mini Buckets", bpc: 6 },
+    { code: "L20", name: "Pizza", bpc: 72 },
+    { code: "L21", name: "Cheeseburger", bpc: 72 }, { code: "L38", name: "Salt & Vinegar", bpc: 72 }, { code: "L34", name: "Honey BBQ", bpc: 72 },
+    { code: "L56", name: "Cotton Candy", bpc: 72 }, { code: "CASH", name: "Cashews", bpc: 6 }
   ];
   const PROD_FMAP = {}; PROD_FLAVORS.forEach(f => PROD_FMAP[f.code] = f);
   // Daily Fulfillment tracker: Amazon (FBA) SKU -> bags-per-unit map. Editable here as new packs are added;

@@ -31,6 +31,7 @@ Do not edit the Nov 4 2026 Rocky Mountain Dill Pickle / Cracked Pepper receipt u
 | Mixing | Open Mixing. Open Status, Seasoning, and Recipes. Open the batch record action and back out. | Today's mixing list renders. Backing out does not start a batch. | Mixing |
 | P-Mac | Open P-Mac. Open Status, best-by lots, and Log output. Back out of log output without saving. | Status renders. Log output does not post a row if you leave it. `npm test` includes the prod-tracking sync check. | P-Mac |
 | Fulfillment | Open Fulfillment. Open Retail and E-Commerce. Open the daily log and back out. | Retail and e-commerce stay separate counts. Leaving the daily log does not save a day. | Fulfillment |
+| Pallet log | Fulfillment, then Pallet log. Open the flavor list on Add Pallet. Do not save a pallet. | Cotton Candy, Mini Buckets, and Cashews are on the list. Kroger 12-pack options are listed with the Walmart 12-pack options. Walmart is still there. Opening the list does not change saved pallet rows. | Fulfillment |
 | Shipping | Open Shipping. Open the shipment list and the shipping log. | ShipStation shipments render. Opening the log does not create a shipment. | Shipping |
 | Quality | Open Quality. Open Checklists, COAs, SQF tasks, and Trace. Search one known lot. | Checklists render for today. COAs open the library. Trace shows that lot and does not release a hold. | Quality |
 | Ops | Open Ops. Open Maintenance, People, and Settings. | Maintenance lists open requests. Settings opens. Nothing is reset or deleted by opening the tab. | Ops |
