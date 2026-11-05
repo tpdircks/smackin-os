@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-/* The 11/02 sheet sync is the only apply module, and index.html loads it.
-   A hand count still wins: the pass writes only over a sheet-sync post, and
-   never below the qty in RETURNS or a hold location.
+/* The 11/02 bag sync still has its one-pass behavior. index.html no longer
+   loads it. inv-sync-1105.js is the only apply module the page loads.
+   A hand count still wins on the 11/02 module: the pass writes only over a
+   sheet-sync post, and never below the qty in RETURNS or a hold location.
    Older inv-sync files must not ship. The count panel stays unloaded. */
 "use strict";
 
@@ -29,15 +30,14 @@ obsolete.forEach(function (rel) {
 
 var syncFiles = fs.readdirSync(root).filter(function (name) { return /^inv-sync-.*\.js$/.test(name); });
 syncFiles.sort();
-assert(syncFiles.length === 2 && syncFiles[0] === "inv-sync-1102.js" && syncFiles[1] === "inv-sync-packaging-1102.js", "sync files " + syncFiles.join(","));
+assert(syncFiles.length === 3 && syncFiles[0] === "inv-sync-1102.js" && syncFiles[1] === "inv-sync-1105.js" && syncFiles[2] === "inv-sync-packaging-1102.js", "sync files " + syncFiles.join(","));
 
 var htmlFiles = fs.readdirSync(root).filter(function (name) { return /\.html$/.test(name); });
 htmlFiles.forEach(function (name) {
   var html = read(name);
   var tags = html.match(/inv-sync-[^"']+\.js/g) || [];
   if (name === "index.html") {
-    tags.sort();
-    assert(tags.length === 2 && tags[0] === "inv-sync-1102.js" && tags[1] === "inv-sync-packaging-1102.js", "index loads the bag sync and the packaging sync " + tags.join(","));
+    assert(tags.length === 1 && tags[0] === "inv-sync-1105.js", "index loads only the 11/05 sync " + tags.join(","));
   } else {
     tags.forEach(function (tag) {
       assert(false, name + " loads " + tag);
@@ -51,19 +51,24 @@ htmlFiles.forEach(function (name) {
 var index = read("index.html");
 var dbAt = index.indexOf('src="db.js');
 var countAt = index.indexOf('src="slc-count-latest.js');
-var applyAt = index.indexOf('src="inv-sync-1102.js');
+var applyAt = index.indexOf('src="inv-sync-1105.js');
 assert(countAt > 0 && applyAt > countAt, "count file loads before the apply module");
 assert(dbAt > 0 && countAt > dbAt, "apply loads after db.js");
 assert(index.indexOf("inv-sync-1027d.js") < 0, "index does not load the 10/27 module");
+assert(index.indexOf("inv-sync-1102.js") < 0, "index does not load the 11/02 bag sync");
+assert(index.indexOf("inv-sync-packaging-1102.js") < 0, "index does not load the 11/02 packaging sync");
 assert(index.indexOf("slc-count-panel.js") < 0, "index does not load the count panel");
-assert(fs.existsSync(path.join(root, "inv-sync-1102.js")), "apply file present");
+assert(fs.existsSync(path.join(root, "inv-sync-1102.js")), "11/02 apply file kept");
+assert(fs.existsSync(path.join(root, "inv-sync-1105.js")), "11/05 apply file present");
 assert(fs.existsSync(path.join(root, "slc-count-latest.js")), "count file kept");
 assert(fs.existsSync(path.join(root, "slc-count-panel.js")), "panel file kept");
 
 var sw = read("service-worker.js");
-assert(sw.indexOf('const CACHE = "smackin-inv-v285"') >= 0, "cache v269");
+assert(sw.indexOf('const CACHE = "smackin-inv-v286"') >= 0, "cache v286");
 assert(sw.indexOf("smackin-inv-v242") < 0, "old cache gone");
-assert(sw.indexOf("\"./inv-sync-1102.js\"") >= 0, "sw precaches the apply module");
+assert(sw.indexOf("\"./inv-sync-1105.js\"") >= 0, "sw precaches the 11/05 module");
+assert(sw.indexOf("inv-sync-1102.js") < 0, "sw does not precache the 11/02 bag sync");
+assert(sw.indexOf("inv-sync-packaging-1102.js") < 0, "sw does not precache the 11/02 packaging sync");
 assert(sw.indexOf("\"./slc-count-latest.js\"") >= 0, "sw precaches the count file");
 assert(sw.indexOf("./slc-count-panel.js") < 0, "sw does not precache the count panel");
 obsolete.forEach(function (rel) { assert(sw.indexOf(rel) < 0, "sw lists " + rel); });
