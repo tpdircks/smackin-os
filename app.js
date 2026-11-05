@@ -501,9 +501,18 @@
     { code: "CAMO", name: "Camo Bucket", bpc: 54 }, { code: "MINI", name: "Mini Buckets", bpc: 6 },
     { code: "L20", name: "Pizza", bpc: 72 },
     { code: "L21", name: "Cheeseburger", bpc: 72 }, { code: "L38", name: "Salt & Vinegar", bpc: 72 }, { code: "L34", name: "Honey BBQ", bpc: 72 },
-    { code: "L56", name: "Cotton Candy", bpc: 72 }, { code: "CASH", name: "Cashews", bpc: 6 }
+    { code: "L56", name: "Cotton Candy", bpc: 72 },
+    { code: "CASH-CIN", name: "Cashew Cinnamon master (12pk/6pk)", bpc: 72 },
+    { code: "CASH-BBQ", name: "Cashew BBQ master (12pk/6pk)", bpc: 72 },
+    { code: "CASH-BKT", name: "Cashew Bucket", bpc: 24 }
   ];
-  const PROD_FMAP = {}; PROD_FLAVORS.forEach(f => PROD_FMAP[f.code] = f);
+  // Old rows logged the single Cashews code at 6 per case. Keep the label. Do not offer it again.
+  const PROD_FLAVOR_LEGACY = [
+    { code: "CASH", name: "Cashews", bpc: 6 }
+  ];
+  const PROD_FMAP = {};
+  PROD_FLAVORS.forEach(f => PROD_FMAP[f.code] = f);
+  PROD_FLAVOR_LEGACY.forEach(f => { if (!PROD_FMAP[f.code]) PROD_FMAP[f.code] = f; });
   // Daily Fulfillment tracker: Amazon (FBA) SKU -> bags-per-unit map. Editable here as new packs are added;
   // any SKU not in this map (custom / free-text entry) defaults to a user-entered bags-per-unit, or 1.
   const AMZ_SKU_BAGS = { "SS-SP-10-FBA": 10, "SS-SP-11-FBA": 11, "SS-VP-7-FBA": 6 };
