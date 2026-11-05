@@ -213,10 +213,10 @@ assert(html.indexOf('src="fg-lots.js?b=3"') >= 0 && html.indexOf("fg-lots.js") <
 assert(html.indexOf('src="trace.js?b=21"') >= 0, "trace cache bust");
 assert(html.indexOf('src="dept-homes.js?b=32"') >= 0, "dept homes cache bust");
 assert(html.indexOf('src="data-health.js?b=5"') >= 0, "data health cache bust");
-assert(sw.indexOf('const CACHE = "smackin-inv-v284"') >= 0 && sw.indexOf("./fg-lots.js") >= 0, "cache and asset");
-assert(read("build-id.txt").trim() === "smackin-inv-v284", "build id");
-assert(html.indexOf('var EMBEDDED = "smackin-inv-v284"') >= 0, "index embedded");
-assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v284"') >= 0, "escape embedded");
+assert(sw.indexOf('const CACHE = "smackin-inv-v285"') >= 0 && sw.indexOf("./fg-lots.js") >= 0, "cache and asset");
+assert(read("build-id.txt").trim() === "smackin-inv-v285", "build id");
+assert(html.indexOf('var EMBEDDED = "smackin-inv-v285"') >= 0, "index embedded");
+assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v285"') >= 0, "escape embedded");
 
 if (failed) {
   console.error(failed + " failed");
