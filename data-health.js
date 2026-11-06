@@ -13,6 +13,23 @@
   var sb = null;
   function client() { if (!sb && window.supabase && cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY) { try { sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY); } catch (e) {} } return sb; }
   function $(id) { return document.getElementById(id); }
+  function isTestRow(row) {
+    return String(row && (row.status || row.entered_by) || "").toLowerCase() === "test" || String(row && row.batch_id || "") === "SPS-TEST" || String(row && row.batch_label || "").toLowerCase().indexOf("testout") >= 0;
+  }
+  function poGroup(row) { return String(row && (row.partner || "Unknown")) + "|" + String(row && (row.po || "")); }
+  function stuckSummary(rows, today) {
+    var groups = {};
+    (rows || []).forEach(function (row) {
+      if (isTestRow(row) || String(row.status || "Open") !== "Open" || !row.po) return;
+      var key = poGroup(row);
+      if (!groups[key]) groups[key] = { po: row.po, lines: 0, pastDue: false };
+      groups[key].lines++;
+      var due = dueMs(row.due_date);
+      if (due != null && due < today) groups[key].pastDue = true;
+    });
+    var list = Object.keys(groups).map(function (key) { return groups[key]; }).filter(function (g) { return g.pastDue; });
+    return { pos: list.length, lines: list.reduce(function (sum, g) { return sum + g.lines; }, 0) };
+  }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 
   // sources: freshness column + expected cadence (warn/bad in days)
@@ -22,13 +39,11 @@
     { t: "orders", col: "created_at", label: "Orders", warn: 4, bad: 9 },
     { t: "pmac_history", col: "run_date", label: "P-Mac production", warn: 5, bad: 12, alt: { t: "pmac_log", col: "log_date" } },
     { t: "mixing_history", col: "run_date", label: "Mixing production", warn: 5, bad: 12 },
-    { t: "production_output", col: "created_at", label: "Daily production entry", warn: 6, bad: 14 },
-    { t: "shipping_log", col: "created_at", label: "Shipping log (samples/one-offs)", warn: 60, bad: 120 },
+    { t: "shipping_log", col: "ship_date", label: "Shipping business dates", warn: 30, bad: 45, business: true },
     { t: "receiving_log", col: "created_at", label: "Receiving log", warn: 14, bad: 30 },
     { t: "supplier_pos", col: "created_at", label: "Supplier POs", warn: 30, bad: 60 },
     { t: "launch_pipeline", col: "updated_at", label: "Launch pipeline", warn: 45, bad: 90 },
-    { t: "machine_live", col: "updated_at", label: "Live machine feed", warn: 3, bad: 14 },
-    { t: "trace_labels", col: "created_at", label: "Lot trace labels", warn: 4, bad: 14 }
+    { t: "trace_events", col: "created_at", label: "Trace events", warn: 14, bad: 30 }
   ];
 
   function daysAgo(ts) {
@@ -92,10 +107,10 @@
     });
 
     // exception checks
-    var excOrders = c.from("orders").select("id,status,ship_date,created_at").neq("status", "Complete").is("ship_date", null)
-      .then(function (r) { var d = (r && r.data) || []; var cut = Date.now() - 30 * 86400000; return d.filter(function (o) { var t = new Date(o.created_at).getTime(); return !isNaN(t) && t < cut; }).length; }).catch(function () { return null; });
-    var excDemand = c.from("demand_lines").select("due_date,status").eq("status", "Open")
-      .then(function (r) { var d = (r && r.data) || []; var now = Date.now(); return d.filter(function (x) { var due = dueMs(x.due_date); return due != null && (now - due) > 60 * 86400000; }).length; }).catch(function () { return null; });
+    var excOrders = c.from("orders").select("id,status,ship_date,created_at,entered_by").neq("status", "Complete").neq("status", "Test").is("ship_date", null)
+      .then(function (r) { var d = (r && r.data) || []; var cut = Date.now() - 30 * 86400000; return d.filter(function (o) { var t = new Date(o.created_at).getTime(); return !isTestRow(o) && !isNaN(t) && t < cut; }).length; }).catch(function () { return null; });
+    var excDemand = c.from("demand_lines").select("due_date,status,batch_id,batch_label,partner,po").eq("status", "Open").limit(10000)
+      .then(function (r) { var midnight = new Date(); midnight.setHours(0,0,0,0); return stuckSummary((r && r.data) || [], midnight.getTime()); }).catch(function () { return null; });
 
     Promise.all([Promise.all(jobs), excOrders, excDemand]).then(function (all) {
       var rows = all[0], stuckOrders = all[1], oldDemand = all[2];
@@ -103,7 +118,7 @@
         var st = statusOf(x.days, x.src, x.count);
         return '<tr><td><span class="dh-dot dh-' + st.cls + '"></span>' + esc(x.src.label) + '</td>' +
           '<td class="right sm">' + x.count.toLocaleString("en-US") + '</td>' +
-          '<td class="sm">' + esc(x.latest ? String(x.latest).slice(0, 10) : "—") + '</td>' +
+          '<td class="sm">' + esc(x.latest ? String(x.latest).slice(0, 10) : "-") + '</td>' +
           '<td><span class="dh-pill ' + st.cls + '">' + st.txt + '</span></td></tr>';
       }).join("");
       var reds = rows.filter(function (x) { return statusOf(x.days, x.src, x.count).cls === "red"; }).length;
@@ -115,15 +130,15 @@
 
       var exc = '';
       exc += (stuckOrders == null) ? '' : (stuckOrders > 0
-        ? '<div class="ex warn"><b>' + stuckOrders + '</b> open order(s) are more than 30 days old with no ship date &mdash; likely stuck. Check the Orders board.</div>'
+        ? '<div class="ex warn"><b>' + stuckOrders + '</b> open order(s) are more than 30 days old with no ship date. Likely stuck. Check the Orders board.</div>'
         : '<div class="ex ok">No stuck open orders (all recent open orders have activity).</div>');
-      exc += (oldDemand == null) ? '' : (oldDemand > 0
-        ? '<div class="ex warn"><b>' + oldDemand + '</b> demand line(s) are still Open but more than 60 days past due &mdash; likely already shipped or dead.</div>'
-        : '<div class="ex ok">No long-past-due demand lingering as Open.</div>');
+      exc += (oldDemand == null) ? '' : (oldDemand.pos > 0
+        ? '<div class="ex warn"><b>' + oldDemand.pos + '</b> open PO(s) past due across ' + oldDemand.lines + ' DC/flavor lines. Check live order status before closing.</div>'
+        : '<div class="ex ok">No real open POs past due.</div>');
 
       host.innerHTML =
         '<div class="card"><h2>Data Health</h2>' +
-        '<p class="hint">How current each data source is, and whether anything old is stuck. Green = fresh, amber = aging, red = hasn\'t updated in a while. Read-only &mdash; nothing here changes your data.</p>' +
+        '<p class="hint">How current each data source is, and whether anything old is stuck. Green = fresh, amber = aging, red = hasn\'t updated in a while. Read-only. Nothing here changes your data.</p>' +
         '<p style="margin:6px 0 12px">' + summary + '</p>' +
         '<div class="tblwrap"><table class="sortable"><thead><tr><th>Data source</th><th class="right">Records</th><th>Last update</th><th>Freshness</th></tr></thead><tbody>' + body + '</tbody></table></div>' +
         '</div>' +
@@ -132,7 +147,7 @@
   }
 
   var dhOpen = false;
-  window.DATAHEALTH = { open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); dhOpen = true; markActive(); render(); } };
+  window.DATAHEALTH = { forTest: { isTestRow: isTestRow, stuckSummary: stuckSummary }, open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); dhOpen = true; markActive(); render(); } };
 
   function markActive() { try { var nav = $("nav"); if (!nav) return; nav.querySelectorAll(".navitem.active").forEach(function (b) { b.classList.remove("active"); }); var m = $("dh-nav"); if (m) m.classList.add("active"); } catch (e) {} }
   function injectNav() {

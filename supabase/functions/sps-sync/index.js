@@ -2,6 +2,7 @@
 // Secrets: SPS_CLIENT_ID, SPS_CLIENT_SECRET, SPS_FOLDER (testout | out).
 // Reads new files from /transactions/v5/data/{folder}/ and never deletes them.
 import "../../../sps-map.js";
+import { getSpsToken } from "../_shared/sps-auth.mjs";
 
 var SPS = globalThis.SPSMap;
 if (!SPS || typeof SPS.mapDocument !== "function") throw new Error("sps-map.js did not load");
@@ -94,22 +95,6 @@ async function uuidNamed(name) {
   hash[8] = (hash[8] & 0x3f) | 0x80;
   var hex = Array.from(hash.slice(0, 16)).map(function (b) { return b.toString(16).padStart(2, "0"); }).join("");
   return hex.slice(0, 8) + "-" + hex.slice(8, 12) + "-" + hex.slice(12, 16) + "-" + hex.slice(16, 20) + "-" + hex.slice(20, 32);
-}
-async function getToken(id, secret) {
-  var body = new URLSearchParams();
-  body.set("grant_type", "client_credentials");
-  body.set("client_id", id);
-  body.set("client_secret", secret);
-  body.set("audience", "https://spscommerce.com");
-  var res = await fetch("https://auth.spscommerce.com/oauth/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: body.toString()
-  });
-  if (!res.ok) throw new Error("SPS auth failed (" + res.status + ")");
-  var parsed = await res.json();
-  if (!parsed.access_token) throw new Error("SPS auth returned no access_token");
-  return parsed.access_token;
 }
 function fileRows(body) {
   var rows = body && (body.results || body.Results);
@@ -419,7 +404,8 @@ Deno.serve(async function (req) {
     locked = true;
     var merged = await mergeDuplicateOrders(folder);
     var started = Date.now();
-    var token = await getToken(clientId, clientSecret);
+    var tokenResult = await getSpsToken(clientId, clientSecret, { log: console.log });
+    var token = tokenResult.token;
     var files = await listFiles(token, folder);
     var seen = await listProcessed();
     var fresh = files.filter(function (f) { return !seen[f.path]; });
@@ -438,6 +424,8 @@ Deno.serve(async function (req) {
     }
     var summary = {
       at: new Date().toISOString(),
+      auth_retries: tokenResult.auth_retries,
+      auth_attempts: tokenResult.attempts,
       ok: errors.length === 0,
       folder: folder,
       listed: files.length,

@@ -1282,11 +1282,15 @@
         if (ecomN) push("low", plural(ecomN, "open e-commerce order") + " on the E-Commerce board");
       } else if (demandFam.indexOf(tab) >= 0) {
         const dl = DB.demandLines ? DB.demandLines() : [];
-        const openRows = dl.filter(r => (r.status || "Open") === "Open");
-        const pastDue = openRows.filter(r => { const iso = dueISO(r.due_date); return iso && iso < today; }).length;
-        const unmapped = dl.filter(r => /^UNMAPPED/i.test(String(r.flavor || ""))).length;
-        if (pastDue) push("out", plural(pastDue, "open PO line") + " past its due date");
-        if (unmapped) push("low", plural(unmapped, "demand line") + " with an unmapped flavor — re-map");
+        const isTest = r => String(r.status || "").toLowerCase() === "test" || String(r.batch_id || "") === "SPS-TEST" || String(r.batch_label || "").toLowerCase().indexOf("testout") >= 0;
+        const openRows = dl.filter(r => (r.status || "Open") === "Open" && !isTest(r) && r.po);
+        const overdueByPO = {};
+        openRows.forEach(r => { const iso = dueISO(r.due_date); if (!iso || iso >= today) return; const key = String(r.partner || "Unknown") + "|" + r.po; (overdueByPO[key] || (overdueByPO[key] = { count: 0 })).count++; });
+        const overduePOs = Object.keys(overdueByPO).length;
+        const overdueLines = Object.keys(overdueByPO).reduce((sum, key) => sum + overdueByPO[key].count, 0);
+        const unmapped = dl.filter(r => !isTest(r) && /^UNMAPPED/i.test(String(r.flavor || ""))).length;
+        if (overduePOs) push("out", plural(overduePOs, "open PO") + " past due (" + overdueLines + " lines); verify live status before closing");
+        if (unmapped) push("low", plural(unmapped, "demand line") + " with an unmapped flavor; re-map");
       } else if (tab === "launch") {
         const LS = window.LAUNCH_SCHEDULE || [];
         const soon = LS.filter(x => x.when && !DB.items().some(i => String(i.flavor || "").toLowerCase() && String(x.flavor || "").toLowerCase().indexOf(String(i.flavor || "").toLowerCase()) >= 0)).length;

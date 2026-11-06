@@ -1,26 +1,7 @@
-/* Smackin' OS - Demand board conservative auto-retire (demand-autoclose.js)
-
-   IMPORTANT CORRECTION (2026-09-25): an earlier version of this file also
-   DE-DUPLICATED demand lines by (source|po|flavor_code|due_date|cases). That was
-   WRONG — those "duplicate" rows are legitimate per-DC Target allocations (the same
-   PO + flavor shipped to many distribution centers, each with its own case count).
-   De-duping collapsed them and UNDER-COUNTED real demand (e.g. 1,490 cases -> 669),
-   which would tell production to build far too little. There are, in fact, ZERO true
-   duplicates (verified: with DC in the key all rows are unique; batches share no POs),
-   and the importer already de-dups by replacing prior Open lines per PO. So de-dup is
-   REMOVED. Every real open line and its per-DC case/bag count is preserved.
-
-   What it does now (read-only wrapper over DB.demandLines — NO database writes):
-     - Marks a line "Shipped" ONLY when its due date is more than CUTOFF_DAYS in the
-       past — a line that far past due is dead / already shipped. Nothing else changes.
-     - Target is never remapped. A past-due Target PO stays Open on the board
-       until someone marks it shipped.
-     - SPS lines stay Open here. Live SPS closes only when the Order document
-       is Complete (sps-map.js). A due date, ASN, or invoice does not retire them.
-   Persisted closes for non-SPS lines (orders Complete, or non-Target due at
-   least 14 days ago) are written by demand-close-cleanup.js. This file still
-   does not write. Existing Shipped rows are left as they are.
-   Raw rows remain available at DB.demandLinesRaw().
+/* Smackin' OS - conservative demand view. Due date is not shipping proof.
+   Per-DC lines remain distinct. Target and SPS lines remain Open until a source
+   proves their status. All other old lines remain Open for source review too.
+   No database writes are performed by this module.
 */
 (function () {
   "use strict";
@@ -31,19 +12,7 @@
     var y = +m[3]; if (y < 100) y += 2000;
     return new Date(y, +m[1] - 1, +m[2]).getTime();
   }
-  function derive(raw) {
-    if (!Array.isArray(raw) || !raw.length) return raw || [];
-    var now = Date.now();
-    return raw.map(function (r) {
-      if ((r.status || "Open") !== "Open") return r;
-      if (String(r.source || "") === "SPS" || String(r.imported_by || "") === "SPS Feed") return r;
-      if (String(r.batch_id || "") === "SPS-FEED" || String(r.batch_id || "") === "SPS-TEST") return r;
-      if (/target/i.test(String(r.partner || ""))) return r;
-      var due = dueMs(r.due_date);
-      if (due !== null && (now - due) > CUTOFF_DAYS * 86400000) return Object.assign({}, r, { status: "Shipped", _autoclosed: true });
-      return r;
-    });
-  }
+  function derive(raw) { return Array.isArray(raw) ? raw : []; }
   function bind() {
     if (!window.DB || typeof DB.demandLines !== "function") return false;
     if (DB.__demandAutocloseWrapped) return true;

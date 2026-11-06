@@ -155,13 +155,13 @@ eq(html.indexOf('src="sps-map.js?b=6"') >= 0, "sps-map cache bust");
 eq(app.indexOf('dmComplete:"Complete"') >= 0, "complete filter label");
 eq(app.indexOf("'Complete'") >= 0 && app.indexOf("dmComplete") >= 0, "complete option");
 eq(app.indexOf("function orderWaiting") >= 0, "open list ignores SPS tracking");
-eq(sw.indexOf('const CACHE = "smackin-inv-v288"') >= 0, "cache v259");
-eq(read("build-id.txt").trim() === "smackin-inv-v288", "build id");
+eq(sw.indexOf('const CACHE = "smackin-inv-v289"') >= 0, "cache v259");
+eq(read("build-id.txt").trim() === "smackin-inv-v289", "build id");
 eq(sync.indexOf('Deno.env.get("SPS_FOLDER") || "testout"') >= 0, "folder stays testout");
 eq(sync.indexOf('SPS_FOLDER=out') < 0 && sync.indexOf('"out"') >= 0, "out remains a legal folder value");
 eq(sync.indexOf("must not delete") >= 0, "order delete disabled");
 eq(sync.indexOf("orders?id=in.") < 0, "no order row delete");
-eq(auto.indexOf('String(r.source || "") === "SPS"') >= 0, "autoclose skips SPS");
+eq(auto.indexOf("Target and SPS lines remain Open") >= 0 && auto.indexOf("_autoclosed") < 0, "autoclose leaves SPS open");
 ["demand-close-cleanup.js", "scripts/check-sps-lifecycle.js"].forEach(function (rel) {
   var text = read(rel);
   eq(text.indexOf("\u2014") < 0 && text.indexOf("\u2013") < 0, rel + " dash");
