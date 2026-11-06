@@ -16,12 +16,12 @@ var app = read("app.js");
 var html = read("index.html");
 var sw = read("service-worker.js");
 
-eq(sw.indexOf('const CACHE = "smackin-inv-v295"') >= 0, "cache bump");
-eq(html.indexOf("receiving-sop.js?b=5") >= 0, "sop cache bust");
+eq(sw.indexOf('const CACHE = "smackin-inv-v296"') >= 0, "cache bump");
+eq(html.indexOf("receiving-sop.js?b=6") >= 0, "sop cache bust");
 eq(html.indexOf("services.js?b=4") >= 0, "services cache bust");
 eq(html.indexOf("raw-coa.js?b=5") >= 0, "coa script kept");
 eq(html.indexOf("coa-docs.js?b=2") >= 0, "coa file script");
-eq(html.indexOf("dept-homes.js?b=33") >= 0, "dept homes cache bust");
+eq(html.indexOf("dept-homes.js?b=34") >= 0, "dept homes cache bust");
 var homes = read("dept-homes.js");
 var services = read("services.js");
 var recvAt = homes.indexOf('id: "recv"');
@@ -43,7 +43,7 @@ eq(src.indexOf("This file is not a saved receipt.") >= 0, "receive file is not a
 eq(sop.draftGaps({}).join(",") === "supplier,contents,lot,qty,by", "empty log lists header gaps");
 eq(sop.draftGaps({ supplier: "A", contents: "Seed", lot: "L1", qty_received: "0", received_by: "Adriana" }).length === 0, "a numeric qty is not a gap");
 eq(sop.draftGaps({ supplier: "A", contents: "Seed", lot: "  ", qty_received: 4, received_by: "Adriana" }).join(",") === "lot", "blank lot stays missing");
-eq(html.indexOf("app.js?b=207") >= 0, "app cache bust");
+eq(html.indexOf("app.js?b=208") >= 0, "app cache bust");
 eq(src.indexOf("\u2014") < 0 && src.indexOf("\u2013") < 0, "receiving-sop dash");
 eq(src.indexOf("temp_not_measured") >= 0, "not measured is stored");
 eq(src.indexOf('v === "B"') >= 0, "broken seal is the hold");
@@ -53,7 +53,7 @@ eq(src.indexOf('v === "B"') >= 0, "broken seal is the hold");
 ["Receive puts stock on hand", "Recibir pone el stock en mano", "Receber coloca o estoque em maos"].forEach(function (s) {
   eq(app.indexOf(s) >= 0, "hint " + s);
 });
-eq(app.indexOf("const wantLog = !!(supplier || rlCarrier || rlTrack || file)") >= 0, "supplier alone opens the log");
+eq(app.indexOf("const wantLog = !!(supplier || rlCarrier || rlTrack || rlTransport || file)") >= 0, "supplier alone opens the log");
 eq(app.indexOf('go("recvlog")') >= 0, "receive navigates to the log");
 eq(app.indexOf("DB.receive(") < app.indexOf("wantLog"), "stock receive stays first");
 eq(app.indexOf("recvStockGuard") >= 0, "a failed log does not receive stock again");
@@ -153,6 +153,16 @@ eq(csv.indexOf("NM") >= 0, "csv shows NM");
 eq(csv.indexOf(",\"U\",") >= 0 || csv.indexOf(',"U",') >= 0, "csv shows U");
 eq(csv.indexOf("Broken") >= 0, "csv shows Broken");
 eq(csv.indexOf(",\"Y\",") >= 0, "csv still shows Y");
+eq(csv.indexOf("PO / invoice #") >= 0 && csv.indexOf("Transport / BOL #") >= 0 && csv.indexOf("Invoice pending") >= 0, "csv exports invoice and transport");
+eq(sop.validate(base()).indexOf("invoice") < 0 && sop.validate(base({ po_num: "" })).length === 0, "invoice is not required");
+var pending = sop.resolveInvoicePending({ po_num: "", transport_ref: "BOL-9", invoice_pending: true }, null, "Adriana");
+eq(pending.invoice_pending === true && pending.transport_ref === "BOL-9" && !pending.resolution, "new receipt can stay pending");
+var kept = sop.resolveInvoicePending({ po_num: "", invoice_pending: false, transport_ref: "BOL-9" }, { invoice_pending: true, po_num: "", transport_ref: "BOL-1" }, "Adriana");
+eq(kept.invoice_pending === true && kept.transport_ref === "BOL-9" && !kept.resolution, "pending stays without an invoice");
+var cleared = sop.resolveInvoicePending({ po_num: " INV-44 ", transport_ref: "BOL-9", invoice_pending: true, _when: "2026-11-06T18:00:00.000Z" }, { invoice_pending: true, po_num: "", transport_ref: "BOL-9" }, "Adriana");
+eq(cleared.invoice_pending === false && cleared.po_num === "INV-44" && cleared.resolution && cleared.resolution.who === "Adriana" && cleared.resolution.old_invoice_pending === true && cleared.resolution.new_po_num === "INV-44" && cleared.resolution.transport_ref === "BOL-9", "invoice clears pending and keeps the BOL");
+var trail = sop.invoiceTrail({ invoice_pending: true, po_num: "", transport_ref: "BOL-9" }, { invoice_pending: false, po_num: "INV-44", transport_ref: "BOL-9" }, { user_email: "inventory@smackinsnacks.com", changed_at: "2026-11-06T18:00:00.000Z" });
+eq(trail.indexOf("Invoice pending resolved") >= 0 && trail.indexOf("inventory@smackinsnacks.com") >= 0 && trail.indexOf("true -> false") >= 0 && trail.indexOf("INV-44") >= 0, "history trail names who, when, and old/new");
 
 if (fail.length) {
   fail.forEach(function (msg) { console.error("FAIL", msg); });

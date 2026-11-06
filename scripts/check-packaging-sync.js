@@ -33,7 +33,7 @@ assert(src.indexOf('{ code: "SUP-LABOB"') < 0, "does not sync a missing SUP-LABO
 assert(html.indexOf("inv-sync-packaging-1102.js") < 0, "index does not load the stale packaging sync");
 assert(html.indexOf("inv-sync-1102.js") < 0, "index does not load the stale bag sync");
 assert(html.indexOf('src="inv-sync-1106.js?b=1"') >= 0, "index loads the lot sync");
-assert(html.indexOf('src="pack-receive.js?b=3"') > html.indexOf('src="raw-exp.js'), "receive helper follows raw expiration");
+assert(html.indexOf('src="pack-receive.js?b=4"') > html.indexOf('src="raw-exp.js'), "receive helper follows raw expiration");
 assert(sw.indexOf("./inv-sync-packaging-1102.js") < 0, "sw does not precache the stale packaging sync");
 assert(sw.indexOf('"./pack-receive.js"') >= 0, "sw precaches receive helper");
 assert(ux.indexOf("3021") >= 0 && ux.indexOf("S-14632") >= 0, "supplier aliases");

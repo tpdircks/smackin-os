@@ -99,7 +99,8 @@
     else {
       body = '<div class="tblwrap"><table class="sortable"><thead><tr><th>When</th><th>Table</th><th>Action</th><th>Who</th><th>Operator</th><th>Record</th><th>Changed</th></tr></thead><tbody>' +
         shown.map(function (r) {
-          return '<tr><td class="sm">' + esc(when(r.changed_at)) + '</td><td>' + esc(r.table_name) + '</td><td>' + esc(r.action) + '</td><td>' + esc(who(r)) + '</td><td>' + esc(r.operator || "") + '</td><td class="sm">' + esc(r.row_pk || "") + '</td><td class="sm">' + esc(cols(r)) + '</td></tr>';
+          var trail = (window.RECVSOP && RECVSOP.invoiceTrail) ? RECVSOP.invoiceTrail(r.old_row, r.new_row, r) : "";
+          return '<tr><td class="sm">' + esc(when(r.changed_at)) + '</td><td>' + esc(r.table_name) + '</td><td>' + esc(r.action) + '</td><td>' + esc(who(r)) + '</td><td>' + esc(r.operator || "") + '</td><td class="sm">' + esc(r.row_pk || "") + '</td><td class="sm">' + esc(cols(r)) + (trail ? '<div>' + esc(trail) + '</div>' : '') + '</td></tr>';
         }).join("") + '</tbody></table></div>';
     }
     return '<div class="card" id="hist-root"><h2>History</h2>' +

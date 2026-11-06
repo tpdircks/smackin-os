@@ -966,7 +966,38 @@ window.DB = (function () {
     });
     if (rec.checklist !== undefined) o.checklist = rec.checklist || {};
     if (rec.on_hold !== undefined) o.on_hold = !!rec.on_hold;
+    if (rec.transport_ref !== undefined) o.transport_ref = rec.transport_ref == null ? "" : String(rec.transport_ref);
+    if (rec.invoice_pending !== undefined) o.invoice_pending = !!rec.invoice_pending;
     return o;
+  }
+  function stampInvoice(rec, prev, op) {
+    if (window.RECVSOP && typeof window.RECVSOP.resolveInvoicePending === "function") {
+      const out = window.RECVSOP.resolveInvoicePending(rec, prev, op);
+      rec.po_num = out.po_num;
+      rec.transport_ref = out.transport_ref;
+      rec.invoice_pending = out.invoice_pending;
+      return out.resolution || null;
+    }
+    const po = String(rec.po_num || "").trim();
+    rec.po_num = po;
+    if (rec.transport_ref === undefined) rec.transport_ref = prev && prev.transport_ref ? String(prev.transport_ref) : "";
+    if (po) rec.invoice_pending = false;
+    else if (prev && (prev.invoice_pending === true || prev.invoice_pending === "true" || prev.invoice_pending === "t")) rec.invoice_pending = true;
+    else rec.invoice_pending = !!rec.invoice_pending;
+    return null;
+  }
+  function invoiceResolvedLog(resolution, op) {
+    if (!resolution) return null;
+    return {
+      a: "Invoice pending resolved",
+      d: "who " + (resolution.who || op || "") +
+        "; when " + (resolution.when || "") +
+        "; invoice_pending " + resolution.old_invoice_pending + " -> " + resolution.new_invoice_pending +
+        "; po_num '" + (resolution.old_po_num || "") + "' -> '" + (resolution.new_po_num || "") + "'" +
+        "; transport_ref '" + (resolution.transport_ref || "") + "'",
+      u: op || resolution.who || "",
+      t: resolution.when || new Date().toISOString()
+    };
   }
   async function addReceivingLog(rec, file, op) {
     let file_name = file ? file.name : "", file_path = "", file_url = "";
@@ -980,6 +1011,7 @@ window.DB = (function () {
         file_url = (pub && pub.data && pub.data.publicUrl) || "";
       } catch (e) { return { ok: false, msg: String(e) }; }
     }
+    const resolution = stampInvoice(rec, null, op);
     const row = Object.assign({
       recv_date: rec.recv_date || new Date().toISOString().slice(0, 10),
       supplier: rec.supplier || "", po_num: rec.po_num || "", carrier: rec.carrier || "",
@@ -990,7 +1022,8 @@ window.DB = (function () {
       notes: rec.notes || "", file_name: file_name, file_path: file_path, file_url: file_url,
       entered_by: op || "", created_at: new Date().toISOString()
     }, extraRecv(rec));
-    const logEntry = { a: "Receiving logged", d: (row.supplier || "") + (row.po_num ? " PO " + row.po_num : "") + (file_name ? " [" + file_name + "]" : ""), u: op, t: row.created_at };
+    const logEntry = { a: "Receiving logged", d: (row.supplier || "") + (row.po_num ? " PO " + row.po_num : "") + (row.transport_ref ? " BOL " + row.transport_ref : "") + (row.invoice_pending ? " invoice pending" : "") + (file_name ? " [" + file_name + "]" : ""), u: op, t: row.created_at };
+    const resolvedEntry = invoiceResolvedLog(resolution, op);
     let newId = null;
     if (mode === "cloud") {
       const ins = await must(sb.from("receiving_log").insert(row).select("id"), "receiving_log");
@@ -1007,13 +1040,16 @@ window.DB = (function () {
       }
       if (!newId) return { ok: false, msg: "Receiving log did not confirm a saved row. The form was kept." };
       await cloud.addLog(logEntry);
+      if (resolvedEntry) await cloud.addLog(resolvedEntry);
       await cloud.loadAll();
     } else {
       row.id = "RCV-" + Date.now().toString(36) + "-" + Math.floor(Math.random() * 1000);
       newId = row.id;
       if (file && !file_url) row.file_url = URL.createObjectURL(file);
       cache.receivingLog.unshift(row);
-      local.addLog(logEntry); local.save();
+      local.addLog(logEntry);
+      if (resolvedEntry) local.addLog(resolvedEntry);
+      local.save();
     }
     emit();
     return { ok: true, id: newId };
@@ -1029,6 +1065,8 @@ window.DB = (function () {
         filePatch = { file_name: file.name, file_path: path, file_url: (pub && pub.data && pub.data.publicUrl) || "" };
       } catch (e) { return { ok: false, msg: String(e) }; }
     }
+    const prev = (cache.receivingLog || []).find(x => String(x.id) === String(id)) || null;
+    const resolution = stampInvoice(rec, prev, op);
     const patch = Object.assign({
       recv_date: rec.recv_date || null, supplier: rec.supplier || "", po_num: rec.po_num || "",
       carrier: rec.carrier || "", tracking: rec.tracking || "", contents: rec.contents || "", lot: rec.lot || "",
@@ -1036,16 +1074,20 @@ window.DB = (function () {
       qty_received: rec.qty_received === "" || rec.qty_received == null ? null : Number(rec.qty_received),
       condition: rec.condition || "Good", received_by: rec.received_by || "", notes: rec.notes || ""
     }, extraRecv(rec), filePatch);
-    const logEntry = { a: "Receiving edited", d: (patch.supplier || "") + (patch.po_num ? " PO " + patch.po_num : ""), u: op, t: new Date().toISOString() };
+    const logEntry = { a: "Receiving edited", d: (patch.supplier || "") + (patch.po_num ? " PO " + patch.po_num : "") + (patch.transport_ref ? " BOL " + patch.transport_ref : ""), u: op, t: new Date().toISOString() };
+    const resolvedEntry = invoiceResolvedLog(resolution, op);
     if (mode === "cloud") {
       const upd = await must(sb.from("receiving_log").update(patch).eq("id", id).select("id"), "receiving_log");
       if (!upd || !upd.data || !upd.data.length) return { ok: false, msg: "Receiving log update did not confirm. The form was kept." };
       await cloud.addLog(logEntry);
+      if (resolvedEntry) await cloud.addLog(resolvedEntry);
       await cloud.loadAll();
     } else {
       const s = (cache.receivingLog || []).find(x => String(x.id) === String(id));
       if (s) Object.assign(s, patch);
-      local.addLog(logEntry); local.save();
+      local.addLog(logEntry);
+      if (resolvedEntry) local.addLog(resolvedEntry);
+      local.save();
     }
     emit();
     return { ok: true, id: id };

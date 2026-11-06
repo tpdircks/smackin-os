@@ -54,6 +54,8 @@ var oil = { category: "oil" };
 var bag = { category: "bag4" };
 assert(api.isPackItem(box) && api.isPackItem(malto), "box and maltodextrin open the packaging date");
 assert(!api.isPackItem(seasoning) && !api.isPackItem(oil) && !api.isPackItem(bag), "seasoning, oil, and bags do not");
+assert(api.isFinishedCat("cashews") && api.isFinishedCat("dollartree275") && api.isFinishedCat("DOLLAR TREE 275"), "cashews and dollar tree bags are finished");
+assert(!api.isPackItem({ category: "cashews" }) && !api.isPackItem({ category: "dollartree275" }), "cashews and dollar tree bags are not packaging");
 
 var src = read("pack-receive.js");
 var html = read("index.html");
@@ -63,9 +65,9 @@ assert(src.indexOf('label.textContent = tx("exp")') < 0, "label write is guarded
 assert(src.indexOf('hint.textContent = tx("expHint")') < 0, "hint write is guarded");
 assert(src.indexOf('setText(label, tx("exp"))') >= 0, "label uses setText");
 assert(src.indexOf('setText(hint, tx("expHint"))') >= 0, "hint uses setText");
-assert(html.indexOf('src="pack-receive.js?b=3"') >= 0, "receive cache bust");
-assert(sw.indexOf('const CACHE = "smackin-inv-v295"') >= 0, "cache");
-assert(read("build-id.txt").trim() === "smackin-inv-v295", "build id");
+assert(html.indexOf('src="pack-receive.js?b=4"') >= 0, "receive cache bust");
+assert(sw.indexOf('const CACHE = "smackin-inv-v296"') >= 0, "cache");
+assert(read("build-id.txt").trim() === "smackin-inv-v296", "build id");
 assert(src.indexOf("\u2014") < 0 && src.indexOf("\u2013") < 0, "dash");
 
 if (failed) {
