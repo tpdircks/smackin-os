@@ -15,6 +15,10 @@ var html = read("index.html");
 
 eq(gate.indexOf("PASSWORD_RECOVERY") >= 0, "listens for PASSWORD_RECOVERY");
 eq(gate.indexOf("type=recovery") >= 0, "detects type=recovery in URL");
+var detect = gate.slice(gate.indexOf("function hashLooksLikeRecovery"), gate.indexOf("function recoveryHtml"));
+eq(detect.indexOf("location.search") >= 0, "checks the query string");
+eq(!/if\s*\(\s*!h\s*\)\s*return false/.test(detect), "empty hash still checks the query");
+eq(gate.indexOf("type=recovery&") >= 0, "clears type=recovery from the query");
 eq(/updateUser\(\s*\{\s*password\s*:/.test(gate), "calls updateUser({ password })");
 eq(gate.indexOf("renderRecovery") >= 0 || gate.indexOf("Choose a new password") >= 0, "recovery form copy");
 eq(gate.indexOf("smk-pass2") >= 0, "confirm password field");

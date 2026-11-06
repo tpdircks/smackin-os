@@ -12,8 +12,8 @@
      lives only until the browser closes).
    - "Forgot password" and "Resend confirmation" included; a "Sign out" button
      appears once authenticated.
-   - PASSWORD_RECOVERY (and type=recovery in the URL hash) shows a set-new-
-     password form that calls updateUser({ password }), then signs in.
+   - PASSWORD_RECOVERY (and type=recovery in the URL hash or query) shows a
+     set-new-password form that calls updateUser({ password }), then signs in.
 
    NOTE: this is the UI wall. Locking the database (RLS -> authenticated) is the
    fast-follow that makes it real security.
@@ -240,11 +240,10 @@
   function hashLooksLikeRecovery() {
     try {
       var h = String(location.hash || "");
-      if (!h) return false;
-      // Supabase puts type=recovery in the URL hash (or sometimes query).
+      var q = String(location.search || "");
+      // Supabase puts type=recovery in the URL hash, and some links use the query.
       if (/[?&#]type=recovery(?:&|$)/i.test(h)) return true;
-      if (/[?&#]type=recovery(?:&|$)/i.test(String(location.search || ""))) return true;
-      // Also accept explicit query used by some templates.
+      if (/[?&#]type=recovery(?:&|$)/i.test(q)) return true;
       return false;
     } catch (e) { return false; }
   }
@@ -289,9 +288,14 @@
     c.auth.updateUser({ password: pass }).then(function (r) {
       busy(false);
       if (r && r.error) { msg(r.error.message || "Could not update the password.", "err"); return; }
-      // Clear the recovery hash so a refresh does not re-enter recovery.
+      // Clear the recovery hash and query flag so a refresh does not re-enter recovery.
       try {
-        if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+        var search = String(location.search || "")
+          .replace(/([?&])type=recovery&/ig, "$1")
+          .replace(/([?&])type=recovery$/ig, "");
+        if (search === "?") search = "";
+        if (search.charAt(0) === "&") search = "?" + search.slice(1);
+        history.replaceState(null, "", location.pathname + search);
       } catch (e) {}
       msg("Password saved. Signing you in...", "ok");
       setTimeout(function () { location.reload(); }, 400);
