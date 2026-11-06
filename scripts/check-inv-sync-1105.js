@@ -42,16 +42,16 @@ assert(sync.ROWS.every(function (row) { return !skippedCodes[row.code]; }), "ski
 });
 
 var tags = html.match(/inv-sync-[^"']+\.js/g) || [];
-assert(tags.length === 1 && tags[0] === "inv-sync-1105.js", "index loads only 11/05 " + tags.join(","));
-assert(html.indexOf('src="inv-sync-1105.js?b=1"') > html.indexOf('src="sw-boot.js'), "11/05 script is last");
-assert(html.indexOf("inv-sync-1102.js") < 0 && html.indexOf("inv-sync-packaging-1102.js") < 0, "stale loaders are unloaded");
+assert(tags.length === 1 && tags[0] === "inv-sync-1106.js", "index loads the lot sync " + tags.join(","));
+assert(html.indexOf('src="inv-sync-1106.js?b=1"') > html.indexOf('src="sw-boot.js'), "lot sync script is last");
+assert(html.indexOf("inv-sync-1105.js") < 0 && html.indexOf("inv-sync-1102.js") < 0 && html.indexOf("inv-sync-packaging-1102.js") < 0, "stale loaders are unloaded");
 assert(fs.existsSync(path.join(root, "inv-sync-1102.js")) && fs.existsSync(path.join(root, "inv-sync-packaging-1102.js")), "old sync files stay on disk");
-assert(sw.indexOf('const CACHE = "smackin-inv-v293"') >= 0, "cache v286");
-assert(sw.indexOf('"./inv-sync-1105.js"') >= 0, "sw precaches 11/05");
-assert(sw.indexOf("inv-sync-1102.js") < 0 && sw.indexOf("inv-sync-packaging-1102.js") < 0, "sw drops stale syncs");
-assert(read("build-id.txt").trim() === "smackin-inv-v293", "build id");
-assert(html.indexOf('var EMBEDDED = "smackin-inv-v293"') >= 0, "index embedded");
-assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v293"') >= 0, "escape embedded");
+assert(sw.indexOf('const CACHE = "smackin-inv-v294"') >= 0, "cache v286");
+assert(sw.indexOf('"./inv-sync-1106.js"') >= 0, "sw precaches the lot sync");
+assert(sw.indexOf("inv-sync-1105.js") < 0 && sw.indexOf("inv-sync-1102.js") < 0 && sw.indexOf("inv-sync-packaging-1102.js") < 0, "sw drops stale syncs");
+assert(read("build-id.txt").trim() === "smackin-inv-v294", "build id");
+assert(html.indexOf('var EMBEDDED = "smackin-inv-v294"') >= 0, "index embedded");
+assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v294"') >= 0, "escape embedded");
 
 global.DB = {
   itemByCode: function (code) {
