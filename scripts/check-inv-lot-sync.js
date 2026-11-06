@@ -106,6 +106,40 @@ var src = require("fs").readFileSync(require("path").join(__dirname, "..", "scri
 assert(src.indexOf("lot") >= 0 && src.indexOf("SKIPPED") < 0, "generator does not skip lot-tracked raw materials");
 assert(src.indexOf("planAll") >= 0 || src.indexOf("LOT_ROWS") >= 0, "generator writes lot rows");
 
+var seedLine = plan.parseSeedLine({ item: "SEED-WHITE", lot: "26219H03", qty: 900, packed: "08/07/2026" });
+assert(seedLine.exp === "" && seedLine.packed === "2026-08-07" && seedLine.expUnknown, "seed date is packed, not expiration");
+
+var big = plan.planAggregate({ item: "FILM4-S01", qty: 208100 }, [
+  { source_id: "FILM4-S01", location: "F-16-L1", lot: "", qty: 229500, updated_at: "2026-10-01T00:00:00Z" }
+], { today: TODAY, sheetAsOf: AS_OF });
+assert(big.actions.some(function (a) { return a.op === "update" && a.qty === 208100; }), "confirmed film total is loaded");
+assert(!big.holds.length, "confirmed film total is not re-held");
+var jumped = plan.planAggregate({ item: "FILM4-S01", qty: 300000 }, [
+  { source_id: "FILM4-S01", location: "F-16-L1", lot: "", qty: 208100, updated_at: "2026-10-01T00:00:00Z" }
+], { today: TODAY, sheetAsOf: AS_OF });
+assert(jumped.holds.some(function (h) { return h.reason.indexOf("100,000") >= 0; }), "a new jump over 100000 is still held");
+
+var pickleNow = plan.planItemLots("SEAS-S05", [
+  { item: "SEAS-S05", lot: "#61005DA500", qty: 4000, exp: "2027-07-05", locCode: "S 05" },
+  { item: "SEAS-S05", lot: "# J1926", qty: 950, exp: "2027-10-23", locCode: "" }
+], [
+  { source_id: "SEAS-S05", location: "S-05", lot: "# 61005DA500", qty: 4000, expires_on: "2027-07-05", updated_at: "2026-10-26T00:00:00Z" },
+  { source_id: "SEAS-S05", location: "RECEIVING", lot: "LOT # j1926", qty: 1350, expires_on: "2027-10-23", updated_at: "2026-11-04T18:44:28Z" }
+], { today: TODAY, sheetAsOf: AS_OF });
+assert(pickleNow.actions.some(function (a) { return plan.lotKey(a.lot) === "J1926" && a.op === "update" && a.qty === 950; }), "j1926 is set to 950");
+assert(!pickleNow.actions.some(function (a) { return plan.lotKey(a.lot) === "61005DA500" && a.op !== "match"; }), "life spice lot stays 4000");
+
+var towels = plan.planAggregate({ item: "SUP-PAPTOW12", qty: 2, replaceOpen: "WAREHOUSE" }, [
+  { source_id: "SUP-PAPTOW12", location: "RECEIVING", lot: "", qty: -36, updated_at: "2026-08-01T00:00:00Z" },
+  { source_id: "SUP-PAPTOW12", location: "WAREHOUSE", lot: "", qty: 39, updated_at: "2026-08-01T00:00:00Z" }
+], { today: TODAY, sheetAsOf: AS_OF });
+assert(towels.actions.some(function (a) { return a.op === "insert" && a.qty === 2 && a.location === "WAREHOUSE"; }), "paper towels settle at 2 packs");
+assert(towels.actions.filter(function (a) { return a.op === "delete"; }).length === 2, "old towel rows are removed");
+
+var ready = require("../prod-ready.js");
+assert(ready.kindOf({ id: "MALTO", code: "MALTO", category: "retired", name: "Retired: Maltodextrin" }) === "retired", "retired malto leaves the pool");
+assert(ready.kindOf({ id: "TMP-SEAS-MALTODEXTRINCLINTOSECR", code: "TMP-SEAS-MALTODEXTRINCLINTOSECR", category: "seasoning", name: "Seasoning - Maltodextrin Clintose CR-10" }) === "malto", "clintose stays the malto record");
+
 if (failed) {
   console.error(failed + " failed");
   process.exit(1);

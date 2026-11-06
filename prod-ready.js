@@ -55,6 +55,7 @@
     var cat = catOf(it);
     var text = blob(it);
     var code = loose(it && (it.code || it.id));
+    if (cat === "retired") return "retired";
     if (/maltodextrin|clintose/.test(text) || cat === "maltodextrin" || cat === "adhesion" || code === "malto") return "malto";
     if (/\bstevia\b/.test(text) || cat === "stevia" || code === "stevia") return "stevia";
     if (cat === "oil" || code === "oil" || loose(it && it.name) === "oil") return "oil";

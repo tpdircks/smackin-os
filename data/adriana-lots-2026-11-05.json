@@ -501,12 +501,10 @@
     "qty": 950,
     "exp": "2027-10-23",
     "supplier": "Rocky Mountain Spicy Company",
-    "locCode": "S 05",
-    "note": "",
+    "locCode": "",
+    "note": "Adriana confirmed 950 lb on 2026-11-06. Kept in RECEIVING.",
     "category": "seasoning",
-    "unit": "lbs",
-    "hold": "special",
-    "holdReason": "SEAS-S05 Dill Pickle lot j1926 stays untouched pending Adriana (OS 1,350 vs sheet 950)."
+    "unit": "lbs"
   },
   {
     "item": "SEAS-DLRN",
@@ -1404,6 +1402,7 @@
     "note": "Cod 9 W. Packaged 2026-08-07. The Nov 5 reconciliation called this lot expired, but the seed tab has no expiration column, so it is not moved to quarantine.",
     "category": "seed",
     "unit": "lbs",
-    "holdNote": "Seed lot 26219H03 was called expired in the Nov 5 review, but the seed tab has no expiration date. Left in usable stock until Adriana gives the date."
+    "holdNote": "Packed 2026-08-07. Expiration is unknown. Adriana confirmed this date is the packed date, so the 900 lb stays active.",
+    "packed": "2026-08-07"
   }
 ]

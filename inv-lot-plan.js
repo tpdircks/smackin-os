@@ -17,18 +17,59 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
   var OPERATOR = "inventory sync from Adriana count 2026-11-05";
   var SKIP_LOC = { RETURNS: 1, QUARANTINE: 1, "QA-HOLD": 1, "RETURNS-HOLD": 1 };
   var UNSAFE = {
-    "SUP-PAPTOW12": "Paper towels: the sheet says 24 rolls and OS stores packs. Confirm 2 packs versus 24 before writing.",
-    "SUP-TRASHBLACK": "Black trash bags stay held so they are not added on top of the combined trash-bag row.",
-    "SUP-TRASHWHITE": "White trash bags stay held so they are not added on top of the combined trash-bag row.",
-    "SUP-MASKTOMCLAN": "Tom Clan masks stay held so they are not added on top of the combined mask row.",
-    "SUP-MASKDOKU": "Doku masks stay held so they are not added on top of the combined mask row.",
-    "SUP-MASKDRHZ": "DrHZ masks stay held so they are not added on top of the combined mask row.",
     "NUTS-CINNAMONCHURRO": "Cinnamon cashew packs are not an OS item yet. Adriana needs to confirm the unit.",
     "NUTS-BBQ": "BBQ cashew detail and the printed total disagree by 744 packs. Not loaded.",
     "TMP-F4-UNVAULTEDLIMITED": "UNVAULTED / LIMITED FLAVOR does not map to one film SKU.",
-    "TMP-F15-LOADEDNACHO": "The 1.5 oz film row mixes Loaded Potato and Loaded Nacho. Not loaded.",
     "SUP-BOXX": "Box #12126 is 0 on the sheet and 275 in OS. Suspected swap with #12124. Left unchanged."
   };
+  /* Adriana confirmed these exact totals on 2026-11-06. The same number
+     may pass the 100,000 guard. Any other total over 100,000 is still held. */
+  var CONFIRMED_LARGE = {
+    "FILM4-S01": 208100,
+    "FILM4-S02": 434500,
+    "FILM4-S06": 276350,
+    "FILM4-S08": 107250,
+    "FILM4-S09": 300600,
+    "FILM4-S10": 164600,
+    "FILM4-S11": 399600,
+    "TMP-F4-GOODGOODSALTVINEGAR": 316300,
+    "TMP-F4-TERIYAKIANABRUNI": 126600,
+    "FILM15-S01": 108780,
+    "FILM15-S02": 230200,
+    "FILM15-S05": 115700,
+    "FILM15-S06": 108000,
+    "FILM15-S07": 117770,
+    "FILM15-S08": 139715
+  };
+  var CONFIRM_QTY = {
+    "SUP-PAPTOW12": 2,
+    "TMP-F15-LOADEDNACHO": 0,
+    "TMP-F15-LOADEDPOTATO": 3000,
+    "SUP-TRASHBLACK": 140,
+    "SUP-TRASHWHITE": 200,
+    "SUP-MASKTOMCLAN": 7800,
+    "SUP-MASKDOKU": 10850,
+    "SUP-MASKDRHZ": 1850,
+    "SUP-TRABAG": 0,
+    "SUP-MASDAIPRO": 0
+  };
+  var CONFIRM_CREATE = {
+    "SUP-TRASHBLACK": { desc: "Trash bags, black", category: "supply", unit: "ea" },
+    "SUP-TRASHWHITE": { desc: "Trash bags, white", category: "supply", unit: "ea" },
+    "SUP-MASKTOMCLAN": { desc: "Masks, Tom Clan", category: "supply", unit: "ea" },
+    "SUP-MASKDOKU": { desc: "Masks, Doku", category: "supply", unit: "ea" },
+    "SUP-MASKDRHZ": { desc: "Masks, DrHZ", category: "supply", unit: "ea" },
+    "TMP-F15-LOADEDPOTATO": { desc: "Film 1.5oz - Loaded Potato", category: "film15", unit: "impr" }
+  };
+  var CONFIRM_REPLACE = { "SUP-PAPTOW12": "WAREHOUSE" };
+  var CONFIRM_RETIRE = [
+    { item: "MALTO", name: "Retired: Maltodextrin (duplicate of Clintose CR-10)", category: "retired" },
+    { item: "SUP-TRABAG", name: "Retired: Trash Bags (split into black and white)", category: "retired" },
+    { item: "SUP-MASDAIPRO", name: "Retired: Masks KN95 (split by manufacturer)", category: "retired" }
+  ];
+  var CONFIRM_PATCH = [
+    { item: "TMP-SEAS-MALTODEXTRINCLINTOSECR", supplier: "ADM Corn Processing" }
+  ];
 
   function num(n) {
     var x = Number(n);
@@ -89,6 +130,25 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
   function coaHeld(row) {
     var ans = String(row && row.coa_received || "").trim().toLowerCase();
     return ans === "no" && !(row && row.coa_released_at);
+  }
+  function confirmedLarge(item, qty) {
+    return Object.prototype.hasOwnProperty.call(CONFIRMED_LARGE, item) && num(CONFIRMED_LARGE[item]) === num(qty);
+  }
+  /* Seed tab dates are packed dates. They are never an expiration. */
+  function parseSeedLine(row) {
+    row = row || {};
+    var packed = parseExp(row.packed || row.packaged || "");
+    return {
+      item: row.item || "",
+      lot: String(row.lot || "").trim(),
+      qty: num(row.qty),
+      packed: packed,
+      exp: "",
+      expUnknown: true,
+      note: packed
+        ? ("Packed " + packed + ". Expiration is unknown.")
+        : "Expiration is unknown. The seed date is a packed date."
+    };
   }
   function rawItem(it) {
     if (!it) return false;
@@ -310,7 +370,7 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
     var cap = opts.cap || CAP;
     var item = spec.item;
     if (spec.unsafe) return { actions: [], holds: [{ item: item, sheet: num(spec.qty), reason: spec.unsafe }] };
-    if (num(spec.qty) > cap) return { actions: [], holds: [{ item: item, sheet: num(spec.qty), reason: "Quantity " + num(spec.qty) + " is over 100,000. Held as a likely typo." }] };
+    if (num(spec.qty) > cap && !confirmedLarge(item, spec.qty)) return { actions: [], holds: [{ item: item, sheet: num(spec.qty), reason: "Quantity " + num(spec.qty) + " is over 100,000. Held as a likely typo." }] };
     var total = (rows || []).reduce(function (s, r) { return s + num(r.qty); }, 0);
     if ((rows || []).some(function (r) { return isManual(r, opts.sheetAsOf || SHEET_AS_OF); }) && drifted(total, spec.qty)) {
       return { actions: [], holds: [{ item: item, sheet: num(spec.qty), os: num(total), reason: "A stock row was edited after the sheet date. The sheet was not written over it." }] };
@@ -320,7 +380,19 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
       if (!spec.create && spec.missing) return { actions: [], holds: [{ item: item, sheet: num(spec.qty), reason: "Item is not in OS. Not created." }] };
       return { actions: [{ op: "create", item: item, desc: spec.desc || item, category: spec.category || "other", unit: spec.unit || "ea" }, { op: "insert", item: item, location: "RECEIVING", lot: "", qty: num(spec.qty), expires_on: "", sheet: num(spec.qty), from: { qty: 0 } }], holds: [] };
     }
-    if (!drifted(total, spec.qty)) return { actions: [{ op: "match", item: item, qty: num(total), sheet: num(spec.qty) }], holds: [] };
+    if (!drifted(total, spec.qty) && !spec.replaceOpen) return { actions: [{ op: "match", item: item, qty: num(total), sheet: num(spec.qty) }], holds: [] };
+    if (spec.replaceOpen) {
+      var place = spec.replaceOpen;
+      var meaningful = (rows || []).filter(function (r) { return num(r.qty) !== 0; });
+      var clean = meaningful.length === 1 && meaningful[0].location === place && num(meaningful[0].qty) === num(spec.qty);
+      if (clean) return { actions: [{ op: "match", item: item, qty: num(spec.qty), sheet: num(spec.qty) }], holds: [] };
+      var actions = [];
+      meaningful.forEach(function (r) {
+        actions.push({ op: "delete", item: r.source_id || item, location: r.location, lot: r.lot || "", qty: 0, sheet: num(spec.qty), from: { location: r.location, lot: r.lot || "", qty: num(r.qty) } });
+      });
+      if (num(spec.qty) > 0) actions.push({ op: "insert", item: item, location: place, lot: "", qty: num(spec.qty), expires_on: "", sheet: num(spec.qty), from: { qty: num(total) } });
+      return { actions: actions, holds: [] };
+    }
     var guard = 0;
     var open = [];
     (rows || []).forEach(function (r) {
@@ -425,7 +497,30 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
       var qty = rowsFor(stock, it).reduce(function (s, r) { return s + num(r.qty); }, 0);
       if (qty > 0) info.push({ item: it.id, os: num(qty), reason: "Raw item is not on the latest Adriana block. On hand was left unchanged." });
     });
-    var agg = latest.aggregates || [];
+    var seenAgg = {};
+    var agg = (latest.aggregates || []).map(function (spec) {
+      var copy = Object.assign({}, spec);
+      if (Object.prototype.hasOwnProperty.call(CONFIRM_QTY, copy.item)) copy.qty = CONFIRM_QTY[copy.item];
+      if (Object.prototype.hasOwnProperty.call(CONFIRM_QTY, copy.item)) copy.unsafe = "";
+      if (CONFIRM_CREATE[copy.item]) {
+        copy.create = true;
+        copy.desc = CONFIRM_CREATE[copy.item].desc;
+        copy.category = CONFIRM_CREATE[copy.item].category;
+        copy.unit = CONFIRM_CREATE[copy.item].unit;
+      }
+      if (CONFIRM_REPLACE[copy.item]) copy.replaceOpen = CONFIRM_REPLACE[copy.item];
+      seenAgg[copy.item] = 1;
+      return copy;
+    });
+    Object.keys(CONFIRM_CREATE).forEach(function (id) {
+      if (seenAgg[id]) return;
+      var meta = CONFIRM_CREATE[id];
+      agg.push({ item: id, qty: CONFIRM_QTY[id], desc: meta.desc, category: meta.category, unit: meta.unit, create: true, unsafe: "" });
+    });
+    ["SUP-TRABAG", "SUP-MASDAIPRO"].forEach(function (id) {
+      if (seenAgg[id]) return;
+      agg.push({ item: id, qty: 0, desc: id, category: "supply", unit: "ea", unsafe: "" });
+    });
     agg.forEach(function (spec) {
       if (lotIds[spec.item]) return;
       var it = findItem(items, spec.item);
@@ -436,6 +531,20 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
       actions = actions.concat(planned.actions);
       holds = holds.concat(planned.holds);
     });
+    CONFIRM_RETIRE.forEach(function (rec) {
+      var it = findItem(items, rec.item);
+      if (it && String(it.category || "").toLowerCase() === "retired") return;
+      actions.push({ op: "retire", item: rec.item, name: rec.name, category: rec.category, desc: rec.name });
+    });
+    CONFIRM_PATCH.forEach(function (rec) {
+      var it = findItem(items, rec.item);
+      if (it && String(it.name || "").indexOf(rec.supplier) >= 0) return;
+      actions.push({ op: "patch-item", item: rec.item, supplier: rec.supplier, desc: "Maltodextrin Clintose CR-10" });
+    });
+    notes.push({ item: "SEED-WHITE", lot: "26219H03", reason: "Packed 2026-08-07. Expiration is unknown. The 900 lb stays active." });
+    notes.push({ item: "MCASE-BOX", reason: "Adriana confirmed 5,800 on 2026-11-06." });
+    notes.push({ item: "BOX-S-14632", reason: "Adriana confirmed 3,250 on 2026-11-06." });
+    notes.push({ item: "CASEBOX-12", reason: "Adriana confirmed 47,125 on 2026-11-06." });
     info = info.concat(latest.info || []);
     return {
       countDate: latest.countDate || COUNT_DATE,
@@ -510,6 +619,9 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
     COUNT_DATE: COUNT_DATE,
     OPERATOR: OPERATOR,
     UNSAFE: UNSAFE,
+    CONFIRMED_LARGE: CONFIRMED_LARGE,
+    confirmedLarge: confirmedLarge,
+    parseSeedLine: parseSeedLine,
     lotKey: lotKey,
     mapLocation: mapLocation,
     parseExp: parseExp,
