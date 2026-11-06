@@ -1,5 +1,5 @@
 /* ============================================================================
-   Smackin' OS - Authentication gate (auth-gate.js)  b=3
+   Smackin' OS - Authentication gate (auth-gate.js)  b=4
    Login wall in front of the whole app + effortless repeat login.
 
    - Sign-up restricted to @smackinsnacks.com; each person sets their own
@@ -12,8 +12,11 @@
      lives only until the browser closes).
    - "Forgot password" and "Resend confirmation" included; a "Sign out" button
      appears once authenticated.
-   - PASSWORD_RECOVERY (and type=recovery in the URL hash or query) shows a
-     set-new-password form that calls updateUser({ password }), then signs in.
+   - A reset mail link with ?token_hash=...&type=recovery shows the set-password
+     screen and does not exchange that token on load (email scanners must not
+     spend it). Save exchanges the token, then updateUser({ password }).
+   - PASSWORD_RECOVERY (and type=recovery in the URL hash) is the fallback for
+     older links: the same form calls updateUser({ password }), then signs in.
 
    NOTE: this is the UI wall. Locking the database (RLS -> authenticated) is the
    fast-follow that makes it real security.
@@ -28,6 +31,10 @@
   var PERSIST_KEY = "smk-persist";   // "0" = session-only, else persistent
   var EMAIL_KEY = "smk-email";       // last email used (for pre-fill)
   var sb = null;
+  var recoveryLock = false;      // ignore auth events while Save is in flight
+  var recoveryVerified = false;  // token_hash already exchanged on this page
+  var recoveryComplete = false;  // password saved; do not reopen the form
+  var leftRecovery = false;      // person left a bad link for Forgot password
 
   function ready() { return !!(window.supabase && cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY); }
   function wantPersist() { try { return localStorage.getItem(PERSIST_KEY) !== "0"; } catch (e) { return true; } }
@@ -52,7 +59,14 @@
     var store = wantPersist() ? window.localStorage : window.sessionStorage;
     try {
       sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {
-        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: store }
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          // Hash links (access_token) still sign in on load. A token_hash link
+          // must not: the client would spend it before the person clicks Save.
+          detectSessionInUrl: !recoveryTokenHash(),
+          storage: store
+        }
       });
     } catch (e) { sb = null; }
     return sb;
@@ -90,7 +104,9 @@
     "#smk-foot{margin-top:16px;text-align:center;font-size:11px;color:#94a3b8}",
     "#smk-signout{position:fixed;top:9px;right:12px;z-index:2147482000;background:rgba(255,255,255,.14);color:#fff;",
     "border:1px solid rgba(255,255,255,.3);border-radius:7px;padding:4px 10px;font:600 12px Barlow,system-ui,Arial;cursor:pointer}",
-    "#smk-signout:hover{background:rgba(255,255,255,.28)}"
+    "#smk-signout:hover{background:rgba(255,255,255,.28)}",
+    "#smk-forgot-back{width:100%;margin-top:12px;padding:12px;border:0;border-radius:10px;background:#1F3864;color:#fff;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer}",
+    "#smk-forgot-back:hover{background:#284a86}"
   ].join("");
   function injectStyle() {
     if (document.getElementById("smk-auth-style")) return;
@@ -203,7 +219,7 @@
     var email = ($("smk-email").value || "").trim();
     if (!domainOk(email)) { msg("Enter your @" + ALLOWED_DOMAIN + " email above first.", "err"); return; }
     var c = client(); if (!c) return;
-    c.auth.resetPasswordForEmail(email, { redirectTo: REDIRECT }).then(function () {
+    c.auth.resetPasswordForEmail(email, { redirectTo: "https://tpdircks.github.io/smackin-os/" }).then(function () {
       msg("If that account exists, a password-reset link is on its way to " + email + ".", "ok");
     }).catch(function () { msg("Could not send the reset email.", "err"); });
   }
@@ -237,6 +253,17 @@
   }
 
   // ---- password recovery ----------------------------------------------
+  // New reset links: ?token_hash=...&type=recovery. Read only. Do not verify here.
+  function recoveryTokenHash() {
+    try {
+      var q = String(location.search || "");
+      if (!/(?:[?&])type=recovery(?:&|$)/i.test(q)) return "";
+      var m = /(?:[?&])token_hash=([^&]*)/i.exec(q);
+      if (!m) return "";
+      return decodeURIComponent(String(m[1] || "").replace(/\+/g, " "));
+    } catch (e) { return ""; }
+  }
+
   function hashLooksLikeRecovery() {
     try {
       var h = String(location.hash || "");
@@ -248,10 +275,17 @@
     } catch (e) { return false; }
   }
 
+  function linkUsedUp(err) {
+    var m = String((err && err.message) || "").toLowerCase();
+    var code = String((err && (err.code || err.error_code)) || "").toLowerCase();
+    if (code === "otp_expired" || code === "otp_disabled") return true;
+    return m.indexOf("expired") >= 0 || m.indexOf("invalid") >= 0 || m.indexOf("not found") >= 0;
+  }
+
   function recoveryHtml() {
     return '<div id="smk-auth"><div id="smk-card">' +
       '<h1>SMACKIN\' <span class="thin">OS</span></h1>' +
-      '<div id="smk-sub">Choose a new password for your account</div>' +
+      '<div id="smk-sub">Set your new Smackin OS password</div>' +
       '<form id="smk-form" autocomplete="on">' +
       '<label class="fld" for="smk-pass">New password</label>' +
       '<input id="smk-pass" name="password" type="password" autocomplete="new-password" placeholder="At least 8 characters">' +
@@ -277,6 +311,39 @@
     var pw = $("smk-pass"); if (pw) pw.focus();
   }
 
+  function showForgotForm() {
+    leftRecovery = true;
+    mode = "login";
+    render();
+  }
+
+  function showExpiredLink() {
+    msg("This reset link expired. Use Forgot password to get a new one.", "err");
+    var card = $("smk-card");
+    if (!card || $("smk-forgot-back")) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.id = "smk-forgot-back";
+    b.textContent = "Forgot password";
+    b.onclick = showForgotForm;
+    card.appendChild(b);
+  }
+
+  function stripRecoveryParams() {
+    try {
+      var search = String(location.search || "")
+        .replace(/([?&])token_hash=[^&]*&/ig, "$1")
+        .replace(/([?&])token_hash=[^&]*$/ig, "")
+        .replace(/([?&])type=recovery&/ig, "$1")
+        .replace(/([?&])type=recovery$/ig, "");
+      if (search === "?") search = "";
+      if (search.charAt(0) === "&") search = "?" + search.slice(1);
+      search = search.replace(/&$/, "");
+      if (search === "?") search = "";
+      history.replaceState(null, "", location.pathname + search);
+    } catch (e) {}
+  }
+
   function submitRecovery() {
     var pass = ($("smk-pass") && $("smk-pass").value) || "";
     var pass2 = ($("smk-pass2") && $("smk-pass2").value) || "";
@@ -284,28 +351,62 @@
     if (pass !== pass2) { msg("Passwords do not match.", "err"); return; }
     var c = client();
     if (!c) { msg("Auth is still loading, try again in a moment.", "err"); return; }
+    var tokenHash = recoveryTokenHash();
     busy(true); msg("", "");
-    c.auth.updateUser({ password: pass }).then(function (r) {
-      busy(false);
-      if (r && r.error) { msg(r.error.message || "Could not update the password.", "err"); return; }
-      // Clear the recovery hash and query flag so a refresh does not re-enter recovery.
-      try {
-        var search = String(location.search || "")
-          .replace(/([?&])type=recovery&/ig, "$1")
-          .replace(/([?&])type=recovery$/ig, "");
-        if (search === "?") search = "";
-        if (search.charAt(0) === "&") search = "?" + search.slice(1);
-        history.replaceState(null, "", location.pathname + search);
-      } catch (e) {}
-      msg("Password saved. Signing you in...", "ok");
-      setTimeout(function () { location.reload(); }, 400);
-    }).catch(function (e) {
-      busy(false);
-      msg((e && e.message) || "Could not update the password.", "err");
-    });
+
+    var savePassword = function () {
+      return c.auth.updateUser({ password: pass }).then(function (r) {
+        busy(false);
+        recoveryLock = false;
+        if (r && r.error) { msg(r.error.message || "Could not update the password.", "err"); return; }
+        stripRecoveryParams();
+        recoveryComplete = true;
+        msg("Password saved. Signing you in...", "ok");
+        var session = r && r.data && r.data.session;
+        if (session && session.user) finishSignedIn(session);
+        else {
+          c.auth.getSession().then(function (s) {
+            var next = s && s.data && s.data.session;
+            if (next && next.user) finishSignedIn(next);
+          }).catch(function () {});
+        }
+        setTimeout(function () { location.reload(); }, 400);
+      }).catch(function (e) {
+        busy(false);
+        recoveryLock = false;
+        msg((e && e.message) || "Could not update the password.", "err");
+      });
+    };
+
+    // token_hash links verify only on this click. Older hash links already have a session.
+    if (tokenHash && !recoveryVerified) {
+      recoveryLock = true;
+      c.auth.verifyOtp({ token_hash: tokenHash, type: "recovery" }).then(function (r) {
+        if (!r || r.error || !(r.data && r.data.session)) {
+          recoveryLock = false;
+          busy(false);
+          if (r && r.error && !linkUsedUp(r.error)) {
+            msg(r.error.message || "Could not verify the reset link.", "err");
+            return;
+          }
+          showExpiredLink();
+          return;
+        }
+        recoveryVerified = true;
+        return savePassword();
+      }).catch(function (e) {
+        recoveryLock = false;
+        busy(false);
+        if (linkUsedUp(e)) showExpiredLink();
+        else msg((e && e.message) || "Could not verify the reset link.", "err");
+      });
+      return;
+    }
+    savePassword();
   }
 
   function enterRecovery(session) {
+    if (recoveryLock || recoveryComplete) return;
     if (!session || !session.user) { renderRecovery(); return; }
     renderRecovery();
   }
@@ -324,17 +425,31 @@
     if (recovering) renderRecovery();
     c.auth.getSession().then(function (r) {
       var session = r && r.data && r.data.session;
-      if (recovering || hashLooksLikeRecovery()) { enterRecovery(session); return; }
+      if (recoveryComplete) {
+        if (session && session.user) finishSignedIn(session);
+        return;
+      }
+      // token_hash stays in the URL until Save. Do not treat it as a session.
+      if (!leftRecovery && (recovering || hashLooksLikeRecovery() || recoveryTokenHash())) {
+        enterRecovery(session);
+        return;
+      }
       if (session && session.user) finishSignedIn(session);
       else if (!$("smk-auth")) render();
       else if (mode !== "recovery") render();
     }).catch(function () {
-      if (recovering) renderRecovery();
+      if (leftRecovery) return;
+      if (recovering || recoveryTokenHash()) renderRecovery();
       else render();
     });
     try {
       c.auth.onAuthStateChange(function (evt, session) {
-        if (evt === "PASSWORD_RECOVERY" || hashLooksLikeRecovery()) {
+        if (recoveryComplete) {
+          if (session && session.user) finishSignedIn(session);
+          return;
+        }
+        // A token_hash in the query is not a session. Keep the set-password screen up.
+        if (!leftRecovery && (evt === "PASSWORD_RECOVERY" || hashLooksLikeRecovery() || recoveryTokenHash())) {
           enterRecovery(session);
           return;
         }
@@ -349,7 +464,11 @@
   }
 
   function start() {
-    if (document.body) render();               // wall paints immediately
+    if (document.body) {
+      // Paint the set-password screen for a token_hash link without verifying.
+      if (recoveryTokenHash() || hashLooksLikeRecovery()) renderRecovery();
+      else render();
+    }
     if (!boot()) { var n = 0, iv = setInterval(function () { if (boot() || ++n > 60) clearInterval(iv); }, 200); }
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
