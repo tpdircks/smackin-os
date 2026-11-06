@@ -11,7 +11,10 @@
   var api = factory();
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   if (root) root.POLINES = api;
-  if (typeof document !== "undefined") api.watchEmail();
+  if (typeof document !== "undefined") {
+    api.bindClicks();
+    api.watchEmail();
+  }
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
@@ -41,6 +44,37 @@
   function canEdit(email) {
     return !!EDITORS[String(email || "").trim().toLowerCase()];
   }
+  function b64url(s) {
+    var t = String(s || "").replace(/-/g, "+").replace(/_/g, "/");
+    while (t.length % 4) t += "=";
+    try {
+      if (typeof atob === "function") return atob(t);
+      if (typeof Buffer !== "undefined") return Buffer.from(t, "base64").toString("utf8");
+    } catch (e) {}
+    return "";
+  }
+  function emailFromJwt(token) {
+    var part = String(token || "").split(".")[1];
+    if (!part) return "";
+    try {
+      var json = JSON.parse(b64url(part) || "null");
+      return json && json.email ? String(json.email) : "";
+    } catch (e) { return ""; }
+  }
+  function emailFromAuthBlob(obj) {
+    if (!obj) return "";
+    if (typeof obj === "string") {
+      var text = obj;
+      if (text.indexOf("base64-") === 0) text = b64url(text.slice(7));
+      try { obj = JSON.parse(text); } catch (e) { return emailFromJwt(obj); }
+    }
+    if (!obj || typeof obj !== "object") return "";
+    if (obj.user && obj.user.email) return String(obj.user.email);
+    if (obj.currentSession && obj.currentSession.user && obj.currentSession.user.email) return String(obj.currentSession.user.email);
+    if (obj.data && obj.data.session && obj.data.session.user && obj.data.session.user.email) return String(obj.data.session.user.email);
+    var token = obj.access_token || (obj.currentSession && obj.currentSession.access_token) || (obj.session && obj.session.access_token) || "";
+    return emailFromJwt(token);
+  }
   function readStoredEmail() {
     if (typeof window === "undefined") return "";
     if (window.SMK_USER_EMAIL) return String(window.SMK_USER_EMAIL);
@@ -49,20 +83,47 @@
     try { if (window.sessionStorage) stores.push(window.sessionStorage); } catch (e2) {}
     for (var s = 0; s < stores.length; s++) {
       var store = stores[s];
+      var chunks = [];
       for (var i = 0; i < store.length; i++) {
         var key = store.key(i);
         if (!key || key.indexOf("sb-") !== 0 || key.indexOf("auth-token") < 0) continue;
-        try {
-          var obj = JSON.parse(store.getItem(key) || "null");
-          var email = obj && obj.user && obj.user.email;
-          if (!email && obj && obj.currentSession && obj.currentSession.user) email = obj.currentSession.user.email;
-          if (email) return String(email);
-        } catch (e3) {}
+        if (/\.\d+$/.test(key)) chunks.push(key);
+        else {
+          var email = emailFromAuthBlob(store.getItem(key) || "");
+          if (email) return email;
+        }
+      }
+      if (chunks.length) {
+        chunks.sort();
+        var joined = "";
+        for (var c = 0; c < chunks.length; c++) joined += store.getItem(chunks[c]) || "";
+        var fromChunks = emailFromAuthBlob(joined);
+        if (fromChunks) return fromChunks;
       }
     }
     return "";
   }
   function currentEmail() { return readStoredEmail(); }
+  function sessionClient() {
+    if (typeof window === "undefined" || !window.supabase || !window.SMACKIN_CONFIG) return null;
+    var cfg = window.SMACKIN_CONFIG;
+    if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY || typeof window.supabase.createClient !== "function") return null;
+    try { return window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY); } catch (e) { return null; }
+  }
+  function ensureEmail() {
+    var sync = currentEmail();
+    if (canEdit(sync)) return Promise.resolve(sync);
+    var client = sessionClient();
+    if (!client || !client.auth || typeof client.auth.getSession !== "function") return Promise.resolve(sync);
+    return client.auth.getSession().then(function (r) {
+      var session = r && r.data && r.data.session;
+      var email = emailFromAuthBlob(session || {});
+      if (email) {
+        try { window.SMK_USER_EMAIL = email; } catch (e) {}
+      }
+      return email || currentEmail();
+    }).catch(function () { return currentEmail(); });
+  }
   function canEditCurrent() { return canEdit(currentEmail()); }
   function actorNow() {
     return { email: currentEmail(), when: new Date().toISOString() };
@@ -101,8 +162,10 @@
   }
   function parseLines(raw) {
     var lines = raw;
-    if (typeof raw === "string") {
-      try { lines = JSON.parse(raw || "[]"); } catch (e) { lines = []; }
+    var guard = 0;
+    while (typeof lines === "string" && guard < 3) {
+      guard++;
+      try { lines = JSON.parse(lines || "[]"); } catch (e) { lines = []; break; }
     }
     if (!Array.isArray(lines)) return [];
     return lines.map(function (l) { return (l && typeof l === "object") ? l : {}; });
@@ -227,13 +290,17 @@
     for (var i = 0; i < inputs.length; i++) previewSet(inputs[i], currentEmail());
   }
   function removePreview(lid, email) {
-    if (!preview) return { ok: false, reason: "missing" };
+    if (!preview) { toast("There is no upload to edit."); return { ok: false, reason: "missing" }; }
     var who = email == null ? currentEmail() : email;
-    if (!canEdit(who)) return { ok: false, reason: "forbidden" };
+    if (!canEdit(who)) {
+      toast(who ? ("You can't change PO lines (" + who + ").") : "You can't change PO lines. Sign in as Troy, Michelle, or Matt.");
+      return { ok: false, reason: "forbidden" };
+    }
     syncFromDom();
-    if (!previewLine(lid)) return { ok: false, reason: "missing" };
+    if (!previewLine(lid)) { toast("That line is not on this upload."); return { ok: false, reason: "missing" }; }
     preview.removed[lid] = true;
-    refresh();
+    try { refresh(); } catch (e) {}
+    toast("Line removed from this upload.");
     return { ok: true, lines: keptLines() };
   }
   function setShowZero(on, email) {
@@ -277,7 +344,7 @@
       }
       return "<tr>" + inputCell(l, "item") + inputCell(l, "desc") + inputCell(l, "qty") +
         inputCell(l, "unit") + inputCell(l, "price") +
-        '<td><button type="button" class="ghost sm danger" onclick="POLINES.removePreview(\'' + esc(l._lid) + '\')">Remove</button></td></tr>';
+        '<td><button type="button" class="ghost sm danger" data-po-act="preview-remove" data-lid="' + esc(l._lid) + '">Remove</button></td></tr>';
     }).join("");
     if (!body) body = '<tr><td colspan="6" class="muted">No lines to save yet.</td></tr>';
     return noteHtml +
@@ -285,9 +352,15 @@
       body + "</tbody></table>";
   }
 
+  function host() {
+    if (typeof globalThis !== "undefined") return globalThis;
+    if (typeof window !== "undefined") return window;
+    return {};
+  }
   function findPo(id) {
     var list = [];
-    try { list = (root.DB && root.DB.supplierPos) ? root.DB.supplierPos() : []; } catch (e) { list = []; }
+    var db = host().DB;
+    try { list = (db && db.supplierPos) ? db.supplierPos() : []; } catch (e) { list = []; }
     for (var i = 0; i < list.length; i++) {
       if (String(list[i].id) === String(id)) return list[i];
     }
@@ -462,12 +535,12 @@
         '<td><input data-f="qty" inputmode="decimal" value="' + esc(display(l, "qty")) + '"></td>' +
         '<td><input data-f="unit" value="' + esc(display(l, "unit")) + '"></td>' +
         '<td><input data-f="price" inputmode="decimal" value="' + esc(display(l, "price")) + '"></td>' +
-        '<td><button type="button" class="ghost sm danger" data-po="' + id + '" data-lid="' + esc(l._lid) + '" onclick="POLINES.deleteSaved(this)">Remove</button></td></tr>';
+        '<td><button type="button" class="ghost sm danger" data-po-act="delete" data-po="' + id + '" data-lid="' + esc(l._lid) + '">Remove</button></td></tr>';
     }).join("");
     if (!body) body = '<tr><td colspan="7" class="muted">No line items on file</td></tr>';
     return '<table class="potable" id="pol-saved"><thead><tr><th>Item</th><th>Description</th><th>Ship date</th><th>Qty</th><th>Unit</th><th>Price</th><th></th></tr></thead><tbody>' +
       body + "</tbody></table>" +
-      '<button type="button" class="primary" style="margin-top:10px" data-po="' + id + '" onclick="POLINES.saveSaved(this)">Save lines</button>';
+      '<button type="button" class="primary" style="margin-top:10px" data-po-act="save" data-po="' + id + '">Save lines</button>';
   }
   function readSavedDom() {
     if (typeof document === "undefined") return [];
@@ -483,44 +556,116 @@
     }
     return edits;
   }
+  var busyFlag = false;
+  function poBusy() { return busyFlag; }
+  function holdBusy(on) {
+    busyFlag = !!on;
+    if (typeof window === "undefined") return;
+    window.SMK_BUSY = window.SMK_BUSY || [];
+    if (window.SMK_BUSY.indexOf(poBusy) < 0) window.SMK_BUSY.push(poBusy);
+  }
+  function cloudOn() {
+    try { var db = host().DB; return !!(db && db.mode === "cloud"); } catch (e) { return false; }
+  }
+  function denyText(email) {
+    if (email) return "You can't change PO lines (" + email + ").";
+    return "You can't change PO lines. Sign in as Troy, Michelle, or Matt.";
+  }
   function persist(poId, plan, email) {
-    if (!root.DB || typeof root.DB.updateSupplierPO !== "function") return Promise.resolve({ ok: false, reason: "missing" });
-    return root.DB.updateSupplierPO(poId, plan.patch, email || "");
+    var db = host().DB;
+    if (!db || typeof db.updateSupplierPO !== "function") return Promise.resolve({ ok: false, msg: "The database is not ready." });
+    if (!cloudOn()) return Promise.resolve({ ok: false, msg: "Not connected to the live database, so the line was not changed." });
+    return db.updateSupplierPO(poId, plan.patch, email || "");
+  }
+  function askConfirm(message) {
+    return new Promise(function (resolve) {
+      if (typeof document === "undefined" || !document.body) { resolve(false); return; }
+      var old = document.getElementById("pol-confirm");
+      if (old && old.parentNode) old.parentNode.removeChild(old);
+      var box = document.createElement("div");
+      box.id = "pol-confirm";
+      box.setAttribute("role", "dialog");
+      box.setAttribute("style", "position:fixed;inset:0;z-index:2147483600;background:rgba(4,34,59,.45);display:flex;align-items:center;justify-content:center;padding:16px");
+      box.innerHTML = '<div style="background:#fff;border-radius:12px;padding:18px;max-width:420px;width:100%">' +
+        '<p id="pol-confirm-msg" style="margin:0 0 14px;font-weight:700">' + esc(message) + "</p>" +
+        '<button type="button" id="pol-confirm-yes" class="primary">Delete this line</button> ' +
+        '<button type="button" id="pol-confirm-no" class="ghost">Cancel</button></div>';
+      document.body.appendChild(box);
+      function done(v) {
+        if (box.parentNode) box.parentNode.removeChild(box);
+        resolve(!!v);
+      }
+      var yes = document.getElementById("pol-confirm-yes");
+      var no = document.getElementById("pol-confirm-no");
+      if (yes) yes.onclick = function () { done(true); };
+      if (no) no.onclick = function () { done(false); };
+    });
   }
   function saveSaved(btn) {
     var poId = btn && btn.getAttribute ? btn.getAttribute("data-po") : btn;
-    var email = currentEmail();
-    if (!canEdit(email)) { toast("You can't change PO lines."); return Promise.resolve({ ok: false, reason: "forbidden" }); }
-    var po = findPo(poId);
-    if (!po) { toast("That PO is not open."); return Promise.resolve({ ok: false, reason: "missing" }); }
-    var plan = planSaved(po, { edits: readSavedDom() }, actorNow());
-    if (!plan.ok) { toast("Could not update that line."); return Promise.resolve(plan); }
-    if (!plan.changed) { toast("No line changes to save."); return Promise.resolve(plan); }
-    return persist(poId, plan, email).then(function (res) {
-      if (res && res.ok === false) { toast(res.msg || "Save failed"); return res; }
-      toast("Lines saved");
-      refresh();
-      return res || { ok: true };
-    });
+    var edits = readSavedDom();
+    holdBusy(true);
+    return ensureEmail().then(function (email) {
+      if (!canEdit(email)) { toast(denyText(email)); return { ok: false, reason: "forbidden" }; }
+      var po = findPo(poId);
+      if (!po) { toast("That PO is not on this screen, so the lines were not saved."); return { ok: false, reason: "missing" }; }
+      var plan = planSaved(po, { edits: edits }, { email: email, when: new Date().toISOString() });
+      if (!plan.ok) { toast(plan.reason === "forbidden" ? denyText(email) : "Those lines could not be saved."); return plan; }
+      if (!plan.changed) { toast("No line changes to save."); return plan; }
+      return persist(poId, plan, email).then(function (res) {
+        if (!res || res.ok === false) { toast((res && res.msg) || "The lines were not saved."); return res || { ok: false }; }
+        toast("Lines saved");
+        refresh();
+        return res;
+      });
+    }).catch(function (e) {
+      toast("The lines were not saved. " + ((e && e.message) || e));
+      return { ok: false, reason: "error" };
+    }).then(function (res) { holdBusy(false); return res; });
   }
   function deleteSaved(btn) {
-    var email = currentEmail();
-    if (!canEdit(email)) { toast("You can't change PO lines."); return Promise.resolve({ ok: false, reason: "forbidden" }); }
-    if (typeof window !== "undefined" && typeof window.confirm === "function" && !window.confirm("Delete this line?")) {
-      return Promise.resolve({ ok: false, reason: "cancel" });
-    }
-    var poId = btn.getAttribute("data-po");
-    var lid = btn.getAttribute("data-lid");
-    var po = findPo(poId);
-    if (!po) return Promise.resolve({ ok: false, reason: "missing" });
-    var plan = planSaved(po, { deletes: [lid] }, actorNow());
-    if (!plan.ok) { toast("Could not delete that line."); return Promise.resolve(plan); }
-    return persist(poId, plan, email).then(function (res) {
-      if (res && res.ok === false) { toast(res.msg || "Save failed"); return res; }
-      toast("Line deleted");
-      refresh();
-      return res || { ok: true };
-    });
+    var poId = btn && btn.getAttribute ? btn.getAttribute("data-po") : "";
+    var lid = btn && btn.getAttribute ? btn.getAttribute("data-lid") : "";
+    holdBusy(true);
+    return ensureEmail().then(function (email) {
+      if (!canEdit(email)) { toast(denyText(email)); return { ok: false, reason: "forbidden" }; }
+      return askConfirm("Delete this line?").then(function (yes) {
+        if (!yes) return { ok: false, reason: "cancel" };
+        var po = findPo(poId);
+        if (!po) { toast("That PO is not on this screen, so the line was not deleted."); return { ok: false, reason: "missing" }; }
+        var plan = planSaved(po, { deletes: [lid] }, { email: email, when: new Date().toISOString() });
+        if (!plan.ok) {
+          toast(plan.reason === "missing line" ? "That line is not on this PO anymore." : "That line could not be deleted.");
+          return plan;
+        }
+        return persist(poId, plan, email).then(function (res) {
+          if (!res || res.ok === false) { toast((res && res.msg) || "The line was not deleted."); return res || { ok: false }; }
+          toast("Line deleted");
+          try { refresh(); } catch (e2) {}
+          return res;
+        });
+      });
+    }).catch(function (e) {
+      toast("The line was not deleted. " + ((e && e.message) || e));
+      return { ok: false, reason: "error" };
+    }).then(function (res) { holdBusy(false); return res; });
+  }
+  var clicksBound = false;
+  function onDocClick(e) {
+    var t = e.target;
+    if (!t || !t.closest) return;
+    var btn = t.closest("[data-po-act]");
+    if (!btn) return;
+    e.preventDefault();
+    var act = btn.getAttribute("data-po-act");
+    if (act === "delete") deleteSaved(btn);
+    else if (act === "save") saveSaved(btn);
+    else if (act === "preview-remove") removePreview(btn.getAttribute("data-lid"));
+  }
+  function bindClicks() {
+    if (clicksBound || typeof document === "undefined") return;
+    clicksBound = true;
+    document.addEventListener("click", onDocClick, true);
   }
   function removeEditRow(btn) {
     if (!canEditCurrent()) { toast("You can't change PO lines."); return; }
@@ -575,6 +720,9 @@
     saveSaved: saveSaved,
     deleteSaved: deleteSaved,
     removeEditRow: removeEditRow,
+    bindClicks: bindClicks,
+    askConfirm: askConfirm,
+    emailFromAuthBlob: emailFromAuthBlob,
     watchEmail: watchEmail
   };
 });

@@ -16,7 +16,7 @@ var app = read("app.js");
 var html = read("index.html");
 var sw = read("service-worker.js");
 
-eq(sw.indexOf('const CACHE = "smackin-inv-v291"') >= 0, "cache bump");
+eq(sw.indexOf('const CACHE = "smackin-inv-v292"') >= 0, "cache bump");
 eq(html.indexOf("receiving-sop.js?b=5") >= 0, "sop cache bust");
 eq(html.indexOf("services.js?b=4") >= 0, "services cache bust");
 eq(html.indexOf("raw-coa.js?b=5") >= 0, "coa script kept");
@@ -43,7 +43,7 @@ eq(src.indexOf("This file is not a saved receipt.") >= 0, "receive file is not a
 eq(sop.draftGaps({}).join(",") === "supplier,contents,lot,qty,by", "empty log lists header gaps");
 eq(sop.draftGaps({ supplier: "A", contents: "Seed", lot: "L1", qty_received: "0", received_by: "Adriana" }).length === 0, "a numeric qty is not a gap");
 eq(sop.draftGaps({ supplier: "A", contents: "Seed", lot: "  ", qty_received: 4, received_by: "Adriana" }).join(",") === "lot", "blank lot stays missing");
-eq(html.indexOf("app.js?b=205") >= 0, "app cache bust");
+eq(html.indexOf("app.js?b=206") >= 0, "app cache bust");
 eq(src.indexOf("\u2014") < 0 && src.indexOf("\u2013") < 0, "receiving-sop dash");
 eq(src.indexOf("temp_not_measured") >= 0, "not measured is stored");
 eq(src.indexOf('v === "B"') >= 0, "broken seal is the hold");

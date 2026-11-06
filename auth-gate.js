@@ -412,8 +412,10 @@
   }
 
   function finishSignedIn(session) {
+    var email = session && session.user && session.user.email;
+    try { if (email) window.SMK_USER_EMAIL = email; } catch (e) {}
     removeOverlay();
-    addSignOut(session && session.user && session.user.email);
+    addSignOut(email);
   }
 
   // ---- boot -------------------------------------------------------------

@@ -1655,6 +1655,7 @@ window.DB = (function () {
     if (mode === "cloud") {
       const r = await sb.from("supplier_pos").update(patch).eq("id", id).select();
       if (r && r.error) return { ok: false, msg: r.error.message || "update failed" };
+      if (!r || !r.data || !r.data.length) return { ok: false, msg: "The PO was not updated." };
       await cloud.loadAll();
     } else {
       const s = (cache.supplierPos || []).find(x => String(x.id) === String(id));

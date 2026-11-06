@@ -27,7 +27,7 @@ eq(gate.indexOf("Passwords do not match") >= 0, "mismatch messaging");
 eq(gate.indexOf("resetPasswordForEmail") >= 0, "forgot password still sends reset email");
 eq(gate.indexOf("signInWithPassword") >= 0, "normal sign-in stays");
 eq(gate.indexOf("Save new password") >= 0, "save button label");
-eq(html.indexOf("auth-gate.js?b=4") >= 0, "auth-gate cache bust");
+eq(html.indexOf("auth-gate.js?b=5") >= 0, "auth-gate cache bust");
 eq(gate.indexOf("\u2014") < 0 && gate.indexOf("\u2013") < 0, "no em dash");
 
 if (fail.length) {

@@ -4,5 +4,8 @@
   "description": "Smackin OS static app. npm test runs the Node check scripts. It does not touch Supabase.",
   "scripts": {
     "test": "node scripts/run-checks.js"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.65.0"
   }
 }

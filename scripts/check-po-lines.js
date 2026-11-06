@@ -167,8 +167,29 @@ eq(!assembled.lines.some(function (l) { return l._lid === "b"; }), "missing form
 var noMatt = P.assemble(store.supplier_pos[0], [{ lid: "a", item: "HACK", desc: "Film A", qty: "10", price: "1", unit: "cs", ship: "" }], { email: "inventory@smackinsnacks.com", when: when });
 eq(noMatt.ok === false && noMatt.reason === "forbidden", "other users cannot assemble a line change");
 
+var oldLines = JSON.stringify([
+  { item: "KEEP-OLD", desc: "Stay", qty: "4", price: "1", lot: "LOT-1" },
+  { item: "DROP-OLD", desc: "Go", quantity: "0", price: "2", lot: "LOT-1", custom: "old-shape" }
+]);
+var oldPo = { id: "OLD", vendor: "Old Mill", po_num: "OLD-1", notes: "legacy", file_url: "https://example.test/old", lines: oldLines };
+var oldForm = P.linesForForm(oldPo);
+eq(oldForm.length === 2 && oldForm[1].item === "DROP-OLD" && oldForm[1]._lid === "row-1", "old lines get stable ids");
+var oldStore = { supplier_pos: [JSON.parse(JSON.stringify(oldPo))], audit_log: [] };
+var oldDel = P.applyStore(oldStore, "OLD", { deletes: [oldForm[1]._lid] }, actor);
+eq(oldDel.ok === true, "old format delete");
+var oldLeft = JSON.parse(oldStore.supplier_pos[0].lines);
+eq(oldLeft.length === 1 && oldLeft[0].item === "KEEP-OLD" && oldLeft[0].lot === "LOT-1", "old delete keeps the sibling line");
+eq(oldDel.history[0].action === "delete" && oldDel.history[0].old_row.lines.indexOf("old-shape") >= 0, "old delete history has the full row");
+var dblPo = { id: "DBL", vendor: "Old Mill", lines: JSON.stringify(oldLines) };
+var dblForm = P.linesForForm(dblPo);
+var dbl = P.planSaved(dblPo, { deletes: [dblForm[0]._lid] }, actor);
+eq(dbl.ok === true && dbl.lines.length === 1 && dbl.lines[0].item === "DROP-OLD", "double-encoded lines still delete one row");
+var tokenBody = Buffer.from(JSON.stringify({ email: "Michelle.Nydegger@smackinsnacks.com" })).toString("base64url");
+eq(P.canEdit(P.emailFromAuthBlob({ access_token: "hdr." + tokenBody + ".sig" })), "jwt email counts as Michelle");
+
 var upd = db.slice(db.indexOf("async function updateSupplierPO"), db.indexOf("function poLinesRaw"));
 eq(upd.indexOf('.from("supplier_pos").update(patch).eq("id", id)') >= 0, "db updates one row by id");
+eq(upd.indexOf("The PO was not updated.") >= 0, "empty update is a visible failure");
 eq(upd.indexOf(".insert(") < 0 && upd.indexOf('eq("lot"') < 0 && upd.indexOf(".eq(\"lot\"") < 0, "db update is not a lot match or insert");
 var idxFn = src.slice(src.indexOf("function lineIndex"), src.indexOf("function setField"));
 eq(idxFn.indexOf("_lid") >= 0 && idxFn.indexOf("lot") < 0, "line match is the line id");
@@ -176,9 +197,10 @@ eq(src.indexOf("Delete this line?") >= 0, "confirm before delete");
 eq(src.indexOf("Show them") >= 0 && src.indexOf("lines with 0 qty were skipped") >= 0, "preview copy");
 eq(app.indexOf("POLINES.previewHtml()") >= 0 && app.indexOf("POLINES.linesForSave()") >= 0, "upload preview is wired");
 eq(app.indexOf("POLINES.savedEditorHtml(s)") >= 0 && app.indexOf("POLINES.assemble(") >= 0, "saved PO edit is wired");
-eq(app.indexOf("POLINES.removeEditRow(this)") >= 0, "edit form remove");
-eq(html.indexOf("po-lines.js?b=1") >= 0 && html.indexOf("app.js?b=205") >= 0, "script bust");
-eq(sw.indexOf("./po-lines.js") >= 0 && sw.indexOf('const CACHE = "smackin-inv-v291"') >= 0, "cache");
+eq(app.indexOf('data-po-act="delete"') >= 0, "edit form remove writes the line");
+eq(src.indexOf('data-po-act="delete"') >= 0 && src.indexOf("addEventListener(\"click\", onDocClick, true)") >= 0, "clicks are delegated");
+eq(html.indexOf("po-lines.js?b=2") >= 0 && html.indexOf("app.js?b=206") >= 0, "script bust");
+eq(sw.indexOf("./po-lines.js") >= 0 && sw.indexOf('const CACHE = "smackin-inv-v292"') >= 0, "cache");
 eq(app.indexOf("ROLE_TABS_API") >= 0 && src.indexOf("visibleFor") < 0, "tabs stay open");
 eq(src.indexOf("\u2014") < 0 && src.indexOf("\u2013") < 0, "no em dash");
 
