@@ -114,15 +114,23 @@
     loading = true;
     loadErr = "";
     return Promise.all([
-      fetchAll("pmac_history", "run_date,bag_size,flavor_code,flavor_name,operator,shift,box_count,total_pkgs"),
-      fetchAll("mixing_history", "run_date,flavor_code,flavor_name,operator,machine,total_bins"),
+      fetchAll("pmac_history", "run_date,bag_size,flavor_code,flavor_name,operator,shift,box_count,total_pkgs,dept,machine"),
+      fetchAll("mixing_history", "run_date,flavor_code,flavor_name,operator,machine,shift,total_bins"),
       fetchPmacLog(),
       fetchWip().then(function (rows) { WIP = rows || []; wipErr = ""; return WIP; }).catch(function (e) {
         WIP = [];
         wipErr = (e && e.message) || "Could not load daily units";
         return [];
       })
-    ]).then(function (res) { PM = unionPmac(res[0] || [], res[2] || []); MX = res[1] || []; loaded = true; loading = false; })
+    ]).then(function (res) {
+      var model = window.MFGHIST_MODEL;
+      if (!model) throw new Error("Production history model did not load.");
+      var parts = model.partitionPmac(res[0] || []);
+      PM = unionPmac(parts.pmac.concat(parts.other), res[2] || []);
+      MX = model.unionMixing(res[1] || [], parts.mixing);
+      loaded = true;
+      loading = false;
+    })
       .catch(function (e) { loading = false; loaded = false; loadErr = (e && e.message) || "Could not load history"; });
   }
 
@@ -316,6 +324,43 @@
     try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
   }
 
+  function renderMixing(host) {
+    var model = window.MFGHIST_MODEL;
+    var sum = model ? model.summarizeMixing(MX) : { bins: 0, packages: 0, days: 0, runs: MX.length };
+    var rng = dateRange(MX);
+    var bins = model ? model.volumeByMonth(MX, "bins") : [];
+    var pkgs = model ? model.volumeByMonth(MX, "packages") : [];
+    var flavors = model ? model.flavorRollup(MX).slice(0, 15) : [];
+    var recent = MX.slice(-120).reverse();
+    var flavorHtml = flavors.length ? '<div class="tblwrap"><table class="sortable"><thead><tr><th>Flavor</th><th class="right">Bins</th><th class="right">Packages</th></tr></thead><tbody>' +
+      flavors.map(function (r) { return '<tr><td>' + esc(r.k) + '</td><td class="right">' + fmt(r.bins) + '</td><td class="right">' + fmt(r.packages) + '</td></tr>'; }).join("") +
+      '</tbody></table></div>' : '<p class="muted">No data.</p>';
+    var recentHtml = '<div class="tblwrap"><table class="sortable"><thead><tr><th>Date</th><th>Operator</th><th>Machine</th><th>Flavor</th><th class="right">Qty</th><th>Unit</th></tr></thead><tbody>' +
+      recent.map(function (r) {
+        var f = (r.flavor_code ? r.flavor_code + " - " : "") + (r.flavor_name || "");
+        var qty = r.unit === "packages" ? num(r.total_pkgs) : num(r.total_bins);
+        var unit = r.unit === "packages" ? "Packages" : "Bins";
+        return '<tr><td class="sm">' + esc(r.run_date) + '</td><td class="sm">' + esc(r.operator || "") + '</td><td class="sm">' + esc(r.machine || "") + '</td><td>' + esc(f) + '</td><td class="right">' + fmt(qty) + '</td><td class="sm">' + unit + '</td></tr>';
+      }).join("") + '</tbody></table></div>';
+    host.innerHTML = '<div class="card"><h2>Production History</h2>' +
+      '<p class="hint">Bin runs from the mixing tracker, plus every Detail sheet row whose department is Mixing. Those Detail rows are packages, not bins, so the totals stay separate. A row is listed once. The Mixing workbook parser is still off.</p>' +
+      segHtml() +
+      '<div class="mfgcards">' +
+      '<div class="mfgcard"><div class="n">' + fmt(sum.bins) + '</div><div class="l">Total Bins</div></div>' +
+      '<div class="mfgcard"><div class="n">' + fmt(sum.packages) + '</div><div class="l">Mixing packages</div></div>' +
+      '<div class="mfgcard"><div class="n">' + fmt(sum.days) + '</div><div class="l">Production days</div></div>' +
+      '<div class="mfgcard"><div class="n">' + fmt(sum.runs) + '</div><div class="l">Runs logged</div></div>' +
+      '</div>' +
+      '<p class="hint">' + (rng.min || "?") + ' \u2192 ' + (rng.max || "?") + '</p></div>' +
+      '<div class="card"><h2 class="sub2">Bins by month</h2>' + barChart(bins, "Bins") + '</div>' +
+      '<div class="card"><h2 class="sub2">Packages by month</h2>' + barChart(pkgs, "Packages") + '</div>' +
+      '<div class="card"><h2 class="sub2">Top flavors</h2>' + flavorHtml + '</div>' +
+      '<div class="card"><h2 class="sub2">Recent runs</h2>' + recentHtml + '</div>';
+    host.setAttribute("data-mfg", "1");
+    var flag = document.createElement("span"); flag.id = "mfg-hist-active"; flag.style.display = "none"; host.appendChild(flag);
+    try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
+  }
+
   function render() {
     styleOnce();
     var host = $("view"); if (!host) return;
@@ -328,6 +373,7 @@
       return;
     }
     if (dept === "wip") { renderWip(host); return; }
+    if (dept === "mixing") { renderMixing(host); return; }
     var rows = dept === "pmac" ? PM : MX;
     var valKey = dept === "pmac" ? "total_pkgs" : "total_bins";
     var unit = dept === "pmac" ? "Packages" : "Bins";
@@ -338,7 +384,7 @@
 
     var html = (dept === "pmac" ? '<div id="mfg-hist-link"></div>' : "") +
       '<div class="card"><h2>Production History</h2>' +
-      '<p class="hint">Allen\'s Mixing &amp; P-Mac history, loaded from the production trackers. ' + fmt(PM.length) + ' P-Mac runs and ' + fmt(MX.length) + ' Mixing runs on record.</p>' +
+      '<p class="hint">Packaging runs from the Detail sheet and the digital P-Mac log. ' + fmt(rows.length) + ' runs. Rows tagged Mixing are on the Mixing tab.</p>' +
       segHtml() +
       '<div class="mfgcards">' +
       '<div class="mfgcard"><div class="n">' + fmt(tot) + '</div><div class="l">Total ' + unit + '</div></div>' +
