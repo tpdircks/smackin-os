@@ -1980,7 +1980,7 @@
     const lt = (parseFloat(l.qty) || 0) * (parseFloat(l.price) || 0);
     const lid = l._lid ? '<input type="hidden" id="pl-lid-' + i + '" value="' + vv(l._lid) + '">' : "";
     const rm = (poEditId && l._lid && window.POLINES && POLINES.canEditCurrent())
-      ? '<button type="button" class="ghost sm danger" onclick="POLINES.removeEditRow(this)">Remove</button>' : "";
+      ? '<button type="button" class="ghost sm danger" data-po-act="delete" data-po="' + esc(poEditId) + '" data-lid="' + esc(l._lid) + '">Remove</button>' : "";
     return '<td><input id="pl-item-' + i + '" list="dl-po-item" autocomplete="off" value="' + vv(l.item) + '" onchange="UI.poLineFill(' + i + ',\'item\')"></td>' +
       '<td><input id="pl-desc-' + i + '" list="dl-po-flavor" autocomplete="off" value="' + vv(l.desc) + '" onchange="UI.poLineFill(' + i + ',\'desc\')"></td>' +
       '<td><input id="pl-ship-' + i + '" type="date" value="' + vv(l.ship) + '"></td>' +
