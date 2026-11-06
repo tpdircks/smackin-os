@@ -1,5 +1,5 @@
 /* ============================================================================
-   Smackin' OS - Authentication gate (auth-gate.js)  b=2
+   Smackin' OS - Authentication gate (auth-gate.js)  b=3
    Login wall in front of the whole app + effortless repeat login.
 
    - Sign-up restricted to @smackinsnacks.com; each person sets their own
@@ -12,6 +12,8 @@
      lives only until the browser closes).
    - "Forgot password" and "Resend confirmation" included; a "Sign out" button
      appears once authenticated.
+   - PASSWORD_RECOVERY (and type=recovery in the URL hash or query) shows a
+     set-new-password form that calls updateUser({ password }), then signs in.
 
    NOTE: this is the UI wall. Locking the database (RLS -> authenticated) is the
    fast-follow that makes it real security.
@@ -125,7 +127,13 @@
 
   function $(id) { return document.getElementById(id); }
   function msg(text, kind) { var m = $("smk-msg"); if (!m) return; m.textContent = text; m.className = kind || ""; }
-  function busy(b) { var btn = $("smk-btn"); if (btn) { btn.disabled = b; btn.textContent = b ? "Please wait…" : (mode === "signup" ? "Create account" : "Log in"); } }
+  function busy(b) {
+    var btn = $("smk-btn");
+    if (!btn) return;
+    btn.disabled = b;
+    if (b) { btn.textContent = "Please wait..."; return; }
+    btn.textContent = mode === "signup" ? "Create account" : (mode === "recovery" ? "Save new password" : "Log in");
+  }
 
   function render() {
     injectStyle();
@@ -181,11 +189,11 @@
           if (r.error) {
             busy(false);
             var m = (r.error.message || "").toLowerCase();
-            if (m.indexOf("confirm") >= 0) msg("Please confirm your email first — check your inbox, or use “Resend confirmation email” on the Create account tab.", "err");
+            if (m.indexOf("confirm") >= 0) msg("Please confirm your email first - check your inbox, or use “Resend confirmation email” on the Create account tab.", "err");
             else msg("Incorrect email or password.", "err");
             return;
           }
-          msg("Signed in…", "ok");
+          msg("Signed in...", "ok");
           setTimeout(function () { location.reload(); }, 300);
         }).catch(function (e) { busy(false); msg((e && e.message) || "Something went wrong.", "err"); });
     }
@@ -228,19 +236,113 @@
     document.body.appendChild(b);
   }
 
+  // ---- password recovery ----------------------------------------------
+  function hashLooksLikeRecovery() {
+    try {
+      var h = String(location.hash || "");
+      var q = String(location.search || "");
+      // Supabase puts type=recovery in the URL hash, and some links use the query.
+      if (/[?&#]type=recovery(?:&|$)/i.test(h)) return true;
+      if (/[?&#]type=recovery(?:&|$)/i.test(q)) return true;
+      return false;
+    } catch (e) { return false; }
+  }
+
+  function recoveryHtml() {
+    return '<div id="smk-auth"><div id="smk-card">' +
+      '<h1>SMACKIN\' <span class="thin">OS</span></h1>' +
+      '<div id="smk-sub">Choose a new password for your account</div>' +
+      '<form id="smk-form" autocomplete="on">' +
+      '<label class="fld" for="smk-pass">New password</label>' +
+      '<input id="smk-pass" name="password" type="password" autocomplete="new-password" placeholder="At least 8 characters">' +
+      '<label class="fld" for="smk-pass2">Confirm password</label>' +
+      '<input id="smk-pass2" name="password2" type="password" autocomplete="new-password" placeholder="Re-enter password">' +
+      '<button type="submit" id="smk-btn">Save new password</button>' +
+      '</form>' +
+      '<div id="smk-msg"></div>' +
+      '<div id="smk-foot">Access is limited to @' + ALLOWED_DOMAIN + ' accounts.</div>' +
+      '</div></div>';
+  }
+
+  function renderRecovery() {
+    injectStyle();
+    mode = "recovery";
+    var existing = $("smk-auth");
+    var host = document.createElement("div");
+    host.innerHTML = recoveryHtml();
+    var node = host.firstChild;
+    if (existing) existing.replaceWith(node); else document.body.appendChild(node);
+    document.body.style.overflow = "hidden";
+    $("smk-form").onsubmit = function (e) { e.preventDefault(); submitRecovery(); };
+    var pw = $("smk-pass"); if (pw) pw.focus();
+  }
+
+  function submitRecovery() {
+    var pass = ($("smk-pass") && $("smk-pass").value) || "";
+    var pass2 = ($("smk-pass2") && $("smk-pass2").value) || "";
+    if (pass.length < 8) { msg("Password must be at least 8 characters.", "err"); return; }
+    if (pass !== pass2) { msg("Passwords do not match.", "err"); return; }
+    var c = client();
+    if (!c) { msg("Auth is still loading, try again in a moment.", "err"); return; }
+    busy(true); msg("", "");
+    c.auth.updateUser({ password: pass }).then(function (r) {
+      busy(false);
+      if (r && r.error) { msg(r.error.message || "Could not update the password.", "err"); return; }
+      // Clear the recovery hash and query flag so a refresh does not re-enter recovery.
+      try {
+        var search = String(location.search || "")
+          .replace(/([?&])type=recovery&/ig, "$1")
+          .replace(/([?&])type=recovery$/ig, "");
+        if (search === "?") search = "";
+        if (search.charAt(0) === "&") search = "?" + search.slice(1);
+        history.replaceState(null, "", location.pathname + search);
+      } catch (e) {}
+      msg("Password saved. Signing you in...", "ok");
+      setTimeout(function () { location.reload(); }, 400);
+    }).catch(function (e) {
+      busy(false);
+      msg((e && e.message) || "Could not update the password.", "err");
+    });
+  }
+
+  function enterRecovery(session) {
+    if (!session || !session.user) { renderRecovery(); return; }
+    renderRecovery();
+  }
+
+  function finishSignedIn(session) {
+    removeOverlay();
+    addSignOut(session && session.user && session.user.email);
+  }
+
   // ---- boot -------------------------------------------------------------
   function boot() {
     if (!ready()) return false;
     var c = client();
     if (!c) return false;
+    var recovering = hashLooksLikeRecovery();
+    if (recovering) renderRecovery();
     c.auth.getSession().then(function (r) {
       var session = r && r.data && r.data.session;
-      if (session && session.user) { removeOverlay(); addSignOut(session.user.email); }
+      if (recovering || hashLooksLikeRecovery()) { enterRecovery(session); return; }
+      if (session && session.user) finishSignedIn(session);
+      else if (!$("smk-auth")) render();
+      else if (mode !== "recovery") render();
+    }).catch(function () {
+      if (recovering) renderRecovery();
       else render();
-    }).catch(function () { render(); });
+    });
     try {
-      c.auth.onAuthStateChange(function (_evt, session) {
-        if (session && session.user) { removeOverlay(); addSignOut(session.user.email); }
+      c.auth.onAuthStateChange(function (evt, session) {
+        if (evt === "PASSWORD_RECOVERY" || hashLooksLikeRecovery()) {
+          enterRecovery(session);
+          return;
+        }
+        if (session && session.user) {
+          // Do not wipe a recovery form if we are mid-set-password.
+          if (mode === "recovery" && $("smk-pass2")) return;
+          finishSignedIn(session);
+        }
       });
     } catch (e) {}
     return true;
