@@ -77,9 +77,9 @@ eq(app.indexOf("PROD_FLAVOR_LEGACY.forEach") >= 0, "legacy codes stay readable")
 
 var sw = read("service-worker.js");
 var html = read("index.html");
-eq(sw.indexOf('const CACHE = "smackin-inv-v289"') >= 0, "cache");
+eq(sw.indexOf('const CACHE = "smackin-inv-v290"') >= 0, "cache");
 eq(html.indexOf("app.js?b=204") >= 0, "app bust");
-eq(read("build-id.txt").trim() === "smackin-inv-v289", "build id");
+eq(read("build-id.txt").trim() === "smackin-inv-v290", "build id");
 
 if (fail.length) {
   fail.forEach(function (msg) { console.error("FAIL", msg); });

@@ -46,12 +46,12 @@ assert(tags.length === 1 && tags[0] === "inv-sync-1105.js", "index loads only 11
 assert(html.indexOf('src="inv-sync-1105.js?b=1"') > html.indexOf('src="sw-boot.js'), "11/05 script is last");
 assert(html.indexOf("inv-sync-1102.js") < 0 && html.indexOf("inv-sync-packaging-1102.js") < 0, "stale loaders are unloaded");
 assert(fs.existsSync(path.join(root, "inv-sync-1102.js")) && fs.existsSync(path.join(root, "inv-sync-packaging-1102.js")), "old sync files stay on disk");
-assert(sw.indexOf('const CACHE = "smackin-inv-v289"') >= 0, "cache v286");
+assert(sw.indexOf('const CACHE = "smackin-inv-v290"') >= 0, "cache v286");
 assert(sw.indexOf('"./inv-sync-1105.js"') >= 0, "sw precaches 11/05");
 assert(sw.indexOf("inv-sync-1102.js") < 0 && sw.indexOf("inv-sync-packaging-1102.js") < 0, "sw drops stale syncs");
-assert(read("build-id.txt").trim() === "smackin-inv-v289", "build id");
-assert(html.indexOf('var EMBEDDED = "smackin-inv-v289"') >= 0, "index embedded");
-assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v289"') >= 0, "escape embedded");
+assert(read("build-id.txt").trim() === "smackin-inv-v290", "build id");
+assert(html.indexOf('var EMBEDDED = "smackin-inv-v290"') >= 0, "index embedded");
+assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v290"') >= 0, "escape embedded");
 
 global.DB = {
   itemByCode: function (code) {
