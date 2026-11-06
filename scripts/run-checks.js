@@ -9,7 +9,7 @@ var spawn = require("child_process").spawnSync;
 
 var root = path.resolve(__dirname, "..");
 var dir = __dirname;
-var syntax = ["app.js", "db.js", "coa-docs.js", "recv-match.js", "raw-coa.js", "service-worker.js", "sw-escape.js"];
+var syntax = ["app.js", "db.js", "coa-docs.js", "recv-match.js", "raw-coa.js", "po-lines.js", "service-worker.js", "sw-escape.js"];
 var failed = 0;
 
 syntax.forEach(function (rel) {
