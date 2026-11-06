@@ -20,7 +20,7 @@ If the trail insert fails, the trigger logs a warning and the business save stil
 ## Exclusions
 
 - `audit_log` has no trigger. The trail does not record itself.
-- `kv_status` rows whose key ends in `:last_sync`, `:lock`, or `:source` are skipped. Those are sync heartbeats (`pmac:last_sync`, `sps:last_sync`, `pmac:lock`, `pmac:source`, and the same pattern for other jobs). Other `kv_status` keys are recorded.
+- `kv_status` rows whose key ends in `:last_sync`, `:lock`, `:source`, or `:cursor` are skipped. Those are sync heartbeats (`pmac:last_sync`, `sps:last_sync`, `pmac:lock`, `pmac:source`, `shipping:cursor`, and the same pattern for other jobs). A cursor poll still updates `updated_at`. It does not add a History row. Other `kv_status` keys are recorded.
 - No other table is excluded. `transactions`, `stock`, receiving, production, and lots are included.
 
 New public tables pick up the trigger from the `os_private_attach_audit` event trigger.

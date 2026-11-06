@@ -1,50 +1,20 @@
-/* ============================================================================
-   Smackin' OS - Demand close cleanup (demand-close-cleanup.js)
-   One-shot, cloud-gated pass that writes demand_lines.status = 'Shipped'.
-
-   The Order Board, Build Need, and Production Schedule all count
-   DB.demandLines() rows whose status is Open. demand-autoclose.js only
-   repaints a line as Shipped in the browser after 60 days. It does not
-   write the database, so past-due September and early October POs stayed
-   open. This module persists the close. It does not de-dupe lines. Target
-   per-DC rows share a PO and each keeps its own case count.
-
-   Close an Open, non-Target, non-SPS PO (every demand_lines row for that PO) when:
-     1. orders has at least one row whose customer_po matches, and every
-        matching row is Complete. A mix of Complete and anything else stays
-        Open, with a review:mixed-orders note.
-     2. Otherwise, when every line has a due date and the latest due date is
-        at least 14 calendar days before today in America/Denver.
-        2026-10-15 closes on 2026-10-29. 2026-10-16 stays open.
-        A blank due date is not past-due. Those lines stay Open with a Due?
-        note.
-
-   SPS lines (source SPS, SPS Feed, SPS-FEED, SPS-TEST) are not closed here.
-   A due date or an orders row marked Complete is not an SPS Order Complete
-   signal. sps-map.js writes Complete only when the Fulfillment Order
-   document status is Complete. Existing Shipped rows are not rewritten.
-
-   PO match: trim, compare the letters and digits, and also the DEMAND.orderNum
-   form (text before a dash, then a leading 10001 stripped). Target is never
-   closed here. A 2026-10-29 read found no orders match, no shipping_log PO,
-   and no 856 for the open Target POs, so they stay Open for Troy.
-
-   Idempotent. localStorage flag demand-close-2026-10-29-v1 skips later loads.
-   Bump the flag to run the pass again. ?demandclose=dry logs the plan and
-   does not write. ?demandclose=force ignores the flag.
-   ========================================================================== */
+/* Smackin' OS - Demand close review.
+   Age is evidence for a review queue, never proof that a PO shipped.
+   SPS is Complete only from the SPS Order document. A due date, ASN, invoice,
+   or age cannot close it. ShipStation demand remains Open until a source-backed
+   status update or a human review. Existing Shipped rows are never rewritten.
+   This module plans source evidence but performs no automatic demand writes.
+*/
 (function (root) {
   "use strict";
 
   var FLAG = "demand-close-2026-10-29-v1";
   var PAST_DUE_DAYS = 14;
   var NOTE_COMPLETE = "auto:orders-complete";
-  var NOTE_PAST = "auto:past-due";
   var NOTE_MIXED = "review:mixed-orders";
   var NOTE_DUE = "Due?";
   var PAGE = 1000;
   var READ_CAP = 20000;
-  var WRITE_CHUNK = 80;
 
   function alnum(s) {
     return String(s == null ? "" : s).toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -176,8 +146,8 @@
       pastDueDays: PAST_DUE_DAYS,
       beforeOpenPOs: 0,
       beforeOpenLines: 0,
-      closeComplete: [],
-      closePastDue: [],
+      reviewSource: [],
+      leftPastDue: [],
       leftTarget: [],
       leftMixed: [],
       leftOpen: [],
@@ -255,43 +225,19 @@
       var reason = "";
       if (target) report.leftTarget.push(summary);
       else if (sps) report.leftOpen.push(summary);
-      else if (allComplete) {
-        reason = "orders-complete";
-        report.closeComplete.push(summary);
-      } else if (mixed) report.leftMixed.push(summary);
-      else if (past) {
-        reason = "past-due";
-        report.closePastDue.push(summary);
-      } else report.leftOpen.push(summary);
-      if (!target && !sps && !reason && !mixed && blank) report.dueUnknown.push(summary);
-
+      else report.reviewSource.push(summary);
+      if (mixed) report.leftMixed.push(summary);
+      if (past) report.leftPastDue.push(summary);
+      if (blank) report.dueUnknown.push(summary);
+      // No implicit Shipped writes. The report remains read-only so the human
+      // or source-owner can verify each source before a separate status action.
       lines.forEach(function (r) {
         if (target || sps) return;
-        var tag = "";
-        var nextStatus = "Open";
-        if (reason === "orders-complete") {
-          nextStatus = "Shipped";
-          tag = NOTE_COMPLETE;
-        } else if (reason === "past-due") {
-          nextStatus = "Shipped";
-          tag = NOTE_PAST;
-        } else if (!target && mixed) {
-          tag = NOTE_MIXED;
-          if (!dueISO(r.due_date)) tag = withNote(tag, NOTE_DUE);
-        } else if (!target && !dueISO(r.due_date)) tag = NOTE_DUE;
+        var tag = mixed ? NOTE_MIXED : "";
+        if (!dueISO(r.due_date)) tag = withNote(tag, NOTE_DUE);
         var nextNotes = withNote(r.notes, tag);
-        var prevNotes = String(r.notes == null ? "" : r.notes).trim();
-        var statusChanged = nextStatus !== "Open";
-        if (!statusChanged && nextNotes === prevNotes) return;
-        var patch = {
-          id: r.id,
-          source: r.source || "",
-          po: r.po || "",
-          notes: nextNotes
-        };
-        if (statusChanged) patch.status = "Shipped";
-        if (statusChanged) ship.push(patch);
-        else notes.push(patch);
+        if (nextNotes === String(r.notes == null ? "" : r.notes).trim()) return;
+        notes.push({ id: r.id, source: r.source || "", po: r.po || "", notes: nextNotes });
       });
     });
 
@@ -347,87 +293,39 @@
     return out;
   }
 
-  async function applyPatches(sb, patches) {
-    var groups = {};
-    var order = [];
-    patches.forEach(function (p) {
-      if (!p || p.id == null || p.id === "") throw new Error("demand line is missing an id");
-      var key = (p.status || "") + "\n" + (p.notes || "");
-      if (!groups[key]) {
-        groups[key] = { status: p.status || "", notes: p.notes || "", ids: [] };
-        order.push(key);
-      }
-      groups[key].ids.push(p.id);
-    });
-    for (var i = 0; i < order.length; i++) {
-      var g = groups[order[i]];
-      for (var j = 0; j < g.ids.length; j += WRITE_CHUNK) {
-        var ids = g.ids.slice(j, j + WRITE_CHUNK);
-        var body = { notes: g.notes };
-        if (g.status) body.status = g.status;
-        var q = sb.from("demand_lines").update(body).in("id", ids).eq("status", "Open");
-        var res = await q.select("id");
-        if (res && res.error) throw new Error(res.error.message || "update failed");
-        var wrote = (res && res.data) || [];
-        if (wrote.length !== ids.length) throw new Error("updated " + wrote.length + " of " + ids.length + " demand lines");
-      }
-    }
-  }
-
   function bucketPOs(list) {
     return list.reduce(function (s, row) { return s + (row.boardPOs || 0); }, 0);
   }
-
   function summaryLine(report) {
     return {
       beforeOpenPOs: report.beforeOpenPOs,
       beforeOpenLines: report.beforeOpenLines,
-      closedByComplete: bucketPOs(report.closeComplete),
-      closedByPastDue: bucketPOs(report.closePastDue),
+      closedByComplete: 0,
+      closedByPastDue: 0,
+      sourceReview: bucketPOs(report.reviewSource),
+      pastDueReview: bucketPOs(report.leftPastDue),
       leftTarget: bucketPOs(report.leftTarget),
       leftMixed: bucketPOs(report.leftMixed),
       leftOpen: bucketPOs(report.leftOpen),
       dueUnknown: bucketPOs(report.dueUnknown)
     };
   }
-
-  async function audit(sb, report) {
-    var counts = summaryLine(report);
-    var res = await sb.from("transactions").insert({
-      action: "Demand auto-close",
-      detail: "orders-complete " + counts.closedByComplete + " POs; past-due " + counts.closedByPastDue + " POs; left open " + (counts.leftTarget + counts.leftMixed + counts.leftOpen),
-      operator: FLAG
-    });
-    if (res && res.error) throw new Error(res.error.message || "audit failed");
-  }
-
   var busy = false;
   async function run() {
     var flag = modeFlag();
-    if (flag !== "force" && flag !== "dry" && done()) return true;
     if (!ready() || busy) return false;
     busy = true;
-    var dry = flag === "dry";
     try {
-      var today = mountainToday(new Date());
       var sb = client();
       var lines = await readAll(sb, "demand_lines", "id,source,partner,po,due_date,status,notes,bags,cases", { col: "status", val: "Open" });
       var orders = await readAll(sb, "orders", "id,customer_po,status", null);
-      var planned = plan(lines, orders, today);
-      console.log("[demand-close]", dry ? "dry" : "plan", summaryLine(planned.report));
-      if (!dry) {
-        var patches = planned.ship.concat(planned.notes);
-        if (patches.length) {
-          await applyPatches(sb, patches);
-          try { await audit(sb, planned.report); } catch (err) { console.warn("[demand-close] audit", err && err.message ? err.message : err); }
-          try { if (root.DB && root.DB.refresh) await root.DB.refresh(); } catch (e2) {}
-        }
-        markDone();
-      }
+      var planned = plan(lines, orders, mountainToday(new Date()));
+      console.log("[demand-close] read-only review; no Shipped writes", summaryLine(planned.report));
+      if (flag === "force") console.log("[demand-close] source-check review returned " + planned.report.reviewSource.length + " PO groups");
       busy = false;
       return true;
     } catch (e) {
-      console.warn("[demand-close]", e && e.message ? e.message : e);
+      console.warn("[demand-close] review read failed; no demand was changed", e && e.message ? e.message : e);
       busy = false;
       return false;
     }
@@ -437,7 +335,6 @@
     FLAG: FLAG,
     PAST_DUE_DAYS: PAST_DUE_DAYS,
     NOTE_COMPLETE: NOTE_COMPLETE,
-    NOTE_PAST: NOTE_PAST,
     NOTE_MIXED: NOTE_MIXED,
     NOTE_DUE: NOTE_DUE,
     plan: plan,

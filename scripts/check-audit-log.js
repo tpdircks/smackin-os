@@ -15,7 +15,9 @@ function read(rel) { return fs.readFileSync(path.join(root, rel), "utf8"); }
 var sql = read("supabase/migrations/20261106100319_audit_log.sql");
 eq(sql.indexOf("os_private.log_change") >= 0, "trigger function");
 eq(sql.indexOf("for each row execute function os_private.log_change()") >= 0, "row trigger");
-eq(sql.indexOf(":(last_sync|lock|source)$") >= 0, "heartbeat exclusion");
+eq(sql.indexOf(":(last_sync|lock|source)$") >= 0, "original heartbeat exclusion");
+var cursorSQL = read("supabase/migrations/20261106123000_audit_cursor_heartbeat.sql");
+eq(cursorSQL.indexOf(":(last_sync|lock|source|cursor)$") >= 0, "cursor heartbeat exclusion");
 eq(sql.indexOf("tg_table_name = 'audit_log'") >= 0, "skip self");
 eq(sql.indexOf("exception when others") >= 0, "save survives a trail error");
 eq(sql.indexOf("revoke all on table public.audit_log from anon") >= 0, "anon cannot write the trail");
@@ -29,20 +31,28 @@ eq(sql.indexOf("received_by") >= 0 && sql.indexOf("updated_by") >= 0, "operator 
 eq(read("session-bind.js").indexOf("smk-persist") >= 0, "session storage");
 eq(read("index.html").indexOf("session-bind.js?b=1") >= 0, "session script");
 eq(read("docs/audit-log.md").indexOf(":last_sync") >= 0, "exclusion docs");
+eq(read("docs/audit-log.md").indexOf(":cursor") >= 0, "cursor exclusion docs");
+eq(cursorSQL.toLowerCase().indexOf("grant ") < 0 && cursorSQL.toLowerCase().indexOf("delete from") < 0, "cursor migration does not grant or delete");
 eq(sql.indexOf("\u2014") < 0 && read("docs/audit-log.md").indexOf("\u2014") < 0, "no em dash");
 
+var adminURL = process.env.SMACKIN_AUDIT_DATABASE_URL || "";
+function admin(db) { if (!adminURL) return ""; var u = new URL(adminURL); u.pathname = "/" + (db || "postgres"); return u.toString(); }
+function spawnDB(args) {
+  if (adminURL) return cp.spawnSync("psql", args, { encoding: "utf8", env: Object.assign({}, process.env, { PGPASSWORD: undefined, LD_LIBRARY_PATH: undefined }) });
+  return cp.spawnSync("sudo", ["-u", "postgres", "psql"].concat(args), { encoding: "utf8" });
+}
 function psql(db, statement) {
-  var args = ["-u", "postgres", "psql", "-v", "ON_ERROR_STOP=1", "-q"];
-  if (db) args.push("-d", db);
+  var args = ["-v", "ON_ERROR_STOP=1", "-q"];
+  if (adminURL) args.push("-d", admin(db)); else if (db) args.push("-d", db);
   args.push("-c", statement);
-  var res = cp.spawnSync("sudo", args, { encoding: "utf8" });
+  var res = spawnDB(args);
   if (res.status !== 0) {
     throw new Error((res.stderr || res.stdout || "psql failed").trim());
   }
   return res.stdout || "";
 }
 function psqlFile(db, file) {
-  var res = cp.spawnSync("sudo", ["-u", "postgres", "psql", "-v", "ON_ERROR_STOP=1", "-q", "-d", db, "-f", file], { encoding: "utf8" });
+  var res = spawnDB(["-v", "ON_ERROR_STOP=1", "-q", "-d", adminURL ? admin(db) : db, "-f", file]);
   if (res.status !== 0) throw new Error((res.stderr || res.stdout || "psql file failed").trim());
 }
 
@@ -52,7 +62,7 @@ function prove() {
     console.log("postgres proof skipped (psql missing)");
     return;
   }
-  cp.spawnSync("sudo", ["pg_ctlcluster", "16", "main", "start"], { encoding: "utf8" });
+  if (!adminURL) cp.spawnSync("sudo", ["pg_ctlcluster", "16", "main", "start"], { encoding: "utf8" });
   psql("postgres", "drop database if exists smackin_audit_proof;");
   psql("postgres", "create database smackin_audit_proof;");
   ["anon", "authenticated", "authenticator", "service_role"].forEach(function (role) {
@@ -107,6 +117,18 @@ function prove() {
   asUser("troy@smackinsnacks.com", "authenticated", "insert into public.kv_status (key, value) values ('plant-note', 'hello');");
   eq(count("table_name = 'kv_status'") === 1, "other kv rows are kept");
 
+  asUser("svc@smackinsnacks.com", "service_role", "insert into public.kv_status (key, value) values ('shipping:cursor', 'before');");
+  eq(count("new_row->>'key' = 'shipping:cursor'") === 1, "cursor write is audited before the exclusion");
+  psqlFile("smackin_audit_proof", path.join(root, "supabase/migrations/20261106123000_audit_cursor_heartbeat.sql"));
+  var afterCursor = count("");
+  asUser("svc@smackinsnacks.com", "service_role", "update public.kv_status set value = 'after' where key = 'shipping:cursor';");
+  eq(count("") === afterCursor, "cursor write is not audited after the exclusion");
+  var afterBeat = count("");
+  asUser("svc@smackinsnacks.com", "service_role", "update public.kv_status set value = 'ok3' where key = 'pmac:last_sync';");
+  eq(count("") === afterBeat, "last_sync stays excluded after the cursor migration");
+  asUser("troy@smackinsnacks.com", "authenticated", "insert into public.kv_status (key, value) values ('plant-note-after', 'kept');");
+  eq(count("new_row->>'key' = 'plant-note-after'") === 1, "other kv rows stay audited after the cursor exclusion");
+
   asUser("", "anon", "insert into public.items (id, code, name) values ('BAG4-S01', 'B4-S01', 'OG');");
   var anon = psql("smackin_audit_proof", "copy (select actor_role || '|' || coalesce(user_email, '') from public.audit_log where table_name = 'items') to stdout;");
   eq(anon.trim() === "anon|", "anon write shows as anon " + JSON.stringify(anon.trim()));
@@ -114,13 +136,13 @@ function prove() {
   psql("smackin_audit_proof", "create table public.future_widget (id int primary key, name text); insert into public.future_widget values (1, 'n');");
   eq(count("table_name = 'future_widget'") === 1, "future table is audited");
 
-  var denied = cp.spawnSync("sudo", ["-u", "postgres", "psql", "-v", "ON_ERROR_STOP=1", "-d", "smackin_audit_proof", "-c", "set role anon; update public.audit_log set note = 'nope';"], { encoding: "utf8" });
+  var denied = spawnDB(["-v", "ON_ERROR_STOP=1", "-d", adminURL ? admin("smackin_audit_proof") : "smackin_audit_proof", "-c", "set role anon; update public.audit_log set note = 'nope';"], { encoding: "utf8" });
   eq(denied.status !== 0, "anon cannot update the trail");
-  var deniedAuth = cp.spawnSync("sudo", ["-u", "postgres", "psql", "-v", "ON_ERROR_STOP=1", "-d", "smackin_audit_proof", "-c", "grant usage on schema public to authenticated; set role authenticated; delete from public.audit_log;"], { encoding: "utf8" });
+  var deniedAuth = spawnDB(["-v", "ON_ERROR_STOP=1", "-d", adminURL ? admin("smackin_audit_proof") : "smackin_audit_proof", "-c", "grant usage on schema public to authenticated; set role authenticated; delete from public.audit_log;"], { encoding: "utf8" });
   eq(deniedAuth.status !== 0, "authenticated cannot delete the trail");
   var readerRead = psql("smackin_audit_proof", "grant usage on schema public to erp_reader; set role erp_reader; select count(*) from public.audit_log;");
   eq(/[0-9]/.test(readerRead), "erp_reader can read the trail");
-  var readerWrite = cp.spawnSync("sudo", ["-u", "postgres", "psql", "-v", "ON_ERROR_STOP=1", "-d", "smackin_audit_proof", "-c", "set role erp_reader; insert into public.audit_log (table_name, action) values ('items', 'insert');"], { encoding: "utf8" });
+  var readerWrite = spawnDB(["-v", "ON_ERROR_STOP=1", "-d", adminURL ? admin("smackin_audit_proof") : "smackin_audit_proof", "-c", "set role erp_reader; insert into public.audit_log (table_name, action) values ('items', 'insert');"], { encoding: "utf8" });
   eq(readerWrite.status !== 0, "erp_reader cannot insert the trail");
 
   psql("postgres", "drop database if exists smackin_audit_proof;");
