@@ -1669,9 +1669,10 @@
         '<div><label>' + L("spoPO") + '</label><input id="spo-po" value="' + esc(p.po_num) + '"></div>' +
         '<div><label>' + L("spoDate") + '</label><input id="spo-date" value="' + esc(p.po_date) + '"></div></div>' +
         '<div class="row"><div><label>' + L("spoTotal") + '</label><input id="spo-total" value="' + esc(p.total) + '"></div>' +
-        '<div><label>' + L("spoItems") + '</label><input value="' + (p.item_count || 0) + '" disabled></div>' +
+        '<div><label>' + L("spoItems") + '</label><input id="spo-count" value="' + ((window.POLINES && POLINES.keptCount() != null) ? POLINES.keptCount() : (p.item_count || 0)) + '" disabled></div>' +
         '<div><label>' + L("spoUploadedBy") + '</label><select id="op">' + ["Michelle", "Matt", "Troy"].map(n => "<option>" + n + "</option>").join("") + '</select></div></div>' +
         '<div><label>' + L("spoNotes") + '</label><input id="spo-notes"></div>' +
+        (window.POLINES ? POLINES.previewHtml() : "") +
         '<button class="primary" onclick="UI.spoSave()">' + L("spoSave") + '</button> ' +
         '<button class="ghost" style="margin-top:14px" onclick="UI.spoClear()">' + L("spoCancel") + '</button></div>';
     }
@@ -1934,11 +1935,15 @@
     const s = DB.supplierPos().find(x => String(x.id) === String(id));
     if (!s) { spoDetailId = null; return viewSupplierPos(); }
     const lines = poLinesOf(s);
+    const canEditLines = window.POLINES && POLINES.canEditCurrent();
     const lineRows = lines.length ? lines.map(l => {
       const shipCell = l.recv ? '<span class="pill ok">received</span>' : (l.ship ? esc(l.ship) : "");
       return '<tr><td>' + esc(l.item) + '</td><td>' + esc(l.desc) + '</td><td class="sm">' + shipCell + '</td><td class="right">' + esc(l.qty) + '</td>' +
         '<td class="right">' + (l.price !== "" ? money(l.price) : "") + '</td><td class="right">' + (l.tot !== "" ? money(l.tot) : "") + '</td></tr>';
     }).join("") : '<tr><td colspan="6" class="muted">' + L("poNoLines") + '</td></tr>';
+    const lineTable = canEditLines
+      ? POLINES.savedEditorHtml(s)
+      : '<table class="potable"><thead><tr><th>' + L("poItemNo") + '</th><th>' + L("poDesc") + '</th><th>Ship date</th><th class="right">' + L("poQtyL") + '</th><th class="right">' + L("poPriceL") + '</th><th class="right">' + L("poLineTot") + '</th></tr></thead><tbody>' + lineRows + '</tbody></table>';
     // info field helper: only render rows that have a value
     const fld = (label, val) => (val != null && val !== "") ? '<div class="podf"><span class="podl">' + label + '</span><span class="podv">' + esc(val) + '</span></div>' : "";
     const info = fld(L("spoVendor"), s.vendor) + fld(L("spoPO"), s.po_num) + fld(L("spoDate"), s.po_date) +
@@ -1964,8 +1969,8 @@
       '<div class="poinfo">' + info + '</div>' +
       '<div class="podoc">' + fileBlock + '</div>' +
       poEmailForm(s) + '</div>' +
-      '<div class="card"><h2 class="sub2">' + L("spoItems") + ' (' + lines.length + ')</h2>' +
-      '<table class="potable"><thead><tr><th>' + L("poItemNo") + '</th><th>' + L("poDesc") + '</th><th>Ship date</th><th class="right">' + L("poQtyL") + '</th><th class="right">' + L("poPriceL") + '</th><th class="right">' + L("poLineTot") + '</th></tr></thead><tbody>' + lineRows + '</tbody></table>' +
+      '<div class="card"><h2 class="sub2">' + L("spoItems") + ' (' + (canEditLines && window.POLINES ? POLINES.linesForForm(s).length : lines.length) + ')</h2>' +
+      lineTable +
       '<div class="pototals" style="margin-top:12px">' + totalsRows + '</div>' +
       (notesClean(s.notes) ? '<h3 class="sub2" style="margin-top:14px">' + L("spoNotes") + '</h3><p>' + esc(notesClean(s.notes)) + '</p>' : "") + '</div>';
   }
@@ -1973,12 +1978,17 @@
     l = l || {};
     const vv = x => (x == null ? "" : esc(String(x)));
     const lt = (parseFloat(l.qty) || 0) * (parseFloat(l.price) || 0);
+    const lid = l._lid ? '<input type="hidden" id="pl-lid-' + i + '" value="' + vv(l._lid) + '">' : "";
+    const rm = (poEditId && l._lid && window.POLINES && POLINES.canEditCurrent())
+      ? '<button type="button" class="ghost sm danger" onclick="POLINES.removeEditRow(this)">Remove</button>' : "";
     return '<td><input id="pl-item-' + i + '" list="dl-po-item" autocomplete="off" value="' + vv(l.item) + '" onchange="UI.poLineFill(' + i + ',\'item\')"></td>' +
       '<td><input id="pl-desc-' + i + '" list="dl-po-flavor" autocomplete="off" value="' + vv(l.desc) + '" onchange="UI.poLineFill(' + i + ',\'desc\')"></td>' +
       '<td><input id="pl-ship-' + i + '" type="date" value="' + vv(l.ship) + '"></td>' +
       '<td><input id="pl-qty-' + i + '" type="number" min="0" step="any" inputmode="decimal" value="' + vv(l.qty) + '" oninput="UI.poRecalc()"></td>' +
+      '<td><input id="pl-unit-' + i + '" value="' + vv(l.unit) + '"></td>' +
       '<td><input id="pl-price-' + i + '" type="number" min="0" step="any" inputmode="decimal" value="' + vv(l.price) + '" oninput="UI.poRecalc()"></td>' +
-      '<td class="right"><span id="pl-tot-' + i + '">' + (lt ? money(lt) : "$0.00") + '</span></td>';
+      '<td class="right"><span id="pl-tot-' + i + '">' + (lt ? money(lt) : "$0.00") + '</span>' + lid + '</td>' +
+      '<td>' + rm + '</td>';
   }
   function viewNonPo() {
     var vendors = Array.from(new Set(DB.supplierPos().map(x => x.vendor).filter(Boolean))).sort();
@@ -2014,7 +2024,7 @@
     const editing = poEditId ? DB.supplierPos().find(x => String(x.id) === String(poEditId)) : null;
     const E = editing || {};
     const av = x => (x == null ? "" : esc(String(x)));
-    const eLines = editing ? poLinesOf(editing) : [];
+    const eLines = editing ? (window.POLINES ? POLINES.linesForForm(editing) : poLinesOf(editing)) : [];
     let rows = "";
     if (editing && eLines.length) {
       eLines.forEach((l, i) => rows += '<tr>' + poRowInner(i, l) + '</tr>');
@@ -2036,7 +2046,7 @@
       '<div><label>' + L("poVendorPhone") + '</label><input id="po-vphone" autocomplete="off" value="' + av(E.vendor_phone) + '"></div></div>' +
       '<div><label>' + L("poShipTo") + '</label><input id="po-shipto" list="dl-po-shipto" autocomplete="off" value="' + av(E.ship_to) + '"></div>' +
       '<h3 class="sub2" style="margin-top:14px">' + L("spoItems") + '</h3>' +
-      '<table class="potable"><thead><tr><th>' + L("poItemNo") + '</th><th>' + L("poDesc") + '</th><th>Ship date</th><th>' + L("poQtyL") + '</th><th>' + L("poPriceL") + '</th><th class="right">' + L("poLineTot") + '</th></tr></thead><tbody id="po-lines">' + rows + '</tbody></table>' +
+      '<table class="potable"><thead><tr><th>' + L("poItemNo") + '</th><th>' + L("poDesc") + '</th><th>Ship date</th><th>' + L("poQtyL") + '</th><th>Unit</th><th>' + L("poPriceL") + '</th><th class="right">' + L("poLineTot") + '</th><th></th></tr></thead><tbody id="po-lines">' + rows + '</tbody></table>' +
       '<button class="ghost sm" onclick="UI.poAddLine()">' + L("poAddLine") + '</button>' +
       '<div class="pototals">' +
       '<div><span>' + L("poSubtotalL") + '</span><b id="po-subtotal">' + money(eSub) + '</b></div>' +
@@ -6046,17 +6056,27 @@
     },
     // ---- Supplier POs (upload) ----
     async spoFile(input) { const f = input.files && input.files[0]; if (!f) return; spoFile = f; toast(L("spoParsed"));
-      spoParsed = (await spoParseFile(f)) || { vendor: "", po_num: "", po_date: "", total: "", item_count: 0, lines: "[]", recognized: false }; render(); },
-    spoClear() { spoFile = null; spoParsed = null; render(); },
+      spoParsed = (await spoParseFile(f)) || { vendor: "", po_num: "", po_date: "", total: "", item_count: 0, lines: "[]", recognized: false };
+      if (window.POLINES) POLINES.loadPreview(spoParsed);
+      render(); },
+    spoClear() { spoFile = null; spoParsed = null; if (window.POLINES) POLINES.clearPreview(); render(); },
+    poLinesRefresh() { render(); },
     async spoSave() {
       if (!spoFile) return toast(L("spoNoFile"));
       const v = id => { const e = $(id); return e ? (e.value || "").trim() : ""; };
       const by = $("op") ? $("op").value : "";
+      let lines = (spoParsed && spoParsed.lines) || "[]";
+      let count = (spoParsed && spoParsed.item_count) || 0;
+      if (window.POLINES && spoParsed) {
+        const kept = POLINES.linesForSave();
+        lines = JSON.stringify(kept);
+        count = kept.length;
+      }
       const rec = { vendor: v("spo-vendor"), po_num: v("spo-po"), po_date: v("spo-date"), total: v("spo-total"),
-        item_count: (spoParsed && spoParsed.item_count) || 0, lines: (spoParsed && spoParsed.lines) || "[]", notes: v("spo-notes") };
+        item_count: count, lines: lines, notes: v("spo-notes") };
       const res = await DB.createSupplierPO(rec, spoFile, by);
       if (!res.ok) return toast(res.msg || "error");
-      spoFile = null; spoParsed = null; toast(L("spoSaved")); render();
+      spoFile = null; spoParsed = null; if (window.POLINES) POLINES.clearPreview(); toast(L("spoSaved")); render();
     },
     async spoDelete(id) { if (!confirm(L("spoConfirmDel"))) return; await DB.deleteSupplierPO(id, opVal()); toast(L("spoDelete") + " ✓"); },
     spoSearch(val) { const q = (val || "").toLowerCase().trim();
@@ -6311,10 +6331,10 @@
       const lines = []; let sub = 0;
       document.querySelectorAll("#po-lines tr").forEach(tr => {
         const g = sel => { const el = tr.querySelector(sel); return el ? (el.value || "").trim() : ""; };
-        const item = g("[id^=pl-item-]"), desc = g("[id^=pl-desc-]"), qty = g("[id^=pl-qty-]"), price = g("[id^=pl-price-]"), ship = g("[id^=pl-ship-]");
-        if (!item && !desc && !qty && !price) return;
+        const item = g("[id^=pl-item-]"), desc = g("[id^=pl-desc-]"), qty = g("[id^=pl-qty-]"), price = g("[id^=pl-price-]"), ship = g("[id^=pl-ship-]"), unit = g("[id^=pl-unit-]"), lid = g("[id^=pl-lid-]");
+        if (!item && !desc && !qty && !price && !unit) return;
         const lt = (parseFloat(qty) || 0) * (parseFloat(price) || 0); sub += lt;
-        lines.push({ item: item, desc: desc, qty: qty, price: price, ship: ship, total: String(Math.round(lt * 100) / 100) });
+        lines.push({ item: item, desc: desc, qty: qty, price: price, unit: unit, ship: ship, lid: lid, total: String(Math.round(lt * 100) / 100) });
       });
       const gg = id => parseFloat(v(id)) || 0;
       const grand = sub + gg("po-shipping") + gg("po-tax") + gg("po-other");
@@ -6326,6 +6346,19 @@
       if (poEditId) {
         // Preserve ETA and [[STATUS:...]] tags so editing the PO doesn't wipe them.
         const prev = DB.supplierPos().find(x => String(x.id) === String(poEditId));
+        if (window.POLINES && prev) {
+          const who = POLINES.currentEmail();
+          if (POLINES.canEdit(who)) {
+            const built = POLINES.assemble(prev, lines, { email: who, when: new Date().toISOString() });
+            if (!built.ok) return toast(built.reason || "Could not update lines");
+            rec.lines = JSON.stringify(built.lines);
+            rec.item_count = built.lines.length;
+          } else {
+            if (POLINES.linesDiffer(prev, lines)) toast("Line items were not changed. Troy, Michelle, or Matt can edit them.");
+            rec.lines = typeof prev.lines === "string" ? prev.lines : JSON.stringify(prev.lines || []);
+            rec.item_count = prev.item_count != null ? prev.item_count : 0;
+          }
+        }
         const eta = (prev && etaOfNotes(prev.notes)) || etaOfNotes(rec.notes);
         const st = (prev && statusOfNotes(prev.notes)) || statusOfNotes(rec.notes);
         if (eta || st) rec.notes = notesWithTags(rec.notes, eta, st);
