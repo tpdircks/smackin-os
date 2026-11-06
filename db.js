@@ -315,6 +315,7 @@ window.DB = (function () {
       cache.suppliers = su.data || [];
       cache.stock = (st.data || []).map(r => ({
         item_id: r.item_id, location: r.location, qty: Number(r.qty), lot: r.lot,
+        updated_at: r.updated_at || null,
         expires_on: r.expires_on ? String(r.expires_on).slice(0, 10) : null,
         coa_received: coaNorm(r.coa_received),
         coa_note: r.coa_note || "",

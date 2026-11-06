@@ -1,0 +1,410 @@
+result,item,lot,location,os_before,sheet,os_after,reason
+applied,TMP-SEAS-APPLEPIE,# J1O25,QUARANTINE,0,11.3,11.3,insert exp 2026-10-22
+applied,TMP-SEAS-BACONMACCHEESE,# 11654,L-36,200,200,200,update exp 2026-11-15
+applied,Seas - BacRP,# 4213K,RECEIVING,30,30,30,update exp 2027-08-26
+applied,TMP-SEAS-BCJALAP,# 2-158928,RECEIVING,700,0,0,delete
+applied,TMP-SEAS-BANANAPUDDING,# 70XXE,QUARANTINE,0,20.01,20.01,insert exp 2026-10-29
+applied,TMP-SEAS-BANANAPUDDING,# 70XXJ,RECEIVING,45,45,45,update exp 2027-09-25
+applied,SEAS-S03,# 6194,S-03,4500,1650,1650,update exp 2027-07-13
+applied,SEAS-S03,# 6209,S-03,0,2000,2000,insert exp 2027-07-28
+applied,SEAS-BBQC,#203720260729RNA7,RACK-C,500,500,500,update exp 2027-07-29
+applied,TMP-SEAS-BIRTHDAYCAKE,#11810,A-18-L1,350,200,200,update exp 2027-02-20
+applied,TMP-SEAS-BLUEBERRYMUFFIN,Lot # 11811,RECEIVING,1974,687,687,update exp 2027-02-10
+applied,TMP-SEAS-BLOODYMARYSNACKS,# 42XXE,QUARANTINE,0,6,6,insert exp 2026-10-09
+applied,TMP-SEAS-BUFFALOWING,# 7205E,QUARANTINE,0,18,18,insert exp 2026-08-05
+applied,SEAS-S09,# A1326,S-09,1375,25,25,update exp 2027-01-21
+applied,SEAS-S09,# D1326,S-09,0,1000,1000,insert exp 2027-04-27
+applied,SEAS -,# 7005 K,RECEIVING,30,30,30,update exp 2027-08-20
+applied,SEAS-S07,# 6098,S-07,3250,2200,2200,update exp 2027-04-08
+applied,SEAS-L01,Lot # 4205 J,L-25,810,180,180,update exp 2027-08-25
+applied,SEAS-L02,Lot# 4209 E,L-20,540,785.25,785.25,update exp 2027-07-28
+applied,SEAS-L02,4209 E,RECEIVING,405,0,0,delete
+applied,SEAS-L02,Pizza-L20,RECEIVING,227.3,0,0,delete
+applied,TMP-SEAS-CHILICHEESE,# 11655,RECEIVING,150,150,150,update exp 2026-11-14
+applied,TMP - SEAS- ChickenBaconTypeRanch,Lot #  2-159659,RECEIVING,550,500,500,update exp 2027-09-18
+applied,TMP-SEAS-CHICKENNOODLE,# SJ0300-09262027,RECEIVING,0,11,11,insert
+applied,SEAS-CFRS,#203120260730RNA7,RACK-C,500,500,500,update exp 2027-07-30
+applied,SEAS-CPRN,#203620260724RNA8,L-44,500,150,150,update exp 2027-07-24
+applied,TMP-SEAS-CHILILIMEPOPCORN,# 4073 E,RECEIVING,45,45,45,update exp 2027-09-25
+applied,TMP-SEAS-CINNAMONROLLFROSTING,# 7008E,RECEIVING,22.8,22.8,22.8,update exp 2026-11-10
+applied,SEAS-S02,# H 1326,S-02,0,2000,2000,insert exp 2027-09-02
+applied,SEAS-S02,# 1326,RECEIVING,2700,0,0,delete
+applied,SEAS-S02,# F1826,RECEIVING,2700,0,0,delete
+applied,SEAS-S02,LOT - G0726,RECEIVING,2700,0,0,delete
+applied,TMP-SEAS-COTTONCANDY,#11713,RECEIVING,250,850,850,update exp 2026-12-08
+applied,TMP-SEAS-COTTONCANDY,# 11809,RECEIVING,3446,0,0,delete
+applied,TMP-SEAS-CRABSEAFOODBOIL,# SSO4E,QUARANTINE,0,6.1,6.1,insert exp 2026-10-09
+applied,SEAS-S06,60922DA401,S-06,2000,2000,2000,update exp 2027-06-22
+applied,SEAS-S06,LOT #  J1926,S-06,650,650,650,update exp 2028-04-27
+applied,TMP-SEAS-DIJONHERBPOPCORN,# 4215E,QUARANTINE,0,28.7,28.7,insert exp 2026-09-26
+applied,TMP-SEAS-DIJONHERBPOPCORN,# 4215E,RECEIVING,0,9.7,9.7,insert exp 2026-12-27
+applied,TMP-SEAS-DIJON RANCH - Seasoning,11808,C-47-L1,477,477,477,update exp 2027-02-26
+applied,SEAS-S05,# 61005DA500,S-05,4000,4000,4000,update exp 2027-07-05
+applied,SEAS-S05,,PROD-WEIGH,1550,0,0,delete
+applied,SEAS-S05,Lot # J0126,RECEIVING,900,0,0,delete
+applied,SEAS-DLRN,#1985-20260724RNA7,C-46-L1,500,475,475,update exp 2027-07-24
+applied,SEAS- DutchApplePie,11806,RACK-C,527,527,527,update exp 2027-02-26
+applied,TMP-SEAS-EVERYTHINGBAGEL,,RECEIVING,0,92.5,92.5,insert
+applied,TMP-SEAS-FIREHOUSEAMUBLK,# 7016E,QUARANTINE,0,6.1,6.1,insert exp 2026-10-02
+applied,TMP-SEAS-FIREHOUSEAMUBLK,# 7016 K,RECEIVING,0,30,30,insert exp 2027-08-20
+applied,TMP-SEAS-FIREHOUSEAMUBLK,# 7016,G-07-L2,30,0,0,delete
+applied,TMP-SEAS-FLAMINGHOTCHEDDARGHOST,# 4208E,L-23,0,45,45,insert exp 2027-06-17
+applied,SEAS - FRCH,# 2210-20260826RNA4,L-52,500,500,500,update exp 2027-08-26
+applied,SEAS -FC,Lot # 1984-20260812RNA4,L-48,500,500,500,update exp 2027-08-12
+applied,TMP-SEAS-GARDENSALSASNACK,# 4216E,RECEIVING,0,238.2,238.2,insert exp 2027-04-21
+applied,SEAS-S04,# 6247,S-04,2900,2100,2100,update exp 2027-09-04
+applied,SEAS-S04,60909DA382,S-04,4050,3700,3700,update exp 2027-06-09
+applied,SEAS-GMSC,#2035-20260730RNA9,RACK-C,450,450,450,update exp 2027-07-30
+applied,TMP-SEAS-HABANEROMANGO,# SSOIE,QUARANTINE,0,5,5,insert exp 2026-10-09
+applied,SEAS-HTCH,#1983-20260724RNA6,RACK-C,500,500,500,update exp 2027-07-24
+applied,TMP-SEAS-HONEYBBQPOPCORN,# HO.05.29.26,A-20-L1,0,1225,1225,insert
+applied,SEAS-HMSN,#2033-20260729RNA8,C-45-L1,550,500,500,update exp 2027-07-29
+applied,TMP - SEAS - JalpRch – Seasoning,11807,L-50,994,497,497,update exp 2027-02-26
+applied,TMP-SEAS-KOREANBBQSNACK,# 1699-20260702RNB3,L-41,1150,1000,1000,update exp 2027-07-02
+applied,TMP-SEAS-KOREANBBQSNACK,# 2096-20260730RNA6,C-41-L1,0,200,200,insert exp 2027-07-30
+applied,SEAS-KBBQ,,RECEIVING,200,0,0,delete
+applied,SEAS-S10,# H1326,S-10,2700,2350,2350,update exp 2027-09-02
+applied,TMP-SEAS-LOADEDPOTATOPOPCORN,# 4207E,L-33,0,180,180,insert exp 2027-10-06
+applied,TMP-SEAS-LOADEDPOTATOPOPCORN,Lot # 4207 K,DOCK-18,360,0,0,delete
+applied,TMP-SEAS-LOADEDPOTATO,# 4207 E,RECEIVING,315,0,0,delete
+applied,SEAS-MPBC,#1981-20260723RNA7,RACK-C,500,500,500,update exp 2027-07-23
+applied,TMP-SEAS-MAPLEBOURBONDEREKWOLF,,A-04-L1,0,6.9,6.9,insert exp 2027-08-27
+applied,TMP-SEAS-MALTODEXTRINCLINTOSECR,M26070840,M-CR-10,2400,2000,2000,update exp 2028-07-07
+applied,MALTO,,F-14-L1,2400,0,0,delete
+applied,MALTO,M260070840,RECEIVING,100,0,0,delete
+applied,TMP-SEAS-NASHVILLEHOT,#2-158917,A-01-L1,600,300,300,update
+applied,TMP-SEAS-ORANGECRANBERRYCOSMOWI,# 0804E,QUARANTINE,6.2,6.2,6.2,update exp 2026-10-02
+applied,TMP-SEAS-PEANUTBUTTERCUPS,# 70XXE,QUARANTINE,0,1,1,insert exp 2026-10-10
+applied,TMP-SEAS-PEANUTBUTTERJELLY,# 7018 E,L-27,135,540,540,update exp 2027-08-25
+applied,TMP-SEAS-PEANUTBUTTERJELLY,,RECEIVING,405,0,0,delete
+applied,SEAS-PPBC,#1980-20260723RNA8,RACK-C,500,500,500,update exp 2027-07-23
+applied,TMP-SEAS-PUMPKINPIESPICE,,L-51,0,47,47,insert
+applied,SEAS-S08,#G0726,S-08,751,650,650,update exp 2027-07-20
+applied,SEAS - RCH UP,# 60811DA383,RECEIVING,2050,1500,1500,update exp 2027-05-11
+applied,TMP-SEAS-REAPERRANCH,# SSO2E,QUARANTINE,0,6.9,6.9,insert exp 2026-10-09
+applied,TMP-SEAS-SALTVINEGAR,#11657,RECEIVING,0,950,950,insert exp 2026-11-12
+applied,TMP-SEAS-SALTVINEGAR,#11753,RECEIVING,0,2550,2550,insert exp 2027-01-13
+applied,TMP-SEAS-SMORESSEASONING,# 01296-1,A-05-L1,0,4.4,4.4,insert exp 2027-02-07
+applied,TMP-SEAS-SMOKEDBRISCKET,# SSO3E,QUARANTINE,1,1,1,update exp 2026-10-09
+applied,TMP-SEAS-Snickerdoodle Style - seasoning,11805,RACK-C,591,591,591,update exp 2027-02-25
+applied,SEAS-S11,# D176,S-11,1575,425,425,update exp 2027-04-17
+applied,SEAS-S11,# G226,S-11,0,1000,1000,insert exp 2027-07-22
+applied,TMP-SEAS-SPICYDILLPICKLE,# 42l0E,QUARANTINE,0,9.5,9.5,insert exp 2026-10-09
+applied,TMP-SEAS-SPICYDILLPICKLE,#4203K,G-07-L2,30,0,0,delete
+applied,TMP-SEAS-SPICYGARLICBUTTER,# 4203E,QUARANTINE,0,6,6,insert exp 2026-10-10
+applied,TMP-SEAS-SPICYGARLICBUTTER,#4203K,A-14-L1,30,30,30,update exp 2027-08-20
+applied,TMP-SEAS-SPICYGUACAMOLE,# 6119,RECEIVING,0,200,200,insert exp 2027-04-29
+applied,TMP-SEAS-SPICYNACHO,# 5323,RECEIVING,0,700,700,insert exp 2026-11-19
+applied,TMP-SEAS-STEVIASWEETENER,,STSW,0,200,200,insert exp 2029-04-07
+applied,STEVIA,,PROD-WEIGH,331,0,0,delete
+applied,TMP-SEAS-STEVIAZEROCALORIE,# 5001,STSW,6.05,6.05,6.05,update exp 2028-09-23
+applied,TMP-SEAS-STRAWBERRYCHEESECAKE,# 7020 E,L-21,1215,270,270,update exp 2027-10-15
+applied,TMP-SEAS-STRAWBERRYCHEESECAKE,7020E,RECEIVING,360,0,0,delete
+applied,TMP-SEAS-SWEETTHAICHILE,#21124,A-02-L1,1996,1996,1996,update exp 2027-03-30
+applied,TMP-SEAS-TACOMILDFIREHOUSE,# 7065 K,QUARANTINE,0,10,10,insert exp 2026-07-24
+applied,TMP-SEAS-TACOMILDFIREHOUSE,# 7065 J,QUARANTINE,0,10,10,insert exp 2026-07-24
+applied,TMP-SEAS-TACOMILDFIREHOUSE,# 7065 E,QUARANTINE,0,20,20,insert exp 2026-07-25
+applied,TMP-SEAS-TERIYAKI,#4037 K,QUARANTINE,0,630,630,insert exp 2026-07-31
+applied,TMP-SEAS-TERIYAKI,#4037 K,L-14,0,666.9,666.9,insert exp 2027-06-30
+applied,SEAS- TEXBB,Lot # 1982-20260812RNA5,RACK-C,500,500,500,update exp 2027-08-12
+applied,TMP-SEAS-TIKKAMASSALA,# T1021035,A-21-L1,0,14,14,insert
+applied,TMP - SEAS -TZATZIKI SEASONING,#2472-20260916RNA1,RECEIVING,50,50,50,update exp 2027-09-16
+applied,TMP-SEAS-WALKINGTACO,11896,RECEIVING,1030,1030,1030,update exp 2027-03-30
+applied,TMP-SEAS-WALKINGTACO,,RECEIVING,50,0,0,delete
+applied,SEED-BROWN,26230H17,RECEIVING,26700,550,550,update
+applied,SEED-BROWN,26231H17,RECEIVING,0,13100,13100,insert
+applied,SEED-BROWN,Lot # 26216H03  - 4I / # 26217H03  - 4J,RECEIVING,4700,0,0,delete
+applied,SEED-WHITE,26222H10,RECEIVING,32800,8650,8650,update
+applied,SEED-WHITE,26223H10,RECEIVING,6,10550,10550,update
+applied,SEED-WHITE,26224H10,RECEIVING,0,3000,3000,insert
+applied,SEED-WHITE,26219H03,RECEIVING,0,900,900,insert
+applied,SEED-WHITE,Lot#26220H03-#26220H10#26223H10#26224H10#26219H03,E-21-L1,194,0,0,delete
+applied,FILM4-S04,,F-18-L1,63300,30000,0,delete
+applied,FILM4-S04,,RECEIVING,57000,30000,30000,update
+applied,TMP-F4-FLAMEGRILLEDSTEAK,,RECEIVING,0,400,400,insert
+applied,TMP-F4-KGHONEYMUSTARD,,RECEIVING,0,10000,10000,insert
+applied,BKT - White Sports  Bucket 6ct,,RECEIVING,15815,23050,10815,update
+applied,BOX-S-14632,,RECEIVING,4300,3250,0,delete
+applied,BOX-S-14632,PACK-1102,RECEIVING,4300,3250,3250,update
+applied,MCASE-BOX,#,RECEIVING,6375,5800,0,delete
+applied,MCASE-BOX,,A-10-L2,350,5800,0,delete
+applied,MCASE-BOX,,A-10-L3,350,5800,125,update
+applied,CASEBOX-12,,RECEIVING,42850,47125,0,delete
+applied,CASEBOX-12,,WAREHOUSE,23100,47125,21600,update
+already-matching,TPM - SEAS - BEER&BRAT,# 11917,RECEIVING,50,50,50,already matches the sheet
+already-matching,BAG4-S01,,,7900,7900,7900,already matches the sheet
+already-matching,BAG4-S02,,,3300,3300,3300,already matches the sheet
+already-matching,BAG4-S03,,,11800,11800,11800,already matches the sheet
+already-matching,BAG4-S04,,,31700,31700,31700,already matches the sheet
+already-matching,BAG4-S05,,,19700,19700,19700,already matches the sheet
+already-matching,BAG4-S06,,,5300,5300,5300,already matches the sheet
+already-matching,BAG4-S07,,,16200,16200,16200,already matches the sheet
+already-matching,BAG4-S08,,,7100,7100,7100,already matches the sheet
+already-matching,BAG4-S09,,,11400,11400,11400,already matches the sheet
+already-matching,BAG4-S10,,,6700,6700,6700,already matches the sheet
+already-matching,BAG4-S11,,,7000,7000,7000,already matches the sheet
+already-matching,TMP-B4-BACONJALAPENO,,,15200,15200,15200,already matches the sheet
+already-matching,BAG4-L13,,,0,0,0,already matches the sheet
+already-matching,BAG4-L10,,,20200,20200,20200,already matches the sheet
+already-matching,BAG4-L09,,,5300,5300,5300,already matches the sheet
+already-matching,TMP-B4-CHEDDARSOURCREAM,,,2000,2000,2000,already matches the sheet
+already-matching,BAG4-L01,,,13700,13700,13700,already matches the sheet
+already-matching,BAG4-L08,,,1700,1700,1700,already matches the sheet
+already-matching,TMP-B4-CHIPOTLERANCH,,,7300,7300,7300,already matches the sheet
+already-matching,BAG4-L19,,,57500,57500,57500,already matches the sheet
+already-matching,BAG4-L02,,,12500,12500,12500,already matches the sheet
+already-matching,TMP-B4-FUNNELCAKE,,,200,200,200,already matches the sheet
+already-matching,BAG4-L03,,,800,800,800,already matches the sheet
+already-matching,BAG4-L07,,,8600,8600,8600,already matches the sheet
+already-matching,BAG4-L04,,,8500,8500,8500,already matches the sheet
+already-matching,BAG4-L20,,,0,0,0,already matches the sheet
+already-matching,BAG4-L14,,,11200,11200,11200,already matches the sheet
+already-matching,TMP-B4-LOADEDNACHO,,,43700,43700,43700,already matches the sheet
+already-matching,BAG4-L18,,,330,330,330,already matches the sheet
+already-matching,BAG4-L11,,,0,0,0,already matches the sheet
+already-matching,BAG4-L12,,,8700,8700,8700,already matches the sheet
+already-matching,BAG4-L05,,,11000,11000,11000,already matches the sheet
+already-matching,BAG4-L15,,,2500,2500,2500,already matches the sheet
+already-matching,TMP-B4-STRAWBERRYCHEESECAKE,,,50100,50100,50100,already matches the sheet
+already-matching,BAG4-L17,,,0,0,0,already matches the sheet
+already-matching,BAG4-L06,,,2200,2200,2200,already matches the sheet
+already-matching,BAG4-L16,,,4000,4000,4000,already matches the sheet
+already-matching,BAG15-S01,,,14000,14000,14000,already matches the sheet
+already-matching,BAG15-S02,,,16000,16000,16000,already matches the sheet
+already-matching,BAG15-S03,,,28750,28750,28750,already matches the sheet
+already-matching,BAG15-S04,,,26000,26000,26000,already matches the sheet
+already-matching,BAG15-S05,,,2500,2500,2500,already matches the sheet
+already-matching,BAG15-S06,,,6500,6500,6500,already matches the sheet
+already-matching,BAG15-S07,,,25000,25000,25000,already matches the sheet
+already-matching,BAG15-S08,,,10750,10750,10750,already matches the sheet
+already-matching,BAG15-S09,,,27800,27800,27800,already matches the sheet
+already-matching,BAG15-S10,,,9000,9000,9000,already matches the sheet
+already-matching,BAG15-S11,,,14750,14750,14750,already matches the sheet
+already-matching,DT275-BBQ,,,7920,7920,7920,already matches the sheet
+already-matching,DT275-CINNAMON,,,68160,68160,68160,already matches the sheet
+already-matching,DT275-GARLIC,,,3600,3600,3600,already matches the sheet
+already-matching,DT275-LEMONPEPPER,,,0,0,0,already matches the sheet
+already-matching,TMP-B15-GUACAMOLE,,,550,550,550,already matches the sheet
+already-matching,TMP-B15-KETCHUP,,,250,250,250,already matches the sheet
+already-matching,TMP-B15-LOADEDPOTATO,,,30,30,30,already matches the sheet
+already-matching,TMP-B15-MEXICANSTREETCORN,,,5250,5250,5250,already matches the sheet
+already-matching,TMP-B15-CHEDDARSOURCREAM,,,5000,5000,5000,already matches the sheet
+already-matching,TMP-B15-PEANUTBUTTERJELLY,,,200,200,200,already matches the sheet
+already-matching,TMP-B15-SALSA,,,250,250,250,already matches the sheet
+already-matching,TMP-B15-SPICYQUESO,,,200,200,200,already matches the sheet
+already-matching,TMP-B15-TACO,,,250,250,250,already matches the sheet
+already-matching,TMP-B15-BACONMACCHEESE,,,5000,5000,5000,already matches the sheet
+already-matching,TMP-B15-BISTRO,,,80,80,80,already matches the sheet
+already-matching,TMP-B15-BLOODYMARY,,,30,30,30,already matches the sheet
+already-matching,TMP-B15-HABANEROMANGO,,,7,7,7,already matches the sheet
+already-matching,TMP-B15-HONEYBBQ,,,100,100,100,already matches the sheet
+already-matching,TMP-B15-HOTRAMEN,,,303,303,303,already matches the sheet
+already-matching,TMP-B15-MOJITO,,,16,16,16,already matches the sheet
+already-matching,TMP-B15-PEANUTBUTTERCUP,,,100,100,100,already matches the sheet
+already-matching,TMP-B15-SMOKEDBRISCKET,,,30,30,30,already matches the sheet
+already-matching,TMP-B15-SPICYDILLPICKLE,,,5,5,5,already matches the sheet
+already-matching,TMP-F4-LOADEDNACHO,,,0,0,0,already matches the sheet
+already-matching,FILM4-S03,,,48000,48000,48000,already matches the sheet
+already-matching,FILM4-S05,,,54400,54400,54400,already matches the sheet
+already-matching,FILM4-S07,,,48300,48300,48300,already matches the sheet
+already-matching,TMP-F4-BACKYARDSPORTSBBQ,,,1850,1850,1850,already matches the sheet
+already-matching,TMP-F4-BACKYARDSPORTSLOADEDNACHOPABLO,,,6000,6000,6000,already matches the sheet
+already-matching,TMP-F4-BACONJALAPENO,,,31100,31100,31100,already matches the sheet
+already-matching,TMP-F4-STRAWBERRYCHEESECAKE,,,0,0,0,already matches the sheet
+already-matching,TMP-F4-BACONMCCHEESE,,,20,20,20,already matches the sheet
+already-matching,TMP-F4-BEEFBRISKET,,,31450,31450,31450,already matches the sheet
+already-matching,TMP-F4-BIRTHDAYCAKESUNFLOWER,,,0,0,0,already matches the sheet
+already-matching,TMP-F4-BLUEBERRYPIE,,,14000,14000,14000,already matches the sheet
+already-matching,TMP-F4-BUFFALORANCH,,,0,0,0,already matches the sheet
+already-matching,TMP-F4-CHEDDARGHOSTPEPPER,,,0,0,0,already matches the sheet
+already-matching,TMP-F4-CHEDDARSOURCREAM,,,36000,36000,36000,already matches the sheet
+already-matching,TMP-F4-CHEESEBURGER,,,51600,51600,51600,already matches the sheet
+already-matching,TMP-F4-CHILELIMON,,,0,0,0,already matches the sheet
+already-matching,TMP-F4-CHILICHEESEDOG,,,0,0,0,already matches the sheet
+already-matching,TMP-F4-CHIPOTLERANCH,,,45220,45220,45220,already matches the sheet
+already-matching,TMP-F4-CINNAMONROLL,,,0,0,0,already matches the sheet
+already-matching,TMP-F4-COTTONCANDY,,,45150,45150,45150,already matches the sheet
+already-matching,TMP-F4-DEEPDISHPIZZA,,,78900,78900,78900,already matches the sheet
+already-matching,TMP-F4-DIJONRANCH,,,33000,33000,33000,already matches the sheet
+already-matching,TMP-F4-DILLRANCH,,,0,0,0,already matches the sheet
+already-matching,TMP-F4-FUNNELCAKE,,,6600,6600,6600,already matches the sheet
+already-matching,TMP-F4-GLAZEDDONUT,,,0,0,0,already matches the sheet
+already-matching,TMP-F4-GUACAMOLE,,,0,0,0,already matches the sheet
+already-matching,TMP-F4-HATCHCHILI,,,0,0,0,already matches the sheet
+already-matching,TMP-F4-HONEYBBQALEXRODRIGUES,,,63600,63600,63600,already matches the sheet
+already-matching,TMP-F4-HONEYSHIRACHA,,,0,0,0,already matches the sheet
+already-matching,TMP-F4-KETCHUP,,,0,0,0,already matches the sheet
+already-matching,TMP-F4-KOREANBBQKINGOFJUCO,,,96300,96300,96300,already matches the sheet
+already-matching,TMP-F4-LOADEDPOTATO,,,0,0,0,already matches the sheet
+already-matching,TMP-F4-MAPLEBACON,,,0,0,0,already matches the sheet
+already-matching,TMP-F4-MEXICANSTREET,,,4000,4000,4000,already matches the sheet
+already-matching,TMP-F4-NASHVILLEHOT,,,1050,1050,1050,already matches the sheet
+already-matching,TMP-F4-PARMUFFALO,,,0,0,0,already matches the sheet
+already-matching,TMP-F4-PEANUTBUTTERJELLY,,,0,0,0,already matches the sheet
+already-matching,TMP-F4-PEPPEREDBACON,,,0,0,0,already matches the sheet
+already-matching,TMP-F4-SALSA,,,0,0,0,already matches the sheet
+already-matching,TMP-F4-SALTEDCARAMEL,,,0,0,0,already matches the sheet
+already-matching,TMP-F4-SMORES,,,0,0,0,already matches the sheet
+already-matching,TMP-F4-SPICYQUESO,,,0,0,0,already matches the sheet
+already-matching,TMP-F4-SWEETTHAICHILI,,,50,50,50,already matches the sheet
+already-matching,TMP-F4-TACO,,,0,0,0,already matches the sheet
+already-matching,FILM15-S03,,,87400,87400,87400,already matches the sheet
+already-matching,FILM15-S04,,,95000,95000,95000,already matches the sheet
+already-matching,FILM15-S09,,,9200,9200,9200,already matches the sheet
+already-matching,FILM15-S10,,,70000,70000,70000,already matches the sheet
+already-matching,FILM15-S11,,,79160,79160,79160,already matches the sheet
+already-matching,TMP-F15-TERIYAKI,,,500,500,500,already matches the sheet
+already-matching,TMP-F15-TACO,,,0,0,0,already matches the sheet
+already-matching,TMP-F15-SALSA,,,0,0,0,already matches the sheet
+already-matching,TMP-F15-GUACAMOLE,,,0,0,0,already matches the sheet
+already-matching,TMP-F15-HONEYSHIRACHA,,,1200,1200,1200,already matches the sheet
+already-matching,TMP-F15-PARMUFFALO,,,0,0,0,already matches the sheet
+already-matching,TMP-F15-PEANUTBUTTERJELLY,,,4150,4150,4150,already matches the sheet
+already-matching,TMP-F15-STRAWBERRYCHEESECAKE,,,0,0,0,already matches the sheet
+already-matching,TMP-F15-CINNAMONROLL,,,0,0,0,already matches the sheet
+already-matching,TMP-F15-SALTEDCARAMEL,,,0,0,0,already matches the sheet
+already-matching,TMP-F15-KETCHUP,,,1400,1400,1400,already matches the sheet
+already-matching,TMP-F15-GRIMREAPERRANCH,,,7000,7000,7000,already matches the sheet
+already-matching,TMP-F15-SOURSCREAMINONION,,,7000,7000,7000,already matches the sheet
+already-matching,TMP-F15-SPICYQUESO,,,0,0,0,already matches the sheet
+already-matching,TMP-F15-BUFFALORANCH,,,0,0,0,already matches the sheet
+already-matching,TMP-F15-ORIGINALCAMO,,,0,0,0,already matches the sheet
+already-matching,TMP-F15-BBQCAMO,,,0,0,0,already matches the sheet
+already-matching,TMP-F15-DILLPICKLECAMO,,,0,0,0,already matches the sheet
+already-matching,TMP-F15-ADVENTBAG2025,,,9000,9000,9000,already matches the sheet
+already-matching,TMP-F275-BBQ,,,83980,83980,83980,already matches the sheet
+already-matching,TMP-F275-GARLIC,,,88600,88600,88600,already matches the sheet
+already-matching,BKT-UNPR,,,2856,2856,2856,already matches the sheet
+already-matching,LID-BLUE,,,4088,4088,4088,already matches the sheet
+already-matching,BKT-SPORTS,,,733,733,733,already matches the sheet
+already-matching,LID-DKBLUE,,,617,617,617,already matches the sheet
+already-matching,BKT-BOX,,,5825,5825,5825,already matches the sheet
+already-matching,BKT-STICKER,,,29000,29000,29000,already matches the sheet
+already-matching,BKT-STICKER-PIZZA,,,12765,12765,12765,already matches the sheet
+already-matching,BKT-CAMO,,,159,159,159,already matches the sheet
+already-matching,LID-BLACK,,,139,139,139,already matches the sheet
+already-matching,BOX - BKT SPTS WH 6CT,,,2025,2025,2025,already matches the sheet
+already-matching,LID - WHITE,,,22770,22770,22770,already matches the sheet
+already-matching,BOX-160086,,,8150,8150,8150,already matches the sheet
+already-matching,SUP-HEAPALANG,,,684,684,684,already matches the sheet
+already-matching,TGT-SHIPPER,,,6300,6300,6300,already matches the sheet
+already-matching,WM-SHIPPER,,,21700,21700,21700,already matches the sheet
+already-matching,BOX-24,,,1575,1575,1575,already matches the sheet
+already-matching,Box - MC Cashew,,,4450,4450,4450,already matches the sheet
+already-matching,Box - Cashew 6,,,40600,40600,40600,already matches the sheet
+already-matching,SUP-BOXRS14,,,686,686,686,already matches the sheet
+already-matching,SUP-CARDUMBIN,,,36,36,36,already matches the sheet
+already-matching,DISPLAY-4OZ,,,5620,5620,5620,already matches the sheet
+already-matching,SUP-DISHEA,,,6142,6142,6142,already matches the sheet
+already-matching,SUP-DISSHIBOX,,,5480,5480,5480,already matches the sheet
+already-matching,SUP-BAGDIS,,,1880,1880,1880,already matches the sheet
+already-matching,SLV-S01,,,12240,12240,12240,already matches the sheet
+already-matching,SLV-S02,,,27120,27120,27120,already matches the sheet
+already-matching,SLV-S03,,,3360,3360,3360,already matches the sheet
+already-matching,SLV-S04,,,17920,17920,17920,already matches the sheet
+already-matching,SLV-S05,,,1350,1350,1350,already matches the sheet
+already-matching,SLV-S07,,,24240,24240,24240,already matches the sheet
+already-matching,SLV-S08,,,10560,10560,10560,already matches the sheet
+already-matching,SLV-CHZ,,,16640,16640,16640,already matches the sheet
+already-matching,SUP-HALBOXCUT,,,690,690,690,already matches the sheet
+already-matching,SUP-ADVCALINS,,,49,49,49,already matches the sheet
+already-matching,SUP-ADVCALSHI,,,277,277,277,already matches the sheet
+already-matching,SUP-SMAADVCAL,,,17,17,17,already matches the sheet
+already-matching,SUP-FIEBOXYEL,,,500,500,500,already matches the sheet
+already-matching,SUP-FIE3PK,,,380,380,380,already matches the sheet
+already-matching,POLY-SM,,,22500,22500,22500,already matches the sheet
+already-matching,POLY-LG,,,18000,18000,18000,already matches the sheet
+already-matching,STICKER-SM,,,9000,9000,9000,already matches the sheet
+already-matching,SUP-LABECOM,,,48000,48000,48000,already matches the sheet
+already-matching,SUP-LABPAP,,,78750,78750,78750,already matches the sheet
+already-matching,SUP-GAYDHL,,,29,29,29,already matches the sheet
+already-matching,SUP-PALWOO,,,252,252,252,already matches the sheet
+already-matching,SUP-BOXDHL,,,101,101,101,already matches the sheet
+already-matching,SUP-BOXUSP,,,29,29,29,already matches the sheet
+already-matching,SUP-TAPDISPRE,,,5,5,5,already matches the sheet
+already-matching,SUP-TAPDISSTR,,,0,0,0,already matches the sheet
+already-matching,SUP-3MACTAP,,,188,188,188,already matches the sheet
+already-matching,SUP-3HANTAP,,,720,720,720,already matches the sheet
+already-matching,SUP-SHURTAPE,,,144,144,144,already matches the sheet
+already-matching,SUP-2HANTAP,,,383,383,383,already matches the sheet
+already-matching,SUP-2MACTAP,,,165,165,165,already matches the sheet
+already-matching,SUP-SHRWRAHAN,,,0,0,0,already matches the sheet
+already-matching,SUP-SHRWRAMAC,,,33,33,33,already matches the sheet
+already-matching,SUP-CUP12OZ,,,600,600,600,already matches the sheet
+already-matching,SUP-PAPROLTOW,,,0,0,0,already matches the sheet
+already-matching,SUP-PAPCUP4,,,1700,1700,1700,already matches the sheet
+already-matching,SUP-BATTIS,,,48,48,48,already matches the sheet
+already-matching,SUP-PLA81,,,0,0,0,already matches the sheet
+already-matching,SUP-FABCON1,,,0,0,0,already matches the sheet
+already-matching,SUP-CLOCON,,,0,0,0,already matches the sheet
+already-matching,SUP-SPO,,,0,0,0,already matches the sheet
+already-matching,SUP-KNI,,,1000,1000,1000,already matches the sheet
+already-matching,SUP-FOR,,,0,0,0,already matches the sheet
+already-matching,SUP-GLO,,,32600,32600,32600,already matches the sheet
+already-matching,SUP-GLOX,,,6500,6500,6500,already matches the sheet
+already-matching,SUP-GLOXX,,,31700,31700,31700,already matches the sheet
+already-matching,SUP-GLOXXX,,,7800,7800,7800,already matches the sheet
+already-matching,SUP-STEWIP,,,1080,1080,1080,already matches the sheet
+already-matching,SUP-HAINETHK1,,,0,0,0,already matches the sheet
+already-matching,SUP-BEANETHK1,,,3000,3000,3000,already matches the sheet
+already-matching,SUP-HOTSTARIB,,,480,480,480,already matches the sheet
+already-matching,SUP-HUNTINGSEAT,,,0,0,0,already matches the sheet
+already-matching,SUP-BLUEINFLUENCER,,,32,32,32,already matches the sheet
+already-matching,SUP-CARDFASTAMAZON,,,10010,10010,10010,already matches the sheet
+already-matching,SUP-DISHEASV,,,200,200,200,already matches the sheet
+already-matching,SUP-HANDWRAPRED,,,3,3,3,already matches the sheet
+already-matching,SUP-CUP8OZ,,,0,0,0,already matches the sheet
+already-matching,SUP-FRESHAIR,,,0,0,0,already matches the sheet
+already-matching,SUP-FACTIS,,,0,0,0,already matches the sheet
+already-matching,SUP-BOXRSC16,,,0,0,0,already matches the sheet
+already-matching,SUP-LABEL12-ORIGINAL,,,76500,76500,76500,already matches the sheet
+already-matching,SUP-LABEL12-CINNAMONCHURROS,,,31500,31500,31500,already matches the sheet
+already-matching,SUP-LABEL12-BBQ,,,35000,35000,35000,already matches the sheet
+already-matching,SUP-LABEL12-GARLICPARMESAN,,,22000,22000,22000,already matches the sheet
+already-matching,SUP-LABEL12-DILLPICKLE,,,36000,36000,36000,already matches the sheet
+already-matching,SUP-LABEL12-CRACKEDPEPPER,,,68500,68500,68500,already matches the sheet
+already-matching,SUP-LABEL12-CHEDDARJALAPENO,,,17500,17500,17500,already matches the sheet
+already-matching,SUP-LABEL12-RANCH,,,39000,39000,39000,already matches the sheet
+already-matching,SUP-LABEL12-MAPLE,,,31500,31500,31500,already matches the sheet
+already-matching,SUP-LABEL12-LEMONPEPPER,,,35000,35000,35000,already matches the sheet
+already-matching,SUP-LABEL12-VARIETY,,,81000,81000,81000,already matches the sheet
+already-matching,SUP-LABEL12-SOURCREAMONION,,,53000,53000,53000,already matches the sheet
+already-matching,BKT-STD,,,1201,1201,1201,already matches the sheet
+already-matching,SUP-BOX,,,275,275,275,already matches the sheet
+held,Dill Pickle Popcorn Spicy,# 4201K,,,30,,No OS item for Dill Pickle Popcorn Spicy. Adriana needs a SKU before this 30 lb lot can be placed.
+held,Glazed Donut Style,#11779,,,550,,Sheet Glazed Donut Style 550 lb lot 11779 has no OS item. The Snickerdoodle item is a different sheet line and was not used as a stand-in.
+held,SEAS-S05,# J1926,,,950,,"SEAS-S05 Dill Pickle lot j1926 stays untouched pending Adriana (OS 1,350 vs sheet 950)."
+held,SEAS-S05,LOT # j1926,RECEIVING,1350,,1350,"SEAS-S05 Dill Pickle lot j1926 stays untouched pending Adriana (OS 1,350 vs sheet 950)."
+held,TMP-B4-DILLRANCH,,,100,0,100,Sheet quantity is below the quantity already in RETURNS or a hold location. Those locations were not changed.
+held,FILM4-S01,,,,208100,,"Quantity 208100 is over 100,000. Held as a likely typo."
+held,FILM4-S02,,,,434500,,"Quantity 434500 is over 100,000. Held as a likely typo."
+held,FILM4-S06,,,,276350,,"Quantity 276350 is over 100,000. Held as a likely typo."
+held,FILM4-S08,,,,107250,,"Quantity 107250 is over 100,000. Held as a likely typo."
+held,FILM4-S09,,,,300600,,"Quantity 300600 is over 100,000. Held as a likely typo."
+held,FILM4-S10,,,,164600,,"Quantity 164600 is over 100,000. Held as a likely typo."
+held,FILM4-S11,,,,399600,,"Quantity 399600 is over 100,000. Held as a likely typo."
+held,TMP-F4-GOODGOODSALTVINEGAR,,,,316300,,"Quantity 316300 is over 100,000. Held as a likely typo."
+held,TMP-F4-TERIYAKIANABRUNI,,,,126600,,"Quantity 126600 is over 100,000. Held as a likely typo."
+held,TMP-F4-UNVAULTEDLIMITED,,,,27600,,UNVAULTED / LIMITED FLAVOR does not map to one film SKU.
+held,FILM15-S01,,,,108780,,"Quantity 108780 is over 100,000. Held as a likely typo."
+held,FILM15-S02,,,,230200,,"Quantity 230200 is over 100,000. Held as a likely typo."
+held,FILM15-S05,,,,115700,,"Quantity 115700 is over 100,000. Held as a likely typo."
+held,FILM15-S06,,,,108000,,"Quantity 108000 is over 100,000. Held as a likely typo."
+held,FILM15-S07,,,,117770,,"Quantity 117770 is over 100,000. Held as a likely typo."
+held,FILM15-S08,,,,139715,,"Quantity 139715 is over 100,000. Held as a likely typo."
+held,TMP-F15-LOADEDNACHO,,,,3000,,The 1.5 oz film row mixes Loaded Potato and Loaded Nacho. Not loaded.
+held,SUP-BOXX,,,,0,,Box #12126 is 0 on the sheet and 275 in OS. Suspected swap with #12124. Left unchanged.
+held,SUP-PAPTOW12,,,,24,,Paper towels: the sheet says 24 rolls and OS stores packs. Confirm 2 packs versus 24 before writing.
+held,SUP-TRASHBLACK,,,,140,,Black trash bags stay held so they are not added on top of the combined trash-bag row.
+held,SUP-TRASHWHITE,,,,200,,White trash bags stay held so they are not added on top of the combined trash-bag row.
+held,SUP-MASKTOMCLAN,,,,7800,,Tom Clan masks stay held so they are not added on top of the combined mask row.
+held,SUP-MASKDOKU,,,,10850,,Doku masks stay held so they are not added on top of the combined mask row.
+held,SUP-MASKDRHZ,,,,1850,,DrHZ masks stay held so they are not added on top of the combined mask row.
+held,NUTS-CINNAMONCHURRO,,,,4032,,Cinnamon cashew packs are not an OS item yet. Adriana needs to confirm the unit.
+held,NUTS-BBQ,,,,18432,,BBQ cashew detail and the printed total disagree by 744 packs. Not loaded.
+note,SEAS-L02,#4209 E,,,,,Combined 2 sheet rows for the same lot at L-20. Earliest expiration kept.
+note,TMP-SEAS-COTTONCANDY,#11713,,,,,Combined 2 sheet rows for the same lot at RECEIVING. Earliest expiration kept.
+note,TMP-SEAS-DIJONHERBPOPCORN,# 4215E,,,,,Combined 2 sheet rows for the same lot at QUARANTINE. Earliest expiration kept.
+note,TMP-SEAS-PEANUTBUTTERJELLY,# 7018E,,,,,Combined 2 sheet rows for the same lot at L-27. Earliest expiration kept.
+note,TMP-SEAS-STEVIAZEROCALORIE,# 5001,,,,,Combined 2 sheet rows for the same lot at STSW. Earliest expiration kept.
+note,SEED-WHITE,26219H03,,,,,"Seed lot 26219H03 was called expired in the Nov 5 review, but the seed tab has no expiration date. Left in usable stock until Adriana gives the date."

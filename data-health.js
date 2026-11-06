@@ -142,8 +142,51 @@
         '<p style="margin:6px 0 12px">' + summary + '</p>' +
         '<div class="tblwrap"><table class="sortable"><thead><tr><th>Data source</th><th class="right">Records</th><th>Last update</th><th>Freshness</th></tr></thead><tbody>' + body + '</tbody></table></div>' +
         '</div>' +
-        '<div class="card"><h2 class="sub2">Exceptions</h2><div id="dh-exc">' + (exc || '<p class="muted">No exception checks available.</p>') + '</div></div>';
+        '<div class="card"><h2 class="sub2">Exceptions</h2><div id="dh-exc">' + (exc || '<p class="muted">No exception checks available.</p>') + '</div></div>' +
+        '<div class="card" id="dh-sync"><h2 class="sub2">Inventory Sync</h2><p class="muted">Checking Adriana\'s count...</p></div>';
+      fillSync();
     });
+  }
+  function syncRows(list, limit) {
+    return (list || []).slice(0, limit).map(function (r) {
+      var item = esc(r.item || r.desc || "");
+      var lot = esc(r.lot || "");
+      var loc = esc(r.location || (r.from && r.from.location) || "");
+      var before = r.from && r.from.qty != null ? r.from.qty : (r.os != null ? r.os : "");
+      var after = r.op === "delete" ? 0 : (r.qty != null ? r.qty : "");
+      var why = esc(r.reason || r.op || "");
+      return "<tr><td>" + item + "</td><td>" + lot + "</td><td>" + loc + "</td><td class=\"right\">" + esc(before) + "</td><td class=\"right\">" + esc(r.sheet != null ? r.sheet : "") + "</td><td class=\"right\">" + esc(after) + "</td><td>" + why + "</td></tr>";
+    }).join("");
+  }
+  function fillSync() {
+    var el = $("dh-sync");
+    if (!el) return;
+    var api = window.INV_LOT_PLAN;
+    var latest = window.ADRIANA_LATEST;
+    var db = window.DB;
+    if (!api || !latest || !db || typeof db.stock !== "function" || typeof db.items !== "function" || !db.items().length) {
+      el.innerHTML = "<h2 class=\"sub2\">Inventory Sync</h2><p class=\"muted\">Waiting for inventory to load.</p>";
+      return;
+    }
+    var today = new Date().toISOString().slice(0, 10);
+    var planned = api.planAll(latest, db.stock(), db.items(), { today: today, sheetAsOf: latest.sheetAsOf });
+    var holds = planned.holds || [];
+    var drifts = planned.applied || [];
+    var matched = planned.matching || [];
+    var exc = holds.length
+      ? "<div class=\"ex warn\"><b>" + holds.length + "</b> held line" + (holds.length === 1 ? "" : "s") + ". Each one needs a look. The count is an exception, not a silent skip.</div>"
+      : "<div class=\"ex ok\">No held lines.</div>";
+    exc += drifts.length
+      ? "<div class=\"ex warn\"><b>" + drifts.length + "</b> line" + (drifts.length === 1 ? "" : "s") + " still differ from Adriana's " + esc(latest.countDate) + " count.</div>"
+      : "<div class=\"ex ok\">On-hand matches the latest Adriana count, except held lines.</div>";
+    var head = "<tr><th>Item</th><th>Lot</th><th>Location</th><th class=\"right\">OS before</th><th class=\"right\">Sheet</th><th class=\"right\">OS after</th><th>Reason</th></tr>";
+    el.innerHTML = "<h2 class=\"sub2\">Inventory Sync</h2>" +
+      "<p class=\"hint\">Adriana's Inventory SLC 2026 count " + esc(latest.countDate) + ". This check compares OS on-hand, per item and per lot, with that block. A difference over 0.5% or over 1 unit is listed. Nothing on this screen writes.</p>" +
+      exc +
+      "<p class=\"sm\">" + drifts.length + " to apply, " + matched.length + " already matching, " + holds.length + " held.</p>" +
+      (drifts.length ? "<h3>Still different</h3><div class=\"tblwrap\"><table class=\"sortable\"><thead>" + head + "</thead><tbody>" + syncRows(drifts, 80) + "</tbody></table></div>" : "") +
+      (holds.length ? "<h3>Held</h3><div class=\"tblwrap\"><table class=\"sortable\"><thead>" + head + "</thead><tbody>" + syncRows(holds, 80) + "</tbody></table></div>" : "") +
+      "<h3>Already matching</h3><p class=\"sm\">" + matched.length + " lines already match. The first 40 are listed.</p><div class=\"tblwrap\"><table><thead>" + head + "</thead><tbody>" + syncRows(matched, 40) + "</tbody></table></div>";
   }
 
   var dhOpen = false;
