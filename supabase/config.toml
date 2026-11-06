@@ -11,3 +11,7 @@ entrypoint = "./functions/shipping-sync/index.js"
 [functions.prod-tracking-sync]
 verify_jwt = false
 entrypoint = "./functions/prod-tracking-sync/index.js"
+
+[functions.os-viewer]
+verify_jwt = false
+entrypoint = "./functions/os-viewer/index.js"

@@ -19,7 +19,7 @@
      Cmd+Shift+R can drop a stale smackin-inv worker even when that worker
      swallows sw-escape.js. Only an older smackin-inv cache is removed. */
   (function () {
-    var EMBEDDED = "smackin-inv-v286";
+    var EMBEDDED = "smackin-inv-v287";
     function ver(id) {
       var m = /smackin-inv-v(\d+)/.exec(String(id || ""));
       return m ? parseInt(m[1], 10) : 0;
@@ -95,6 +95,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="session-bind.js?b=1"></script>
 
   <!-- app -->
   <script src="config.js?b=38"></script>
@@ -110,10 +111,11 @@
   <script src="launch-schedule.js?b=1"></script>
   <script src="allen-reorder.js?b=1"></script>
   <script src="recv-match.js?b=2"></script>
+  <script src="role-tabs.js?b=1"></script>
   <script src="db.js?b=101"></script>
   <script src="gusto-roster.js?b=1"></script>
   <script src="order-lanes.js?b=1"></script>
-  <script src="app.js?b=202"></script>
+  <script src="app.js?b=203"></script>
   <script src="returns-workflow.js?b=2"></script>
   <script src="fg-lots.js?b=3"></script>
   <script src="ecom-lot-log.js?b=1"></script>
@@ -125,7 +127,8 @@
   <script src="demand-autoclose.js?b=4"></script>
   <script src="demand-close-cleanup.js?b=2"></script>
   <script src="demand-flavor-remap.js?b=1"></script>
-  <script src="mfg-history.js?b=5"></script>
+  <script src="mfg-history-model.js?b=1"></script>
+  <script src="mfg-history.js?b=6"></script>
   <script src="wip-production.js?b=1"></script>
   <script src="mfg-upload.js?b=4"></script>
   <script src="data-health.js?b=5"></script>
@@ -157,6 +160,7 @@
   <script src="coa-docs.js?b=2"></script>
   <script src="pack-receive.js?b=3"></script>
   <script src="floor-clarity.js?b=1"></script>
+  <script src="history.js?b=1"></script>
   <script src="sw-boot.js?b=2"></script>
   <script src="inv-sync-1105.js?b=1"></script>
 </body>

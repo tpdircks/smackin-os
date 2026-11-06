@@ -530,7 +530,7 @@
     { key: "tote", label: "Tote - 1 bag x 1,200 lb", per: 1200 }
   ];
   const SEED_PACK_MAP = {}; SEED_PACKS.forEach(p => SEED_PACK_MAP[p.key] = p);
-  const TABS = ["home","daily","dash","analytics","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","skulookup","prodlog","fulfilldaily","flavinv","stockbuild","reorder15","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","recipes","prodorders","reordertracker","launch","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","expreceipts","supplierpos","people","improve","maintenance","compliance","quality","disposition","reference","labels","log","settings","board"];
+  const TABS = ["home","daily","dash","analytics","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","skulookup","prodlog","fulfilldaily","flavinv","stockbuild","reorder15","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","recipes","prodorders","reordertracker","launch","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","expreceipts","supplierpos","people","improve","maintenance","compliance","quality","disposition","reference","labels","log","history","settings","board"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -773,7 +773,7 @@
     { key:"grpMixing", items:["board","prodorders","reordertracker","launch","mixing","pmac","pmacout","floor"] },
     { key:"grpPurchasing", items:["purchasing","expreceipts","reorder15"] },
     { key:"grpQuality", items:["compliance","quality","disposition"] },
-    { key:"grpTeam", items:["people","maintenance","improve","rd","log"] },
+    { key:"grpTeam", items:["people","maintenance","improve","rd","log","history"] },
     { key:"grpDocs", items:["reference"] },
     { key:"grpSystem", items:["settings"] }
   ];
@@ -852,7 +852,19 @@
     prefs.sortKey = p.sortKey || ""; prefs.sortDir = p.sortDir || 1;
   } } catch (e) {} })();
   function savePrefs(){ try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch (e) {} }
-  function visibleTabs(){ return ROLE_TABS[prefs.role] || TABS; }
+  function visibleTabs(){
+    // Every signed-in person sees the full manager tab list. The view preset
+    // is kept in preferences and does not hide tabs or rows.
+    var full = TABS.slice();
+    if (window.ROLE_TABS_API && typeof ROLE_TABS_API.visibleFor === "function") return ROLE_TABS_API.visibleFor(prefs.role, full);
+    return full;
+  }
+  function histBtn(table, pk, sku) {
+    try {
+      if (window.HIST && typeof HIST.button === "function") return " " + HIST.button(table, pk, sku);
+    } catch (e) {}
+    return "";
+  }
   let colPanel = false; // dashboard column editor open?
   let dragCol = null;
   let orderView = "open"; // orders: "open" | "complete"
@@ -1344,7 +1356,7 @@
       const quarBadge = qHold > 0 ? ' <span class="pill low" title="' + L("adjQuarTip") + '">&#128274; ' + fmt(qHold) + ' ' + L("adjQuarWord") + '</span>' : '';
       const txt = (i.name + " " + i.code + " " + (CATLBL[i.category] || i.category) + (qHold > 0 ? " quarantine" : "")).toLowerCase();
       return '<tr data-txt="' + txt.replace(/"/g, "") + '"><td><span class="tag">' + (CATLBL[i.category] || i.category) + '</span></td>' +
-        '<td><b>' + i.name + '</b>' + quarBadge + '<div class="muted sm">' + i.code + '</div></td>' +
+        '<td><b>' + i.name + '</b>' + quarBadge + '<div class="muted sm">' + i.code + histBtn("items", i.id, i.code) + '</div></td>' +
         '<td class="right muted">' + fmt(oh) + ' ' + i.unit + (qHold > 0 ? '<div class="sm" style="color:#B25C00">' + fmt(avail) + ' available · ' + fmt(qHold) + ' held</div>' : '') + '</td>' +
         '<td><input class="adjq" id="adj-' + i.id + '" type="number" min="0" inputmode="numeric" placeholder="' + fmt(oh) + '" data-cur="' + oh + '"></td></tr>';
     }).join("");
@@ -2291,7 +2303,8 @@
         '<td class="muted">' + esc(s.received_by || "") + '</td>' +
         '<td class="center">' + doc + '</td>' +
         '<td><button class="ghost sm" title="' + L("editRow") + '" onclick="UI.rlEdit(\'' + s.id + '\')">&#9998;</button>' +
-        ' <button class="ghost sm danger" onclick="UI.rlDelete(\'' + s.id + '\')">&#10005;</button></td></tr>';
+        ' <button class="ghost sm danger" onclick="UI.rlDelete(\'' + s.id + '\')">&#10005;</button>' +
+        histBtn("receiving_log", s.id, s.item_id || s.lot || s.po_num) + '</td></tr>';
     }).join("");
     const table = list.length ? '<table><thead><tr>' +
       th("recv_date", L("rlDate")) + th("supplier", L("rlSupplier")) + th("po_num", L("rlPO")) +
@@ -2809,7 +2822,7 @@
       const act = l.status === "Quarantine"
         ? '<button class="ghost sm" onclick="UI.seasStatus(\'' + l.id + '\',\'Good\')">' + L("markGood") + '</button>'
         : '<button class="ghost sm danger" onclick="UI.seasStatus(\'' + l.id + '\',\'Quarantine\')">' + L("markQuar") + '</button>';
-      return '<tr><td><b>' + (l.product || l.flavor_code) + '</b></td><td>' + (l.lot || "&mdash;") + '</td><td class="muted sm">' + (l.manufacturer || "&mdash;") +
+      return '<tr><td><b>' + (l.product || l.flavor_code) + '</b>' + histBtn("seasoning_lots", l.id, l.lot || l.flavor_code) + '</td><td>' + (l.lot || "&mdash;") + '</td><td class="muted sm">' + (l.manufacturer || "&mdash;") +
         '</td><td' + (isExp ? ' class="expd"' : "") + '>' + (exp || "&mdash;") + '</td><td class="right">' + fmt(l.weight) + '</td><td>' + (l.location ? '<span class="tag">' + esc(l.location) + '</span>' : "&mdash;") + '</td><td>' + stat + '</td><td>' + act + ' <button class="ghost sm" title="' + L("editRow") + '" onclick="UI.seasEdit(\'' + l.id + '\')">&#9998;</button></td></tr>';
     }).join("") : '<tr><td colspan="7" class="muted">' + L("noLots") + '</td></tr>';
     return '<div class="card"><h2>' + L("seasoning") + '</h2><p class="hint">' + L("seasHint") + '</p>' +
@@ -2845,7 +2858,7 @@
         : '<button class="ghost sm danger" onclick="UI.seedStatus(\'' + l.id + '\',\'Quarantine\')">' + L("markQuar") + '</button>';
       const pk = SEED_PACK_MAP[l.packaging];
       const packDesc = (Number(l.pallets) ? fmt(l.pallets) + " " + L("sdPalletsShort") : "") + (pk ? (Number(l.pallets) ? " · " : "") + esc(pk.label) : "");
-      return '<tr><td><b>' + esc(l.product || l.seed_code || "") + '</b></td><td>' + esc(l.lot || "—") + '</td><td>' + (l.internal_code ? '<span class="tag">' + esc(l.internal_code) + '</span>' : "—") + '</td><td class="muted sm">' + esc(l.supplier || "—") +
+      return '<tr><td><b>' + esc(l.product || l.seed_code || "") + '</b>' + histBtn("seed_lots", l.id, l.lot || l.seed_code) + '</td><td>' + esc(l.lot || "—") + '</td><td>' + (l.internal_code ? '<span class="tag">' + esc(l.internal_code) + '</span>' : "—") + '</td><td class="muted sm">' + esc(l.supplier || "—") +
         '</td><td>' + (rec || "—") + '</td><td class="right">' + fmt(l.weight) + '</td><td class="muted sm">' + (packDesc || "—") + '</td><td>' + stat + '</td><td>' + act + ' <button class="ghost sm" title="' + L("editRow") + '" onclick="UI.seedEdit(\'' + l.id + '\')">&#9998;</button></td></tr>';
     }).join("") : '<tr><td colspan="9" class="muted">' + L("noSeedLots") + '</td></tr>';
     const today = new Date().toISOString().slice(0, 10);
@@ -2995,7 +3008,7 @@
       const f = PROD_FMAP[p.flavor_code];
       return '<tr><td>' + (idx + 1) + '</td><td>L' + esc(p.line) + '</td><td><b>' + esc(p.flavor_code) + '</b>' + (f ? ' <span class="muted sm">' + esc(f.name) + '</span>' : '') + '</td>' +
         '<td class="right"><b>' + fmt(p.cases) + '</b></td><td class="sm muted">' + esc(p.log_time || '') + '</td><td class="sm">' + esc(p.notes || '') + '</td>' +
-        '<td><button class="ghost sm danger" onclick="UI.plDel(\'' + p.id + '\')">&#10005;</button></td></tr>';
+        '<td>' + histBtn("production_pallets", p.id, p.flavor_code) + ' <button class="ghost sm danger" onclick="UI.plDel(\'' + p.id + '\')">&#10005;</button></td></tr>';
     }).join('') : '<tr><td colspan="7" class="muted">' + L("plNoPallets") + '</td></tr>';
     // flavor summary (auto)
     const sum = {}; let totCases = 0, totBags = 0;
@@ -3010,6 +3023,7 @@
     // header card: date / lot / shift lead / counter
     const header = '<div class="card"><div class="suprow"><h2 style="flex:1;margin:0">' + L("prodlog") + '</h2>' +
       '<div style="display:flex;align-items:center;gap:6px">' +
+      histBtn("production_days", day.id || "", day.lot || date) +
       '<button class="ghost sm" title="Previous day" onclick="UI.plDateShift(-1)">&#9664;</button>' +
       '<input type="date" value="' + date + '" onchange="UI.plDate(this.value)" style="width:auto">' +
       '<button class="ghost sm" title="Next day" onclick="UI.plDateShift(1)">&#9654;</button>' +
@@ -6631,6 +6645,10 @@
     s.left = left + "px"; s.top = top + "px";
     const fld = card.querySelector("select, input"); if (fld) try { fld.focus(); } catch (e) {}
   }
+  function viewHistory() {
+    if (window.HIST && typeof HIST.view === "function") return HIST.view();
+    return '<div class="card"><h2>History</h2><p class="hint">History did not load. Refresh the page.</p></div>';
+  }
   function render() {
     if (!recvSkipCapture) {
       if ($("r-qty")) {
@@ -6659,7 +6677,7 @@
     }, orders: viewOrders, rd: viewRD, qa: viewQA,
       move: viewMove, prodorders: viewProdOrders, reordertracker: viewReorderTracker, launch: viewLaunch, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, skulookup: viewSkuLookup, prodlog: viewProdLog, fulfilldaily: viewFulfillDaily, stockbuild: viewStockBuild, reorder15: viewReorder15, seasoning: viewSeasoning, recipes: viewRecipes, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, expreceipts: viewExpectedReceipts, flavinv: viewFlavorInventory, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, maintenance: viewMaintenance, compliance: viewCompliance, quality: viewQuality, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
-      demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, ecomdemand: viewEcomDemand, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor, board: viewBoard, disposition: viewDisposition };
+      demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, ecomdemand: viewEcomDemand, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor, board: viewBoard, disposition: viewDisposition, history: viewHistory };
     const DEMAND_FAMILY = ["demand", "demandboard", "demandsched", "demandimport", "ecomdemand", "forecast"];
     const dbar = DEMAND_FAMILY.indexOf(active) >= 0 ? demandTabsBar(active) : "";
     $("view").innerHTML = alertStrip(active) + dbar + (map[active] || viewHome)();
