@@ -211,12 +211,12 @@ assert(homes.indexOf('"trLabels", "fglots"') >= 0, "quality subtab");
 assert(health.indexOf('t: "trace_events"') >= 0, "data health source");
 assert(html.indexOf('src="fg-lots.js?b=3"') >= 0 && html.indexOf("fg-lots.js") < html.indexOf("trace.js"), "script order");
 assert(html.indexOf('src="trace.js?b=21"') >= 0, "trace cache bust");
-assert(html.indexOf('src="dept-homes.js?b=32"') >= 0, "dept homes cache bust");
+assert(html.indexOf('src="dept-homes.js?b=33"') >= 0, "dept homes cache bust");
 assert(html.indexOf('src="data-health.js?b=6"') >= 0, "data health cache bust");
-assert(sw.indexOf('const CACHE = "smackin-inv-v292"') >= 0 && sw.indexOf("./fg-lots.js") >= 0, "cache and asset");
-assert(read("build-id.txt").trim() === "smackin-inv-v292", "build id");
-assert(html.indexOf('var EMBEDDED = "smackin-inv-v292"') >= 0, "index embedded");
-assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v292"') >= 0, "escape embedded");
+assert(sw.indexOf('const CACHE = "smackin-inv-v293"') >= 0 && sw.indexOf("./fg-lots.js") >= 0, "cache and asset");
+assert(read("build-id.txt").trim() === "smackin-inv-v293", "build id");
+assert(html.indexOf('var EMBEDDED = "smackin-inv-v293"') >= 0, "index embedded");
+assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v293"') >= 0, "escape embedded");
 
 if (failed) {
   console.error(failed + " failed");
