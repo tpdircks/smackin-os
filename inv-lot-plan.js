@@ -17,11 +17,35 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
   var OPERATOR = "inventory sync from Adriana count 2026-11-05";
   var SKIP_LOC = { RETURNS: 1, QUARANTINE: 1, "QA-HOLD": 1, "RETURNS-HOLD": 1 };
   var UNSAFE = {
-    "NUTS-CINNAMONCHURRO": "Cinnamon cashew packs are not an OS item yet. Adriana needs to confirm the unit.",
-    "NUTS-BBQ": "BBQ cashew detail and the printed total disagree by 744 packs. Not loaded.",
     "TMP-F4-UNVAULTEDLIMITED": "UNVAULTED / LIMITED FLAVOR does not map to one film SKU.",
     "SUP-BOXX": "Box #12126 is 0 on the sheet and 275 in OS. Suspected swap with #12124. Left unchanged."
   };
+  /* Cashew bags confirmed 2026-11-06. Eight stock rows are the loaded
+     on-hand. Eleven source pallets roll into those rows. Pallet 8 and the
+     Oct 15 receipt stay open and are not part of the totals. */
+  var CASHEW_PALLETS = [
+    { item: "NUTS-CINNAMONCHURRO", lot: "H 26268", exp: "2027-09-25", location: "RACK B", pallet: "2", boxes: 16, partial24: 0, qty: 2304 },
+    { item: "NUTS-CINNAMONCHURRO", lot: "H 26268", exp: "2027-09-25", location: "E-COMMERCE", pallet: "1", boxes: 12, partial24: 0, qty: 1728 },
+    { item: "NUTS-BBQ", lot: "H 26267", exp: "2027-09-24", location: "RACK B", pallet: "4", boxes: 16, partial24: 1, qty: 2328 },
+    { item: "NUTS-BBQ", lot: "H 26266", exp: "2027-09-23", location: "RACK B", pallet: "2", boxes: 16, partial24: 0, qty: 2304 },
+    { item: "NUTS-BBQ", lot: "H 26281", exp: "2027-10-08", location: "RACK B", pallet: "5", boxes: 19, partial24: 0, qty: 2736 },
+    { item: "NUTS-BBQ", lot: "H 26281", exp: "2027-10-08", location: "RACK B", pallet: "6", boxes: 16, partial24: 0, qty: 2304 },
+    { item: "NUTS-BBQ", lot: "H 26281", exp: "2027-10-09", location: "RACK B", pallet: "5-1/2", boxes: 7, partial24: 0, qty: 1008 },
+    { item: "NUTS-BBQ", lot: "H 26281", exp: "2027-10-09", location: "RACK B", pallet: "7", boxes: 16, partial24: 0, qty: 2304 },
+    { item: "NUTS-BBQ", lot: "H 26282", exp: "2027-10-09", location: "RACK B", pallet: "9", boxes: 20, partial24: 1, qty: 2904 },
+    { item: "NUTS-BBQ", lot: "H 26283", exp: "2027-10-10", location: "RACK B", pallet: "10", boxes: 11, partial24: 4, qty: 1680 },
+    { item: "NUTS-BBQ", lot: "H 26266", exp: "2027-09-23", location: "E-COMMERCE", pallet: "1", boxes: 6, partial24: 0, qty: 864 }
+  ];
+  var CASHEW_STOCK = [
+    { item: "NUTS-CINNAMONCHURRO", lot: "H 26268", exp: "2027-09-25", location: "RACK B", qty: 2304, pallet: "2" },
+    { item: "NUTS-CINNAMONCHURRO", lot: "H 26268", exp: "2027-09-25", location: "E-COMMERCE", qty: 1728, pallet: "1" },
+    { item: "NUTS-BBQ", lot: "H 26267", exp: "2027-09-24", location: "RACK B", qty: 2328, pallet: "4" },
+    { item: "NUTS-BBQ", lot: "H 26266", exp: "2027-09-23", location: "RACK B", qty: 2304, pallet: "2" },
+    { item: "NUTS-BBQ", lot: "H 26281", exp: "2027-10-08", location: "RACK B", qty: 8352, pallet: "5,6,5-1/2,7", laterExp: "2027-10-09" },
+    { item: "NUTS-BBQ", lot: "H 26282", exp: "2027-10-09", location: "RACK B", qty: 2904, pallet: "9" },
+    { item: "NUTS-BBQ", lot: "H 26283", exp: "2027-10-10", location: "RACK B", qty: 1680, pallet: "10" },
+    { item: "NUTS-BBQ", lot: "H 26266", exp: "2027-09-23", location: "E-COMMERCE", qty: 864, pallet: "1" }
+  ];
   /* Adriana confirmed these exact totals on 2026-11-06. The same number
      may pass the 100,000 guard. Any other total over 100,000 is still held. */
   var CONFIRMED_LARGE = {
@@ -452,6 +476,84 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
     return { rows: out, info: info };
   }
 
+  function openHolds() {
+    return [
+      {
+        item: "NUTS-BBQ",
+        lot: "H 26282",
+        location: "RACK B",
+        sheet: 2880,
+        title: "BBQ H 26282 pallet 8",
+        reason: "BBQ H 26282 pallet 8, exp 2027-10-09, 20 boxes / 2,880 bags, is in the Oct 15, Oct 20, Oct 22, and Oct 27 source blocks. The Nov 2 block swapped pallet 8 and pallet 9. Nov 5 keeps pallet 9 at 2,904 bags and omits pallet 8. Not loaded. Not part of the 18,432 BBQ total. Ask Adri whether it is still on hand. Yes would raise BBQ to 21,312. No keeps 18,432 and can close this hold."
+      },
+      {
+        item: "",
+        lot: "",
+        sheet: 15408,
+        title: "Oct 15 cashew receipt",
+        reason: "Oct 15 block line is 5 Pallets Today, 144, 15408. That looks like 107 supplier boxes. No lot, expiry, supplier, or transport / BOL was recorded. Not backfilled. No supplier invoice is assumed."
+      }
+    ];
+  }
+  function openNotes() {
+    return [
+      {
+        item: "NUTS-BBQ",
+        lot: "H 26281",
+        title: "H 26281 earliest expiry",
+        reason: "BBQ lot H 26281 at RACK B is one stock row of 8,352 bags with earliest expiry 2027-10-08. Pallet 5 is 2,736 bags exp 2027-10-08, pallet 6 is 2,304 bags exp 2027-10-08, pallet 5-1/2 is 1,008 bags exp 2027-10-09, and pallet 7 is 2,304 bags exp 2027-10-09. The stock key is item, location, and lot, so the later expiry is not a second row. This is not a fully reconciled lot trace."
+      },
+      {
+        item: "DT275-BBQ",
+        title: "Dollar Tree Oct 28 stock",
+        reason: "Unconfirmed Oct 28 Dollar Tree on-hand is not a pallet ledger: BBQ 7,920, Cinnamon Churro 68,160, Garlic Parm 3,600. It is not loaded into Dollar Tree Finished Goods. Waiting on Jesus."
+      },
+      {
+        item: "DT275-BBQ",
+        title: "Unverified P-Mac run",
+        reason: "Unverified P-Mac run on Aug 17: machine 42, flavor S03 BYBBQ, bag size 2.75 oz, 25 boxes, 3,000 packages. No positive Dollar Tree join. Not counted with stock or with the pallet ledger."
+      }
+    ];
+  }
+  function cashewReport(stock) {
+    var lines = CASHEW_STOCK.map(function (line) {
+      var hit = (stock || []).filter(function (r) {
+        return r && String(r.item_id || r.item || "") === line.item &&
+          lotKey(r.lot) === lotKey(line.lot) &&
+          String(r.location || "").toUpperCase() === String(line.location || "").toUpperCase();
+      });
+      var qty = hit.reduce(function (s, r) { return s + num(r.qty); }, 0);
+      var exp = hit.map(function (r) { return String(r.expires_on || r.exp || "").slice(0, 10); }).filter(Boolean).sort()[0] || "";
+      return {
+        item: line.item,
+        lot: line.lot,
+        location: line.location,
+        sheet: line.qty,
+        os: num(qty),
+        exp: line.exp,
+        osExp: exp,
+        match: !drifted(qty, line.qty) && (!hit.length || exp === line.exp)
+      };
+    });
+    function sumItem(id) {
+      return lines.filter(function (l) { return l.item === id; }).reduce(function (s, l) { return s + l.sheet; }, 0);
+    }
+    var palletSum = CASHEW_PALLETS.reduce(function (s, p) { return s + num(p.qty); }, 0);
+    return {
+      lines: lines,
+      pallets: CASHEW_PALLETS,
+      palletCount: CASHEW_PALLETS.length,
+      palletSum: palletSum,
+      churro: sumItem("NUTS-CINNAMONCHURRO"),
+      bbq: sumItem("NUTS-BBQ"),
+      total: palletSum,
+      hold8Qty: 2880,
+      hold8InSum: false,
+      h26281Exp: "2027-10-08",
+      holds: openHolds(),
+      notes: openNotes()
+    };
+  }
   function planAll(latest, stock, items, opts) {
     opts = opts || {};
     var today = opts.today || latest.today || "2026-11-06";
@@ -509,6 +611,12 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
         copy.unit = CONFIRM_CREATE[copy.item].unit;
       }
       if (CONFIRM_REPLACE[copy.item]) copy.replaceOpen = CONFIRM_REPLACE[copy.item];
+      if (copy.item === "NUTS-CINNAMONCHURRO" || copy.item === "NUTS-BBQ") {
+        copy.unsafe = "";
+        copy.category = "cashews";
+        copy.unit = "bags";
+        copy.create = false;
+      }
       seenAgg[copy.item] = 1;
       return copy;
     });
@@ -542,6 +650,8 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
       actions.push({ op: "patch-item", item: rec.item, supplier: rec.supplier, desc: "Maltodextrin Clintose CR-10" });
     });
     notes.push({ item: "SEED-WHITE", lot: "26219H03", reason: "Packed 2026-08-07. Expiration is unknown. The 900 lb stays active." });
+    holds = holds.concat(openHolds());
+    notes = notes.concat(openNotes());
     notes.push({ item: "MCASE-BOX", reason: "Adriana confirmed 5,800 on 2026-11-06." });
     notes.push({ item: "BOX-S-14632", reason: "Adriana confirmed 3,250 on 2026-11-06." });
     notes.push({ item: "CASEBOX-12", reason: "Adriana confirmed 47,125 on 2026-11-06." });
@@ -603,6 +713,9 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
       if (drifted(have, itemSheet[id])) flags.push({ item: id, lot: "", os: num(have), sheet: itemSheet[id], kind: "item" });
     });
     (latest.aggregates || []).forEach(function (spec) {
+      if (spec && (spec.item === "NUTS-CINNAMONCHURRO" || spec.item === "NUTS-BBQ")) {
+        spec = Object.assign({}, spec, { unsafe: "", category: "cashews", unit: "bags" });
+      }
       if (!spec.item || spec.unsafe || num(spec.qty) > CAP || alias[spec.item]) return;
       if (itemSheet[spec.item]) return;
       var it = findItem(items, spec.item);
@@ -619,6 +732,11 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
     COUNT_DATE: COUNT_DATE,
     OPERATOR: OPERATOR,
     UNSAFE: UNSAFE,
+    CASHEW_STOCK: CASHEW_STOCK,
+    CASHEW_PALLETS: CASHEW_PALLETS,
+    openHolds: openHolds,
+    openNotes: openNotes,
+    cashewReport: cashewReport,
     CONFIRMED_LARGE: CONFIRMED_LARGE,
     confirmedLarge: confirmedLarge,
     parseSeedLine: parseSeedLine,

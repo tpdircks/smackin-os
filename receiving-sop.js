@@ -35,7 +35,8 @@
     "Trailer Sealed/Padlock", "Seal #",
     "Trailer clean, no pests, no holes, no off odors",
     "COA/Label Acceptable", "Approved Supplier", "Carrier Sanitation", "Material Condition",
-    "Deviation Actions", "Temperature F", "Allergen", "On Hold"
+    "Deviation Actions", "Temperature F", "Allergen", "On Hold",
+    "PO / invoice #", "Transport / BOL #", "Invoice pending"
   ];
   var HOLD_HEAD = [
     "Date", "Warehouse Personnel", "Product, Ingredient, or Packaging Affected",
@@ -392,6 +393,70 @@
     if (checklistOf(r).temp_not_measured && (r.temperature_f == null || r.temperature_f === "")) return "NM";
     return r.temperature_f == null || r.temperature_f === "" ? "" : r.temperature_f;
   }
+  function invoicePendingOn(v) {
+    return v === true || v === "1" || v === "true" || v === "t" || v === "TRUE";
+  }
+  function invoicePendingCell(r) {
+    return invoicePendingOn(r && r.invoice_pending) ? "Pending" : "";
+  }
+  function blankText(v) {
+    return String(v == null ? "" : v).trim();
+  }
+  function resolveInvoicePending(rec, prev, op) {
+    rec = rec || {};
+    prev = prev || null;
+    var po = blankText(rec.po_num);
+    var transport = rec.transport_ref !== undefined ? blankText(rec.transport_ref) : blankText(prev && prev.transport_ref);
+    var was = !!(prev && invoicePendingOn(prev.invoice_pending));
+    var pending;
+    if (po) pending = false;
+    else if (was) pending = true;
+    else pending = invoicePendingOn(rec.invoice_pending);
+    var when = rec._when || new Date().toISOString();
+    var who = blankText(op || rec._op || rec.operator || rec.received_by);
+    var resolved = was && !pending && !!po;
+    return {
+      po_num: po,
+      transport_ref: transport,
+      invoice_pending: pending,
+      resolution: resolved ? {
+        who: who,
+        when: when,
+        old_invoice_pending: true,
+        new_invoice_pending: false,
+        old_po_num: blankText(prev && prev.po_num),
+        new_po_num: po,
+        transport_ref: transport
+      } : null
+    };
+  }
+  function trailVal(v) {
+    if (v === true) return "true";
+    if (v === false) return "false";
+    if (v == null || String(v).trim() === "") return "(blank)";
+    return String(v);
+  }
+  function invoiceTrail(oldRow, newRow, meta) {
+    oldRow = oldRow || {};
+    newRow = newRow || {};
+    var keys = ["invoice_pending", "po_num", "transport_ref"];
+    var bits = [];
+    keys.forEach(function (k) {
+      var has = Object.prototype.hasOwnProperty.call(oldRow, k) || Object.prototype.hasOwnProperty.call(newRow, k);
+      if (!has) return;
+      if (trailVal(oldRow[k]) === trailVal(newRow[k])) return;
+      bits.push(k + " " + trailVal(oldRow[k]) + " -> " + trailVal(newRow[k]));
+    });
+    if (!bits.length) return "";
+    var who = meta && (meta.user_email || meta.operator) || "";
+    var when = meta && meta.changed_at ? String(meta.changed_at) : "";
+    var head = [];
+    if (who) head.push(who);
+    if (when) head.push(when);
+    var resolved = trailVal(oldRow.invoice_pending) === "true" && trailVal(newRow.invoice_pending) === "false" && trailVal(newRow.po_num) !== "(blank)";
+    var label = resolved ? "Invoice pending resolved" : "Invoice fields";
+    return label + (head.length ? " (" + head.join(", ") + ")" : "") + ": " + bits.join("; ");
+  }
   function sealCell(r) {
     var v = String((r && r.chk_trailer_sealed) || "").trim().toUpperCase();
     if (v === "B") return "Broken";
@@ -405,7 +470,8 @@
         sealCell(r), r.seal_number, r.chk_trailer_clean, r.chk_coa_label,
         r.chk_approved_supplier, r.chk_carrier_sanitation, r.chk_material_condition,
         r.deviation_actions, tempCell(r),
-        allergenCell(r), r.on_hold ? "Yes" : "No"
+        allergenCell(r), r.on_hold ? "Yes" : "No",
+        r.po_num, r.transport_ref, invoicePendingCell(r)
       ].map(csvCell).join(","));
     });
     return lines.join("\r\n");
@@ -1115,7 +1181,10 @@
     noteExternalRelease: noteExternalRelease,
     ensureLoaded: ensureLoaded,
     normLot: normLot,
-    draftGaps: draftGaps
+    draftGaps: draftGaps,
+    resolveInvoicePending: resolveInvoicePending,
+    invoiceTrail: invoiceTrail,
+    invoicePendingCell: invoicePendingCell
   };
   root.RECVSOP = api;
 
@@ -1203,6 +1272,9 @@
       normLot: normLot,
       draftGaps: draftGaps,
       dispPhrase: dispPhrase,
+      resolveInvoicePending: resolveInvoicePending,
+      invoiceTrail: invoiceTrail,
+      invoicePendingCell: invoicePendingCell,
       RECV_HEAD: RECV_HEAD,
       HOLD_HEAD: HOLD_HEAD
     };

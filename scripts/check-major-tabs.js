@@ -24,6 +24,10 @@ eq(read("pack-receive.js").indexOf("function setText") >= 0, "receive item guard
 eq(app.indexOf("function viewReceive") >= 0 && app.indexOf("function viewReceivingLog") >= 0, "receive screens stay");
 eq(app.indexOf('histBtn("receiving_log"') >= 0 && app.indexOf('histBtn("items"') >= 0 && app.indexOf('histBtn("production_pallets"') >= 0, "history links");
 eq(read("history.js").indexOf("\u2014") < 0, "history copy");
+eq(read("index.html").indexOf("dt-finished.js?b=1") >= 0, "dollar tree module");
+eq(read("dept-homes.js").indexOf('fn: "dtfg"') >= 0, "dollar tree inventory tab");
+eq(app.indexOf('id="r-transport"') >= 0 && app.indexOf('id="r-inv-pending"') >= 0, "receive transport and pending");
+eq(app.indexOf("rPendingBadge") >= 0, "pending badge");
 
 if (fail.length) {
   console.error(fail.join("\n"));

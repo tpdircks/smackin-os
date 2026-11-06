@@ -137,6 +137,30 @@ assert(towels.actions.some(function (a) { return a.op === "insert" && a.qty === 
 assert(towels.actions.filter(function (a) { return a.op === "delete"; }).length === 2, "old towel rows are removed");
 
 var ready = require("../prod-ready.js");
+assert(!plan.UNSAFE["NUTS-CINNAMONCHURRO"] && !plan.UNSAFE["NUTS-BBQ"], "cashew unsafe strings are gone");
+assert(plan.UNSAFE["TMP-F4-UNVAULTEDLIMITED"] && plan.UNSAFE["SUP-BOXX"], "other unsafe rules stay");
+var cashewStock = plan.CASHEW_STOCK.map(function (line) {
+  return { item_id: line.item, location: line.location, lot: line.lot, qty: line.qty, expires_on: line.exp };
+});
+var cashew = plan.cashewReport(cashewStock);
+assert(cashew.lines.length === 8 && cashew.lines.every(function (l) { return l.match; }), "eight cashew stock lines match");
+assert(cashew.churro === 4032 && cashew.bbq === 18432 && cashew.total === 22464, "cashew totals " + cashew.churro + " " + cashew.bbq + " " + cashew.total);
+assert(cashew.palletCount === 11 && cashew.palletSum === 22464, "eleven source pallets sum to the stock");
+assert(!cashew.pallets.some(function (p) { return p.pallet === "8"; }), "pallet 8 is not in the loaded pallets");
+assert(cashew.hold8Qty === 2880 && cashew.hold8InSum === false && cashew.bbq + cashew.hold8Qty === 21312, "pallet 8 stays out of the BBQ sum");
+var h26281 = cashew.lines.filter(function (l) { return plan.lotKey(l.lot) === "H26281"; });
+assert(h26281.length === 1 && h26281[0].exp === "2027-10-08" && h26281[0].sheet === 8352, "H26281 uses the earliest expiry");
+var later = cashew.pallets.filter(function (p) { return plan.lotKey(p.lot) === "H26281" && p.exp === "2027-10-09"; });
+assert(later.length === 2 && later.reduce(function (s, p) { return s + p.qty; }, 0) === 3312, "later H26281 pallets stay on the source list");
+var cashewPlan = plan.planAll({ lots: [], aggregates: [
+  { item: "NUTS-CINNAMONCHURRO", qty: 4032, category: "other", unit: "packs", create: true, unsafe: "old note" },
+  { item: "NUTS-BBQ", qty: 18432, category: "other", unit: "packs", create: true, unsafe: "old note" }
+] }, cashewStock, [
+  { id: "NUTS-CINNAMONCHURRO", code: "NUTS-CINNAMONCHURRO", category: "cashews" },
+  { id: "NUTS-BBQ", code: "NUTS-BBQ", category: "cashews" }
+], { today: TODAY, sheetAsOf: AS_OF });
+assert(!cashewPlan.applied.some(function (a) { return a.item === "NUTS-BBQ" || a.item === "NUTS-CINNAMONCHURRO"; }), "matching cashew totals are not rewritten");
+assert(cashewPlan.holds.some(function (h) { return /pallet 8/.test(h.reason); }) && cashewPlan.holds.some(function (h) { return /Oct 15/.test(h.reason); }), "open cashew holds stay on the plan");
 assert(ready.kindOf({ id: "MALTO", code: "MALTO", category: "retired", name: "Retired: Maltodextrin" }) === "retired", "retired malto leaves the pool");
 assert(ready.kindOf({ id: "TMP-SEAS-MALTODEXTRINCLINTOSECR", code: "TMP-SEAS-MALTODEXTRINCLINTOSECR", category: "seasoning", name: "Seasoning - Maltodextrin Clintose CR-10" }) === "malto", "clintose stays the malto record");
 

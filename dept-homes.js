@@ -41,10 +41,11 @@
   var touchArmed = false;
   // Which subtab is showing for the current department. Empty on an action screen.
   var shellHere = "";
-  var INV_SUBS = ["dash", "returns", "finbags", "locations", "facility", "seed", "skus", "printlabels", "analytics", "trMove"];
+  var INV_SUBS = ["dash", "returns", "finbags", "dtfg", "locations", "facility", "seed", "skus", "printlabels", "analytics", "trMove"];
   var INV_ACTIONS = ["receive", "adjust", "count", "move", "alerts"];
   var INV_SUB_SHORT = {
-    trMove: { en: "Lot move", es: "Mover lote", pt: "Mover lote" }
+    trMove: { en: "Lot move", es: "Mover lote", pt: "Mover lote" },
+    dtfg: { en: "Dollar Tree", es: "Dollar Tree", pt: "Dollar Tree" }
   };
 
   var TAB_DEPT = {
@@ -122,6 +123,7 @@
     alerts: { go: "alerts", icon: "bell", title: { en: "Alerts", es: "Alertas", pt: "Alertas" }, blurb: { en: "Out of stock, low stock, and seasoning dates.", es: "Agotado, stock bajo y fechas de sazon.", pt: "Esgotado, estoque baixo e datas de tempero." } },
     shortdated: { go: "disposition", icon: "archive", title: { en: "Short-Dated", es: "Short-Dated", pt: "Short-Dated" }, blurb: { en: "Finished goods flagged by date, with a disposition.", es: "Producto terminado marcado por fecha, con destino.", pt: "Produto acabado marcado por data, com destino." } },
     finbags: { go: "finbags", icon: "shopping-bag", title: { en: "Finished Bags", es: "Bolsas Terminadas", pt: "Sacos Terminados" }, blurb: { en: "Bags staged in storage after P-Mac.", es: "Bolsas en almacenamiento despues de P-Mac.", pt: "Sacos no estoque depois do P-Mac." } },
+    dtfg: { fn: "dtfg", icon: "store", title: { en: "Dollar Tree Finished Goods", es: "Producto terminado Dollar Tree", pt: "Produto acabado Dollar Tree" }, blurb: { en: "Dollar Tree 2.75 oz pallets. The list starts empty. Oct 28 stock is a note, not a pallet.", es: "Tarimas Dollar Tree 2.75 oz. La lista empieza vacia. El stock del 28 de octubre es una nota, no una tarima.", pt: "Paletes Dollar Tree 2.75 oz. A lista comeca vazia. O estoque de 28 de outubro e uma nota, nao um palete." } },
     move: { go: "move", icon: "arrow-left-right", title: { en: "Move / Pick", es: "Mover / Sacar", pt: "Mover / Separar" }, blurb: { en: "Move or pick inventory between locations.", es: "Mueva o saque inventario entre ubicaciones.", pt: "Mova ou separe estoque entre locais." } },
     locations: { go: "locations", icon: "map-pin", title: { en: "Locations", es: "Ubicaciones", pt: "Locais" }, blurb: { en: "See what is in each location now.", es: "Vea que hay en cada ubicacion ahora.", pt: "Veja o que ha em cada local agora." } },
     facility: { go: "facility", icon: "warehouse", title: { en: "Facility Map", es: "Mapa de Planta", pt: "Mapa da Planta" }, blurb: { en: "Plant map and pallet racks.", es: "Mapa de la planta y racks de tarimas.", pt: "Mapa da planta e racks de paletes." } },
@@ -503,6 +505,7 @@
     if (fn === "qacheck" && window.QACHECK && typeof QACHECK.open === "function") { QACHECK.open(); return; }
     if (fn === "coa" && window.COA_DOCS && typeof COA_DOCS.open === "function") { COA_DOCS.open(); return; }
     if (fn === "fglots" && window.FGLOTS && typeof FGLOTS.open === "function") { FGLOTS.open(); return; }
+    if (fn === "dtfg" && window.DTFINISHED && typeof DTFINISHED.open === "function") { DTFINISHED.open(); return; }
     toast(Lmissing());
   }
 
@@ -2018,6 +2021,7 @@
       else if (entry.kind === "mod" && entry.id === "ferr" && window.FULFILL_ANALYTICS) { FULFILL_ANALYTICS.open(); landed = true; }
       else if (entry.kind === "mod" && entry.id === "qacheck" && window.QACHECK) { QACHECK.open(); landed = true; }
       else if (entry.kind === "mod" && entry.id === "fglots" && window.FGLOTS) { FGLOTS.open(); landed = true; }
+      else if (entry.kind === "mod" && entry.id === "dtfg" && window.DTFINISHED) { DTFINISHED.open(); landed = true; }
     } finally {
       backRestoring = false;
     }
@@ -2161,6 +2165,7 @@
     wrapFn(window.FULFILL_ANALYTICS, "open", { kind: "mod", id: "ferr" });
     wrapFn(window.QACHECK, "open", { kind: "mod", id: "qacheck" });
     wrapFn(window.FGLOTS, "open", { kind: "mod", id: "fglots" });
+    wrapFn(window.DTFINISHED, "open", { kind: "mod", id: "dtfg" });
   }
   function leaveBoardMode() {
     if (!document.body.classList.contains("boardmode")) return;

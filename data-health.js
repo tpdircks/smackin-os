@@ -180,12 +180,16 @@
       ? "<div class=\"ex warn\"><b>" + drifts.length + "</b> line" + (drifts.length === 1 ? "" : "s") + " still differ from Adriana's " + esc(latest.countDate) + " count.</div>"
       : "<div class=\"ex ok\">On-hand matches the latest Adriana count, except held lines.</div>";
     var head = "<tr><th>Item</th><th>Lot</th><th>Location</th><th class=\"right\">OS before</th><th class=\"right\">Sheet</th><th class=\"right\">OS after</th><th>Reason</th></tr>";
+    var noteBlock = (planned.notes || []).map(function (n) {
+      return "<div class=\"ex warn\"><b>" + esc(n.title || n.item || "Note") + ".</b> " + esc(n.reason || "") + "</div>";
+    }).join("");
     el.innerHTML = "<h2 class=\"sub2\">Inventory Sync</h2>" +
       "<p class=\"hint\">Adriana's Inventory SLC 2026 count " + esc(latest.countDate) + ". This check compares OS on-hand, per item and per lot, with that block. A difference over 0.5% or over 1 unit is listed. Nothing on this screen writes.</p>" +
       exc +
       "<p class=\"sm\">" + drifts.length + " to apply, " + matched.length + " already matching, " + holds.length + " held.</p>" +
       (drifts.length ? "<h3>Still different</h3><div class=\"tblwrap\"><table class=\"sortable\"><thead>" + head + "</thead><tbody>" + syncRows(drifts, 80) + "</tbody></table></div>" : "") +
       (holds.length ? "<h3>Held</h3><div class=\"tblwrap\"><table class=\"sortable\"><thead>" + head + "</thead><tbody>" + syncRows(holds, 80) + "</tbody></table></div>" : "") +
+      (noteBlock ? "<h3>Open exceptions</h3>" + noteBlock : "") +
       "<h3>Already matching</h3><p class=\"sm\">" + matched.length + " lines already match. The first 40 are listed.</p><div class=\"tblwrap\"><table><thead>" + head + "</thead><tbody>" + syncRows(matched, 40) + "</tbody></table></div>";
   }
 

@@ -105,7 +105,7 @@
   }
   function isFinishedCat(cat) {
     var c = catKey(cat);
-    return c === "bag4" || c === "bag15" || c === "film4" || c === "film15";
+    return c === "bag4" || c === "bag15" || c === "film4" || c === "film15" || c === "dollartree275" || c === "cashews";
   }
   function isPackItem(it) {
     return !!(it && !isRawCat(it.category) && !isFinishedCat(it.category));
@@ -383,7 +383,7 @@
     try { paint(); } catch (e) {}
   }
 
-  var api = { aliasText: aliasText, isPackItem: isPackItem, candidates: candidates, setText: setText, ALIAS: ALIAS };
+  var api = { aliasText: aliasText, isPackItem: isPackItem, isFinishedCat: isFinishedCat, candidates: candidates, setText: setText, ALIAS: ALIAS };
   if (typeof module !== "undefined" && module.exports && (typeof root === "undefined" || !root.document)) {
     module.exports = api;
     return;
