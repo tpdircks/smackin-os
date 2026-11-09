@@ -54,6 +54,113 @@
   }
   function dueMs(s) { var m = String(s || "").match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/); if (!m) return null; var y = +m[3]; if (y < 100) y += 2000; return new Date(y, +m[1] - 1, +m[2]).getTime(); }
 
+
+  var LOOKBACK_DAYS = 30;
+  var DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  var MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  function pad2(n) {
+    n = String(n);
+    return n.length < 2 ? "0" + n : n;
+  }
+  function addDays(iso, n) {
+    var p = String(iso || "").split("-");
+    if (p.length < 3) return "";
+    var dt = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2] + Number(n || 0)));
+    return dt.getUTCFullYear() + "-" + pad2(dt.getUTCMonth() + 1) + "-" + pad2(dt.getUTCDate());
+  }
+  function denverStamp(now) {
+    now = now instanceof Date ? now : new Date(now || Date.now());
+    var fmt = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Denver",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23"
+    });
+    var parts = {};
+    fmt.formatToParts(now).forEach(function (part) { parts[part.type] = part.value; });
+    return {
+      date: parts.year + "-" + parts.month + "-" + parts.day,
+      hour: parseInt(parts.hour, 10),
+      minute: parseInt(parts.minute, 10)
+    };
+  }
+  function prettyPmacDate(iso) {
+    var p = String(iso || "").split("-");
+    if (p.length < 3) return String(iso || "");
+    var dt = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2]));
+    return DAY_NAMES[dt.getUTCDay()] + " " + MONTH_NAMES[dt.getUTCMonth()] + " " + dt.getUTCDate() + ", " + dt.getUTCFullYear();
+  }
+  function asDateMap(src) {
+    var out = {};
+    if (!src) return out;
+    if (Object.prototype.toString.call(src) === "[object Array]") {
+      src.forEach(function (d) {
+        var k = String(d || "").slice(0, 10);
+        if (k) out[k] = 1;
+      });
+      return out;
+    }
+    Object.keys(src).forEach(function (k) {
+      if (src[k]) out[String(k).slice(0, 10)] = 1;
+    });
+    return out;
+  }
+  function isWeekday(iso) {
+    var p = String(iso || "").split("-");
+    if (p.length < 3) return false;
+    var dow = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])).getUTCDay();
+    return dow >= 1 && dow <= 5;
+  }
+  function pastNextDayDeadline(now, iso) {
+    var next = addDays(iso, 1);
+    var stamp = denverStamp(now);
+    if (!next || !stamp.date) return false;
+    if (stamp.date > next) return true;
+    if (stamp.date < next) return false;
+    return stamp.hour > 15 || (stamp.hour === 15 && stamp.minute >= 0);
+  }
+  function missingPmacDays(opts) {
+    opts = opts || {};
+    var now = opts.now instanceof Date ? opts.now : new Date(opts.now || Date.now());
+    var today = denverStamp(now).date;
+    var start = opts.start || addDays(today, -LOOKBACK_DAYS);
+    var present = asDateMap(opts.present);
+    var holidays = asDateMap(opts.holidays);
+    var out = [];
+    var cursor = start;
+    var guard = 0;
+    while (cursor && cursor <= today && guard < 400) {
+      guard++;
+      if (isWeekday(cursor) && !present[cursor] && !holidays[cursor] && pastNextDayDeadline(now, cursor)) out.push(cursor);
+      cursor = addDays(cursor, 1);
+    }
+    return out;
+  }
+  function loadMissingPmac(c) {
+    var now = new Date();
+    var start = addDays(denverStamp(now).date, -LOOKBACK_DAYS);
+    return Promise.all([
+      c.from("pmac_history").select("run_date").gte("run_date", start).limit(5000),
+      c.from("time_off_holidays").select("holiday_date").gte("holiday_date", start).limit(200)
+    ]).then(function (rs) {
+      if (rs[0] && rs[0].error) return null;
+      var present = {};
+      ((rs[0] && rs[0].data) || []).forEach(function (r) {
+        var d = r && r.run_date ? String(r.run_date).slice(0, 10) : "";
+        if (d) present[d] = 1;
+      });
+      var holidays = {};
+      ((rs[1] && !rs[1].error && rs[1].data) || []).forEach(function (r) {
+        var d = r && r.holiday_date ? String(r.holiday_date).slice(0, 10) : "";
+        if (d) holidays[d] = 1;
+      });
+      return missingPmacDays({ present: present, holidays: holidays, now: now, start: start });
+    }).catch(function () { return null; });
+  }
+
   function styleOnce() {
     if ($("dh-style")) return;
     var s = document.createElement("style"); s.id = "dh-style";
@@ -64,7 +171,8 @@
       ".dh-pill.green{background:#dcfce7;color:#166534}.dh-pill.amber{background:#fef3c7;color:#92400e}.dh-pill.red{background:#fee2e2;color:#991b1b}.dh-pill.grey{background:#f1f5f9;color:#64748b}",
       "#dh-exc .ex{padding:11px 14px;border-radius:10px;margin-top:8px;font-size:13.5px}",
       "#dh-exc .ex.warn{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412}",
-      "#dh-exc .ex.ok{background:#ecfdf5;border:1px solid #a7f3d0;color:#047857}"
+      "#dh-exc .ex.ok{background:#ecfdf5;border:1px solid #a7f3d0;color:#047857}",
+      "#dh-exc .ex.bad{background:#fee2e2;border:1px solid #fecaca;color:#991b1b}"
     ].join("");
     (document.head || document.documentElement).appendChild(s);
   }
@@ -111,9 +219,10 @@
       .then(function (r) { var d = (r && r.data) || []; var cut = Date.now() - 30 * 86400000; return d.filter(function (o) { var t = new Date(o.created_at).getTime(); return !isTestRow(o) && !isNaN(t) && t < cut; }).length; }).catch(function () { return null; });
     var excDemand = c.from("demand_lines").select("due_date,status,batch_id,batch_label,partner,po").eq("status", "Open").limit(10000)
       .then(function (r) { var midnight = new Date(); midnight.setHours(0,0,0,0); return stuckSummary((r && r.data) || [], midnight.getTime()); }).catch(function () { return null; });
+    var excPmac = loadMissingPmac(c);
 
-    Promise.all([Promise.all(jobs), excOrders, excDemand]).then(function (all) {
-      var rows = all[0], stuckOrders = all[1], oldDemand = all[2];
+    Promise.all([Promise.all(jobs), excOrders, excDemand, excPmac]).then(function (all) {
+      var rows = all[0], stuckOrders = all[1], oldDemand = all[2], missingPmac = all[3];
       var body = rows.map(function (x) {
         var st = statusOf(x.days, x.src, x.count);
         return '<tr><td><span class="dh-dot dh-' + st.cls + '"></span>' + esc(x.src.label) + '</td>' +
@@ -135,6 +244,15 @@
       exc += (oldDemand == null) ? '' : (oldDemand.pos > 0
         ? '<div class="ex warn"><b>' + oldDemand.pos + '</b> open PO(s) past due across ' + oldDemand.lines + ' DC/flavor lines. Check live order status before closing.</div>'
         : '<div class="ex ok">No real open POs past due.</div>');
+      if (missingPmac == null) {
+        exc += '';
+      } else if (missingPmac.length) {
+        exc += missingPmac.map(function (d) {
+          return '<div class="ex bad"><b>No P-Mac production rows for ' + esc(prettyPmacDate(d)) + '.</b> The Production Tracking file had no rows for that weekday by 3 PM America/Denver the next day.</div>';
+        }).join("");
+      } else {
+        exc += '<div class="ex ok">No missing weekday P-Mac days in the last ' + LOOKBACK_DAYS + ' days.</div>';
+      }
 
       host.innerHTML =
         '<div class="card"><h2>Data Health</h2>' +
@@ -194,7 +312,7 @@
   }
 
   var dhOpen = false;
-  window.DATAHEALTH = { forTest: { isTestRow: isTestRow, stuckSummary: stuckSummary }, open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); dhOpen = true; markActive(); render(); } };
+  window.DATAHEALTH = { forTest: { isTestRow: isTestRow, stuckSummary: stuckSummary, missingPmacDays: missingPmacDays, prettyPmacDate: prettyPmacDate, denverStamp: denverStamp, addDays: addDays, LOOKBACK_DAYS: LOOKBACK_DAYS }, open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); dhOpen = true; markActive(); render(); } };
 
   function markActive() { try { var nav = $("nav"); if (!nav) return; nav.querySelectorAll(".navitem.active").forEach(function (b) { b.classList.remove("active"); }); var m = $("dh-nav"); if (m) m.classList.add("active"); } catch (e) {} }
   function injectNav() {
