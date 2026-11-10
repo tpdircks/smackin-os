@@ -27,14 +27,14 @@ eq(src.indexOf("create table if not exists public.production_orders") >= 0, "fal
 eq(src.indexOf("work_orders (") < 0, "no new work_orders table");
 eq(paper.indexOf("window.PROD_ORDERS") >= 0, "paper orders kept");
 eq(app.indexOf("production orders to Mixing") >= 0, "legacy marker");
-eq(sw.indexOf('const CACHE = "smackin-inv-v307"') >= 0, "cache v254");
+eq(sw.indexOf('const CACHE = "smackin-inv-v308"') >= 0, "cache v254");
 eq(sw.indexOf('const CACHE = "smackin-inv-v249"') < 0, "old cache gone");
 eq(sw.indexOf('"./work-orders.js"') >= 0, "sw asset");
 eq(sw.indexOf('"./inventory-visual.js"') >= 0 && sw.indexOf('"./inventory-visual.css"') >= 0, "visual assets stay cached");
 eq(sw.indexOf("./slc-count-panel.js") < 0 && sw.indexOf("./inv-sync-1027d.js") < 0, "count panel and 10/27 sync are not precached");
 eq(html.indexOf("work-orders.js?b=5") >= 0, "script tag");
 eq(html.indexOf("mixing-recipes.js?b=4") >= 0, "mixing cache bust");
-eq(html.indexOf("dept-homes.js?b=36") >= 0, "dept homes cache bust");
+eq(html.indexOf("dept-homes.js?b=37") >= 0, "dept homes cache bust");
 eq(html.indexOf("inventory-visual.js?b=4") >= 0 && html.indexOf("inventory-visual.css?b=3") >= 0, "visual still wired");
 function deptSlice(id, next) {
   var at = homes.indexOf('id: "' + id + '"');
@@ -63,7 +63,8 @@ eq(pmac.indexOf('actions: ["board", "prodorders", "pmacout", "trPmac"]') >= 0, "
   eq(slice.indexOf("primary:") >= 0, id + " has a primary view");
   eq(slice.indexOf("runningFirst") < 0 && slice.indexOf("sections:") < 0, id + " has no tool-card home");
 });
-eq(deptSlice("demand", "purch").indexOf('primary: "demandboard"') >= 0, "demand opens the order board");
+eq(deptSlice("demand", "purch").indexOf('primary: "makeplan"') >= 0, "demand opens Make Plan");
+eq(deptSlice("demand", "purch").indexOf('"demandboard"') >= 0, "order board stays a demand tab");
 eq(deptSlice("recv", "inv").indexOf('primary: "recvlog"') >= 0, "receiving opens the dock log");
 eq(deptSlice("purch", "recv").indexOf('primary: "purchasing"') >= 0, "purchasing opens POs");
 eq(deptSlice("ful", "ship").indexOf('primary: "ordersRetail"') >= 0, "fulfillment opens retail orders");

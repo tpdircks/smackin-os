@@ -34,7 +34,7 @@
   var backRestoring = false;
   var backPressBusy = false;
   var backLeaving = false;
-  var DEMAND_TABS = { demand: 1, demandboard: 1, demandsched: 1, demandimport: 1, ecomdemand: 1, forecast: 1 };
+  var DEMAND_TABS = { makeplan: 1, demand: 1, demandboard: 1, demandsched: 1, demandimport: 1, ecomdemand: 1, forecast: 1 };
   // A department tap blurs the field before click, so remember the mid-entry
   // check from the press itself. Touch sends a later mousedown after the blur.
   var pressBusy = false;
@@ -64,7 +64,7 @@
     prodlog: "ful", fulfilldaily: "ful", flavinv: "ful", stockbuild: "ful",
     orders: "ful", ordersretail: "ful", ordersecom: "ful", orderdocs: "ful",
     shiplog: "ship",
-    demand: "demand", demandboard: "demand", demandsched: "demand", demandimport: "demand",
+    demand: "demand", makeplan: "demand", demandboard: "demand", demandsched: "demand", demandimport: "demand",
     ecomdemand: "demand", forecast: "demand",
     people: "ops", improve: "ops", rd: "ops", log: "ops",
     reference: "ops", board: "mixing", settings: "ops"
@@ -184,6 +184,7 @@
     desk: { go: "home", icon: "home", title: { en: "Dashboard", es: "Panel", pt: "Painel" }, blurb: { en: "Facility snapshot: stock, orders, and what needs attention.", es: "Resumen de la planta: stock, ordenes y lo que necesita atencion.", pt: "Resumo da planta: estoque, pedidos e o que precisa de atencao." } },
     daily: { go: "daily", icon: "calendar-days", title: { en: "Daily Metrics", es: "Daily Metrics", pt: "Daily Metrics" }, blurb: { en: "Retail cases and e-com labels for this week and this month, plus manufacturing. Mini buckets stay separate.", es: "Cajas retail y etiquetas e-com de esta semana y este mes, mas manufactura. Los mini buckets van aparte.", pt: "Caixas de varejo e etiquetas e-com desta semana e deste mes, mais manufatura. Mini buckets ficam separados." } },
     demand: { go: "demand", icon: "calendar-clock", title: { en: "By Department", es: "Por Departamento", pt: "Por Departamento" }, blurb: { en: "Today's build target by department.", es: "La meta de produccion de hoy por departamento.", pt: "A meta de producao de hoje por departamento." } },
+    makeplan: { go: "makeplan", icon: "clipboard-list", title: { en: "Make Plan", es: "Plan de produccion", pt: "Plano de producao" }, blurb: { en: "This week's demand, on hand, and what to produce. Allen's production view.", es: "La demanda de esta semana, lo que hay en mano y que producir.", pt: "A demanda desta semana, o que ha em estoque e o que produzir." } },
     demandboard: { go: "demandboard", icon: "list-checks", title: { en: "Order Board", es: "Tablero de Pedidos", pt: "Painel de Pedidos" }, blurb: { en: "Open orders due to ship.", es: "Ordenes abiertas por enviar.", pt: "Pedidos abertos para enviar." } },
     demandsched: { go: "demandsched", icon: "gauge", title: { en: "Production Schedule", es: "Programa de Produccion", pt: "Programa de Producao" }, blurb: { en: "What to produce by flavor against finished bags on hand.", es: "Que producir por sabor contra bolsas terminadas en mano.", pt: "O que produzir por sabor contra sacos prontos em estoque." } },
     demandimport: { go: "demandimport", icon: "file-up", title: { en: "Import Orders", es: "Importar Pedidos", pt: "Importar Pedidos" }, blurb: { en: "Load SPS and ShipIQ exports into the demand board.", es: "Cargue exportaciones SPS y ShipIQ en el tablero de demanda.", pt: "Carregue exportacoes SPS e ShipIQ no painel de demanda." } },
@@ -218,10 +219,11 @@
     },
     {
       id: "demand",
-      primary: "demandboard",
+      primary: "makeplan",
       actions: ["demandimport"],
-      subs: ["demandboard", "demand", "floor", "demandsched", "ecomdemand", "forecast"],
+      subs: ["makeplan", "demandboard", "demand", "floor", "demandsched", "ecomdemand", "forecast"],
       short: {
+        makeplan: { en: "Make Plan", es: "Plan", pt: "Plano" },
         floor: { en: "Now Running", es: "En marcha", pt: "Em andamento" },
         demandsched: { en: "Schedule", es: "Programa", pt: "Programa" },
         forecast: { en: "Forecast", es: "Pronostico", pt: "Previsao" }
@@ -229,7 +231,7 @@
       icon: "activity",
       label: { en: "Demand", es: "Demanda", pt: "Demanda" },
       title: { en: "Demand", es: "Demanda", pt: "Demanda" },
-      intro: { en: "Open orders due to ship. Import is the action. The other boards are tabs.", es: "Ordenes abiertas por enviar. Importar es la accion. Los otros tableros son pestanas.", pt: "Pedidos abertos para enviar. Importar e a acao. Os outros paineis sao abas." }
+      intro: { en: "Make Plan is the production view. Order Board, Import, E-Com, and Forecast stay on their own tabs.", es: "El plan de produccion es la vista de produccion. El tablero, importar, e-com y el pronostico siguen en sus pestanas.", pt: "O plano de producao e a visao de producao. O painel, importar, e-com e a previsao continuam nas suas abas." }
     },
     {
       id: "purch",
@@ -924,6 +926,7 @@
   }
   function openDemand() {
     return arr(function () { return DB.demandLines ? DB.demandLines() : []; }).filter(function (r) {
+      if (window.MAKE_PLAN && typeof MAKE_PLAN.classifyLine === "function") return MAKE_PLAN.classifyLine(r, new Date()).keep;
       if (window.SPSMap && typeof SPSMap.countsForBuild === "function") return SPSMap.countsForBuild(r);
       return (r.status || "Open") === "Open";
     }).slice().sort(function (a, b) {

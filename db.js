@@ -244,15 +244,22 @@ window.DB = (function () {
       return sb.from("shipping_log").select("*").order("ship_date", { ascending: false }).order("id", { ascending: false });
     }, 3000);
     let manual = [];
+    let queue = [];
     try {
       const extra = await readRows(function () {
         return sb.from("shipping_log").select("*").or("entered_by.is.null,entered_by.not.like.sync:*").order("id", { ascending: true });
       }, 2000);
       manual = extra.data || [];
     } catch (e) { manual = []; }
+    try {
+      const waiting = await readRows(function () {
+        return sb.from("shipping_log").select("*").eq("status", "awaiting_shipment").eq("entered_by", "sync:shipstation");
+      }, 2000);
+      queue = waiting.data || [];
+    } catch (e2) { queue = []; }
     const seen = {};
     const rows = [];
-    manual.concat(recent.data || []).forEach(function (r) {
+    manual.concat(queue).concat(recent.data || []).forEach(function (r) {
       const id = String(r && r.id);
       if (seen[id]) return;
       seen[id] = true;
