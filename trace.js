@@ -50,22 +50,26 @@
   var WRITE_STOCK = false;            // do not write stock, racks, or Adriana's counts
 
   // ---- flavor master (Codes tab, Allen Back, confirmed 2026-11-10) ----------
-  // Names and status follow the Codes tab. alg / algTxt are unchanged on codes
-  // that were already here. Quality owns allergens. A new code gets a blank alg.
+  // Names and status follow the Codes tab. alg / algTxt are the finished-good
+  // class printed on labels, FG lots, and the batch record. rawAlg is the
+  // seasoning on the rack and at mixing when it differs. Brittney Christensen
+  // confirmed the classes below by email on 2026-11-10.
   // status: active (pickers), retired (history only), unassigned, incomplete,
   // off_master (kept until Allen adds it). successor is the current L-code.
   // former is the old name still shown for an unassigned code.
   // L53 is not on the current Codes master. Sweet Thai Chili stays L39.
-  // L19 stays Honey Sriracha. L52 allergen stays blank.
-  // Tuple: code, name, alg, algTxt, status, successor, former, note.
+  // L19 stays Honey Sriracha.
+  // Tuple: code, name, alg, algTxt, status, successor, former, note,
+  // rawAlg, rawAlgTxt, fgNote.
   var FLAVORS = [
     ["S01", "OG Original", "A1", "", "active"], ["S02", "Cinnamon Churro", "A2", "Milk", "active"], ["S03", "Backyard BBQ", "A2", "Milk", "active"],
     ["S04", "Garlic Parmesan", "A2", "Milk", "active"], ["S05", "Dill Pickle", "A1", "", "active"], ["S06", "Cracked Pepper", "A1", "", "active"],
     ["S07", "Cheddar Jalapeno", "A2", "Milk", "active"], ["S08", "Ranch", "A2", "Milk", "active"], ["S09", "Maple Brown Sugar", "A2", "Milk", "active"],
     ["S10", "Lemon Pepper", "A1", "", "active"], ["S11", "Sour Cream & Onion", "A2", "Milk", "active"],
     ["L14", "Teriyaki (Ana Bruni)", "A3", "Wheat, Soy", "active"], ["L15", "Taco", "A1", "", "active"], ["L16", "Salsa", "A1", "", "active"], ["L17", "Guacamole", "A2", "Milk", "active"],
-    ["L18", "Chili Lime", "A2", "Milk", "active"], ["L19", "Honey Sriracha", "A1", "", "active"], ["L20", "Deep Dish Pizza", "A3", "Milk, Gluten", "active"],
-    ["L21", "Strawberry Cheesecake", "A2", "Milk", "active"], ["L22", "Loaded Nacho", "A2", "Milk", "active"], ["L23", "Cheddar Ghost Pepper", "A3", "Milk, Almond", "active"],
+    ["L18", "Chili Lime", "A2", "Milk", "active", "", "", "", "A1", "", "Finished good contains Milk because Spicy Guacamole is added in batching."],
+    ["L19", "Honey Sriracha", "A1", "", "active"], ["L20", "Deep Dish Pizza", "A3", "Milk, Gluten", "active"],
+    ["L21", "Strawberry Cheesecake", "A2", "Milk", "active"], ["L22", "Loaded Nacho", "A3", "Milk, Soy", "active"], ["L23", "Cheddar Ghost Pepper", "A3", "Milk, Almond", "active"],
     ["L24", "Parmuffalo", "A2", "Milk", "active"], ["L25", "Cheeseburger", "A2", "Milk", "active"], ["L26", "Buffalo Ranch", "A2", "Milk", "active"],
     ["L27", "Peanut Butter & Jelly", "A3", "Peanut", "active"], ["L28", "Cinnamon Roll", "A2", "Milk", "active"], ["L29", "Spicy Queso", "A2", "Milk", "active"],
     ["L30", "Salted Caramel", "A1", "", "active"], ["L31", "GuacZilla!", "A2", "Milk", "active"], ["L32", "Ketchup", "A1", "", "active"],
@@ -75,20 +79,20 @@
     ["L42", "Cheddar Sour Cream", "A2", "Milk", "active"], ["L43", "Funnel Cake", "A2", "Milk", "active"], ["L44", "Chipotle Ranch", "A2", "Milk", "active"],
     ["L45", "Honey Mustard", "A1", "", "active"], ["L46", "Dill Ranch", "A2", "Milk", "active"], ["L47", "Dijon Ranch", "A2", "Milk", "active"],
     ["L48", "Fried Chicken", "A1", "", "active"], ["L49", "Flame-Grilled Steak", "A1", "", "active"], ["L50", "Jalapeno Ranch", "A2", "Milk", "active"],
-    ["L51", "Not Assigned", "", "", "unassigned", "", "Pumpkin Spice"], ["L52", "French Onion Soup", "", "", "active"],
+    ["L51", "Not Assigned", "", "", "unassigned", "", "Pumpkin Spice"], ["L52", "French Onion Soup", "A1", "", "active"],
     ["L53", "Loaded Nacho - Pablo", "A3", "Milk, Soy", "off_master", "", "", "not on current Codes master"],
     ["L54", "Not Assigned", "A2", "Milk", "unassigned"],
     ["L55", "Bacon Jalapeno", "A2", "Milk", "active"], ["L56", "Cotton Candy", "A1", "", "active"],
     ["L57", "Birthday Cake", "A2", "Milk", "active"], ["L58", "Nashville Hot", "A1", "", "active"],
     ["L59", "Mexican Street Corn", "A2", "Milk", "active"],
-    ["L60", "Brisket", "", "", "active"], ["L61", "Glazed Donut", "", "", "active"],
-    ["L62", "Banana Cream Pie", "", "", "active"], ["L63", "Beer & Brats", "", "", "active"],
-    ["L64", "Peppered Bacon", "", "", "active"],
+    ["L60", "Brisket", "A1", "", "active"], ["L61", "Glazed Donut", "", "", "active"],
+    ["L62", "Banana Cream Pie", "A3", "Milk, Soy", "active"], ["L63", "Beer & Brats", "", "", "active"],
+    ["L64", "Peppered Bacon", "A1", "", "active"],
     ["L65", "Not Assigned", "", "", "unassigned"],
     ["L66", "Not Assigned", "", "", "unassigned", "", "Cajun"],
-    ["L67", "Everything Bagel", "", "", "incomplete"],
-    ["L68", "Tzatziki", "", "", "active"], ["L69", "BBQ Chili", "", "", "active"],
-    ["L70", "Snickerdoodle", "", "", "active"], ["L71", "Green Chili", "", "", "active"],
+    ["L67", "Everything Bagel", "A3", "Sesame", "incomplete"],
+    ["L68", "Tzatziki", "A1", "", "active"], ["L69", "BBQ Chili", "A1", "", "active"],
+    ["L70", "Snickerdoodle", "A2", "Milk", "active"], ["L71", "Green Chili", "A1", "", "active"],
     ["L72", "Not Assigned", "", "", "unassigned"], ["L73", "Not Assigned", "", "", "unassigned"],
     ["A01", "Nashville Hot", "A1", "", "retired", "L58"],
     ["A02", "Sweet Thai Chili", "", "", "retired"],
@@ -100,14 +104,14 @@
     ["A08", "Reaper Ranch", "", "", "retired"],
     ["A09", "Crab Boil", "", "", "retired"],
     ["A10", "Habanero Mango", "", "", "retired"],
-    ["A11", "Smoked Brisket", "", "", "retired", "L60"],
+    ["A11", "Smoked Brisket", "A3", "Milk, Soy", "retired", "L60"],
     ["A12", "Bloody Mary", "", "", "retired"],
     ["A13", "Mojito", "", "", "retired"],
     ["A14", "Spicy Garlic Butter", "", "", "retired"],
     ["A15", "Cosmo", "", "", "retired"],
     ["A16", "Coconut Curry", "", "", "retired"],
     ["A17", "Peanut Butter Cup", "", "", "retired"],
-    ["A18", "Birthday Cake", "A3", "Milk, Wheat, Soy, Egg", "retired", "L57"],
+    ["A18", "Birthday Cake", "A3", "Milk, Egg, Wheat, Soy", "retired", "L57"],
     ["A19", "Spicy Dill Pickle", "", "", "retired"],
     ["A20", "Honey BBQ", "", "", "retired"],
     ["A21", "Tikka Masala", "", "", "retired"],
@@ -115,8 +119,29 @@
     ["A23", "Mexican Street Corn", "A2", "Milk", "retired", "L59"],
     ["A24", "Apple Cider", "", "", "retired"]
   ].map(function (f) {
-    return { code: f[0], name: f[1], alg: f[2], algTxt: f[3], status: f[4] || "active", successor: f[5] || "", former: f[6] || "", note: f[7] || "" };
+    return {
+      code: f[0], name: f[1], alg: f[2], algTxt: f[3], status: f[4] || "active",
+      successor: f[5] || "", former: f[6] || "", note: f[7] || "",
+      rawAlg: f[8] || "", rawAlgTxt: f[9] || "", fgNote: f[10] || ""
+    };
   });
+  var ALLERGEN_SOURCE = "Brittney Christensen email 2026-11-10";
+  var ALLERGEN_RULED = { L18: 1, L22: 1, L52: 1, L55: 1, L57: 1, L60: 1, L62: 1, L64: 1, L67: 1, L68: 1, L69: 1, L70: 1, L71: 1, A11: 1, A18: 1 };
+  FLAVORS.forEach(function (f) { if (ALLERGEN_RULED[f.code]) f.allergenSource = ALLERGEN_SOURCE; });
+  function rawAllergen(f) {
+    if (!f) return { alg: "", algTxt: "", note: "" };
+    if (f.rawAlg) return { alg: f.rawAlg, algTxt: f.rawAlgTxt || "", note: f.fgNote || "" };
+    return { alg: f.alg || "", algTxt: f.algTxt || "", note: "" };
+  }
+  function fgAllergen(f) {
+    if (!f) return { alg: "", algTxt: "", note: "" };
+    return { alg: f.alg || "", algTxt: f.algTxt || "", note: f.fgNote || "" };
+  }
+  function allergenBits(part) {
+    var alg = part && part.alg || "";
+    var txt = part && part.algTxt || (alg === "A1" ? "None" : "");
+    return { alg: alg, txt: txt, note: (part && part.note) || "" };
+  }
   function flavorBy(code) {
     code = String(code || "").toUpperCase();
     var m = code.match(/^([SLA]\d{2})/);
@@ -1009,7 +1034,8 @@
       var lpn = newLpn(isFG ? "FG" : "RM");
       var issue = String(r.issue || "").trim();
       var status = isFG ? inheritFgStatus(lot) : (issue ? "HOLD" : (ty.food && !r.rel ? "HOLD" : "RELEASED"));
-      var data = { issues: issue ? [{ txt: issue, by: opName(), at: stamp }] : [], unit: (i + 1) + " of " + units, legacy: !!(r.existing || isFG), alg: fl ? fl.alg : "", algTxt: fl ? fl.algTxt : "", released_by: status === "RELEASED" && ty.food ? opName() : "" };
+      var part = fl ? (isFG ? fgAllergen(fl) : rawAllergen(fl)) : { alg: "", algTxt: "", note: "" };
+      var data = { issues: issue ? [{ txt: issue, by: opName(), at: stamp }] : [], unit: (i + 1) + " of " + units, legacy: !!(r.existing || isFG), alg: part.alg, algTxt: part.algTxt, fgNote: isFG ? (part.note || "") : "", allergenSource: fl && fl.allergenSource || "", released_by: status === "RELEASED" && ty.food ? opName() : "" };
       if (isFG && fgPack) {
         data.best_by_source = fgPack.source;
         if (fgPack.suggested) data.best_by_suggested = fgPack.suggested;
@@ -1230,7 +1256,11 @@
     h += '<div><label>' + esc(L("flavor")) + '</label>' + sel("trc-m-flav", flavorOpts(true, m.flavor), m.flavor, "TRACE.mixFlavor(this.value)") + '</div>';
     h += '<div><label>' + esc(L("prefix")) + '</label><input id="trc-m-prefix" value="' + esc(m.prefix || "") + '" onchange="TRACE.mixPrefix(this.value)"></div>';
     h += '</div>';
-    if (fl) h += '<p style="margin:10px 0 0"><b>Allergen:</b> <span class="trc-pill ' + (fl.alg === "A1" ? "RELEASED" : "HOLD") + '">' + esc(fl.alg || "?") + '</span> ' + esc(fl.algTxt || (fl.alg === "A1" ? "None" : "")) + '</p>';
+    if (fl) {
+      var raw = allergenBits(rawAllergen(fl));
+      h += '<p style="margin:10px 0 0"><b>Allergen:</b> <span class="trc-pill ' + (raw.alg === "A1" ? "RELEASED" : "HOLD") + '">' + esc(raw.alg || "?") + '</span> ' + esc(raw.txt) + '</p>';
+      if (fl.fgNote) h += '<p class="hint" id="trc-m-fgnote">' + esc(fl.fgNote) + "</p>";
+    }
     h += '<p class="hint" style="margin-top:12px">' + esc(L("scanInputs")) + '</p>' + scanBox("mixScan");
     h += '<h3 style="margin:14px 0 6px">' + esc(L("inputs")) + '</h3>';
     if (!m.inputs.length) h += '<p class="muted">-</p>';
@@ -1281,10 +1311,11 @@
     var bc = mixBatchCode(); if (!bc) { flash(L("prefix") + "?", "err"); render(); return; }
     var pw = openPrintWin();
     var parents = m.inputs.map(function (x) { return x.lpn; }), stamp = nowISO(), rows = [], evs = [];
+    var rawBin = allergenBits(rawAllergen(fl));
     var prior = allLabels().filter(function (l) { return l.kind === "BN" && l.lot === bc; }).length;
     for (var i = 0; i < m.bins; i++) {
       var lpn = newLpn("BN");
-      rows.push({ lpn: lpn, kind: "BN", mtype: "BIN", item: "Mixed bin", flavor_code: fl.code, flavor: fl.name, size: "", lot: bc, supplier: "", supplier_lot: "", seed_code: seeds[0].seed_code, exp: null, qty: 1, qty_left: 1, uom: "bin", status: "ACTIVE", location: "MIXING", parents: parents, po: "", station: "MIXER " + ST.mixer, data: { prefix: String(m.prefix).toUpperCase().trim(), mixer: ST.mixer, bin_no: prior + i + 1, alg: fl.alg, algTxt: fl.algTxt, date: today() }, created_by: opName(), created_at: stamp });
+      rows.push({ lpn: lpn, kind: "BN", mtype: "BIN", item: "Mixed bin", flavor_code: fl.code, flavor: fl.name, size: "", lot: bc, supplier: "", supplier_lot: "", seed_code: seeds[0].seed_code, exp: null, qty: 1, qty_left: 1, uom: "bin", status: "ACTIVE", location: "MIXING", parents: parents, po: "", station: "MIXER " + ST.mixer, data: { prefix: String(m.prefix).toUpperCase().trim(), mixer: ST.mixer, bin_no: prior + i + 1, alg: rawBin.alg, algTxt: rawBin.txt, fgNote: fl.fgNote || "", date: today() }, created_by: opName(), created_at: stamp });
       evs.push({ type: "MIX", lpn: lpn, qty: 1, uom: "bin", ref: "MIXER " + ST.mixer, lot: bc, data: { inputs: parents } });
     }
     var ups = [];
@@ -1326,7 +1357,11 @@
     h += '<label>' + esc(L("setPrinter")) + '</label><div class="trc-big">' + esc(bcode || "-") + '</div>';
     var packSt = bcode ? inheritFgStatus(bcode) : "ACTIVE";
     if (packSt === "HOLD" || packSt === "REJECTED") h += '<div class="trc-holdban"><span class="trc-badge-hold">' + esc(packSt) + '</span> ' + esc(bcode) + '<span class="sub">' + esc(packSt === "REJECTED" ? L("rejectBanner") : L("holdBanner")) + " " + esc(L("palletHeldInherit")) + '</span></div>';
-    if (fl) h += '<p><b>Allergen:</b> ' + esc(fl.alg) + ' ' + esc(fl.algTxt) + ' &middot; <b>' + esc(L("size")) + ':</b> ' + esc(size) + '</p>';
+    if (fl) {
+      var fgShow = allergenBits(fgAllergen(fl));
+      h += '<p id="trc-p-alg"><b>Allergen:</b> ' + esc(fgShow.alg) + ' ' + esc(fgShow.txt) + ' &middot; <b>' + esc(L("size")) + ':</b> ' + esc(size) + '</p>';
+      if (fl.fgNote) h += '<p class="hint">' + esc(fl.fgNote) + "</p>";
+    }
     h += '<div class="trc-grid"><div><label>' + esc(L("bags")) + '</label><input id="trc-p-bags" type="number" min="1" placeholder="e.g. 2500" value="' + esc(W.pmBags || "") + '"></div>';
     h += bestByBox("trc-p-exp", !!W.pmExpTouched, W.pmExp || "", size, p.flavor || "");
     h += '</div>';
@@ -1421,7 +1456,8 @@
     var parents = (p.openBins || []).concat(p.openFilms && p.openFilms.length ? p.openFilms : (p.film ? [p.film] : []));
     parents = parents.filter(function (x, i, a) { return x && a.indexOf(x) === i; });
     var fgStatus = inheritFgStatus(lot);
-    var fgData = { machine: m, week: isoWeek(), date: today(), alg: fl ? fl.alg : "", algTxt: fl ? fl.algTxt : "", batch: p.batch, best_by_source: pack.source };
+    var fgPart = fl ? fgAllergen(fl) : { alg: "", algTxt: "", note: "" };
+    var fgData = { machine: m, week: isoWeek(), date: today(), alg: fgPart.alg, algTxt: fgPart.algTxt, fgNote: fgPart.note || "", allergenSource: fl && fl.allergenSource || "", batch: p.batch, best_by_source: pack.source };
     if (pack.suggested) fgData.best_by_suggested = pack.suggested;
     if (fgStatus === "HOLD" || fgStatus === "REJECTED") inheritHoldData(lot, fgData, fgStatus);
     var row = { lpn: newLpn("FG"), kind: "FG", mtype: "FG", item: (fl ? fl.name : p.flavor) + " " + sizeForMachine(m), flavor_code: p.flavor, flavor: fl ? fl.name : "", size: sizeForMachine(m), lot: lot, supplier: "", supplier_lot: "", seed_code: "", exp: pack.exp || null, qty: bags, qty_left: bags, uom: "bags", status: fgStatus, location: "STAGING", parents: parents, po: "", station: "PMAC " + m, data: fgData, created_by: opName(), created_at: nowISO() };
@@ -2876,6 +2912,7 @@
       top = "MIXED BIN / CONTENEDOR";
       body = '<div class="big">' + esc(l.flavor) + '</div><div class="lot">BATCH ' + esc(l.lot) + '</div>' +
         '<div class="alg">Allergen ' + esc(d.alg || "") + (d.algTxt ? ": " + esc(d.algTxt) : (d.alg === "A1" ? ": none" : "")) + '</div>' +
+        (d.fgNote ? '<div class="kv">' + esc(d.fgNote) + '</div>' : "") +
         '<div class="kv"><b>Mixer:</b> ' + esc(d.mixer || "") + ' &nbsp; <b>Bin #</b> ' + esc(d.bin_no || "") + ' &nbsp; <b>Date:</b> ' + esc(d.date || "") + '</div><div class="kv"><b>By:</b> ' + esc(l.created_by || "") + '</div>';
     } else if (l.kind === "FG") {
       top = "FINISHED BAGS / BOLSAS TERMINADAS";
@@ -2883,6 +2920,7 @@
         '<div class="qty">' + fmt(l.qty) + ' BAGS / BOLSAS</div>' +
         '<div class="kv"><b>Best-by / Consumir antes:</b> ' + esc(l.exp ? String(l.exp).slice(0, 10) : "Not set / No definido") + '</div>' +
         (d.alg ? '<div class="alg">Allergen ' + esc(d.alg) + (d.algTxt ? ": " + esc(d.algTxt) : "") + '</div>' : "") +
+        (d.fgNote ? '<div class="kv">' + esc(d.fgNote) + '</div>' : "") +
         '<div class="kv"><b>Packed:</b> ' + esc(d.date || dLocal(l.created_at)) + (d.machine ? ' &nbsp; <b>P-Mac</b> ' + esc(d.machine) : "") + ' &nbsp; <b>By:</b> ' + esc(l.created_by || "") + '</div>' +
         (upStatus(l.status) === "REJECTED"
           ? '<div class="hold">REJECTED - RECHAZADO<br><span style="font-size:14px">Do not use or ship / No usar ni enviar</span>' + (holdReasonOf(l) ? '<br><span style="font-size:15px">' + esc(holdReasonOf(l)) + '</span>' : '') + '</div>'
@@ -3024,7 +3062,7 @@
     lf: function (k, v) { W.labels[k] = v; render(); },
     // for testing / other modules
     _state: function () { return { mode: mode, labels: S.labels, events: S.events, W: W, ST: ST }; },
-    _load: load, isoWeek: isoWeek, flavors: FLAVORS, flavorBy: flavorBy, displayName: displayName, statusNote: statusNote,
+    _load: load, isoWeek: isoWeek, flavors: FLAVORS, flavorBy: flavorBy, displayName: displayName, statusNote: statusNote, rawAllergen: rawAllergen, fgAllergen: fgAllergen,
     _fefo: { onHand: fefoOnHand, ask: fefoAsk, best: fefoBest, monday: isoMonday, week: bagWeek, packDay: inferPackDay, earlier: fefoEarlier },
     _recall: { packet: recallPacket },
     _hold: { info: lotHoldInfo, block: lotPullBlock, pallet: palletPullBlock, inherit: inheritFgStatus, patch: qaPatch, banner: heldBannerHtml }

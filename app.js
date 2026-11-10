@@ -2557,7 +2557,8 @@
       if (seasItem) tracked++;
       const ohCell = onHand == null ? '<span class="muted">not tracked</span>' : fmt(Math.round(onHand)) + ' lb';
       const flag = (onHand != null && rec > 0 && onHand < rec) ? ' style="background:rgba(181,32,36,.08)"' : '';
-      rows += '<tr' + flag + '><td><b>' + esc(r.name) + '</b><div class="muted sm">' + esc(r.code || "") + (r.planning_group ? ' &middot; ' + esc(r.planning_group) : '') + (r.allergen_level ? ' &middot; ' + esc(r.allergen_level) : '') + '</div></td>' +
+      var fgBit = (r.fg_allergen_level && r.fg_allergen_level !== r.allergen_level) ? ' &middot; FG ' + esc(r.fg_allergen_level) + (r.fg_allergens ? ' ' + esc(r.fg_allergens) : '') : '';
+      rows += '<tr' + flag + '><td><b>' + esc(r.name) + '</b><div class="muted sm">' + esc(r.code || "") + (r.planning_group ? ' &middot; ' + esc(r.planning_group) : '') + (r.allergen_level ? ' &middot; ' + esc(r.allergen_level) : '') + fgBit + '</div>' + (r.fg_allergen_note ? '<div class="muted sm">' + esc(r.fg_allergen_note) + '</div>' : '') + '</td>' +
         '<td class="right"><b>' + r.seas_lbs + '</b> lb</td>' +
         '<td class="right">' + per4.toFixed(4) + '</td>' +
         '<td class="right">' + per1k.toFixed(1) + ' lb</td>' +
@@ -2886,7 +2887,7 @@
     }).join("") : '<tr><td colspan="7" class="muted">' + L("noLots") + '</td></tr>';
     return '<div class="card"><h2>' + L("seasoning") + '</h2><p class="hint">' + L("seasHint") + '</p>' +
       (sediting ? '<p class="hint">&#9998; ' + L("editingRow") + '</p>' : '') +
-      '<div class="row"><div><label>' + L("slProduct") + '</label><select id="sl-prod" onchange="UI.seasProdPick(this.value)">' + opts + '<option value="__new__"' + (isCustom ? ' selected' : '') + '>' + L("slNewFlavor") + '</option></select></div>' +
+      '<div class="row"><div><label>' + L("slProduct") + '</label><select id="sl-prod" onchange="UI.seasProdPick(this.value)">' + opts + '<option value="__new__"' + (isCustom ? ' selected' : '') + '>' + L("slNewFlavor") + '</option></select><p id="sl-alg" class="hint"></p></div>' +
       '<div id="sl-newwrap" style="' + (isCustom ? '' : 'display:none') + '"><label>' + L("slNewFlavor") + '</label><input id="sl-newflavor" autocomplete="off" placeholder="' + L("slNewFlavorPh") + '" value="' + (isCustom ? av(sed.product) : '') + '"></div>' +
       '<div><label>' + L("slLot") + '</label><input id="sl-lot" autocomplete="off" placeholder="# 6105" value="' + av(sed.lot) + '"></div>' +
       '<div><label>' + L("slMfr") + '</label><input id="sl-mfr" autocomplete="off" placeholder="Commercial Creations" value="' + av(sed.manufacturer) + '"></div></div>' +
@@ -5791,7 +5792,14 @@
     // ---- Seasoning lots ----
     seasEdit(id) { seasEditId = id; render(); window.scrollTo(0, 0); },
     seasEditCancel() { seasEditId = null; render(); },
-    seasProdPick(v) { const w = $("sl-newwrap"); if (w) w.style.display = (v === "__new__") ? "" : "none"; },
+    seasProdPick(v) {
+      const w = $("sl-newwrap"); if (w) w.style.display = (v === "__new__") ? "" : "none";
+      const hint = $("sl-alg"); if (!hint) return;
+      const code = String(v || "").split("|")[0];
+      const rec = (code && code !== "__new__" && window.RECIPE_LOOKUP) ? window.RECIPE_LOOKUP(code) : null;
+      if (!rec) { hint.textContent = ""; return; }
+      hint.textContent = "Raw seasoning " + (rec.allergen_level || "") + (rec.fg_allergen_note ? ". " + rec.fg_allergen_note : "");
+    },
     async addSeasLot() {
       const rawProd = ($("sl-prod").value || ""); let fcode, prod;
       if (rawProd === "__new__") { prod = (($("sl-newflavor") || {}).value || "").trim(); if (!prod) return toast(L("slNewNeed")); fcode = "LTO-" + (prod.toUpperCase().replace(/[^A-Z0-9]+/g, "").slice(0, 8) || "NEW"); }

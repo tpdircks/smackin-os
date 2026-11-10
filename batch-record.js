@@ -255,7 +255,16 @@
     var R = root.RECIPES || {};
     return Object.keys(R).map(function (k) {
       var r = R[k];
-      return { code: r.code, name: r.name, alg: r.allergen_level || "", algTxt: "", status: r.status || "active", successor: r.successor || "" };
+      return {
+        code: r.code, name: r.name,
+        alg: r.fg_allergen_level || r.allergen_level || "",
+        algTxt: r.fg_allergens || "",
+        rawAlg: r.fg_allergen_level ? (r.allergen_level || "") : "",
+        rawAlgTxt: "",
+        fgNote: r.fg_allergen_note || "",
+        status: r.status || "active",
+        successor: r.successor || ""
+      };
     }).filter(function (f) { return f.code; });
   }
   function flavorBy(code) {
@@ -317,7 +326,9 @@
   function referenceIngredients(recipe, flavor) {
     recipe = recipe || null;
     flavor = flavor || {};
-    var allergen = flavor.alg === "A1" || !flavor.algTxt ? "" : flavor.algTxt;
+    var rawAlg = flavor.rawAlg || flavor.alg;
+    var rawTxt = flavor.rawAlg ? (flavor.rawAlgTxt || "") : (flavor.algTxt || "");
+    var allergen = rawAlg === "A1" || !rawTxt ? "" : rawTxt;
     var named = !!(recipe && recipe.code);
     return [
       makeIng({ key: "seed", ingredient: "Seed" + (recipe && recipe.seed_type ? " (" + recipe.seed_type + ")" : ""), formula_lbs: named || flavor.code ? "100" : "", formula_src: named || flavor.code ? "reference" : "", ingredient_src: "reference" }),
@@ -743,9 +754,11 @@
   function allergenLine(rec) {
     var code = rec.header.allergen_code || "";
     var txt = rec.header.allergen || "";
-    if (!code && !txt) return tx("none");
-    if (code === "A1" && (!txt || txt === "none")) return "A1: " + tx("none");
-    return (code ? code + ": " : "") + (txt || "");
+    var flavor = flavorBy(rec.flavor_code);
+    var note = flavor && flavor.fgNote ? " " + flavor.fgNote : "";
+    if (!code && !txt) return tx("none") + note;
+    if (code === "A1" && (!txt || txt === "none")) return "A1: " + tx("none") + note;
+    return (code ? code + ": " : "") + (txt || "") + note;
   }
   function warnHtml(rec) {
     var flavor = flavorBy(rec.flavor_code) || { code: rec.flavor_code, name: rec.flavor_name, alg: rec.header.allergen_code, algTxt: rec.header.allergen };

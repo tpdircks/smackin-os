@@ -569,6 +569,11 @@
       esc(dash(cd.allergens || rec.allergens || row.allergens)) +
       (cd.allergen_level || rec.allergen_level || row.allergen_level ? " (" + esc(cd.allergen_level || rec.allergen_level || row.allergen_level) + ")" : "") +
       "</p>";
+    if (cd.fg_allergen_note || rec.fg_allergen_note) {
+      html += '<p class="awo-alg">' + esc(cd.fg_allergen_note || rec.fg_allergen_note) +
+        (cd.fg_allergen_level || rec.fg_allergen_level ? " (" + esc(cd.fg_allergen_level || rec.fg_allergen_level) + (cd.fg_allergens || rec.fg_allergens ? " " + esc(cd.fg_allergens || rec.fg_allergens) : "") + ")" : "") +
+        "</p>";
+    }
     html += "<p><b>Instructions / Instrucciones</b></p><p>" + esc(row.mix_instr || "").replace(/\n/g, "<br>") + "</p>";
     html += '<table><thead><tr><th>Completed by / Completado por</th><th>Time / Hora</th><th>Bins mixed / Contenedores mezclados</th><th>Notes / Notas</th></tr></thead>';
     html += '<tbody><tr><td class="awo-blank"></td><td class="awo-blank"></td><td class="awo-blank"></td><td class="awo-blank"></td></tr></tbody></table>';
@@ -782,7 +787,7 @@
       return;
     }
     var s = doc.createElement("script");
-    s.src = "allen-wo-data.js?b=2";
+    s.src = "allen-wo-data.js?b=3";
     s.setAttribute("data-allen-wo-data", "1");
     s.onload = finish;
     s.onerror = finish;

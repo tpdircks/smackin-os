@@ -172,6 +172,10 @@ window.ALLEN_WO_DATA = {
       "name": "Chili Lime",
       "allergens": "None",
       "allergen_level": "A1",
+      "fg_allergens": "Milk",
+      "fg_allergen_level": "A2",
+      "fg_allergen_note": "Finished good contains Milk because Spicy Guacamole is added in batching.",
+      "allergen_source": "Brittney Christensen email 2026-11-10",
       "selectable": true,
       "pending_confirmation": true,
       "pending_reason": "Allen cell: 3.5 lbs Chile Limon + 3.5 lbs Spicy Guacamole. AB 2026-11-06 note (Matt): 3.6 lbs Chile Limon + 2.5 lbs Guacamole. OS keeps 6 lbs Chile Limon."
@@ -206,8 +210,9 @@ window.ALLEN_WO_DATA = {
       "name": "Loaded Nacho",
       "allergens": "M, SY",
       "allergen_level": "A3",
-      "selectable": true
-    },
+      "selectable": true,
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     {
       "code": "L23",
       "abbr": "ChGhPe",
@@ -449,8 +454,9 @@ window.ALLEN_WO_DATA = {
       "name": "French Onion Soup",
       "allergens": "none",
       "allergen_level": "A1",
-      "selectable": true
-    },
+      "selectable": true,
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     {
       "code": "L54",
       "abbr": "NA",
@@ -467,8 +473,9 @@ window.ALLEN_WO_DATA = {
       "name": "Bacon Jalapeno",
       "allergens": "M",
       "allergen_level": "A2",
-      "selectable": true
-    },
+      "selectable": true,
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     {
       "code": "L56",
       "abbr": "CotCdy",
@@ -483,8 +490,9 @@ window.ALLEN_WO_DATA = {
       "name": "Birthday Cake",
       "allergens": "M",
       "allergen_level": "A2",
-      "selectable": true
-    },
+      "selectable": true,
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     {
       "code": "L58",
       "abbr": "NASHOT",
@@ -507,8 +515,9 @@ window.ALLEN_WO_DATA = {
       "name": "Brisket",
       "allergens": "None",
       "allergen_level": "A1",
-      "selectable": true
-    },
+      "selectable": true,
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     {
       "code": "L61",
       "abbr": "GZDNUT",
@@ -523,8 +532,9 @@ window.ALLEN_WO_DATA = {
       "name": "Banana Cream Pie",
       "allergens": "M,SY",
       "allergen_level": "A3",
-      "selectable": true
-    },
+      "selectable": true,
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     {
       "code": "L63",
       "abbr": "BEERBT",
@@ -539,8 +549,9 @@ window.ALLEN_WO_DATA = {
       "name": "Peppered Bacon",
       "allergens": "None",
       "allergen_level": "A1",
-      "selectable": true
-    },
+      "selectable": true,
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     {
       "code": "L65",
       "abbr": "NA",
@@ -570,16 +581,18 @@ window.ALLEN_WO_DATA = {
       "allergen_level": "A3",
       "selectable": false,
       "status": "incomplete",
-      "hold_reason": "UNKNOWN — waiting on seasoning from Herman's. S0549 was originally approved."
-    },
+      "hold_reason": "UNKNOWN — waiting on seasoning from Herman's. S0549 was originally approved.",
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     {
       "code": "L68",
       "abbr": "TZATZI",
       "name": "Tzatziki",
       "allergens": "None",
       "allergen_level": "A1",
-      "selectable": true
-    },
+      "selectable": true,
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     {
       "code": "L69",
       "abbr": "BBQCHL",
@@ -587,24 +600,27 @@ window.ALLEN_WO_DATA = {
       "allergens": "None",
       "allergen_level": "A1",
       "selectable": true,
-      "warning": "THIS MIGHT BE WAY TOO SALTY. Might be better as 5.5 lb or 25 g per lb of seed."
-    },
+      "warning": "THIS MIGHT BE WAY TOO SALTY. Might be better as 5.5 lb or 25 g per lb of seed.",
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     {
       "code": "L70",
       "abbr": "SNICKD",
       "name": "Snickerdoodle",
       "allergens": "M",
       "allergen_level": "A2",
-      "selectable": true
-    },
+      "selectable": true,
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     {
       "code": "L71",
       "abbr": "GRNCHI",
       "name": "Green Chili",
       "allergens": "None",
       "allergen_level": "A1",
-      "selectable": true
-    },
+      "selectable": true,
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     {
       "code": "L72",
       "abbr": "NA",
@@ -730,8 +746,9 @@ window.ALLEN_WO_DATA = {
       "code": "A11",
       "abbr": "SMOBRI",
       "name": "Smoked Brisket",
-      "allergens": null,
-      "allergen_level": null,
+      "allergens": "Milk, Soy",
+      "allergen_level": "A3",
+      "allergen_source": "Brittney Christensen email 2026-11-10",
       "selectable": false,
       "status": "retired",
       "successor": "L60",
@@ -801,8 +818,9 @@ window.ALLEN_WO_DATA = {
       "code": "A18",
       "abbr": "BIRCAK",
       "name": "Birthday Cake",
-      "allergens": null,
-      "allergen_level": null,
+      "allergens": "Milk, Egg, Wheat, Soy",
+      "allergen_level": "A3",
+      "allergen_source": "Brittney Christensen email 2026-11-10",
       "selectable": false,
       "status": "retired",
       "successor": "L57",
@@ -1207,6 +1225,10 @@ window.ALLEN_WO_DATA = {
       "notes": null,
       "allergens": "None",
       "allergen_level": "A1",
+      "fg_allergens": "Milk",
+      "fg_allergen_level": "A2",
+      "fg_allergen_note": "Finished good contains Milk because Spicy Guacamole is added in batching.",
+      "allergen_source": "Brittney Christensen email 2026-11-10",
       "selectable": true,
       "pending_confirmation": true,
       "pending_reason": "Allen cell: 3.5 lbs Chile Limon + 3.5 lbs Spicy Guacamole. AB 2026-11-06 note (Matt): 3.6 lbs Chile Limon + 2.5 lbs Guacamole. OS keeps 6 lbs Chile Limon."
@@ -1299,8 +1321,9 @@ window.ALLEN_WO_DATA = {
       "allergens": "M, SY",
       "allergen_level": "A3",
       "selectable": true,
-      "flag": "Low Salt seed is temporary (AB 2026-10-15). May switch back to Standard."
-    },
+      "flag": "Low Salt seed is temporary (AB 2026-10-15). May switch back to Standard.",
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     "L23": {
       "code": "L23",
       "name": "Cheddar Ghost Pepper",
@@ -1937,8 +1960,9 @@ window.ALLEN_WO_DATA = {
       "notes": null,
       "allergens": "none",
       "allergen_level": "A1",
-      "selectable": true
-    },
+      "selectable": true,
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     "L55": {
       "code": "L55",
       "name": "Bacon Jalapeno",
@@ -1959,8 +1983,9 @@ window.ALLEN_WO_DATA = {
       "notes": null,
       "allergens": "M",
       "allergen_level": "A2",
-      "selectable": true
-    },
+      "selectable": true,
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     "L56": {
       "code": "L56",
       "name": "Cotton Candy",
@@ -2003,8 +2028,9 @@ window.ALLEN_WO_DATA = {
       "notes": null,
       "allergens": "M",
       "allergen_level": "A2",
-      "selectable": true
-    },
+      "selectable": true,
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     "L58": {
       "code": "L58",
       "name": "Nashville Hot",
@@ -2069,8 +2095,9 @@ window.ALLEN_WO_DATA = {
       "notes": null,
       "allergens": "None",
       "allergen_level": "A1",
-      "selectable": true
-    },
+      "selectable": true,
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     "L61": {
       "code": "L61",
       "name": "Glazed Donut",
@@ -2113,8 +2140,9 @@ window.ALLEN_WO_DATA = {
       "notes": null,
       "allergens": "M,SY",
       "allergen_level": "A3",
-      "selectable": true
-    },
+      "selectable": true,
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     "L63": {
       "code": "L63",
       "name": "Beer & Brats",
@@ -2157,8 +2185,9 @@ window.ALLEN_WO_DATA = {
       "notes": null,
       "allergens": "None",
       "allergen_level": "A1",
-      "selectable": true
-    },
+      "selectable": true,
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     "L67": {
       "code": "L67",
       "name": "Everything Bagel",
@@ -2181,8 +2210,9 @@ window.ALLEN_WO_DATA = {
       "allergen_level": "A3",
       "selectable": false,
       "incomplete": true,
-      "flag": "UNKNOWN — waiting on seasoning from Herman's. S0549 was originally approved."
-    },
+      "flag": "UNKNOWN — waiting on seasoning from Herman's. S0549 was originally approved.",
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     "L68": {
       "code": "L68",
       "name": "Tzatziki",
@@ -2203,8 +2233,9 @@ window.ALLEN_WO_DATA = {
       "notes": null,
       "allergens": "None",
       "allergen_level": "A1",
-      "selectable": true
-    },
+      "selectable": true,
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     "L69": {
       "code": "L69",
       "name": "BBQ Chili",
@@ -2226,8 +2257,9 @@ window.ALLEN_WO_DATA = {
       "allergens": "None",
       "allergen_level": "A1",
       "selectable": true,
-      "flag": "THIS MIGHT BE WAY TOO SALTY. Might be better as 5.5 lb or 25 g per lb of seed."
-    },
+      "flag": "THIS MIGHT BE WAY TOO SALTY. Might be better as 5.5 lb or 25 g per lb of seed.",
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     "L70": {
       "code": "L70",
       "name": "Snickerdoodle",
@@ -2249,8 +2281,9 @@ window.ALLEN_WO_DATA = {
       "allergens": "M",
       "allergen_level": "A2",
       "selectable": true,
-      "flag": "AB 2026-11-09: changed from 7 lbs Snickerdoodle Style to 5 lbs Cinnamon Churro + 5 lbs Birthday Cake (Matt). Prior test failed."
-    },
+      "flag": "AB 2026-11-09: changed from 7 lbs Snickerdoodle Style to 5 lbs Cinnamon Churro + 5 lbs Birthday Cake (Matt). Prior test failed.",
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
     "L71": {
       "code": "L71",
       "name": "Green Chili",
@@ -2271,8 +2304,9 @@ window.ALLEN_WO_DATA = {
       "notes": null,
       "allergens": "None",
       "allergen_level": "A1",
-      "selectable": true
-    }
+      "selectable": true,
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+}
   },
   "work_orders": [
     {
