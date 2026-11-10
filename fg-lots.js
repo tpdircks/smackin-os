@@ -24,25 +24,59 @@
   var SHELF_KEY = "fg_shelf_life";
   var BAGCODE_RE = /^[SLA]\d{4}\/\d[A-Z]\d\.\d{1,2}$/;
 
-  var FLAVORS = {
-    S01: "OG Original", S02: "Cinnamon Churro", S03: "Backyard BBQ", S04: "Garlic Parmesan",
-    S05: "Dill Pickle", S06: "Cracked Pepper", S07: "Cheddar Jalapeno", S08: "Ranch",
-    S09: "Maple Brown Sugar", S10: "Lemon Pepper", S11: "Sour Cream & Onion",
-    L14: "Teriyaki", L15: "Taco", L16: "Salsa", L17: "Guacamole", L18: "Chile Lime",
-    L19: "Honey Sriracha", L20: "Pizza / Deep Dish Pizza", L21: "Strawberry Cheesecake",
-    L22: "Loaded Nacho", L23: "Cheddar Ghost Pepper", L24: "Parmuffalo", L25: "Cheeseburger",
-    L26: "Buffalo Ranch", L27: "Peanut Butter & Jelly", L28: "Cinnamon Roll", L29: "Spicy Queso",
-    L30: "Salted Caramel", L31: "GuacZilla!", L32: "Ketchup", L33: "Loaded Potato",
-    L34: "Honey BBQ", L35: "Chili Cheese Dog", L36: "Bacon Mac & Cheese", L37: "Blueberry Pie",
-    L38: "Salt & Vinegar", L39: "Sweet Thai Chili", L40: "S'Mores", L41: "Korean BBQ",
-    L42: "Cheddar Sour Cream", L43: "Funnel Cake", L44: "Chipotle Ranch", L45: "Honey Mustard",
-    L46: "Dill Ranch", L47: "Dijon Ranch", L48: "Fried Chicken", L49: "Flame Grilled Steak",
-    L50: "Jalapeno Ranch", L51: "Pumpkin Spice", L52: "French Onion Soup",
-    L53: "Loaded Nacho - Pablo", L54: "Strawberry Cheesecake-Flash", L55: "Bacon Jalapeno",
-    L56: "Cotton Candy", L57: "Birthday Cake", L58: "Nashville Hot",
-    L59: "Mexican Street Corn", L60: "Brisket", L61: "Glazed Donut", L63: "Beer Brat",
-    A01: "Nashville Hot", A18: "Birthday Cake", A23: "Mexican Street Corn"
-  };
+  // Codes tab (Allen, confirmed 2026-11-10). Tuple: code, name, status, successor, former, note.
+  // flavorName shows the earlier name for an unassigned code so old lots still read.
+  // L53 stays, flagged not on the current Codes master. New codes have no allergen here.
+  var FLAVOR_ROWS = [
+    ["S01", "OG Original", "active"], ["S02", "Cinnamon Churro", "active"], ["S03", "Backyard BBQ", "active"],
+    ["S04", "Garlic Parmesan", "active"], ["S05", "Dill Pickle", "active"], ["S06", "Cracked Pepper", "active"],
+    ["S07", "Cheddar Jalapeno", "active"], ["S08", "Ranch", "active"], ["S09", "Maple Brown Sugar", "active"],
+    ["S10", "Lemon Pepper", "active"], ["S11", "Sour Cream & Onion", "active"],
+    ["L14", "Teriyaki (Ana Bruni)", "active"], ["L15", "Taco", "active"], ["L16", "Salsa", "active"], ["L17", "Guacamole", "active"],
+    ["L18", "Chili Lime", "active"], ["L19", "Honey Sriracha", "active"], ["L20", "Deep Dish Pizza", "active"],
+    ["L21", "Strawberry Cheesecake", "active"], ["L22", "Loaded Nacho", "active"], ["L23", "Cheddar Ghost Pepper", "active"],
+    ["L24", "Parmuffalo", "active"], ["L25", "Cheeseburger", "active"], ["L26", "Buffalo Ranch", "active"],
+    ["L27", "Peanut Butter & Jelly", "active"], ["L28", "Cinnamon Roll", "active"], ["L29", "Spicy Queso", "active"],
+    ["L30", "Salted Caramel", "active"], ["L31", "GuacZilla!", "active"], ["L32", "Ketchup", "active"],
+    ["L33", "Loaded Potato", "active"], ["L34", "Honey BBQ (Alex Rodrigues)", "active"], ["L35", "Chili Cheese Dog", "active"],
+    ["L36", "Bacon Mac & Cheese", "active"], ["L37", "Blueberry Pie", "active"], ["L38", "Salt & Vinegar (Good Good)", "active"],
+    ["L39", "Sweet Thai Chili", "active"], ["L40", "S'Mores", "active"], ["L41", "Korean BBQ (King of Juco)", "active"],
+    ["L42", "Cheddar Sour Cream", "active"], ["L43", "Funnel Cake", "active"], ["L44", "Chipotle Ranch", "active"],
+    ["L45", "Honey Mustard", "active"], ["L46", "Dill Ranch", "active"], ["L47", "Dijon Ranch", "active"],
+    ["L48", "Fried Chicken", "active"], ["L49", "Flame-Grilled Steak", "active"], ["L50", "Jalapeno Ranch", "active"],
+    ["L51", "Not Assigned", "unassigned", "", "Pumpkin Spice"], ["L52", "French Onion Soup", "active"],
+    ["L53", "Loaded Nacho - Pablo", "off_master", "", "", "not on current Codes master"],
+    ["L54", "Not Assigned", "unassigned"],
+    ["L55", "Bacon Jalapeno", "active"], ["L56", "Cotton Candy", "active"],
+    ["L57", "Birthday Cake", "active"], ["L58", "Nashville Hot", "active"],
+    ["L59", "Mexican Street Corn", "active"],
+    ["L60", "Brisket", "active"], ["L61", "Glazed Donut", "active"],
+    ["L62", "Banana Cream Pie", "active"], ["L63", "Beer & Brats", "active"],
+    ["L64", "Peppered Bacon", "active"],
+    ["L65", "Not Assigned", "unassigned"],
+    ["L66", "Not Assigned", "unassigned", "", "Cajun"],
+    ["L67", "Everything Bagel", "incomplete"],
+    ["L68", "Tzatziki", "active"], ["L69", "BBQ Chili", "active"],
+    ["L70", "Snickerdoodle", "active"], ["L71", "Green Chili", "active"],
+    ["L72", "Not Assigned", "unassigned"], ["L73", "Not Assigned", "unassigned"],
+    ["A01", "Nashville Hot", "retired", "L58"],
+    ["A02", "Sweet Thai Chili", "retired"], ["A03", "Bacon Jalapeno Popper", "retired"],
+    ["A04", "Maple Bourbon", "retired"], ["A05", "S'mores", "retired"],
+    ["A06", "Chicken Noodle", "retired"], ["A07", "Bistro", "retired"],
+    ["A08", "Reaper Ranch", "retired"], ["A09", "Crab Boil", "retired"],
+    ["A10", "Habanero Mango", "retired"], ["A11", "Smoked Brisket", "retired", "L60"],
+    ["A12", "Bloody Mary", "retired"], ["A13", "Mojito", "retired"],
+    ["A14", "Spicy Garlic Butter", "retired"], ["A15", "Cosmo", "retired"],
+    ["A16", "Coconut Curry", "retired"], ["A17", "Peanut Butter Cup", "retired"],
+    ["A18", "Birthday Cake", "retired", "L57"], ["A19", "Spicy Dill Pickle", "retired"],
+    ["A20", "Honey BBQ", "retired"], ["A21", "Tikka Masala", "retired"],
+    ["A22", "Hot Ramen", "retired"], ["A23", "Mexican Street Corn", "retired", "L59"],
+    ["A24", "Apple Cider", "retired"]
+  ];
+  var FLAVOR_META = {};
+  FLAVOR_ROWS.forEach(function (r) {
+    FLAVOR_META[r[0]] = { code: r[0], name: r[1], status: r[2] || "active", successor: r[3] || "", former: r[4] || "", note: r[5] || "" };
+  });
 
   var TXT = {
     en: {
@@ -198,9 +232,18 @@
     var m = String(lot || "").toUpperCase().match(/^([SLA]\d{2})/);
     return m ? m[1] : "";
   }
-  function flavorName(code) {
+  function flavorRecord(code) {
     code = String(code || "").toUpperCase();
-    return FLAVORS[code] || code;
+    var m = code.match(/^([SLA]\d{2})/);
+    if (m) code = m[1];
+    return FLAVOR_META[code] || null;
+  }
+  function flavorName(code) {
+    var raw = String(code || "").toUpperCase();
+    var rec = FLAVOR_META[raw];
+    if (!rec) return raw;
+    if (rec.status === "unassigned" && rec.former) return rec.former;
+    return rec.name;
   }
   function shelfKeyOk(key) {
     key = String(key || "");
@@ -846,7 +889,8 @@
     ensureRule: ensureRule,
     currentRule: currentRule,
     ruleStatus: ruleStatus,
-    flavorName: flavorName
+    flavorName: flavorName,
+    flavorRecord: flavorRecord
   };
   root.FGLOTS = api;
 

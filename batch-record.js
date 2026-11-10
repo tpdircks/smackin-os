@@ -255,7 +255,7 @@
     var R = root.RECIPES || {};
     return Object.keys(R).map(function (k) {
       var r = R[k];
-      return { code: r.code, name: r.name, alg: r.allergen_level || "", algTxt: "" };
+      return { code: r.code, name: r.name, alg: r.allergen_level || "", algTxt: "", status: r.status || "active", successor: r.successor || "" };
     }).filter(function (f) { return f.code; });
   }
   function flavorBy(code) {
@@ -830,8 +830,14 @@
     return '<div class="card"><h2 class="sub2">' + esc(tx("savedTitle")) + " (" + cache.length + ")</h2><div class=\"tblwrap\"><table><thead><tr><th>" + esc(tx("date")) + "</th><th>" + esc(tx("shift")) + "</th><th>" + esc(tx("flavor")) + "</th><th>" + esc(tx("status")) + "</th><th>" + esc(tx("operator")) + "</th><th></th></tr></thead><tbody>" + rows + "</tbody></table></div></div>";
   }
   function flavorOpts(sel) {
-    return '<option value=""></option>' + flavorList().map(function (f) {
-      return '<option value="' + esc(f.code) + '"' + (f.code === sel ? " selected" : "") + ">" + esc(f.code + "  " + f.name) + "</option>";
+    var cur = String(sel || "").toUpperCase();
+    return '<option value=""></option>' + flavorList().filter(function (f) {
+      var st = f.status || "active";
+      return st === "active" || String(f.code || "").toUpperCase() === cur;
+    }).map(function (f) {
+      var label = f.code + "  " + f.name;
+      if (f.status && f.status !== "active") label += " (" + f.status + (f.successor ? ", now " + f.successor : "") + ")";
+      return '<option value="' + esc(f.code) + '"' + (f.code === sel ? " selected" : "") + ">" + esc(label) + "</option>";
     }).join("");
   }
   function render() {

@@ -2545,6 +2545,7 @@
     let tracked = 0, rows = "";
     keys.forEach(k => {
       const r = R[k];
+      if (r.status === "retired" || r.status === "unassigned") return;
       if (!r.seas_lbs) return;
       const per4 = r.seas_lbs / 400;                 // lb per 4oz bag
       const per1k = (per4 * 1000);                   // lb per 1,000 4oz bags

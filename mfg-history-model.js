@@ -134,8 +134,23 @@
     });
     return Object.keys(m).sort().map(function (k) { return { k: k, v: m[k] }; });
   }
+  function catalogHit(code) {
+    var trace = typeof globalThis !== "undefined" ? globalThis.TRACE : null;
+    if (!trace || typeof trace.flavorBy !== "function" || !code) return null;
+    return trace.flavorBy(code);
+  }
   function flavorLabel(r) {
-    return ((r.flavor_code ? r.flavor_code + " - " : "") + (r.flavor_name || "")).trim();
+    var code = r.flavor_code || "";
+    var name = r.flavor_name || "";
+    var hit = catalogHit(code);
+    var extra = "";
+    if (hit) {
+      if (!name) name = (hit.status === "unassigned" && hit.former) ? hit.former : hit.name;
+      if (hit.status === "retired") extra = hit.successor ? " (retired, now " + hit.successor + ")" : " (retired)";
+      else if (hit.status === "unassigned") extra = " (unassigned)";
+      else if (hit.status === "off_master") extra = " (not on current Codes master)";
+    }
+    return ((code ? code + " - " : "") + name + extra).trim();
   }
   function flavorRollup(rows) {
     var m = {};

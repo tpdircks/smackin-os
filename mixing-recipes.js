@@ -49,11 +49,14 @@
   function recipes() {
     return root.RECIPES || {};
   }
+  function isLive(r) {
+    if (!r) return false;
+    return r.status !== "retired" && r.status !== "unassigned";
+  }
   function list() {
     return Object.keys(recipes()).map(function (k) {
-      var r = recipes()[k];
-      return r;
-    });
+      return recipes()[k];
+    }).filter(isLive);
   }
   function codeRank(code) {
     var m = /^([A-Z]+)(\d+)$/.exec(String(code || ""));
@@ -145,7 +148,7 @@
     var diff = badge ? " mxr-diff" : "";
     return '<article class="mxr-card' + diff + '" data-mxr-find="' + esc(findText(r)) + '">' +
       '<div class="mxr-top"><div><div class="mxr-name">' + esc(r.name || "") + "</div>" +
-      '<div class="mxr-code">' + esc(r.code || "") + "</div></div>" +
+      '<div class="mxr-code">' + esc(r.code || "") + (r.status === "incomplete" ? " · incomplete" : "") + "</div></div>" +
       (badge ? '<span class="mxr-badge">' + esc(badge) + "</span>" : "") +
       "</div>" +
       line(approvalLine(r), "mxr-app") +
@@ -344,6 +347,7 @@
 
   root.MXR = {
     DIFF_LB: DIFF_LB,
+    isLive: isLive,
     ratesDiffer: ratesDiffer,
     approvalLine: approvalLine,
     badgeText: badgeText,

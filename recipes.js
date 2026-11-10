@@ -5,6 +5,8 @@
    WIP Approved Recipes fields are optional and do not replace a seasoning or malt amount that already has a number.
    Held unchanged: S04, S05, S06, S08, L18 seasoning rates; all existing malto_lbs 3.0 values.
    New optional fields from Allen: water, oil, stevia.
+   Codes tab (Allen, confirmed 2026-11-10) is the flavor-id master. status is active, retired, unassigned, or incomplete.
+   Oil and stevia "None" were added only where the Recipes tab says None. Seasoning pounds and malto_lbs were not changed.
 */
 window.RECIPES = {
  "cinnamonchurro": {
@@ -21,7 +23,10 @@ window.RECIPES = {
   "wip_rate_from": "RECIPE-INGREDIENTS LIST",
   "wip_ing_lbs_per_batch": 8.5,
   "wip_malt_lbs": 2,
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "backyardbbq": {
   "code": "S03",
@@ -44,7 +49,9 @@ window.RECIPES = {
   "wip_ing_lbs_per_batch": 6.5,
   "wip_malt_lbs": 2,
   "water": "5 cups",
-  "oil": "2 oz"
+  "oil": "2 oz",
+  "stevia": "None",
+  "status": "active"
  },
  "garlicparmesan": {
   "code": "S04",
@@ -68,7 +75,10 @@ window.RECIPES = {
   "wip_rate_from": "Approved Recipes",
   "wip_ing_lbs_per_batch": 6.5,
   "wip_malt_lbs": 2,
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "dillpickle": {
   "code": "S05",
@@ -92,7 +102,10 @@ window.RECIPES = {
   "wip_rate_from": "Approved Recipes",
   "wip_ing_lbs_per_batch": 5.5,
   "wip_malt_lbs": 2,
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "crackedpepper": {
   "code": "S06",
@@ -116,7 +129,10 @@ window.RECIPES = {
   "wip_rate_from": "Approved Recipes",
   "wip_ing_lbs_per_batch": 2,
   "wip_malt_lbs": 2,
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "cheddarjalapeno": {
   "code": "S07",
@@ -133,7 +149,9 @@ window.RECIPES = {
   "wip_ing_lbs_per_batch": 6,
   "wip_malt_lbs": 2,
   "water": "5 cups",
-  "oil": "2 oz"
+  "oil": "2 oz",
+  "stevia": "None",
+  "status": "active"
  },
  "ranch": {
   "code": "S08",
@@ -157,7 +175,10 @@ window.RECIPES = {
   "wip_rate_from": "Approved Recipes",
   "wip_ing_lbs_per_batch": 7,
   "wip_malt_lbs": 2,
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "maplebrownsugar": {
   "code": "S09",
@@ -174,7 +195,8 @@ window.RECIPES = {
   "wip_ing_lbs_per_batch": 7.5,
   "wip_malt_lbs": 2,
   "water": "5 cups",
-  "stevia": "2 lbs"
+  "stevia": "2 lbs",
+  "status": "active"
  },
  "lemonpepper": {
   "code": "S10",
@@ -190,7 +212,10 @@ window.RECIPES = {
   "wip_rate_from": "RECIPE-INGREDIENTS LIST",
   "wip_ing_lbs_per_batch": 6.5,
   "wip_malt_lbs": 2,
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "sourcreamonion": {
   "code": "S11",
@@ -206,11 +231,14 @@ window.RECIPES = {
   "wip_rate_from": "RECIPE-INGREDIENTS LIST",
   "wip_ing_lbs_per_batch": 6.5,
   "wip_malt_lbs": 2,
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "teriyaki": {
   "code": "L14",
-  "name": "Teriyaki",
+  "name": "Teriyaki (Ana Bruni)",
   "seas_lbs": 6.0,
   "seas_desc": "6 lbs Teriyaki",
   "seed_type": "Standard",
@@ -227,7 +255,10 @@ window.RECIPES = {
   "wip_rate_from": "Approved Recipes",
   "wip_ing_lbs_per_batch": 6,
   "wip_malt_lbs": 2,
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "taco": {
   "code": "L15",
@@ -243,7 +274,10 @@ window.RECIPES = {
   "wip_rate_from": "RECIPE-INGREDIENTS LIST",
   "wip_ing_lbs_per_batch": 6,
   "wip_malt_lbs": 2,
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "salsa": {
   "code": "L16",
@@ -259,7 +293,10 @@ window.RECIPES = {
   "wip_rate_from": "RECIPE-INGREDIENTS LIST",
   "wip_ing_lbs_per_batch": 7,
   "wip_malt_lbs": 2,
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "guacamole": {
   "code": "L17",
@@ -275,11 +312,14 @@ window.RECIPES = {
   "wip_rate_from": "RECIPE-INGREDIENTS LIST",
   "wip_ing_lbs_per_batch": 7,
   "wip_malt_lbs": 2,
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "chilelimon": {
   "code": "L18",
-  "name": "Chile Limon",
+  "name": "Chili Lime",
   "seas_lbs": 6.0,
   "seas_desc": "6 lbs Chile Limon",
   "seed_type": "Standard",
@@ -288,7 +328,10 @@ window.RECIPES = {
   "planning_group": "G2",
   "allergen_level": "A1",
   "wip_malt_lbs": 2,
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "honeysriracha": {
   "code": "L19",
@@ -304,11 +347,14 @@ window.RECIPES = {
   "wip_rate_from": "RECIPE-INGREDIENTS LIST",
   "wip_ing_lbs_per_batch": 8,
   "wip_malt_lbs": 2,
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "pizza": {
   "code": "L20",
-  "name": "Pizza",
+  "name": "Deep Dish Pizza",
   "seas_lbs": 7.0,
   "seas_desc": "7 lbs Cheesy Pizza Popcorn",
   "seed_type": "Standard",
@@ -317,11 +363,14 @@ window.RECIPES = {
   "planning_group": "REVIEW",
   "allergen_level": "A3",
   "wip_malt_lbs": 2,
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "strawberrycheesecake": {
   "code": "L21",
-  "name": "Strawberry \nCheesecake",
+  "name": "Strawberry Cheesecake",
   "seas_lbs": 9.0,
   "seas_desc": "9.0 lbs Strawberry Cheesecake",
   "seed_type": "Low Salt",
@@ -341,7 +390,10 @@ window.RECIPES = {
   "wip_rate_from": "Approved Recipes",
   "wip_malt_lbs": 2,
   "wip_seed_cell": 0.04,
-  "water": "6 cups"
+  "water": "6 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "loadednacho": {
   "code": "L22",
@@ -360,11 +412,14 @@ window.RECIPES = {
   "wip_g_per_lb": 27,
   "wip_lbs_per_batch": 5.95,
   "wip_rate_from": "Approved Recipes",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "chedderghostpepper": {
   "code": "L23",
-  "name": "Chedder Ghost Pepper",
+  "name": "Cheddar Ghost Pepper",
   "seas_lbs": 7.0,
   "seas_desc": "7 lbs Chedder Ghost Pepper",
   "seed_type": "Standard",
@@ -373,7 +428,10 @@ window.RECIPES = {
   "planning_group": "REVIEW",
   "allergen_level": "A3",
   "wip_malt_lbs": 2,
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "parmuffalo": {
   "code": "L24",
@@ -386,7 +444,10 @@ window.RECIPES = {
   "planning_group": "G2",
   "allergen_level": "A2",
   "wip_malt_lbs": 2,
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "cheeseburger": {
   "code": "L25",
@@ -399,7 +460,10 @@ window.RECIPES = {
   "planning_group": "G2",
   "allergen_level": "A2",
   "wip_malt_lbs": 2,
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "buffaloranch": {
   "code": "L26",
@@ -422,7 +486,10 @@ window.RECIPES = {
   "wip_lbs_per_batch": 5.51,
   "wip_rate_from": "Approved Recipes",
   "wip_malt_lbs": 2,
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "peanutbutterjelly": {
   "code": "L27",
@@ -436,7 +503,9 @@ window.RECIPES = {
   "allergen_level": "A3",
   "wip_malt_lbs": 2,
   "water": "5 cups",
-  "stevia": "2 lbs"
+  "stevia": "2 lbs",
+  "oil": "None",
+  "status": "active"
  },
  "cinnamonroll": {
   "code": "L28",
@@ -450,7 +519,9 @@ window.RECIPES = {
   "allergen_level": "A2",
   "wip_malt_lbs": 2,
   "water": "5 cups",
-  "stevia": "2 lbs"
+  "stevia": "2 lbs",
+  "oil": "None",
+  "status": "active"
  },
  "spicyqueso": {
   "code": "L29",
@@ -462,7 +533,10 @@ window.RECIPES = {
   "malto_lbs": 3.0,
   "planning_group": "G2",
   "allergen_level": "A2",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "saltedcaramel": {
   "code": "L30",
@@ -475,11 +549,13 @@ window.RECIPES = {
   "planning_group": "G1",
   "allergen_level": "A1",
   "water": "5 cups",
-  "stevia": "2 lbs"
+  "stevia": "2 lbs",
+  "oil": "None",
+  "status": "active"
  },
  "guaczilla": {
   "code": "L31",
-  "name": "Guaczilla!",
+  "name": "GuacZilla!",
   "seas_lbs": 7.2,
   "seas_desc": "2.4 lbs Guacamole, 4.8 lbs Spicy Nacho (old batch)",
   "seed_type": "Standard",
@@ -487,7 +563,10 @@ window.RECIPES = {
   "malto_lbs": 3.0,
   "planning_group": "G2",
   "allergen_level": "A2",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "ketchup": {
   "code": "L32",
@@ -501,7 +580,9 @@ window.RECIPES = {
   "allergen_level": "A1",
   "wip_malt_lbs": 2,
   "water": "5 cups",
-  "stevia": "2 lbs"
+  "stevia": "2 lbs",
+  "oil": "None",
+  "status": "active"
  },
  "loadedpotato": {
   "code": "L33",
@@ -514,11 +595,14 @@ window.RECIPES = {
   "planning_group": "REVIEW",
   "allergen_level": "A3",
   "wip_malt_lbs": 2,
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "honeybbq": {
   "code": "L34",
-  "name": "Honey BBQ",
+  "name": "Honey BBQ (Alex Rodrigues)",
   "seas_lbs": 7.0,
   "seas_desc": "7 lbs Honey BBQ Popcorn",
   "seed_type": "Standard",
@@ -534,7 +618,10 @@ window.RECIPES = {
   "wip_g_per_lb": 32,
   "wip_lbs_per_batch": 7.05,
   "wip_rate_from": "Approved Recipes",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "chilicheesedog": {
   "code": "L35",
@@ -554,7 +641,10 @@ window.RECIPES = {
   "wip_g_per_lb": 32,
   "wip_lbs_per_batch": 7.05,
   "wip_rate_from": "Approved Recipes",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "baconmaccheese": {
   "code": "L36",
@@ -574,7 +664,10 @@ window.RECIPES = {
   "wip_g_per_lb": 32,
   "wip_lbs_per_batch": 7.05,
   "wip_rate_from": "Approved Recipes",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "blueberrypie": {
   "code": "L37",
@@ -594,11 +687,14 @@ window.RECIPES = {
   "wip_lbs_per_batch": 8.38,
   "wip_rate_from": "Approved Recipes",
   "wip_seed_cell": 0.041,
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "saltvinegar": {
   "code": "L38",
-  "name": "Salt & Vinegar",
+  "name": "Salt & Vinegar (Good Good)",
   "seas_lbs": 7.0,
   "seas_desc": "7 lbs Salt & Vinegar",
   "seed_type": "Standard",
@@ -606,7 +702,10 @@ window.RECIPES = {
   "malto_lbs": 3.0,
   "planning_group": "G1",
   "allergen_level": "A1",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "sweetthaichili": {
   "code": "L39",
@@ -625,7 +724,10 @@ window.RECIPES = {
   "wip_g_per_lb": 32,
   "wip_lbs_per_batch": 7.05,
   "wip_rate_from": "Approved Recipes",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "smores": {
   "code": "L40",
@@ -648,11 +750,13 @@ window.RECIPES = {
   "wip_rate_from": "Approved Recipes",
   "wip_seed_cell": 0.04,
   "water": "6 cups",
-  "stevia": "2 lbs"
+  "stevia": "2 lbs",
+  "oil": "None",
+  "status": "active"
  },
  "koreanbbq": {
   "code": "L41",
-  "name": "Korean BBQ",
+  "name": "Korean BBQ (King of Juco)",
   "seas_lbs": 5.5,
   "seas_desc": "5.5 lbs Korean BBQ",
   "seed_type": "Standard",
@@ -668,7 +772,10 @@ window.RECIPES = {
   "wip_g_per_lb": 25,
   "wip_lbs_per_batch": 5.51,
   "wip_rate_from": "Approved Recipes",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "cheddarsourcream": {
   "code": "L42",
@@ -690,7 +797,10 @@ window.RECIPES = {
   "wip_g_per_lb": 32,
   "wip_lbs_per_batch": 7.05,
   "wip_rate_from": "Approved Recipes",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "funnelcake": {
   "code": "L43",
@@ -711,7 +821,10 @@ window.RECIPES = {
   "wip_lbs_per_batch": 8.6,
   "wip_rate_from": "Approved Recipes",
   "wip_seed_cell": 0.041,
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "chipotleranch": {
   "code": "L44",
@@ -733,11 +846,14 @@ window.RECIPES = {
   "wip_lbs_per_batch": 5.51,
   "wip_rate_from": "Approved Recipes",
   "seas_source": "WIP Approved Recipes S0405",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "honeymustardkonnorgriffin": {
   "code": "L45",
-  "name": "Honey Mustard  (Konnor Griffin)",
+  "name": "Honey Mustard",
   "seas_lbs": 8.6,
   "seas_desc": "8.6 lbs Honey Mustard (Konnor Griffin)",
   "seed_type": "Standard",
@@ -755,11 +871,14 @@ window.RECIPES = {
   "wip_lbs_per_batch": 8.6,
   "wip_rate_from": "Approved Recipes",
   "seas_source": "WIP Approved Recipes S0447",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "dillranchgoodgood": {
   "code": "L46",
-  "name": "Dill Ranch (Good Good)",
+  "name": "Dill Ranch",
   "seas_lbs": 5.51,
   "seas_desc": "5.51 lbs Dill Ranch (Good Good)",
   "seed_type": "Standard",
@@ -777,7 +896,10 @@ window.RECIPES = {
   "wip_lbs_per_batch": 5.51,
   "wip_rate_from": "Approved Recipes",
   "seas_source": "WIP Approved Recipes S0427",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "dijonranch": {
   "code": "L47",
@@ -800,7 +922,10 @@ window.RECIPES = {
   "wip_rate_from": "Approved Recipes",
   "wip_malt_lbs": 2,
   "seas_source": "WIP Approved Recipes S0464",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "friedchicken": {
   "code": "L48",
@@ -822,11 +947,14 @@ window.RECIPES = {
   "wip_lbs_per_batch": 5.51,
   "wip_rate_from": "Approved Recipes",
   "seas_source": "WIP Approved Recipes S0416",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "flamegrilledsteak": {
   "code": "L49",
-  "name": "Flame Grilled Steak",
+  "name": "Flame-Grilled Steak",
   "seas_lbs": 5.75,
   "seas_desc": "5.75 lbs Grilled Marinated Steak",
   "seed_type": "Standard",
@@ -834,7 +962,10 @@ window.RECIPES = {
   "malto_lbs": 3.0,
   "planning_group": "G1",
   "allergen_level": "A1",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "jalapenoranch": {
   "code": "L50",
@@ -856,11 +987,14 @@ window.RECIPES = {
   "wip_lbs_per_batch": 7.05,
   "wip_rate_from": "Approved Recipes",
   "seas_source": "WIP Approved Recipes S0466",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "pumpkinspice": {
   "code": "L51",
-  "name": "Pumpkin Spice",
+  "name": "Not Assigned",
   "seas_lbs": null,
   "seas_desc": null,
   "seed_type": null,
@@ -868,7 +1002,10 @@ window.RECIPES = {
   "malto_lbs": null,
   "planning_group": null,
   "allergen_level": null,
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "oil": "None",
+  "status": "unassigned",
+  "former_name": "Pumpkin Spice"
  },
  "frenchonionsoup": {
   "code": "L52",
@@ -890,7 +1027,10 @@ window.RECIPES = {
   "wip_lbs_per_batch": 5.51,
   "wip_rate_from": "Approved Recipes",
   "seas_source": "WIP Approved Recipes S0485",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "smokedbrisket": {
   "code": "A11",
@@ -901,7 +1041,9 @@ window.RECIPES = {
   "mix_level": "1",
   "malto_lbs": null,
   "planning_group": null,
-  "allergen_level": null
+  "allergen_level": null,
+  "status": "retired",
+  "successor": "L60"
  },
  "spicydillpickle": {
   "code": "A19",
@@ -912,7 +1054,8 @@ window.RECIPES = {
   "mix_level": "1",
   "malto_lbs": null,
   "planning_group": null,
-  "allergen_level": null
+  "allergen_level": null,
+  "status": "retired"
  },
  "nashvillehot": {
   "code": "A01",
@@ -930,7 +1073,9 @@ window.RECIPES = {
   "wip_sheet_flavor": "Nashville Hot",
   "wip_g_per_lb": 32,
   "wip_lbs_per_batch": 7.05,
-  "wip_rate_from": "Approved Recipes"
+  "wip_rate_from": "Approved Recipes",
+  "status": "retired",
+  "successor": "L58"
  },
  "mexicanstreetcorn": {
   "code": "A23",
@@ -947,7 +1092,9 @@ window.RECIPES = {
   "wip_sheet_flavor": "Mexican Street Corn",
   "wip_g_per_lb": 32,
   "wip_lbs_per_batch": 7.05,
-  "wip_rate_from": "Approved Recipes"
+  "wip_rate_from": "Approved Recipes",
+  "status": "retired",
+  "successor": "L59"
  },
  "birthdaycake": {
   "code": "A18",
@@ -965,7 +1112,9 @@ window.RECIPES = {
   "wip_sheet_flavor": "Birthday Cake",
   "wip_g_per_lb": 44,
   "wip_lbs_per_batch": 9.7,
-  "wip_rate_from": "Approved Recipes"
+  "wip_rate_from": "Approved Recipes",
+  "status": "retired",
+  "successor": "L57"
  },
  "baconjalapeno": {
   "code": "L55",
@@ -979,7 +1128,10 @@ window.RECIPES = {
   "allergen_level": "A2",
   "wip_malt_lbs": 2,
   "flavor_house": "Elite Spice",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "cottoncandy": {
   "code": "L56",
@@ -994,7 +1146,10 @@ window.RECIPES = {
   "wip_malt_lbs": 2,
   "flavor_house": "Savor",
   "approved_sample": "S0293",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "l57birthdaycake": {
   "code": "L57",
@@ -1008,7 +1163,10 @@ window.RECIPES = {
   "allergen_level": "A2",
   "wip_malt_lbs": 2,
   "flavor_house": "Savor",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "l58nashvillehot": {
   "code": "L58",
@@ -1022,7 +1180,10 @@ window.RECIPES = {
   "allergen_level": "A1",
   "wip_malt_lbs": 2,
   "flavor_house": "Elite Spice",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "l59mexicanstreetcorn": {
   "code": "L59",
@@ -1036,7 +1197,10 @@ window.RECIPES = {
   "allergen_level": "A2",
   "wip_malt_lbs": 2,
   "flavor_house": "Savor",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "brisket": {
   "code": "L60",
@@ -1051,7 +1215,10 @@ window.RECIPES = {
   "wip_malt_lbs": 2,
   "flavor_house": "Chesapeake",
   "approved_sample": "S0407",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "glazeddonut": {
   "code": "L61",
@@ -1066,7 +1233,10 @@ window.RECIPES = {
   "wip_malt_lbs": 2,
   "flavor_house": "Savor",
   "approved_sample": "S0448",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "bananacreampie": {
   "code": "L62",
@@ -1081,7 +1251,10 @@ window.RECIPES = {
   "wip_malt_lbs": 2,
   "flavor_house": "Firehouse",
   "approved_sample": "S0161",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "beerbrats": {
   "code": "L63",
@@ -1096,7 +1269,10 @@ window.RECIPES = {
   "wip_malt_lbs": 2,
   "flavor_house": "Savor",
   "approved_sample": "S0537",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "pepperedbacon": {
   "code": "L64",
@@ -1111,7 +1287,10 @@ window.RECIPES = {
   "wip_malt_lbs": 2,
   "flavor_house": "Chesapeake",
   "approved_sample": "S0417",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "everythingbagel": {
   "code": "L67",
@@ -1128,7 +1307,10 @@ window.RECIPES = {
   "approved_sample": "NA",
   "water": "5 cups",
   "notes": "UNKNOWN. Waiting on seasoning from Herman's. S0549 was originally approved.",
-  "incomplete": true
+  "incomplete": true,
+  "oil": "None",
+  "stevia": "None",
+  "status": "incomplete"
  },
  "tzatziki": {
   "code": "L68",
@@ -1143,7 +1325,10 @@ window.RECIPES = {
   "wip_malt_lbs": 2,
   "flavor_house": "Chesapeake",
   "approved_sample": "S0484",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "bbqchili": {
   "code": "L69",
@@ -1159,7 +1344,10 @@ window.RECIPES = {
   "flavor_house": "Chesapeake",
   "approved_sample": "S0366",
   "water": "5 cups",
-  "notes": "THIS MIGHT BE WAY TOO SALTY. Might be better as 5.5 lb or 25 g per lb of seed."
+  "notes": "THIS MIGHT BE WAY TOO SALTY. Might be better as 5.5 lb or 25 g per lb of seed.",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "snickerdoodle": {
   "code": "L70",
@@ -1175,7 +1363,10 @@ window.RECIPES = {
   "flavor_house": "Rocky Mountain Spice, Savor Seasoning",
   "approved_sample": "S0492",
   "water": "5 cups",
-  "notes": "AB 2026-11-09: changed from 7 lbs Snickerdoodle Style to 5 lbs Cinnamon Churro + 5 lbs Birthday Cake (Matt). Prior test failed."
+  "notes": "AB 2026-11-09: changed from 7 lbs Snickerdoodle Style to 5 lbs Cinnamon Churro + 5 lbs Birthday Cake (Matt). Prior test failed.",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  },
  "greenchili": {
   "code": "L71",
@@ -1190,7 +1381,10 @@ window.RECIPES = {
   "wip_malt_lbs": 2,
   "flavor_house": "Chesapeake",
   "approved_sample": "S0419",
-  "water": "5 cups"
+  "water": "5 cups",
+  "oil": "None",
+  "stevia": "None",
+  "status": "active"
  }
 };
 /* Approved Recipes flavors with no production recipe in Smackin OS. */
@@ -1313,9 +1507,28 @@ window.WIP_APPROVED_MISSING = [
 window.RECIPE_LOOKUP = function(name){
   if(!name) return null;
   var k = String(name).toLowerCase().replace(/[^a-z0-9]/g,'');
+  var code = String(name).toUpperCase().replace(/[^A-Z0-9]/g,'');
+  var keys = Object.keys(window.RECIPES);
+  function live(r){ return r && r.status !== "retired" && r.status !== "unassigned"; }
+  function norm(s){ return String(s||"").toLowerCase().replace(/[^a-z0-9]/g,''); }
+  if(window.RECIPES[k] && live(window.RECIPES[k])) return window.RECIPES[k];
+  var i, r;
+  for(i=0;i<keys.length;i++){
+    r = window.RECIPES[keys[i]];
+    if(String(r.code||"").toUpperCase()===code) return r;
+  }
+  for(i=0;i<keys.length;i++){
+    r = window.RECIPES[keys[i]];
+    if(live(r) && norm(r.name)===k) return r;
+  }
+  for(i=0;i<keys.length;i++){
+    r = window.RECIPES[keys[i]];
+    if(norm(r.former_name)===k) return r;
+  }
   if(window.RECIPES[k]) return window.RECIPES[k];
-  // fallback: strip a leading size/desc, try contains match
-  for(var rk in window.RECIPES){ if(k.indexOf(rk)>=0 || rk.indexOf(k)>=0) return window.RECIPES[rk]; }
+  var rk;
+  for(rk in window.RECIPES){ if((k.indexOf(rk)>=0 || rk.indexOf(k)>=0) && live(window.RECIPES[rk])) return window.RECIPES[rk]; }
+  for(rk in window.RECIPES){ if(k.indexOf(rk)>=0 || rk.indexOf(k)>=0) return window.RECIPES[rk]; }
   return null;
 };
 window.BAGS_PER_BATCH = { '4oz':400, '1.5oz':1067 };

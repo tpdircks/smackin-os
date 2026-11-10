@@ -126,16 +126,26 @@ assert(fg.healthLine({ count: 4, latest: "2026-10-30T18:02:00Z", fg: 3 }, "en").
 assert(fg.healthLine({ count: null }, "en").indexOf("could not read") >= 0, "read failure");
 
 var LOT_ADDED = [
-  ["L53", "Loaded Nacho - Pablo", "A3", "Milk, Soy"],
-  ["L54", "Strawberry Cheesecake-Flash", "A2", "Milk"],
-  ["L55", "Bacon Jalapeno", "A2", "Milk"],
-  ["L56", "Cotton Candy", "A1", ""],
-  ["L57", "Birthday Cake", "A2", "Milk"],
-  ["L58", "Nashville Hot", "A1", ""],
-  ["L59", "Mexican Street Corn", "A2", "Milk"],
-  ["L60", "Brisket", "", ""],
-  ["L61", "Glazed Donut", "", ""],
-  ["L63", "Beer Brat", "", ""]
+  ["L53", "Loaded Nacho - Pablo", "A3", "Milk, Soy", "off_master"],
+  ["L54", "Not Assigned", "A2", "Milk", "unassigned"],
+  ["L55", "Bacon Jalapeno", "A2", "Milk", "active"],
+  ["L56", "Cotton Candy", "A1", "", "active"],
+  ["L57", "Birthday Cake", "A2", "Milk", "active"],
+  ["L58", "Nashville Hot", "A1", "", "active"],
+  ["L59", "Mexican Street Corn", "A2", "Milk", "active"],
+  ["L60", "Brisket", "", "", "active"],
+  ["L61", "Glazed Donut", "", "", "active"],
+  ["L62", "Banana Cream Pie", "", "", "active"],
+  ["L63", "Beer & Brats", "", "", "active"],
+  ["L64", "Peppered Bacon", "", "", "active"],
+  ["L65", "Not Assigned", "", "", "unassigned"],
+  ["L67", "Everything Bagel", "", "", "incomplete"],
+  ["L68", "Tzatziki", "", "", "active"],
+  ["L69", "BBQ Chili", "", "", "active"],
+  ["L70", "Snickerdoodle", "", "", "active"],
+  ["L71", "Green Chili", "", "", "active"],
+  ["L72", "Not Assigned", "", "", "unassigned"],
+  ["L73", "Not Assigned", "", "", "unassigned"]
 ];
 var traceSrc = read("trace.js");
 var flavStart = traceSrc.indexOf("var FLAVORS = [");
@@ -151,22 +161,35 @@ traceFlavors.forEach(function (row) {
   assert(!seenCode[row[0]], "duplicate flavor code " + row[0]);
   seenCode[row[0]] = 1;
 });
+assert(traceBy("L18") && traceBy("L18")[1] === "Chili Lime" && traceBy("L18")[2] === "A2" && traceBy("L18")[3] === "Milk", "L18 name only, allergen stays");
 assert(traceBy("L19") && traceBy("L19")[1] === "Honey Sriracha" && traceBy("L19")[2] === "A1", "L19 stays Honey Sriracha");
+assert(traceBy("L20") && traceBy("L20")[1] === "Deep Dish Pizza" && traceBy("L20")[2] === "A3" && traceBy("L20")[3] === "Milk, Gluten", "L20 name only");
+assert(traceBy("L22") && traceBy("L22")[2] === "A2" && traceBy("L22")[3] === "Milk", "L22 allergen stays");
 assert(traceBy("L39") && traceBy("L39")[1] === "Sweet Thai Chili", "L39 stays Sweet Thai Chili");
 assert(traceBy("S01") && traceBy("S01")[1] === "OG Original", "S01 stays");
 assert(traceBy("L52") && traceBy("L52")[1] === "French Onion Soup" && traceBy("L52")[2] === "", "L52 allergen stays blank");
-assert(traceBy("A18") && traceBy("A18")[2] === "A3" && traceBy("A18")[3] === "Milk, Wheat, Soy, Egg", "A18 legacy Birthday Cake");
-assert(traceBy("A01") && traceBy("A01")[1] === "Nashville Hot", "A01 legacy stays");
-assert(traceBy("A23") && traceBy("A23")[1] === "Mexican Street Corn", "A23 legacy stays");
-assert(!traceBy("L62"), "L62 French Onion duplicate is not added");
+assert(traceBy("L51") && traceBy("L51")[1] === "Not Assigned" && traceBy("L51")[4] === "unassigned" && traceBy("L51")[6] === "Pumpkin Spice", "L51 unassigned, Pumpkin Spice kept");
+assert(traceBy("L66") && traceBy("L66")[1] === "Not Assigned" && traceBy("L66")[4] === "unassigned" && traceBy("L66")[6] === "Cajun", "L66 unassigned, Cajun kept");
+assert(traceBy("L53") && traceBy("L53")[7] === "not on current Codes master", "L53 waits on Allen");
+assert(traceBy("A18") && traceBy("A18")[2] === "A3" && traceBy("A18")[3] === "Milk, Wheat, Soy, Egg" && traceBy("A18")[4] === "retired" && traceBy("A18")[5] === "L57", "A18 retired Birthday Cake");
+assert(traceBy("A01") && traceBy("A01")[1] === "Nashville Hot" && traceBy("A01")[2] === "A1" && traceBy("A01")[4] === "retired" && traceBy("A01")[5] === "L58", "A01 retired, successor L58");
+assert(traceBy("A11") && traceBy("A11")[1] === "Smoked Brisket" && traceBy("A11")[2] === "" && traceBy("A11")[5] === "L60", "A11 retired, blank allergen");
+assert(traceBy("A19") && traceBy("A19")[4] === "retired" && !traceBy("A19")[5], "A19 retired with no successor");
+assert(traceBy("A23") && traceBy("A23")[1] === "Mexican Street Corn" && traceBy("A23")[2] === "A2" && traceBy("A23")[5] === "L59", "A23 retired");
+assert(traceBy("A24") && traceBy("A24")[1] === "Apple Cider" && traceBy("A24")[4] === "retired", "A24 retired");
 LOT_ADDED.forEach(function (row) {
   var hit = traceBy(row[0]);
-  assert(hit && hit[1] === row[1] && hit[2] === row[2] && hit[3] === row[3], "trace " + row[0] + " " + (hit && hit.join("|")));
-  assert(fg.flavorName(row[0]) === row[1], "fg-lots " + row[0]);
+  assert(hit && hit[1] === row[1] && hit[2] === row[2] && hit[3] === row[3] && hit[4] === row[4], "trace " + row[0] + " " + (hit && hit.join("|")));
+  var shown = (row[4] === "unassigned" && fg.flavorRecord(row[0]).former) ? fg.flavorRecord(row[0]).former : row[1];
+  assert(fg.flavorName(row[0]) === shown, "fg-lots " + row[0] + " " + fg.flavorName(row[0]));
+  assert(fg.flavorRecord(row[0]).status === row[4] && fg.flavorRecord(row[0]).name === row[1], "fg-lots status " + row[0]);
 });
+assert(fg.flavorName("L18") === "Chili Lime", "fg-lots L18");
 assert(fg.flavorName("L19") === "Honey Sriracha", "fg-lots L19");
 assert(fg.flavorName("L39") === "Sweet Thai Chili", "fg-lots L39");
-assert(fg.flavorName("L62") === "L62", "fg-lots has no L62 name");
+assert(fg.flavorName("L51") === "Pumpkin Spice" && fg.flavorRecord("L51").name === "Not Assigned", "fg-lots keeps Pumpkin Spice for history");
+assert(fg.flavorName("L66") === "Cajun", "fg-lots keeps Cajun for history");
+assert(fg.flavorRecord("A0151/9O1.01").code === "A01" && fg.flavorRecord("A0151/9O1.01").status === "retired" && fg.flavorRecord("A0151/9O1.01").successor === "L58", "old A01 lot still resolves");
 assert(traceBy("L5641".slice(0, 3))[1] === "Cotton Candy", "lot prefix L56 resolves Cotton Candy");
 assert(traceBy("L1941".slice(0, 3))[1] === "Honey Sriracha", "lot prefix L19 resolves Honey Sriracha");
 
@@ -209,14 +232,14 @@ assert(homes.indexOf('"produce", "fglots"') >= 0, "fulfillment subtab");
 assert(homes.indexOf('subs: ["pmac", "fglots"') >= 0, "pmac subtab");
 assert(homes.indexOf('"trLabels", "fglots"') >= 0, "quality subtab");
 assert(health.indexOf('t: "trace_events"') >= 0, "data health source");
-assert(html.indexOf('src="fg-lots.js?b=4"') >= 0 && html.indexOf("fg-lots.js") < html.indexOf("trace.js"), "script order");
-assert(html.indexOf('src="trace.js?b=23"') >= 0, "trace cache bust");
+assert(html.indexOf('src="fg-lots.js?b=5"') >= 0 && html.indexOf("fg-lots.js") < html.indexOf("trace.js"), "script order");
+assert(html.indexOf('src="trace.js?b=24"') >= 0, "trace cache bust");
 assert(html.indexOf('src="dept-homes.js?b=36"') >= 0, "dept homes cache bust");
 assert(html.indexOf('src="data-health.js?b=11"') >= 0, "data health cache bust");
-assert(sw.indexOf('const CACHE = "smackin-inv-v304"') >= 0 && sw.indexOf("./fg-lots.js") >= 0 && sw.indexOf("./prod-ready.js") >= 0, "cache and asset");
-assert(read("build-id.txt").trim() === "smackin-inv-v304", "build id");
-assert(html.indexOf('var EMBEDDED = "smackin-inv-v304"') >= 0, "index embedded");
-assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v304"') >= 0, "escape embedded");
+assert(sw.indexOf('const CACHE = "smackin-inv-v305"') >= 0 && sw.indexOf("./fg-lots.js") >= 0 && sw.indexOf("./prod-ready.js") >= 0, "cache and asset");
+assert(read("build-id.txt").trim() === "smackin-inv-v305", "build id");
+assert(html.indexOf('var EMBEDDED = "smackin-inv-v305"') >= 0, "index embedded");
+assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v305"') >= 0, "escape embedded");
 
 if (failed) {
   console.error(failed + " failed");

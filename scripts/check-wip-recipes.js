@@ -54,8 +54,27 @@ eq(R.frenchonionsoup.seas_lbs === 5.51, "french onion lbs");
 eq(R.honeymustardkonnorgriffin.seas_lbs === 8.6, "honey mustard lbs");
 eq(R.dijonranch.seas_lbs === 7.05, "dijon lbs");
 eq(seas("flamegrilledsteak") === 5.75, "flame grilled rate");
+eq(R.flamegrilledsteak.name === "Flame-Grilled Steak", "flame grilled name");
+eq(R.chilelimon.name === "Chili Lime" && R.chilelimon.seas_lbs === 6 && R.chilelimon.allergen_level === "A1", "chili lime name, rate, allergen");
+eq(R.chilelimon.oil === "None" && R.chilelimon.stevia === "None", "chili lime none keys");
+eq(R.backyardbbq.oil === "2 oz" && R.backyardbbq.stevia === "None", "bbq oil stays");
+eq(R.maplebrownsugar.stevia === "2 lbs", "maple stevia stays");
 eq(seas("pumpkinspice") == null, "pumpkin seasoning stays blank");
 eq(malto("pumpkinspice") == null, "pumpkin malt stays blank");
+eq(R.pumpkinspice.status === "unassigned" && R.pumpkinspice.name === "Not Assigned" && R.pumpkinspice.former_name === "Pumpkin Spice", "pumpkin is unassigned");
+eq(R.pumpkinspice.oil === "None" && !R.pumpkinspice.stevia, "pumpkin oil none only");
+eq(R.frenchonionsoup.malto_lbs == null, "L52 malt stays blank");
+eq(R.nashvillehot.status === "retired" && R.nashvillehot.successor === "L58", "A01 retired");
+eq(R.smokedbrisket.status === "retired" && R.smokedbrisket.successor === "L60", "A11 retired");
+eq(R.birthdaycake.status === "retired" && R.birthdaycake.successor === "L57" && R.birthdaycake.allergen_level === "A3", "A18 retired");
+eq(R.spicydillpickle.status === "retired" && !R.spicydillpickle.successor, "A19 retired");
+eq(R.mexicanstreetcorn.status === "retired" && R.mexicanstreetcorn.successor === "L59", "A23 retired");
+eq(R.l58nashvillehot.status === "active" && R.l58nashvillehot.name === "Nashville Hot", "L58 is the live Nashville Hot");
+eq(R.everythingbagel.status === "incomplete" && R.everythingbagel.allergen_level === "A3", "L67 stays incomplete");
+eq(!M.isLive(R.pumpkinspice) && !M.isLive(R.nashvillehot) && M.isLive(R.l58nashvillehot) && M.isLive(R.everythingbagel), "mixing list drops retired and unassigned");
+eq(ctx.window.RECIPE_LOOKUP("Nashville Hot").code === "L58", "name lookup prefers the active code");
+eq(ctx.window.RECIPE_LOOKUP("A01").code === "A01", "retired code still resolves");
+eq(ctx.window.RECIPE_LOOKUP("Pumpkin Spice").code === "L51", "former name still resolves");
 
 Object.keys(R).forEach(function (key) {
   eq(malto(key) !== 2, key + " malt was not changed to 2");

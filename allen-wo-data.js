@@ -195,7 +195,7 @@ window.ALLEN_WO_DATA = {
     {
       "code": "L21",
       "abbr": "STRCHK",
-      "name": "Strawberry, Cheesecake",
+      "name": "Strawberry Cheesecake",
       "allergens": "M",
       "allergen_level": "A2",
       "selectable": true
@@ -439,6 +439,8 @@ window.ALLEN_WO_DATA = {
       "allergens": null,
       "allergen_level": null,
       "selectable": false,
+      "status": "unassigned",
+      "former_name": "Pumpkin Spice",
       "hold_reason": "Not assigned / blank"
     },
     {
@@ -456,6 +458,7 @@ window.ALLEN_WO_DATA = {
       "allergens": null,
       "allergen_level": null,
       "selectable": false,
+      "status": "unassigned",
       "hold_reason": "Not assigned / blank"
     },
     {
@@ -545,6 +548,7 @@ window.ALLEN_WO_DATA = {
       "allergens": null,
       "allergen_level": null,
       "selectable": false,
+      "status": "unassigned",
       "hold_reason": "Not assigned / blank"
     },
     {
@@ -554,6 +558,8 @@ window.ALLEN_WO_DATA = {
       "allergens": null,
       "allergen_level": null,
       "selectable": false,
+      "status": "unassigned",
+      "former_name": "Cajun",
       "hold_reason": "Not assigned / blank"
     },
     {
@@ -563,6 +569,7 @@ window.ALLEN_WO_DATA = {
       "allergens": "SE",
       "allergen_level": "A3",
       "selectable": false,
+      "status": "incomplete",
       "hold_reason": "UNKNOWN — waiting on seasoning from Herman's. S0549 was originally approved."
     },
     {
@@ -605,6 +612,7 @@ window.ALLEN_WO_DATA = {
       "allergens": null,
       "allergen_level": null,
       "selectable": false,
+      "status": "unassigned",
       "hold_reason": "Not assigned / blank"
     },
     {
@@ -614,7 +622,252 @@ window.ALLEN_WO_DATA = {
       "allergens": null,
       "allergen_level": null,
       "selectable": false,
+      "status": "unassigned",
       "hold_reason": "Not assigned / blank"
+    },
+    {
+      "code": "A01",
+      "abbr": "NASHOT",
+      "name": "Nashville Hot",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "successor": "L58",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A02",
+      "abbr": "SWETHA",
+      "name": "Sweet Thai Chili",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A03",
+      "abbr": "BACWRA",
+      "name": "Bacon Jalapeno Popper",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A04",
+      "abbr": "MAPBOU",
+      "name": "Maple Bourbon",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A05",
+      "abbr": "SMORES",
+      "name": "S'mores",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A06",
+      "abbr": "BRICHI",
+      "name": "Chicken Noodle",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A07",
+      "abbr": "BISTRO",
+      "name": "Bistro",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A08",
+      "abbr": "REARAN",
+      "name": "Reaper Ranch",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A09",
+      "abbr": "CRABOI",
+      "name": "Crab Boil",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A10",
+      "abbr": "HABMAN",
+      "name": "Habanero Mango",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A11",
+      "abbr": "SMOBRI",
+      "name": "Smoked Brisket",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "successor": "L60",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A12",
+      "abbr": "BLOMAR",
+      "name": "Bloody Mary",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A13",
+      "abbr": "MOJITO",
+      "name": "Mojito",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A14",
+      "abbr": "SPIGAR",
+      "name": "Spicy Garlic Butter",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A15",
+      "abbr": "COSMO",
+      "name": "Cosmo",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A16",
+      "abbr": "COCCUR",
+      "name": "Coconut Curry",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A17",
+      "abbr": "PEABUT",
+      "name": "Peanut Butter Cup",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A18",
+      "abbr": "BIRCAK",
+      "name": "Birthday Cake",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "successor": "L57",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A19",
+      "abbr": "SPIDIL",
+      "name": "Spicy Dill Pickle",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A20",
+      "abbr": "HONBBQ",
+      "name": "Honey BBQ",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A21",
+      "abbr": "TIKMAS",
+      "name": "Tikka Masala",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A22",
+      "abbr": "HOTRAM",
+      "name": "Hot Ramen",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A23",
+      "abbr": "MEXSTR",
+      "name": "Mexican Street Corn",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "successor": "L59",
+      "note": "2025 Advent Calendar. No longer used."
+    },
+    {
+      "code": "A24",
+      "abbr": "APPCID",
+      "name": "Apple Cider",
+      "allergens": null,
+      "allergen_level": null,
+      "selectable": false,
+      "status": "retired",
+      "note": "2025 Advent Calendar. No longer used."
     }
   ],
   "recipes": {
@@ -1004,7 +1257,7 @@ window.ALLEN_WO_DATA = {
     },
     "L21": {
       "code": "L21",
-      "name": "Strawberry, Cheesecake",
+      "name": "Strawberry Cheesecake",
       "malt": "2 lbs",
       "water": "6 cups",
       "oil": "None",
