@@ -661,7 +661,23 @@
     if (reason.indexOf("QUARANTINE") >= 0) return "QUARANTINE";
     return "";
   }
+  var QUALITY_RELEASE = {
+    "brittney.christensen@smackinsnacks.com": 1,
+    "monica.smith@smackinsnacks.com": 1,
+    "troy.dircks@smackinsnacks.com": 1
+  };
+  function qualityReleaseUser(email) {
+    return !!QUALITY_RELEASE[String(email || "").trim().toLowerCase()];
+  }
+  function qualityActor() {
+    var email = "";
+    try { email = root.SMK_USER_EMAIL || ""; } catch (e) { email = ""; }
+    email = String(email || "").trim().toLowerCase();
+    return qualityReleaseUser(email) ? email : "";
+  }
   function dispositionByValue(h) {
+    var actor = qualityActor();
+    if (actor) return actor;
     var who = String(h && h.held_by || "");
     if (/sync backfill|inventory sync|stock hold/i.test(who)) return "";
     return who;
@@ -983,6 +999,7 @@
     var note = val("rsop-note-" + id);
     var who = val("rsop-by-" + id);
     if (!disp) return toast(tx("pickDisp"));
+    if (!who) who = qualityActor();
     if (!who) return toast(tx("needBy"));
     if (disp === "other" && !note) return toast(tx("needNote"));
     if (disp === "released" && root.RAW_EXP && typeof root.RAW_EXP.confirmRelease === "function") {
@@ -1318,6 +1335,8 @@
     stockHoldRows: stockHoldRows,
     dispositionByValue: dispositionByValue,
     stockOriginLocation: stockOriginLocation,
+    qualityReleaseUser: qualityReleaseUser,
+    qualityActor: qualityActor,
     noteExternalHold: noteExternalHold,
     noteExternalRelease: noteExternalRelease,
     ensureLoaded: ensureLoaded,
@@ -1419,6 +1438,8 @@
       stockHoldRows: stockHoldRows,
       dispositionByValue: dispositionByValue,
       stockOriginLocation: stockOriginLocation,
+      qualityReleaseUser: qualityReleaseUser,
+      qualityActor: qualityActor,
       RECV_HEAD: RECV_HEAD,
       HOLD_HEAD: HOLD_HEAD
     };
