@@ -1,7 +1,9 @@
 /* Lot-level inventory sync planner.
    Adriana's count is the on-hand. Raw materials (seasoning, seed,
    maltodextrin, oil, stevia) are applied per lot: quantity, lot,
-   expiration, and location. A lot dated before today goes to QUARANTINE.
+   expiration, and location.    A lot dated before today goes to QUARANTINE.
+   holdSpecForAction describes the hold_log row for that raw lot.
+   It does not write, and it does not invent a receiving_log row.
    A lot whose COA answer is No and has not been released stays on QA-HOLD.
    A quantity over 100,000 is held. A stock row edited after the sheet
    time is left alone and reported. SEAS-S05 lot j1926 is held for Adriana.
@@ -172,6 +174,27 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
       note: packed
         ? ("Packed " + packed + ". Expiration is unknown.")
         : "Expiration is unknown. The seed date is a packed date."
+    };
+  }
+  /* Raw lot the sync is about to leave in QUARANTINE. Null for bags,
+     film, and any row that is not a raw insert or update. receiving_log_id
+     stays null: this is not a receipt. */
+  function holdSpecForAction(action, item) {
+    if (!action) return null;
+    if (action.op !== "insert" && action.op !== "update") return null;
+    if (String(action.location || "").toUpperCase() !== "QUARANTINE") return null;
+    if (!(num(action.qty) > 0)) return null;
+    var it = item || { id: action.item, code: action.item, name: action.desc || "", category: action.category || "" };
+    if (!rawItem(it)) return null;
+    return {
+      held_by: OPERATOR,
+      item_id: action.item,
+      item_name: it.name || action.desc || action.item || "",
+      lot: action.lot || "",
+      hold_qty: num(action.qty),
+      hold_reason: "Inventory sync placed this raw lot in QUARANTINE. Not a receipt.",
+      receiving_log_id: null,
+      status: "held"
     };
   }
   function rawItem(it) {
@@ -747,6 +770,7 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
     isManual: isManual,
     coaHeld: coaHeld,
     rawItem: rawItem,
+    holdSpecForAction: holdSpecForAction,
     planItemLots: planItemLots,
     planAggregate: planAggregate,
     aggregatesFromCsv: aggregatesFromCsv,

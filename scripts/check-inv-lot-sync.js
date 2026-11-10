@@ -46,6 +46,13 @@ var apple = plan.planItemLots("TMP-SEAS-APPLEPIE", [
   { source_id: "TMP-SEAS-APPLEPIE", location: "RECEIVING", lot: "", qty: 12, updated_at: "2026-06-01T00:00:00Z" }
 ], { today: TODAY, sheetAsOf: AS_OF });
 assert(apple.actions.some(function (a) { return a.op === "update" && a.location === "QUARANTINE" && a.qty === 11.3; }), "expired lot goes to quarantine");
+var appleWrite = apple.actions.filter(function (a) { return a.op === "update" && a.location === "QUARANTINE"; })[0];
+var appleHold = plan.holdSpecForAction(appleWrite, { id: "TMP-SEAS-APPLEPIE", category: "seasoning", name: "Seasoning - Apple Pie" });
+assert(appleHold && appleHold.status === "held" && appleHold.receiving_log_id == null, "quarantine sync describes a hold, not a receipt");
+assert(appleHold.hold_reason.indexOf("QUARANTINE") >= 0 && appleHold.hold_reason.indexOf("Not a receipt") >= 0, "sync hold reason");
+assert(appleHold.lot.indexOf("J1O25") >= 0 && appleHold.hold_qty === 11.3, "sync hold keeps the lot and qty");
+assert(plan.holdSpecForAction({ op: "insert", item: "BAG4-S01", location: "QUARANTINE", lot: "L", qty: 10 }, { id: "BAG4-S01", category: "bag4", name: "Bags" }) == null, "a bag in quarantine is not a raw sync hold");
+assert(plan.holdSpecForAction({ op: "insert", item: "TMP-SEAS-APPLEPIE", location: "RECEIVING", lot: "L", qty: 10 }, { id: "TMP-SEAS-APPLEPIE", category: "seasoning", name: "Seasoning - Apple Pie" }) == null, "good stock does not open a hold");
 
 var manual = plan.planItemLots("SEAS-S08", [
   { item: "SEAS-S08", lot: "#G0726", qty: 650, exp: "2027-07-20", locCode: "S 08" }

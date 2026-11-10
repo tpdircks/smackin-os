@@ -361,7 +361,10 @@
     return bits.join(" · ");
   }
   function releaseHtml(row, itemId, lot, loc) {
-    if (!row || normAnswer(row.coa_received) !== "no" || row.coa_released_at) return "";
+    if (!row || row.coa_released_at) return "";
+    var heldLoc = String(loc || "").toUpperCase();
+    var stockHeld = heldLoc === "QUARANTINE" || heldLoc === "QA-HOLD";
+    if (normAnswer(row.coa_received) !== "no" && !stockHeld) return "";
     return '<span class="rc-line"><input class="rc-who" maxlength="80" autocomplete="name" value="' + esc(operator()) + '" placeholder="' + esc(tx("yourName")) + '" aria-label="' + esc(tx("yourName")) + '">' +
       '<button type="button" class="ghost sm rc-rel" data-item="' + esc(itemId || row.item_id || "") + '" data-lot="' + esc(lot || row.lot || "") + '" data-recv="' + esc(row.id || "") + '" data-loc="' + esc(loc || "") + '">' + esc(tx("release")) + "</button></span>";
   }
@@ -409,11 +412,13 @@
     (stock || []).forEach(function (r) {
       if (!r || (r.item_id !== it.id && r.item_id !== it.code)) return;
       if (!(Math.abs(Number(r.qty) || 0) > 0.0001)) return;
-      var key = normLot(r.lot) + "|" + (normLot(r.lot) ? "" : (r.location || ""));
+      var loc = String(r.location || "").toUpperCase();
+      var stockHeld = loc === "QUARANTINE" || loc === "QA-HOLD";
+      var key = normLot(r.lot) + "|" + ((stockHeld || !normLot(r.lot)) ? loc : "");
       if (seen[key]) return;
       seen[key] = 1;
       var hit = resolveCoa(r, it, stock, recv);
-      if (!hit.received) return;
+      if (!hit.received && !stockHeld) return;
       out.push({
         lot: r.lot || "",
         loc: r.location || "",
@@ -424,7 +429,7 @@
         releasedAt: hit.releasedAt,
         releasedBy: hit.releasedBy,
         recvId: hit.recvId,
-        onHold: hit.received === "no" && !hit.releasedAt
+        onHold: stockHeld || (hit.received === "no" && !hit.releasedAt)
       });
     });
     return out;
@@ -496,7 +501,9 @@
           coa_released_at: l.releasedAt, coa_released_by: l.releasedBy, id: l.recvId, item_id: it.id, lot: l.lot
         };
         var hot = l.onHold ? " rc-hold" : "";
-        html += '<div class="rc-line' + hot + '"><div class="rc-meta">' + esc(summaryText(row)) + "</div>" + releaseHtml(row, it.id, l.lot, l.loc) + "</div>";
+        var label = summaryText(row);
+        if (!label && l.onHold) label = [l.loc, l.lot].filter(Boolean).join(" ");
+        html += '<div class="rc-line' + hot + '"><div class="rc-meta">' + esc(label) + "</div>" + releaseHtml(row, it.id, l.lot, l.loc) + "</div>";
       });
       var box = prev || document.createElement("div");
       var hotAny = lines.some(function (l) { return l.onHold; });
@@ -741,6 +748,19 @@
     var name = whoEl ? String(whoEl.value || "").trim() : operator();
     if (!name) { toast(tx("needName")); return; }
     var lot = btn.getAttribute("data-lot") || "";
+    var item = itemById(btn.getAttribute("data-item") || "");
+    if (root.RAW_EXP && typeof root.RAW_EXP.confirmRelease === "function") {
+      var exp = "";
+      if (root.DB && root.DB.stock) {
+        var key = normLot(lot);
+        (root.DB.stock() || []).forEach(function (r) {
+          if (exp || !r || normLot(r.lot) !== key) return;
+          if (item && r.item_id !== item.id && r.item_id !== item.code) return;
+          if (r.expires_on) exp = r.expires_on;
+        });
+      }
+      if (!root.RAW_EXP.confirmRelease(item, [{ lot: lot, expires_on: exp }])) return;
+    }
     var ask = tx("releaseAsk") + (lot ? "\n" + lot : "");
     if (root.COA_DOCS && typeof root.COA_DOCS.allowRelease === "function") {
       if (!root.COA_DOCS.allowRelease({
@@ -856,6 +876,7 @@
     summaryText: summaryText,
     resolveCoa: resolveCoa,
     linesFor: linesFor,
+    releaseHtml: releaseHtml,
     afterHoldLogReleased: afterHoldLogReleased,
     COA_HOLD_REASON: COA_HOLD_REASON,
     OPS: OPS

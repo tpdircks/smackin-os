@@ -96,10 +96,10 @@ assert(qa.indexOf("[data-dept-sub]") >= 0, "checklists leave on main tabs");
 assert(qa.indexOf('data-dept-sub") === "qacheck"') >= 0, "checklists stay on their own tab");
 assert(qa.indexOf('"#trc-root, #sqf-root, #fgl-root, #btr-root, #fa-root, #cd-lot, #dept-home"') >= 0, "checklists do not repaint over trace");
 assert(sqf.indexOf("[data-dept-sub]") >= 0 && fg.indexOf("[data-dept-sub]") >= 0, "other quality tabs leave too");
-assert(html.indexOf('src="trace.js?b=22"') >= 0, "trace cache bust");
+assert(html.indexOf('src="trace.js?b=23"') >= 0, "trace cache bust");
 assert(html.indexOf('src="qa-checklists.js?b=4"') >= 0, "checklists cache bust");
-assert(sw.indexOf('const CACHE = "smackin-inv-v303"') >= 0, "cache");
-assert(read("build-id.txt").trim() === "smackin-inv-v303", "build id");
+assert(sw.indexOf('const CACHE = "smackin-inv-v304"') >= 0, "cache");
+assert(read("build-id.txt").trim() === "smackin-inv-v304", "build id");
 [trace, qa].forEach(function (src, i) {
   assert(src.indexOf("\u2014") < 0 && src.indexOf("\u2013") < 0, "dash " + i);
 });

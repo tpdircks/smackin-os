@@ -64,7 +64,7 @@ assert(fs.existsSync(path.join(root, "slc-count-latest.js")), "count file kept")
 assert(fs.existsSync(path.join(root, "slc-count-panel.js")), "panel file kept");
 
 var sw = read("service-worker.js");
-assert(sw.indexOf('const CACHE = "smackin-inv-v303"') >= 0, "cache v286");
+assert(sw.indexOf('const CACHE = "smackin-inv-v304"') >= 0, "cache v286");
 assert(sw.indexOf("smackin-inv-v242") < 0, "old cache gone");
 assert(sw.indexOf("inv-sync-1106.js") < 0 && sw.indexOf("\"./inv-lot-plan.js\"") >= 0, "sw drops the finished lot sync and keeps the plan");
 assert(sw.indexOf("\"./inv-sync-1105.js\"") < 0, "sw drops the skipped 11/05 module");

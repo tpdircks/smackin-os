@@ -5873,6 +5873,24 @@
     async qaConvert(itemId, zone) {
       const it = DB.items().find(i => i.id === itemId); if (!it) return;
       const q = DB.atLoc(itemId, zone); if (!(q > 0)) return;
+      const rows = (DB.stock() || []).filter(r => (r.item_id === it.id || r.item_id === it.code) && r.location === zone && Number(r.qty) > 0);
+      if (window.RAW_EXP && typeof RAW_EXP.confirmRelease === "function" && !RAW_EXP.confirmRelease(it, rows)) return;
+      if ((zone === "QUARANTINE" || zone === "QA-HOLD") && DB.settleStockHold) {
+        for (const row of rows) {
+          const res = await DB.settleStockHold({
+            itemId: it.id,
+            itemName: it.name,
+            lot: row.lot || "",
+            qty: row.qty,
+            location: zone,
+            by: opVal(),
+            note: "Release to good stock",
+            disposition: "released"
+          });
+          if (res && res.ok === false) return toast(res.msg || "Release failed");
+        }
+        toast(it.name + " -> RECEIVING"); render(); return;
+      }
       const r = await DB.move(it, zone, "RECEIVING", q, opVal()); if (!r.ok) return toast(r.msg);
       toast(it.name + " -> RECEIVING"); render();
     },

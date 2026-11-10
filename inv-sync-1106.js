@@ -109,6 +109,31 @@
       });
     }
   }
+  async function ensureQuarantineHold(a, items) {
+    var plan = planApi();
+    if (!plan || typeof plan.holdSpecForAction !== "function") return;
+    var spec = plan.holdSpecForAction(a, plan.findItem(items, a.item));
+    if (!spec) return;
+    var existing = await rest("/rest/v1/hold_log?status=eq.held&item_id=eq." + enc(spec.item_id) + "&select=id,lot&limit=100", { headers: headers(), cache: "no-store" });
+    var key = plan.lotKey(spec.lot);
+    var hit = (existing || []).some(function (h) { return plan.lotKey(h.lot) === key; });
+    if (hit) return;
+    await rest("/rest/v1/hold_log", {
+      method: "POST",
+      headers: Object.assign(headers(), { Prefer: "return=minimal" }),
+      body: JSON.stringify({
+        hold_at: new Date().toISOString(),
+        held_by: spec.held_by,
+        item_id: spec.item_id,
+        item_name: spec.item_name,
+        lot: spec.lot,
+        hold_qty: spec.hold_qty,
+        hold_reason: spec.hold_reason,
+        receiving_log_id: null,
+        status: "held"
+      })
+    });
+  }
   async function run() {
     try { if (root.localStorage && localStorage.getItem(LOCAL_FLAG)) return true; } catch (e) {}
     if (!ready() || busy) return false;
@@ -135,6 +160,7 @@
         state = await readState();
         if (!(state.phase === "lock" && state.token === myToken)) throw new Error("lost lock");
         await writeAction(steps[i]);
+        await ensureQuarantineHold(steps[i], items);
       }
       var touched = {};
       steps.forEach(function (a) { if (a.item) touched[a.item] = 1; });

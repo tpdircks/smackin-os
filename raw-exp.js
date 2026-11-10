@@ -38,6 +38,9 @@
       soon: "Soon",
       saved: "Expiration date saved",
       missing: "Expiration date needs the expires_on columns. The receipt was still saved.",
+      expMissing: "Expiration is missing for",
+      expBlank: "The expiration date is blank.",
+      expAnyway: "Release anyway?",
       hd: "Expiration"
     },
     es: {
@@ -50,6 +53,9 @@
       soon: "Pronto",
       saved: "Fecha de vencimiento guardada",
       missing: "La fecha de vencimiento necesita las columnas expires_on. El recibo si se guardo.",
+      expMissing: "Falta el vencimiento de",
+      expBlank: "La fecha de vencimiento esta en blanco.",
+      expAnyway: "Liberar de todos modos?",
       hd: "Vencimiento"
     },
     pt: {
@@ -62,6 +68,9 @@
       soon: "Em breve",
       saved: "Data de validade salva",
       missing: "A data de validade precisa das colunas expires_on. O recebimento foi salvo.",
+      expMissing: "Falta a validade de",
+      expBlank: "A data de validade esta em branco.",
+      expAnyway: "Liberar mesmo assim?",
       hd: "Validade"
     }
   };
@@ -213,6 +222,25 @@
     return out;
   }
 
+  function releaseWarning(item, lot, expiresOn) {
+    if (!isRawItem(item)) return "";
+    if (dateISO(expiresOn)) return "";
+    var name = (item && (item.name || item.id)) || "this lot";
+    var lotBit = lot ? " lot " + lot : "";
+    return tx("expMissing") + " " + name + lotBit + ". " + tx("expBlank") + " " + tx("expAnyway");
+  }
+  function confirmRelease(item, rows) {
+    var lines = [];
+    (rows || []).forEach(function (r) {
+      var msg = releaseWarning(item, r && r.lot, r && r.expires_on);
+      if (msg && lines.indexOf(msg) < 0) lines.push(msg);
+    });
+    if (!lines.length) return true;
+    var ask = (typeof root.confirm === "function") ? root.confirm : null;
+    if (!ask && typeof window !== "undefined" && typeof window.confirm === "function") ask = window.confirm.bind(window);
+    if (!ask) return true;
+    return !!ask(lines.join("\n"));
+  }
   function fmtQty(n) {
     var x = Number(n) || 0;
     try { return x.toLocaleString(); } catch (e) { return String(x); }
@@ -673,6 +701,8 @@
     resolveExpires: resolveExpires,
     lotLines: lotLines,
     stampsAfterMove: stampsAfterMove,
+    releaseWarning: releaseWarning,
+    confirmRelease: confirmRelease,
     age: age,
     WRITE_STOCK: false
   };
