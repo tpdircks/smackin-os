@@ -20,9 +20,9 @@ assert.strictEqual(src.indexOf("\u2014"), -1, "no em dash");
 assert.ok(src.indexOf("pmac_history") >= 0, "reads pmac history");
 assert.ok(src.indexOf("recv_date") >= 0, "receipts use recv_date");
 assert.ok(app.indexOf("DAILYMETRICS.view") >= 0, "daily view delegates");
-assert.ok(html.indexOf("daily-metrics.js?b=1") >= 0, "script cache bust");
+assert.ok(html.indexOf("daily-metrics.js?b=2") >= 0, "script cache bust");
 assert.ok(sw.indexOf("./daily-metrics.js") >= 0, "service worker asset");
-assert.ok(sw.indexOf('const CACHE = "smackin-inv-v299"') >= 0, "cache bump");
+assert.ok(sw.indexOf('const CACHE = "smackin-inv-v300"') >= 0, "cache bump");
 
 var api = require(path.join(root, "daily-metrics.js"));
 assert.strictEqual(api.weekStart("2026-11-10"), "2026-11-09");
@@ -47,9 +47,15 @@ var model = api.buildModel({
     { prod_date: "2026-11-04", channel: "retail", counter_start: 10, counter_end: null, notes: "Counter not closed" }
   ],
   pallets: [
-    { prod_date: "2026-11-05", line: "2", flavor_code: "MINI", cases: 4500, notes: "MINI BUCKETS" },
-    { prod_date: "2026-11-09", line: "1", flavor_code: "S04", cases: 120, notes: "MASTER" },
-    { prod_date: "2026-11-09", line: "1", flavor_code: "S03", cases: 30, notes: "MASTER" }
+    { prod_date: "2026-11-02", channel: "retail", line: "2", flavor_code: "S02", cases: 259, notes: "TARGET" },
+    { prod_date: "2026-11-02", channel: "ecom", line: "9", flavor_code: "NO", cases: 9999, notes: "TARGET" },
+    { prod_date: "2026-11-03", channel: "retail", line: "2", flavor_code: "WM-S04", cases: 162, notes: "KROGER" },
+    { prod_date: "2026-11-03", channel: "retail", line: "2", flavor_code: "S08", cases: 422, notes: "TARGET" },
+    { prod_date: "2026-11-04", channel: "retail", line: "2", flavor_code: "S01", cases: 136, notes: "TARGET" },
+    { prod_date: "2026-11-05", channel: "retail", line: "2", flavor_code: "MINI", cases: 4500, notes: "MINI BUCKETS" },
+    { prod_date: "2026-11-06", channel: "retail", line: "2", flavor_code: "MINI", cases: 4050, notes: "MINI BUCKETS" },
+    { prod_date: "2026-11-09", channel: "retail", line: "1", flavor_code: "S04", cases: 120, notes: "MASTER" },
+    { prod_date: "2026-11-09", channel: "retail", line: "1", flavor_code: "S03", cases: 30, notes: "MASTER" }
   ],
   fulfill: [
     { fdate: "2026-11-09", ecom_total: 397, amazon_bags: 0, notes: "", entered_by: "Jesus" }
@@ -78,10 +84,20 @@ assert.strictEqual(model.week.rolls.amazon.total, 0);
 assert.strictEqual(model.week.rolls.ship.hasData, false, "no shipment rows is not zero");
 assert.strictEqual(model.week.rolls.ship.total, null);
 assert.strictEqual(model.week.rolls.cases.total, 150);
+assert.strictEqual(model.month.rolls.cases.total, 1129, "mini buckets are not retail cases");
+assert.strictEqual(model.month.rolls.mini.total, 8550);
 assert.strictEqual(model.week.rolls.quality.hasData, false);
 
 var byDate = {};
 model.month.cells.forEach(function (c) { byDate[c.d] = c; });
+assert.strictEqual(api.cellText(byDate["2026-11-02"].cases), "259");
+assert.strictEqual(api.cellText(byDate["2026-11-03"].cases), "584");
+assert.strictEqual(api.cellText(byDate["2026-11-04"].cases), "136");
+assert.strictEqual(api.cellText(byDate["2026-11-05"].cases), "4,500 MB");
+assert.strictEqual(api.cellText(byDate["2026-11-06"].cases), "4,050 MB");
+assert.strictEqual(api.cellText(byDate["2026-11-09"].cases), "150");
+assert.strictEqual(byDate["2026-11-03"].cases.cats.TARGET, 422);
+assert.strictEqual(byDate["2026-11-03"].cases.cats.KROGER, 162);
 assert.strictEqual(byDate["2026-11-01"].pmac.kind, "off");
 assert.strictEqual(byDate["2026-11-04"].pmac.kind, "missing");
 assert.strictEqual(byDate["2026-11-06"].pmac.kind, "missing");
@@ -98,7 +114,12 @@ assert.strictEqual(model.priorMonth.rolls.ship.total, 1, "Oct 30 is outside the 
 assert.strictEqual(model.month.rolls.recv.total, 2);
 
 var page = api.html(model);
-assert.ok(page.indexOf("This week") >= 0 && page.indexOf("This month") >= 0, "both periods render");
+assert.ok(page.indexOf("Retail") >= 0 && page.indexOf("E-com") >= 0 && page.indexOf("Manufacturing") >= 0, "three sections");
+assert.ok(page.indexOf("Metal detector boxes") >= 0, "counter is boxes");
+assert.ok(page.indexOf("Retail counter bags") < 0, "counter is not labeled bags");
+assert.ok(page.indexOf("Logistics") >= 0, "shipments stay out of retail");
+assert.ok(page.indexOf("shipping log is stale") >= 0, "stale shipping is called out");
+assert.ok(page.indexOf("4,500 MB") >= 0, "mini buckets stay labeled");
 assert.ok(page.indexOf("Missing") >= 0, "missing flag is visible");
 assert.ok(page.indexOf("No data") >= 0, "empty periods say no data");
 assert.ok(page.indexOf("<svg") >= 0, "chart renders");

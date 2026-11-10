@@ -954,7 +954,26 @@
     else if (t === "ordersecom") { orderLane = "ecom"; t = "orders"; }
     active = t; if (t !== "purchasing") { purchMode = "list"; receivingPOid = null; } else { spoDetailId = null; spoView = "list"; } if (t === "orders") markOrdersSeen(); closeDrawer(); render();
   }
-  function opVal() { const e = $("op"); return e ? e.value : "Troy"; }
+  function operatorIdentity(fieldValue, email) {
+    var picked = String(fieldValue == null ? "" : fieldValue).trim();
+    if (picked) return picked;
+    return String(email || "").trim();
+  }
+  function signedInIdentity() {
+    try { if (window.SMK_USER_EMAIL) return String(window.SMK_USER_EMAIL).trim(); } catch (e) {}
+    try {
+      if (window.POLINES && typeof window.POLINES.currentEmail === "function") {
+        var email = window.POLINES.currentEmail();
+        if (email) return String(email).trim();
+      }
+    } catch (e2) {}
+    return "";
+  }
+  function opVal() {
+    var e = $("op");
+    var who = operatorIdentity(e ? e.value : "", signedInIdentity());
+    return who || "Troy";
+  }
 
   // ---------- edit lock (PIN) — viewing is open, changes require the PIN ----------
   const EDIT_PIN = "2210";
@@ -1005,7 +1024,12 @@
     return '<label>' + L("operator") + '</label><select id="' + id + '">' +
       ["Jesus","Adriana","Marlin","Edgar","Troy"].map(n => '<option' + (n === def ? ' selected' : '') + '>' + n + "</option>").join("") + "</select>";
   }
-  function opValFor(id) { const e = $(id); return e ? e.value : "Troy"; }
+  function opValFor(id) {
+    var e = $(id);
+    var who = operatorIdentity(e ? e.value : "", signedInIdentity());
+    return who || "Troy";
+  }
+  try { window.SMK_OPERATOR_IDENTITY = operatorIdentity; } catch (eOp) {}
   // Operator dropdown scoped to a production area, from the Gusto-sourced roster:
   //  mixing = Mixing dept; pmac = Packaging (+ Manufacturing supervisor Wilson) crew.
   function areaOperators(area) {
@@ -1485,7 +1509,11 @@
   // ---------- R&D / sample requests ----------
   function rdIsReceived(r) { return (r.status || "Pending") === "Received"; }
   function rdIsOverdue(r) { const nb = (r.needed_by || "").slice(0, 10); return nb && nb < new Date().toISOString().slice(0, 10) && !rdIsReceived(r); }
-  function rdOp() { const e = $("rd-op"); return e ? e.value : "Troy"; }
+  function rdOp() {
+    var e = $("rd-op");
+    var who = operatorIdentity(e ? e.value : "", signedInIdentity());
+    return who || "Troy";
+  }
   function viewRD() {
     const all = DB.rdRequests().slice().sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
     const pend = all.filter(r => !rdIsReceived(r));
@@ -4010,7 +4038,7 @@
       '<label for="ref-input" class="spodroplabel">&#128193; ' + L("refDrop") + '</label></div>' +
       (refFiles && refFiles.length ? '<p class="hint">&#128206; ' + refFiles.length + ' ' + L("refSelected") + '</p>' : '') +
       '<div class="row"><div><label>' + L("refCategory") + '</label><select id="ref-cat">' + REF_CATS.map(c => "<option>" + c + "</option>").join("") + '</select></div>' +
-      '<div><label>' + L("spoUploadedBy") + '</label><input id="op" value="Troy"></div></div>' +
+      '<div><label>' + L("spoUploadedBy") + '</label><input id="op" value="' + esc(signedInIdentity() || "Troy") + '"></div></div>' +
       '<div><label>' + L("refNotes") + '</label><input id="ref-notes" autocomplete="off"></div>' +
       '<button class="primary" onclick="UI.refSave()">' + L("refSaveBtn") + '</button>' +
       (refFiles && refFiles.length ? ' <button class="ghost" style="margin-top:14px" onclick="UI.refClear()">' + L("spoCancel") + '</button>' : '') + '</div>';
@@ -6062,7 +6090,7 @@
       const by = $("rd-op") ? $("rd-op").value : "";
       await DB.createRdRequest({ req_type: v("rd-type"), company: co, contact_name: v("rd-cn"), contact_email: v("rd-em"),
         items: items, quantity: v("rd-qty"), needed_by: v("rd-need"), purpose: v("rd-purp"),
-        follow_up: v("rd-follow"), notes: v("rd-notes"), requested_by: by, status: "Pending" }, by || "Troy");
+        follow_up: v("rd-follow"), notes: v("rd-notes"), requested_by: by, status: "Pending" }, operatorIdentity(by, signedInIdentity()) || "Troy");
       rdAddOpen = false; rdView = "pending"; toast(L("rdAdded")); render();
     },
     async rdReceived(id) { if (!confirm(L("rdConfirmRecv"))) return; await DB.setRdStatus(id, "Received", rdOp()); toast(L("rdMarkRecv") + " ✓"); },
@@ -6167,7 +6195,7 @@
     async refSave() {
       if (!refFiles || !refFiles.length) return toast(L("refNoFile"));
       const cat = ($("ref-cat") || {}).value || "Other"; const notes = (($("ref-notes") || {}).value || "").trim();
-      const by = ($("op") || {}).value || "Troy";
+      const by = operatorIdentity((($("op") || {}).value || ""), signedInIdentity()) || "Troy";
       let ok = 0, err = "";
       for (const f of refFiles) {
         const r = await DB.createRefDoc({ title: f.name.replace(/\.[^.]+$/, ""), category: cat, notes: notes }, f, by);
