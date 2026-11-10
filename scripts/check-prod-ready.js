@@ -102,6 +102,7 @@ vm.runInNewContext(read("recipes.js"), sandbox);
 var liveGaps = P.recipeGaps(sandbox.RECIPES, sandbox.WIP_APPROVED_MISSING);
 eq(sandbox.RECIPES.brisket && sandbox.RECIPES.brisket.seas_lbs === 5.5, "brisket is a recipe");
 eq(!liveGaps.some(function (g) { return g.name === "Texas Beef Brisket Snack Seasoning"; }), "brisket left the approved-only list");
+eq(!liveGaps.some(function (g) { return g.name === "Pumpkin Spice" || g.name === "Not Assigned" || g.name === "Spicy Dill Pickle" || g.name === "Smoked Brisket"; }), "retired and unassigned flavors are not missing recipes");
 
 function serve() {
   return http.createServer(function (req, res) {

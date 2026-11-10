@@ -49,37 +49,102 @@
   var LS_ST = "trace-station-v1";     // per-device station settings (operator, machine, tab)
   var WRITE_STOCK = false;            // do not write stock, racks, or Adriana's counts
 
-  // ---- flavor master (Allen's Updated Flavor Codes, 2026-08-04) ----------------
-  // L53-L59 plus L60, L61, L63 from Lot Codes.xlsx (Troy, ~2026-09-30).
-  // alg: A1 = none, A2 = milk, A3 = multiple (detail listed). Blank alg = not on the sheet.
-  // L54 is Strawberry Cheesecake-Flash. Sweet Thai Chili stays L39. L19 stays Honey Sriracha.
-  // A01, A18, and A23 stay as legacy codes. L62 (second French Onion Soup) is omitted.
+  // ---- flavor master (Codes tab, Allen Back, confirmed 2026-11-10) ----------
+  // Names and status follow the Codes tab. alg / algTxt are unchanged on codes
+  // that were already here. Quality owns allergens. A new code gets a blank alg.
+  // status: active (pickers), retired (history only), unassigned, incomplete,
+  // off_master (kept until Allen adds it). successor is the current L-code.
+  // former is the old name still shown for an unassigned code.
+  // L53 is not on the current Codes master. Sweet Thai Chili stays L39.
+  // L19 stays Honey Sriracha. L52 allergen stays blank.
+  // Tuple: code, name, alg, algTxt, status, successor, former, note.
   var FLAVORS = [
-    ["S01", "OG Original", "A1", ""], ["S02", "Cinnamon Churro", "A2", "Milk"], ["S03", "Backyard BBQ", "A2", "Milk"],
-    ["S04", "Garlic Parmesan", "A2", "Milk"], ["S05", "Dill Pickle", "A1", ""], ["S06", "Cracked Pepper", "A1", ""],
-    ["S07", "Cheddar Jalapeno", "A2", "Milk"], ["S08", "Ranch", "A2", "Milk"], ["S09", "Maple Brown Sugar", "A2", "Milk"],
-    ["S10", "Lemon Pepper", "A1", ""], ["S11", "Sour Cream & Onion", "A2", "Milk"],
-    ["L14", "Teriyaki", "A3", "Wheat, Soy"], ["L15", "Taco", "A1", ""], ["L16", "Salsa", "A1", ""], ["L17", "Guacamole", "A2", "Milk"],
-    ["L18", "Chile Lime", "A2", "Milk"], ["L19", "Honey Sriracha", "A1", ""], ["L20", "Pizza / Deep Dish Pizza", "A3", "Milk, Gluten"],
-    ["L21", "Strawberry Cheesecake", "A2", "Milk"], ["L22", "Loaded Nacho", "A2", "Milk"], ["L23", "Cheddar Ghost Pepper", "A3", "Milk, Almond"],
-    ["L24", "Parmuffalo", "A2", "Milk"], ["L25", "Cheeseburger", "A2", "Milk"], ["L26", "Buffalo Ranch", "A2", "Milk"],
-    ["L27", "Peanut Butter & Jelly", "A3", "Peanut"], ["L28", "Cinnamon Roll", "A2", "Milk"], ["L29", "Spicy Queso", "A2", "Milk"],
-    ["L30", "Salted Caramel", "A1", ""], ["L31", "GuacZilla!", "A2", "Milk"], ["L32", "Ketchup", "A1", ""],
-    ["L33", "Loaded Potato", "A3", "Milk, Soy"], ["L34", "Honey BBQ", "A1", ""], ["L35", "Chili Cheese Dog", "A2", "Milk"],
-    ["L36", "Bacon Mac & Cheese", "A2", "Milk"], ["L37", "Blueberry Pie", "A1", ""], ["L38", "Salt & Vinegar", "A1", ""],
-    ["L39", "Sweet Thai Chili", "A1", ""], ["L40", "S'Mores", "A1", ""], ["L41", "Korean BBQ", "A3", "Wheat, Soy"],
-    ["L42", "Cheddar Sour Cream", "A2", "Milk"], ["L43", "Funnel Cake", "A2", "Milk"], ["L44", "Chipotle Ranch", "A2", "Milk"],
-    ["L45", "Honey Mustard", "A1", ""], ["L46", "Dill Ranch", "A2", "Milk"], ["L47", "Dijon Ranch", "A2", "Milk"],
-    ["L48", "Fried Chicken", "A1", ""], ["L49", "Flame Grilled Steak", "A1", ""], ["L50", "Jalapeno Ranch", "A2", "Milk"],
-    ["L51", "Pumpkin Spice", "", ""], ["L52", "French Onion Soup", "", ""],
-    ["L53", "Loaded Nacho - Pablo", "A3", "Milk, Soy"], ["L54", "Strawberry Cheesecake-Flash", "A2", "Milk"],
-    ["L55", "Bacon Jalapeno", "A2", "Milk"], ["L56", "Cotton Candy", "A1", ""],
-    ["L57", "Birthday Cake", "A2", "Milk"], ["L58", "Nashville Hot", "A1", ""],
-    ["L59", "Mexican Street Corn", "A2", "Milk"],
-    ["L60", "Brisket", "", ""], ["L61", "Glazed Donut", "", ""], ["L63", "Beer Brat", "", ""],
-    ["A01", "Nashville Hot", "A1", ""], ["A18", "Birthday Cake", "A3", "Milk, Wheat, Soy, Egg"], ["A23", "Mexican Street Corn", "A2", "Milk"]
-  ].map(function (f) { return { code: f[0], name: f[1], alg: f[2], algTxt: f[3] }; });
-  function flavorBy(code) { code = String(code || "").toUpperCase(); for (var i = 0; i < FLAVORS.length; i++) if (FLAVORS[i].code === code) return FLAVORS[i]; return null; }
+    ["S01", "OG Original", "A1", "", "active"], ["S02", "Cinnamon Churro", "A2", "Milk", "active"], ["S03", "Backyard BBQ", "A2", "Milk", "active"],
+    ["S04", "Garlic Parmesan", "A2", "Milk", "active"], ["S05", "Dill Pickle", "A1", "", "active"], ["S06", "Cracked Pepper", "A1", "", "active"],
+    ["S07", "Cheddar Jalapeno", "A2", "Milk", "active"], ["S08", "Ranch", "A2", "Milk", "active"], ["S09", "Maple Brown Sugar", "A2", "Milk", "active"],
+    ["S10", "Lemon Pepper", "A1", "", "active"], ["S11", "Sour Cream & Onion", "A2", "Milk", "active"],
+    ["L14", "Teriyaki (Ana Bruni)", "A3", "Wheat, Soy", "active"], ["L15", "Taco", "A1", "", "active"], ["L16", "Salsa", "A1", "", "active"], ["L17", "Guacamole", "A2", "Milk", "active"],
+    ["L18", "Chili Lime", "A2", "Milk", "active"], ["L19", "Honey Sriracha", "A1", "", "active"], ["L20", "Deep Dish Pizza", "A3", "Milk, Gluten", "active"],
+    ["L21", "Strawberry Cheesecake", "A2", "Milk", "active"], ["L22", "Loaded Nacho", "A2", "Milk", "active"], ["L23", "Cheddar Ghost Pepper", "A3", "Milk, Almond", "active"],
+    ["L24", "Parmuffalo", "A2", "Milk", "active"], ["L25", "Cheeseburger", "A2", "Milk", "active"], ["L26", "Buffalo Ranch", "A2", "Milk", "active"],
+    ["L27", "Peanut Butter & Jelly", "A3", "Peanut", "active"], ["L28", "Cinnamon Roll", "A2", "Milk", "active"], ["L29", "Spicy Queso", "A2", "Milk", "active"],
+    ["L30", "Salted Caramel", "A1", "", "active"], ["L31", "GuacZilla!", "A2", "Milk", "active"], ["L32", "Ketchup", "A1", "", "active"],
+    ["L33", "Loaded Potato", "A3", "Milk, Soy", "active"], ["L34", "Honey BBQ (Alex Rodrigues)", "A1", "", "active"], ["L35", "Chili Cheese Dog", "A2", "Milk", "active"],
+    ["L36", "Bacon Mac & Cheese", "A2", "Milk", "active"], ["L37", "Blueberry Pie", "A1", "", "active"], ["L38", "Salt & Vinegar (Good Good)", "A1", "", "active"],
+    ["L39", "Sweet Thai Chili", "A1", "", "active"], ["L40", "S'Mores", "A1", "", "active"], ["L41", "Korean BBQ (King of Juco)", "A3", "Wheat, Soy", "active"],
+    ["L42", "Cheddar Sour Cream", "A2", "Milk", "active"], ["L43", "Funnel Cake", "A2", "Milk", "active"], ["L44", "Chipotle Ranch", "A2", "Milk", "active"],
+    ["L45", "Honey Mustard", "A1", "", "active"], ["L46", "Dill Ranch", "A2", "Milk", "active"], ["L47", "Dijon Ranch", "A2", "Milk", "active"],
+    ["L48", "Fried Chicken", "A1", "", "active"], ["L49", "Flame-Grilled Steak", "A1", "", "active"], ["L50", "Jalapeno Ranch", "A2", "Milk", "active"],
+    ["L51", "Not Assigned", "", "", "unassigned", "", "Pumpkin Spice"], ["L52", "French Onion Soup", "", "", "active"],
+    ["L53", "Loaded Nacho - Pablo", "A3", "Milk, Soy", "off_master", "", "", "not on current Codes master"],
+    ["L54", "Not Assigned", "A2", "Milk", "unassigned"],
+    ["L55", "Bacon Jalapeno", "A2", "Milk", "active"], ["L56", "Cotton Candy", "A1", "", "active"],
+    ["L57", "Birthday Cake", "A2", "Milk", "active"], ["L58", "Nashville Hot", "A1", "", "active"],
+    ["L59", "Mexican Street Corn", "A2", "Milk", "active"],
+    ["L60", "Brisket", "", "", "active"], ["L61", "Glazed Donut", "", "", "active"],
+    ["L62", "Banana Cream Pie", "", "", "active"], ["L63", "Beer & Brats", "", "", "active"],
+    ["L64", "Peppered Bacon", "", "", "active"],
+    ["L65", "Not Assigned", "", "", "unassigned"],
+    ["L66", "Not Assigned", "", "", "unassigned", "", "Cajun"],
+    ["L67", "Everything Bagel", "", "", "incomplete"],
+    ["L68", "Tzatziki", "", "", "active"], ["L69", "BBQ Chili", "", "", "active"],
+    ["L70", "Snickerdoodle", "", "", "active"], ["L71", "Green Chili", "", "", "active"],
+    ["L72", "Not Assigned", "", "", "unassigned"], ["L73", "Not Assigned", "", "", "unassigned"],
+    ["A01", "Nashville Hot", "A1", "", "retired", "L58"],
+    ["A02", "Sweet Thai Chili", "", "", "retired"],
+    ["A03", "Bacon Jalapeno Popper", "", "", "retired"],
+    ["A04", "Maple Bourbon", "", "", "retired"],
+    ["A05", "S'mores", "", "", "retired"],
+    ["A06", "Chicken Noodle", "", "", "retired"],
+    ["A07", "Bistro", "", "", "retired"],
+    ["A08", "Reaper Ranch", "", "", "retired"],
+    ["A09", "Crab Boil", "", "", "retired"],
+    ["A10", "Habanero Mango", "", "", "retired"],
+    ["A11", "Smoked Brisket", "", "", "retired", "L60"],
+    ["A12", "Bloody Mary", "", "", "retired"],
+    ["A13", "Mojito", "", "", "retired"],
+    ["A14", "Spicy Garlic Butter", "", "", "retired"],
+    ["A15", "Cosmo", "", "", "retired"],
+    ["A16", "Coconut Curry", "", "", "retired"],
+    ["A17", "Peanut Butter Cup", "", "", "retired"],
+    ["A18", "Birthday Cake", "A3", "Milk, Wheat, Soy, Egg", "retired", "L57"],
+    ["A19", "Spicy Dill Pickle", "", "", "retired"],
+    ["A20", "Honey BBQ", "", "", "retired"],
+    ["A21", "Tikka Masala", "", "", "retired"],
+    ["A22", "Hot Ramen", "", "", "retired"],
+    ["A23", "Mexican Street Corn", "A2", "Milk", "retired", "L59"],
+    ["A24", "Apple Cider", "", "", "retired"]
+  ].map(function (f) {
+    return { code: f[0], name: f[1], alg: f[2], algTxt: f[3], status: f[4] || "active", successor: f[5] || "", former: f[6] || "", note: f[7] || "" };
+  });
+  function flavorBy(code) {
+    code = String(code || "").toUpperCase();
+    var m = code.match(/^([SLA]\d{2})/);
+    if (m) code = m[1];
+    for (var i = 0; i < FLAVORS.length; i++) if (FLAVORS[i].code === code) return FLAVORS[i];
+    return null;
+  }
+  function displayName(f) {
+    if (!f) return "";
+    if (f.status === "unassigned" && f.former) return f.former;
+    return f.name;
+  }
+  function statusNote(f) {
+    if (!f || f.status === "active") return "";
+    if (f.status === "retired") return f.code + " " + f.name + " is retired." + (f.successor ? " Successor " + f.successor + "." : " No successor on the Codes master.");
+    if (f.status === "unassigned") return f.code + " is not assigned." + (f.former ? " Earlier name " + f.former + "." : "");
+    if (f.status === "incomplete") return f.code + " " + f.name + " is incomplete.";
+    if (f.status === "off_master") return f.code + " " + f.name + " is not on the current Codes master.";
+    return "";
+  }
+  function flavorLabel(f) {
+    var t = f.code + "  " + f.name;
+    if (f.status === "retired") t += f.successor ? " (retired, now " + f.successor + ")" : " (retired)";
+    else if (f.status === "unassigned") t += f.former ? " (was " + f.former + ")" : " (not assigned)";
+    else if (f.status === "incomplete") t += " (incomplete)";
+    else if (f.status === "off_master") t += " (not on current Codes master)";
+    return t;
+  }
 
   var MIXERS = ["1", "2", "3", "4", "5", "6", "7", "8"];
   var PMACS = ["1", "2", "3", "4", "5", "6", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"];
@@ -349,7 +414,7 @@
       if (!name) name = sample.flavor || "";
     }
     var known = flavorBy(fc);
-    if (known) name = known.name;
+    if (known) name = displayName(known);
     return { fc: fc, size: size, name: name };
   }
   function ecomWindows(events) {
@@ -850,7 +915,11 @@
   function sel(id, opts, cur, onch) {
     return '<select id="' + id + '"' + (onch ? ' onchange="' + onch + '"' : "") + '>' + opts.map(function (o) { var v = typeof o === "string" ? o : o.v; var t = typeof o === "string" ? o : o.t; return '<option value="' + esc(v) + '"' + (String(v) === String(cur) ? " selected" : "") + '>' + esc(t) + '</option>'; }).join("") + '</select>';
   }
-  function flavorOpts(blank) { return (blank ? [{ v: "", t: "-" }] : []).concat(FLAVORS.map(function (f) { return { v: f.code, t: f.code + "  " + f.name }; })); }
+  function flavorOpts(blank, current) {
+    current = String(current || "").toUpperCase();
+    var rows = FLAVORS.filter(function (f) { return f.status === "active" || f.code === current; });
+    return (blank ? [{ v: "", t: "-" }] : []).concat(rows.map(function (f) { return { v: f.code, t: flavorLabel(f) }; }));
+  }
   function val(id) { var e = $(id); return e ? e.value : ""; }
   function chk(id) { var e = $(id); return !!(e && e.checked); }
   function pill(s) {
@@ -876,7 +945,7 @@
     var h = '<div class="card"><h2 class="sub2">' + esc(L("tRecv")) + '</h2><div class="trc-grid">';
     h += '<div><label>' + esc(L("type")) + '</label>' + sel("trc-r-type", TYPES.map(function (t) { return { v: t.k, t: LT(t) }; }), r.type, "TRACE.recvType(this.value)") + '</div>';
     h += '<div><label>' + esc(L("item")) + '</label><input id="trc-r-item" list="trc-items" value="' + esc(r.item || "") + '"><datalist id="trc-items">' + items.map(function (n) { return '<option value="' + esc(n) + '">'; }).join("") + '</datalist></div>';
-    if (r.type === "SEAS" || r.type === "FILM" || r.type === "FG") h += '<div><label>' + esc(L("flavor")) + '</label>' + sel("trc-r-flav", flavorOpts(true), r.flavor || "") + '</div>';
+    if (r.type === "SEAS" || r.type === "FILM" || r.type === "FG") h += '<div><label>' + esc(L("flavor")) + '</label>' + sel("trc-r-flav", flavorOpts(true, r.flavor), r.flavor || "") + '</div>';
     if (r.type === "FG") {
       h += '<div><label>' + esc(L("size")) + '</label>' + sel("trc-r-size", ["4oz", "1.5oz", "2.75oz"], r.size || "4oz") + '</div>';
       h += '<div><label>' + esc(L("lotCode")) + '</label><input id="trc-r-lot" value="' + esc(r.lot || "") + '" placeholder="L2031/3X9.35"></div>';
@@ -1158,7 +1227,7 @@
     var m = W.mix, fl = flavorBy(m.flavor);
     var h = '<div class="card"><h2 class="sub2">' + esc(L("tMix")) + '</h2><div class="trc-grid">';
     h += '<div><label>' + esc(L("mixer")) + '</label>' + sel("trc-m-mixer", MIXERS.map(function (x) { return { v: x, t: "Mixer " + x }; }), ST.mixer, "TRACE.setMixer(this.value)") + '</div>';
-    h += '<div><label>' + esc(L("flavor")) + '</label>' + sel("trc-m-flav", flavorOpts(true), m.flavor, "TRACE.mixFlavor(this.value)") + '</div>';
+    h += '<div><label>' + esc(L("flavor")) + '</label>' + sel("trc-m-flav", flavorOpts(true, m.flavor), m.flavor, "TRACE.mixFlavor(this.value)") + '</div>';
     h += '<div><label>' + esc(L("prefix")) + '</label><input id="trc-m-prefix" value="' + esc(m.prefix || "") + '" onchange="TRACE.mixPrefix(this.value)"></div>';
     h += '</div>';
     if (fl) h += '<p style="margin:10px 0 0"><b>Allergen:</b> <span class="trc-pill ' + (fl.alg === "A1" ? "RELEASED" : "HOLD") + '">' + esc(fl.alg || "?") + '</span> ' + esc(fl.algTxt || (fl.alg === "A1" ? "None" : "")) + '</p>';
@@ -2066,9 +2135,11 @@
     h += '<p id="trc-u-fefo-note" class="trc-fefo-note' + (fefoMsg.kind ? " " + fefoMsg.kind : "") + '"' + (fefoMsg.text ? "" : " hidden") + '>' + esc(fefoMsg.text) + '</p>';
     var holdMsg = lotPullBlock(cleanScan(u.mlot));
     h += '<div id="trc-u-hold" class="trc-holdban"' + (holdMsg ? "" : " hidden") + '>' + esc(holdMsg) + '</div></div>';
-    var flavs = flavorOpts(true);
+    var flavs = flavorOpts(true, u.mflav);
     if (flavs[0]) flavs[0] = { v: "", t: L("flavorBlank") };
+    var pickedFl = flavorBy(u.mflav);
     h += '<div><label>' + esc(L("flavor")) + '</label>' + sel("trc-u-mflav", flavs, u.mflav || "", "TRACE.useFlavorPick()") + '</div>';
+    h += '<p id="trc-u-fstat" class="hint"' + (pickedFl && pickedFl.status !== "active" ? "" : " hidden") + '>' + esc(statusNote(pickedFl)) + '</p>';
     h += '<div><label>' + esc(L("bagTotal")) + '</label><input id="trc-u-mbags" type="number" inputmode="numeric" min="1" value="' + esc(u.mbags || "") + '" enterkeyhint="done" onkeydown="TRACE.useKey(event,\'bags\')"></div>';
     h += '<div><label>' + esc(L("pullDate")) + '</label><input id="trc-u-mdate" type="date" value="' + esc(dateVal) + '" onkeydown="TRACE.useKey(event,\'date\')"></div></div>';
     h += '<div class="trc-size-row"><span class="trc-size-lbl">' + esc(L("size")) + '</span>';
@@ -2123,7 +2194,23 @@
     if (fl && !W.use._flavManual) {
       W.use.mflav = fl.code;
       W.use._flavFromLot = fl.code;
-      var s = $("trc-u-mflav"); if (s && s.value !== fl.code) s.value = fl.code;
+      var s = $("trc-u-mflav");
+      if (s && s.value !== fl.code) {
+        var has = false;
+        for (var oi = 0; oi < s.options.length; oi++) if (s.options[oi].value === fl.code) has = true;
+        if (!has) {
+          var opt = document.createElement("option");
+          opt.value = fl.code;
+          opt.textContent = flavorLabel(fl);
+          s.appendChild(opt);
+        }
+        s.value = fl.code;
+      }
+    }
+    var note = $("trc-u-fstat");
+    if (note) {
+      note.textContent = statusNote(fl && !W.use._flavManual ? fl : flavorBy(W.use.mflav));
+      note.hidden = !note.textContent;
     }
     paintFefoNote();
     paintHold();
@@ -2179,7 +2266,7 @@
     var ask = fefoAsk(lot, fefoFc, size, "use");
     if (ask && !window.confirm(ask.text)) { flash(L("fefoCancel"), "warn"); u.focusId = "trc-u-mlot"; render(); return; }
     var ts = tsForPullDate(pullDate);
-    var useData = { flavor_code: fefoFc, flavor: fl ? fl.name : "", size: size, manual: true, pull_date: pullDate, from_loc: fromLoc, from_kind: u.mfrom || "" };
+    var useData = { flavor_code: fefoFc, flavor: fl ? displayName(fl) : "", size: size, manual: true, pull_date: pullDate, from_loc: fromLoc, from_kind: u.mfrom || "" };
     Object.assign(useData, fefoOverride(ask));
     addEvents([{ type: "USE", ts: ts, lpn: null, qty: bags, uom: "bags", from_loc: fromLoc, to_loc: u.dest, ref: u.ref || "", lot: lot, data: useData }]).then(function (res) {
       if (res && res.ok === false) { flash("Save failed: " + res.msg, "err"); render(); return; }
@@ -2597,7 +2684,7 @@
         else if (e.type === "USE" && !e.lpn && e.to_loc === "ECOM") ecomHand += num(e.qty);
       });
       var known = flavorBy(fc);
-      if (known) flav = known.name;
+      if (known) flav = displayName(known);
       var posText = Object.keys(pos).map(function (p) { return p + ": " + pos[p]; }).join(", ");
       return {
         lot: displayLot(key), flavor: flav, flavorCode: fc, size: size, state: state, reason: state === "HOLD" || state === "REJECTED" ? (info.reason || "") : "",
@@ -2668,8 +2755,10 @@
     if (t.drillDone) h += '<p><b>Mock recall time:</b> ' + esc(t.drillDone) + '</p>';
     h += '</div>';
     if (!t.q) return h;
+    var resolved = statusNote(flavorBy(t.q)) || (flavorBy(t.q) ? flavorBy(t.q).code + " " + displayName(flavorBy(t.q)) + " is active." : "");
     h += '<div class="card" id="trc-evidence"><h2 class="sub2">Trace: ' + esc(t.q) + '</h2><p class="muted">Run ' + esc(new Date().toLocaleString()) + ' by ' + esc(opName() || "?") + (t.drillStart ? " &middot; mock recall in progress" : "") + '</p>';
-    if (!res.labels.length && !res.events.length) return h + '<p><b>' + esc(L("notFound")) + '</b></p></div>';
+    if (resolved) h += '<p id="trc-resolved"><b>' + esc(resolved) + '</b></p>';
+    if (!res.labels.length && !res.events.length) return h + '<p>' + (resolved ? "" : '<b>' + esc(L("notFound")) + '</b>') + '</p></div>';
     h += traceStatusHtml(res.labels);
     var lots = balance(res.labels);
     var lk = Object.keys(lots);
@@ -2935,7 +3024,7 @@
     lf: function (k, v) { W.labels[k] = v; render(); },
     // for testing / other modules
     _state: function () { return { mode: mode, labels: S.labels, events: S.events, W: W, ST: ST }; },
-    _load: load, isoWeek: isoWeek, flavors: FLAVORS,
+    _load: load, isoWeek: isoWeek, flavors: FLAVORS, flavorBy: flavorBy, displayName: displayName, statusNote: statusNote,
     _fefo: { onHand: fefoOnHand, ask: fefoAsk, best: fefoBest, monday: isoMonday, week: bagWeek, packDay: inferPackDay, earlier: fefoEarlier },
     _recall: { packet: recallPacket },
     _hold: { info: lotHoldInfo, block: lotPullBlock, pallet: palletPullBlock, inherit: inheritFgStatus, patch: qaPatch, banner: heldBannerHtml }

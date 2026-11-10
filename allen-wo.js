@@ -535,6 +535,11 @@
     html += "<h1>SMACKIN' WORK ORDER / ORDEN DE TRABAJO</h1>";
     html += '<p class="awo-sub">From / De: Allen Back · Mixing &amp; P-Mac</p>';
     if (pending) html += '<div class="awo-banner">' + esc(tx("pending")) + " — " + esc(rec.pending_reason || tx("pendingAsk")) + "</div>";
+    if (cd.status === "retired") {
+      var retired = (row.code || cd.code || "") + " is retired.";
+      if (cd.successor) retired += " Successor " + cd.successor + ".";
+      html += '<div class="awo-banner">' + esc(retired) + "</div>";
+    }
     if (rec.flag) html += '<div class="awo-banner bad">' + esc(tx("warning")) + ": " + esc(rec.flag) + "</div>";
     html += '<div class="awo-grid">';
     [
@@ -777,7 +782,7 @@
       return;
     }
     var s = doc.createElement("script");
-    s.src = "allen-wo-data.js?b=1";
+    s.src = "allen-wo-data.js?b=2";
     s.setAttribute("data-allen-wo-data", "1");
     s.onload = finish;
     s.onerror = finish;

@@ -164,12 +164,17 @@
     if (recipe && !groups[key].recipe) groups[key].recipe = recipe;
     return groups[key];
   }
+  function recipeLive(r) {
+    if (!r) return false;
+    var s = r.status;
+    return !s || s === "active" || s === "incomplete";
+  }
   function buildGroups(input) {
     var groups = {};
     var recipes = input.recipes || {};
     Object.keys(recipes).forEach(function (k) {
       var r = recipes[k];
-      if (!r) return;
+      if (!recipeLive(r)) return;
       ensure(groups, flavorKey(r.name) || k, r);
     });
     (input.missing || []).forEach(function (r) {
@@ -373,6 +378,7 @@
     });
     Object.keys(recipes || {}).forEach(function (k) {
       var r = recipes[k];
+      if (!recipeLive(r)) return;
       var bits = [];
       if (seasRate(r) == null) bits.push("seasoning amount");
       if (maltRate(r) == null) bits.push("maltodextrin amount");

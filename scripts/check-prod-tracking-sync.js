@@ -266,8 +266,8 @@ async function main() {
   eq(read("mfg-history.js").indexOf("MFGUPLOAD.mountLink") >= 0, "history link");
   eq(read("index.html").indexOf("mfg-upload.js?b=4") >= 0, "upload cache bust");
   eq(read("mfg-upload.js").indexOf('existing[k] = (existing[k] || 0) + 1') >= 0, "upload counts P-Mac lines");
-  eq(read("index.html").indexOf("mfg-history.js?b=7") >= 0, "history cache bust");
-  eq(read("service-worker.js").indexOf('const CACHE = "smackin-inv-v304"') >= 0, "cache bump");
+  eq(read("index.html").indexOf("mfg-history.js?b=8") >= 0, "history cache bust");
+  eq(read("service-worker.js").indexOf('const CACHE = "smackin-inv-v305"') >= 0, "cache bump");
 
   var ui = upload.slice(upload.indexOf("Live link to Allen"));
   eq(ui.indexOf("\u2014") < 0 && ui.indexOf("\u2013") < 0, "upload copy has no em dash");
