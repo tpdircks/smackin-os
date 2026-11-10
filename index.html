@@ -19,7 +19,7 @@
      Cmd+Shift+R can drop a stale smackin-inv worker even when that worker
      swallows sw-escape.js. Only an older smackin-inv cache is removed. */
   (function () {
-    var EMBEDDED = "smackin-inv-v298";
+    var EMBEDDED = "smackin-inv-v299";
     function ver(id) {
       var m = /smackin-inv-v(\d+)/.exec(String(id || ""));
       return m ? parseInt(m[1], 10) : 0;
@@ -65,7 +65,7 @@
     }).catch(function () {});
   })();
   </script>
-  <script src="sw-escape.js?b=31"></script>
+  <script src="sw-escape.js?b=32"></script>
 </head>
 <body>
   <header>
@@ -116,7 +116,8 @@
   <script src="db.js?b=103"></script>
   <script src="gusto-roster.js?b=1"></script>
   <script src="order-lanes.js?b=1"></script>
-  <script src="app.js?b=208"></script>
+  <script src="app.js?b=209"></script>
+  <script src="daily-metrics.js?b=1"></script>
   <script src="po-lines.js?b=2"></script>
   <script src="returns-workflow.js?b=2"></script>
   <script src="fg-lots.js?b=3"></script>
@@ -149,7 +150,7 @@
   <script src="qa-checklists.js?b=3"></script>
   <script src="fulfillment-analytics.js?b=3"></script>
   <script src="dt-finished.js?b=1"></script>
-  <script src="dept-homes.js?b=34"></script>
+  <script src="dept-homes.js?b=35"></script>
   <script src="demand-wos.js?b=2"></script>
   <script src="vendor-seed.js?b=2"></script>
   <script src="vendor-lead.js?b=3"></script>

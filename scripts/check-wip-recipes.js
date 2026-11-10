@@ -17,8 +17,9 @@ var M = ctx.window.MXR;
 var fail = [];
 function eq(cond, msg) { if (!cond) fail.push(msg); }
 
-eq(Object.keys(R).length === 54, "expected 54 recipes");
-eq(ctx.window.WIP_APPROVED_MISSING && ctx.window.WIP_APPROVED_MISSING.length >= 20, "missing list");
+eq(Object.keys(R).length === 69, "expected 69 recipes");
+eq(ctx.window.WIP_APPROVED_MISSING && ctx.window.WIP_APPROVED_MISSING.length === 11, "missing list");
+eq(!ctx.window.WIP_APPROVED_MISSING.some(function (row) { return /brisket/i.test(row.name || ""); }), "brisket is a recipe, not a missing approval");
 
 function seas(key) { return R[key].seas_lbs; }
 function malto(key) { return R[key].malto_lbs; }
@@ -37,20 +38,22 @@ eq(seas("maplebrownsugar") === 7, "maple rate");
 eq(R.maplebrownsugar.wip_lbs_per_batch === 7.5, "maple sheet");
 eq(R.maplebrownsugar.wip_rate_from === "RECIPE-INGREDIENTS LIST", "maple source");
 eq(seas("teriyaki") === 6, "teriyaki rate");
-eq(seas("strawberrycheesecake") === 9.75, "strawberry rate");
+eq(seas("strawberrycheesecake") === 9, "strawberry rate");
 
-["chipotleranch", "friedchicken", "dijonranch", "jalapenoranch", "dillranchgoodgood", "honeymustardkonnorgriffin", "frenchonionsoup"].forEach(function (key) {
+["friedchicken", "dijonranch", "jalapenoranch", "dillranchgoodgood", "honeymustardkonnorgriffin", "frenchonionsoup"].forEach(function (key) {
   eq(R[key].seas_lbs != null, key + " filled");
   eq(R[key].seas_source && R[key].seas_source.indexOf("WIP Approved Recipes") === 0, key + " source");
   eq(Number(R[key].seas_lbs) === Number(R[key].wip_lbs_per_batch), key + " matches sheet");
   eq(!M.badgeText(R[key]), key + " should not differ from itself");
 });
 eq(R.chipotleranch.approved_sample === "S0405", "chipotle latest sample");
-eq(R.chipotleranch.seas_lbs === 5.51, "chipotle lbs");
+eq(R.chipotleranch.seas_lbs === 7, "chipotle lbs");
+eq(R.chipotleranch.wip_lbs_per_batch === 5.51, "chipotle sheet lbs");
+eq(M.badgeText(R.chipotleranch) === "WIP differs: 5.51 vs 7 lb", "chipotle differs from the sheet");
 eq(R.frenchonionsoup.seas_lbs === 5.51, "french onion lbs");
 eq(R.honeymustardkonnorgriffin.seas_lbs === 8.6, "honey mustard lbs");
 eq(R.dijonranch.seas_lbs === 7.05, "dijon lbs");
-eq(seas("flamegrilledsteak") == null, "flame grilled stays blank");
+eq(seas("flamegrilledsteak") === 5.75, "flame grilled rate");
 eq(seas("pumpkinspice") == null, "pumpkin seasoning stays blank");
 eq(malto("pumpkinspice") == null, "pumpkin malt stays blank");
 

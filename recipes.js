@@ -1127,7 +1127,7 @@ window.RECIPES = {
   "flavor_house": "Ordering Herman's Blend",
   "approved_sample": "NA",
   "water": "5 cups",
-  "notes": "UNKNOWN — waiting on seasoning from Herman's. S0549 was originally approved.",
+  "notes": "UNKNOWN. Waiting on seasoning from Herman's. S0549 was originally approved.",
   "incomplete": true
  },
  "tzatziki": {

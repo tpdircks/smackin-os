@@ -1191,6 +1191,10 @@
     };
   }
   function viewDaily() {
+    if (window.DAILYMETRICS && typeof window.DAILYMETRICS.view === "function") {
+      try { return window.DAILYMETRICS.view(); }
+      catch (e) { return '<div class="card"><h2>Daily Metrics</h2><p class="hint">' + esc(e && e.message ? e.message : e) + '</p></div>'; }
+    }
     const d = dailyDateSel || new Date().toISOString().slice(0, 10);
     const m = dayMetrics(d);
     const kpi = (n, l) => '<div class="kpi"><div class="n">' + fmt(n) + '</div><div class="l">' + l + '</div></div>';
@@ -6181,7 +6185,11 @@
     async prodAdvance(po) { const cur = PROD_STAGES.indexOf(prodStageGet(po)); const nx = PROD_STAGES[Math.min(cur + 1, PROD_STAGES.length - 1)]; const r = await prodStageSet(po, nx); if (r && r.ok === false) return; toast(po + " → " + nx); render(); },
     async prodReset(po) { const r = await prodStageSet(po, "Open"); if (r && r.ok === false) return; render(); },
     async sdSet(id, val) { const r = DB.kvSet ? await DB.kvSet("sd:" + id, val) : { ok: false }; if (r && r.ok === false) return; toast("Saved"); },
-    dailyDate(v) { dailyDateSel = v; render(); },
+    dailyDate(v) {
+      dailyDateSel = v;
+      if (window.DAILYMETRICS && typeof window.DAILYMETRICS.openDay === "function") { window.DAILYMETRICS.openDay(v); return; }
+      render();
+    },
     logFilter(field, val) { if (field === "who") logWho = val; else if (field === "act") logAct = val; else if (field === "q") logQ = val; render(); },
     qualTab(t) { qualTabSel = t; render(); },
     async qualSave() {

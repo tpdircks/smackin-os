@@ -98,8 +98,8 @@ assert(qa.indexOf('"#trc-root, #sqf-root, #fgl-root, #btr-root, #fa-root, #cd-lo
 assert(sqf.indexOf("[data-dept-sub]") >= 0 && fg.indexOf("[data-dept-sub]") >= 0, "other quality tabs leave too");
 assert(html.indexOf('src="trace.js?b=21"') >= 0, "trace cache bust");
 assert(html.indexOf('src="qa-checklists.js?b=3"') >= 0, "checklists cache bust");
-assert(sw.indexOf('const CACHE = "smackin-inv-v297"') >= 0, "cache");
-assert(read("build-id.txt").trim() === "smackin-inv-v297", "build id");
+assert(sw.indexOf('const CACHE = "smackin-inv-v299"') >= 0, "cache");
+assert(read("build-id.txt").trim() === "smackin-inv-v299", "build id");
 [trace, qa].forEach(function (src, i) {
   assert(src.indexOf("\u2014") < 0 && src.indexOf("\u2013") < 0, "dash " + i);
 });
