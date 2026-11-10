@@ -2662,8 +2662,11 @@
   }
 
   // =========================== LABELS list ===========================
-  function labelTable(list) {
-    if (!list.length) return '<p class="muted">-</p>';
+  function labelTable(list, total) {
+    if (!list.length) {
+      if (!total) return '<p class="hint">Not in use yet. trace_labels has no rows, so finished pallet labels are not stored here.</p>';
+      return '<p class="muted">No labels match these filters.</p>';
+    }
     return '<div class="tblwrap"><table class="trc"><thead><tr><th>Label</th><th>Item</th><th>Lot</th><th>Qty left</th><th>Where</th><th>Status</th><th></th></tr></thead><tbody>' + list.map(function (l) {
       var hot = labelHeld(l);
       return '<tr class="' + (hot ? "trc-held" : "") + '"><td><b>' + esc(l.lpn) + '</b><br><span class="muted sm">' + esc(tsLocal(l.created_at)) + ' ' + esc(l.created_by || "") + '</span></td><td>' + esc(l.flavor ? l.flavor + (l.size ? " " + l.size : "") : l.item) + (l.kind === "RM" ? '<br><span class="muted sm">' + esc(l.supplier || "") + '</span>' : "") + '</td><td><b>' + esc(l.lot || "") + '</b>' + (l.exp ? '<br><span class="muted sm">exp ' + esc(l.exp) + '</span>' : "") + (hot && holdReasonOf(l) ? '<br><span class="trc-badge-hold">' + esc(holdReasonOf(l)) + '</span>' : "") + '</td><td>' + fmt(l.qty_left) + ' ' + esc(l.uom) + '</td><td>' + esc(l.location || "") + '</td><td>' + pill(l.status) + (hot ? ' <span class="trc-badge-hold">' + esc(isRejectStatus(l.status) ? "REJECTED" : "HOLD") + '</span>' : "") + '</td><td class="trc-row"><button class="ghost sm" onclick="TRACE.reprint(\'' + esc(l.lpn) + '\')">' + esc(L("reprint")) + '</button><button class="ghost sm" onclick="TRACE.traceOf(\'' + esc(l.lpn) + '\')">' + esc(L("tTrace")) + '</button>' + statusActions(l) + '</td></tr>';
@@ -2686,7 +2689,7 @@
     var ok = Object.keys(onhand).sort();
     if (ok.length) h += '<p class="muted" style="margin-top:10px"><b>Scanned finished bags on hand:</b> ' + ok.map(function (k) { return esc(k) + ": " + fmt(onhand[k]); }).join(" &middot; ") + '</p>';
     h += heldBannerHtml();
-    h += '</div><div class="card">' + labelTable(list.slice(0, 300)) + '</div>';
+    h += '</div><div class="card">' + labelTable(list.slice(0, 300), allLabels().length) + '</div>';
     return h;
   }
 

@@ -223,6 +223,13 @@
       '</div>';
   }
   function ymd(d) { return String(d || "").slice(0, 10); }
+  function asOfNote(maxIso, what) {
+    var iso = ymd(maxIso);
+    if (!iso) return '<p class="hint">' + esc(what) + ' is not in use yet. No rows are stored.</p>';
+    var age = Math.floor((Date.now() - new Date(iso + "T00:00:00Z").getTime()) / 86400000);
+    if (age > 7) return '<p class="hint">As of ' + esc(iso) + '. No data since ' + esc(iso) + '. This is saved history, not today.</p>';
+    return '<p class="hint">As of ' + esc(iso) + '.</p>';
+  }
   function wipByMonth() {
     var m = {};
     WIP.forEach(function (r) {
@@ -276,7 +283,7 @@
     if (wipErr) return esc(wipErr);
     if (st && st.error) return esc(st.error);
     if (st && st.busy) return "Importing daily units from the WIP sheet.";
-    return "No daily units stored yet.";
+    return "Not in use yet. No daily units stored.";
   }
   function renderWip(host) {
     var body;
@@ -302,7 +309,8 @@
           note = " " + (chk.sourceDays - chk.days) + " sheet days had notes instead of unit counts.";
         }
       } catch (e1) { note = ""; }
-      body = '<div class="mfgcards">' +
+      body = asOfNote(mx, "WIP daily units") +
+        '<div class="mfgcards">' +
         '<div class="mfgcard"><div class="n">' + fmt(u15 + u4) + '</div><div class="l">Total units</div></div>' +
         '<div class="mfgcard"><div class="n">' + fmt(u4) + '</div><div class="l">4 oz units</div></div>' +
         '<div class="mfgcard"><div class="n">' + fmt(u15) + '</div><div class="l">1.5 oz units</div></div>' +
@@ -311,7 +319,7 @@
         '<p class="hint">' + esc(mn || "?") + ' \u2192 ' + esc(mx || "?") + note + '</p>';
     }
     var html = '<div class="card"><h2>Production History</h2>' +
-      '<p class="hint">Daily retail units by flavor from the WIP Production sheet. Blank cells and sheet notes are not counted.</p>' +
+      '<p class="hint">Daily retail units by flavor from the WIP Production sheet. Blank cells and sheet notes are not counted. The last saved day is the as-of date below.</p>' +
       segHtml() + body + '</div>';
     if (!wipErr && WIP.length) {
       html += '<div class="card"><h2 class="sub2">Units by month</h2>' + barChart(wipByMonth(), "Units") + '</div>' +
@@ -344,6 +352,7 @@
       }).join("") + '</tbody></table></div>';
     host.innerHTML = '<div class="card"><h2>Production History</h2>' +
       '<p class="hint">Bin runs from the mixing tracker, plus every Detail sheet row whose department is Mixing. Those Detail rows are packages, not bins, so the totals stay separate. A row is listed once. The Mixing workbook parser is still off.</p>' +
+      asOfNote(rng.max, "Mixing history") +
       segHtml() +
       '<div class="mfgcards">' +
       '<div class="mfgcard"><div class="n">' + fmt(sum.bins) + '</div><div class="l">Total Bins</div></div>' +

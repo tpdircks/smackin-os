@@ -22,13 +22,18 @@
     (rows || []).forEach(function (row) {
       if (isTestRow(row) || String(row.status || "Open") !== "Open" || !row.po) return;
       var key = poGroup(row);
-      if (!groups[key]) groups[key] = { po: row.po, lines: 0, pastDue: false };
+      if (!groups[key]) groups[key] = { po: row.po, partner: String(row.partner || "Unknown"), lines: 0, bags: 0, pastDue: false, due: "" };
       groups[key].lines++;
+      groups[key].bags += Number(row.bags) || 0;
       var due = dueMs(row.due_date);
-      if (due != null && due < today) groups[key].pastDue = true;
+      if (due != null && due < today) {
+        groups[key].pastDue = true;
+        if (!groups[key].due) groups[key].due = String(row.due_date || "");
+      }
     });
     var list = Object.keys(groups).map(function (key) { return groups[key]; }).filter(function (g) { return g.pastDue; });
-    return { pos: list.length, lines: list.reduce(function (sum, g) { return sum + g.lines; }, 0) };
+    list.sort(function (a, b) { return (a.partner + a.po).localeCompare(b.partner + b.po); });
+    return { pos: list.length, lines: list.reduce(function (sum, g) { return sum + g.lines; }, 0), list: list };
   }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 
@@ -39,18 +44,44 @@
     { t: "orders", col: "created_at", label: "Orders", warn: 4, bad: 9 },
     { t: "pmac_history", col: "run_date", label: "P-Mac production", warn: 5, bad: 12, alt: { t: "pmac_log", col: "log_date" } },
     { t: "mixing_history", col: "run_date", label: "Mixing production", warn: 5, bad: 12 },
-    { t: "shipping_log", col: "ship_date", label: "Shipping business dates", warn: 30, bad: 45, business: true },
+    { t: "wip_production_daily", col: "prod_date", label: "WIP daily units", warn: 5, bad: 12 },
+    { t: "fulfillment_daily", col: "fdate", label: "Fulfillment daily", warn: 2, bad: 4, business: true },
+    { t: "production_days", col: "prod_date", label: "Production days", warn: 2, bad: 4, business: true },
+    { t: "production_pallets", col: "prod_date", label: "Production pallets", warn: 2, bad: 4, business: true },
+    { t: "shipping_log", col: "ship_date", label: "Shipping business dates", warn: 3, bad: 7, business: true, skipTest: true },
     { t: "receiving_log", col: "created_at", label: "Receiving log", warn: 14, bad: 30 },
     { t: "supplier_pos", col: "created_at", label: "Supplier POs", warn: 30, bad: 60 },
     { t: "launch_pipeline", col: "updated_at", label: "Launch pipeline", warn: 45, bad: 90 },
-    { t: "trace_events", col: "created_at", label: "Trace events", warn: 14, bad: 30 }
+    { t: "demand_forecast", col: "updated_at", label: "Demand forecast", warn: 30, bad: 60 },
+    { t: "machine_live", col: "updated_at", label: "Machine live", warn: 14, bad: 30 },
+    { t: "trace_events", col: "ts", label: "Trace events", warn: 14, bad: 30 }
   ];
 
-  function daysAgo(ts) {
+  function daysAgo(ts, now) {
     if (!ts) return null;
     var d = new Date(ts); if (isNaN(d)) { var m = String(ts).match(/(\d{4})-(\d{2})-(\d{2})/); if (m) d = new Date(+m[1], +m[2] - 1, +m[3]); }
     if (isNaN(d)) return null;
-    return Math.floor((Date.now() - d.getTime()) / 86400000);
+    var base = now instanceof Date ? now.getTime() : Date.now();
+    return Math.floor((base - d.getTime()) / 86400000);
+  }
+  function businessDaysAgo(ts, now) {
+    var end = denverStamp(now || new Date()).date;
+    var start = String(ts || "").slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(start) || !end) return daysAgo(ts, now);
+    if (start >= end) return 0;
+    var n = 0;
+    var cursor = addDays(start, 1);
+    var guard = 0;
+    while (cursor && cursor <= end && guard < 800) {
+      if (isWeekday(cursor)) n++;
+      cursor = addDays(cursor, 1);
+      guard++;
+    }
+    return n;
+  }
+  function ageOf(ts, src, now) {
+    if (src && src.business) return businessDaysAgo(ts, now);
+    return daysAgo(ts, now);
   }
   function dueMs(s) { var m = String(s || "").match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/); if (!m) return null; var y = +m[3]; if (y < 100) y += 2000; return new Date(y, +m[1] - 1, +m[2]).getTime(); }
 
@@ -181,9 +212,10 @@
     if (count == null) return { cls: "red", txt: "could not read" };
     if (count === 0) return { cls: "grey", txt: "no data yet" };
     if (days == null) return { cls: "grey", txt: "unknown" };
-    if (days >= src.bad) return { cls: "red", txt: days + "d ago" };
-    if (days >= src.warn) return { cls: "amber", txt: days + "d ago" };
-    return { cls: "green", txt: days === 0 ? "today" : days + "d ago" };
+    var unit = src.business ? " business days ago" : "d ago";
+    if (days >= src.bad) return { cls: "red", txt: days + unit };
+    if (days >= src.warn) return { cls: "amber", txt: days + unit };
+    return { cls: "green", txt: days === 0 ? "today" : days + unit };
   }
 
   function render() {
@@ -192,9 +224,11 @@
     host.innerHTML = '<div class="card"><h2>Data Health</h2><p class="muted" id="dh-loading">Checking every data source…</p></div>';
     var c = client(); if (!c) { $("dh-loading").textContent = "Not connected."; return; }
 
-    function probe(t, col) {
+    function probe(t, col, extra) {
+      var latestQ = c.from(t).select(extra && extra.skipTest ? col + ",status" : col).order(col, { ascending: false }).limit(1);
+      if (extra && extra.skipTest) latestQ = latestQ.neq("status", "Test");
       return Promise.all([
-        c.from(t).select(col).order(col, { ascending: false }).limit(1),
+        latestQ,
         c.from(t).select("*", { count: "exact", head: true })
       ]).then(function (r) {
         var err = (r[0] && r[0].error) || (r[1] && r[1].error);
@@ -205,19 +239,19 @@
     // A source with `alt` (e.g. P-Mac: uploaded pmac_history + digital pmac_log) is the union:
     // newest date of either, combined record count (log rows may overlap uploads; count is approximate).
     var jobs = SOURCES.map(function (src) {
-      return Promise.all([probe(src.t, src.col), src.alt ? probe(src.alt.t, src.alt.col) : Promise.resolve(null)]).then(function (p) {
+      return Promise.all([probe(src.t, src.col, src), src.alt ? probe(src.alt.t, src.alt.col) : Promise.resolve(null)]).then(function (p) {
         var a = p[0], b = p[1], latest = a.latest;
         if (a.count == null && (!b || b.count == null)) return { src: src, latest: null, count: null, days: null };
         var count = (a.count || 0) + ((b && b.count) || 0);
         if (b) { var bl = b.latest ? String(b.latest).slice(0, 10) : null; if (bl && (!latest || bl > String(latest).slice(0, 10))) latest = bl; }
-        return { src: src, latest: latest, count: count, days: daysAgo(latest) };
+        return { src: src, latest: latest, count: count, days: ageOf(latest, src) };
       }).catch(function () { return { src: src, latest: null, count: 0, days: null }; });
     });
 
     // exception checks
     var excOrders = c.from("orders").select("id,status,ship_date,created_at,entered_by").neq("status", "Complete").neq("status", "Test").is("ship_date", null)
       .then(function (r) { var d = (r && r.data) || []; var cut = Date.now() - 30 * 86400000; return d.filter(function (o) { var t = new Date(o.created_at).getTime(); return !isTestRow(o) && !isNaN(t) && t < cut; }).length; }).catch(function () { return null; });
-    var excDemand = c.from("demand_lines").select("due_date,status,batch_id,batch_label,partner,po").eq("status", "Open").limit(10000)
+    var excDemand = c.from("demand_lines").select("due_date,status,batch_id,batch_label,partner,po,bags").eq("status", "Open").limit(10000)
       .then(function (r) { var midnight = new Date(); midnight.setHours(0,0,0,0); return stuckSummary((r && r.data) || [], midnight.getTime()); }).catch(function () { return null; });
     var excPmac = loadMissingPmac(c);
 
@@ -242,7 +276,12 @@
         ? '<div class="ex warn"><b>' + stuckOrders + '</b> open order(s) are more than 30 days old with no ship date. Likely stuck. Check the Orders board.</div>'
         : '<div class="ex ok">No stuck open orders (all recent open orders have activity).</div>');
       exc += (oldDemand == null) ? '' : (oldDemand.pos > 0
-        ? '<div class="ex warn"><b>' + oldDemand.pos + '</b> open PO(s) past due across ' + oldDemand.lines + ' DC/flavor lines. Check live order status before closing.</div>'
+        ? '<div class="ex warn"><b>Past-due open demand.</b> <b>' + oldDemand.pos + '</b> open PO(s) past due across ' + oldDemand.lines + ' DC/flavor lines: ' +
+          (oldDemand.list || []).map(function (g) {
+            var bags = g.bags ? (", " + g.bags.toLocaleString("en-US") + " bags") : "";
+            return esc(g.partner) + " PO " + esc(g.po) + " (due " + esc(g.due || "blank") + ", " + g.lines + " lines" + bags + ")";
+          }).join("; ") +
+          '. These stay open until a source proves status. This screen does not close them.</div>'
         : '<div class="ex ok">No real open POs past due.</div>');
       if (missingPmac == null) {
         exc += '';
@@ -312,7 +351,7 @@
   }
 
   var dhOpen = false;
-  window.DATAHEALTH = { forTest: { isTestRow: isTestRow, stuckSummary: stuckSummary, missingPmacDays: missingPmacDays, prettyPmacDate: prettyPmacDate, denverStamp: denverStamp, addDays: addDays, LOOKBACK_DAYS: LOOKBACK_DAYS }, open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); dhOpen = true; markActive(); render(); } };
+  window.DATAHEALTH = { forTest: { isTestRow: isTestRow, stuckSummary: stuckSummary, missingPmacDays: missingPmacDays, prettyPmacDate: prettyPmacDate, denverStamp: denverStamp, addDays: addDays, LOOKBACK_DAYS: LOOKBACK_DAYS, sources: SOURCES, daysAgo: daysAgo, businessDaysAgo: businessDaysAgo, ageOf: ageOf, statusOf: statusOf }, open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); dhOpen = true; markActive(); render(); } };
 
   function markActive() { try { var nav = $("nav"); if (!nav) return; nav.querySelectorAll(".navitem.active").forEach(function (b) { b.classList.remove("active"); }); var m = $("dh-nav"); if (m) m.classList.add("active"); } catch (e) {} }
   function injectNav() {
