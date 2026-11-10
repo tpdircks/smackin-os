@@ -1112,10 +1112,14 @@
     }).join("");
     return '<h3 style="margin-top:16px">QUARANTINE / QA-HOLD</h3><p class="hint">Stock on hold, including lots from an inventory count. Quality release moves that lot to RECEIVING.</p><table class="trc"><thead><tr><th>Item</th><th>Lot</th><th>Where</th><th>Exp</th><th>Qty</th><th>' + esc(L("issueCol")) + '</th><th></th></tr></thead><tbody>' + body + "</tbody></table>";
   }
+  function releaseActor() {
+    var actor = window.RECVSOP && typeof RECVSOP.qualityActor === "function" && RECVSOP.qualityActor();
+    return actor || opName();
+  }
   function releaseStock(i) {
     var row = QA_STOCK[i];
     if (!row) return;
-    if (needOp()) return;
+    if (!releaseActor() && needOp()) return;
     var D = window.DB;
     var it = null;
     if (D && D.items) {
@@ -1135,7 +1139,7 @@
       qty: row.hold_qty,
       location: row._location,
       holdId: row.holdId || "",
-      by: opName(),
+      by: releaseActor(),
       note: "",
       disposition: "released",
       reason: row.hold_reason

@@ -5892,7 +5892,7 @@
             lot: row.lot || "",
             qty: row.qty,
             location: zone,
-            by: opVal(),
+            by: (window.RECVSOP && RECVSOP.qualityActor && RECVSOP.qualityActor()) || opVal(),
             note: "Release to good stock",
             disposition: "released"
           });
@@ -6654,8 +6654,19 @@
   ["saveAdjust","ordAdd","ordComplete","ordReopen","receive","put","move","produce","count","doReturn","addSeasLot","seasStatus","quarExpired","qaConvert","qaScrap","poSave","poOrder","poCancel","poDelete","poReceiveConfirm","reset"].forEach(fn => {
     const orig = UI[fn];
     if (typeof orig !== "function") return;
-    UI[fn] = async function () { if (!(await ensureUnlocked())) return; return orig.apply(UI, arguments); };
+    UI[fn] = async function () {
+      // Quality hold release is not an inventory edit. Scrap and every other
+      // write on this list still ask for the inventory PIN.
+      if (fn === "qaConvert" && qualityHoldRelease(arguments[1])) return orig.apply(UI, arguments);
+      if (!(await ensureUnlocked())) return;
+      return orig.apply(UI, arguments);
+    };
   });
+  function qualityHoldRelease(zone) {
+    var z = String(zone || "").toUpperCase();
+    if (z !== "QUARANTINE" && z !== "QA-HOLD") return false;
+    return !!(window.RECVSOP && typeof RECVSOP.qualityActor === "function" && RECVSOP.qualityActor());
+  }
 
   function refreshDatalists() {
     $("dl-items").innerHTML = DB.items().map(i => '<option value="' + i.code + '">' + i.name + "</option>").join("");

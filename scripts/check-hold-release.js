@@ -23,6 +23,14 @@ assert(open[0].hold_qty === 1000 && open[0]._location === "QUARANTINE", "qty and
 assert(open[0].hold_reason.indexOf("Not a receipt") >= 0, "not a fake receipt");
 assert(open[0].id.indexOf("stk:") === 0 && open[0]._stock === true, "synthetic until a hold_log row exists");
 assert(sop.dispositionByValue({ held_by: "sync backfill" }) === "", "backfill does not sign the disposition");
+assert(sop.qualityReleaseUser("Brittney.Christensen@smackinsnacks.com"), "Brittney can release a hold");
+assert(sop.qualityReleaseUser("monica.smith@smackinsnacks.com") && sop.qualityReleaseUser("troy.dircks@smackinsnacks.com"), "Monica and Troy can release a hold");
+assert(!sop.qualityReleaseUser("adriana@smackinsnacks.com") && !sop.qualityReleaseUser(""), "other staff still need the inventory PIN");
+global.SMK_USER_EMAIL = "brittney.christensen@smackinsnacks.com";
+assert(sop.qualityActor() === "brittney.christensen@smackinsnacks.com", "signed-in Quality email is the actor");
+assert(sop.dispositionByValue({ held_by: "sync backfill" }) === "brittney.christensen@smackinsnacks.com", "her name prefills the disposition");
+global.SMK_USER_EMAIL = "";
+assert(sop.qualityActor() === "", "no session is not a Quality release");
 assert(sop.stockOriginLocation({ hold_reason: "Sync backfill. Stock was already in QUARANTINE. Not a receipt." }) === "QUARANTINE", "backfill location");
 
 var covered = sop.stockHoldRows(stock, [jal], [{
@@ -59,6 +67,9 @@ assert(sql.indexOf("QUARANTINE") >= 0 && sql.indexOf("receiving_log_id") >= 0 &&
 assert(sql.indexOf("sync backfill") < 0, "the trigger is not the one-time backfill");
 assert(trace.indexOf("qaStockRows") >= 0 && trace.indexOf("Quality release") >= 0, "QA Hold lists stock");
 assert(app.indexOf("settleStockHold") >= 0 && app.indexOf("confirmRelease") >= 0, "release to good stock warns and records the hold");
+assert(app.indexOf("qualityHoldRelease") >= 0 && app.indexOf('fn === "qaConvert" && qualityHoldRelease') >= 0, "quarantine release skips the inventory PIN for Quality");
+assert(app.indexOf('"qaScrap"') >= 0 && app.indexOf("ensureUnlocked") >= 0, "scrap and other edits still ask for the PIN");
+assert(read("receiving-sop.js").indexOf("SMK_UNLOCK") < 0 && read("trace.js").indexOf("SMK_UNLOCK") < 0 && read("raw-coa.js").indexOf("SMK_UNLOCK") < 0, "HOLD log, QA Hold, and COA release do not open the inventory PIN");
 assert(read("receiving-sop.js").indexOf("visibleHolds") >= 0, "HOLD log includes stock with no receipt");
 
 if (failed) {

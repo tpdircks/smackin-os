@@ -745,7 +745,8 @@
   async function releaseFrom(btn) {
     var box = btn.closest ? (btn.closest(".rc-line") || btn.closest(".rc-log") || btn.closest(".rc-floor")) : null;
     var whoEl = box ? box.querySelector(".rc-who") : null;
-    var name = whoEl ? String(whoEl.value || "").trim() : operator();
+    var actor = root.RECVSOP && typeof root.RECVSOP.qualityActor === "function" && root.RECVSOP.qualityActor();
+    var name = actor || (whoEl ? String(whoEl.value || "").trim() : "") || operator();
     if (!name) { toast(tx("needName")); return; }
     var lot = btn.getAttribute("data-lot") || "";
     var item = itemById(btn.getAttribute("data-item") || "");
