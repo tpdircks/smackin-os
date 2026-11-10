@@ -327,6 +327,10 @@ window.RECIPES = {
   "malto_lbs": 3.0,
   "planning_group": "G2",
   "allergen_level": "A1",
+  "fg_allergen_level": "A2",
+  "fg_allergens": "Milk",
+  "fg_allergen_note": "Finished good contains Milk because Spicy Guacamole is added in batching.",
+  "allergen_source": "Brittney Christensen email 2026-11-10",
   "wip_malt_lbs": 2,
   "water": "5 cups",
   "oil": "None",
@@ -415,8 +419,9 @@ window.RECIPES = {
   "water": "5 cups",
   "oil": "None",
   "stevia": "None",
-  "status": "active"
- },
+  "status": "active",
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
  "chedderghostpepper": {
   "code": "L23",
   "name": "Cheddar Ghost Pepper",
@@ -1030,8 +1035,9 @@ window.RECIPES = {
   "water": "5 cups",
   "oil": "None",
   "stevia": "None",
-  "status": "active"
- },
+  "status": "active",
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
  "smokedbrisket": {
   "code": "A11",
   "name": "Smoked Brisket",
@@ -1041,7 +1047,9 @@ window.RECIPES = {
   "mix_level": "1",
   "malto_lbs": null,
   "planning_group": null,
-  "allergen_level": null,
+  "allergen_level": "A3",
+  "allergens": "Milk, Soy",
+  "allergen_source": "Brittney Christensen email 2026-11-10",
   "status": "retired",
   "successor": "L60"
  },
@@ -1114,8 +1122,10 @@ window.RECIPES = {
   "wip_lbs_per_batch": 9.7,
   "wip_rate_from": "Approved Recipes",
   "status": "retired",
-  "successor": "L57"
- },
+  "successor": "L57",
+  "allergens": "Milk, Egg, Wheat, Soy",
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
  "baconjalapeno": {
   "code": "L55",
   "name": "Bacon Jalapeno",
@@ -1131,8 +1141,9 @@ window.RECIPES = {
   "water": "5 cups",
   "oil": "None",
   "stevia": "None",
-  "status": "active"
- },
+  "status": "active",
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
  "cottoncandy": {
   "code": "L56",
   "name": "Cotton Candy",
@@ -1166,8 +1177,9 @@ window.RECIPES = {
   "water": "5 cups",
   "oil": "None",
   "stevia": "None",
-  "status": "active"
- },
+  "status": "active",
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
  "l58nashvillehot": {
   "code": "L58",
   "name": "Nashville Hot",
@@ -1218,8 +1230,9 @@ window.RECIPES = {
   "water": "5 cups",
   "oil": "None",
   "stevia": "None",
-  "status": "active"
- },
+  "status": "active",
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
  "glazeddonut": {
   "code": "L61",
   "name": "Glazed Donut",
@@ -1254,8 +1267,9 @@ window.RECIPES = {
   "water": "5 cups",
   "oil": "None",
   "stevia": "None",
-  "status": "active"
- },
+  "status": "active",
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
  "beerbrats": {
   "code": "L63",
   "name": "Beer & Brats",
@@ -1290,8 +1304,9 @@ window.RECIPES = {
   "water": "5 cups",
   "oil": "None",
   "stevia": "None",
-  "status": "active"
- },
+  "status": "active",
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
  "everythingbagel": {
   "code": "L67",
   "name": "Everything Bagel",
@@ -1310,8 +1325,9 @@ window.RECIPES = {
   "incomplete": true,
   "oil": "None",
   "stevia": "None",
-  "status": "incomplete"
- },
+  "status": "incomplete",
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
  "tzatziki": {
   "code": "L68",
   "name": "Tzatziki",
@@ -1328,8 +1344,9 @@ window.RECIPES = {
   "water": "5 cups",
   "oil": "None",
   "stevia": "None",
-  "status": "active"
- },
+  "status": "active",
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
  "bbqchili": {
   "code": "L69",
   "name": "BBQ Chili",
@@ -1347,8 +1364,9 @@ window.RECIPES = {
   "notes": "THIS MIGHT BE WAY TOO SALTY. Might be better as 5.5 lb or 25 g per lb of seed.",
   "oil": "None",
   "stevia": "None",
-  "status": "active"
- },
+  "status": "active",
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
  "snickerdoodle": {
   "code": "L70",
   "name": "Snickerdoodle",
@@ -1366,8 +1384,9 @@ window.RECIPES = {
   "notes": "AB 2026-11-09: changed from 7 lbs Snickerdoodle Style to 5 lbs Cinnamon Churro + 5 lbs Birthday Cake (Matt). Prior test failed.",
   "oil": "None",
   "stevia": "None",
-  "status": "active"
- },
+  "status": "active",
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+},
  "greenchili": {
   "code": "L71",
   "name": "Green Chili",
@@ -1384,8 +1403,9 @@ window.RECIPES = {
   "water": "5 cups",
   "oil": "None",
   "stevia": "None",
-  "status": "active"
- }
+  "status": "active",
+  "allergen_source": "Brittney Christensen email 2026-11-10"
+}
 };
 /* Approved Recipes flavors with no production recipe in Smackin OS. */
 window.WIP_APPROVED_MISSING = [

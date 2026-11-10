@@ -77,6 +77,34 @@
   FLAVOR_ROWS.forEach(function (r) {
     FLAVOR_META[r[0]] = { code: r[0], name: r[1], status: r[2] || "active", successor: r[3] || "", former: r[4] || "", note: r[5] || "" };
   });
+  var ALLERGEN_SOURCE = "Brittney Christensen email 2026-11-10";
+  var FG_ALLERGEN = {
+    L18: { alg: "A2", algTxt: "Milk", rawAlg: "A1", rawAlgTxt: "", fgNote: "Finished good contains Milk because Spicy Guacamole is added in batching." },
+    L22: { alg: "A3", algTxt: "Milk, Soy" },
+    L52: { alg: "A1", algTxt: "" },
+    L55: { alg: "A2", algTxt: "Milk" },
+    L57: { alg: "A2", algTxt: "Milk" },
+    L60: { alg: "A1", algTxt: "" },
+    L62: { alg: "A3", algTxt: "Milk, Soy" },
+    L64: { alg: "A1", algTxt: "" },
+    L67: { alg: "A3", algTxt: "Sesame" },
+    L68: { alg: "A1", algTxt: "" },
+    L69: { alg: "A1", algTxt: "" },
+    L70: { alg: "A2", algTxt: "Milk" },
+    L71: { alg: "A1", algTxt: "" },
+    A11: { alg: "A3", algTxt: "Milk, Soy" },
+    A18: { alg: "A3", algTxt: "Milk, Egg, Wheat, Soy" }
+  };
+  Object.keys(FG_ALLERGEN).forEach(function (code) {
+    if (!FLAVOR_META[code]) return;
+    var a = FG_ALLERGEN[code];
+    FLAVOR_META[code].alg = a.alg;
+    FLAVOR_META[code].algTxt = a.algTxt;
+    FLAVOR_META[code].rawAlg = a.rawAlg || "";
+    FLAVOR_META[code].rawAlgTxt = a.rawAlgTxt || "";
+    FLAVOR_META[code].fgNote = a.fgNote || "";
+    FLAVOR_META[code].allergenSource = ALLERGEN_SOURCE;
+  });
 
   var TXT = {
     en: {
@@ -737,7 +765,10 @@
       var days = daysText(r.days_left, code);
       var qty = r.qty_left == null ? "" : Number(r.qty_left).toLocaleString("en-US");
       var src = r.source === "logged" ? (L("logged") + (r.logged_on ? " (" + r.logged_on + ")" : "")) : L("pallet");
-      return "<tr><td><b>" + esc(r.lot) + "</b></td><td>" + esc(r.flavor || "") + "</td><td>" + esc(r.size || "") +
+      var rec = flavorRecord(r.flavor_code);
+      var alg = "";
+      if (rec && rec.alg) alg = " " + rec.alg + (rec.algTxt ? " " + rec.algTxt : (rec.alg === "A1" ? " None" : ""));
+      return "<tr><td><b>" + esc(r.lot) + "</b></td><td>" + esc(r.flavor || "") + (alg ? '<div class="muted sm">' + esc(alg.trim()) + (rec && rec.fgNote ? ". " + esc(rec.fgNote) : "") + "</div>" : "") + "</td><td>" + esc(r.size || "") +
         "</td><td>" + best + (days ? " <span class=\"muted\">" + esc(days) + "</span>" : "") + flag + "</td><td>" +
         esc(r.status || "") + "</td><td class=\"num\">" + esc(qty) + "</td><td>" + esc(r.location || "") +
         "</td><td>" + esc(src) + "</td></tr>";
