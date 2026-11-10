@@ -113,12 +113,12 @@ assert(db.indexOf('from: "RECEIVING", to: "QA-HOLD"') < 0, "move is not hardcode
 assert(db.indexOf('"QA-HOLD"') >= 0 && db.indexOf("hold_log") >= 0, "uses QA-HOLD and the hold log");
 assert(db.indexOf("fn_apply_delta") >= 0, "stock moves stay on the existing delta helper");
 assert(src.indexOf("fn_apply_delta") < 0, "ui module does not call the delta rpc");
-assert(sw.indexOf('const CACHE = "smackin-inv-v307"') >= 0 && sw.indexOf("./raw-coa.js") >= 0, "cache and asset");
+assert(sw.indexOf('const CACHE = "smackin-inv-v308"') >= 0 && sw.indexOf("./raw-coa.js") >= 0, "cache and asset");
 assert(html.indexOf("raw-coa.js?b=7") >= 0, "script bust");
 assert(html.indexOf("coa-docs.js?b=2") >= 0, "coa docs script");
-assert(html.indexOf('var EMBEDDED = "smackin-inv-v307"') >= 0, "embedded build");
-assert(read("build-id.txt").trim() === "smackin-inv-v307", "build id");
-assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v307"') >= 0, "escape build");
+assert(html.indexOf('var EMBEDDED = "smackin-inv-v308"') >= 0, "embedded build");
+assert(read("build-id.txt").trim() === "smackin-inv-v308", "build id");
+assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v308"') >= 0, "escape build");
 assert(html.indexOf("db.js?b=105") >= 0, "db bust");
 assert(read("receiving-sop.js").indexOf("afterHoldLogReleased") >= 0, "hold log release notifies COA");
 

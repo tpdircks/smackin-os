@@ -351,7 +351,41 @@
     }
     if (failingChecks(input).length && !String(input.deviation_actions || "").trim()) errors.push(tx("devReq"));
     if (input.duplicate) errors.push(tx("dup") + (input.duplicate === true ? "" : " (" + input.duplicate + ")"));
+    if (/fire\s*house/i.test(String(input.supplier || "")) && !fireHouseIso(input.expires_on || input.exp)) {
+      errors.push("Fire House needs the box expiration. That date is the lot.");
+    }
     return errors;
+  }
+  function fireHouseIso(v) {
+    var s = String(v || "").trim();
+    var iso = /^(\d{4}-\d{2}-\d{2})/.exec(s);
+    if (iso) return iso[1];
+    var us = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/.exec(s);
+    if (!us) return "";
+    var y = parseInt(us[3], 10);
+    if (y < 100) y += 2000;
+    var m = String(parseInt(us[1], 10));
+    var d = String(parseInt(us[2], 10));
+    if (m.length < 2) m = "0" + m;
+    if (d.length < 2) d = "0" + d;
+    return y + "-" + m + "-" + d;
+  }
+  function applyFireHouse(rec) {
+    rec = rec || {};
+    if (!/fire\s*house/i.test(String(rec.supplier || ""))) return rec;
+    var iso = fireHouseIso(rec.expires_on || rec.exp);
+    if (!iso) return rec;
+    var itemNo = String(rec.lot || "").trim();
+    if (/^FHF\s*EXP\b/i.test(itemNo)) itemNo = "";
+    var note = String(rec.notes || "");
+    if (itemNo) {
+      var phrase = "Fire House item " + itemNo + ". Lot is the box expiration.";
+      if (note.toLowerCase().indexOf(phrase.toLowerCase()) < 0) note = note ? (note.replace(/\s+$/, "") + " " + phrase) : phrase;
+    }
+    rec.lot = "FHF EXP " + iso;
+    rec.expires_on = iso;
+    rec.notes = note;
+    return rec;
   }
   var DRAFT_KEYS = ["supplier", "contents", "lot", "qty", "by"];
   var DRAFT_INPUT = { supplier: "rl-supplier", contents: "rl-contents", lot: "rl-lot", qty: "rl-qrec", by: "rl-by" };
@@ -806,7 +840,8 @@
       temp_not_measured: !!(doc && doc.getElementById("rsop-temp-nm") && doc.getElementById("rsop-temp-nm").checked),
       deviation_actions: val("rsop-dev"),
       allergen: radioVal("rsop_allergen"),
-      item_code: val("rsop-item")
+      item_code: val("rsop-item"),
+      expires_on: base.expires_on || val("rl-exp") || ""
     };
     CHECKS.forEach(function (c) { input[c.key] = radioVal("rsop_" + c.key); });
     return input;
@@ -836,6 +871,8 @@
     CHECKS.forEach(function (c) { rec[c.key] = input[c.key]; });
     if (fails.length && (!rec.condition || rec.condition === "Good")) rec.condition = "Hold";
     if (it && !rec.contents) rec.contents = it.name || rec.contents;
+    if (input.expires_on) rec.expires_on = input.expires_on;
+    applyFireHouse(rec);
     showError("");
     return { ok: true, rec: rec, held: fails.length > 0, open: open, warn: tempWarn(input.temperature_f) };
   }
@@ -1420,6 +1457,7 @@
   if (typeof module !== "undefined" && module.exports) {
     module.exports = {
       validate: validate,
+      applyFireHouse: applyFireHouse,
       tempWarn: tempWarn,
       failingChecks: failingChecks,
       recordPatch: recordPatch,

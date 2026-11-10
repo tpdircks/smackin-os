@@ -171,6 +171,47 @@ assert(cashewPlan.holds.some(function (h) { return /pallet 8/.test(h.reason); })
 assert(ready.kindOf({ id: "MALTO", code: "MALTO", category: "retired", name: "Retired: Maltodextrin" }) === "retired", "retired malto leaves the pool");
 assert(ready.kindOf({ id: "TMP-SEAS-MALTODEXTRINCLINTOSECR", code: "TMP-SEAS-MALTODEXTRINCLINTOSECR", category: "seasoning", name: "Seasoning - Maltodextrin Clintose CR-10" }) === "malto", "clintose stays the malto record");
 
+var fhNone = plan.planItemLots("SEAS-L02", [
+  { item: "SEAS-L02", supplier: "Fire House Flavors", lot: "4209 E", qty: 10, exp: "", locCode: "L20" },
+  { item: "SEAS-L02", supplier: "Fire House Flavors", lot: "4209 E", qty: 5, exp: "*", locCode: "L20" }
+], [], { today: TODAY, sheetAsOf: AS_OF });
+assert(fhNone.actions.length === 0, "undated Fire House line is not invented");
+assert(fhNone.holds.length === 2 && fhNone.holds.every(function (h) { return h.reason.indexOf("Not merged") >= 0; }), "undated Fire House lines are reported");
+
+var fhCombo = plan.planItemLots("SEAS-L02", [
+  { item: "SEAS-L02", supplier: "Fire House", lot: "4209 E", qty: 100, exp: "2027-07-02", locCode: "L20" },
+  { item: "SEAS-L02", supplier: "FireHouse Flavors", lot: "4209 F", qty: 35, exp: "07/02/2027", locCode: "L 20" },
+  { item: "SEAS-L02", supplier: "Fire House Flavors", lot: "4209 E", qty: 45, exp: "2027-07-08", locCode: "L20" }
+], [], { today: "2026-11-10", sheetAsOf: AS_OF });
+assert(fhCombo.actions.length === 2, "different Fire House dates stay separate");
+var fhJuly = fhCombo.actions.filter(function (a) { return a.expires_on === "2027-07-02"; })[0];
+var fhJuly8 = fhCombo.actions.filter(function (a) { return a.expires_on === "2027-07-08"; })[0];
+assert(fhJuly && fhJuly.op === "insert" && fhJuly.qty === 135 && fhJuly.lot === "FHF EXP 2027-07-02" && fhJuly.location === "L-20", "same date at one location combines");
+assert(fhJuly8 && fhJuly8.lot === "FHF EXP 2027-07-08" && fhJuly8.qty === 45, "the other date is its own lot");
+assert(fhCombo.notes.some(function (n) { return n.reason === "Fire House item 4209 E, 4209 F. Lot is the box expiration."; }), "combined note names both item numbers");
+assert(fhCombo.notes.some(function (n) { return n.reason === "Fire House item 4209 E. Lot is the box expiration."; }), "single date note names the item");
+
+var fhOther = plan.planItemLots("SEAS-S08", [
+  { item: "SEAS-S08", supplier: "Commercial Creamery", lot: "#G0726", qty: 10, exp: "2027-07-20", locCode: "S 08" }
+], [], { today: TODAY, sheetAsOf: AS_OF });
+assert(fhOther.actions.length === 1 && fhOther.actions[0].lot === "#G0726", "a non Fire House lot stays the supplier lot");
+
+var fhMatch = plan.planItemLots("SEAS-L02", [
+  { item: "SEAS-L02", lot: "FHF EXP 2027-08-24", qty: 135, exp: "2027-08-24", locCode: "L20" }
+], [
+  { source_id: "SEAS-L02", location: "L-20", lot: "FHF EXP 2027-08-24", qty: 135, expires_on: "2027-08-24", updated_at: "2026-10-01T00:00:00Z" }
+], { today: "2026-11-10", sheetAsOf: AS_OF });
+assert(fhMatch.actions.length === 1 && fhMatch.actions[0].op === "match", "an OS FHF EXP lot matches the box date");
+
+var fhFlags = plan.reconcile({ lots: [
+  { item: "SEAS-L02", supplier: "Fire House Flavors", lot: "#4209 E", qty: 135, exp: "2027-07-02" },
+  { item: "SEAS-L02", supplier: "Fire House Flavors", lot: "4209 E", qty: 10, exp: "" }
+], aggregates: [] }, [
+  { item_id: "SEAS-L02", location: "L-20", lot: "FHF EXP 2027-07-02", qty: 135 }
+], [{ id: "SEAS-L02", code: "SEAS-L02" }]);
+assert(!fhFlags.some(function (f) { return f.kind === "lot"; }), "reconcile keys the box date, not the item number");
+assert(fhFlags.some(function (f) { return f.kind === "firehouse-exp" && f.sheet === 10; }), "reconcile reports an undated Fire House line");
+
 if (failed) {
   console.error(failed + " failed");
   process.exit(1);
