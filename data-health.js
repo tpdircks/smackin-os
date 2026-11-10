@@ -5,6 +5,9 @@
    anything that's gone quiet (green / amber / red), plus a few exception checks
    (stuck open orders, past-due demand still open). Nothing is changed here; it
    just surfaces exceptions so old data doesn't sit unnoticed.
+   PAUSED_FEEDS marks feeds that are intentionally not in use. Those rows
+   stay grey and out of the stale count. Remove one entry to count it again.
+   A later date than asOf leaves the pause. An empty asOf means never used.
    Self-contained, no app.js edit.
    ==========================================================================*/
 (function () {
@@ -43,7 +46,7 @@
     { t: "demand_lines", col: "created_at", label: "Demand imports", warn: 12, bad: 25 },
     { t: "orders", col: "created_at", label: "Orders", warn: 4, bad: 9 },
     { t: "pmac_history", col: "run_date", label: "P-Mac production", warn: 5, bad: 12, alt: { t: "pmac_log", col: "log_date" } },
-    { t: "mixing_history", col: "run_date", label: "Mixing production", warn: 5, bad: 12 },
+    { t: "mixing_history", col: "run_date", label: "Mixing tracker", warn: 5, bad: 12 },
     { t: "wip_production_daily", col: "prod_date", label: "WIP daily units", warn: 5, bad: 12 },
     { t: "fulfillment_daily", col: "fdate", label: "Fulfillment daily", warn: 2, bad: 4, business: true },
     { t: "production_days", col: "prod_date", label: "Production days", warn: 2, bad: 4, business: true },
@@ -52,10 +55,20 @@
     { t: "receiving_log", col: "created_at", label: "Receiving log", warn: 14, bad: 30 },
     { t: "supplier_pos", col: "created_at", label: "Supplier POs", warn: 30, bad: 60 },
     { t: "launch_pipeline", col: "updated_at", label: "Launch pipeline", warn: 45, bad: 90 },
-    { t: "demand_forecast", col: "updated_at", label: "Demand forecast", warn: 30, bad: 60 },
-    { t: "machine_live", col: "updated_at", label: "Machine live", warn: 14, bad: 30 },
+    { t: "demand_forecast", col: "updated_at", label: "WOS forecast", warn: 30, bad: 60 },
+    { t: "machine_live", col: "updated_at", label: "Live machine feed", warn: 14, bad: 30 },
+    { t: "qc_forms", col: "form_date", label: "QC forms", warn: 2, bad: 4, business: true },
     { t: "trace_events", col: "ts", label: "Trace events", warn: 14, bad: 30 }
   ];
+
+  // Remove one entry to count that feed again. asOf is the last data date.
+  // A newer date shows the feed as active and flags "new data while paused".
+  var PAUSED_FEEDS = {
+    mixing_history: { key: "mixing_history", owner: "Troy Dircks", asOf: "2026-09-29", reason: "Mixing tracker is intentionally not in use." },
+    machine_live: { key: "machine_live", owner: "Troy Dircks", asOf: "2026-09-09", reason: "Live machine feed is intentionally not in use." },
+    demand_forecast: { key: "demand_forecast", owner: "Troy Dircks", asOf: "2026-07-17", reason: "WOS forecast is intentionally not in use." },
+    qc_forms: { key: "qc_forms", owner: "Troy Dircks", asOf: "", reason: "QC forms have never been used." }
+  };
 
   function daysAgo(ts, now) {
     if (!ts) return null;
@@ -123,6 +136,27 @@
     if (p.length < 3) return String(iso || "");
     var dt = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2]));
     return DAY_NAMES[dt.getUTCDay()] + " " + MONTH_NAMES[dt.getUTCMonth()] + " " + dt.getUTCDate() + ", " + dt.getUTCFullYear();
+  }
+  function prettyDay(iso) {
+    var p = String(iso || "").split("-");
+    if (p.length < 3) return "";
+    var dt = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2]));
+    if (isNaN(dt.getTime())) return "";
+    return MONTH_NAMES[dt.getUTCMonth()] + " " + dt.getUTCDate() + ", " + dt.getUTCFullYear();
+  }
+  function dayKey(ts) {
+    var s = String(ts || "").slice(0, 10);
+    return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : "";
+  }
+  function pausedEntry(src) {
+    if (!src || !PAUSED_FEEDS) return null;
+    return PAUSED_FEEDS[src.t] || null;
+  }
+  function newerThanPause(entry, latest, count) {
+    if (!entry) return false;
+    var day = dayKey(latest);
+    if (!entry.asOf) return !!(day || (Number(count) > 0));
+    return !!(day && day > entry.asOf);
   }
   function asDateMap(src) {
     var out = {};
@@ -200,6 +234,8 @@
       ".dh-green{background:#16a34a}.dh-amber{background:#e39412}.dh-red{background:#b52024}.dh-grey{background:#9ca3af}",
       ".dh-pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700}",
       ".dh-pill.green{background:#dcfce7;color:#166534}.dh-pill.amber{background:#fef3c7;color:#92400e}.dh-pill.red{background:#fee2e2;color:#991b1b}.dh-pill.grey{background:#f1f5f9;color:#64748b}",
+      "tr.dh-paused td{color:#64748b;background:#f8fafc}",
+      ".dh-owner{display:block;color:#64748b;font-size:12px;font-weight:600;margin-top:2px}",
       "#dh-exc .ex{padding:11px 14px;border-radius:10px;margin-top:8px;font-size:13.5px}",
       "#dh-exc .ex.warn{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412}",
       "#dh-exc .ex.ok{background:#ecfdf5;border:1px solid #a7f3d0;color:#047857}",
@@ -208,14 +244,63 @@
     (document.head || document.documentElement).appendChild(s);
   }
 
-  function statusOf(days, src, count) {
-    if (count == null) return { cls: "red", txt: "could not read" };
-    if (count === 0) return { cls: "grey", txt: "no data yet" };
-    if (days == null) return { cls: "grey", txt: "unknown" };
-    var unit = src.business ? " business days ago" : "d ago";
-    if (days >= src.bad) return { cls: "red", txt: days + unit };
-    if (days >= src.warn) return { cls: "amber", txt: days + unit };
-    return { cls: "green", txt: days === 0 ? "today" : days + unit };
+  function statusOf(days, src, count, latest) {
+    if (count == null) return { cls: "red", txt: "could not read", paused: false };
+    var entry = pausedEntry(src);
+    if (entry && !newerThanPause(entry, latest, count)) {
+      var when = entry.asOf ? (prettyDay(dayKey(latest) || entry.asOf) || entry.asOf) : "never used";
+      return { cls: "grey", txt: "Paused", paused: true, owner: entry.owner || "", when: when, reason: entry.reason || "" };
+    }
+    var st;
+    if (count === 0) st = { cls: "grey", txt: "no data yet" };
+    else if (days == null) st = { cls: "grey", txt: "unknown" };
+    else {
+      var unit = src.business ? " business days ago" : "d ago";
+      if (days >= src.bad) st = { cls: "red", txt: days + unit };
+      else if (days >= src.warn) st = { cls: "amber", txt: days + unit };
+      else st = { cls: "green", txt: days === 0 ? "today" : days + unit };
+    }
+    st.paused = false;
+    if (entry) st.note = "new data while paused";
+    return st;
+  }
+  function lastShown(latest, st) {
+    if (st && st.paused) return st.when || "never used";
+    if (latest) return String(latest).slice(0, 10);
+    return "-";
+  }
+  function renderRow(x) {
+    var st = statusOf(x.days, x.src, x.count, x.latest);
+    var countTxt = x.count == null ? "-" : Number(x.count).toLocaleString("en-US");
+    var note = "";
+    if (st.paused && st.owner) note = '<div class="dh-owner">' + esc(st.owner) + "</div>";
+    else if (st.note) note = '<div class="dh-owner">' + esc(st.note) + "</div>";
+    var title = st.reason ? ' title="' + esc(st.reason) + '"' : "";
+    var trCls = st.paused ? ' class="dh-paused"' : "";
+    return "<tr" + trCls + title + "><td><span class=\"dh-dot dh-" + st.cls + "\"></span>" + esc(x.src.label) + note + "</td>" +
+      '<td class="right sm">' + countTxt + "</td>" +
+      '<td class="sm">' + esc(lastShown(x.latest, st)) + "</td>" +
+      '<td><span class="dh-pill ' + st.cls + '">' + esc(st.txt) + "</span></td></tr>";
+  }
+  function tally(rows) {
+    var reds = 0, ambers = 0, paused = 0;
+    (rows || []).forEach(function (x) {
+      var st = statusOf(x.days, x.src, x.count, x.latest);
+      if (st.paused) paused++;
+      else if (st.cls === "red") reds++;
+      else if (st.cls === "amber") ambers++;
+    });
+    return { reds: reds, ambers: ambers, paused: paused };
+  }
+  function summaryHtml(totals) {
+    totals = totals || {};
+    var reds = totals.reds || 0, ambers = totals.ambers || 0, pausedN = totals.paused || 0;
+    var summary = "";
+    if (reds) summary += '<span class="dh-pill red">' + reds + " stale</span> ";
+    else if (!ambers) summary += '<span class="dh-pill green">All sources current</span> ';
+    if (ambers) summary += '<span class="dh-pill amber">' + ambers + " aging</span> ";
+    if (pausedN) summary += '<span class="dh-pill grey">' + pausedN + " paused</span>";
+    return summary;
   }
 
   function render() {
@@ -257,19 +342,9 @@
 
     Promise.all([Promise.all(jobs), excOrders, excDemand, excPmac]).then(function (all) {
       var rows = all[0], stuckOrders = all[1], oldDemand = all[2], missingPmac = all[3];
-      var body = rows.map(function (x) {
-        var st = statusOf(x.days, x.src, x.count);
-        return '<tr><td><span class="dh-dot dh-' + st.cls + '"></span>' + esc(x.src.label) + '</td>' +
-          '<td class="right sm">' + x.count.toLocaleString("en-US") + '</td>' +
-          '<td class="sm">' + esc(x.latest ? String(x.latest).slice(0, 10) : "-") + '</td>' +
-          '<td><span class="dh-pill ' + st.cls + '">' + st.txt + '</span></td></tr>';
-      }).join("");
-      var reds = rows.filter(function (x) { return statusOf(x.days, x.src, x.count).cls === "red"; }).length;
-      var ambers = rows.filter(function (x) { return statusOf(x.days, x.src, x.count).cls === "amber"; }).length;
-
-      var summary = reds ? '<span class="dh-pill red">' + reds + ' stale</span> ' : '';
-      summary += ambers ? '<span class="dh-pill amber">' + ambers + ' aging</span> ' : '';
-      if (!reds && !ambers) summary = '<span class="dh-pill green">All sources current</span>';
+      var body = rows.map(renderRow).join("");
+      var totals = tally(rows);
+      var summary = summaryHtml(totals);
 
       var exc = '';
       exc += (stuckOrders == null) ? '' : (stuckOrders > 0
@@ -295,7 +370,7 @@
 
       host.innerHTML =
         '<div class="card"><h2>Data Health</h2>' +
-        '<p class="hint">How current each data source is, and whether anything old is stuck. Green = fresh, amber = aging, red = hasn\'t updated in a while. Read-only. Nothing here changes your data.</p>' +
+        '<p class="hint">How current each data source is, and whether anything old is stuck. Green = fresh, amber = aging, red = hasn\'t updated in a while. Paused is grey, names the owner, and is left out of the stale count. Read-only. Nothing here changes your data.</p>' +
         '<p style="margin:6px 0 12px">' + summary + '</p>' +
         '<div class="tblwrap"><table class="sortable"><thead><tr><th>Data source</th><th class="right">Records</th><th>Last update</th><th>Freshness</th></tr></thead><tbody>' + body + '</tbody></table></div>' +
         '</div>' +
@@ -351,7 +426,7 @@
   }
 
   var dhOpen = false;
-  window.DATAHEALTH = { forTest: { isTestRow: isTestRow, stuckSummary: stuckSummary, missingPmacDays: missingPmacDays, prettyPmacDate: prettyPmacDate, denverStamp: denverStamp, addDays: addDays, LOOKBACK_DAYS: LOOKBACK_DAYS, sources: SOURCES, daysAgo: daysAgo, businessDaysAgo: businessDaysAgo, ageOf: ageOf, statusOf: statusOf }, open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); dhOpen = true; markActive(); render(); } };
+  window.DATAHEALTH = { forTest: { isTestRow: isTestRow, stuckSummary: stuckSummary, missingPmacDays: missingPmacDays, prettyPmacDate: prettyPmacDate, prettyDay: prettyDay, denverStamp: denverStamp, addDays: addDays, LOOKBACK_DAYS: LOOKBACK_DAYS, sources: SOURCES, PAUSED_FEEDS: PAUSED_FEEDS, daysAgo: daysAgo, businessDaysAgo: businessDaysAgo, ageOf: ageOf, statusOf: statusOf, renderRow: renderRow, tally: tally, summaryHtml: summaryHtml }, open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); dhOpen = true; markActive(); render(); } };
 
   function markActive() { try { var nav = $("nav"); if (!nav) return; nav.querySelectorAll(".navitem.active").forEach(function (b) { b.classList.remove("active"); }); var m = $("dh-nav"); if (m) m.classList.add("active"); } catch (e) {} }
   function injectNav() {
