@@ -464,7 +464,8 @@ window.DB = (function () {
         const fc = await readRows(function () { return sb.from("demand_forecast").select("*").order("id", { ascending: true }); });
         cache.forecast = (fc && fc.data ? fc.data : []).map(r => ({
           flavor: r.flavor || "", size: r.size || "", forecast_bags: Number(r.forecast_bags) || 0,
-          source_month: r.source_month || ""
+          source_month: r.source_month || "",
+          updated_at: r.updated_at || null
         }));
       } catch (e) { cache.forecast = cache.forecast || []; }
       // ecom_demand (ShipStation e-com bags-needed-per-flavor snapshot) loaded separately + resiliently

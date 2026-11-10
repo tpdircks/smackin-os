@@ -767,6 +767,22 @@
     } else nav.appendChild(btn);
     try { if (root.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
   }
+  function ensureData(done) {
+    if (root.ALLEN_WO_DATA) { done(); return; }
+    var existing = doc.querySelector("script[data-allen-wo-data]");
+    function finish() { done(); }
+    if (existing) {
+      existing.addEventListener("load", finish);
+      existing.addEventListener("error", finish);
+      return;
+    }
+    var s = doc.createElement("script");
+    s.src = "allen-wo-data.js?b=1";
+    s.setAttribute("data-allen-wo-data", "1");
+    s.onload = finish;
+    s.onerror = finish;
+    (doc.body || doc.documentElement).appendChild(s);
+  }
   function open(opts) {
     opts = opts || {};
     screen = opts.screen || "list";
@@ -780,7 +796,7 @@
       if (n) n.classList.remove("open");
       if (bd) bd.classList.remove("show");
     } catch (e) {}
-    render();
+    ensureData(function () { render(); });
   }
   function onClick(ev) {
     if (!doc.getElementById("awo-root")) return;

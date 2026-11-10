@@ -1,6 +1,6 @@
 /* ============================================================================
    P-Mac Log Output  (pmac-log.js)
-   Digital version of Allen's "P-Mac (Packing Machine) Log v27" — CORE / first pass.
+   Digital version of Allen's "P-Mac (Packing Machine) Log v27". CORE / first pass.
    Captures the Shift Setup block as dated, saved records:
      date, shift, operator, machine #, flavor (+ number), bag size (1.5/2.75/4.0),
      package type (Standard/Unvaulted/Backyard Sports-Pedro/Halloween + add-new),
@@ -122,13 +122,13 @@
 
   function form() {
     var flavs = flavorList();
-    var flavOpts = '<option value="">Flavor / Sabor…</option>' + flavs.map(function (f) { return '<option value="' + esc(f.name) + '" data-code="' + esc(f.code) + '">' + esc(f.code ? (f.code + " — " + f.name) : f.name) + '</option>'; }).join("");
+    var flavOpts = '<option value="">Flavor / Sabor…</option>' + flavs.map(function (f) { return '<option value="' + esc(f.name) + '" data-code="' + esc(f.code) + '">' + esc(f.code ? (f.code + " - " + f.name) : f.name) + '</option>'; }).join("");
     var pkgOpts = pkgTypes().map(function (p) { return opt(p, "Standard", p); }).join("") + opt("__add__", "", "+ Add packaging type…");
     var sizeOpts = BAG_SIZES.map(function (s) { return opt(s, "4.0", s + " oz"); }).join("");
     var allOpts = ALLERGENS.map(function (a) { return opt(a, "None", a); }).join("");
     var opsList = operators().map(function (o) { return '<option value="' + esc(o) + '">'; }).join("");
     return '<div class="card"><h2>P-Mac Log Output</h2>' +
-      '<p class="hint">Digital P-Mac (Packing Machine) log — Shift Setup. Log each run as it comes off P-Mac. ' +
+      '<p class="hint">Digital P-Mac (Packing Machine) log, Shift Setup. Log each run as it comes off P-Mac. ' +
       'Downtime tracking and the QA checklist come next (designing with Allen).</p>' +
       '<div class="row">' +
         '<div><label>Date / Fecha</label><input id="pml-date" type="date" value="' + todayISO() + '"></div>' +
@@ -149,9 +149,9 @@
         '<div><label>Total Packages</label><input id="pml-total" type="number" min="0" placeholder="0"></div>' +
       '</div>' +
       '<div class="row">' +
-        '<div><label>Weight 1 (oz)</label><input id="pml-w1" type="number" step="0.01" placeholder="—"></div>' +
-        '<div><label>Weight 2 (oz)</label><input id="pml-w2" type="number" step="0.01" placeholder="—"></div>' +
-        '<div><label>Weight 3 (oz)</label><input id="pml-w3" type="number" step="0.01" placeholder="—"></div>' +
+        '<div><label>Weight 1 (oz)</label><input id="pml-w1" type="number" step="0.01" placeholder="-"></div>' +
+        '<div><label>Weight 2 (oz)</label><input id="pml-w2" type="number" step="0.01" placeholder="-"></div>' +
+        '<div><label>Weight 3 (oz)</label><input id="pml-w3" type="number" step="0.01" placeholder="-"></div>' +
         '<div style="flex:2"><label>Notes / Notas</label><input id="pml-notes" autocomplete="off"></div>' +
       '</div>' +
       '<p class="hint" style="margin:2px 0 8px">Min weight at run start: 1.5oz → 1.62 · 2.75oz → 2.97 · 4.0oz → 4.22 oz. ' +
@@ -163,10 +163,10 @@
 
   function logTable() {
     var rows = cache || [];
-    if (!rows.length) return '<div class="card"><h2 class="sub2">Logged runs</h2><p class="muted">No runs logged yet.</p></div>';
+    if (!rows.length) return '<div class="card"><h2 class="sub2">Logged runs</h2><p class="hint">Not in use yet. The floor uses the Production Tracking workbook, so this digital log has no rows.</p></div>';
     var body = rows.slice(0, 100).map(function (r) {
       var flav = r.flavor_name || "";
-      if (r.flavor_code) flav = r.flavor_code + " — " + flav;
+      if (r.flavor_code) flav = r.flavor_code + " - " + flav;
       return '<tr>' +
         '<td class="sm">' + esc(r.log_date || "") + '</td>' +
         '<td class="sm">' + esc(r.shift || "") + '</td>' +
@@ -174,7 +174,7 @@
         '<td class="sm">' + esc(r.bag_size ? r.bag_size + "oz" : "") + '</td>' +
         '<td class="sm">' + esc(r.package_type || "") + '</td>' +
         '<td class="sm">' + esc(r.batch_code || "") + '</td>' +
-        '<td class="right">' + esc(r.total_packages != null && r.total_packages !== "" ? r.total_packages : "—") + '</td>' +
+        '<td class="right">' + esc(r.total_packages != null && r.total_packages !== "" ? r.total_packages : "-") + '</td>' +
         '<td class="sm muted">' + esc(r.operator || "") + '</td>' +
         '<td><button class="ghost sm danger" onclick="PMACLOG.del(\'' + esc(r.id) + '\')">&#10005;</button></td>' +
       '</tr>';

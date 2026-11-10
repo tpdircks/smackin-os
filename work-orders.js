@@ -853,6 +853,18 @@
     if (tab === "need") return '<div class="card">' + needHtml() + "</div>";
     return '<div class="card">' + listHtml() + "</div>";
   }
+  function paintList() {
+    var body = doc.getElementById("wo-body");
+    var view = doc.getElementById("view");
+    if (!body) { render(); return; }
+    var top = view ? view.scrollTop : 0;
+    var winX = root.scrollX || 0;
+    var winY = root.scrollY || 0;
+    var next = bodyHtml();
+    if (body.innerHTML !== next) body.innerHTML = next;
+    if (view) view.scrollTop = top;
+    if (root.scrollTo) root.scrollTo(winX, winY);
+  }
   function render() {
     var host = doc && doc.getElementById("wo-root");
     if (!host) return;
@@ -1027,7 +1039,9 @@
       if (doc && doc.getElementById("wo-root")) {
         var ae = doc.activeElement;
         var typing = silent && ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName);
-        if (!typing) render();
+        if (typing) return;
+        if (silent && screen === "list" && doc.getElementById("wo-body")) paintList();
+        else render();
       }
     }).catch(function (e) {
       loading = false;

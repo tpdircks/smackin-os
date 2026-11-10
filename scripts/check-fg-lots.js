@@ -209,14 +209,14 @@ assert(homes.indexOf('"produce", "fglots"') >= 0, "fulfillment subtab");
 assert(homes.indexOf('subs: ["pmac", "fglots"') >= 0, "pmac subtab");
 assert(homes.indexOf('"trLabels", "fglots"') >= 0, "quality subtab");
 assert(health.indexOf('t: "trace_events"') >= 0, "data health source");
-assert(html.indexOf('src="fg-lots.js?b=3"') >= 0 && html.indexOf("fg-lots.js") < html.indexOf("trace.js"), "script order");
-assert(html.indexOf('src="trace.js?b=21"') >= 0, "trace cache bust");
+assert(html.indexOf('src="fg-lots.js?b=4"') >= 0 && html.indexOf("fg-lots.js") < html.indexOf("trace.js"), "script order");
+assert(html.indexOf('src="trace.js?b=22"') >= 0, "trace cache bust");
 assert(html.indexOf('src="dept-homes.js?b=36"') >= 0, "dept homes cache bust");
-assert(html.indexOf('src="data-health.js?b=9"') >= 0, "data health cache bust");
-assert(sw.indexOf('const CACHE = "smackin-inv-v300"') >= 0 && sw.indexOf("./fg-lots.js") >= 0 && sw.indexOf("./prod-ready.js") >= 0, "cache and asset");
-assert(read("build-id.txt").trim() === "smackin-inv-v300", "build id");
-assert(html.indexOf('var EMBEDDED = "smackin-inv-v300"') >= 0, "index embedded");
-assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v300"') >= 0, "escape embedded");
+assert(html.indexOf('src="data-health.js?b=10"') >= 0, "data health cache bust");
+assert(sw.indexOf('const CACHE = "smackin-inv-v301"') >= 0 && sw.indexOf("./fg-lots.js") >= 0 && sw.indexOf("./prod-ready.js") >= 0, "cache and asset");
+assert(read("build-id.txt").trim() === "smackin-inv-v301", "build id");
+assert(html.indexOf('var EMBEDDED = "smackin-inv-v301"') >= 0, "index embedded");
+assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v301"') >= 0, "escape embedded");
 
 if (failed) {
   console.error(failed + " failed");

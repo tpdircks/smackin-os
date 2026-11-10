@@ -798,12 +798,15 @@
   function footnote(model) {
     var a = model.asof || {};
     function bit(label, table, iso) {
-      return label + " (" + table + ") last entry " + (iso ? pretty(iso) : "has no rows") + ".";
+      if (!iso) return label + " (" + table + ") is not in use yet. No rows.";
+      var line = label + " (" + table + ") as of " + pretty(iso) + " (" + String(iso).slice(0, 10) + ").";
+      if (!model.monthFrom || String(iso).slice(0, 10) < model.monthFrom) line += " No data since " + pretty(iso) + ".";
+      return line;
     }
     return '<p class="hint">Not added into these totals: ' + esc(bit("Mixing bins", "mixing_history", a.mixing)) + " " +
       esc(bit("WIP daily units", "wip_production_daily", a.wip)) + " " +
       esc(bit("Old production output log", "production_output", a.output)) +
-      " Those feeds are not current for this week.</p>";
+      " A date here is the last saved row, not a claim that the feed is current.</p>";
   }
 
   function rangeLine(title, from, to, priorFrom, priorTo) {

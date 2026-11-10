@@ -4512,7 +4512,16 @@
     const table = '<div class="card"><div class="tblwrap"><table class="sortable"><thead><tr>' +
       '<th>' + L("fcFlavor") + '</th><th class="right">' + L("fcApp4") + '</th><th class="right">' + L("fcWip4") + '</th><th class="right" data-nosort>' + L("fcDelta4") + '</th>' +
       '<th class="right">' + L("fcApp15") + '</th><th class="right">' + L("fcWip15") + '</th><th class="right" data-nosort>' + L("fcDelta15") + '</th></tr></thead><tbody>' + rows + '</tbody></table></div></div>';
-    const head = '<div class="card"><h2>&#9878; ' + L("forecast") + '</h2><p class="hint">' + L("fcHint") + (sourceMonth ? ' ' + L("fcSnapshot") + ': ' + esc(sourceMonth) + '.' : '') + '</p></div>';
+    let latestAt = "";
+    fc.forEach(r => { const t = String(r.updated_at || ""); if (t > latestAt) latestAt = t; });
+    const asOf = latestAt ? latestAt.slice(0, 10) : "";
+    const forecastAge = asOf ? Math.floor((Date.now() - new Date(asOf + "T00:00:00Z").getTime()) / 86400000) : null;
+    const staleLine = !fc.length
+      ? '<p class="hint">Demand forecast is not in use yet. No rows are stored.</p>'
+      : (forecastAge != null && forecastAge > 30
+        ? '<p class="hint">As of ' + esc(asOf) + '. No data since ' + esc(asOf) + '. This snapshot is not current.</p>'
+        : (asOf ? '<p class="hint">As of ' + esc(asOf) + '.</p>' : ''));
+    const head = '<div class="card"><h2>&#9878; ' + L("forecast") + '</h2><p class="hint">' + L("fcHint") + (sourceMonth ? ' ' + L("fcSnapshot") + ': ' + esc(sourceMonth) + '.' : '') + '</p>' + staleLine + '</div>';
     return head + table;
   }
   function viewFacility() {
@@ -4834,7 +4843,7 @@
   };
   function bt(key) { const t = BOARD_TXT[key] || { en: key, es: key }; return '<span class="bt-en">' + esc(t.en) + '</span><span class="bt-es">' + esc(t.es) + '</span>'; }
   function boardStartTimers() {
-    if (!boardDataTimer) boardDataTimer = setInterval(() => { if (active === "board") { boardLastRefresh = Date.now(); render(); } else boardStopTimers(); }, 30000);
+    if (!boardDataTimer) boardDataTimer = setInterval(function () { if (active === "board") boardRefreshData(); else boardStopTimers(); }, 30000);
     if (!boardClockTimer) boardClockTimer = setInterval(boardTickClock, 1000);
   }
   function boardStopTimers() {
@@ -4949,6 +4958,22 @@
       '<div class="boardzones"><div class="board-make"><div class="boardzonelabel">' + bt("makeNow") + '</div>' + makeZone + '</div>' +
       '<div class="board-side"><div class="boardzonelabel">' + bt("today") + '</div>' + boardTodayZone(data) + '</div></div>' +
       '<div class="board-stockzone"><div class="boardzonelabel sm">' + bt("stock") + '</div>' + boardStockStrip(data.stock) + '</div></div>';
+  }
+  function boardRefreshData() {
+    if (active !== "board") { boardStopTimers(); return; }
+    const view = $("view");
+    if (!view) return;
+    const wrap = view.querySelector(".boardwrap");
+    if (!wrap || !boardDept || BOARD_DEPTS.indexOf(boardDept) < 0) return;
+    const scroller = document.scrollingElement || document.documentElement;
+    const top = scroller ? scroller.scrollTop : 0;
+    const left = scroller ? scroller.scrollLeft : 0;
+    const viewTop = view.scrollTop;
+    const next = boardHtml(boardDept);
+    if (wrap.outerHTML !== next) wrap.outerHTML = next;
+    if (scroller) { scroller.scrollTop = top; scroller.scrollLeft = left; }
+    view.scrollTop = viewTop;
+    boardLastRefresh = Date.now();
   }
   function viewBoard() {
     const q = (function () { try { return new URLSearchParams(location.search).get("board") || ""; } catch (e) { return ""; } })();

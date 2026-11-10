@@ -62,7 +62,7 @@
       holdTitle: "WHSE_FORM_3.0 Warehouse HOLD Log",
       holdHint: "Release puts the lot back into FEFO and Use. Thrown away, returned to vendor, and other close the hold and keep the lot unavailable.",
       exportRecv: "Export Receiving Log CSV", exportHold: "Export HOLD Log CSV",
-      loading: "Loading the HOLD Log...", emptyHold: "No HOLD Log rows yet.",
+      loading: "Loading the HOLD Log...", emptyHold: "Not in use yet. No HOLD Log rows.",
       by: "Disposition by", note: "Note", saveDisp: "Save disposition",
       pickDisp: "Pick a disposition.", needBy: "Disposition by is required.",
       needNote: "Other needs a note.",

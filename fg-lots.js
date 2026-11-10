@@ -50,7 +50,7 @@
       hint: "Finished pallet labels from Lot Trace, plus bag codes logged on Daily Production. Logged rows were not palletized and have no quantity. This screen does not change inventory.",
       noRule: "No confirmed shelf-life rule is on file (kv_status fg_shelf_life). Best-by is only the date someone typed. Product and Quality still need to set the months.",
       hasRule: "A confirmed shelf-life rule is on file. P-Mac can prefill best-by. Change it when the bag shows a different date.",
-      healthEmpty: "trace_labels: 0. Last update: none. Finished pallets are not in the cloud yet.",
+      healthEmpty: "trace_labels: 0. Not in use yet. Last update: none. No finished pallet labels are stored.",
       healthLive: "trace_labels: {n}. Last update: {when}. FG pallet labels: {fg}.",
       healthFail: "trace_labels: could not read.",
       lot: "Lot", flavor: "Flavor", size: "Size", bestBy: "Best-by", days: "Days left",

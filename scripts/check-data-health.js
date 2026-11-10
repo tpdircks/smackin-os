@@ -16,7 +16,11 @@ const rows=[
  {po:"T-FUTURE",partner:"Target",status:"Open",due_date:"11/26/2026"}
 ];
 assert.equal(api.isTestRow(rows[3]),true);assert.equal(api.isTestRow(rows[0]),false);
-assert.equal(JSON.stringify(api.stuckSummary(rows,+new Date("2026-11-06T12:00:00"))),JSON.stringify({pos:2,lines:3}));
+var stuck=api.stuckSummary(rows,+new Date("2026-11-06T12:00:00"));
+assert.equal(stuck.pos,2);assert.equal(stuck.lines,3);
+assert.equal(stuck.list.map(function(g){return g.po;}).sort().join(","),"K-1,T-1");
+assert.ok(src.includes("Past-due open demand"),"past-due panel names the POs");
+assert.ok(src.includes("does not close them"),"past-due panel does not autoclose");
 assert.equal(src.includes('col: "due_date"'),false,"due dates must not masquerade as import freshness");
 assert.equal(src.includes('col: "ship_date"'),true,"business shipping date is distinct from backend sync heartbeat");
 const app=fs.readFileSync(path.join(__dirname,"..","app.js"),"utf8");
@@ -61,4 +65,24 @@ assert.ok(hol.indexOf("2026-11-26") < 0, "company holidays are not flagged");
 assert.equal(src.includes("No P-Mac production rows for"), true, "red line copy");
 assert.equal(src.includes("ex bad"), true, "red exception style");
 assert.equal(src.includes("\u2014"), false, "data health has no em dash");
+assert.equal(src.includes('col: "created_at", label: "Trace events"'), false, "trace probe is not created_at");
+assert.ok(src.includes('{ t: "trace_events", col: "ts", label: "Trace events"'), "trace probe uses ts");
+assert.ok(src.includes('label: "Shipping business dates", warn: 3, bad: 7, business: true, skipTest: true'), "shipping is 3/7 business days");
+assert.ok(src.includes('.neq("status", "Test")'), "shipping freshness skips Test rows");
+["fulfillment_daily","production_days","production_pallets","wip_production_daily","demand_forecast","machine_live"].forEach(function(t){
+  assert.ok(src.includes('t: "' + t + '"'), "freshness row " + t);
+});
+var asOf = new Date("2026-11-10T16:00:00-07:00");
+function srcOf(table){ return api.sources.filter(function(s){ return s.t === table; })[0]; }
+function stale(table, iso){
+  var srcRow = srcOf(table);
+  return api.statusOf(api.ageOf(iso, srcRow, asOf), srcRow, 10).cls;
+}
+assert.equal(stale("mixing_history","2026-09-29"), "red", "mixing Sep 29 is stale");
+assert.equal(stale("wip_production_daily","2026-09-28"), "red", "wip Sep 28 is stale");
+assert.equal(stale("demand_forecast","2026-07-16"), "red", "forecast July is stale");
+assert.equal(stale("machine_live","2026-09-09"), "red", "machine live Sep 9 is stale");
+assert.equal(stale("shipping_log","2026-10-23"), "red", "shipping Oct 23 is past 7 business days");
+assert.equal(api.businessDaysAgo("2026-10-23", asOf) >= 7, true, "Oct 23 to Nov 10 is at least 7 business days");
+assert.equal(stale("fulfillment_daily","2026-11-09"), "green", "fulfillment through Monday is fresh on Tuesday");
 console.log("data health + PO grouping test: 2 POs / 3 lines; no testout; no age-close source; business/import timestamps explicit");

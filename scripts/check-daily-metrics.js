@@ -20,9 +20,9 @@ assert.strictEqual(src.indexOf("\u2014"), -1, "no em dash");
 assert.ok(src.indexOf("pmac_history") >= 0, "reads pmac history");
 assert.ok(src.indexOf("recv_date") >= 0, "receipts use recv_date");
 assert.ok(app.indexOf("DAILYMETRICS.view") >= 0, "daily view delegates");
-assert.ok(html.indexOf("daily-metrics.js?b=2") >= 0, "script cache bust");
+assert.ok(html.indexOf("daily-metrics.js?b=3") >= 0, "script cache bust");
 assert.ok(sw.indexOf("./daily-metrics.js") >= 0, "service worker asset");
-assert.ok(sw.indexOf('const CACHE = "smackin-inv-v300"') >= 0, "cache bump");
+assert.ok(sw.indexOf('const CACHE = "smackin-inv-v301"') >= 0, "cache bump");
 
 var api = require(path.join(root, "daily-metrics.js"));
 assert.strictEqual(api.weekStart("2026-11-10"), "2026-11-09");

@@ -50,7 +50,7 @@
       localBanner: "LOCAL: this browser is not on the shared database. Save keeps the record on this device only.",
       tableBanner: "The shared batch_records table is not in Supabase yet. Troy or the coordinator runs batch_records.sql in the SQL editor. Until then, Save keeps a copy on this device only.",
       sqlNote: "Shared save uses batch_records. Troy or the coordinator applies batch_records.sql once.",
-      emptySaved: "No batch records saved in Smackin OS yet. Older paper sheets are not loaded here.",
+      emptySaved: "Not in use yet. No batch records saved in Smackin OS. Older paper sheets are not loaded here.",
       savedTitle: "Saved in this screen",
       scanShift: "Lot Trace scans are for this flavor and date. Shift is not stored on the scan, so confirm these batches belong to this shift.",
       noScans: "No Lot Trace mixing scans for this flavor on this date. Lots and batch columns are blank until you type them or scans exist.",

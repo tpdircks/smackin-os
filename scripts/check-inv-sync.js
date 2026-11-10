@@ -37,7 +37,7 @@ htmlFiles.forEach(function (name) {
   var html = read(name);
   var tags = html.match(/inv-sync-[^"']+\.js/g) || [];
   if (name === "index.html") {
-    assert(tags.length === 1 && tags[0] === "inv-sync-1106.js", "index loads only the lot sync " + tags.join(","));
+    assert(tags.length === 0, "index does not boot a finished lot sync " + tags.join(","));
   } else {
     tags.forEach(function (tag) {
       assert(false, name + " loads " + tag);
@@ -51,9 +51,9 @@ htmlFiles.forEach(function (name) {
 var index = read("index.html");
 var dbAt = index.indexOf('src="db.js');
 var countAt = index.indexOf('src="slc-count-latest.js');
-var applyAt = index.indexOf('src="inv-sync-1106.js');
-assert(countAt > 0 && applyAt > countAt, "count file loads before the apply module");
-assert(dbAt > 0 && countAt > dbAt, "apply loads after db.js");
+assert(index.indexOf("inv-sync-1106.js") < 0, "done-flagged Nov 5 lot sync is not loaded");
+assert(countAt > 0, "count file stays loaded");
+assert(dbAt > 0 && countAt > dbAt, "count file loads after db.js");
 assert(index.indexOf("inv-sync-1027d.js") < 0, "index does not load the 10/27 module");
 assert(index.indexOf("inv-sync-1102.js") < 0, "index does not load the 11/02 bag sync");
 assert(index.indexOf("inv-sync-packaging-1102.js") < 0, "index does not load the 11/02 packaging sync");
@@ -64,9 +64,9 @@ assert(fs.existsSync(path.join(root, "slc-count-latest.js")), "count file kept")
 assert(fs.existsSync(path.join(root, "slc-count-panel.js")), "panel file kept");
 
 var sw = read("service-worker.js");
-assert(sw.indexOf('const CACHE = "smackin-inv-v300"') >= 0, "cache v286");
+assert(sw.indexOf('const CACHE = "smackin-inv-v301"') >= 0, "cache v286");
 assert(sw.indexOf("smackin-inv-v242") < 0, "old cache gone");
-assert(sw.indexOf("\"./inv-sync-1106.js\"") >= 0 && sw.indexOf("\"./inv-lot-plan.js\"") >= 0, "sw precaches the lot sync");
+assert(sw.indexOf("inv-sync-1106.js") < 0 && sw.indexOf("\"./inv-lot-plan.js\"") >= 0, "sw drops the finished lot sync and keeps the plan");
 assert(sw.indexOf("\"./inv-sync-1105.js\"") < 0, "sw drops the skipped 11/05 module");
 assert(sw.indexOf("inv-sync-1102.js") < 0, "sw does not precache the 11/02 bag sync");
 assert(sw.indexOf("inv-sync-packaging-1102.js") < 0, "sw does not precache the 11/02 packaging sync");

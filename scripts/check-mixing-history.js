@@ -16,7 +16,7 @@ var html = read("index.html");
 
 eq(src.indexOf("unionMixing") >= 0 && src.indexOf("partitionPmac") >= 0, "view uses the model");
 eq(src.indexOf("MX = res[1]") < 0, "mixing is not the tracker table alone");
-eq(html.indexOf("mfg-history-model.js?b=1") >= 0 && html.indexOf("mfg-history.js?b=6") > html.indexOf("mfg-history-model.js"), "script order");
+eq(html.indexOf("mfg-history-model.js?b=1") >= 0 && html.indexOf("mfg-history.js?b=7") > html.indexOf("mfg-history-model.js"), "script order");
 eq(src.indexOf("\u2014") < 0 && read("mfg-history-model.js").indexOf("\u2014") < 0, "no em dash");
 
 eq(model.deptKind("Mixing") === "mixing", "Mixing");
