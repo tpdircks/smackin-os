@@ -78,7 +78,7 @@ eq(src.indexOf("\u2014") < 0 && src.indexOf("\u2013") < 0, "no em dash");
 });
 eq(read("index.html").indexOf("dt-finished.js?b=1") >= 0, "script tag");
 eq(read("service-worker.js").indexOf('"./dt-finished.js"') >= 0, "precached");
-eq(read("service-worker.js").indexOf('const CACHE = "smackin-inv-v297"') >= 0, "cache");
+eq(read("service-worker.js").indexOf('const CACHE = "smackin-inv-v298"') >= 0, "cache");
 eq(read("dept-homes.js").indexOf('"dtfg"') >= 0, "inventory tab");
 
 if (fail.length) {
