@@ -1,7 +1,11 @@
-/* Auto-generated from Allen's Manufacturing Main Document (Recipes + Codes tabs).
+/* Auto-generated from Allen's Manufacturing Main Document (Recipes + Codes tabs),
+   overlaid with BATCH_SHEETS_v_8.4i (as-of 2026-11-09, last modified 2026-11-09 6:20 PM MT).
    Per-flavor recipe rates keyed by normalized flavor name. seas_lbs/malto_lbs are per 100-lb seed batch.
    BATCH MODEL: 100 lb seed = 1 batch. 4oz bags per batch=400; 1.5oz bags per batch=1067.
-   WIP Approved Recipes fields are optional and do not replace a seasoning or malt amount that already has a number. */
+   WIP Approved Recipes fields are optional and do not replace a seasoning or malt amount that already has a number.
+   Held unchanged: S04, S05, S06, S08, L18 seasoning rates; all existing malto_lbs 3.0 values.
+   New optional fields from Allen: water, oil, stevia.
+*/
 window.RECIPES = {
  "cinnamonchurro": {
   "code": "S02",
@@ -16,7 +20,8 @@ window.RECIPES = {
   "wip_lbs_per_batch": 8.5,
   "wip_rate_from": "RECIPE-INGREDIENTS LIST",
   "wip_ing_lbs_per_batch": 8.5,
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups"
  },
  "backyardbbq": {
   "code": "S03",
@@ -37,7 +42,9 @@ window.RECIPES = {
   "wip_lbs_per_batch": 6.39,
   "wip_rate_from": "Approved Recipes",
   "wip_ing_lbs_per_batch": 6.5,
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups",
+  "oil": "2 oz"
  },
  "garlicparmesan": {
   "code": "S04",
@@ -60,7 +67,8 @@ window.RECIPES = {
   "wip_lbs_per_batch": 7.05,
   "wip_rate_from": "Approved Recipes",
   "wip_ing_lbs_per_batch": 6.5,
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups"
  },
  "dillpickle": {
   "code": "S05",
@@ -83,7 +91,8 @@ window.RECIPES = {
   "wip_lbs_per_batch": 7.05,
   "wip_rate_from": "Approved Recipes",
   "wip_ing_lbs_per_batch": 5.5,
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups"
  },
  "crackedpepper": {
   "code": "S06",
@@ -106,7 +115,8 @@ window.RECIPES = {
   "wip_lbs_per_batch": 7.05,
   "wip_rate_from": "Approved Recipes",
   "wip_ing_lbs_per_batch": 2,
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups"
  },
  "cheddarjalapeno": {
   "code": "S07",
@@ -121,7 +131,9 @@ window.RECIPES = {
   "wip_lbs_per_batch": 6,
   "wip_rate_from": "RECIPE-INGREDIENTS LIST",
   "wip_ing_lbs_per_batch": 6,
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups",
+  "oil": "2 oz"
  },
  "ranch": {
   "code": "S08",
@@ -144,7 +156,8 @@ window.RECIPES = {
   "wip_lbs_per_batch": 5.95,
   "wip_rate_from": "Approved Recipes",
   "wip_ing_lbs_per_batch": 7,
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups"
  },
  "maplebrownsugar": {
   "code": "S09",
@@ -159,7 +172,9 @@ window.RECIPES = {
   "wip_lbs_per_batch": 7.5,
   "wip_rate_from": "RECIPE-INGREDIENTS LIST",
   "wip_ing_lbs_per_batch": 7.5,
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups",
+  "stevia": "2 lbs"
  },
  "lemonpepper": {
   "code": "S10",
@@ -174,7 +189,8 @@ window.RECIPES = {
   "wip_lbs_per_batch": 6.5,
   "wip_rate_from": "RECIPE-INGREDIENTS LIST",
   "wip_ing_lbs_per_batch": 6.5,
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups"
  },
  "sourcreamonion": {
   "code": "S11",
@@ -189,7 +205,8 @@ window.RECIPES = {
   "wip_lbs_per_batch": 6.5,
   "wip_rate_from": "RECIPE-INGREDIENTS LIST",
   "wip_ing_lbs_per_batch": 6.5,
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups"
  },
  "teriyaki": {
   "code": "L14",
@@ -209,7 +226,8 @@ window.RECIPES = {
   "wip_lbs_per_batch": 5.95,
   "wip_rate_from": "Approved Recipes",
   "wip_ing_lbs_per_batch": 6,
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups"
  },
  "taco": {
   "code": "L15",
@@ -224,7 +242,8 @@ window.RECIPES = {
   "wip_lbs_per_batch": 6,
   "wip_rate_from": "RECIPE-INGREDIENTS LIST",
   "wip_ing_lbs_per_batch": 6,
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups"
  },
  "salsa": {
   "code": "L16",
@@ -239,7 +258,8 @@ window.RECIPES = {
   "wip_lbs_per_batch": 7,
   "wip_rate_from": "RECIPE-INGREDIENTS LIST",
   "wip_ing_lbs_per_batch": 7,
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups"
  },
  "guacamole": {
   "code": "L17",
@@ -254,7 +274,8 @@ window.RECIPES = {
   "wip_lbs_per_batch": 7,
   "wip_rate_from": "RECIPE-INGREDIENTS LIST",
   "wip_ing_lbs_per_batch": 7,
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups"
  },
  "chilelimon": {
   "code": "L18",
@@ -266,7 +287,8 @@ window.RECIPES = {
   "malto_lbs": 3.0,
   "planning_group": "G2",
   "allergen_level": "A2",
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups"
  },
  "honeysriracha": {
   "code": "L19",
@@ -281,7 +303,8 @@ window.RECIPES = {
   "wip_lbs_per_batch": 8,
   "wip_rate_from": "RECIPE-INGREDIENTS LIST",
   "wip_ing_lbs_per_batch": 8,
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups"
  },
  "pizza": {
   "code": "L20",
@@ -293,13 +316,14 @@ window.RECIPES = {
   "malto_lbs": 3.0,
   "planning_group": "REVIEW",
   "allergen_level": "A3",
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups"
  },
  "strawberrycheesecake": {
   "code": "L21",
   "name": "Strawberry \nCheesecake",
-  "seas_lbs": 9.75,
-  "seas_desc": "9.75 lbs Strawberry Cheesecake",
+  "seas_lbs": 9.0,
+  "seas_desc": "9.0 lbs Strawberry Cheesecake",
   "seed_type": "Low Salt",
   "mix_level": "2",
   "malto_lbs": 3.0,
@@ -316,14 +340,15 @@ window.RECIPES = {
   "wip_lbs_per_batch": 9.7,
   "wip_rate_from": "Approved Recipes",
   "wip_malt_lbs": 2,
-  "wip_seed_cell": 0.04
+  "wip_seed_cell": 0.04,
+  "water": "6 cups"
  },
  "loadednacho": {
   "code": "L22",
   "name": "Loaded Nacho",
-  "seas_lbs": 2.0,
-  "seas_desc": "2 lbs Taco, 2 lbs Jalapeno, \n2 lbs loaded potato.",
-  "seed_type": "Standard",
+  "seas_lbs": 6.0,
+  "seas_desc": "2 lbs Taco, 2 lbs Cheddar Jalapeno, 2 lbs loaded potato.",
+  "seed_type": "Low Salt",
   "mix_level": "2",
   "malto_lbs": 3.0,
   "planning_group": "G2",
@@ -334,7 +359,8 @@ window.RECIPES = {
   "wip_sheet_flavor": "Walking Taco Style Seasoning 9g",
   "wip_g_per_lb": 27,
   "wip_lbs_per_batch": 5.95,
-  "wip_rate_from": "Approved Recipes"
+  "wip_rate_from": "Approved Recipes",
+  "water": "5 cups"
  },
  "chedderghostpepper": {
   "code": "L23",
@@ -346,19 +372,21 @@ window.RECIPES = {
   "malto_lbs": 3.0,
   "planning_group": "REVIEW",
   "allergen_level": "A3",
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups"
  },
  "parmuffalo": {
   "code": "L24",
   "name": "Parmuffalo",
-  "seas_lbs": 4.0,
+  "seas_lbs": 7.5,
   "seas_desc": "4 lbs Garlic, 3.5 lbs Buffalo",
   "seed_type": "Standard",
   "mix_level": "2",
   "malto_lbs": 3.0,
   "planning_group": "G2",
   "allergen_level": "A2",
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups"
  },
  "cheeseburger": {
   "code": "L25",
@@ -370,12 +398,13 @@ window.RECIPES = {
   "malto_lbs": 3.0,
   "planning_group": "G2",
   "allergen_level": "A2",
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups"
  },
  "buffaloranch": {
   "code": "L26",
   "name": "Buffalo Ranch",
-  "seas_lbs": 4.0,
+  "seas_lbs": 7.5,
   "seas_desc": "4 lbs Ranch, 3.5 lbs Buffalo",
   "seed_type": "Standard",
   "mix_level": "2",
@@ -392,7 +421,8 @@ window.RECIPES = {
   "wip_g_per_lb": 25,
   "wip_lbs_per_batch": 5.51,
   "wip_rate_from": "Approved Recipes",
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups"
  },
  "peanutbutterjelly": {
   "code": "L27",
@@ -404,30 +434,35 @@ window.RECIPES = {
   "malto_lbs": 3.0,
   "planning_group": "REVIEW",
   "allergen_level": "A3",
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups",
+  "stevia": "2 lbs"
  },
  "cinnamonroll": {
   "code": "L28",
   "name": "Cinnamon Roll",
-  "seas_lbs": 4.5,
+  "seas_lbs": 9,
   "seas_desc": "4.5 lbs Cinnamon Roll Frosting & 4.5 lbs Cinnamon Sugar Blend",
   "seed_type": "Low Salt",
   "mix_level": "2",
   "malto_lbs": 3.0,
   "planning_group": "G2",
   "allergen_level": "A2",
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups",
+  "stevia": "2 lbs"
  },
  "spicyqueso": {
   "code": "L29",
   "name": "Spicy Queso",
-  "seas_lbs": 5.0,
-  "seas_desc": "5 lbs Spicy Nacho & \n2.5 lbs of Ghost Pepper",
+  "seas_lbs": 7.5,
+  "seas_desc": "5 lbs Spicy Nacho & 2.5 lbs of Ghost Pepper",
   "seed_type": "Standard",
   "mix_level": "2",
   "malto_lbs": 3.0,
   "planning_group": "G2",
-  "allergen_level": "A2"
+  "allergen_level": "A2",
+  "water": "5 cups"
  },
  "saltedcaramel": {
   "code": "L30",
@@ -438,18 +473,21 @@ window.RECIPES = {
   "mix_level": "1",
   "malto_lbs": 3.0,
   "planning_group": "G1",
-  "allergen_level": "A1"
+  "allergen_level": "A1",
+  "water": "5 cups",
+  "stevia": "2 lbs"
  },
  "guaczilla": {
   "code": "L31",
   "name": "Guaczilla!",
-  "seas_lbs": 2.4,
+  "seas_lbs": 7.2,
   "seas_desc": "2.4 lbs Guacamole, 4.8 lbs Spicy Nacho (old batch)",
   "seed_type": "Standard",
   "mix_level": "2",
   "malto_lbs": 3.0,
   "planning_group": "G2",
-  "allergen_level": "A2"
+  "allergen_level": "A2",
+  "water": "5 cups"
  },
  "ketchup": {
   "code": "L32",
@@ -461,7 +499,9 @@ window.RECIPES = {
   "malto_lbs": 3.0,
   "planning_group": "G1",
   "allergen_level": "A1",
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups",
+  "stevia": "2 lbs"
  },
  "loadedpotato": {
   "code": "L33",
@@ -473,7 +513,8 @@ window.RECIPES = {
   "malto_lbs": 3.0,
   "planning_group": "REVIEW",
   "allergen_level": "A3",
-  "wip_malt_lbs": 2
+  "wip_malt_lbs": 2,
+  "water": "5 cups"
  },
  "honeybbq": {
   "code": "L34",
@@ -492,7 +533,8 @@ window.RECIPES = {
   "wip_sheet_flavor": "Honey BBQ",
   "wip_g_per_lb": 32,
   "wip_lbs_per_batch": 7.05,
-  "wip_rate_from": "Approved Recipes"
+  "wip_rate_from": "Approved Recipes",
+  "water": "5 cups"
  },
  "chilicheesedog": {
   "code": "L35",
@@ -511,7 +553,8 @@ window.RECIPES = {
   "wip_sheet_flavor": "Chili Cheese Dog",
   "wip_g_per_lb": 32,
   "wip_lbs_per_batch": 7.05,
-  "wip_rate_from": "Approved Recipes"
+  "wip_rate_from": "Approved Recipes",
+  "water": "5 cups"
  },
  "baconmaccheese": {
   "code": "L36",
@@ -530,7 +573,8 @@ window.RECIPES = {
   "wip_sheet_flavor": "Bacon Mac & Cheese",
   "wip_g_per_lb": 32,
   "wip_lbs_per_batch": 7.05,
-  "wip_rate_from": "Approved Recipes"
+  "wip_rate_from": "Approved Recipes",
+  "water": "5 cups"
  },
  "blueberrypie": {
   "code": "L37",
@@ -549,7 +593,8 @@ window.RECIPES = {
   "wip_g_per_lb": 38,
   "wip_lbs_per_batch": 8.38,
   "wip_rate_from": "Approved Recipes",
-  "wip_seed_cell": 0.041
+  "wip_seed_cell": 0.041,
+  "water": "5 cups"
  },
  "saltvinegar": {
   "code": "L38",
@@ -560,7 +605,8 @@ window.RECIPES = {
   "mix_level": "1",
   "malto_lbs": 3.0,
   "planning_group": "G1",
-  "allergen_level": "A1"
+  "allergen_level": "A1",
+  "water": "5 cups"
  },
  "sweetthaichili": {
   "code": "L39",
@@ -578,7 +624,8 @@ window.RECIPES = {
   "wip_sheet_flavor": "Sweet Thai Chili",
   "wip_g_per_lb": 32,
   "wip_lbs_per_batch": 7.05,
-  "wip_rate_from": "Approved Recipes"
+  "wip_rate_from": "Approved Recipes",
+  "water": "5 cups"
  },
  "smores": {
   "code": "L40",
@@ -599,7 +646,9 @@ window.RECIPES = {
   "wip_g_per_lb": 32,
   "wip_lbs_per_batch": 7.05,
   "wip_rate_from": "Approved Recipes",
-  "wip_seed_cell": 0.04
+  "wip_seed_cell": 0.04,
+  "water": "6 cups",
+  "stevia": "2 lbs"
  },
  "koreanbbq": {
   "code": "L41",
@@ -618,7 +667,8 @@ window.RECIPES = {
   "wip_sheet_flavor": "Korean BBQ Snack Seasoning",
   "wip_g_per_lb": 25,
   "wip_lbs_per_batch": 5.51,
-  "wip_rate_from": "Approved Recipes"
+  "wip_rate_from": "Approved Recipes",
+  "water": "5 cups"
  },
  "cheddarsourcream": {
   "code": "L42",
@@ -639,7 +689,8 @@ window.RECIPES = {
   "wip_sheet_flavor": "Cheddar & Sour Cream",
   "wip_g_per_lb": 32,
   "wip_lbs_per_batch": 7.05,
-  "wip_rate_from": "Approved Recipes"
+  "wip_rate_from": "Approved Recipes",
+  "water": "5 cups"
  },
  "funnelcake": {
   "code": "L43",
@@ -659,14 +710,15 @@ window.RECIPES = {
   "wip_g_per_lb": 39,
   "wip_lbs_per_batch": 8.6,
   "wip_rate_from": "Approved Recipes",
-  "wip_seed_cell": 0.041
+  "wip_seed_cell": 0.041,
+  "water": "5 cups"
  },
  "chipotleranch": {
   "code": "L44",
   "name": "Chipotle Ranch",
-  "seas_lbs": 5.51,
-  "seas_desc": "5.51 lbs Chipotle Ranch",
-  "seed_type": null,
+  "seas_lbs": 7.0,
+  "seas_desc": "7 lbs Chipotle Ranch",
+  "seed_type": "Standard",
   "mix_level": "A2",
   "malto_lbs": 3.0,
   "planning_group": "G2",
@@ -680,14 +732,15 @@ window.RECIPES = {
   "wip_g_per_lb": 25,
   "wip_lbs_per_batch": 5.51,
   "wip_rate_from": "Approved Recipes",
-  "seas_source": "WIP Approved Recipes S0405"
+  "seas_source": "WIP Approved Recipes S0405",
+  "water": "5 cups"
  },
  "honeymustardkonnorgriffin": {
   "code": "L45",
   "name": "Honey Mustard  (Konnor Griffin)",
   "seas_lbs": 8.6,
   "seas_desc": "8.6 lbs Honey Mustard (Konnor Griffin)",
-  "seed_type": null,
+  "seed_type": "Standard",
   "mix_level": "A1",
   "malto_lbs": 3.0,
   "planning_group": "G1",
@@ -701,14 +754,15 @@ window.RECIPES = {
   "wip_g_per_lb": 39,
   "wip_lbs_per_batch": 8.6,
   "wip_rate_from": "Approved Recipes",
-  "seas_source": "WIP Approved Recipes S0447"
+  "seas_source": "WIP Approved Recipes S0447",
+  "water": "5 cups"
  },
  "dillranchgoodgood": {
   "code": "L46",
   "name": "Dill Ranch (Good Good)",
   "seas_lbs": 5.51,
   "seas_desc": "5.51 lbs Dill Ranch (Good Good)",
-  "seed_type": null,
+  "seed_type": "Standard",
   "mix_level": "A2",
   "malto_lbs": 3.0,
   "planning_group": "G2",
@@ -722,14 +776,15 @@ window.RECIPES = {
   "wip_g_per_lb": 25,
   "wip_lbs_per_batch": 5.51,
   "wip_rate_from": "Approved Recipes",
-  "seas_source": "WIP Approved Recipes S0427"
+  "seas_source": "WIP Approved Recipes S0427",
+  "water": "5 cups"
  },
  "dijonranch": {
   "code": "L47",
   "name": "Dijon Ranch",
   "seas_lbs": 7.05,
   "seas_desc": "7.05 lbs Dijon Ranch",
-  "seed_type": null,
+  "seed_type": "Standard",
   "mix_level": "A2",
   "malto_lbs": 3.0,
   "planning_group": "G2",
@@ -744,14 +799,15 @@ window.RECIPES = {
   "wip_lbs_per_batch": 7.05,
   "wip_rate_from": "Approved Recipes",
   "wip_malt_lbs": 2,
-  "seas_source": "WIP Approved Recipes S0464"
+  "seas_source": "WIP Approved Recipes S0464",
+  "water": "5 cups"
  },
  "friedchicken": {
   "code": "L48",
   "name": "Fried Chicken",
   "seas_lbs": 5.51,
   "seas_desc": "5.51 lbs Fried Chicken",
-  "seed_type": null,
+  "seed_type": "Standard",
   "mix_level": "A1",
   "malto_lbs": 3.0,
   "planning_group": "G1",
@@ -765,25 +821,27 @@ window.RECIPES = {
   "wip_g_per_lb": 25,
   "wip_lbs_per_batch": 5.51,
   "wip_rate_from": "Approved Recipes",
-  "seas_source": "WIP Approved Recipes S0416"
+  "seas_source": "WIP Approved Recipes S0416",
+  "water": "5 cups"
  },
  "flamegrilledsteak": {
   "code": "L49",
   "name": "Flame Grilled Steak",
-  "seas_lbs": null,
-  "seas_desc": null,
-  "seed_type": null,
+  "seas_lbs": 5.75,
+  "seas_desc": "5.75 lbs Grilled Marinated Steak",
+  "seed_type": "Standard",
   "mix_level": "A1",
   "malto_lbs": 3.0,
   "planning_group": "G1",
-  "allergen_level": "A1"
+  "allergen_level": "A1",
+  "water": "5 cups"
  },
  "jalapenoranch": {
   "code": "L50",
   "name": "Jalapeno Ranch",
   "seas_lbs": 7.05,
   "seas_desc": "7.05 lbs Jalapeno Ranch",
-  "seed_type": null,
+  "seed_type": "Standard",
   "mix_level": "A2",
   "malto_lbs": 3.0,
   "planning_group": "G2",
@@ -797,7 +855,8 @@ window.RECIPES = {
   "wip_g_per_lb": 32,
   "wip_lbs_per_batch": 7.05,
   "wip_rate_from": "Approved Recipes",
-  "seas_source": "WIP Approved Recipes S0466"
+  "seas_source": "WIP Approved Recipes S0466",
+  "water": "5 cups"
  },
  "pumpkinspice": {
   "code": "L51",
@@ -816,7 +875,7 @@ window.RECIPES = {
   "name": "French Onion Soup",
   "seas_lbs": 5.51,
   "seas_desc": "5.51 lbs French Onion Soup",
-  "seed_type": null,
+  "seed_type": "Standard",
   "mix_level": null,
   "malto_lbs": null,
   "planning_group": null,
@@ -830,7 +889,8 @@ window.RECIPES = {
   "wip_g_per_lb": 25,
   "wip_lbs_per_batch": 5.51,
   "wip_rate_from": "Approved Recipes",
-  "seas_source": "WIP Approved Recipes S0485"
+  "seas_source": "WIP Approved Recipes S0485",
+  "water": "5 cups"
  },
  "smokedbrisket": {
   "code": "A11",
@@ -906,28 +966,235 @@ window.RECIPES = {
   "wip_g_per_lb": 44,
   "wip_lbs_per_batch": 9.7,
   "wip_rate_from": "Approved Recipes"
+ },
+ "baconjalapeno": {
+  "code": "L55",
+  "name": "Bacon Jalapeno",
+  "seas_lbs": 7,
+  "seas_desc": "7 lbs Bacon Jalapeno Popper",
+  "seed_type": "Standard",
+  "mix_level": "A2",
+  "malto_lbs": 3.0,
+  "planning_group": "G2",
+  "allergen_level": "A2",
+  "wip_malt_lbs": 2,
+  "flavor_house": "Elite Spice",
+  "water": "5 cups"
+ },
+ "cottoncandy": {
+  "code": "L56",
+  "name": "Cotton Candy",
+  "seas_lbs": 8,
+  "seas_desc": "8 lbs Cotton Candy",
+  "seed_type": "Standard",
+  "mix_level": "A1",
+  "malto_lbs": 3.0,
+  "planning_group": "G1",
+  "allergen_level": "A1",
+  "wip_malt_lbs": 2,
+  "flavor_house": "Savor",
+  "approved_sample": "S0293",
+  "water": "5 cups"
+ },
+ "l57birthdaycake": {
+  "code": "L57",
+  "name": "Birthday Cake",
+  "seas_lbs": 9.75,
+  "seas_desc": "9.75 lbs Birthday Cake",
+  "seed_type": "Low Salt",
+  "mix_level": "A2",
+  "malto_lbs": 3.0,
+  "planning_group": "G2",
+  "allergen_level": "A2",
+  "wip_malt_lbs": 2,
+  "flavor_house": "Savor",
+  "water": "5 cups"
+ },
+ "l58nashvillehot": {
+  "code": "L58",
+  "name": "Nashville Hot",
+  "seas_lbs": 7,
+  "seas_desc": "7 lbs Nashville Hot",
+  "seed_type": "Standard",
+  "mix_level": "A1",
+  "malto_lbs": 3.0,
+  "planning_group": "G1",
+  "allergen_level": "A1",
+  "wip_malt_lbs": 2,
+  "flavor_house": "Elite Spice",
+  "water": "5 cups"
+ },
+ "l59mexicanstreetcorn": {
+  "code": "L59",
+  "name": "Mexican Street Corn",
+  "seas_lbs": 7,
+  "seas_desc": "7 lbs Mexican Street Corn",
+  "seed_type": "Standard",
+  "mix_level": "A2",
+  "malto_lbs": 3.0,
+  "planning_group": "G2",
+  "allergen_level": "A2",
+  "wip_malt_lbs": 2,
+  "flavor_house": "Savor",
+  "water": "5 cups"
+ },
+ "brisket": {
+  "code": "L60",
+  "name": "Brisket",
+  "seas_lbs": 5.5,
+  "seas_desc": "5.5 lbs Texas Beef Brisket",
+  "seed_type": "Standard",
+  "mix_level": "A1",
+  "malto_lbs": 3.0,
+  "planning_group": "G1",
+  "allergen_level": "A1",
+  "wip_malt_lbs": 2,
+  "flavor_house": "Chesapeake",
+  "approved_sample": "S0407",
+  "water": "5 cups"
+ },
+ "glazeddonut": {
+  "code": "L61",
+  "name": "Glazed Donut",
+  "seas_lbs": 8.5,
+  "seas_desc": "8.5 lbs Glazed Donut",
+  "seed_type": "Low Salt",
+  "mix_level": "A1",
+  "malto_lbs": 3.0,
+  "planning_group": "G1",
+  "allergen_level": "A1",
+  "wip_malt_lbs": 2,
+  "flavor_house": "Savor",
+  "approved_sample": "S0448",
+  "water": "5 cups"
+ },
+ "bananacreampie": {
+  "code": "L62",
+  "name": "Banana Cream Pie",
+  "seas_lbs": 9.25,
+  "seas_desc": "9.25 lbs Banana Pudding",
+  "seed_type": "Low Salt",
+  "mix_level": "A3",
+  "malto_lbs": 3.0,
+  "planning_group": "REVIEW",
+  "allergen_level": "A3",
+  "wip_malt_lbs": 2,
+  "flavor_house": "Firehouse",
+  "approved_sample": "S0161",
+  "water": "5 cups"
+ },
+ "beerbrats": {
+  "code": "L63",
+  "name": "Beer & Brats",
+  "seas_lbs": 7,
+  "seas_desc": "7 lbs Beer & Brats",
+  "seed_type": "Standard",
+  "mix_level": "A1",
+  "malto_lbs": 3.0,
+  "planning_group": "G1",
+  "allergen_level": "A1",
+  "wip_malt_lbs": 2,
+  "flavor_house": "Savor",
+  "approved_sample": "S0537",
+  "water": "5 cups"
+ },
+ "pepperedbacon": {
+  "code": "L64",
+  "name": "Peppered Bacon",
+  "seas_lbs": 5.5,
+  "seas_desc": "5.5 lbs Peppered Bacon",
+  "seed_type": "Standard",
+  "mix_level": "A1",
+  "malto_lbs": 3.0,
+  "planning_group": "G1",
+  "allergen_level": "A1",
+  "wip_malt_lbs": 2,
+  "flavor_house": "Chesapeake",
+  "approved_sample": "S0417",
+  "water": "5 cups"
+ },
+ "everythingbagel": {
+  "code": "L67",
+  "name": "Everything Bagel",
+  "seas_lbs": null,
+  "seas_desc": "UNKNOWN - WAITING ON SEASONING FROM HERMAN's",
+  "seed_type": "Standard",
+  "mix_level": "A3",
+  "malto_lbs": 3.0,
+  "planning_group": "REVIEW",
+  "allergen_level": "A3",
+  "wip_malt_lbs": 2,
+  "flavor_house": "Ordering Herman's Blend",
+  "approved_sample": "NA",
+  "water": "5 cups",
+  "notes": "UNKNOWN. Waiting on seasoning from Herman's. S0549 was originally approved.",
+  "incomplete": true
+ },
+ "tzatziki": {
+  "code": "L68",
+  "name": "Tzatziki",
+  "seas_lbs": 5.5,
+  "seas_desc": "5.5 lb Tzatziki",
+  "seed_type": "Standard",
+  "mix_level": "A1",
+  "malto_lbs": 3.0,
+  "planning_group": "G1",
+  "allergen_level": "A1",
+  "wip_malt_lbs": 2,
+  "flavor_house": "Chesapeake",
+  "approved_sample": "S0484",
+  "water": "5 cups"
+ },
+ "bbqchili": {
+  "code": "L69",
+  "name": "BBQ Chili",
+  "seas_lbs": 7,
+  "seas_desc": "7 lbs BBQ Chili",
+  "seed_type": "Standard",
+  "mix_level": "A1",
+  "malto_lbs": 3.0,
+  "planning_group": "G1",
+  "allergen_level": "A1",
+  "wip_malt_lbs": 2,
+  "flavor_house": "Chesapeake",
+  "approved_sample": "S0366",
+  "water": "5 cups",
+  "notes": "THIS MIGHT BE WAY TOO SALTY. Might be better as 5.5 lb or 25 g per lb of seed."
+ },
+ "snickerdoodle": {
+  "code": "L70",
+  "name": "Snickerdoodle",
+  "seas_lbs": 10,
+  "seas_desc": "5 lbs Cinnamon Churro, 5 lbs of Birthday Cake",
+  "seed_type": "Low Salt",
+  "mix_level": "A2",
+  "malto_lbs": 3.0,
+  "planning_group": "G2",
+  "allergen_level": "A2",
+  "wip_malt_lbs": 2,
+  "flavor_house": "Rocky Mountain Spice, Savor Seasoning",
+  "approved_sample": "S0492",
+  "water": "5 cups",
+  "notes": "AB 2026-11-09: changed from 7 lbs Snickerdoodle Style to 5 lbs Cinnamon Churro + 5 lbs Birthday Cake (Matt). Prior test failed."
+ },
+ "greenchili": {
+  "code": "L71",
+  "name": "Green Chili",
+  "seas_lbs": 5.5,
+  "seas_desc": "5.5 lbs Hatch Chili",
+  "seed_type": "Standard",
+  "mix_level": "A1",
+  "malto_lbs": 3.0,
+  "planning_group": "G1",
+  "allergen_level": "A1",
+  "wip_malt_lbs": 2,
+  "flavor_house": "Chesapeake",
+  "approved_sample": "S0419",
+  "water": "5 cups"
  }
 };
 /* Approved Recipes flavors with no production recipe in Smackin OS. */
 window.WIP_APPROVED_MISSING = [
- {
-  "name": "Cotton Candy",
-  "approved_sample": "S0293",
-  "flavor_house": "Savor",
-  "vendor_item": "AAA01767-001",
-  "wip_g_per_lb": 36,
-  "wip_lbs_per_batch": 7.94
- },
- {
-  "name": "BBQ Chili",
-  "approved_sample": "S0366",
-  "flavor_house": "Chesapeake Spice",
-  "vendor_item": "S84101E1",
-  "approved_by": "HQ",
-  "approved_text": "Approved by HQ",
-  "wip_g_per_lb": 32,
-  "wip_lbs_per_batch": 7.05
- },
  {
   "name": "Cinnamon Sugar",
   "approved_sample": "S0395",
@@ -935,36 +1202,6 @@ window.WIP_APPROVED_MISSING = [
   "vendor_item": "RD-716674-050726B",
   "wip_g_per_lb": 39,
   "wip_lbs_per_batch": 8.6
- },
- {
-  "name": "Texas Beef Brisket Snack Seasoning",
-  "approved_sample": "S0407",
-  "flavor_house": "Chesapeake Spice",
-  "vendor_item": "83791SNK",
-  "approved_by": "HQ",
-  "approved_text": "Approved by HQ but gritty",
-  "wip_g_per_lb": 25,
-  "wip_lbs_per_batch": 5.51
- },
- {
-  "name": "Peppered Bacon Seasoning",
-  "approved_sample": "S0417",
-  "flavor_house": "Chesapeake Spice",
-  "vendor_item": "S71465E1",
-  "approved_by": "HQ",
-  "approved_text": "Approved by HQ",
-  "wip_g_per_lb": 25,
-  "wip_lbs_per_batch": 5.51
- },
- {
-  "name": "Hatch Chili Seasoning",
-  "approved_sample": "S0419",
-  "flavor_house": "Chesapeake Spice",
-  "vendor_item": "S84250E1",
-  "approved_by": "HQ",
-  "approved_text": "Approved by HQ",
-  "wip_g_per_lb": 25,
-  "wip_lbs_per_batch": 5.51
  },
  {
   "name": "Maple Bacon Seasoning",
@@ -977,16 +1214,6 @@ window.WIP_APPROVED_MISSING = [
   "wip_lbs_per_batch": 5.51
  },
  {
-  "name": "Glazed Donut Seasoning",
-  "approved_sample": "S0448",
-  "flavor_house": "Savor",
-  "vendor_item": "AAA1812-001",
-  "approved_date": "07/01/26",
-  "approved_text": "Approve 07/01/26",
-  "wip_g_per_lb": 39,
-  "wip_lbs_per_batch": 8.6
- },
- {
   "name": "Chicken Fried Rice Seasoning",
   "approved_sample": "S0461",
   "flavor_house": "Chesapeake V2",
@@ -997,16 +1224,6 @@ window.WIP_APPROVED_MISSING = [
   "wip_lbs_per_batch": 5.51
  },
  {
-  "name": "Grilled Marinated Streak Combo Seasoning",
-  "approved_sample": "S0470",
-  "flavor_house": "Chesapeake",
-  "vendor_item": "S84351E1",
-  "approved_by": "Matt",
-  "approved_text": "Matt Approved",
-  "wip_g_per_lb": 26,
-  "wip_lbs_per_batch": 5.73
- },
- {
   "name": "Asian Zing Style seasoning",
   "approved_sample": "S0482",
   "flavor_house": "Savor",
@@ -1014,26 +1231,6 @@ window.WIP_APPROVED_MISSING = [
   "approved_by": "Max",
   "approved_date": "08/27/26",
   "approved_text": "yes, max 8/27/26",
-  "wip_g_per_lb": 32,
-  "wip_lbs_per_batch": 7.05
- },
- {
-  "name": "Tzatziki Seasoning",
-  "approved_sample": "S0484",
-  "flavor_house": "Chesapeake",
-  "vendor_item": "S77628E1",
-  "approved_by": "HQ",
-  "approved_text": "Approved by HQ",
-  "wip_g_per_lb": 25,
-  "wip_lbs_per_batch": 5.51
- },
- {
-  "name": "Snickerdoodle Style Seasoning",
-  "approved_sample": "S0492",
-  "flavor_house": "Savor",
-  "vendor_item": "CNN00151-001",
-  "approved_by": "HQ",
-  "approved_text": "Approved by HQ",
   "wip_g_per_lb": 32,
   "wip_lbs_per_batch": 7.05
  },
@@ -1060,25 +1257,6 @@ window.WIP_APPROVED_MISSING = [
   "earlier": "S0382 at 32 g"
  },
  {
-  "name": "Bacon Type Jalapeno Popper",
-  "approved_sample": "S0508",
-  "flavor_house": "Elite Spice",
-  "vendor_item": "67823A2",
-  "wip_g_per_lb": 32,
-  "wip_lbs_per_batch": 7.05,
-  "earlier": "S0148 at 32 g"
- },
- {
-  "name": "Beer & Brats",
-  "approved_sample": "S0537",
-  "flavor_house": "Savor",
-  "vendor_item": "HTD00002-001",
-  "approved_by": "Max",
-  "approved_text": "Yes 8/11, Max",
-  "wip_g_per_lb": 32,
-  "wip_lbs_per_batch": 7.05
- },
- {
   "name": "Beer Cheese",
   "approved_sample": "S0541",
   "flavor_house": "Savor",
@@ -1095,17 +1273,6 @@ window.WIP_APPROVED_MISSING = [
   "vendor_item": "2686938-001",
   "approved_by": "Max",
   "approved_text": "Yes 8/11, Max",
-  "wip_g_per_lb": 32,
-  "wip_lbs_per_batch": 7.05
- },
- {
-  "name": "Everything Seasoning",
-  "approved_sample": "S0559",
-  "flavor_house": "Elite Spice",
-  "vendor_item": "81233A2",
-  "approved_by": "Max",
-  "approved_date": "08/20/26",
-  "approved_text": "Yes, Max 8/20/26",
   "wip_g_per_lb": 32,
   "wip_lbs_per_batch": 7.05
  },

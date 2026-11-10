@@ -88,11 +88,11 @@ assert(src.indexOf("fn_apply_delta") < 0, "no stock delta rpc");
 assert(db.indexOf("async function setRawExpires") >= 0, "db stamp");
 assert(db.indexOf('update({ expires_on: value })') >= 0, "metadata column only");
 assert(db.indexOf('c === "seed" || c === "seeds" || c === "seasoning" || c === "oil" || c === "stevia"') >= 0, "db categories");
-assert(sw.indexOf('const CACHE = "smackin-inv-v298"') >= 0 && sw.indexOf("./raw-exp.js") >= 0, "cache and asset");
+assert(sw.indexOf('const CACHE = "smackin-inv-v299"') >= 0 && sw.indexOf("./raw-exp.js") >= 0, "cache and asset");
 assert(html.indexOf("raw-exp.js?b=3") >= 0, "script bust");
-assert(html.indexOf('var EMBEDDED = "smackin-inv-v298"') >= 0, "embedded build");
-assert(read("build-id.txt").trim() === "smackin-inv-v298", "build id");
-assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v298"') >= 0, "escape build");
+assert(html.indexOf('var EMBEDDED = "smackin-inv-v299"') >= 0, "embedded build");
+assert(read("build-id.txt").trim() === "smackin-inv-v299", "build id");
+assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v299"') >= 0, "escape build");
 assert(html.indexOf("db.js?b=103") >= 0, "db bust");
 
 if (failed) {

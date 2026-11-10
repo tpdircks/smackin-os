@@ -274,8 +274,9 @@
   function paperBags(p) {
     var a = num(p && p.pkgs4);
     var b = num(p && p.pkgs15);
-    if (a == null && b == null) return null;
-    return (a || 0) + (b || 0);
+    var c = num(p && p.pkgs275);
+    if (a == null && b == null && c == null) return null;
+    return (a || 0) + (b || 0) + (c || 0);
   }
   function blank(id) {
     return {
@@ -291,6 +292,7 @@
     var id = trim(p && p.po);
     var row = blank(id);
     row.flavor = p.flavor || "";
+    row.code = p.code || "";
     row.size = p.size || "";
     row.bags_needed = paperBags(p);
     row.target_date = isoDate(p.deadline) || isoDate(p.date) || "";

@@ -100,7 +100,8 @@ var sandbox = {};
 sandbox.window = sandbox;
 vm.runInNewContext(read("recipes.js"), sandbox);
 var liveGaps = P.recipeGaps(sandbox.RECIPES, sandbox.WIP_APPROVED_MISSING);
-eq(liveGaps.some(function (g) { return g.name === "Texas Beef Brisket Snack Seasoning"; }), "live approved list includes brisket");
+eq(sandbox.RECIPES.brisket && sandbox.RECIPES.brisket.seas_lbs === 5.5, "brisket is a recipe");
+eq(!liveGaps.some(function (g) { return g.name === "Texas Beef Brisket Snack Seasoning"; }), "brisket left the approved-only list");
 
 function serve() {
   return http.createServer(function (req, res) {
