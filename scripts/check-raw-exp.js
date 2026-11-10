@@ -84,6 +84,17 @@ assert(rx.releaseWarning(jal, "#2-160510", "2027-01-01") === "", "a real date do
 assert(rx.releaseWarning(bag, "L1", "") === "", "finished goods do not get the raw warning");
 assert(rx.confirmRelease(jal, [{ lot: "#2-160510", expires_on: "2026-11-01" }]) === true, "dated release is not blocked");
 
+var fhLot = rx.composeFireHouse("Fire House Flavors", "4209 E", "2027-07-02", "pallet 2");
+assert(fhLot.ok && fhLot.lot === "FHF EXP 2027-07-02" && fhLot.expiresOn === "2027-07-02", "Fire House receive composes the lot");
+assert(fhLot.notes.indexOf("Fire House item 4209 E. Lot is the box expiration.") >= 0 && fhLot.notes.indexOf("pallet 2") >= 0, "item number stays in the note");
+assert(fhLot.lot.indexOf("4209") < 0, "item number is not the lot");
+var fhAgain = rx.composeFireHouse("Fire House Flavors", "4209 E", "2027-07-02", fhLot.notes);
+assert(fhAgain.notes === fhLot.notes, "the item note is not repeated");
+var fhBlock = rx.composeFireHouse("Fire House", "4209 E", "", "");
+assert(fhBlock.ok === false && fhBlock.msg === rx.FH_NEED_EXP && fhBlock.lot === "", "Fire House without a date is blocked");
+var fhOther = rx.composeFireHouse("Elite Spice", "2-160510", "", "keep");
+assert(fhOther.fireHouse === false && fhOther.lot === "2-160510" && fhOther.notes === "keep", "another supplier keeps the typed lot");
+
 var src = read("raw-exp.js");
 var db = read("db.js");
 var sw = read("service-worker.js");
@@ -94,11 +105,11 @@ assert(src.indexOf("fn_apply_delta") < 0, "no stock delta rpc");
 assert(db.indexOf("async function setRawExpires") >= 0, "db stamp");
 assert(db.indexOf('update({ expires_on: value })') >= 0, "metadata column only");
 assert(db.indexOf('c === "seed" || c === "seeds" || c === "seasoning" || c === "oil" || c === "stevia"') >= 0, "db categories");
-assert(sw.indexOf('const CACHE = "smackin-inv-v307"') >= 0 && sw.indexOf("./raw-exp.js") >= 0, "cache and asset");
-assert(html.indexOf("raw-exp.js?b=4") >= 0, "script bust");
-assert(html.indexOf('var EMBEDDED = "smackin-inv-v307"') >= 0, "embedded build");
-assert(read("build-id.txt").trim() === "smackin-inv-v307", "build id");
-assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v307"') >= 0, "escape build");
+assert(sw.indexOf('const CACHE = "smackin-inv-v308"') >= 0 && sw.indexOf("./raw-exp.js") >= 0, "cache and asset");
+assert(html.indexOf("raw-exp.js?b=5") >= 0, "script bust");
+assert(html.indexOf('var EMBEDDED = "smackin-inv-v308"') >= 0, "embedded build");
+assert(read("build-id.txt").trim() === "smackin-inv-v308", "build id");
+assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v308"') >= 0, "escape build");
 assert(html.indexOf("db.js?b=105") >= 0, "db bust");
 
 if (failed) {

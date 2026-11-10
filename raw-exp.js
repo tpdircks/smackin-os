@@ -101,6 +101,41 @@
     var m = String(v).match(/^(\d{4}-\d{2}-\d{2})/);
     return m ? m[1] : "";
   }
+  var FH_NEED_EXP = "Fire House needs the box expiration. That date is the lot.";
+  function isFireHouseSupplier(name) {
+    return /fire\s*house/i.test(String(name || ""));
+  }
+  function expISO(v) {
+    var iso = dateISO(v);
+    if (iso) return iso;
+    var us = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/.exec(String(v || "").trim());
+    if (!us) return "";
+    var y = parseInt(us[3], 10);
+    if (y < 100) y += 2000;
+    var m = String(parseInt(us[1], 10));
+    var d = String(parseInt(us[2], 10));
+    if (m.length < 2) m = "0" + m;
+    if (d.length < 2) d = "0" + d;
+    return y + "-" + m + "-" + d;
+  }
+  // The typed lot is the Fire House item number. The stock lot is the box date.
+  function composeFireHouse(supplier, itemNo, exp, notes) {
+    var typed = String(itemNo == null ? "" : itemNo).trim();
+    var note = String(notes == null ? "" : notes);
+    if (!isFireHouseSupplier(supplier)) {
+      return { fireHouse: false, ok: true, lot: typed, expiresOn: expISO(exp), notes: note, itemNo: typed, msg: "" };
+    }
+    var iso = expISO(exp);
+    var fromLot = /^FHF\s*EXP\s+(\d{4}-\d{2}-\d{2})/i.exec(typed);
+    if (!iso && fromLot) iso = fromLot[1];
+    if (!iso) return { fireHouse: true, ok: false, lot: "", expiresOn: "", notes: note, itemNo: typed, msg: FH_NEED_EXP };
+    var item = /^FHF\s*EXP\b/i.test(typed) ? "" : typed;
+    if (item) {
+      var phrase = "Fire House item " + item + ". Lot is the box expiration.";
+      if (note.toLowerCase().indexOf(phrase.toLowerCase()) < 0) note = note ? (note.replace(/\s+$/, "") + " " + phrase) : phrase;
+    }
+    return { fireHouse: true, ok: true, lot: "FHF EXP " + iso, expiresOn: iso, notes: note, itemNo: item, msg: "" };
+  }
   function todayISO() {
     try {
       return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Denver", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
@@ -260,9 +295,26 @@
     return itemByCode(code);
   }
   function showReceiveField() {
+    if (isFireHouseSupplier(val("r-sup"))) return true;
     var it = receiveItem();
     if (!it) return true;
     return isRawItem(it);
+  }
+  function setItemNumberLabel(inputId, supplierId) {
+    var input = document.getElementById(inputId);
+    if (!input || !input.parentNode) return;
+    var lab = input.parentNode.querySelector("label");
+    if (!lab) return;
+    if (!lab.getAttribute("data-base")) lab.setAttribute("data-base", lab.innerHTML);
+    var fh = isFireHouseSupplier(val(supplierId));
+    if (fh) lab.innerHTML = "Fire House item number";
+    else if (lab.getAttribute("data-fh") === "1") lab.innerHTML = lab.getAttribute("data-base");
+    lab.setAttribute("data-fh", fh ? "1" : "0");
+    if (fh) input.placeholder = "4209 E";
+  }
+  function paintFireHouseLabels() {
+    setItemNumberLabel("r-lot", "r-sup");
+    setItemNumberLabel("rl-lot", "rl-supplier");
   }
   function receiveLoc() {
     var loc = val("r-loc").toUpperCase();
@@ -346,6 +398,7 @@
     var box = existing ? existing.closest(".rx-field") : null;
     if (box) box.style.display = show ? "" : "none";
     if (existing) existing.setAttribute("data-rx-on", show ? "1" : "0");
+    paintFireHouseLabels();
   }
 
   function paintLogForm() {
@@ -361,6 +414,7 @@
     var hold = document.createElement("div");
     hold.innerHTML = fieldHtml("rl-exp", match ? dateISO(match.expires_on) : kept, match ? match.id : "", match ? match.item_id : "");
     row.parentNode.insertBefore(hold.firstChild, row.nextSibling);
+    paintFireHouseLabels();
   }
 
   function paintLogTable() {
@@ -587,10 +641,17 @@
       return async function () {
         var el = document.getElementById("r-exp");
         var on = el && el.getAttribute("data-rx-on") === "1";
-        var exp = on ? dateISO(el.value) : "";
-        pending = exp ? {
-          exp: exp,
-          lot: val("r-lot"),
+        var exp = on || isFireHouseSupplier(val("r-sup")) ? expISO(el && el.value) : "";
+        var fh = composeFireHouse(val("r-sup"), val("r-lot"), exp, val("r-notes"));
+        if (fh.fireHouse && fh.ok === false) {
+          if (root.UI && root.UI.toast) root.UI.toast(fh.msg, 7000);
+          return;
+        }
+        var stampExp = fh.fireHouse ? fh.expiresOn : exp;
+        var stampLot = fh.fireHouse ? fh.lot : val("r-lot");
+        pending = stampExp ? {
+          exp: stampExp,
+          lot: stampLot,
           code: val("r-newcode") || val("r-code"),
           loc: receiveLoc(),
           allowClear: false,
@@ -613,15 +674,19 @@
     arm("rlSave", function (orig) {
       return async function () {
         var el = document.getElementById("rl-exp");
+        var fh = composeFireHouse(val("rl-supplier"), val("rl-lot"), el ? el.value : "", val("rl-notes"));
+        if (fh.fireHouse && fh.ok === false) {
+          if (root.UI && root.UI.toast) root.UI.toast(fh.msg, 7000);
+          return;
+        }
         pending = el ? {
-          exp: dateISO(el.value),
-          lot: val("rl-lot"),
-          code: "",
+          exp: fh.fireHouse ? fh.expiresOn : dateISO(el.value),
+          lot: fh.fireHouse ? fh.lot : val("rl-lot"),
+          code: el.getAttribute("data-item-id") || "",
           loc: "",
           allowClear: true,
           used: false,
-          recvId: el.getAttribute("data-recv-id") || "",
-          code: el.getAttribute("data-item-id") || ""
+          recvId: el.getAttribute("data-recv-id") || ""
         } : null;
         try {
           return await orig.apply(root.UI, arguments);
@@ -668,6 +733,18 @@
       var t = e.target;
       if (!t) return;
       if (t.id === "r-code" || t.id === "r-newcat" || t.id === "r-newcode") paintReceive();
+      if (t.id === "r-sup" || t.id === "rl-supplier") {
+        paintReceive();
+        paintFireHouseLabels();
+      }
+    });
+    view.addEventListener("change", function (e) {
+      var t = e.target;
+      if (!t) return;
+      if (t.id === "r-sup" || t.id === "rl-supplier") {
+        paintReceive();
+        paintFireHouseLabels();
+      }
     });
     onView();
   }
@@ -698,6 +775,9 @@
     isRawItem: isRawItem,
     normLot: normLot,
     dateISO: dateISO,
+    isFireHouseSupplier: isFireHouseSupplier,
+    composeFireHouse: composeFireHouse,
+    FH_NEED_EXP: FH_NEED_EXP,
     resolveExpires: resolveExpires,
     lotLines: lotLines,
     stampsAfterMove: stampsAfterMove,

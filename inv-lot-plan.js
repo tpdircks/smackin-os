@@ -125,6 +125,34 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
     if (d.length < 2) d = "0" + d;
     return y + "-" + m + "-" + d;
   }
+  // Fire House Flavors does not test or send a COA. Brittney Christensen,
+  // 2026-11-10: the printed box expiration is the lot. A code such as
+  // "4209 E" is their item number and stays in the note.
+  function isFireHouse(line) {
+    if (!line) return false;
+    if (/fire\s*house/i.test(String(line.supplier || ""))) return true;
+    if (/^FHF\s*EXP\b/i.test(String(line.lot || ""))) return true;
+    return false;
+  }
+  function fireHouseExp(line) {
+    var exp = parseExp(line && line.exp);
+    if (exp) return exp;
+    var m = /^FHF\s*EXP\s+(\d{4}-\d{2}-\d{2})/i.exec(String(line && line.lot || ""));
+    return m ? m[1] : "";
+  }
+  function fireHouseLot(line) {
+    var exp = fireHouseExp(line);
+    return exp ? ("FHF EXP " + exp) : "";
+  }
+  function fireHouseItemNo(line) {
+    var lot = String(line && line.lot || "").trim();
+    if (!lot || /^FHF\s*EXP\b/i.test(lot)) return "";
+    return lot;
+  }
+  function fireHouseNote(itemNos) {
+    var nums = (itemNos || []).filter(Boolean);
+    return "Fire House item " + (nums.length ? nums.join(", ") : "(none)") + ". Lot is the box expiration.";
+  }
   function mapLocation(locCode, note) {
     var code = String(locCode || "").trim();
     var rack = /rack\s*([a-h])/i.exec(String(note || ""));
@@ -275,8 +303,15 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
     });
     var active = (lines || []).filter(function (line) { return line.item && !line.hold; });
     active.forEach(function (line) {
+      if (isFireHouse(line) && !fireHouseExp(line)) {
+        holds.push({ item: itemId, lot: line.lot || "", sheet: num(line.qty), reason: "Fire House line has no expiration. The box date is the lot. Not merged." });
+      }
       if (num(line.qty) > cap) {
         var key = lotKey(line.lot);
+        if (isFireHouse(line)) {
+          key = lotKey(fireHouseLot(line)) || key;
+          if (lotKey(line.lot)) protectedKeys[lotKey(line.lot)] = "over cap";
+        }
         if (key) protectedKeys[key] = "over cap";
         holds.push({ item: itemId, lot: line.lot || "", sheet: num(line.qty), reason: "Quantity " + num(line.qty) + " is over 100,000. Held as a likely typo." });
       }
@@ -285,20 +320,27 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
     var grouped = {};
     var targets = [];
     usable.forEach(function (line) {
+      if (isFireHouse(line) && !fireHouseExp(line)) return;
       if (!(num(line.qty) > 0)) return;
-      var key = lotKey(line.lot);
-      if (protectedKeys[key]) return;
-      var exp = parseExp(line.exp);
+      var fh = isFireHouse(line);
+      var exp = fh ? fireHouseExp(line) : parseExp(line.exp);
+      var lot = fh ? fireHouseLot(line) : String(line.lot || "").trim();
+      var key = lotKey(lot);
+      if (protectedKeys[key] || (fh && protectedKeys[lotKey(line.lot)])) return;
       var expired = !!(exp && exp < today);
       var loc = expired ? "QUARANTINE" : mapLocation(line.locCode, line.note);
       var gk = key + "\n" + loc;
       if (!grouped[gk]) {
-        grouped[gk] = { lotKey: key, lot: String(line.lot || "").trim(), location: loc, qty: 0, exp: exp, desc: line.desc || "", expired: expired, parts: 0 };
+        grouped[gk] = { lotKey: key, lot: lot, location: loc, qty: 0, exp: exp, desc: line.desc || "", expired: expired, parts: 0, fireHouse: fh, itemNos: [] };
         targets.push(grouped[gk]);
       }
       grouped[gk].qty = num(grouped[gk].qty + num(line.qty));
       grouped[gk].parts += 1;
       if (exp && (!grouped[gk].exp || exp < grouped[gk].exp)) grouped[gk].exp = exp;
+      if (fh) {
+        var itemNo = fireHouseItemNo(line);
+        if (itemNo && grouped[gk].itemNos.indexOf(itemNo) < 0) grouped[gk].itemNos.push(itemNo);
+      }
     });
     targets.forEach(function (t) {
       if (t.location === "QUARANTINE") return;
@@ -317,10 +359,21 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
         seen[gk].qty = num(seen[gk].qty + t.qty);
         seen[gk].parts += t.parts;
         if (t.exp && (!seen[gk].exp || t.exp < seen[gk].exp)) seen[gk].exp = t.exp;
+        if (t.fireHouse) seen[gk].fireHouse = true;
+        (t.itemNos || []).forEach(function (n) {
+          if (!seen[gk].itemNos) seen[gk].itemNos = [];
+          if (seen[gk].itemNos.indexOf(n) < 0) seen[gk].itemNos.push(n);
+        });
       }
     });
     targets = merged;
     targets.forEach(function (t) {
+      if (t.fireHouse) {
+        var reason = fireHouseNote(t.itemNos);
+        t.note = reason;
+        notes.push({ item: itemId, lot: t.lot, reason: reason });
+        return;
+      }
       if (t.parts > 1) notes.push({ item: itemId, lot: t.lot, reason: "Combined " + t.parts + " sheet rows for the same lot at " + t.location + ". Earliest expiration kept." });
     });
 
@@ -695,8 +748,15 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
     var out = {};
     (lines || []).forEach(function (line) {
       if (!line.item || line.hold || !(num(line.qty) > 0) || num(line.qty) > CAP) return;
-      var key = line.item + "\n" + lotKey(line.lot);
-      if (!out[key]) out[key] = { item: line.item, lot: line.lot || "", qty: 0 };
+      var lot = String(line.lot || "");
+      var keyLot = lotKey(line.lot);
+      if (isFireHouse(line)) {
+        lot = fireHouseLot(line);
+        if (!lot) return;
+        keyLot = lotKey(lot);
+      }
+      var key = line.item + "\n" + keyLot;
+      if (!out[key]) out[key] = { item: line.item, lot: lot, qty: 0 };
       out[key].qty = num(out[key].qty + num(line.qty));
     });
     return Object.keys(out).map(function (k) { return out[k]; });
@@ -727,6 +787,17 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
     var itemSheet = {};
     (latest.lots || []).forEach(function (line) {
       if (!line.item || line.hold || num(line.qty) > CAP) return;
+      if (isFireHouse(line) && !fireHouseLot(line)) {
+        flags.push({
+          item: line.item,
+          lot: line.lot || "",
+          os: 0,
+          sheet: num(line.qty),
+          kind: "firehouse-exp",
+          reason: "Fire House line has no expiration. The box date is the lot. Not merged."
+        });
+        return;
+      }
       if (!itemSheet[line.item]) itemSheet[line.item] = 0;
       itemSheet[line.item] = num(itemSheet[line.item] + num(line.qty));
     });
@@ -766,6 +837,9 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
     lotKey: lotKey,
     mapLocation: mapLocation,
     parseExp: parseExp,
+    isFireHouse: isFireHouse,
+    fireHouseLot: fireHouseLot,
+    fireHouseNote: fireHouseNote,
     drifted: drifted,
     isManual: isManual,
     coaHeld: coaHeld,

@@ -2247,7 +2247,21 @@
     ["chk_trailer_sealed", "chk_trailer_clean", "chk_coa_label", "chk_approved_supplier", "chk_carrier_sanitation", "chk_material_condition"].forEach(function (k) {
       ed[k] = radioVal("rsop_" + k);
     });
+    if (window.RAW_EXP && typeof RAW_EXP.composeFireHouse === "function") {
+      const fh = RAW_EXP.composeFireHouse(ed.supplier, ed.lot, ed.expires_on, ed.notes);
+      if (fh.fireHouse && fh.ok) {
+        ed.lot = fh.lot;
+        ed.notes = fh.notes;
+        ed.expires_on = fh.expiresOn;
+      }
+    }
     return ed;
+  }
+  function fireHouseFieldLot(supplier, lot, notes) {
+    if (!/fire\s*house/i.test(String(supplier || ""))) return lot || "";
+    if (!/^FHF\s*EXP\b/i.test(String(lot || ""))) return lot || "";
+    const m = /Fire House item\s+(.+?)\. Lot is the box expiration\./i.exec(String(notes || ""));
+    return m ? m[1].trim() : (lot || "");
   }
   function logDraftFromReceive(snap, it) {
     snap = snap || {};
@@ -2324,7 +2338,7 @@
       '<div><label>' + L("rlTracking") + ' <span class="muted">(PRO)</span></label><input id="rl-tracking" autocomplete="off" value="' + av(ed.tracking) + '"></div>' +
       '<div><label>' + L("rlCondition") + '</label><select id="rl-condition">' + selOpt(RECV_LOG_CONDITIONS, ed.condition, "Good") + '</select></div></div>' +
       '<div class="row"><div style="flex:2"><label>' + L("rlContents") + '</label><input id="rl-contents" autocomplete="off" value="' + av(ed.contents) + '"></div>' +
-      '<div><label>' + L("rlLot") + '</label><input id="rl-lot" autocomplete="off" placeholder="Lot / batch" value="' + av(ed.lot) + '"></div></div>' +
+      '<div><label>' + L("rlLot") + '</label><input id="rl-lot" autocomplete="off" placeholder="Lot / batch" value="' + av(fireHouseFieldLot(ed.supplier, ed.lot, ed.notes)) + '"></div></div>' +
       '<div class="row"><div><label>' + L("rlQtyOrd") + ' <span class="muted">(opt.)</span></label><input id="rl-qord" type="number" min="0" placeholder="0" value="' + qv(ed.qty_ordered) + '"></div>' +
       '<div><label>' + L("rlQtyRec") + '</label><input id="rl-qrec" type="number" min="0" placeholder="0" value="' + qv(ed.qty_received) + '"></div>' +
       '<div><label>' + L("rlReceivedBy") + '</label><input id="rl-by" list="dl-rl-by" autocomplete="off" value="' + av(ed.received_by) + '"></div></div>' +
@@ -2397,7 +2411,7 @@
       (recvNewItem ? "" : itemScan("r-code", "r-qty", k.code)) + newToggle + newPanel +
       '<div class="row"><div><label>' + L("qty") + '</label><input id="r-qty" type="number" min="0" placeholder="' + L("enter") + '" value="' + av(k.qty) + '"></div>' +
       '<div><label>' + L("rPallets") + ' <span class="muted">(opt.)</span></label><input id="r-pal" type="number" min="0" step="0.1" placeholder="0" value="' + av(k.pal) + '"></div>' +
-      '<div><label>' + L("lot") + ' <span class="muted">(opt.)</span></label><input id="r-lot" autocomplete="off" placeholder="LOT-0701" value="' + av(k.lot) + '"></div></div>' +
+      '<div><label>' + L("lot") + ' <span class="muted">(opt.)</span></label><input id="r-lot" autocomplete="off" placeholder="LOT-0701" value="' + av(fireHouseFieldLot(k.sup, k.lot, k.notes)) + '"></div></div>' +
       '<div class="row"><div><label>' + L("rSupplier") + '</label><select id="r-sup"><option value=""></option>' + selOpts(DB.recvSuppliers, k.sup) + '</select></div>' +
       '<div><label>' + L("rInvoice") + ' <span class="muted">' + L("rOptional") + '</span></label><input id="r-inv" autocomplete="off" placeholder="INV-..." value="' + av(k.inv) + '" oninput="UI.recvInvoiceTyped()"></div>' +
       '<div><label>' + L("rCategory") + '</label><select id="r-cat"><option value=""></option>' + selOpts(DB.recvCategories, k.cat) + '</select></div></div>' +
@@ -5325,7 +5339,7 @@
       try {
         const snap = captureReceiveForm();
         rememberReceiveDraft(snap);
-        const q = parseFloat(snap.qty); const lot = String(snap.lot || "").trim();
+        const q = parseFloat(snap.qty); let lot = String(snap.lot || "").trim();
         const loc = String(snap.loc || "").trim().toUpperCase();
         const meta = { supplier: snap.sup || "", invoice: String(snap.inv || "").trim(), category: snap.cat || "",
           pallets: snap.pal || "", condition: snap.cond || "Good", status: snap.stat || "Received", location: loc || "" };
@@ -5334,7 +5348,19 @@
         const rlTrack = String(snap.tracking || "").trim();
         const rlTransport = String(snap.transport || "").trim();
         const rlQord = String(snap.qord || "").trim();
-        const rlNotes = String(snap.notes || "").trim();
+        let rlNotes = String(snap.notes || "").trim();
+        if (window.RAW_EXP && typeof RAW_EXP.composeFireHouse === "function") {
+          const fh = RAW_EXP.composeFireHouse(snap.sup, lot, snap.exp, rlNotes);
+          if (fh.fireHouse && fh.ok === false) return toast(fh.msg, 7000);
+          if (fh.fireHouse) {
+            lot = fh.lot;
+            rlNotes = fh.notes;
+            snap.lot = fh.lot;
+            snap.notes = fh.notes;
+            snap.exp = fh.expiresOn;
+            window.__smkRecvExp = fh.expiresOn;
+          }
+        }
         const file = recvFile;
         const newCode = recvNewItem ? String(snap.newcode || "").trim() : "";
         const newName = recvNewItem ? String(snap.newname || "").trim() : "";
@@ -5384,7 +5410,7 @@
             transport_ref: rlTransport, invoice_pending: snap.invPending === "1" || snap.invPending === true,
             carrier: rlCarrier, tracking: rlTrack, contents: it.name || "", lot: lot || "",
             qty_ordered: rlQord, qty_received: q, condition: meta.condition || "Good",
-            received_by: op, notes: rlNotes, item_id: it.id || it.code || ""
+            received_by: op, notes: rlNotes, expires_on: snap.exp || "", item_id: it.id || it.code || ""
           };
           let saved = null;
           let plan = null;
@@ -5994,7 +6020,20 @@
           transport_ref: snap.transport_ref, invoice_pending: snap.invoice_pending,
           carrier: snap.carrier, tracking: snap.tracking, contents: snap.contents, lot: snap.lot,
           qty_ordered: snap.qty_ordered, qty_received: snap.qty_received, condition: snap.condition,
-          received_by: snap.received_by, notes: snap.notes };
+          received_by: snap.received_by, notes: snap.notes, expires_on: snap.expires_on || "" };
+        if (/fire\s*house/i.test(supplier)) {
+          const fh = (window.RAW_EXP && typeof RAW_EXP.composeFireHouse === "function")
+            ? RAW_EXP.composeFireHouse(supplier, snap.lot, snap.expires_on, snap.notes)
+            : null;
+          if (fh && fh.ok === false) return toast(fh.msg, 7000);
+          if (fh && fh.fireHouse) {
+            rec.lot = fh.lot;
+            rec.notes = fh.notes;
+            rec.expires_on = fh.expiresOn;
+          } else if (!fh && !/^\d{4}-\d{2}-\d{2}/.test(String(snap.expires_on || ""))) {
+            return toast("Fire House needs the box expiration. That date is the lot.", 7000);
+          }
+        }
         let gate = { ok: true, rec: rec };
         if (window.RECVSOP && RECVSOP.prepare) {
           if (RECVSOP.ensureLoaded) { try { await RECVSOP.ensureLoaded(); } catch (e) {} }
