@@ -120,7 +120,7 @@
       needOp: "Enter your name first.", needLot: "Supplier lot # is required. Every receipt needs a lot.",
       saved: "Saved", labelsMade: "labels created",
       qaHint: "Food-contact materials start on HOLD. Release after the COA is checked. Anything on hold cannot be used in Mixing or P-Mac.",
-      release: "Release", reject: "Reject", hold: "Put on hold", noHold: "Nothing on hold.",
+      release: "Release", qaRelease: "Quality release", reject: "Reject", hold: "Put on hold", noHold: "Nothing on hold.",
       mixer: "Mixer", prefix: "Batch prefix (flavor code + malto + season, e.g. L2031)", batch: "Batch code",
       inputs: "Ingredients scanned", scanInputs: "Scan the seed, seasoning and malto labels you are loading",
       bins: "Bins to tag", makeBins: "Print bin tags", newBatch: "New batch", lbsUsed: "lbs used", markEmpty: "used up",
@@ -201,7 +201,7 @@
       needOp: "Primero escriba su nombre.", needLot: "El lote del proveedor es obligatorio. Cada recibo necesita lote.",
       saved: "Guardado", labelsMade: "etiquetas creadas",
       qaHint: "Los materiales de contacto con alimentos empiezan RETENIDOS. Liberar después de revisar el COA. Lo retenido no se puede usar en Mezcla o P-Mac.",
-      release: "Liberar", reject: "Rechazar", hold: "Retener", noHold: "Nada retenido.",
+      release: "Liberar", qaRelease: "Liberar calidad", reject: "Rechazar", hold: "Retener", noHold: "Nada retenido.",
       mixer: "Mezcladora", prefix: "Prefijo del lote (sabor + malto + sazón, ej. L2031)", batch: "Código de lote",
       inputs: "Ingredientes escaneados", scanInputs: "Escanee las etiquetas de semilla, sazonador y malto que va a cargar",
       bins: "Contenedores a etiquetar", makeBins: "Imprimir etiquetas de contenedor", newBatch: "Lote nuevo", lbsUsed: "lbs usadas", markEmpty: "se acabo",
@@ -285,7 +285,8 @@
       outEarly: "Essa data e anterior a saida deste lote para e-com.",
       outSize: "Esse tamanho nao combina com a saida e-com aberta.",
       fromRackPh: "Rack, ex. A-05-L3",
-      ecomWinOpen: "ainda no pick", ecomWinOut: "fora do pick"
+      ecomWinOpen: "ainda no pick", ecomWinOut: "fora do pick",
+      qaRelease: "Liberar qualidade"
     }
   };
   function lang() {
@@ -989,14 +990,77 @@
     var hot = labelHeld(l);
     return '<tr class="' + (hot ? "trc-held" : "") + '"><td><b>' + esc(l.lpn) + '</b><br><span class="muted sm">' + esc(dLocal(l.created_at)) + '</span></td><td>' + esc(l.item) + (l.flavor ? '<br><span class="muted sm">' + esc(l.flavor) + (l.size ? " " + esc(l.size) : "") + '</span>' : "") + '</td><td>' + esc(l.supplier || "") + '<br><b>' + esc(lotShown) + '</b></td><td>' + esc(l.exp || "") + '</td><td>' + fmt(l.qty_left != null ? l.qty_left : l.qty) + ' ' + esc(l.uom) + '</td><td>' + (iss.length ? '<b style="color:#a11">' + esc(iss[iss.length - 1].txt) + '</b>' + (iss.length > 1 ? ' <span class="muted sm">(+' + (iss.length - 1) + ')</span>' : '') : esc(holdReasonOf(l))) + '</td><td class="trc-row">' + statusActions(l) + '</td></tr>';
   }
+  var QA_STOCK = [];
+  var qaHoldRev = -1;
+  function qaStockRows() {
+    var D = window.DB;
+    if (!D || !D.stock || !D.items || !window.RECVSOP || typeof RECVSOP.stockHoldRows !== "function") return [];
+    var open = [];
+    try { if (typeof RECVSOP.openHolds === "function") open = RECVSOP.openHolds() || []; } catch (e) { open = []; }
+    try { return RECVSOP.stockHoldRows(D.stock() || [], D.items() || [], open, { onlyMissing: false }); }
+    catch (e2) { return []; }
+  }
+  function askHoldLog() {
+    if (!window.RECVSOP || typeof RECVSOP.ensureLoaded !== "function") return;
+    RECVSOP.ensureLoaded().then(function (rev) {
+      if (rev === qaHoldRev) return;
+      qaHoldRev = rev;
+      if (ACTIVE && ST.tab === "qa") render();
+    }).catch(function () {});
+  }
+  function qaStockTable(rows) {
+    QA_STOCK = rows || [];
+    if (!QA_STOCK.length) return "";
+    var body = QA_STOCK.map(function (r, i) {
+      var exp = r.expires_on ? esc(String(r.expires_on).slice(0, 10)) : "";
+      return "<tr class=\"trc-held\"><td><b>" + esc(r.item_name || r.item_id || "") + "</b></td><td><b>" + esc(r.lot || "") + "</b></td><td>" + esc(r._location || "") + "</td><td>" + exp + "</td><td class=\"right\">" + esc(r.hold_qty == null ? "" : r.hold_qty) + "</td><td>" + esc(r.hold_reason || "") + "</td><td><button type=\"button\" class=\"primary sm\" onclick=\"TRACE.releaseStock(" + i + ")\">" + esc(L("qaRelease")) + "</button></td></tr>";
+    }).join("");
+    return '<h3 style="margin-top:16px">QUARANTINE / QA-HOLD</h3><p class="hint">Stock on hold, including lots from an inventory count. Quality release moves that lot to RECEIVING.</p><table class="trc"><thead><tr><th>Item</th><th>Lot</th><th>Where</th><th>Exp</th><th>Qty</th><th>' + esc(L("issueCol")) + '</th><th></th></tr></thead><tbody>' + body + "</tbody></table>";
+  }
+  function releaseStock(i) {
+    var row = QA_STOCK[i];
+    if (!row) return;
+    if (needOp()) return;
+    var D = window.DB;
+    var it = null;
+    if (D && D.items) {
+      var items = D.items() || [];
+      for (var n = 0; n < items.length; n++) {
+        if (items[n].id === row.item_id || items[n].code === row.item_id) it = items[n];
+      }
+    }
+    if (window.RAW_EXP && typeof RAW_EXP.confirmRelease === "function") {
+      if (!RAW_EXP.confirmRelease(it, [{ lot: row.lot, expires_on: row.expires_on }])) return;
+    }
+    if (!D || typeof D.settleStockHold !== "function") { flash("Release is still loading. Refresh the page.", "err"); return; }
+    D.settleStockHold({
+      itemId: row.item_id,
+      itemName: row.item_name,
+      lot: row.lot,
+      qty: row.hold_qty,
+      location: row._location,
+      holdId: row.holdId || "",
+      by: opName(),
+      note: "",
+      disposition: "released",
+      reason: row.hold_reason
+    }).then(function (res) {
+      if (!res || res.ok === false) { flash((res && res.msg) || "Release failed", "err"); render(); return; }
+      flash((row.lot || row.item_name || "") + ": " + L("releaseSaved"), "ok");
+      render();
+    }).catch(function (e) { flash(String(e && e.message || e), "err"); render(); });
+  }
   function vQa() {
+    askHoldLog();
     var list = allLabels().filter(function (l) { return labelHeld(l) && String(l.status || "").toUpperCase() !== "REJECTED"; }).sort(byNewest);
     var rejected = allLabels().filter(function (l) { return String(l.status || "").toUpperCase() === "REJECTED" && !isClosedStatus(l.status); }).sort(byNewest);
+    var stockRows = qaStockRows();
     var h = '<div class="card"><h2 class="sub2">' + esc(L("tQa")) + '</h2><p class="hint">' + esc(L("qaHint")) + '</p>';
     h += heldBannerHtml();
     h += scanBox("qaScan", L("scanPh") + " (" + L("release") + ")");
-    if (!list.length) h += '<p class="muted" style="margin-top:12px">' + esc(L("noHold")) + '</p>';
-    else h += '<table class="trc" style="margin-top:12px"><thead><tr><th>Label</th><th>Item</th><th>Supplier / lot</th><th>Exp</th><th>Qty</th><th>' + esc(L("issueCol")) + '</th><th></th></tr></thead><tbody>' + list.map(qaRow).join("") + '</tbody></table>';
+    h += qaStockTable(stockRows);
+    if (!list.length && !stockRows.length) h += '<p class="muted" style="margin-top:12px">' + esc(L("noHold")) + '</p>';
+    else if (list.length) h += '<table class="trc" style="margin-top:12px"><thead><tr><th>Label</th><th>Item</th><th>Supplier / lot</th><th>Exp</th><th>Qty</th><th>' + esc(L("issueCol")) + '</th><th></th></tr></thead><tbody>' + list.map(qaRow).join("") + '</tbody></table>';
     if (rejected.length) h += '<h3 style="margin-top:16px">REJECTED</h3><table class="trc"><thead><tr><th>Label</th><th>Item</th><th>Supplier / lot</th><th>Exp</th><th>Qty</th><th>' + esc(L("issueCol")) + '</th><th></th></tr></thead><tbody>' + rejected.map(qaRow).join("") + '</tbody></table>';
     h += '</div>';
     return h;
@@ -1032,6 +1096,11 @@
     }
     if (status === "RELEASED") {
       var why = holdReasonOf(l);
+      var rawType = /^(SEAS|SEED|MALTO|OIL|STEVIA)$/i.test(String(l.mtype || ""));
+      if (rawType && window.RAW_EXP && typeof RAW_EXP.confirmRelease === "function") {
+        var rawItem = { category: "seasoning", name: l.item || l.lpn || "" };
+        if (!RAW_EXP.confirmRelease(rawItem, [{ lot: l.lot || l.supplier_lot || "", expires_on: l.exp || "" }])) return;
+      }
       if (!window.confirm(lpn + "\n" + L("releasePalletAsk") + (why ? "\n" + why : ""))) return;
     }
     var pw = openPrintWin();
@@ -2836,7 +2905,7 @@
     toggleGroup: function () { injectNav(); },
     setOp: function (v) { rememberOp(v); render(); },
     recvType: recvType, recvExisting: recvExisting, recvSave: recvSave,
-    qa: qaSet, qaScan: qaScan, qaIssue: qaIssue,
+    qa: qaSet, qaScan: qaScan, qaIssue: qaIssue, releaseStock: releaseStock,
     setMixer: function (v) { ST.mixer = v; saveST(); render(); },
     mixFlavor: function (v) { W.mix.flavor = v; W.mix.prefix = v ? lastPrefixFor(v) : ""; render(); },
     mixPrefix: function (v) { W.mix.prefix = String(v || "").toUpperCase().trim(); render(); },

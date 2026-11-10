@@ -5,7 +5,10 @@
    number and keeps its own row. Any N or UA sets receiving_log.on_hold and
    writes hold_log (status held), except Trailer Sealed N. N means an
    unsealed LTL or shared trailer and does not hold the lot. Broken (B)
-   holds and needs deviation actions. Release clears the hold. Thrown away,
+   holds and needs deviation actions. Stock already sitting in QUARANTINE
+   or QA-HOLD is listed here too, including an inventory-sync lot that has
+   no receiving row. Release moves that lot to RECEIVING and writes the
+   hold. Thrown away,
    returned to vendor, and other keep the lot out of FEFO and Use.
    Approved supplier is a manual Y/N. The vendor register stays in Drive.
    Temperature is recorded when there is a reading. Not measured stores a
@@ -645,10 +648,85 @@
     return '<p class="rsop-tools"><button type="button" class="ghost" data-rsop="export-recv">' + esc(tx("exportRecv")) +
       '</button> <button type="button" class="ghost" data-rsop="export-hold">' + esc(tx("exportHold")) + "</button></p>";
   }
+  function stockOriginHold(h) {
+    if (!h) return false;
+    if (h._stock) return true;
+    var reason = String(h.hold_reason || "");
+    return reason.indexOf("Not a receipt") >= 0 || reason.indexOf("Sync backfill") >= 0 || reason.indexOf("Inventory sync placed") >= 0;
+  }
+  function stockOriginLocation(h) {
+    if (h && h._location) return String(h._location).toUpperCase();
+    var reason = String(h && h.hold_reason || "");
+    if (reason.indexOf("QA-HOLD") >= 0) return "QA-HOLD";
+    if (reason.indexOf("QUARANTINE") >= 0) return "QUARANTINE";
+    return "";
+  }
+  function dispositionByValue(h) {
+    var who = String(h && h.held_by || "");
+    if (/sync backfill|inventory sync|stock hold/i.test(who)) return "";
+    return who;
+  }
+  function holdCoversStock(h, row) {
+    if (!h || h.status !== "held" || !row) return false;
+    if (normLot(h.lot) !== normLot(row.lot)) return false;
+    if (h.item_id && row.item_id && String(h.item_id) !== String(row.item_id)) return false;
+    if (!h.item_id) return false;
+    return true;
+  }
+  function stockHoldRows(stock, items, openHolds, opts) {
+    opts = opts || {};
+    var byId = {};
+    (items || []).forEach(function (it) {
+      if (!it) return;
+      if (it.id) byId[it.id] = it;
+      if (it.code) byId[it.code] = it;
+    });
+    var out = [];
+    (stock || []).forEach(function (r) {
+      if (!r) return;
+      var loc = String(r.location || "").toUpperCase();
+      if (loc !== "QUARANTINE" && loc !== "QA-HOLD") return;
+      if (!(Number(r.qty) > 0)) return;
+      var covered = (openHolds || []).some(function (h) { return holdCoversStock(h, r); });
+      if (opts.onlyMissing && covered) return;
+      var it = byId[r.item_id];
+      var match = null;
+      (openHolds || []).forEach(function (h) { if (!match && holdCoversStock(h, r)) match = h; });
+      out.push({
+        id: match && match.id ? match.id : ("stk:" + String(r.item_id || "") + ":" + normLot(r.lot) + ":" + loc),
+        hold_at: (match && match.hold_at) || r.updated_at || "",
+        held_by: (match && match.held_by) || "",
+        item_id: r.item_id,
+        item_name: it ? (it.name || it.id) : (r.item_id || ""),
+        lot: r.lot || "",
+        hold_qty: Number(r.qty),
+        hold_reason: (match && match.hold_reason) || ("Stock is in " + loc + ". Not a receipt."),
+        receiving_log_id: match ? match.receiving_log_id : null,
+        status: "held",
+        _stock: !match,
+        _location: loc,
+        holdId: match && match.id ? match.id : "",
+        expires_on: r.expires_on || ""
+      });
+    });
+    return out;
+  }
+  function dbStock() {
+    var D = root.DB;
+    if (!D || !D.stock || !D.items) return { stock: [], items: [] };
+    try { return { stock: D.stock() || [], items: D.items() || [] }; }
+    catch (e) { return { stock: [], items: [] }; }
+  }
+  function visibleHolds() {
+    var pack = dbStock();
+    var extra = stockHoldRows(pack.stock, pack.items, holds.filter(function (h) { return h.status === "held"; }), { onlyMissing: true });
+    return holds.concat(extra);
+  }
   function holdInner() {
     if (!loaded) return '<p class="hint">' + esc(tx("loading")) + "</p>";
-    if (!holds.length) return '<p class="muted">' + esc(tx("emptyHold")) + "</p>";
-    var rows = holds.slice().sort(function (a, b) {
+    var shown = visibleHolds();
+    if (!shown.length) return '<p class="muted">' + esc(tx("emptyHold")) + "</p>";
+    var rows = shown.slice().sort(function (a, b) {
       var ah = a.status === "held" ? 0 : 1;
       var bh = b.status === "held" ? 0 : 1;
       if (ah !== bh) return ah - bh;
@@ -664,7 +742,7 @@
           '<option value="returned_to_vendor">Returned to vendor</option>' +
           '<option value="other">Other</option></select>' +
           '<input id="rsop-note-' + esc(h.id) + '" placeholder="' + esc(tx("note")) + '">' +
-          '<input id="rsop-by-' + esc(h.id) + '" placeholder="' + esc(tx("by")) + '" value="' + esc(h.held_by || "") + '">' +
+          '<input id="rsop-by-' + esc(h.id) + '" placeholder="' + esc(tx("by")) + '" value="' + esc(dispositionByValue(h)) + '">' +
           '<button type="button" class="primary sm" data-rsop="dispose" data-id="' + esc(h.id) + '">' + esc(tx("saveDisp")) + "</button></div>"
         : esc(dispPhrase(h)) + (h.disposition_by ? '<div class="muted sm">' + esc(h.disposition_by) + "</div>" : "");
       return "<tr><td>" + esc(denverDay(h.hold_at)) + "</td><td>" + esc(h.held_by || "") + "</td><td>" + esc(h.item_name || "") +
@@ -869,10 +947,37 @@
     return holds.filter(function (h) { return !!BLOCK[h.status]; });
   }
   function exportRecv() { download("WHSE_FORM_1.0_Receiving_Log.csv", receivingCsv(recvRows())); }
-  function exportHold() { download("WHSE_FORM_3.0_HOLD_Log.csv", holdCsv(holds)); }
+  function exportHold() { download("WHSE_FORM_3.0_HOLD_Log.csv", holdCsv(visibleHolds())); }
+  function itemForHold(h) {
+    var D = root.DB;
+    if (!D || !D.items || !h) return null;
+    var list = [];
+    try { list = D.items() || []; } catch (e) { list = []; }
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === h.item_id || list[i].code === h.item_id) return list[i];
+    }
+    return null;
+  }
+  function expiresForHold(h) {
+    if (h && h.expires_on) return h.expires_on;
+    var D = root.DB;
+    if (!D || !D.stock || !h) return "";
+    var key = normLot(h.lot);
+    var rows = [];
+    try { rows = D.stock() || []; } catch (e) { rows = []; }
+    var found = "";
+    rows.forEach(function (r) {
+      if (found || !r) return;
+      if (h.item_id && r.item_id !== h.item_id) return;
+      if (normLot(r.lot) !== key) return;
+      if (r.expires_on) found = r.expires_on;
+    });
+    return found;
+  }
   async function doDispose(id) {
+    var shown = visibleHolds();
     var h = null;
-    for (var i = 0; i < holds.length; i++) if (String(holds[i].id) === String(id)) h = holds[i];
+    for (var i = 0; i < shown.length; i++) if (String(shown[i].id) === String(id)) h = shown[i];
     if (!h || h.status !== "held") return;
     var disp = val("rsop-disp-" + id);
     var note = val("rsop-note-" + id);
@@ -880,7 +985,30 @@
     if (!disp) return toast(tx("pickDisp"));
     if (!who) return toast(tx("needBy"));
     if (disp === "other" && !note) return toast(tx("needNote"));
+    if (disp === "released" && root.RAW_EXP && typeof root.RAW_EXP.confirmRelease === "function") {
+      if (!root.RAW_EXP.confirmRelease(itemForHold(h), [{ lot: h.lot, expires_on: expiresForHold(h) }])) return;
+    }
     if (disp === "released" && rowStillFails(h.receiving_log_id) && !root.confirm(tx("releaseAsk"))) return;
+    if (h._stock && root.DB && typeof root.DB.settleStockHold === "function") {
+      var settled = await root.DB.settleStockHold({
+        itemId: h.item_id,
+        itemName: h.item_name,
+        lot: h.lot,
+        qty: h.hold_qty,
+        location: h._location,
+        by: who,
+        note: note,
+        disposition: disp,
+        reason: h.hold_reason
+      });
+      if (!settled || settled.ok === false) return toast((settled && settled.msg) || tx("holdFail"));
+      if (settled.row) holds.unshift(settled.row);
+      revision++;
+      paintHolds(true);
+      try { await ensureLoaded(true); } catch (e) {}
+      toast(disp === "released" ? tx("released") : tx("closed"));
+      return;
+    }
     var patch = {
       status: disp,
       disposition: disp,
@@ -915,6 +1043,16 @@
           by: who,
           note: note,
           reason: h.hold_reason
+        });
+      } catch (e) { toast(String(e && e.message || e)); }
+    }
+    if (disp === "released" && stockOriginHold(h) && root.DB && typeof root.DB.releaseHeldQty === "function") {
+      try {
+        await root.DB.releaseHeldQty({
+          itemId: h.item_id,
+          lot: h.lot,
+          location: stockOriginLocation(h),
+          by: who
         });
       } catch (e) { toast(String(e && e.message || e)); }
     }
@@ -1177,6 +1315,9 @@
     lotHeld: lotHeld,
     holdMessage: holdMessage,
     openHolds: openHolds,
+    stockHoldRows: stockHoldRows,
+    dispositionByValue: dispositionByValue,
+    stockOriginLocation: stockOriginLocation,
     noteExternalHold: noteExternalHold,
     noteExternalRelease: noteExternalRelease,
     ensureLoaded: ensureLoaded,
@@ -1275,6 +1416,9 @@
       resolveInvoicePending: resolveInvoicePending,
       invoiceTrail: invoiceTrail,
       invoicePendingCell: invoicePendingCell,
+      stockHoldRows: stockHoldRows,
+      dispositionByValue: dispositionByValue,
+      stockOriginLocation: stockOriginLocation,
       RECV_HEAD: RECV_HEAD,
       HOLD_HEAD: HOLD_HEAD
     };

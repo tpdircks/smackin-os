@@ -2606,16 +2606,156 @@ window.DB = (function () {
     const rows = cache.stock.filter(r => found.ids.has(r.item_id) && r.location === from && rawLotKey(r.lot) === key && Number(r.qty) > 0.0001);
     if (!rows.length) return { ok: true, moved: 0 };
     const deltas = [];
+    const keptExp = [];
     let qty = 0;
     rows.forEach(r => {
       const q = Number(r.qty);
       qty += q;
       deltas.push({ item_id: r.item_id, location: from, delta: -q, lot: r.lot || null });
       deltas.push({ item_id: r.item_id, location: to, delta: q, lot: r.lot || null });
+      if (r.expires_on) keptExp.push({ item_id: r.item_id, lot: r.lot || "", expiresOn: String(r.expires_on).slice(0, 10) });
     });
     const name = found.item ? (found.item.name || found.item.id) : itemId;
     await applyDeltas(deltas, { a: action, d: name + " lot " + (lot || "") + " " + from + " -> " + to, u: op || "", t: new Date().toISOString() });
+    await keepDestExp(keptExp, to);
     return { ok: true, moved: qty };
+  }
+  // Copy an expiration the source row already had onto a blank destination.
+  // A blank source date is left blank. An existing destination date is left alone.
+  async function keepDestExp(keptExp, to) {
+    for (const e of keptExp) {
+      if (!e || !e.expiresOn) continue;
+      const dest = cache.stock.find(r => r.item_id === e.item_id && r.location === to && (r.lot || "") === e.lot);
+      if (dest && dest.expires_on) continue;
+      if (mode === "cloud") {
+        const res = await sb.from("stock").update({ expires_on: e.expiresOn }).eq("item_id", e.item_id).eq("location", to).eq("lot", e.lot);
+        if (res && res.error) {
+          if (!rawExpiresMissing(res.error)) return { ok: false, msg: res.error.message || "expires_on" };
+          continue;
+        }
+      }
+      cache.stock.forEach(r => {
+        if (r.item_id === e.item_id && r.location === to && (r.lot || "") === e.lot && !r.expires_on) r.expires_on = e.expiresOn;
+      });
+    }
+    return { ok: true };
+  }
+  function sameHeldLot(h, opts) {
+    if (!h || h.status !== "held") return false;
+    opts = opts || {};
+    if (rawLotKey(h.lot) !== rawLotKey(opts.lot)) return false;
+    if (!opts.itemId) return !h.item_id;
+    const ids = coaIds(opts.itemId).ids;
+    if (h.item_id && !ids.has(h.item_id)) return false;
+    return !!h.item_id;
+  }
+  function stockOriginReason(reason) {
+    const s = String(reason || "");
+    return s.indexOf("Not a receipt") >= 0 || s.indexOf("Sync backfill") >= 0 || s.indexOf("Inventory sync placed") >= 0;
+  }
+  async function releaseHeldQty(opts) {
+    opts = opts || {};
+    const loc = String(opts.location || "").toUpperCase();
+    const froms = (loc === "QUARANTINE" || loc === "QA-HOLD") ? [loc] : ["QUARANTINE", "QA-HOLD"];
+    let moved = 0;
+    for (const from of froms) {
+      const res = await shiftLot(opts.itemId, from, "RECEIVING", opts.lot, opts.by || "", "Hold released");
+      moved += (res && res.moved) || 0;
+    }
+    return { ok: true, moved: moved };
+  }
+  async function patchHold(id, patch) {
+    if (!id) return { ok: false, msg: "hold_log" };
+    if (mode !== "cloud") {
+      const all = coaHoldStore();
+      all.forEach(h => { if (String(h.id) === String(id)) Object.assign(h, patch); });
+      coaHoldSave(all);
+      return { ok: true };
+    }
+    const res = await sb.from("hold_log").update(patch).eq("id", id).select("*");
+    if (res && res.error) return { ok: false, msg: res.error.message || "hold_log" };
+    return { ok: true, row: res.data && res.data[0] };
+  }
+  async function ensureOpenStockHold(opts) {
+    opts = opts || {};
+    const loc = String(opts.location || "QUARANTINE").toUpperCase();
+    const reason = opts.reason || ("Stock is in " + loc + ". Not a receipt.");
+    const held = await listHeld();
+    const open = held.filter(h => sameHeldLot(h, opts) && stockOriginReason(h.hold_reason));
+    if (open.length) return open[0];
+    const row = {
+      hold_at: new Date().toISOString(),
+      held_by: String(opts.by || "").trim().slice(0, 80),
+      item_id: opts.itemId || null,
+      item_name: opts.itemName || "",
+      lot: String(opts.lot || "").trim(),
+      hold_qty: opts.qty == null || opts.qty === "" || isNaN(Number(opts.qty)) ? null : Number(opts.qty),
+      hold_reason: reason,
+      receiving_log_id: null,
+      status: "held"
+    };
+    if (mode !== "cloud") {
+      row.id = "HLD-" + Date.now().toString(36);
+      const all = coaHoldStore();
+      all.unshift(row);
+      coaHoldSave(all);
+      return row;
+    }
+    const ins = await sb.from("hold_log").insert(row).select("*");
+    if (ins && ins.error) return { ok: false, msg: ins.error.message || "hold_log" };
+    return (ins.data && ins.data[0]) || row;
+  }
+  // Quality release of a QUARANTINE or QA-HOLD stock row. Writes hold_log
+  // (the audit trigger records it) and moves a release to RECEIVING.
+  // Does not create a receiving_log row and does not invent an expiration.
+  async function settleStockHold(opts) {
+    opts = opts || {};
+    const by = String(opts.by || "").trim();
+    if (!by) return { ok: false, msg: "Your name is required" };
+    const disp = opts.disposition || "released";
+    const note = coaNoteTrim(opts.note);
+    if (disp === "other" && !note) return { ok: false, msg: "Note is required" };
+    const loc = String(opts.location || "QUARANTINE").toUpperCase();
+    let hold = null;
+    if (opts.holdId && String(opts.holdId).indexOf("stk:") !== 0) {
+      const held = await listHeld();
+      hold = held.find(h => String(h.id) === String(opts.holdId)) || null;
+    }
+    if (!hold) {
+      hold = await ensureOpenStockHold({
+        itemId: opts.itemId,
+        itemName: opts.itemName,
+        lot: opts.lot,
+        qty: opts.qty,
+        location: loc,
+        by: by,
+        reason: opts.reason || ("Stock is in " + loc + ". Not a receipt.")
+      });
+      if (hold && hold.ok === false) return hold;
+    }
+    const now = new Date().toISOString();
+    const patch = {
+      status: disp,
+      disposition: disp,
+      disposition_at: now,
+      disposition_note: disp === "released" && (!note || note.toLowerCase() === "quality released") ? "Quality released" : note,
+      disposition_by: by,
+      updated_at: now
+    };
+    const saved = await patchHold(hold.id, patch);
+    if (saved && saved.ok === false) return saved;
+    const rest = (await listHeld()).filter(h => sameHeldLot(h, opts) && stockOriginReason(h.hold_reason) && String(h.hold_reason).indexOf(loc) >= 0 && String(h.id) !== String(hold.id));
+    for (const h of rest) {
+      const again = await patchHold(h.id, patch);
+      if (again && again.ok === false) return again;
+    }
+    if (disp === "released") {
+      const moved = await releaseHeldQty({ itemId: opts.itemId, lot: opts.lot, location: loc, by: by });
+      if (moved && moved.ok === false) return moved;
+    }
+    if (mode !== "cloud") local.save();
+    if (!opts.quiet) emit();
+    return { ok: true, id: hold.id, row: Object.assign({}, hold, patch) };
   }
   function coaHoldMatch(h, opts) {
     if (!h || h.status !== "held") return false;
@@ -2630,7 +2770,7 @@ window.DB = (function () {
   }
   async function listHeld() {
     if (mode !== "cloud") return coaHoldStore().filter(h => h && h.status === "held");
-    const res = await sb.from("hold_log").select("id,status,hold_reason,receiving_log_id,lot").eq("status", "held").limit(500);
+    const res = await sb.from("hold_log").select("id,status,hold_reason,receiving_log_id,lot,item_id,item_name,hold_qty").eq("status", "held").limit(2000);
     if (res && res.error) return [];
     return (res && res.data) || [];
   }
@@ -2750,15 +2890,40 @@ window.DB = (function () {
     if (!opts.quiet) emit();
     return { ok: true };
   }
+  async function closeStockOriginHolds(opts, note, by) {
+    const now = new Date().toISOString();
+    const patch = {
+      status: "released",
+      disposition: "released",
+      disposition_at: now,
+      disposition_note: note,
+      disposition_by: by || "",
+      updated_at: now
+    };
+    const loc = String((opts && opts.location) || "").toUpperCase();
+    if (loc !== "QUARANTINE" && loc !== "QA-HOLD") return [];
+    const held = await listHeld();
+    const mine = held.filter(h => sameHeldLot(h, opts) && stockOriginReason(h.hold_reason) && String(h.hold_reason || "").toUpperCase().indexOf(loc) >= 0);
+    for (const h of mine) {
+      const res = await patchHold(h.id, patch);
+      if (res && res.ok === false) return res;
+    }
+    return mine;
+  }
   // Quality release. coa_received is not changed.
+  // A QUARANTINE location moves that lot out of QUARANTINE. Other releases
+  // still move QA-HOLD only, so an expired pile of the same lot stays put.
   async function releaseRawCoa(opts) {
     opts = opts || {};
     const by = String(opts.by || "").trim();
     if (!by) return { ok: false, msg: "Your name is required" };
+    const note = coaNoteTrim(opts.note);
+    const releaseNote = !note || note.toLowerCase() === "quality released" ? "Quality released" : ("Quality released. " + note);
     if (!opts.skipHoldWrite) {
-      const note = coaNoteTrim(opts.note);
-      const closed = await closeCoaHolds(opts, !note || note.toLowerCase() === "quality released" ? "Quality released" : ("Quality released. " + note), by);
+      const closed = await closeCoaHolds(opts, releaseNote, by);
       if (closed && closed.ok === false) return closed;
+      const stockClosed = await closeStockOriginHolds(opts, releaseNote, by);
+      if (stockClosed && stockClosed.ok === false) return stockClosed;
     }
     const still = (await listHeld()).some(h => opts.lot && rawLotKey(h.lot) === rawLotKey(opts.lot) && h.status === "held");
     if (!still && opts.recvId && !opts.skipHoldWrite) {
@@ -2773,8 +2938,12 @@ window.DB = (function () {
       coaBy: (priorLog && priorLog.coa_by) || (priorStock && priorStock.coa_by) || "",
       coaAt: (priorLog && priorLog.coa_at) || (priorStock && priorStock.coa_at) || null
     };
+    const asked = String(opts.location || "").toUpperCase();
     if (!still) {
-      try { await shiftLot(opts.itemId, "QA-HOLD", "RECEIVING", opts.lot, by, "QA Hold released"); }
+      try {
+        if (asked === "QUARANTINE") await shiftLot(opts.itemId, "QUARANTINE", "RECEIVING", opts.lot, by, "QA Hold released");
+        else await shiftLot(opts.itemId, "QA-HOLD", "RECEIVING", opts.lot, by, "QA Hold released");
+      }
       catch (e) { return { ok: false, msg: String(e && e.message || e) }; }
     }
     const loc = still ? (opts.location || "QA-HOLD") : "RECEIVING";
@@ -2822,7 +2991,7 @@ window.DB = (function () {
     pallets, palletByLpn, mintPallet, putawayPallet, pickPallet, newLpn, isLpn,
     shippingLog, addShipping, setShippingStatus, updateShipping, deleteShipping,
     receivingLog, addReceivingLog, updateReceivingLog, deleteReceivingLog, setRawExpires,
-    setRawCoa, placeRawCoaHold, clearRawCoaHold, releaseRawCoa,
+    setRawCoa, placeRawCoaHold, clearRawCoaHold, releaseRawCoa, releaseHeldQty, settleStockHold,
     improvements, addImprovement, updateImprovement, setImprovementStatus, deleteImprovement,
     maintenance, addMaintenance, updateMaintenance, setMaintenanceStatus, deleteMaintenance,
     fulfillmentDaily, saveFulfillmentDaily, deleteFulfillmentDaily,

@@ -84,6 +84,13 @@ var sharedHit = rc.resolveCoa({ item_id: "SEAS-PEP", lot: "J1926", qty: 12, coa_
 assert(sharedHit.received === "no" && sharedHit.recvId === "pep", "a shared lot does not take the other item COA");
 assert(rc.linesFor(bag, [{ item_id: "B4-S03", location: "QA-HOLD", lot: "F", qty: 4, coa_received: "no" }], []).length === 0, "no finished-goods lines");
 assert(rc.linesFor(maltoSeed, stock, recv).length === 1 && rc.linesFor(maltoSeed, stock, recv)[0].onHold, "floor line shows the hold");
+var jal = { id: "TMP-SEAS-BCJALAP", code: "TMP-SEAS-BCJALAP", category: "SEASONING", name: "Bacon Type Jalapeno Popper" };
+var quar = [{ item_id: "TMP-SEAS-BCJALAP", location: "QUARANTINE", lot: "#2-160510", qty: 1000, coa_received: "" }];
+var quarLine = rc.linesFor(jal, quar, []);
+assert(quarLine.length === 1 && quarLine[0].onHold && quarLine[0].loc === "QUARANTINE", "blank coa quarantine still shows");
+var rel = rc.releaseHtml({ coa_received: "", item_id: jal.id, lot: "#2-160510" }, jal.id, "#2-160510", "QUARANTINE");
+assert(rel.indexOf("Quality release") >= 0, "quality release renders without a COA answer");
+assert(rc.releaseHtml({ coa_received: "yes", item_id: jal.id }, jal.id, "L", "RECEIVING") === "", "good stock has no release button");
 
 var src = read("raw-coa.js");
 var db = read("db.js");
@@ -106,13 +113,13 @@ assert(db.indexOf('from: "RECEIVING", to: "QA-HOLD"') < 0, "move is not hardcode
 assert(db.indexOf('"QA-HOLD"') >= 0 && db.indexOf("hold_log") >= 0, "uses QA-HOLD and the hold log");
 assert(db.indexOf("fn_apply_delta") >= 0, "stock moves stay on the existing delta helper");
 assert(src.indexOf("fn_apply_delta") < 0, "ui module does not call the delta rpc");
-assert(sw.indexOf('const CACHE = "smackin-inv-v303"') >= 0 && sw.indexOf("./raw-coa.js") >= 0, "cache and asset");
-assert(html.indexOf("raw-coa.js?b=5") >= 0, "script bust");
+assert(sw.indexOf('const CACHE = "smackin-inv-v304"') >= 0 && sw.indexOf("./raw-coa.js") >= 0, "cache and asset");
+assert(html.indexOf("raw-coa.js?b=6") >= 0, "script bust");
 assert(html.indexOf("coa-docs.js?b=2") >= 0, "coa docs script");
-assert(html.indexOf('var EMBEDDED = "smackin-inv-v303"') >= 0, "embedded build");
-assert(read("build-id.txt").trim() === "smackin-inv-v303", "build id");
-assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v303"') >= 0, "escape build");
-assert(html.indexOf("db.js?b=104") >= 0, "db bust");
+assert(html.indexOf('var EMBEDDED = "smackin-inv-v304"') >= 0, "embedded build");
+assert(read("build-id.txt").trim() === "smackin-inv-v304", "build id");
+assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v304"') >= 0, "escape build");
+assert(html.indexOf("db.js?b=105") >= 0, "db bust");
 assert(read("receiving-sop.js").indexOf("afterHoldLogReleased") >= 0, "hold log release notifies COA");
 
 if (failed) {

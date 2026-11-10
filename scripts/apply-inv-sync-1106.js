@@ -137,6 +137,30 @@ async function writeAction(a) {
     });
   }
 }
+async function ensureQuarantineHold(a, items) {
+  if (typeof plan.holdSpecForAction !== "function") return;
+  var spec = plan.holdSpecForAction(a, plan.findItem(items, a.item));
+  if (!spec) return;
+  var existing = await rest("/rest/v1/hold_log?status=eq.held&item_id=eq." + enc(spec.item_id) + "&select=id,lot&limit=100", { headers: headers(), cache: "no-store" });
+  var key = plan.lotKey(spec.lot);
+  var hit = (existing || []).some(function (h) { return plan.lotKey(h.lot) === key; });
+  if (hit) return;
+  await rest("/rest/v1/hold_log", {
+    method: "POST",
+    headers: headers({ Prefer: "return=minimal" }),
+    body: JSON.stringify({
+      hold_at: new Date().toISOString(),
+      held_by: spec.held_by,
+      item_id: spec.item_id,
+      item_name: spec.item_name,
+      lot: spec.lot,
+      hold_qty: spec.hold_qty,
+      hold_reason: spec.hold_reason,
+      receiving_log_id: null,
+      status: "held"
+    })
+  });
+}
 
 async function main() {
   var latest = JSON.parse(fs.readFileSync(path.join(root, "data", "adriana-latest.json"), "utf8"));
@@ -172,6 +196,7 @@ async function main() {
   var steps = creates.concat(deletes, updates, inserts);
   for (var i = 0; i < steps.length; i++) {
     await writeAction(steps[i]);
+    await ensureQuarantineHold(steps[i], items);
     if (i % 25 === 0) console.log("wrote " + (i + 1) + "/" + steps.length);
   }
   var touched = {};
