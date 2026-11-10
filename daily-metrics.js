@@ -16,17 +16,26 @@
   var DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   var MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-  var METRICS = [
-    { id: "pmac", label: "P-Mac packages", source: "pmac_history.total_pkgs" },
-    { id: "boxes", label: "P-Mac boxes", source: "pmac_history.box_count" },
-    { id: "counter", label: "Retail counter bags", source: "production_days (counter end minus start)" },
-    { id: "cases", label: "Cases", source: "production_pallets.cases" },
+  var RETAIL = [
+    { id: "cases", label: "Retail cases", source: "production_pallets.cases where channel is retail, excluding MINI BUCKETS" },
+    { id: "mini", label: "Mini buckets", source: "production_pallets.cases where notes are MINI BUCKETS" },
+    { id: "counter", label: "Metal detector boxes", source: "production_days counter_end minus counter_start" }
+  ];
+  var ECOM = [
     { id: "ecom", label: "E-com labels", source: "fulfillment_daily.ecom_total" },
-    { id: "amazon", label: "Amazon bags", source: "fulfillment_daily.amazon_bags" },
+    { id: "amazon", label: "Amazon bags", source: "fulfillment_daily.amazon_bags" }
+  ];
+  var MFG = [
+    { id: "pmac", label: "P-Mac packages", source: "pmac_history.total_pkgs" },
+    { id: "boxes", label: "P-Mac boxes", source: "pmac_history.box_count" }
+  ];
+  var LOGISTICS = [
     { id: "ship", label: "Shipments", source: "shipping_log rows by ship_date" },
     { id: "recv", label: "Receipts", source: "receiving_log rows by recv_date" },
     { id: "quality", label: "Quality checks", source: "quality_logs" }
   ];
+  var METRICS = RETAIL.concat(ECOM, MFG, LOGISTICS);
+  var DAY_METRICS = RETAIL.concat(ECOM, MFG);
 
   function pad(n) { n = String(n); return n.length < 2 ? "0" + n : n; }
   function ymd(v) { return String(v || "").slice(0, 10); }
@@ -153,6 +162,32 @@
     });
     return map;
   }
+  function noteCat(notes) {
+    var n = String(notes || "").replace(/\s+/g, " ").trim().toUpperCase();
+    if (n === "MINI BUCKETS" || n === "MINI BUCKET") return "mini";
+    if (n === "TARGET") return "TARGET";
+    if (n === "KROGER") return "KROGER";
+    if (n === "MASTER") return "MASTER";
+    return "Other";
+  }
+  function indexRetail(rows) {
+    var map = {};
+    (rows || []).forEach(function (r) {
+      var channel = String(r.channel || "retail").toLowerCase();
+      if (channel !== "retail") return;
+      var d = ymd(r.prod_date);
+      if (!d) return;
+      if (!map[d]) map[d] = { cases: 0, mini: 0, anyCases: false, anyMini: false, cats: { TARGET: 0, KROGER: 0, MASTER: 0, Other: 0 }, rows: [] };
+      var v = num(r.cases);
+      var cat = noteCat(r.notes);
+      if (v != null) {
+        if (cat === "mini") { map[d].mini += v; map[d].anyMini = true; }
+        else { map[d].cases += v; map[d].anyCases = true; map[d].cats[cat] += v; }
+      }
+      map[d].rows.push(r);
+    });
+    return map;
+  }
   function indexSum(rows, dateField, valueField) {
     var map = {};
     (rows || []).forEach(function (r) {
@@ -220,6 +255,21 @@
     if (!row || !row.has) return { kind: "none", notes: row ? row.notes : "" };
     return { kind: "value", n: row.n, notes: row.notes || "" };
   }
+  function caseStatus(iso, map, today, failed) {
+    if (failed) return { kind: "error" };
+    if (iso > today) return { kind: "later" };
+    var row = map[iso];
+    if (!row || (!row.anyCases && !row.anyMini)) return { kind: "none" };
+    if (row.anyCases) return { kind: "value", n: row.cases, mini: row.anyMini ? row.mini : 0, cats: row.cats, rows: row.rows };
+    return { kind: "mb", n: row.mini, rows: row.rows };
+  }
+  function miniStatus(iso, map, today, failed) {
+    if (failed) return { kind: "error" };
+    if (iso > today) return { kind: "later" };
+    var row = map[iso];
+    if (!row || !row.anyMini) return { kind: "none" };
+    return { kind: "value", n: row.mini, rows: row.rows };
+  }
   function sumStatus(iso, map, today, failed) {
     if (failed) return { kind: "error" };
     if (iso > today) return { kind: "later" };
@@ -278,6 +328,8 @@
   }
   function cellText(s) {
     if (!s || s.kind === "none") return "No data";
+    if (s.kind === "mb") return fmt(s.n) + " MB";
+    if (s.kind === "value" && s.mini) return fmt(s.n) + " + " + fmt(s.mini) + " MB";
     if (s.kind === "value") return fmt(s.n);
     if (s.kind === "missing") return "Missing";
     if (s.kind === "pending") return "Not in yet";
@@ -303,7 +355,8 @@
       pmac: pmacField(iso, raw.pmac, today, holidays, "pkgs", err.pmac),
       boxes: pmacField(iso, raw.pmac, today, holidays, "boxes", err.pmac),
       counter: counterStatus(iso, raw.counter, today, err.counter),
-      cases: sumStatus(iso, raw.cases, today, err.cases),
+      cases: caseStatus(iso, raw.cases, today, err.cases),
+      mini: miniStatus(iso, raw.cases, today, err.cases),
       ecom: flagStatus(iso, raw.fulfill, today, err.fulfill, "anyEcom"),
       amazon: flagStatus(iso, raw.fulfill, today, err.fulfill, "anyAmz"),
       ship: countStatus(iso, raw.ship, today, err.ship),
@@ -344,7 +397,7 @@
       errors: input.errors || {},
       pmac: indexPmac(input.pmac),
       counter: indexCounter(input.counter),
-      cases: indexSum(input.pallets, "prod_date", "cases"),
+      cases: indexRetail(input.pallets),
       fulfill: indexFulfill(input.fulfill),
       ship: indexCount(input.ship, "ship_date"),
       recv: indexCount(input.recv, "recv_date"),
@@ -528,7 +581,7 @@
       ".dm-kpi.miss .n{font-size:18px;color:#9a3412}",
       ".dm-banner{background:#fff6e9;border:1px solid #f0d7a8;color:#7a4d05;border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700;margin:0 0 12px}",
       ".dm-charts{display:grid;grid-template-columns:1fr;gap:12px}",
-      "@media(min-width:860px){.dm-charts.two{grid-template-columns:1.2fr .8fr}}",
+      "@media(min-width:860px){.dm-charts.two{grid-template-columns:1fr 1fr}}",
       ".dm-panel{background:#f7fafc;border:1px solid var(--line);border-radius:10px;padding:10px 10px 6px}",
       ".dm-panel h3{margin:0 0 4px;font-size:13px;color:var(--navy)}",
       ".dm-svg{width:100%;height:auto;display:block}",
@@ -541,6 +594,7 @@
       ".dm-date input{width:100%}",
       ".dm-flag{font-weight:800}",
       "td.dm-miss{background:#fff6e9;color:#9a3412;font-weight:800}",
+      "td.dm-mb{color:#9a3412;font-weight:800}",
       "td.dm-pend{background:#e7f2fb;color:#04223b;font-weight:800}",
       "td.dm-none{color:#8b97a3}",
       "td.dm-off{color:#9aa6b2}",
@@ -571,10 +625,27 @@
       '<div class="l">' + esc(metric.label) + '</div>' +
       '<div class="s">' + esc(sub) + (cmp ? "<br>" + esc(cmp) : "") + "</div></div>";
   }
-  function tiles(rolls, priorRolls) {
-    return '<div class="dm-kpis">' + METRICS.map(function (m) {
+  function tiles(list, rolls, priorRolls) {
+    return '<div class="dm-kpis">' + list.map(function (m) {
       return tile(m, rolls[m.id], priorRolls ? priorRolls[m.id] : null);
-    }).join("") + '</div>';
+    }).join("") + "</div>";
+  }
+  function catLine(cells) {
+    var cats = { TARGET: 0, KROGER: 0, MASTER: 0, Other: 0 };
+    var any = false;
+    (cells || []).forEach(function (c) {
+      var s = c.cases;
+      if (!s || !s.cats) return;
+      Object.keys(cats).forEach(function (k) {
+        if (s.cats[k]) { cats[k] += s.cats[k]; any = true; }
+      });
+    });
+    if (!any) return "";
+    var bits = [];
+    ["TARGET", "KROGER", "MASTER", "Other"].forEach(function (k) {
+      if (cats[k]) bits.push(k + " " + fmt(cats[k]));
+    });
+    return '<p class="hint" style="margin-top:0">Retail cases by note: ' + esc(bits.join(", ")) + ". Mini buckets are not in that split.</p>";
   }
   function banner(cells) {
     var missing = [];
@@ -591,6 +662,7 @@
   }
   function cellClass(s) {
     if (!s) return "dm-none";
+    if (s.kind === "mb") return "dm-mb";
     if (s.kind === "missing") return "dm-miss";
     if (s.kind === "pending") return "dm-pend";
     if (s.kind === "off" || s.kind === "later") return "dm-off";
@@ -598,9 +670,9 @@
     return "";
   }
   function dayTable(cells) {
-    var head = "<th>Date</th>" + METRICS.map(function (m) { return '<th class="right">' + esc(m.label) + "</th>"; }).join("");
+    var head = "<th>Date</th>" + DAY_METRICS.map(function (m) { return '<th class="right">' + esc(m.label) + "</th>"; }).join("");
     var body = cells.map(function (c) {
-      var tds = METRICS.map(function (m) {
+      var tds = DAY_METRICS.map(function (m) {
         var s = c[m.id];
         return '<td class="right ' + cellClass(s) + '">' + esc(cellText(s)) + "</td>";
       }).join("");
@@ -629,8 +701,9 @@
         return st && st.kind === "value" && st.n;
       });
     });
-    if (!active.length && !anyMark) return '<p class="muted">No data in this range.</p>';
-    if (active.length && !anyAbove && !anyMark) return '<p class="muted">Logged, and every logged day is 0. Nothing above zero to chart.</p>';
+    var anyMb = !!opts.mb && cells.some(function (c) { return c.cases && c.cases.kind === "mb"; });
+    if (!active.length && !anyMark && !anyMb) return '<p class="muted">No data in this range.</p>';
+    if (active.length && !anyAbove && !anyMark && !anyMb) return '<p class="muted">Logged, and every logged day is 0. Nothing above zero to chart.</p>';
     var W = 760, H = 220, padL = 48, padR = 10, padT = 14, padB = 34;
     var plotW = W - padL - padR, plotH = H - padT - padB;
     var n = Math.max(dates.length, 1);
@@ -654,7 +727,7 @@
     } else {
       var base = padT + plotH;
       svg += '<line x1="' + padL + '" y1="' + base.toFixed(1) + '" x2="' + (W - padR) + '" y2="' + base.toFixed(1) + '" stroke="#e6edf4"/>';
-      svg += '<text x="' + (padL + 8) + '" y="' + (padT + 14) + '" font-size="12" fill="#8a5a12">No amounts logged in this range</text>';
+      svg += '<text x="' + (padL + 8) + '" y="' + (padT + 14) + '" font-size="12" fill="#8a5a12">' + (anyMb ? "Mini buckets are labeled MB and are not on this scale" : "No amounts logged in this range") + "</text>";
     }
     svg += '<defs><pattern id="dmh-' + id + '" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#E08A1E" stroke-width="2"/></pattern></defs>';
     var bw = active.length ? Math.max(4, Math.min(16, (slot * 0.72) / active.length)) : 8;
@@ -672,6 +745,9 @@
         var x = x0 + (slot - bw * active.length) / 2 + si * bw;
         svg += '<rect x="' + x.toFixed(1) + '" y="' + (padT + plotH - h).toFixed(1) + '" width="' + Math.max(bw - 1, 2).toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + s.color + '" rx="1.5"><title>' + esc(s.name + " " + pretty(c.d) + ": " + fmt(st.n)) + "</title></rect>";
       });
+      if (opts.mb && c.cases && c.cases.kind === "mb") {
+        svg += '<text x="' + (x0 + slot / 2).toFixed(1) + '" y="' + (padT + plotH - 8).toFixed(1) + '" text-anchor="middle" font-size="9" font-weight="700" fill="#9a3412">' + esc(fmt(c.cases.n)) + " MB</text>";
+      }
       var label = n > 16 ? String(parseISO(c.d).d) : (DOW[dow(c.d)].slice(0, 1) + " " + parseISO(c.d).d);
       if (n <= 16 || i % 2 === 0) {
         svg += '<text x="' + (x0 + slot / 2).toFixed(1) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="10" fill="#6E7C8A">' + esc(label) + "</text>";
@@ -736,35 +812,48 @@
     return line;
   }
 
-  function overview(model) {
+  function periodBody(model, pack, chartCells, prior, ids) {
+    var retailSeries = [{ key: "cases", name: "Retail cases", color: "#00A341" }];
+    var ecomSeries = [{ key: "ecom", name: "E-com labels", color: "#F26B21" }];
     var pmacSeries = [{ key: "pmac", name: "P-Mac packages", color: "#04223B" }];
-    var mixSeries = [
-      { key: "ecom", name: "E-com labels", color: "#F26B21" },
-      { key: "counter", name: "Retail counter", color: "#006DB6" }
-    ];
-    var caseSeries = [{ key: "cases", name: "Cases", color: "#00A341" }];
+    return '<h2 class="sub2">Retail</h2>' +
+      '<p class="hint" style="margin-top:0">Retail cases are pallet cases (TARGET, KROGER, MASTER, and other notes). MINI BUCKETS stay out of that total because the unit may not be a case.</p>' +
+      tiles(RETAIL, pack.rolls, prior) + catLine(pack.cells) +
+      '<h2 class="sub2">E-com</h2>' +
+      tiles(ECOM, pack.rolls, prior) +
+      '<h2 class="sub2">Manufacturing</h2>' +
+      tiles(MFG, pack.rolls, prior) +
+      banner(pack.cells) +
+      '<div class="dm-charts two"><div class="dm-panel"><h3>Retail cases by day</h3>' + chart(chartCells, retailSeries, { id: ids.retail, mb: true, label: "Retail cases" }) + '</div>' +
+      '<div class="dm-panel"><h3>E-com labels by day</h3>' + chart(chartCells, ecomSeries, { id: ids.ecom, label: "E-com labels" }) + "</div></div>" +
+      '<div class="dm-panel" style="margin-top:12px"><h3>P-Mac packages by day</h3>' + chart(chartCells, pmacSeries, { id: ids.pmac, missing: true, label: "P-Mac packages" }) + "</div>";
+  }
+  function logistics(model) {
+    var ship = model.asof && model.asof.ship;
+    var stale = ship && model.monthFrom && ship < model.monthFrom;
+    var note = "Shipments, receipts, and quality checks are not part of the retail or e-com totals.";
+    if (stale) note += " The shipping log is stale. Last ship date is " + pretty(ship) + ". An empty month means no new rows, not zero shipments.";
+    else if (ship) note += " Last ship date is " + pretty(ship) + ".";
+    return '<div class="card"><h2>Logistics</h2><p class="hint">' + esc(note) + "</p>" +
+      "<h2 class=\"sub2\">This week</h2>" + tiles(LOGISTICS, model.week.rolls, model.priorWeek.rolls) +
+      "<h2 class=\"sub2\">This month</h2>" + tiles(LOGISTICS, model.month.rolls, model.priorMonth.rolls) + "</div>";
+  }
+  function overview(model) {
     return '<div id="dm-root">' +
       '<div class="card"><div class="suprow"><h2 style="margin:0;flex:1">Daily Metrics</h2>' +
       '<div class="dm-date"><input id="dm-date" type="date" min="' + esc(model.windowFrom) + '" max="' + esc(model.today) + '" aria-label="Open one day" onchange="DAILYMETRICS.openDay(this.value)"></div>' +
       '<button type="button" class="ghost sm" onclick="DAILYMETRICS.reload()">Refresh</button></div>' +
-      '<p class="hint">Opens on this week and this month. Pick a date to open one day. No data means there is no row. A past weekday with no P-Mac row is marked Missing and is not counted as zero. Today in Denver is ' + esc(pretty(model.today)) + ".</p>" +
+      '<p class="hint">Retail, e-com, and manufacturing, for this week and this month. Pick a date to open one day. No data means there is no row. A past weekday with no P-Mac row is marked Missing and is not counted as zero. Mini buckets are labeled MB and are not added to retail cases. Today in Denver is ' + esc(pretty(model.today)) + ".</p>" +
       asofChips(model) + "</div>" +
-      '<div class="card"><h2>This week</h2><p class="hint">' + esc(rangeLine("Totals use", model.week.dates[0], model.today, model.priorWeekFrom, model.priorWeekTo)) + " The chart shows the full week, including days still ahead.</p>" +
-      tiles(model.week.rolls, model.priorWeek.rolls) +
-      banner(model.week.cells) +
-      '<div class="dm-charts two"><div class="dm-panel"><h3>P-Mac packages by day</h3>' + chart(model.weekChart, pmacSeries, { id: "wp", missing: true, label: "P-Mac packages this week" }) + '</div>' +
-      '<div class="dm-panel"><h3>E-com labels and retail counter by day</h3>' + chart(model.weekChart, mixSeries, { id: "wm", label: "E-com and retail counter this week" }) + "</div></div>" +
-      '<div class="dm-panel" style="margin-top:12px"><h3>Cases by day</h3>' + chart(model.weekChart, caseSeries, { id: "wc", label: "Cases this week" }) + "</div>" +
+      '<div class="card"><h2>This week</h2><p class="hint">' + esc(rangeLine("Totals use", model.week.dates[0], model.today, model.priorWeekFrom, model.priorWeekTo)) + " Retail and e-com charts each have their own scale. The charts show the full week, including days still ahead.</p>" +
+      periodBody(model, model.week, model.weekChart, model.priorWeek.rolls, { retail: "wr", ecom: "we", pmac: "wp" }) +
       '<h2 class="sub2" style="margin-top:16px">Week by day</h2>' + dayTable(model.weekChart) + "</div>" +
       '<div class="card"><h2>This month</h2><p class="hint">' + esc(rangeLine("Month to date", model.monthFrom, model.today, model.priorMonthFrom, model.priorMonthTo)) + "</p>" +
-      tiles(model.month.rolls, model.priorMonth.rolls) +
-      banner(model.month.cells) +
-      '<div class="dm-panel"><h3>P-Mac packages, month to date</h3>' + chart(model.month.cells, pmacSeries, { id: "mp", missing: true, label: "P-Mac packages this month" }) + "</div>" +
-      '<div class="dm-charts two" style="margin-top:12px"><div class="dm-panel"><h3>E-com labels and retail counter</h3>' + chart(model.month.cells, mixSeries, { id: "mm", label: "E-com and retail counter this month" }) + '</div>' +
-      '<div class="dm-panel"><h3>Cases</h3>' + chart(model.month.cells, caseSeries, { id: "mc", label: "Cases this month" }) + "</div></div>" +
+      periodBody(model, model.month, model.month.cells, model.priorMonth.rolls, { retail: "mr", ecom: "me", pmac: "mp" }) +
       '<h2 class="sub2" style="margin-top:16px">Week by week, P-Mac packages</h2><p class="hint">Each bar is only the days in that week that fall inside this month. A hatched bar is not a zero.</p>' + weekBars(model) +
       '<h2 class="sub2" style="margin-top:16px">Month by day</h2>' + dayTable(model.month.cells) + "</div>" +
-      '<div class="card">' + footnote(model) + '<p class="hint">Sources: P-Mac packages and boxes from pmac_history (department P-Mac only). Retail counter bags from production_days when both counter readings are filled in. Cases from production_pallets. E-com labels and Amazon bags from fulfillment_daily. Shipments from shipping_log. Receipts from receiving_log. Quality checks from quality_logs.</p></div>' +
+      logistics(model) +
+      '<div class="card">' + footnote(model) + '<p class="hint">Retail cases are production_pallets.cases for channel retail, split by the notes category. MINI BUCKETS are not included in retail cases. Metal detector boxes are production_days counter end minus counter start. E-com labels and Amazon bags are fulfillment_daily. P-Mac packages and boxes are pmac_history. Shipments, receipts, and quality stay in Logistics.</p></div>' +
       "</div>";
   }
 
@@ -792,7 +881,7 @@
     if (palletRows.length) {
       palletTable = '<h2 class="sub2">Pallets</h2><div class="tblwrap"><table><thead><tr><th>Line</th><th>Flavor</th><th class="right">Cases</th><th>Notes</th></tr></thead><tbody>' +
         palletRows.map(function (r) {
-          return "<tr><td>" + esc(r.line || "") + "</td><td>" + esc(r.flavor_code || "") + '</td><td class="right">' + esc(num(r.cases) == null ? "No data" : fmt(num(r.cases))) + "</td><td>" + esc(r.notes || "") + "</td></tr>";
+          return "<tr><td>" + esc(r.line || "") + "</td><td>" + esc(r.flavor_code || "") + '</td><td class="right">' + esc(num(r.cases) == null ? "No data" : (noteCat(r.notes) === "mini" ? fmt(num(r.cases)) + " MB" : fmt(num(r.cases)))) + "</td><td>" + esc(r.notes || "") + (noteCat(r.notes) === "mini" ? " (mini buckets, not cases)" : "") + "</td></tr>";
         }).join("") + "</tbody></table></div>";
     }
     var notes = "";
@@ -800,8 +889,11 @@
     if (fulfill && (fulfill.notes || fulfill.by)) notes += "<p class=\"hint\"><b>Fulfillment.</b> " + esc(fulfill.by ? ("Entered by " + fulfill.by + ". ") : "") + esc(fulfill.notes || "") + "</p>";
     return '<div id="dm-root"><div class="card"><div class="suprow"><h2 style="margin:0;flex:1">' + esc(pretty(iso)) + '</h2>' +
       '<button type="button" class="ghost sm" onclick="DAILYMETRICS.showOverview()">Back to week and month</button></div>' +
-      '<p class="hint">One day. No data means that feed has no row for this date.</p>' +
-      tiles(rolls, null) + runTable + palletTable + notes + "</div></div>";
+      '<p class="hint">One day. Retail, e-com, and manufacturing stay separate. No data means that feed has no row for this date.</p>' +
+      '<h2 class="sub2">Retail</h2>' + tiles(RETAIL, rolls, null) +
+      '<h2 class="sub2">E-com</h2>' + tiles(ECOM, rolls, null) +
+      '<h2 class="sub2">Manufacturing</h2>' + tiles(MFG, rolls, null) +
+      '<h2 class="sub2">Logistics</h2>' + tiles(LOGISTICS, rolls, null) + runTable + palletTable + notes + "</div></div>";
   }
 
   function markup() {
@@ -884,6 +976,7 @@
     rollup: rollup,
     compareNote: compareNote,
     cellText: cellText,
+    noteCat: noteCat,
     pretty: pretty,
     METRICS: METRICS,
     html: function (model, mode, day) {
