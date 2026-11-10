@@ -1,7 +1,6 @@
 // Shipping provider poll. Server-side only.
 // Secrets: SHIPSTATION_API_KEY, SHIPSTATION_API_SECRET.
-// Provider: SHIPPING_PROVIDER. Today the default is xpo,worldwide.
-// easypost is a stub for the later swap. shipstation and globalship stay selectable.
+// Provider: SHIPPING_PROVIDER=shipstation (default) or globalship (stub).
 // Writes normalized rows to shipping_log. Cursor and last run live in kv_status.
 // The browser never receives the API key or secret.
 var PUBLISHABLE = "sb_publishable_KlPxfCQUmxbIAVc2p_M5Lw_ligy0COY";
@@ -93,14 +92,51 @@ async function setKv(key, obj) {
   });
 }
 function pad(n) { return (n < 10 ? "0" : "") + n; }
-function ssStamp(input) {
-  var d = input instanceof Date ? input : new Date(input);
-  if (isNaN(d.getTime())) d = new Date(Date.now() - FIRST_LOOKBACK_MS);
+// ShipStation v1 date filters are naive timestamps in the store's account
+// timezone. Smackin shipment createDates line up with America/Denver wall
+// time (weekday mornings around 7:30-8:00). A UTC ISO cursor formatted with
+// getUTC* looks like a future local time, so /shipments returns 0 rows.
+function isNaiveSsDate(s) {
+  s = String(s || "");
+  return /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}/.test(s) && s.indexOf("Z") < 0 && !/[+-]\d{2}:?\d{2}$/.test(s);
+}
+function naiveFromParts(d) {
   return d.getUTCFullYear() + "-" + pad(d.getUTCMonth() + 1) + "-" + pad(d.getUTCDate()) +
     " " + pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()) + ":" + pad(d.getUTCSeconds());
 }
+function denverStamp(d) {
+  var parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Denver",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(d);
+  var get = function (type) {
+    var hit = parts.filter(function (p) { return p.type === type; })[0];
+    return hit ? hit.value : "00";
+  };
+  return get("year") + "-" + get("month") + "-" + get("day") + " " + get("hour") + ":" + get("minute") + ":" + get("second");
+}
+function ssStamp(input) {
+  if (typeof input === "string" && isNaiveSsDate(input)) {
+    return input.slice(0, 19).replace("T", " ");
+  }
+  var d = input instanceof Date ? input : new Date(input);
+  if (isNaN(d.getTime())) d = new Date(Date.now() - FIRST_LOOKBACK_MS);
+  return denverStamp(d);
+}
 function sinceOf(cursorIso) {
   if (!cursorIso) return new Date(Date.now() - FIRST_LOOKBACK_MS);
+  if (isNaiveSsDate(cursorIso)) {
+    var naive = cursorIso.slice(0, 19).replace("T", " ").replace(" ", "T") + "Z";
+    var tNaive = Date.parse(naive);
+    if (isNaN(tNaive)) return new Date(Date.now() - FIRST_LOOKBACK_MS);
+    return naiveFromParts(new Date(tNaive - OVERLAP_MS));
+  }
   var t = Date.parse(cursorIso);
   if (isNaN(t)) return new Date(Date.now() - FIRST_LOOKBACK_MS);
   return new Date(t - OVERLAP_MS);
@@ -226,12 +262,34 @@ function maxTime(rows, fields) {
   });
   return max;
 }
-function advance(prev, maxMs, complete) {
-  if (complete) return new Date().toISOString();
-  if (!maxMs) return prev || "";
-  var next = new Date(maxMs).toISOString();
-  if (prev && Date.parse(next) <= Date.parse(prev)) return new Date(Date.parse(prev) + 1000).toISOString();
-  return next;
+function advance(prev, maxRaw, complete) {
+  // Never jump the cursor to Date.toISOString(). That UTC stamp is sent to
+  // ShipStation as a naive local time and skips every later shipment.
+  if (maxRaw) {
+    var next = isNaiveSsDate(maxRaw) ? String(maxRaw) : new Date(maxRaw).toISOString();
+    if (prev && !isNaiveSsDate(next) && !isNaiveSsDate(prev) && Date.parse(next) <= Date.parse(prev)) {
+      return new Date(Date.parse(prev) + 1000).toISOString();
+    }
+    return next;
+  }
+  return prev || "";
+}
+function maxRaw(rows, fields) {
+  var best = "";
+  var bestMs = 0;
+  (rows || []).forEach(function (row) {
+    fields.forEach(function (field) {
+      var raw = row && row[field];
+      if (raw == null || raw === "") return;
+      var s = String(raw);
+      var t = Date.parse(isNaiveSsDate(s) ? s.slice(0, 19).replace("T", " ").replace(" ", "T") + "Z" : s);
+      if (!isNaN(t) && t >= bestMs) {
+        bestMs = t;
+        best = s;
+      }
+    });
+  });
+  return best;
 }
 function basicAuth(key, secret) {
   return "Basic " + btoa(String(key) + ":" + String(secret));
@@ -285,7 +343,7 @@ var shipstation = {
     var key = Deno.env.get("SHIPSTATION_API_KEY") || "";
     var secret = Deno.env.get("SHIPSTATION_API_SECRET") || "";
     if (!key || !secret) {
-      return { missingSecrets: true, message: "ShipStation is not connected yet. Set SHIPSTATION_API_KEY and SHIPSTATION_API_SECRET on the shipping-sync function.", shipments: [], orders: [], complete: false };
+      return { missingSecrets: true, shipments: [], orders: [], complete: false };
     }
     var auth = basicAuth(key, secret);
     var started = Date.now();
@@ -318,9 +376,9 @@ var shipstation = {
       }).filter(Boolean),
       orders: orders.rows.map(function (row) { return normalizeOrder(row, "shipstation"); }).filter(Boolean),
       next: {
-        shipments: advance(cursor.shipments, maxTime(created.rows, ["createDate", "shipDate"]), created.complete),
-        voids: advance(cursor.voids, maxTime(voided.rows, ["voidDate", "createDate"]), voided.complete),
-        orders: advance(cursor.orders, maxTime(orders.rows, ["modifyDate", "createDate", "orderDate"]), orders.complete)
+        shipments: advance(cursor.shipments, maxRaw(created.rows, ["createDate", "shipDate"]), created.complete),
+        voids: advance(cursor.voids, maxRaw(voided.rows, ["voidDate", "createDate"]), voided.complete),
+        orders: advance(cursor.orders, maxRaw(orders.rows, ["modifyDate", "createDate", "orderDate"]), orders.complete)
       },
       complete: !!(created.complete && voided.complete && orders.complete),
       pages: { shipments: created.pages, voids: voided.pages, orders: orders.pages }
@@ -337,120 +395,11 @@ var globalship = {
   }
 };
 
-// EasyPost replaces the carrier adapters later. Same contract, no client yet.
-var easypost = {
-  id: "easypost",
-  label: "EasyPost",
-  stub: true,
-  async fetchUpdated() {
-    return { stub: true, shipments: [], orders: [], complete: true, rawShipments: [], rawOrders: [], message: "EasyPost is not connected yet." };
-  }
-};
-
-// XPO and Worldwide Express are the current carriers. The browser links tracking
-// numbers to their public pages. The pull stays inside fetchUpdated so a real
-// client can be dropped in without changing the sync loop. Until that client
-// exists, a missing key is reported and nothing is written.
-function pendingCarrier(id, label, envName) {
-  return {
-    id: id,
-    label: label,
-    stub: false,
-    async fetchUpdated() {
-      var key = String(Deno.env.get(envName) || "").trim();
-      var message = key
-        ? (label + " key is set, but the pull client is not wired yet.")
-        : (label + " is not connected yet. Set " + envName + " on the shipping-sync function.");
-      return { missingSecrets: true, message: message, shipments: [], orders: [], complete: false };
-    }
-  };
-}
-var xpo = pendingCarrier("xpo", "XPO", "XPO_API_KEY");
-var worldwide = pendingCarrier("worldwide", "Worldwide Express", "WWEX_API_KEY");
-
-var PROVIDERS = {
-  shipstation: shipstation,
-  globalship: globalship,
-  xpo: xpo,
-  worldwide: worldwide,
-  wwex: worldwide,
-  worldwideexpress: worldwide,
-  easypost: easypost
-};
-
-function resolveOne(id) {
-  var key = String(id || "").trim().toLowerCase().replace(/[^a-z0-9]/g, "");
-  if (PROVIDERS[key]) return PROVIDERS[key];
-  return { id: id || "unknown", label: id || "unknown", stub: true, unknown: true, fetchUpdated: globalship.fetchUpdated };
-}
-
-function combineProviders(list) {
-  var unknown = list.filter(function (p) { return p.unknown; });
-  if (unknown.length) return unknown[0];
-  return {
-    id: list.map(function (p) { return p.id; }).join("+"),
-    label: list.map(function (p) { return p.label; }).join(" and "),
-    stub: list.every(function (p) { return p.stub; }),
-    async fetchUpdated(cursor) {
-      var saved = (cursor && cursor.parts) || {};
-      var shipments = [];
-      var orders = [];
-      var nextParts = {};
-      var pages = {};
-      var notes = [];
-      var complete = true;
-      var anyRows = false;
-      for (var i = 0; i < list.length; i++) {
-        var adapter = list[i];
-        if (adapter.stub) {
-          notes.push(adapter.label + " is not connected yet.");
-          nextParts[adapter.id] = saved[adapter.id] || {};
-          continue;
-        }
-        var pack = await adapter.fetchUpdated(saved[adapter.id] || {});
-        nextParts[adapter.id] = pack.next || saved[adapter.id] || {};
-        if (pack.pages) pages[adapter.id] = pack.pages;
-        if (pack.message) notes.push(pack.message);
-        else if (pack.missingSecrets) notes.push(adapter.label + " is not connected yet.");
-        var got = (pack.shipments || []).concat(pack.orders || []);
-        if (got.length) anyRows = true;
-        shipments = shipments.concat(pack.shipments || []);
-        orders = orders.concat(pack.orders || []);
-        if (pack.complete === false) complete = false;
-      }
-      var message = notes.filter(Boolean).join(" ");
-      if (!anyRows && notes.length) {
-        return { missingSecrets: true, message: message, shipments: [], orders: [], complete: false, next: { parts: nextParts } };
-      }
-      return {
-        missingSecrets: false,
-        message: message,
-        shipments: shipments,
-        orders: orders,
-        next: { parts: nextParts },
-        complete: complete,
-        pages: pages,
-        rawShipments: [],
-        rawOrders: []
-      };
-    }
-  };
-}
-
 function providerOf() {
-  var raw = String(Deno.env.get("SHIPPING_PROVIDER") || "xpo,worldwide").trim().toLowerCase();
-  var ids = raw.split(/[,+|]/).map(function (s) { return s.trim(); }).filter(Boolean);
-  if (!ids.length) ids = ["xpo", "worldwide"];
-  if (ids.length === 1) return resolveOne(ids[0]);
-  var list = [];
-  var seen = {};
-  ids.forEach(function (id) {
-    var adapter = resolveOne(id);
-    if (seen[adapter.id]) return;
-    seen[adapter.id] = true;
-    list.push(adapter);
-  });
-  return combineProviders(list);
+  var id = String(Deno.env.get("SHIPPING_PROVIDER") || "shipstation").trim().toLowerCase();
+  if (id === "globalship") return globalship;
+  if (id === "shipstation") return shipstation;
+  return { id: id, label: id, stub: true, unknown: true, fetchUpdated: globalship.fetchUpdated };
 }
 
 async function rowsForMarker(markerText) {
@@ -520,19 +469,244 @@ async function writeRows(recs) {
   }
   return { written: updated + inserted, updated: updated, inserted: inserted };
 }
+
+function wantDiag(req) {
+  try {
+    var url = new URL(req.url);
+    if (url.searchParams.get("diag") === "1") return true;
+  } catch (e) { /* ignore bad URL */ }
+  return false;
+}
+function storeNames(body) {
+  var list = [];
+  if (Array.isArray(body)) list = body;
+  else if (body && Array.isArray(body.stores)) list = body.stores;
+  return list.map(function (s) {
+    return {
+      storeId: s && s.storeId != null ? s.storeId : null,
+      storeName: s && (s.storeName || s.name) || "",
+      marketplaceName: s && (s.marketplaceName || s.marketplace) || "",
+      active: s ? (s.active !== false) : null
+    };
+  }).filter(function (s) { return s.storeId != null || s.storeName; });
+}
+function countSummary(body, listKey) {
+  var rows = listRows(body, listKey);
+  var total = body && body.total != null ? Number(body.total) : rows.length;
+  var pages = body && body.pages != null ? Number(body.pages) : null;
+  var first = rows[0] || {};
+  var last = rows.length ? rows[rows.length - 1] : {};
+  return {
+    http_ok: true,
+    returned: rows.length,
+    total: isFinite(total) ? total : rows.length,
+    pages: pages,
+    first_createDate: first.createDate || first.createDateUtc || "",
+    first_shipDate: first.shipDate || "",
+    last_createDate: last.createDate || last.createDateUtc || "",
+    last_shipDate: last.shipDate || "",
+    first_modifyDate: first.modifyDate || "",
+    last_modifyDate: last.modifyDate || ""
+  };
+}
+async function ssProbe(path, params, auth) {
+  try {
+    var body = await ssGet(path, params, auth);
+    return { ok: true, body: body };
+  } catch (err) {
+    return { ok: false, error: redact(err && err.message) };
+  }
+}
+async function v2Probe(url, headers) {
+  try {
+    var res = await fetch(url, { headers: Object.assign({ Accept: "application/json" }, headers) });
+    var text = await res.text();
+    var parsed = null;
+    try { parsed = JSON.parse(text); } catch (e) { parsed = null; }
+    var labels = parsed && (parsed.labels || parsed.shipments || parsed.orders);
+    var count = Array.isArray(labels) ? labels.length : (parsed && parsed.total != null ? Number(parsed.total) : null);
+    return {
+      http: res.status,
+      ok: res.ok,
+      total: parsed && parsed.total != null ? Number(parsed.total) : count,
+      returned: Array.isArray(labels) ? labels.length : 0,
+      pages: parsed && parsed.pages != null ? Number(parsed.pages) : null,
+      error: res.ok ? "" : redact(text).slice(0, 180)
+    };
+  } catch (err) {
+    return { http: 0, ok: false, error: redact(err && err.message) };
+  }
+}
+async function runDiag() {
+  var key = "";
+  var secret = "";
+  try { key = Deno.env.get("SHIPSTATION_API_KEY") || ""; } catch (e) { key = ""; }
+  try { secret = Deno.env.get("SHIPSTATION_API_SECRET") || ""; } catch (e) { secret = ""; }
+  var providerEnv = "";
+  try { providerEnv = String(Deno.env.get("SHIPPING_PROVIDER") || ""); } catch (e) { providerEnv = ""; }
+  var anonPresent = false;
+  try { anonPresent = !!(Deno.env.get("SUPABASE_ANON_KEY") || ""); } catch (e2) { anonPresent = false; }
+  var out = {
+    ok: true,
+    diag: true,
+    wrote: false,
+    key_source: key ? "env" : "missing",
+    hardcoded_shipstation_fallback: false,
+    env: {
+      SHIPSTATION_API_KEY: !!key,
+      SHIPSTATION_API_SECRET: !!secret,
+      SHIPPING_PROVIDER: providerEnv || "(unset)",
+      SUPABASE_ANON_KEY: anonPresent,
+      hardcoded_publishable_fallback: true
+    },
+    v1: {},
+    v2: {}
+  };
+  if (!key || !secret) {
+    out.v1.error = "missing_secrets";
+    out.v2.attempted = false;
+    return out;
+  }
+  var auth = basicAuth(key, secret);
+  var since = "2026-10-24 00:00:00";
+  var created = await ssProbe("/shipments", { createDateStart: since, page: "1", pageSize: "1" }, auth);
+  var shipped = await ssProbe("/shipments", { shipDateStart: since, page: "1", pageSize: "1" }, auth);
+  var allShip = await ssProbe("/shipments", { page: "1", pageSize: "1" }, auth);
+  var orders = await ssProbe("/orders", { modifyDateStart: since, page: "1", pageSize: "1" }, auth);
+  var stores = await ssProbe("/stores", {}, auth);
+  out.v1.createDateStart_from_2026_10_24 = created.ok ? countSummary(created.body, "shipments") : { http_ok: false, error: created.error };
+  out.v1.shipDateStart_from_2026_10_24 = shipped.ok ? countSummary(shipped.body, "shipments") : { http_ok: false, error: shipped.error };
+  out.v1.all_shipments_page1 = allShip.ok ? countSummary(allShip.body, "shipments") : { http_ok: false, error: allShip.error };
+  out.v1.orders_modifyDateStart_from_2026_10_24 = orders.ok ? countSummary(orders.body, "orders") : { http_ok: false, error: orders.error };
+  out.v1.stores = stores.ok ? { http_ok: true, count: storeNames(stores.body).length, names: storeNames(stores.body) } : { http_ok: false, error: stores.error };
+  var v2start = "2026-10-24T00:00:00.000Z";
+  var v2labels = "https://api.shipstation.com/v2/labels?created_at_start=" + encodeURIComponent(v2start) + "&page_size=1";
+  var v2ship = "https://api.shipstation.com/v2/shipments?created_at_start=" + encodeURIComponent(v2start) + "&page_size=1";
+  out.v2 = {
+    attempted: true,
+    note: "Tried the current key as an API-Key header, then as key:secret. No secret values are returned.",
+    labels_api_key_only: await v2Probe(v2labels, { "API-Key": key }),
+    labels_api_key_with_secret: await v2Probe(v2labels, { "API-Key": key + ":" + secret }),
+    shipments_api_key_only: await v2Probe(v2ship, { "API-Key": key })
+  };
+  return out;
+}
+
 function cursorOf(saved, providerId) {
-  if (!saved || saved.provider !== providerId) return { shipments: "", voids: "", orders: "", parts: {} };
+  if (!saved || saved.provider !== providerId) return { shipments: "", voids: "", orders: "" };
   return {
     shipments: saved.shipments || "",
     voids: saved.voids || "",
-    orders: saved.orders || "",
-    parts: saved.parts || {}
+    orders: saved.orders || ""
+  };
+}
+
+async function writeRowsUpsertOnly(recs) {
+  var byMarker = {};
+  recs.forEach(function (rec) {
+    if (!rec || !rec.externalId) return;
+    var row = toRow(rec);
+    byMarker[row.notes] = row;
+  });
+  var rows = Object.keys(byMarker).map(function (k) { return byMarker[k]; });
+  var inserted = 0;
+  for (var n = 0; n < rows.length; n += 100) {
+    var part = rows.slice(n, n + 100);
+    await rest("shipping_log?on_conflict=id", {
+      method: "POST",
+      headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+      body: part
+    });
+    inserted += part.length;
+  }
+  return { written: inserted, upserted: inserted, inserted: inserted, updated: 0 };
+}
+
+function wantBackfill(req) {
+  try {
+    var url = new URL(req.url);
+    if (url.searchParams.get("backfill") === "1") return url.searchParams.get("from") || "2026-10-24";
+  } catch (e) { /* ignore */ }
+  return "";
+}
+
+async function runBackfill(fromDay) {
+  var key = Deno.env.get("SHIPSTATION_API_KEY") || "";
+  var secret = Deno.env.get("SHIPSTATION_API_SECRET") || "";
+  if (!key || !secret) return { ok: false, error: "missing_secrets", wrote: false };
+  var auth = basicAuth(key, secret);
+  var saved = await getKv("shipping:backfill");
+  var start = (saved && saved.createDateStart) || (String(fromDay || "2026-10-24").slice(0, 10) + " 00:00:00");
+  var started = Date.now();
+  var created = await pullList("/shipments", "shipments", {
+    createDateStart: start,
+    includeShipmentItems: "true",
+    sortBy: "CreateDate",
+    sortDir: "ASC"
+  }, auth, started);
+  var recs = (created.rows || []).map(function (row) {
+    return normalizeShipment(row, "shipstation");
+  }).filter(Boolean);
+  var wrote = await writeRowsUpsertOnly(recs);
+  var lastRaw = maxRaw(created.rows, ["createDate", "shipDate"]);
+  var nextStart = lastRaw ? ssStamp(lastRaw) : start;
+  var state = {
+    at: new Date().toISOString(),
+    from: fromDay,
+    createDateStart: nextStart,
+    last_raw: lastRaw || "",
+    fetched: recs.length,
+    pages: created.pages,
+    complete: created.complete,
+    written: wrote.written
+  };
+  await setKv("shipping:backfill", state);
+  if (created.complete && recs.length) {
+    await setKv("shipping:cursor", {
+      provider: "shipstation",
+      shipments: lastRaw || nextStart,
+      voids: lastRaw || nextStart,
+      orders: lastRaw || nextStart
+    });
+  } else if (created.complete && !recs.length && saved && saved.last_raw) {
+    await setKv("shipping:cursor", {
+      provider: "shipstation",
+      shipments: saved.last_raw,
+      voids: saved.last_raw,
+      orders: saved.last_raw
+    });
+  }
+  return {
+    ok: true,
+    backfill: true,
+    wrote: true,
+    start: start,
+    fetched: recs.length,
+    written: wrote.written,
+    complete: created.complete,
+    next: nextStart,
+    pages: created.pages
   };
 }
 
 Deno.serve(async function (req) {
   if (req.method !== "GET" && req.method !== "POST") return json({ ok: false, error: "method not allowed" }, 405);
   if (!authorized(req)) return json({ ok: false, error: "unauthorized" }, 401);
+  if (wantDiag(req)) {
+    try { return json(await runDiag()); }
+    catch (err) { return json({ ok: false, diag: true, wrote: false, error: redact(err && err.message) }, 500); }
+  }
+  var backfillFrom = wantBackfill(req);
+  if (backfillFrom) {
+    var lockBf = await getKv("shipping:lock");
+    if (lockBf && lockBf.at && Date.now() - Date.parse(lockBf.at) < LOCK_MS) return json({ ok: true, skipped: "busy" });
+    await setKv("shipping:lock", { at: new Date().toISOString() });
+    try { return json(await runBackfill(backfillFrom)); }
+    catch (err) { return json({ ok: false, backfill: true, error: redact(err && err.message) }, 500); }
+    finally {
+      try { await setKv("shipping:lock", { at: "1970-01-01T00:00:00.000Z" }); } catch (e3) { /* unlock */ }
+    }
+  }
   var provider = providerOf();
   var locked = false;
   try {
@@ -573,13 +747,17 @@ Deno.serve(async function (req) {
         ok: false,
         provider: provider.id,
         label: provider.label,
-        stub: !!pack.stub,
-        message: pack.message || (provider.label + " is not connected yet.")
+        message: "SHIPSTATION_API_KEY and SHIPSTATION_API_SECRET are not set on the shipping-sync function."
       });
-      return json({ ok: false, error: "missing_secrets", provider: provider.id, message: pack.message || "" });
+      return json({ ok: false, error: "missing_secrets" });
     }
     var wrote = await writeRows((pack.shipments || []).concat(pack.orders || []));
-    var nextCursor = Object.assign({ provider: provider.id }, pack.next || {});
+    var nextCursor = {
+      provider: provider.id,
+      shipments: pack.next.shipments,
+      voids: pack.next.voids,
+      orders: pack.next.orders
+    };
     await setKv("shipping:cursor", nextCursor);
     var summary = {
       at: new Date().toISOString(),
@@ -593,8 +771,7 @@ Deno.serve(async function (req) {
       inserted: wrote.inserted,
       updated: wrote.updated,
       complete: pack.complete,
-      pages: pack.pages,
-      message: pack.message || ""
+      pages: pack.pages
     };
     await setKv("shipping:last_sync", summary);
     console.log("shipping-sync provider=" + provider.id + " shipments=" + summary.shipments + " orders=" + summary.orders + " written=" + summary.written);
