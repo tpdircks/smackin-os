@@ -58,7 +58,7 @@
       seed:"Seed", seedHint:"Log each lot of raw sunflower seed with supplier + lot # for recall traceability. Newest first.", sdType:"Seed type", sdOnHand:"On hand by type", sdReceived:"Received",sdIntCode:"Internal code",sdPackaging:"Packaging",sdPickPack:"Select packaging...",sdPallets:"# Pallets",sdPalletsShort:"pallet(s)",sdPackDate:"Packaging date", seedLotsTitle:"Seed lots (newest first)", noSeedLots:"No seed lots yet.",
       skus:"SKUs", skusHint:"Finished-goods / retail SKU catalog - bundles, singles, and cases with bag count and flavor contents. Reference only.", skuCode:"SKU", skuTitle:"Product", skuBags:"Bags", skuComp:"Contents", skuSearchP:"Search SKU, product, or flavor...", skuCount:"SKUs",
       stockbuild:"Stock Build", reorder15:"1.5oz Reorder", r15Hint:"Trigger-based reorder for 1.5oz finished bags (Allen's rule): when a flavor drops to 2 pallets (12,500 bags) or less, build the tier quantity. Prime = 48 bins, Secondary = 24 bins. Coverage uses actual per-flavor ShipStation demand.", r15Prime:"Prime flavors", r15Secondary:"Secondary flavors", r15Bins:"bins", r15After:"after reorder", r15Reorder:"REORDER", r15Ok:"OK", r15NoItem:"no 1.5oz item", r15WksLeft:"Wks left", r15WksAfter:"Wks after", r15ToReorder:"Flavors to reorder now", r15BuildNow:"Build needed now (bags)", r15Trigger:"Trigger (2 pallets)", r15Note:"Coverage after reorder uses actual per-flavor 1.5oz ShipStation demand (FY), not an even split - fast movers like Dill, Maple, Cracked Pepper and BBQ run shorter. Pull recent per-flavor sales before locking targets.", sbHint:"Live build progress vs goals. Update On Hand as you go - the whole team sees it instantly. Yellow field = enter today's count.", sbGoal:"Goal", sbOnHand:"On hand", sbToBuild:"To build", sbPallets:"Pallets", sbDone:"Done", sbTotalGoal:"Total goal", sbComplete:"Complete", sbSaved:"Saved", sbRetail:"Retail", sbEcom:"E-Commerce", sb12pk:"12-Pack Boxes", sbCoverage:"Coverage by group", sbBuilt:"Built vs goal",
-      board:"Board Mode / TV", boardPick:"Pick a department", boardPickHint:"Open this on the floor TV. It shows what to make and today's counts. Bookmark the URL (example: ?board=pmac).", boardExit:"Exit", grpDemand:"Demand", demand:"By Department", demandboard:"Order Board", demandsched:"Production Schedule", demandimport:"Import Orders", ecomdemand:"E-Com Demand", forecast:"Forecast vs Target",
+      board:"Board Mode / TV", boardPick:"Pick a department", boardPickHint:"Open this on the floor TV. It shows what to make and today's counts. Bookmark the URL (example: ?board=pmac).", boardExit:"Exit", grpDemand:"Demand", demand:"By Department", makeplan:"Make Plan", demandboard:"Order Board", demandsched:"Production Schedule", demandimport:"Import Orders", ecomdemand:"E-Com Demand", forecast:"Forecast vs Target",
       fcHint:"Compare only - the app's targets are not changed by this.", fcSnapshot:"Snapshot", fcFlavor:"Flavor", fcApp4:"App Target (4oz)", fcWip4:"WIP Forecast (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"App Target (1.5oz)", fcWip15:"WIP Forecast (1.5oz)", fcDelta15:"Δ (1.5oz)",
       fcNoAppTarget15:"No per-flavor 1.5oz target in the app (bucket / variety-pack only)", fcNone:"No forecast snapshot yet. Ask Claude to refresh it from the WIP FORECAST sheet.", fcBags:"bags",
       dqMix:"Mixing", dqPmac:"P-Mac", dqFul:"Fulfillment", dqToday:"Today", dqTarget:"Today's target", dqTargetShort:"Today",
@@ -216,7 +216,7 @@
       seed:"Semilla", seedHint:"Registre cada lote de semilla cruda con proveedor + lote # para trazabilidad de retiro. Mas nuevo primero.", sdType:"Tipo de semilla", sdOnHand:"En mano por tipo", sdReceived:"Recibido",sdIntCode:"Codigo interno",sdPackaging:"Empaque",sdPickPack:"Elegir empaque...",sdPallets:"# Paletas",sdPalletsShort:"paleta(s)",sdPackDate:"Fecha de empaque", seedLotsTitle:"Lotes de semilla (mas nuevo primero)", noSeedLots:"Aun no hay lotes de semilla.",
       skus:"SKUs", skusHint:"Catalogo de SKU de producto terminado / retail - paquetes, individuales y cajas con cantidad de bolsas y sabores. Solo referencia.", skuCode:"SKU", skuTitle:"Producto", skuBags:"Bolsas", skuComp:"Contenido", skuSearchP:"Buscar SKU, producto o sabor...", skuCount:"SKUs",
       stockbuild:"Construir Inventario", reorder15:"Reorden 1.5oz", r15Hint:"Reorden por disparador para bolsas 1.5oz (regla de Allen): cuando un sabor baja a 2 paletas (12,500 bolsas) o menos, produzca la cantidad del nivel. Prime = 48 bins, Secundario = 24 bins. La cobertura usa la demanda real por sabor de ShipStation.", r15Prime:"Sabores Prime", r15Secondary:"Sabores Secundarios", r15Bins:"bins", r15After:"tras reorden", r15Reorder:"REORDENAR", r15Ok:"OK", r15NoItem:"sin item 1.5oz", r15WksLeft:"Sem. rest.", r15WksAfter:"Sem. tras", r15ToReorder:"Sabores a reordenar ahora", r15BuildNow:"Produccion necesaria (bolsas)", r15Trigger:"Disparador (2 paletas)", r15Note:"La cobertura tras reorden usa la demanda real por sabor de 1.5oz de ShipStation (ano fiscal), no un promedio - los rapidos como Dill, Maple, Cracked Pepper y BBQ duran menos. Use ventas recientes por sabor antes de fijar metas.", sbHint:"Progreso de construccion vs metas en vivo. Actualice En Mano segun avanza - todo el equipo lo ve al instante. Campo amarillo = ingrese el conteo de hoy.", sbGoal:"Meta", sbOnHand:"En mano", sbToBuild:"Por hacer", sbPallets:"Paletas", sbDone:"Listo", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Guardado", sbRetail:"Minorista", sbEcom:"Comercio Electronico", sb12pk:"Cajas de 12", sbCoverage:"Cobertura por grupo", sbBuilt:"Hecho vs meta",
-      board:"Modo Pizarra / TV", boardPick:"Elija un departamento", boardPickHint:"Abra esto en la TV del piso. Muestra que hacer y los numeros de hoy. Guarde el URL (ejemplo: ?board=pmac).", boardExit:"Salir", grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Tablero de Pedidos", demandsched:"Programa de Produccion", demandimport:"Importar Pedidos", ecomdemand:"Demanda E-Com", forecast:"Pronostico vs Objetivo",
+      board:"Modo Pizarra / TV", boardPick:"Elija un departamento", boardPickHint:"Abra esto en la TV del piso. Muestra que hacer y los numeros de hoy. Guarde el URL (ejemplo: ?board=pmac).", boardExit:"Salir", grpDemand:"Demanda", demand:"Por Departamento", makeplan:"Plan de produccion", demandboard:"Tablero de Pedidos", demandsched:"Programa de Produccion", demandimport:"Importar Pedidos", ecomdemand:"Demanda E-Com", forecast:"Pronostico vs Objetivo",
       fcHint:"Solo comparacion - esto no cambia los objetivos de la aplicacion.", fcSnapshot:"Instantanea", fcFlavor:"Sabor", fcApp4:"Objetivo App (4oz)", fcWip4:"Pronostico WIP (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"Objetivo App (1.5oz)", fcWip15:"Pronostico WIP (1.5oz)", fcDelta15:"Δ (1.5oz)",
       fcNoAppTarget15:"Sin objetivo por sabor de 1.5oz en la app (solo cubeta / variety pack)", fcNone:"Aun no hay instantanea de pronostico. Pida a Claude que la actualice desde la hoja WIP FORECAST.", fcBags:"bolsas",
       dqMix:"Mezcla", dqPmac:"P-Mac", dqFul:"Cumplimiento", dqToday:"Hoy", dqTarget:"Meta de hoy", dqTargetShort:"Hoy",
@@ -373,7 +373,7 @@
       seed:"Semente", seedHint:"Registre cada lote de semente crua com fornecedor + lote # para rastreabilidade de recall. Mais novo primeiro.", sdType:"Tipo de semente", sdOnHand:"Em estoque por tipo", sdReceived:"Recebido",sdIntCode:"Codigo interno",sdPackaging:"Embalagem",sdPickPack:"Selecionar embalagem...",sdPallets:"# Paletes",sdPalletsShort:"palete(s)",sdPackDate:"Data de embalagem", seedLotsTitle:"Lotes de semente (mais novo primeiro)", noSeedLots:"Ainda nao ha lotes de semente.",
       skus:"SKUs", skusHint:"Catalogo de SKU de produto acabado / varejo - pacotes, individuais e caixas com contagem de sacos e sabores. Apenas referencia.", skuCode:"SKU", skuTitle:"Produto", skuBags:"Sacos", skuComp:"Conteudo", skuSearchP:"Buscar SKU, produto ou sabor...", skuCount:"SKUs",
       stockbuild:"Construir Estoque", reorder15:"Reposicao 1.5oz", r15Hint:"Reposicao por gatilho para bolsas 1.5oz (regra do Allen): quando um sabor cai para 2 paletes (12,500 bolsas) ou menos, produza a quantidade do nivel. Prime = 48 bins, Secundario = 24 bins. A cobertura usa a demanda real por sabor do ShipStation.", r15Prime:"Sabores Prime", r15Secondary:"Sabores Secundarios", r15Bins:"bins", r15After:"apos reposicao", r15Reorder:"REPOR", r15Ok:"OK", r15NoItem:"sem item 1.5oz", r15WksLeft:"Sem. rest.", r15WksAfter:"Sem. apos", r15ToReorder:"Sabores a repor agora", r15BuildNow:"Producao necessaria (bolsas)", r15Trigger:"Gatilho (2 paletes)", r15Note:"A cobertura apos reposicao usa a demanda real por sabor de 1.5oz do ShipStation (ano fiscal), nao uma media - rapidos como Dill, Maple, Cracked Pepper e BBQ duram menos. Use vendas recentes por sabor antes de fixar metas.", sbHint:"Progresso de construcao vs metas ao vivo. Atualize Em Estoque conforme avanca - toda a equipe ve na hora. Campo amarelo = insira a contagem de hoje.", sbGoal:"Meta", sbOnHand:"Em estoque", sbToBuild:"A fazer", sbPallets:"Paletes", sbDone:"Pronto", sbTotalGoal:"Meta total", sbComplete:"Completo", sbSaved:"Salvo", sbRetail:"Varejo", sbEcom:"E-Commerce", sb12pk:"Caixas de 12", sbCoverage:"Cobertura por grupo", sbBuilt:"Feito vs meta",
-      board:"Modo Painel / TV", boardPick:"Escolha um departamento", boardPickHint:"Abra isto na TV do piso. Mostra o que fazer e os numeros de hoje. Salve o URL (exemplo: ?board=pmac).", boardExit:"Sair", grpDemand:"Demanda", demand:"Por Departamento", demandboard:"Painel de Pedidos", demandsched:"Programa de Producao", demandimport:"Importar Pedidos", ecomdemand:"Demanda E-Com", forecast:"Previsao vs Meta",
+      board:"Modo Painel / TV", boardPick:"Escolha um departamento", boardPickHint:"Abra isto na TV do piso. Mostra o que fazer e os numeros de hoje. Salve o URL (exemplo: ?board=pmac).", boardExit:"Sair", grpDemand:"Demanda", demand:"Por Departamento", makeplan:"Plano de producao", demandboard:"Painel de Pedidos", demandsched:"Programa de Producao", demandimport:"Importar Pedidos", ecomdemand:"Demanda E-Com", forecast:"Previsao vs Meta",
       fcHint:"Somente comparacao - isso nao altera as metas do aplicativo.", fcSnapshot:"Instantaneo", fcFlavor:"Sabor", fcApp4:"Meta App (4oz)", fcWip4:"Previsao WIP (4oz)", fcDelta4:"Δ (4oz)", fcApp15:"Meta App (1.5oz)", fcWip15:"Previsao WIP (1.5oz)", fcDelta15:"Δ (1.5oz)",
       fcNoAppTarget15:"Sem meta por sabor de 1.5oz no app (somente balde / variety pack)", fcNone:"Ainda sem instantaneo de previsao. Peca ao Claude para atualizar a partir da planilha WIP FORECAST.", fcBags:"sacos",
       dqMix:"Mistura", dqPmac:"P-Mac", dqFul:"Expedicao", dqToday:"Hoje", dqTarget:"Meta de hoje", dqTargetShort:"Hoje",
@@ -530,7 +530,7 @@
     { key: "tote", label: "Tote - 1 bag x 1,200 lb", per: 1200 }
   ];
   const SEED_PACK_MAP = {}; SEED_PACKS.forEach(p => SEED_PACK_MAP[p.key] = p);
-  const TABS = ["home","daily","dash","analytics","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","skulookup","prodlog","fulfilldaily","flavinv","stockbuild","reorder15","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","recipes","prodready","prodorders","reordertracker","launch","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","expreceipts","supplierpos","people","improve","maintenance","compliance","quality","disposition","reference","labels","log","history","settings","board"];
+  const TABS = ["home","daily","dash","analytics","alerts","adjust","receive","recvlog","putaway","returns","orders","orderdocs","shiplog","rd","qa","move","produce","retailprod","ecomprod","skulookup","prodlog","fulfilldaily","flavinv","stockbuild","reorder15","makeplan","demand","demandboard","demandsched","demandimport","ecomdemand","forecast","seasoning","recipes","prodready","prodorders","reordertracker","launch","seed","skus","mixing","pmac","floor","count","locations","facility","finbags","pmacout","purchasing","expreceipts","supplierpos","people","improve","maintenance","compliance","quality","disposition","reference","labels","log","history","settings","board"];
 
   // ---- Role presets: which tabs each role sees (home always first) ----
   const ROLE_TABS = {
@@ -646,6 +646,7 @@
     { cat:"Others", sub:"12-Pack Boxes", name:"All 12-packs", goal:800, unit:"boxes" }
   ].map(x => Object.assign(x, { key: (x.cat + "|" + (x.sub || "") + "|" + x.name).replace(/[^A-Za-z0-9]+/g, "_") }));
   const SB_CATS = ["Target", "Walmart", "Master Case", "Others"];
+  window.SB_ITEMS = SB_ITEMS;
   // ---- People directory (LIVE roster pulled from Gusto 2026-07-10; non-sensitive only, NO pay) ----
   // name | job title | department | manager. Manager links drive the org chart.
   const PEOPLE = [
@@ -768,7 +769,7 @@
     { key:"grpInventory", items:["returns","dash","adjust","count","move","locations","facility","finbags"] },
     { key:"grpItems", items:["seasoning","recipes","prodready","seed","skus","analytics","labels"] },
     { key:"grpFulfillment", items:["produce","retailprod","ecomprod","skulookup","prodlog","fulfilldaily","flavinv","stockbuild","orders","orderdocs"] },
-    { key:"grpDemand", items:["demand","demandboard","demandsched","demandimport","ecomdemand","forecast"] },
+    { key:"grpDemand", items:["makeplan","demandboard","demand","demandsched","demandimport","ecomdemand","forecast"] },
     { key:"grpShipping", items:["shiplog"] },
     { key:"grpMixing", items:["board","prodorders","reordertracker","launch","mixing","pmac","pmacout","floor"] },
     { key:"grpPurchasing", items:["purchasing","expreceipts","reorder15"] },
@@ -787,7 +788,7 @@
     mixing:"cooking-pot", pmac:"wrench", count:"clipboard-check", locations:"map-pin", reordertracker:"package-search",
     purchasing:"shopping-cart", expreceipts:"container", supplierpos:"file-text", people:"users", labels:"tag",
     board:"tv", log:"history", settings:"settings", improve:"trending-up", maintenance:"hard-hat", compliance:"shield-check", disposition:"archive", reference:"book-open",
-    demand:"calendar-clock", demandboard:"list-checks", demandsched:"gauge", demandimport:"file-up", ecomdemand:"globe", forecast:"scale", facility:"warehouse", floor:"activity",
+    demand:"calendar-clock", makeplan:"clipboard-list", demandboard:"list-checks", demandsched:"gauge", demandimport:"file-up", ecomdemand:"globe", forecast:"scale", facility:"warehouse", floor:"activity",
     daily:"calendar-days", recipes:"chef-hat", prodready:"clipboard-list", prodorders:"clipboard-pen", launch:"rocket", quality:"microscope", skulookup:"scan-search" };
   function drawIcons() { try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {} }
   let spoFile = null, spoParsed = null;  // supplier-PO upload state
@@ -1246,7 +1247,7 @@
     const today = new Date().toISOString().slice(0, 10);
     const plural = (n, w) => n + " " + w + (n > 1 ? "s" : "");
     // Demand family all share the same board-level alerts.
-    const demandFam = ["demand", "demandboard", "demandsched", "demandimport", "ecomdemand", "forecast"];
+    const demandFam = ["makeplan", "demand", "demandboard", "demandsched", "demandimport", "ecomdemand", "forecast"];
     try {
       if (tab === "seasoning") {
         const exp = expiringLots(), expd = exp.filter(l => daysUntil(l.exp) < 0);
@@ -4135,6 +4136,10 @@
     const t = kind === "covered" ? L("dsCovered") : kind === "blocked" ? L("dsBlocked") : L("dsProduce");
     return '<span style="display:inline-block;padding:2px 9px;border-radius:10px;background:' + c + ';color:#222;font-size:12px;font-weight:600">' + t + '</span>';
   }
+  function planLineOpen(r) {
+    if (window.MAKE_PLAN && typeof MAKE_PLAN.classifyLine === "function") return MAKE_PLAN.classifyLine(r, new Date()).keep;
+    return (r.status || "Open") === "Open";
+  }
   function viewDemandBoard() {
     const all = (DB.demandLines ? DB.demandLines() : []);
     if (!all.length) return '<div class="card"><h2>' + L("demandboard") + '</h2><p class="muted">' + L("dmNone") + '</p>' +
@@ -4142,12 +4147,14 @@
     const partners = [...new Set(all.map(r => r.partner))].sort();
     const flavors = [...new Set(all.map(r => r.flavor))].sort();
     let rows = all.filter(r =>
-      (dmdStatus === "All" || (r.status || "Open") === dmdStatus) &&
+      (dmdStatus === "All" || (dmdStatus === "Open" ? planLineOpen(r) : (r.status || "Open") === dmdStatus)) &&
       (!dmdPartner || r.partner === dmdPartner) &&
       (!dmdFlavor || r.flavor === dmdFlavor));
     // sort by due date then partner then po
     rows = rows.slice().sort((a, b) => ((dueISO(a.due_date) || "9999") + a.partner + a.po).localeCompare((dueISO(b.due_date) || "9999") + b.partner + b.po));
-    const openRows = all.filter(r => (r.status || "Open") === "Open");
+    const openRows = all.filter(planLineOpen);
+    const excluded = (window.MAKE_PLAN && MAKE_PLAN.splitLines) ? MAKE_PLAN.splitLines(all, new Date()).excluded : [];
+    const excludedNote = excluded.length ? '<p class="hint">Excluded Target POs (due before this week): ' + excluded.map(function (ex) { return esc(ex.po) + " due " + esc(ex.due); }).join("; ") + ".</p>" : "";
     const totCases = openRows.reduce((s, r) => s + (Number(r.cases) || 0), 0);
     const totBags = openRows.reduce((s, r) => s + (Number(r.bags) || 0), 0);
     const openPOs = new Set(openRows.map(r => r.source + r.po)).size;
@@ -4160,7 +4167,7 @@
     const head = '<div class="card"><div class="suprow"><h2 style="flex:1;margin:0">' + L("demand") + ' ' + freshChip(dhMax(DB.demandLines ? DB.demandLines() : []), 1) + '</h2>' +
       (all.some(r => /^UNMAPPED/i.test(String(r.flavor || ""))) ? '<button class="ghost sm" style="color:#C55A11;border-color:#C55A11" onclick="UI.demandRemap()">&#128260; Re-map ' + all.filter(r => /^UNMAPPED/i.test(String(r.flavor || ""))).length + ' unmapped</button> ' : "") +
       '<button class="ghost sm" onclick="UI_go(\'demandimport\')">&#8635; ' + L("demandimport") + '</button></div>' +
-      '<p class="hint">' + L("dmHint") + '</p>' +
+      '<p class="hint">' + L("dmHint") + '</p>' + excludedNote +
       '<div class="kpis"><div class="kpi"><div class="n">' + fmt(openPOs) + '</div><div class="l">' + L("dmPOs") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(totCases) + '</div><div class="l">' + L("dmCases") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(totBags) + '</div><div class="l">' + L("dmBags") + '</div></div></div>' +
@@ -4335,11 +4342,17 @@
   }
   // Sub-navigation for the Demand family — one nav entry, tabs move between the views.
   function demandTabsBar(active) {
-    const T = [["demand", "Board"], ["demandboard", "Orders"], ["demandsched", "Schedule"], ["demandimport", "Import"], ["ecomdemand", "E-Com"], ["forecast", "Forecast"]];
+    const T = [["makeplan", "Make Plan"], ["demandboard", "Order Board"], ["demand", "Board"], ["demandsched", "Schedule"], ["demandimport", "Import"], ["ecomdemand", "E-Com"], ["forecast", "Forecast"]];
     return '<div class="ordtabs dmd-family" style="margin-bottom:12px;flex-wrap:wrap">' +
       T.map(t => '<button class="' + (active === t[0] ? "active" : "") + '" onclick="UI_go(\'' + t[0] + '\')">' + t[1] + '</button>').join("") + '</div>';
   }
   function viewDemand() { return deptDemandBoard(dmdDept, true); }
+  function viewMakePlan() {
+    if (!window.MAKE_PLAN || typeof MAKE_PLAN.fromDb !== "function") {
+      return '<div class="card"><h2>Make Plan</h2><p class="hint">The plan did not load. Refresh the page.</p></div>';
+    }
+    return MAKE_PLAN.view(MAKE_PLAN.fromDb(DB));
+  }
   function viewDemandSched() {
     const open = (DB.demandLines ? DB.demandLines() : []).filter(demandCountsForBuild);
     if (!open.length) return '<div class="card"><h2>' + L("demandsched") + '</h2><p class="muted">' + L("dsNone") + '</p>' +
@@ -4991,6 +5004,34 @@
     ecChartMode(k) { ecChartMode = k; render(); },
     // ---- Demand section ----
     dmdSet(k, v) { if (k === "partner") dmdPartner = v; else if (k === "flavor") dmdFlavor = v; else if (k === "status") dmdStatus = v; render(); },
+    async makePlanCopy() {
+      if (!window.MAKE_PLAN) return;
+      const pack = MAKE_PLAN.emailPack(MAKE_PLAN.fromDb(DB));
+      try {
+        if (navigator.clipboard && window.ClipboardItem) {
+          await navigator.clipboard.write([new ClipboardItem({
+            "text/plain": new Blob([pack.plain], { type: "text/plain" }),
+            "text/html": new Blob([pack.html], { type: "text/html" })
+          })]);
+        } else if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(pack.plain);
+        } else return toast("Copy is not available in this browser.", 5000);
+        toast("Demand report copied. Paste it into Outlook.", 4000);
+      } catch (e) {
+        toast("Copy failed. " + String(e && e.message || e), 6000);
+      }
+    },
+    makePlanCsv() {
+      if (!window.MAKE_PLAN) return;
+      const text = MAKE_PLAN.csv(MAKE_PLAN.fromDb(DB));
+      const blob = new Blob([text], { type: "text/csv" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "demand-make-plan.csv";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    },
     dmdDept(d) { dmdDept = d; render(); },
     async prodLog(dept) {
       const isFul = dept === "ful";
@@ -6840,8 +6881,8 @@
     }, orders: viewOrders, rd: viewRD, qa: viewQA,
       move: viewMove, prodorders: viewProdOrders, reordertracker: viewReorderTracker, launch: viewLaunch, produce: viewProduce, retailprod: viewRetailProd, ecomprod: viewEcomProd, skulookup: viewSkuLookup, prodlog: viewProdLog, fulfilldaily: viewFulfillDaily, stockbuild: viewStockBuild, reorder15: viewReorder15, seasoning: viewSeasoning, recipes: viewRecipes, prodready: viewProdReady, seed: viewSeed, skus: viewSkus, finbags: viewFinishedBags, pmacout: viewPmacOut, mixing: viewMixing, pmac: viewPmac,
       count: viewCount, locations: viewLocations, purchasing: viewPurchasing, expreceipts: viewExpectedReceipts, flavinv: viewFlavorInventory, supplierpos: viewSupplierPos, orderdocs: viewOrderDocs, shiplog: viewShippingLog, recvlog: viewReceivingLog, people: viewPeople, improve: viewImprove, maintenance: viewMaintenance, compliance: viewCompliance, quality: viewQuality, reference: viewReference, labels: viewLabels, log: viewLog, settings: viewSettings,
-      demand: viewDemand, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, ecomdemand: viewEcomDemand, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor, board: viewBoard, disposition: viewDisposition, history: viewHistory };
-    const DEMAND_FAMILY = ["demand", "demandboard", "demandsched", "demandimport", "ecomdemand", "forecast"];
+      demand: viewDemand, makeplan: viewMakePlan, demandboard: viewDemandBoard, demandsched: viewDemandSched, demandimport: viewDemandImport, ecomdemand: viewEcomDemand, forecast: viewForecastVsTarget, facility: viewFacility, floor: viewFloor, board: viewBoard, disposition: viewDisposition, history: viewHistory };
+    const DEMAND_FAMILY = ["makeplan", "demand", "demandboard", "demandsched", "demandimport", "ecomdemand", "forecast"];
     const dbar = DEMAND_FAMILY.indexOf(active) >= 0 ? demandTabsBar(active) : "";
     $("view").innerHTML = alertStrip(active) + dbar + (map[active] || viewHome)();
     $("modeBadge").textContent = DB.mode === "cloud" ? L("cloud") : L("localmode");
