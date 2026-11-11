@@ -378,10 +378,22 @@
     var mapRow = input.mapRow;
     if (!mapRow && root.ECOM && typeof root.ECOM.mapRow === "function") mapRow = root.ECOM.mapRow;
     var ecom = ecomFromShipping(input.shipping || [], mapRow);
+    var stagedRows = (input.targetStaged || []).concat((input.stockBuild || []).filter(function (row) { return row.targetStaged; }));
+    var staged = {};
+    var stagedAsOf = "";
+    stagedRows.forEach(function (row) {
+      if (!row.flavor) return;
+      var bags = num(row.bags);
+      if (!(bags > 0) && row.cases) bags = round3(num(row.cases) * BAGS_PER_CASE);
+      if (!(bags > 0)) return;
+      staged[row.flavor] = round3((staged[row.flavor] || 0) + bags);
+      if (String(row.updated_at || "") > stagedAsOf) stagedAsOf = String(row.updated_at);
+    });
+    var sharedBuild = (input.stockBuild || []).filter(function (row) { return !row.targetStaged; });
     var cashews = cashewOnHand(input.items || [], input.stock || []);
     var minis = miniOnHand(input.items || [], input.stock || []);
     var loose = bag4OnHand(input.items || [], input.stock || []);
-    var built = stockBuildBags(input.stockBuild || []);
+    var built = stockBuildBags(sharedBuild);
     var hand = dedupeOnHand(loose.byFlavor, built.byFlavor);
     var film = filmFor(input.items || [], input.stock || []);
     var seas = seasoningFor(input.items || [], input.stock || []);
@@ -400,11 +412,13 @@
       var f = line.flavor || "Unmapped";
       var pack = linePack(line);
       var bags = num(line.bags);
-      if (!demand[f]) demand[f] = { sps: 0, ecom: 0, pack: pack };
+      if (!demand[f]) demand[f] = { sps: 0, ecom: 0, pack: pack, target: 0 };
       if (demand[f].pack !== pack) f = pack + ": " + f;
-      if (!demand[f]) demand[f] = { sps: 0, ecom: 0, pack: pack };
+      if (!demand[f]) demand[f] = { sps: 0, ecom: 0, pack: pack, target: 0 };
       demand[f].sps = round3(demand[f].sps + bags);
       demand[f].pack = pack;
+      var partnerEarly = line.partner || "";
+      if (isTarget(partnerEarly) && pack === "seed4") demand[f].target = round3((demand[f].target || 0) + bags);
       if (line.flavor_code && !codes[f]) codes[f] = line.flavor_code;
       var due = parseDue(line.due_date);
       if (due && (!earliest[f] || due < earliest[f])) earliest[f] = due;
@@ -422,7 +436,7 @@
       if (at > spsAsOf) spsAsOf = at;
     });
     Object.keys(ecom.byFlavor).forEach(function (f) {
-      if (!demand[f]) demand[f] = { sps: 0, ecom: 0, pack: "seed4" };
+      if (!demand[f]) demand[f] = { sps: 0, ecom: 0, pack: "seed4", target: 0 };
       demand[f].ecom = round3(demand[f].ecom + ecom.byFlavor[f]);
       if (!demand[f].pack) demand[f].pack = "seed4";
       if (!customers["E-com"]) customers["E-com"] = { pos: {}, bags: 0 };
@@ -435,14 +449,22 @@
       if (names.indexOf(f) < 0 && (demand[f] || (f.indexOf("Cashews") === 0 && cashews[f] > 0) || (f === "Mini Bucket Mixed" && minis > 0))) names.push(f);
     });
     var flavors = names.map(function (f) {
-      var d = demand[f] || { sps: 0, ecom: 0, pack: f.indexOf("Cashews") === 0 ? "cashew" : (f === "Mini Bucket Mixed" ? "minibucket" : "seed4") };
+      var d = demand[f] || { sps: 0, ecom: 0, pack: f.indexOf("Cashews") === 0 ? "cashew" : (f === "Mini Bucket Mixed" ? "minibucket" : "seed4"), target: 0 };
       var pack = d.pack || "seed4";
       var dem = round3(d.sps + d.ecom);
       var oh = 0;
+      var stagedBags = 0;
       if (pack === "cashew") oh = num(cashews[f] || 0);
       else if (pack === "minibucket") oh = num(minis);
-      else eachMatch(hand.byFlavor, f, function (row) { oh = round3(oh + num(row.bags)); });
-      var produce = Math.max(0, round3(dem - oh));
+      else {
+        eachMatch(hand.byFlavor, f, function (row) { oh = round3(oh + num(row.bags)); });
+        eachMatch(staged, f, function (bags) { stagedBags = round3(stagedBags + num(bags)); });
+      }
+      var targetDem = pack === "seed4" ? num(d.target) : 0;
+      var uncoveredTarget = Math.max(0, round3(targetDem - stagedBags));
+      var otherDem = Math.max(0, round3(dem - targetDem));
+      var needShared = round3(otherDem + uncoveredTarget);
+      var produce = Math.max(0, round3(needShared - oh));
       var filmConfirmed = 0;
       var filmHeld = 0;
       eachMatch(film.byFlavor, f, function (row) {
@@ -471,6 +493,8 @@
         sps: d.sps,
         ecom: d.ecom,
         onHand: oh,
+        targetStaged: stagedBags,
+        targetDemand: targetDem,
         toProduce: produce,
         cases: casesOf(produce),
         pallets: palletsOf(produce),
@@ -481,10 +505,10 @@
         earliest: earliest[f] || "",
         ready: ready,
         kind: kind,
-        surplus: Math.max(0, round3(oh - dem))
+        surplus: Math.max(0, round3(oh - needShared))
       };
     }).filter(function (row) {
-      return row.demand > 0 || row.onHand > 0;
+      return row.demand > 0 || row.onHand > 0 || row.targetStaged > 0;
     });
 
     function roll(rows) {
@@ -553,8 +577,9 @@
     if (film.asOf) notes.push("Film on hand as of " + film.asOf.slice(0, 16).replace("T", " ") + " UTC. A film count over 100,000 is held and is not available.");
     if (loose.asOf) notes.push("4 oz bag stock as of " + loose.asOf.slice(0, 16).replace("T", " ") + " UTC.");
     if (built.asOf) notes.push("Stock Build as of " + built.asOf.slice(0, 16).replace("T", " ") + " UTC.");
+    if (stagedAsOf) notes.push("Target staged as of " + stagedAsOf.slice(0, 16).replace("T", " ") + " UTC.");
     if (spsAsOf) notes.push("SPS demand lines as of " + spsAsOf.slice(0, 16).replace("T", " ") + " UTC.");
-    notes.push("On hand for 4 oz seed uses usable bags (returns, quarantine, QA-hold, and other hold locations are out). Stock Build cases are the same finished goods, so the larger of the two counts is kept and the smaller is not added. PCA Pizza, Deep Dish Pizza, and Cheezy Pizza are one flavor.");
+    notes.push("On hand for 4 oz seed uses usable bags (returns, quarantine, QA-hold, and other hold locations are out). Master Case and other non-Target Stock Build cases are the same finished goods as those bags, so the larger of the two counts is kept and the smaller is not added. Target staged cases are reserved against Target demand by flavor first. They are not mixed into on hand, and that larger-of rule does not drop them. PCA Pizza, Deep Dish Pizza, and Cheezy Pizza are one flavor.");
     notes.push("Cashews use NUTS-BBQ and NUTS-CINNAMONCHURRO only. Mini Bucket Mixed is 24 per case from mini-bucket items. Neither is subtracted from 4 oz seed stock.");
     if (built.mixed) notes.push(fmt(built.mixed) + " Stock Build bags are variety or mixed packs and are not assigned to one flavor.");
     notes.push("Dollar Tree 2.75 oz is display only and is not netted against demand.");
@@ -564,6 +589,9 @@
         notes.push(r.flavor + " seasoning is short: " + fmt(r.seasoning) + " lb on hand, about " + fmt(r.seasoningNeed) + " lb needed for the bags to produce.");
       }
     });
+
+    var stagedBagsTotal = 0;
+    Object.keys(staged).forEach(function (f) { stagedBagsTotal = round3(stagedBagsTotal + staged[f]); });
 
     return {
       week: week,
@@ -585,6 +613,7 @@
       otherLines: otherLines,
       ecom: ecom,
       dedupe: hand.notes,
+      targetStaged: { bags: stagedBagsTotal, cases: casesOf(stagedBagsTotal) },
       dollarTree: dt,
       wip: wip,
       notes: notes,
@@ -605,15 +634,15 @@
     var intro = "Attached/below is this week's demand report (week of " + plan.weekLabel + ").";
     function line(cells) { return cells.join("\t"); }
     var plain = [intro, "", "Demand " + fmt(plan.headline.demand) + " bags. On hand " + fmt(plan.headline.onHand) + ". To produce " + fmt(plan.headline.toProduce) + " bags (" + fmt(plan.headline.cases) + " cases / " + plan.headline.pallets + " pallets).", "", "PRODUCTION REQUIRED"];
-    plain.push(line(["Flavor", "Code", "Demand", "On Hand", "To Produce", "Cases", "Pallets", "Film", "Seasoning lbs", "Earliest Due", "Ready"]));
+    plain.push(line(["Flavor", "Code", "Demand", "On Hand", "Target staged", "To Produce", "Cases", "Pallets", "Film", "Seasoning lbs", "Earliest Due", "Ready"]));
     plan.required.forEach(function (r) {
-      plain.push(line([r.flavor, r.code, r.demand, r.onHand, r.toProduce, r.cases, r.pallets, filmCell(r), r.seasoning, r.earliest, r.ready]));
+      plain.push(line([r.flavor, r.code, r.demand, r.onHand, r.targetStaged || 0, r.toProduce, r.cases, r.pallets, filmCell(r), r.seasoning, r.earliest, r.ready]));
     });
     if (!plan.required.length) plain.push("None. Open demand is covered from stock.");
     plain.push("", "COVERED FROM STOCK");
-    plain.push(line(["Flavor", "Code", "Demand", "On Hand", "Surplus"]));
+    plain.push(line(["Flavor", "Code", "Demand", "On Hand", "Target staged", "Surplus"]));
     plan.covered.forEach(function (r) {
-      plain.push(line([r.flavor, r.code, r.demand, r.onHand, r.surplus]));
+      plain.push(line([r.flavor, r.code, r.demand, r.onHand, r.targetStaged || 0, r.surplus]));
     });
     plain.push("", "DEMAND BY CUSTOMER");
     plain.push(line(["Channel", "POs", "Bags", "Cases", "% of demand"]));
@@ -631,12 +660,12 @@
     }
     var html = "<p>" + esc(intro) + "</p><p><b>Demand</b> " + fmt(plan.headline.demand) + " bags. <b>On hand</b> " + fmt(plan.headline.onHand) + ". <b>To produce</b> " + fmt(plan.headline.toProduce) + " bags (" + fmt(plan.headline.cases) + " cases / " + plan.headline.pallets + " pallets).</p>";
     html += "<h3>Production required</h3>" + htmlTable(
-      ["Flavor", "Code", "Demand", "On Hand", "To Produce", "Cases", "Pallets", "Film", "Seasoning lbs", "Earliest Due", "Ready"],
-      plan.required.map(function (r) { return [r.flavor, r.code, fmt(r.demand), fmt(r.onHand), fmt(r.toProduce), fmt(r.cases), String(r.pallets), filmCell(r), fmt(r.seasoning), r.earliest, r.ready]; })
+      ["Flavor", "Code", "Demand", "On Hand", "Target staged", "To Produce", "Cases", "Pallets", "Film", "Seasoning lbs", "Earliest Due", "Ready"],
+      plan.required.map(function (r) { return [r.flavor, r.code, fmt(r.demand), fmt(r.onHand), fmt(r.targetStaged || 0), fmt(r.toProduce), fmt(r.cases), String(r.pallets), filmCell(r), fmt(r.seasoning), r.earliest, r.ready]; })
     );
     html += "<h3>Covered from stock</h3>" + htmlTable(
-      ["Flavor", "Code", "Demand", "On Hand", "Surplus"],
-      plan.covered.map(function (r) { return [r.flavor, r.code, fmt(r.demand), fmt(r.onHand), fmt(r.surplus)]; })
+      ["Flavor", "Code", "Demand", "On Hand", "Target staged", "Surplus"],
+      plan.covered.map(function (r) { return [r.flavor, r.code, fmt(r.demand), fmt(r.onHand), fmt(r.targetStaged || 0), fmt(r.surplus)]; })
     );
     html += "<h3>Demand by customer</h3>" + htmlTable(
       ["Channel", "POs", "Bags", "Cases", "% of demand"],
@@ -652,12 +681,12 @@
       if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
       return s;
     }
-    var rows = [["section", "flavor", "code", "demand", "on_hand", "to_produce", "cases", "pallets", "film", "seasoning_lbs", "earliest_due", "ready", "surplus"]];
+    var rows = [["section", "flavor", "code", "demand", "on_hand", "target_staged", "to_produce", "cases", "pallets", "film", "seasoning_lbs", "earliest_due", "ready", "surplus"]];
     plan.required.forEach(function (r) {
-      rows.push(["required", r.flavor, r.code, r.demand, r.onHand, r.toProduce, r.cases, r.pallets, filmCell(r), r.seasoning, r.earliest, r.ready, ""]);
+      rows.push(["required", r.flavor, r.code, r.demand, r.onHand, r.targetStaged || 0, r.toProduce, r.cases, r.pallets, filmCell(r), r.seasoning, r.earliest, r.ready, ""]);
     });
     plan.covered.forEach(function (r) {
-      rows.push(["covered", r.flavor, r.code, r.demand, r.onHand, 0, 0, 0, filmCell(r), r.seasoning, r.earliest, r.ready, r.surplus]);
+      rows.push(["covered", r.flavor, r.code, r.demand, r.onHand, r.targetStaged || 0, 0, 0, 0, filmCell(r), r.seasoning, r.earliest, r.ready, r.surplus]);
     });
     return rows.map(function (r) { return r.map(cell).join(","); }).join("\n") + "\n";
   }
@@ -682,6 +711,7 @@
       '<p class="hint">Week of ' + esc(plan.weekLabel) + ' (Monday to Sunday, America/Denver). View only. Pack types are not netted against each other.</p>' +
       '<p style="font-size:18px;margin:8px 0"><b>Demand</b> ' + fmt(h.demand) + ' bags &nbsp; <b>On hand</b> ' + fmt(h.onHand) + ' &nbsp; <b>To produce</b> ' + fmt(h.toProduce) + ' bags (' + fmt(h.cases) + ' cs / ' + h.pallets + ' pallets)</p>' +
       (packLine ? '<p class="hint">' + packLine + "</p>" : "") +
+      (plan.targetStaged && plan.targetStaged.bags > 0 ? '<p class="hint">Target staged ' + fmt(plan.targetStaged.bags) + " bags (" + fmt(plan.targetStaged.cases) + " cases). Reserved against Target demand by flavor, and not mixed into on hand.</p>" : "") +
       '<p class="hint">Key: <span class="mp-dot" style="background:#2E7D32"></span> Covered &nbsp; <span class="mp-dot" style="background:#B7791F"></span> Produce this week (film on hand) &nbsp; <span class="mp-dot" style="background:#B42318"></span> Blocked, no film. Production required is largest first.</p>' +
       '<p><button class="primary" type="button" onclick="UI.makePlanCopy()">Copy as email</button> <button class="ghost" type="button" onclick="UI.makePlanCsv()">Download CSV</button></p>' +
       '<p class="hint">Sources: SPS open lines' + (plan.asOf.sps ? " as of " + esc(plan.asOf.sps.slice(0, 16).replace("T", " ")) + " UTC" : "") +
@@ -689,16 +719,16 @@
       ". 4 oz stock" + (plan.asOf.stock ? " as of " + esc(plan.asOf.stock.slice(0, 16).replace("T", " ")) + " UTC" : "") +
       ". Stock Build" + (plan.asOf.stockBuild ? " as of " + esc(plan.asOf.stockBuild.slice(0, 16).replace("T", " ")) + " UTC" : "") + ".</p></div>";
     var reqBody = plan.required.map(function (r) {
-      return "<tr class=\"mp-" + r.kind + "\"><td>" + esc(r.flavor) + "</td><td>" + esc(r.code) + "</td><td class=\"right\">" + fmt(r.demand) + "</td><td class=\"right\">" + fmt(r.onHand) + "</td><td class=\"right\"><b>" + fmt(r.toProduce) + "</b></td><td class=\"right\">" + fmt(r.cases) + "</td><td class=\"right\">" + r.pallets + "</td><td class=\"right\">" + esc(filmCell(r)) + "</td><td class=\"right\">" + fmt(r.seasoning) + "</td><td>" + esc(r.earliest || "") + "</td><td>" + esc(r.ready) + "</td></tr>";
-    }).join("") || '<tr><td colspan="11">No production required. Open demand is covered from stock.</td></tr>';
+      return "<tr class=\"mp-" + r.kind + "\"><td>" + esc(r.flavor) + "</td><td>" + esc(r.code) + "</td><td class=\"right\">" + fmt(r.demand) + "</td><td class=\"right\">" + fmt(r.onHand) + "</td><td class=\"right\">" + fmt(r.targetStaged || 0) + "</td><td class=\"right\"><b>" + fmt(r.toProduce) + "</b></td><td class=\"right\">" + fmt(r.cases) + "</td><td class=\"right\">" + r.pallets + "</td><td class=\"right\">" + esc(filmCell(r)) + "</td><td class=\"right\">" + fmt(r.seasoning) + "</td><td>" + esc(r.earliest || "") + "</td><td>" + esc(r.ready) + "</td></tr>";
+    }).join("") || '<tr><td colspan="12">No production required. Open demand is covered from stock.</td></tr>';
     var req = '<div class="card"><h2 class="sub2">Production required</h2><div class="tblwrap"><table class="sortable"><thead>' +
-      ths(["Flavor", "Code", "Demand", "On Hand", "To Produce", "Cases", "Pallets", "Film Avail", "Seasoning (lbs)", "Earliest Due", "Ready to run?"]) +
+      ths(["Flavor", "Code", "Demand", "On Hand", "Target staged", "To Produce", "Cases", "Pallets", "Film Avail", "Seasoning (lbs)", "Earliest Due", "Ready to run?"]) +
       "</thead><tbody>" + reqBody + "</tbody></table></div></div>";
     var covBody = plan.covered.map(function (r) {
-      return "<tr class=\"mp-covered\"><td>" + esc(r.flavor) + "</td><td>" + esc(r.code) + "</td><td class=\"right\">" + fmt(r.demand) + "</td><td class=\"right\">" + fmt(r.onHand) + "</td><td class=\"right\"><b>" + fmt(r.surplus) + "</b></td></tr>";
-    }).join("") || "<tr><td colspan=\"5\">No covered flavors.</td></tr>";
+      return "<tr class=\"mp-covered\"><td>" + esc(r.flavor) + "</td><td>" + esc(r.code) + "</td><td class=\"right\">" + fmt(r.demand) + "</td><td class=\"right\">" + fmt(r.onHand) + "</td><td class=\"right\">" + fmt(r.targetStaged || 0) + "</td><td class=\"right\"><b>" + fmt(r.surplus) + "</b></td></tr>";
+    }).join("") || "<tr><td colspan=\"6\">No covered flavors.</td></tr>";
     var cov = '<div class="card"><h2 class="sub2">Covered from stock</h2><div class="tblwrap"><table class="sortable"><thead>' +
-      ths(["Flavor", "Code", "Demand", "On Hand", "Surplus"]) + "</thead><tbody>" + covBody + "</tbody></table></div></div>";
+      ths(["Flavor", "Code", "Demand", "On Hand", "Target staged", "Surplus"]) + "</thead><tbody>" + covBody + "</tbody></table></div></div>";
     var custBody = plan.customers.map(function (c) {
       return "<tr><td>" + esc(c.channel) + "</td><td class=\"right\">" + fmt(c.pos) + "</td><td class=\"right\">" + fmt(c.bags) + "</td><td class=\"right\">" + fmt(c.cases) + "</td><td class=\"right\">" + pct(c.pct) + "</td></tr>";
     }).join("") || "<tr><td colspan=\"5\">No open demand.</td></tr>";
@@ -758,6 +788,7 @@
       sb.push({
         flavor: mixed ? "" : item.name,
         mixed: mixed,
+        targetStaged: item.cat === "Target",
         on_hand: num(row.on_hand),
         bagsEach: mixed ? 0 : bagsEach,
         bags: mixed ? 0 : round3(num(row.on_hand) * bagsEach),
@@ -780,6 +811,92 @@
     });
   }
 
+  function isBookedText(text) {
+    var blob = String(text || "");
+    if (/new\s*legend|\blegend\b|\bbooked\b/i.test(blob)) return true;
+    if (/\bpickup\b/i.test(blob) && !/\bship\b/i.test(blob)) return true;
+    return false;
+  }
+  function bookingsFromOrders(orders) {
+    var out = {};
+    (orders || []).forEach(function (row) {
+      var po = String(row.customer_po || row.po_num || row.po || "");
+      if (!po) return;
+      var appt = String(row.appointment || "").trim();
+      var pickup = String(row.pickup_date || "").trim();
+      var blob = [appt, pickup, row.notes, row.carrier, row.load, row.lane].join(" ");
+      if (appt || pickup || isBookedText(blob)) out[po] = true;
+    });
+    return out;
+  }
+  function groupNeedCases(g) {
+    if (num(g.cases) > 0) return round3(g.cases);
+    if (num(g.bags) > 0) return round3(num(g.bags) / BAGS_PER_CASE);
+    return 0;
+  }
+  function packStates(list) {
+    return {
+      pos: list.length,
+      lines: list.reduce(function (s, g) { return s + g.lines; }, 0),
+      cases: round3(list.reduce(function (s, g) { return s + groupNeedCases(g); }, 0)),
+      list: list
+    };
+  }
+  function openDemandStates(lines, opts) {
+    opts = opts || {};
+    var today = opts.today || denverISO(new Date());
+    var bookings = opts.bookings || {};
+    var groups = {};
+    (lines || []).forEach(function (line) {
+      if (!classifyLine(line).keep) return;
+      if (String(line.status || "").toLowerCase() === "test") return;
+      if (String(line.batch_id || "") === "SPS-TEST") return;
+      if (String(line.batch_label || "").toLowerCase().indexOf("testout") >= 0) return;
+      var po = String(line.po || "");
+      if (!po) return;
+      var g = groups[po] || (groups[po] = {
+        po: po, partner: line.partner || "Unknown", cases: 0, bags: 0, lines: 0, due: "", dueRaw: "", text: "", booked: false
+      });
+      g.cases = round3(g.cases + num(line.cases));
+      g.bags = round3(g.bags + num(line.bags));
+      g.lines += 1;
+      var due = parseDue(line.due_date);
+      if (due && (!g.due || due < g.due)) {
+        g.due = due;
+        g.dueRaw = String(line.due_date || "");
+      }
+      g.text += " " + [line.load, line.notes, line.appointment, line.pickup_date, line.carrier].join(" ");
+      if (bookings[po] || String(line.appointment || "").trim() || String(line.pickup_date || "").trim() || isBookedText(g.text)) g.booked = true;
+    });
+    var pastCandidates = [];
+    Object.keys(groups).forEach(function (po) {
+      var g = groups[po];
+      if (!g.due || g.due >= today) { g.state = "open"; return; }
+      pastCandidates.push(g);
+    });
+    pastCandidates.sort(function (a, b) { return a.due < b.due ? -1 : a.due > b.due ? 1 : (a.po < b.po ? -1 : a.po > b.po ? 1 : 0); });
+    var left = num(opts.stagedCases);
+    var past = [];
+    var awaiting = [];
+    pastCandidates.forEach(function (g) {
+      var target = isTarget(g.partner);
+      var need = groupNeedCases(g);
+      var covered = false;
+      if (target && need > 0 && left + 0.001 >= need) {
+        covered = true;
+        left = round3(left - need);
+      }
+      if (target && (covered || g.booked)) {
+        g.state = "awaiting";
+        awaiting.push(g);
+      } else {
+        g.state = "past";
+        past.push(g);
+      }
+    });
+    return { past: packStates(past), awaiting: packStates(awaiting), byPo: groups, stagedLeft: left };
+  }
+
   var api = {
     BAGS_PER_CASE: BAGS_PER_CASE,
     BAGS_PER_PALLET: BAGS_PER_PALLET,
@@ -797,7 +914,10 @@
     view: view,
     fromDb: fromDb,
     casesOf: casesOf,
-    palletsOf: palletsOf
+    palletsOf: palletsOf,
+    denverISO: denverISO,
+    bookingsFromOrders: bookingsFromOrders,
+    openDemandStates: openDemandStates
   };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   root.MAKE_PLAN = api;

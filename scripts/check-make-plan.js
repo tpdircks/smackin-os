@@ -97,7 +97,7 @@ assert(read("app.js").indexOf("function viewMakePlan") >= 0 && read("app.js").in
 assert(read("app.js").indexOf("async function receive(item, qty, lot, op, meta)") < 0 || read("db.js").indexOf("async function receive(item, qty, lot, op, meta)") >= 0, "receive signature stays in db");
 assert(read("make-plan.js").indexOf(".insert(") < 0 && read("make-plan.js").indexOf(".update(") < 0 && read("make-plan.js").indexOf(".delete(") < 0, "plan does not write");
 assert(read("dept-homes.js").indexOf('primary: "makeplan"') >= 0, "Demand opens Make Plan");
-assert(read("index.html").indexOf("make-plan.js?b=3") >= 0, "script tag");
+assert(read("index.html").indexOf("make-plan.js?b=4") >= 0, "script tag");
 assert(read("service-worker.js").indexOf('"./make-plan.js"') >= 0, "precached");
 
 var refused = plan.build({
@@ -178,6 +178,64 @@ assert(sync.indexOf("MAX_FILES = 30") >= 0 && sync.indexOf("BUDGET_MS = 60000") 
 assert(sync.indexOf("method: \"DELETE\"") < 0 || sync.indexOf("api.spscommerce.com") >= 0, "SPS list stays a GET");
 assert(sync.indexOf("/transactions/v5/data/") >= 0 && sync.indexOf("never deletes or moves") >= 0, "SPS files are not deleted or moved");
 assert(sync.indexOf("fetch(url, { headers:") >= 0 && sync.indexOf("fetch(url, { method:") < 0, "SPS list is a GET");
+
+var stagedPlan = plan.build({
+  now: NOW,
+  lines: [
+    { partner: "Target", po: "T1", due_date: "11/09/2026", flavor: "Backyard BBQ", bags: 3600, cases: 50, status: "Open" },
+    { partner: "KeHE", po: "K1", due_date: "11/12/2026", flavor: "Backyard BBQ", bags: 2000, cases: 28, status: "Open" }
+  ],
+  items: [{ id: "BAG4-S03", category: "bag4", flavor: "Backyard BBQ" }],
+  stock: [{ item_id: "BAG4-S03", location: "RECEIVING", qty: 1000 }],
+  stockBuild: [
+    { flavor: "Backyard BBQ", bags: 3600, on_hand: 50, bagsEach: 72, targetStaged: true },
+    { flavor: "Backyard BBQ", bags: 720, on_hand: 10, bagsEach: 72 }
+  ],
+  purchaseOrders: []
+});
+var bbq = stagedPlan.required.concat(stagedPlan.covered).filter(function (r) { return r.flavor === "Backyard BBQ"; })[0];
+assert(bbq && bbq.targetStaged === 3600 && bbq.onHand === 1000 && bbq.toProduce === 1000, "Target staged nets Target demand and loose bags still cover other customers");
+assert(stagedPlan.targetStaged.cases === 50, "staged cases stay out of the shared on-hand pool");
+assert(plan.view(stagedPlan).indexOf("Target staged") >= 0, "Target staged is its own column");
+assert(plan.emailPack(stagedPlan).plain.indexOf("Target staged") >= 0, "email shows Target staged");
+
+var maxDrop = plan.build({
+  now: NOW,
+  lines: [
+    { partner: "Target", po: "T2", due_date: "11/09/2026", flavor: "Ranch", bags: 3600, cases: 50, status: "Open" },
+    { partner: "KeHE", po: "K2", due_date: "11/12/2026", flavor: "Ranch", bags: 500, cases: 7, status: "Open" }
+  ],
+  items: [{ id: "BAG4-S08", category: "bag4", flavor: "Ranch" }],
+  stock: [{ item_id: "BAG4-S08", location: "RECEIVING", qty: 10000 }],
+  stockBuild: [{ flavor: "Ranch", bags: 3600, on_hand: 50, bagsEach: 72, targetStaged: true }],
+  purchaseOrders: []
+});
+var ranchStaged = maxDrop.required.concat(maxDrop.covered).filter(function (r) { return r.flavor === "Ranch"; })[0];
+assert(ranchStaged && ranchStaged.onHand === 10000 && ranchStaged.targetStaged === 3600 && ranchStaged.toProduce === 0, "max() no longer drops Target staged when loose bags are larger");
+var mixedAway = plan.dedupeOnHand({ Ranch: { bags: 10000 } }, { Ranch: 3600 });
+assert(mixedAway.byFlavor.Ranch.bags === 10000 && mixedAway.byFlavor.Ranch.dropped === 3600, "the old max() would have dropped the smaller Target pile");
+
+var wave = [
+  { partner: "Target", po: "10002157898-1", due_date: "11/09/2026", flavor: "Dill Pickle", bags: 5040, cases: 70, status: "Open", load: "ship 11/09/2026 - 11/10/2026" },
+  { partner: "Target", po: "10002157898-2", due_date: "11/16/2026", flavor: "Ranch", bags: 720, cases: 10, status: "Open", load: "ship 11/16/2026 - 11/17/2026" },
+  { partner: "KeHE", po: "3942350", due_date: "10/7/2026", flavor: "Ranch", bags: 1440, cases: 20, status: "Open", load: "ship 10/07/2026", notes: "[[SPSSTAGE:open]]" },
+  { partner: "Target", po: "BOOKED", due_date: "11/02/2026", flavor: "Backyard BBQ", bags: 1440, cases: 20, status: "Open", notes: "New Legend pickup 11/11 9:00 AM MST" },
+  { partner: "Target", po: "SHORT", due_date: "10/20/2026", flavor: "Dill Pickle", bags: 7200, cases: 100, status: "Open", load: "ship 10/20/2026 - 10/21/2026" }
+];
+var states = plan.openDemandStates(wave, {
+  today: "2026-11-11",
+  stagedCases: 90,
+  bookings: plan.bookingsFromOrders([{ customer_po: "BOOKED", appointment: "11/11/2026 9:00 AM MST", notes: "New Legend" }])
+});
+function posOf(list) { return list.map(function (g) { return g.po; }).sort().join(","); }
+assert(posOf(states.awaiting.list) === "10002157898-1,BOOKED", "covered Target POs and booked pickups are awaiting pickup");
+assert(posOf(states.past.list) === "3942350,SHORT", "KeHE and uncovered Target POs stay past due");
+assert(!states.byPo["10002157898-2"] || states.byPo["10002157898-2"].state === "open", "a future Target wave is not awaiting pickup");
+var shipOnly = plan.openDemandStates(wave, { today: "2026-11-11", stagedCases: 0, bookings: {} });
+assert(posOf(shipOnly.past.list) === "10002157898-1,3942350,SHORT", "a ship window is not a booked pickup");
+assert(posOf(shipOnly.awaiting.list) === "BOOKED", "New Legend pickup text is a booking even when staged cases are zero");
+assert(read("app.js").indexOf("Built, awaiting pickup") >= 0, "order board names the awaiting pickup state");
+assert(read("data-health.js").indexOf("Built, awaiting pickup") >= 0, "past-due view names the awaiting pickup state");
 
 if (failed) {
   console.error(failed + " failed");

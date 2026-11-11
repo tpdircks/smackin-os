@@ -336,8 +336,36 @@
     // exception checks
     var excOrders = c.from("orders").select("id,status,ship_date,created_at,entered_by").neq("status", "Complete").neq("status", "Test").is("ship_date", null)
       .then(function (r) { var d = (r && r.data) || []; var cut = Date.now() - 30 * 86400000; return d.filter(function (o) { var t = new Date(o.created_at).getTime(); return !isTestRow(o) && !isNaN(t) && t < cut; }).length; }).catch(function () { return null; });
-    var excDemand = c.from("demand_lines").select("due_date,status,batch_id,batch_label,partner,po,bags").eq("status", "Open").limit(10000)
-      .then(function (r) { var midnight = new Date(); midnight.setHours(0,0,0,0); return stuckSummary((r && r.data) || [], midnight.getTime()); }).catch(function () { return null; });
+    var excDemand = Promise.all([
+      c.from("demand_lines").select("due_date,status,batch_id,batch_label,partner,po,bags,cases,load,notes").eq("status", "Open").limit(10000),
+      c.from("stock_build").select("item_key,on_hand").limit(200).then(function (r) { return r; }).catch(function () { return { data: [] }; }),
+      c.from("orders").select("customer_po,appointment,notes,carrier").limit(2000).then(function (r) { return r; }).catch(function () { return { data: [] }; })
+    ]).then(function (pair) {
+      var rows = (pair[0] && pair[0].data) || [];
+      var sb = (pair[1] && pair[1].data) || [];
+      var orders = (pair[2] && pair[2].data) || [];
+      var midnight = new Date(); midnight.setHours(0, 0, 0, 0);
+      var summary = stuckSummary(rows, midnight.getTime());
+      if (window.MAKE_PLAN && typeof MAKE_PLAN.openDemandStates === "function") {
+        var staged = 0;
+        sb.forEach(function (row) {
+          if (String(row.item_key || "").indexOf("Target_") === 0) staged += Number(row.on_hand) || 0;
+        });
+        var bookings = typeof MAKE_PLAN.bookingsFromOrders === "function" ? MAKE_PLAN.bookingsFromOrders(orders) : {};
+        var st = MAKE_PLAN.openDemandStates(rows, {
+          today: typeof MAKE_PLAN.denverISO === "function" ? MAKE_PLAN.denverISO(new Date()) : new Date().toISOString().slice(0, 10),
+          stagedCases: staged,
+          bookings: bookings
+        });
+        summary = {
+          pos: st.past.pos,
+          lines: st.past.lines,
+          list: st.past.list.map(function (g) { return { po: g.po, partner: g.partner, lines: g.lines, bags: g.bags, due: g.dueRaw || g.due }; }),
+          awaiting: st.awaiting
+        };
+      }
+      return summary;
+    }).catch(function () { return null; });
     var excPmac = loadMissingPmac(c);
 
     Promise.all([Promise.all(jobs), excOrders, excDemand, excPmac]).then(function (all) {
@@ -358,6 +386,13 @@
           }).join("; ") +
           '. These stay open until a source proves status. This screen does not close them.</div>'
         : '<div class="ex ok">No real open POs past due.</div>');
+      if (oldDemand && oldDemand.awaiting && oldDemand.awaiting.pos > 0) {
+        exc += '<div class="ex ok"><b>Built, awaiting pickup.</b> <b>' + oldDemand.awaiting.pos + '</b> Target PO(s) are built and waiting for pickup across ' + oldDemand.awaiting.lines + ' lines: ' +
+          (oldDemand.awaiting.list || []).map(function (g) {
+            return esc(g.partner) + " PO " + esc(g.po) + " (" + g.lines + " lines)";
+          }).join("; ") +
+          '. They are not past due.</div>';
+      }
       if (missingPmac == null) {
         exc += '';
       } else if (missingPmac.length) {
