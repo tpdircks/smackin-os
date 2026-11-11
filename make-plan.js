@@ -337,6 +337,48 @@
     };
   }
 
+  function linePack(line) {
+    var notes = String(line && line.notes || "");
+    var tag = /\[\[PACK:(seed4|cashew|minibucket)\]\]/.exec(notes);
+    if (tag) return tag[1];
+    var code = String(line && line.flavor_code || "");
+    var flavor = String(line && line.flavor || "");
+    if (code === "NUTS-BBQ" || code === "NUTS-CINNAMONCHURRO" || /^cashews?\b/i.test(flavor)) return "cashew";
+    if (code === "SMA77037" || /mini\s*bucket/i.test(flavor)) return "minibucket";
+    return "seed4";
+  }
+  function cashewOnHand(items, stock) {
+    var by = { "Cashews BBQ": 0, "Cashews Cinnamon Churro": 0 };
+    var ids = {};
+    (items || []).forEach(function (it) { ids[it.id] = it; if (it.code) ids[it.code] = it; });
+    (stock || []).forEach(function (row) {
+      if (!(num(row.qty) > 0) || heldLoc(row.location)) return;
+      var it = ids[row.item_id] || {};
+      var id = String(it.id || row.item_id || "");
+      var blob = (id + " " + (it.flavor || "") + " " + (it.name || "")).toLowerCase();
+      var name = "";
+      if (id === "NUTS-BBQ" || (String(it.category || "").toLowerCase() === "cashews" && /bbq/.test(blob))) name = "Cashews BBQ";
+      else if (id === "NUTS-CINNAMONCHURRO" || (String(it.category || "").toLowerCase() === "cashews" && /churro|cinnamon/.test(blob))) name = "Cashews Cinnamon Churro";
+      if (!name) return;
+      by[name] = round3(by[name] + num(row.qty));
+    });
+    return by;
+  }
+  function miniOnHand(items, stock) {
+    var ids = {};
+    (items || []).forEach(function (it) {
+      var cat = String(it.category || "").toLowerCase();
+      if (cat === "bucket" || cat.indexOf("buckets box") >= 0 || cat.indexOf("backyard sp") >= 0) return;
+      var blob = ((it.id || "") + " " + (it.code || "") + " " + (it.name || "") + " " + (it.flavor || "")).toLowerCase();
+      if (/mini/.test(blob) && /bucket/.test(blob)) ids[it.id] = 1;
+    });
+    var bags = 0;
+    (stock || []).forEach(function (row) {
+      if (!ids[row.item_id] || !(num(row.qty) > 0) || heldLoc(row.location)) return;
+      bags = round3(bags + num(row.qty));
+    });
+    return bags;
+  }
   function coreNames(extra) {
     var names = [
       "OG Original", "Cinnamon Churro", "Backyard BBQ", "Garlic Parmesan", "Dill Pickle",
@@ -355,6 +397,8 @@
     var mapRow = input.mapRow;
     if (!mapRow && root.ECOM && typeof root.ECOM.mapRow === "function") mapRow = root.ECOM.mapRow;
     var ecom = ecomFromShipping(input.shipping || [], mapRow);
+    var cashews = cashewOnHand(input.items || [], input.stock || []);
+    var minis = miniOnHand(input.items || [], input.stock || []);
     var loose = bag4OnHand(input.items || [], input.stock || []);
     var built = stockBuildBags(input.stockBuild || []);
     var hand = dedupeOnHand(loose.byFlavor, built.byFlavor);
@@ -373,9 +417,13 @@
     var spsAsOf = "";
     split.kept.forEach(function (line) {
       var f = line.flavor || "Unmapped";
+      var pack = linePack(line);
       var bags = num(line.bags);
-      if (!demand[f]) demand[f] = { sps: 0, ecom: 0 };
+      if (!demand[f]) demand[f] = { sps: 0, ecom: 0, pack: pack };
+      if (demand[f].pack !== pack) f = pack + ": " + f;
+      if (!demand[f]) demand[f] = { sps: 0, ecom: 0, pack: pack };
       demand[f].sps = round3(demand[f].sps + bags);
+      demand[f].pack = pack;
       if (line.flavor_code && !codes[f]) codes[f] = line.flavor_code;
       var due = parseDue(line.due_date);
       if (due && (!earliest[f] || due < earliest[f])) earliest[f] = due;
@@ -393,19 +441,26 @@
       if (at > spsAsOf) spsAsOf = at;
     });
     Object.keys(ecom.byFlavor).forEach(function (f) {
-      if (!demand[f]) demand[f] = { sps: 0, ecom: 0 };
+      if (!demand[f]) demand[f] = { sps: 0, ecom: 0, pack: "seed4" };
       demand[f].ecom = round3(demand[f].ecom + ecom.byFlavor[f]);
+      if (!demand[f].pack) demand[f].pack = "seed4";
       if (!customers["E-com"]) customers["E-com"] = { pos: {}, bags: 0 };
       customers["E-com"].bags = round3(customers["E-com"].bags + ecom.byFlavor[f]);
       customers["E-com"].pos["queue"] = ecom.orders;
     });
 
-    var names = coreNames(Object.keys(demand));
+    var names = coreNames(Object.keys(demand).filter(function (f) { return !demand[f].pack || demand[f].pack === "seed4"; }));
+    ["Cashews BBQ", "Cashews Cinnamon Churro", "Mini Bucket Mixed"].forEach(function (f) {
+      if (names.indexOf(f) < 0 && (demand[f] || (f.indexOf("Cashews") === 0 && cashews[f] > 0) || (f === "Mini Bucket Mixed" && minis > 0))) names.push(f);
+    });
     var flavors = names.map(function (f) {
-      var d = demand[f] || { sps: 0, ecom: 0 };
+      var d = demand[f] || { sps: 0, ecom: 0, pack: f.indexOf("Cashews") === 0 ? "cashew" : (f === "Mini Bucket Mixed" ? "minibucket" : "seed4") };
+      var pack = d.pack || "seed4";
       var dem = round3(d.sps + d.ecom);
       var oh = 0;
-      eachMatch(hand.byFlavor, f, function (row) { oh = round3(oh + num(row.bags)); });
+      if (pack === "cashew") oh = num(cashews[f] || 0);
+      else if (pack === "minibucket") oh = num(minis);
+      else eachMatch(hand.byFlavor, f, function (row) { oh = round3(oh + num(row.bags)); });
       var produce = Math.max(0, round3(dem - oh));
       var filmConfirmed = 0;
       var filmHeld = 0;
@@ -423,9 +478,12 @@
       var seasNeed = round3(produce * per);
       var kind = "covered";
       var ready = "Covered";
-      if (produce > 0 && filmConfirmed >= produce) { kind = "produce"; ready = "Ready to run"; }
+      if (pack !== "seed4") {
+        if (produce > 0) { kind = "produce"; ready = "Make this pack"; }
+      } else if (produce > 0 && filmConfirmed >= produce) { kind = "produce"; ready = "Ready to run"; }
       else if (produce > 0) { kind = "blocked"; ready = "Blocked, no film"; }
       return {
+        pack: pack,
         flavor: f,
         code: codes[f] || "",
         demand: dem,
@@ -448,35 +506,46 @@
       return row.demand > 0 || row.onHand > 0;
     });
 
-    var required = flavors.filter(function (r) { return r.toProduce > 0; })
-      .sort(function (a, b) { return b.toProduce - a.toProduce || a.flavor.localeCompare(b.flavor); });
-    var covered = flavors.filter(function (r) { return r.toProduce <= 0; })
-      .sort(function (a, b) { return b.surplus - a.surplus || a.flavor.localeCompare(b.flavor); });
-
-    var demandBags = 0;
-    var onHandBags = 0;
-    var produceBags = 0;
-    flavors.forEach(function (r) {
-      if (r.demand > 0) {
-        demandBags = round3(demandBags + r.demand);
-        onHandBags = round3(onHandBags + r.onHand);
-        produceBags = round3(produceBags + r.toProduce);
-      }
-    });
-    covered.forEach(function (r) {
-      if (!(r.demand > 0)) onHandBags = round3(onHandBags + r.onHand);
-    });
-    required.forEach(function (r) {
-      if (!(r.demand > 0)) onHandBags = round3(onHandBags + r.onHand);
-    });
+    function roll(rows) {
+      var demandBags = 0;
+      var onHandBags = 0;
+      var produceBags = 0;
+      rows.forEach(function (r) {
+        if (r.demand > 0) {
+          demandBags = round3(demandBags + r.demand);
+          onHandBags = round3(onHandBags + r.onHand);
+          produceBags = round3(produceBags + r.toProduce);
+        } else onHandBags = round3(onHandBags + r.onHand);
+      });
+      var required = rows.filter(function (r) { return r.toProduce > 0; })
+        .sort(function (a, b) { return b.toProduce - a.toProduce || a.flavor.localeCompare(b.flavor); });
+      var covered = rows.filter(function (r) { return r.toProduce <= 0; })
+        .sort(function (a, b) { return b.surplus - a.surplus || a.flavor.localeCompare(b.flavor); });
+      return {
+        required: required,
+        covered: covered,
+        headline: { demand: demandBags, onHand: onHandBags, toProduce: produceBags, cases: casesOf(produceBags), pallets: palletsOf(produceBags) }
+      };
+    }
+    var packs = [
+      Object.assign({ id: "seed4", title: "4 oz seed" }, roll(flavors.filter(function (r) { return r.pack !== "cashew" && r.pack !== "minibucket"; }))),
+      Object.assign({ id: "cashew", title: "Cashews" }, roll(flavors.filter(function (r) { return r.pack === "cashew"; }))),
+      Object.assign({ id: "minibucket", title: "Mini buckets" }, roll(flavors.filter(function (r) { return r.pack === "minibucket"; })))
+    ];
+    var required = packs[0].required;
+    var covered = packs[0].covered;
+    var demandBags = packs[0].headline.demand;
+    var onHandBags = packs[0].headline.onHand;
+    var produceBags = packs[0].headline.toProduce;
 
     var custRows = Object.keys(customers).map(function (name) {
       var c = customers[name];
       var poN = name === "E-com" ? (ecom.orders || 0) : Object.keys(c.pos).length;
       return { channel: name, pos: poN, bags: c.bags, cases: casesOf(c.bags) };
     }).sort(function (a, b) { return b.bags - a.bags || a.channel.localeCompare(b.channel); });
+    var custBags = custRows.reduce(function (s, c) { return s + c.bags; }, 0);
     custRows.forEach(function (c) {
-      c.pct = demandBags > 0 ? c.bags / demandBags : 0;
+      c.pct = custBags > 0 ? c.bags / custBags : 0;
     });
 
     var weeks = { past: 0, thisWeek: 0, next: 0, later: 0, undated: 0 };
@@ -508,7 +577,8 @@
     if (loose.asOf) notes.push("4 oz bag stock as of " + loose.asOf.slice(0, 16).replace("T", " ") + " UTC.");
     if (built.asOf) notes.push("Stock Build as of " + built.asOf.slice(0, 16).replace("T", " ") + " UTC.");
     if (spsAsOf) notes.push("SPS demand lines as of " + spsAsOf.slice(0, 16).replace("T", " ") + " UTC.");
-    notes.push("On hand uses usable 4 oz bags (returns, quarantine, QA-hold, and other hold locations are out). Stock Build cases are the same finished goods, so the larger of the two counts is kept and the smaller is not added. PCA Pizza, Deep Dish Pizza, and Cheezy Pizza are one flavor.");
+    notes.push("On hand for 4 oz seed uses usable bags (returns, quarantine, QA-hold, and other hold locations are out). Stock Build cases are the same finished goods, so the larger of the two counts is kept and the smaller is not added. PCA Pizza, Deep Dish Pizza, and Cheezy Pizza are one flavor.");
+    notes.push("Cashews use NUTS-BBQ and NUTS-CINNAMONCHURRO only. Mini Bucket Mixed is 24 per case from mini-bucket items. Neither is subtracted from 4 oz seed stock.");
     if (built.mixed) notes.push(fmt(built.mixed) + " Stock Build bags are variety or mixed packs and are not assigned to one flavor.");
     notes.push("Dollar Tree 2.75 oz is display only and is not netted against demand.");
     if (dt.refused) notes.push("The unconfirmed 332,800 Dollar Tree units were not used.");
@@ -528,6 +598,7 @@
         cases: casesOf(produceBags),
         pallets: palletsOf(produceBags)
       },
+      packs: packs,
       required: required,
       covered: covered,
       customers: custRows,
@@ -627,9 +698,13 @@
   }
   function view(plan) {
     var h = plan.headline;
+    var packLine = (plan.packs || []).map(function (p) {
+      return "<b>" + esc(p.title) + "</b> demand " + fmt(p.headline.demand) + ", on hand " + fmt(p.headline.onHand) + ", to produce " + fmt(p.headline.toProduce);
+    }).join("<br>");
     var head = '<div class="card" data-slot="makeplan"><h2>Make Plan</h2>' +
-      '<p class="hint">Week of ' + esc(plan.weekLabel) + ' (Monday to Sunday, America/Denver). View only.</p>' +
+      '<p class="hint">Week of ' + esc(plan.weekLabel) + ' (Monday to Sunday, America/Denver). View only. Pack types are not netted against each other.</p>' +
       '<p style="font-size:18px;margin:8px 0"><b>Demand</b> ' + fmt(h.demand) + ' bags &nbsp; <b>On hand</b> ' + fmt(h.onHand) + ' &nbsp; <b>To produce</b> ' + fmt(h.toProduce) + ' bags (' + fmt(h.cases) + ' cs / ' + h.pallets + ' pallets)</p>' +
+      (packLine ? '<p class="hint">' + packLine + "</p>" : "") +
       '<p class="hint">Key: <span class="mp-dot" style="background:#2E7D32"></span> Covered &nbsp; <span class="mp-dot" style="background:#B7791F"></span> Produce this week (film on hand) &nbsp; <span class="mp-dot" style="background:#B42318"></span> Blocked, no film. Production required is largest first.</p>' +
       '<p><button class="primary" type="button" onclick="UI.makePlanCopy()">Copy as email</button> <button class="ghost" type="button" onclick="UI.makePlanCsv()">Download CSV</button></p>' +
       '<p class="hint">Sources: SPS open lines' + (plan.asOf.sps ? " as of " + esc(plan.asOf.sps.slice(0, 16).replace("T", " ")) + " UTC" : "") +

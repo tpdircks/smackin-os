@@ -6,6 +6,7 @@ var fs = require("fs");
 var path = require("path");
 require("../ecom.js");
 var plan = require("../make-plan.js");
+var SPS = require("../sps-map.js");
 
 var root = path.resolve(__dirname, "..");
 var failed = 0;
@@ -95,7 +96,7 @@ assert(read("app.js").indexOf("function viewMakePlan") >= 0 && read("app.js").in
 assert(read("app.js").indexOf("async function receive(item, qty, lot, op, meta)") < 0 || read("db.js").indexOf("async function receive(item, qty, lot, op, meta)") >= 0, "receive signature stays in db");
 assert(read("make-plan.js").indexOf(".insert(") < 0 && read("make-plan.js").indexOf(".update(") < 0 && read("make-plan.js").indexOf(".delete(") < 0, "plan does not write");
 assert(read("dept-homes.js").indexOf('primary: "makeplan"') >= 0, "Demand opens Make Plan");
-assert(read("index.html").indexOf("make-plan.js?b=1") >= 0, "script tag");
+assert(read("index.html").indexOf("make-plan.js?b=2") >= 0, "script tag");
 assert(read("service-worker.js").indexOf('"./make-plan.js"') >= 0, "precached");
 
 var refused = plan.build({
@@ -119,6 +120,63 @@ var pizza = plan.build({
 });
 var pizzaRow = pizza.required.concat(pizza.covered).filter(function (r) { return r.flavor === "PCA Pizza"; })[0];
 assert(pizzaRow && pizzaRow.onHand === 12183 && pizzaRow.toProduce === 0, "Deep Dish stock covers PCA Pizza demand");
+
+function one(desc, qty, uom, extra) {
+  var line = Object.assign({ description: desc, qty: qty, uom: uom, lineNo: "1" }, extra || {});
+  return SPS.buildDemand({ partner: "Vistar", po: "PO", orderLines: [line] }, "out")[0];
+}
+var cashew = one("6/12 4 oz Cashews BBQ Backyard", 93, "Case", { buyerItem: "SMA55478" });
+assert(cashew.flavor === "Cashews BBQ" && cashew.flavor_code === "NUTS-BBQ" && cashew.bags === 93 * 72, "cashew BBQ is its own 72-bag case");
+assert(cashew.notes.indexOf("[[PACK:cashew]]") >= 0, "cashew pack tag");
+var churroSeed = one("6/12 4 oz Seed Sunflower Cinnamon Churro", 25, "Case");
+assert(churroSeed.flavor === "Cinnamon Churro" && churroSeed.flavor_code === "S02" && churroSeed.bags === 25 * 72, "seed churro stays seed");
+var cashewChurro = one("6/12 4 oz Cashews Cinnamon Churro", 56, "Case", { buyerItem: "SMA55479" });
+assert(cashewChurro.flavor === "Cashews Cinnamon Churro" && cashewChurro.bags === 56 * 72, "cashew churro is not seed churro");
+var mini = one("6 4 oz Sunflower Mini Bucket Mixed", 284, "Case", { buyerItem: "SMA77037" });
+assert(mini.flavor === "Mini Bucket Mixed" && mini.bags === 284 * 24 && mini.notes.indexOf("[[PACK:minibucket]]") >= 0, "mini bucket is 24 per case");
+assert(SPS.buildDemand({ partner: "Vistar", po: "PO", orderLines: [{ description: "6 4 oz Sunflower Mini Bucket Mixed", qty: 2, uom: "Case", buyerItem: "SMA77037", lineNo: "1" }] }, "out").length === 1, "mini bucket does not explode");
+var candy = one("6/12 4 oz Sunflower Seed Cotton Candy", 149, "Case", { buyerItem: "SMA77039" });
+assert(candy.flavor === "Cotton Candy" && candy.flavor_code === "L56" && candy.bags === 149 * 72, "cotton candy is L56 at 72 bags");
+var eachLine = one("SMACKIN Sunflower Seeds 4OZ Cinnamon Churro", 648, "Each");
+assert(eachLine.flavor === "Cinnamon Churro" && eachLine.bags === 648, "Bass Pro and Target eaches stay eaches");
+var kehe = one("Sunflower Seeds Cinnamon Churro Pack : 72", 15, "Case", { pack: 72 });
+assert(kehe.flavor === "Cinnamon Churro" && kehe.bags === 15 * 72, "KeHE pack 72 stays 72");
+var pizzaSeed = one("6/12 4 oz Seed Sunflower PCA Pizza", 50, "Case");
+assert(pizzaSeed.flavor === "PCA Pizza" && pizzaSeed.bags === 50 * 72, "PCA Pizza stays a seed flavor");
+
+var splitPack = plan.build({
+  now: NOW,
+  lines: [
+    { partner: "Vistar", po: "1", flavor: "Cashews BBQ", flavor_code: "NUTS-BBQ", bags: 200, status: "Open", notes: "[[PACK:cashew]]", due_date: "11/19/2026" },
+    { partner: "Vistar", po: "1", flavor: "Backyard BBQ", flavor_code: "S03", bags: 100, status: "Open", notes: "[[PACK:seed4]]", due_date: "11/19/2026" },
+    { partner: "Vistar", po: "2", flavor: "Mini Bucket Mixed", flavor_code: "SMA77037", bags: 48, status: "Open", notes: "[[PACK:minibucket]]", due_date: "11/19/2026" }
+  ],
+  items: [
+    { id: "BAG4-S03", category: "bag4", flavor: "Backyard BBQ" },
+    { id: "NUTS-BBQ", category: "cashews", flavor: "Cashew BBQ", name: "Cashew BBQ" },
+    { id: "BKT-STD", category: "bucket", flavor: "Bucket", name: "Bucket - Standard" }
+  ],
+  stock: [
+    { item_id: "BAG4-S03", location: "RECEIVING", qty: 5000 },
+    { item_id: "NUTS-BBQ", location: "RACK B", qty: 80 },
+    { item_id: "BKT-STD", location: "RECEIVING", qty: 900 }
+  ],
+  purchaseOrders: []
+});
+var seedBbq = splitPack.packs[0].required.concat(splitPack.packs[0].covered).filter(function (r) { return r.flavor === "Backyard BBQ"; })[0];
+var nutBbq = splitPack.packs[1].required.concat(splitPack.packs[1].covered).filter(function (r) { return r.flavor === "Cashews BBQ"; })[0];
+var miniRow = splitPack.packs[2].required.concat(splitPack.packs[2].covered).filter(function (r) { return r.flavor === "Mini Bucket Mixed"; })[0];
+assert(seedBbq && seedBbq.onHand === 5000 && seedBbq.toProduce === 0, "seed BBQ keeps bag stock");
+assert(nutBbq && nutBbq.onHand === 80 && nutBbq.demand === 200 && nutBbq.toProduce === 120, "cashew need uses NUTS-BBQ only");
+assert(miniRow && miniRow.onHand === 0 && miniRow.demand === 48 && miniRow.toProduce === 48, "empty buckets are not mini-bucket stock");
+assert(splitPack.headline.demand === 100, "seed headline does not include cashew or mini demand");
+var sync = read("supabase/functions/sps-sync/index.js");
+assert(sync.indexOf('Deno.env.get("SPS_FOLDER") || "out"') >= 0, "SPS folder default is out");
+assert(sync.indexOf('if (f === "testout") f = "out"') >= 0, "a stale testout secret still reads out");
+assert(sync.indexOf("MAX_FILES = 30") >= 0 && sync.indexOf("BUDGET_MS = 60000") >= 0, "live folder budget");
+assert(sync.indexOf("method: \"DELETE\"") < 0 || sync.indexOf("api.spscommerce.com") >= 0, "SPS list stays a GET");
+assert(sync.indexOf("/transactions/v5/data/") >= 0 && sync.indexOf("never deletes or moves") >= 0, "SPS files are not deleted or moved");
+assert(sync.indexOf("fetch(url, { headers:") >= 0 && sync.indexOf("fetch(url, { method:") < 0, "SPS list is a GET");
 
 if (failed) {
   console.error(failed + " failed");

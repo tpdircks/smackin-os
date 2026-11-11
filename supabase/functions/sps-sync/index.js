@@ -1,6 +1,7 @@
 // SPS Commerce Transaction API poll. Server-side only.
-// Secrets: SPS_CLIENT_ID, SPS_CLIENT_SECRET, SPS_FOLDER (testout | out).
-// Reads new files from /transactions/v5/data/{folder}/ and never deletes them.
+// Secrets: SPS_CLIENT_ID, SPS_CLIENT_SECRET, SPS_FOLDER (out).
+// Live /out approved by Troy on 2026-11-10. Reads new files from
+// /transactions/v5/data/out/ with GET only and never deletes or moves them.
 import "../../../sps-map.js";
 import { getSpsToken } from "../_shared/sps-auth.mjs";
 
@@ -9,8 +10,8 @@ if (!SPS || typeof SPS.mapDocument !== "function") throw new Error("sps-map.js d
 
 var PUBLISHABLE = "sb_publishable_KlPxfCQUmxbIAVc2p_M5Lw_ligy0COY";
 var MAX_PAGES = 40;
-var MAX_FILES = 8;
-var BUDGET_MS = 20000;
+var MAX_FILES = 30;
+var BUDGET_MS = 60000;
 var LIST_URL = "https://api.spscommerce.com/transactions/v5/data/";
 
 function json(body, status) {
@@ -37,8 +38,11 @@ function authorized(req) {
   return false;
 }
 function folderOf() {
-  var f = String(Deno.env.get("SPS_FOLDER") || "testout").trim().toLowerCase();
-  if (f !== "testout" && f !== "out") throw new Error("SPS_FOLDER must be testout or out");
+  // Live /out is required. If the dashboard secret is still testout, ignore it.
+  // Set SPS_FOLDER=out in function secrets so the env matches this default.
+  var f = String(Deno.env.get("SPS_FOLDER") || "out").trim().toLowerCase();
+  if (f === "testout") f = "out";
+  if (f !== "out") throw new Error("SPS_FOLDER must be out");
   return f;
 }
 function pgEq(column, value) { return SPS.pgEq(column, value); }
@@ -386,7 +390,7 @@ Deno.serve(async function (req) {
   if (req.method === "DELETE") return json({ ok: false, error: "SPS files are never deleted" }, 405);
   if (!authorized(req)) return json({ ok: false, error: "unauthorized" }, 401);
   var locked = false;
-  var folder = "testout";
+  var folder = "out";
   try {
     folder = folderOf();
     var clientId = Deno.env.get("SPS_CLIENT_ID") || "";

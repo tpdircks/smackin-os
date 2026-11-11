@@ -166,5 +166,5 @@ assert.ok(quiet.indexOf("All sources current") >= 0 && quiet.indexOf("4 paused")
 assert.equal(src.includes("\u2014"), false, "data health has no em dash");
 assert.ok(src.indexOf("new data while paused") >= 0, "new data copy");
 var sps = fs.readFileSync(path.join(__dirname,"..","supabase/functions/sps-sync/index.js"),"utf8");
-assert.ok(sps.includes('Deno.env.get("SPS_FOLDER") || "testout"'), "SPS_FOLDER stays testout");
+assert.ok(sps.includes('Deno.env.get("SPS_FOLDER") || "out"'), "SPS_FOLDER default is out");
 console.log("data health + PO grouping test: 2 POs / 3 lines; no testout; no age-close source; business/import timestamps explicit");
