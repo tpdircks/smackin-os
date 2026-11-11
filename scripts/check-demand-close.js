@@ -25,7 +25,7 @@ eq(src.indexOf("production-orders") < 0 && src.indexOf("production_orders") < 0,
 eq(prod.indexOf("demand-close") < 0, "production-orders.js unchanged by this module");
 eq(src.indexOf("nextStatus") < 0 && src.indexOf("NOTE_PAST") < 0, "no age-only Shipped status");
 eq(src.indexOf(".update(body)") < 0 && src.indexOf("applyPatches(sb") < 0, "cleanup no longer persists closes");
-eq(sw.indexOf('const CACHE = "smackin-inv-v311"') >= 0, "cache bump");
+eq(sw.indexOf('const CACHE = "smackin-inv-v312"') >= 0, "cache bump");
 eq(sw.indexOf('"./demand-close-cleanup.js"') >= 0, "sw asset");
 eq(html.indexOf('demand-close-cleanup.js?b=3') >= 0, "script tag");
 eq(html.indexOf("demand-autoclose.js?b=5") >= 0, "autoclose cache bust");

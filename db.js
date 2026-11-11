@@ -26,7 +26,7 @@ window.DB = (function () {
   const seed = window.SMACKIN_SEED;
   let mode = "local";
   let sb = null;                  // supabase client
-  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [], returnsLog: [], prodOut: [], lineStatus: [], forecast: [], ecomDemand: [], maintenance: [], fulfillmentDaily: [] };
+  let cache = { items: [], suppliers: [], stock: [], pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], demandLines: [], demandPoStage: [], returnsLog: [], prodOut: [], lineStatus: [], forecast: [], ecomDemand: [], maintenance: [], fulfillmentDaily: [] };
   let subscribers = [];
 
   function emit() { subscribers.forEach(fn => { try { fn(); } catch (e) {} }); }
@@ -93,6 +93,12 @@ window.DB = (function () {
   function maintenance() { return cache.maintenance || []; }
   function fulfillmentDaily() { return cache.fulfillmentDaily || []; }
   function demandLines() { return cache.demandLines || []; }
+  function demandPoStage() { return cache.demandPoStage || []; }
+  function stageEditorEmail(email) {
+    var who = String(email || "");
+    if (!who && window.POLINES && typeof POLINES.currentEmail === "function") who = POLINES.currentEmail();
+    return window.POLINES && typeof POLINES.canEdit === "function" && POLINES.canEdit(who);
+  }
   function productionOutput() { return cache.prodOut || []; }
   function lineStatus() { return cache.lineStatus || []; }
   function forecast() { return cache.forecast || []; }
@@ -185,9 +191,9 @@ window.DB = (function () {
     loadOrSeed() {
       let raw = null;
       try { raw = localStorage.getItem(KEY); } catch (e) {}
-      if (raw) { cache = JSON.parse(raw); if (!cache.pos) cache.pos = []; if (!cache.log) cache.log = []; if (!cache.seasLots) cache.seasLots = []; if (!cache.orders) cache.orders = []; if (!cache.rdRequests) cache.rdRequests = []; if (!cache.supplierPos) cache.supplierPos = []; if (!cache.orderDocs) cache.orderDocs = []; if (!cache.consumption) cache.consumption = []; if (!cache.seedLots) cache.seedLots = []; if (!cache.stockBuild) cache.stockBuild = {}; if (!cache.shippingLog) cache.shippingLog = []; if (!cache.receivingLog) cache.receivingLog = []; if (!cache.improvements) cache.improvements = []; if (!cache.maintenance) cache.maintenance = []; return; }
+      if (raw) { cache = JSON.parse(raw); if (!cache.pos) cache.pos = []; if (!cache.log) cache.log = []; if (!cache.seasLots) cache.seasLots = []; if (!cache.orders) cache.orders = []; if (!cache.rdRequests) cache.rdRequests = []; if (!cache.supplierPos) cache.supplierPos = []; if (!cache.orderDocs) cache.orderDocs = []; if (!cache.consumption) cache.consumption = []; if (!cache.seedLots) cache.seedLots = []; if (!cache.stockBuild) cache.stockBuild = {}; if (!cache.shippingLog) cache.shippingLog = []; if (!cache.receivingLog) cache.receivingLog = []; if (!cache.improvements) cache.improvements = []; if (!cache.maintenance) cache.maintenance = []; if (!cache.demandPoStage) cache.demandPoStage = []; return; }
       const s = seed.build();
-      cache = { items: s.items, suppliers: s.suppliers, stock: s.stock, pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], maintenance: [] };
+      cache = { items: s.items, suppliers: s.suppliers, stock: s.stock, pos: [], log: [], seasLots: [], orders: [], rdRequests: [], supplierPos: [], orderDocs: [], consumption: [], seedLots: [], stockBuild: {}, shippingLog: [], receivingLog: [], improvements: [], prodDays: [], prodPallets: [], refDocs: [], maintenance: [], demandPoStage: [] };
       this.save();
     },
     save() { try { localStorage.setItem(KEY, JSON.stringify(cache)); } catch (e) {} },
@@ -434,6 +440,13 @@ window.DB = (function () {
         qty_hold: Number(r.qty_hold) || 0, qty_release: Number(r.qty_release) || 0,
         qty_scrap: Number(r.qty_scrap) || 0, qty_other: Number(r.qty_other) || 0
       }));
+      try {
+        const staged = await readRows(function () { return sb.from("demand_po_stage").select("*").order("partner", { ascending: true }).order("po", { ascending: true }); }, 2000);
+        cache.demandPoStage = (staged && staged.data ? staged.data : []).map(r => ({
+          partner: r.partner, po: r.po, pickup_date: r.pickup_date ? String(r.pickup_date).slice(0, 10) : "",
+          note: r.note || "", updated_at: r.updated_at || "", updated_by: r.updated_by || ""
+        }));
+      } catch (e) { cache.demandPoStage = cache.demandPoStage || []; }
       cache.demandLines = (dmd && dmd.data ? dmd.data : []).map(r => ({
         id: r.id, batch_id: r.batch_id, batch_label: r.batch_label, source: r.source,
         partner: r.partner, po: r.po, dc: r.dc, flavor: r.flavor, flavor_code: r.flavor_code,
@@ -571,7 +584,7 @@ window.DB = (function () {
     subscribeRealtime() {
       // One channel, debounced full reload. transactions used to be the only
       // broadcast; screens whose write did not also insert a log stayed stale.
-      const tables = ["stock", "transactions", "orders", "demand_lines", "receiving_log", "shipping_log", "production_output", "line_status", "ecom_demand", "supplier_pos", "purchase_orders", "po_lines", "seasoning_lots", "seed_lots", "improvements", "maintenance_items", "quality_logs", "production_orders", "kv_status", "fulfillment_daily", "returns_log", "items", "production_days", "production_pallets", "consumption", "order_docs", "rd_requests", "stock_build", "sku_catalog"];
+      const tables = ["stock", "transactions", "orders", "demand_lines", "demand_po_stage", "receiving_log", "shipping_log", "production_output", "line_status", "ecom_demand", "supplier_pos", "purchase_orders", "po_lines", "seasoning_lots", "seed_lots", "improvements", "maintenance_items", "quality_logs", "production_orders", "kv_status", "fulfillment_daily", "returns_log", "items", "production_days", "production_pallets", "consumption", "order_docs", "rd_requests", "stock_build", "sku_catalog"];
       let ch = sb.channel("inv");
       tables.forEach(function (t) {
         ch = ch.on("postgres_changes", { event: "*", schema: "public", table: t }, function () { scheduleRefresh(); });
@@ -2131,6 +2144,47 @@ window.DB = (function () {
     }
     emit(); return { ok: true, count: clean.length, batch_id };
   }
+  async function saveDemandPoStage(rec, email) {
+    if (!stageEditorEmail(email)) return { ok: false, reason: "forbidden" };
+    rec = rec || {};
+    const partner = String(rec.partner || "").trim();
+    const po = String(rec.po || "").trim();
+    if (!partner || !po) return { ok: false, reason: "missing" };
+    const who = String(email || (window.POLINES && POLINES.currentEmail ? POLINES.currentEmail() : "") || "");
+    const row = {
+      partner: partner,
+      po: po,
+      pickup_date: rec.pickup_date ? String(rec.pickup_date).slice(0, 10) : null,
+      note: String(rec.note || ""),
+      updated_at: new Date().toISOString(),
+      updated_by: who
+    };
+    if (mode === "cloud") {
+      await must(sb.from("demand_po_stage").upsert(row, { onConflict: "partner,po" }), "demand_po_stage");
+      await cloud.loadAll();
+    } else {
+      cache.demandPoStage = (cache.demandPoStage || []).filter(r => !(r.partner === partner && r.po === po));
+      cache.demandPoStage.push(Object.assign({}, row, { pickup_date: row.pickup_date || "" }));
+      local.save();
+    }
+    emit();
+    return { ok: true };
+  }
+  async function clearDemandPoStage(partner, po, email) {
+    if (!stageEditorEmail(email)) return { ok: false, reason: "forbidden" };
+    partner = String(partner || "").trim();
+    po = String(po || "").trim();
+    if (!partner || !po) return { ok: false, reason: "missing" };
+    if (mode === "cloud") {
+      await must(sb.from("demand_po_stage").delete().eq("partner", partner).eq("po", po), "demand_po_stage");
+      await cloud.loadAll();
+    } else {
+      cache.demandPoStage = (cache.demandPoStage || []).filter(r => !(r.partner === partner && r.po === po));
+      local.save();
+    }
+    emit();
+    return { ok: true };
+  }
   async function setDemandStatus(id, status, op) {
     const cur = (cache.demandLines || []).find(x => String(x.id) === String(id));
     const logEntry = { a: "Demand " + status, d: cur ? (cur.partner + " " + cur.po + " " + cur.flavor) : String(id), u: op, t: new Date().toISOString() };
@@ -2980,7 +3034,7 @@ window.DB = (function () {
 
   return {
     init, onChange, refresh: function () { return refreshFromCloud(true); }, get mode() { return mode; },
-    demandLines, importDemand, setDemandStatus, shipDemandPO, clearDemandBatch, clearAllDemand, remapDemandFlavors,
+    demandLines, demandPoStage, saveDemandPoStage, clearDemandPoStage, importDemand, setDemandStatus, shipDemandPO, clearDemandBatch, clearAllDemand, remapDemandFlavors,
     productionOutput, addProdOutput, deleteProdOutput,
     lineStatus, addMachine, setLineStatus, deleteMachine,
     forecast,
