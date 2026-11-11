@@ -1312,11 +1312,19 @@
       } else if (demandFam.indexOf(tab) >= 0) {
         const dl = DB.demandLines ? DB.demandLines() : [];
         const isTest = r => String(r.status || "").toLowerCase() === "test" || String(r.batch_id || "") === "SPS-TEST" || String(r.batch_label || "").toLowerCase().indexOf("testout") >= 0;
-        const openRows = dl.filter(r => (r.status || "Open") === "Open" && !isTest(r) && r.po);
-        const overdueByPO = {};
-        openRows.forEach(r => { const iso = dueISO(r.due_date); if (!iso || iso >= today) return; const key = String(r.partner || "Unknown") + "|" + r.po; (overdueByPO[key] || (overdueByPO[key] = { count: 0 })).count++; });
-        const overduePOs = Object.keys(overdueByPO).length;
-        const overdueLines = Object.keys(overdueByPO).reduce((sum, key) => sum + overdueByPO[key].count, 0);
+        const pickup = demandPickupStates();
+        let overduePOs = 0, overdueLines = 0;
+        if (pickup) {
+          overduePOs = pickup.past.pos;
+          overdueLines = pickup.past.lines;
+          if (pickup.awaiting.pos) push("low", plural(pickup.awaiting.pos, "Target PO") + " built, awaiting pickup (" + pickup.awaiting.lines + " lines)");
+        } else {
+          const openRows = dl.filter(r => (r.status || "Open") === "Open" && !isTest(r) && r.po);
+          const overdueByPO = {};
+          openRows.forEach(r => { const iso = dueISO(r.due_date); if (!iso || iso >= today) return; const key = String(r.partner || "Unknown") + "|" + r.po; (overdueByPO[key] || (overdueByPO[key] = { count: 0 })).count++; });
+          overduePOs = Object.keys(overdueByPO).length;
+          overdueLines = Object.keys(overdueByPO).reduce((sum, key) => sum + overdueByPO[key].count, 0);
+        }
         const unmapped = dl.filter(r => !isTest(r) && /^UNMAPPED/i.test(String(r.flavor || ""))).length;
         if (overduePOs) push("out", plural(overduePOs, "open PO") + " past due (" + overdueLines + " lines); verify live status before closing");
         if (unmapped) push("low", plural(unmapped, "demand line") + " with an unmapped flavor; re-map");
@@ -4140,6 +4148,22 @@
     if (window.MAKE_PLAN && typeof MAKE_PLAN.classifyLine === "function") return MAKE_PLAN.classifyLine(r, new Date()).keep;
     return (r.status || "Open") === "Open";
   }
+  function demandPickupStates() {
+    if (!window.MAKE_PLAN || typeof MAKE_PLAN.openDemandStates !== "function") return null;
+    var staged = 0;
+    var counts = DB.stockBuild ? DB.stockBuild() : {};
+    (typeof SB_ITEMS !== "undefined" ? SB_ITEMS : []).forEach(function (item) {
+      if (item.cat !== "Target") return;
+      staged += Number((counts[item.key] || {}).on_hand) || 0;
+    });
+    var records = (DB.orders ? DB.orders() : []).concat(DB.shippingLog ? DB.shippingLog() : []);
+    var bookings = typeof MAKE_PLAN.bookingsFromOrders === "function" ? MAKE_PLAN.bookingsFromOrders(records) : {};
+    return MAKE_PLAN.openDemandStates(DB.demandLines ? DB.demandLines() : [], {
+      today: typeof MAKE_PLAN.denverISO === "function" ? MAKE_PLAN.denverISO(new Date()) : new Date().toISOString().slice(0, 10),
+      stagedCases: staged,
+      bookings: bookings
+    });
+  }
   function viewDemandBoard() {
     const all = (DB.demandLines ? DB.demandLines() : []);
     if (!all.length) return '<div class="card"><h2>' + L("demandboard") + '</h2><p class="muted">' + L("dmNone") + '</p>' +
@@ -4156,6 +4180,9 @@
     const totCases = openRows.reduce((s, r) => s + (Number(r.cases) || 0), 0);
     const totBags = openRows.reduce((s, r) => s + (Number(r.bags) || 0), 0);
     const openPOs = new Set(openRows.map(r => r.source + r.po)).size;
+    const pickup = demandPickupStates();
+    const awaitingN = pickup ? pickup.awaiting.pos : 0;
+    const pastN = pickup ? pickup.past.pos : 0;
     const psel = '<select onchange="UI.dmdSet(\'partner\',this.value)"><option value="">' + L("dmAllPartners") + '</option>' +
       partners.map(p => '<option' + (p === dmdPartner ? ' selected' : '') + '>' + esc(p) + '</option>').join("") + '</select>';
     const fsel = '<select onchange="UI.dmdSet(\'flavor\',this.value)"><option value="">' + L("dmAllFlavors") + '</option>' +
@@ -4168,12 +4195,16 @@
       '<p class="hint">' + L("dmHint") + '</p>' +
       '<div class="kpis"><div class="kpi"><div class="n">' + fmt(openPOs) + '</div><div class="l">' + L("dmPOs") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(totCases) + '</div><div class="l">' + L("dmCases") + '</div></div>' +
-      '<div class="kpi"><div class="n">' + fmt(totBags) + '</div><div class="l">' + L("dmBags") + '</div></div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(totBags) + '</div><div class="l">' + L("dmBags") + '</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(pastN) + '</div><div class="l">Past due</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(awaitingN) + '</div><div class="l">Built, awaiting pickup</div></div></div>' +
       '<div class="row" style="margin-top:10px">' + psel + fsel + ssel + '</div></div>';
     const body = rows.length ? rows.map(r => {
       const open = (r.status || "Open") === "Open";
       const stage = open && window.SPSMap && typeof SPSMap.stageLabel === "function" ? SPSMap.stageLabel(r) : "";
-      const shipBtn = open ? '<button class="ghost sm" onclick="UI.dmShip(\'' + r.source + '\',\'' + esc(r.po) + '\')">' + L("dmShip") + '</button>' + (stage ? '<div class="muted sm">' + esc(stage) + '</div>' : '')
+      const poState = pickup && pickup.byPo ? pickup.byPo[r.po] : null;
+      const statePill = poState && poState.state === "awaiting" ? ' <span class="pill ok">Built, awaiting pickup</span>' : (poState && poState.state === "past" ? ' <span class="pill out">Past due</span>' : "");
+      const shipBtn = open ? '<button class="ghost sm" onclick="UI.dmShip(\'' + r.source + '\',\'' + esc(r.po) + '\')">' + L("dmShip") + '</button>' + (stage ? '<div class="muted sm">' + esc(stage) + '</div>' : '') + statePill
         : '<span class="muted sm">' + esc(r.status || L("dmShipped")) + '</span>';
       const dc = (r.dc || (r.notes || "")) ? esc(r.dc || "") : "";
       return '<tr><td>' + esc(r.partner) + '</td><td><b>' + esc(r.po) + '</b>' + (r.load ? ' <span class="muted sm">L' + esc(r.load) + '</span>' : '') + '</td>' +
