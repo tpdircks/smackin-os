@@ -16,7 +16,7 @@ var css = read("dept-density.css");
 var html = read("index.html");
 var sw = read("service-worker.js");
 
-eq(sw.indexOf('const CACHE = "smackin-inv-v309"') >= 0, "cache");
+eq(sw.indexOf('const CACHE = "smackin-inv-v310"') >= 0, "cache");
 eq(sw.indexOf("./dept-boards.js") >= 0, "worker caches boards");
 eq(html.indexOf("dept-boards.js?b=1") >= 0, "script");
 eq(html.indexOf("dept-density.css?b=2") >= 0, "density css");

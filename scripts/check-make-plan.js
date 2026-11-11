@@ -30,7 +30,7 @@ var lines = [
   { partner: "KeHE", po: "NEW1", due_date: "11/12/2026", flavor: "OG Original", flavor_code: "S01", bags: 72, status: "New" }
 ];
 var split = plan.splitLines(lines, NOW);
-assert(split.excluded.map(function (e) { return e.po; }).join(",") === "10002133500,10002144994", "old Target POs drop");
+assert(split.kept.some(function (l) { return l.po === "10002133500"; }) && split.kept.some(function (l) { return l.po === "10002144994"; }), "older Target POs stay open");
 assert(split.kept.some(function (l) { return l.po === "10002157898"; }), "this week's Target PO stays");
 assert(split.kept.some(function (l) { return l.po === "14903367"; }), "past-due non-Target stays");
 assert(!split.kept.some(function (l) { return l.po === "ASN1" || l.po === "INV1" || l.po === "DONE"; }), "ASN, invoice, and complete stay out");
@@ -77,26 +77,27 @@ var built = plan.build({
   recipe: function () { return { seas_lbs: 8 }; }
 });
 assert(built.wip.note === "No WIP PO-tab orders in OS", "empty PO tab note");
-assert(built.headline.toProduce === Math.max(0, (5040 + 12) - 7200) + Math.max(0, 72 - 50) + Math.max(0, 288 - 0), "to produce is demand minus the kept on hand");
+assert(built.headline.toProduce === Math.max(0, (5040 + 12) - 7200) + Math.max(0, 72 - 50) + Math.max(0, 288 + 80) + 100, "to produce keeps older Target bags");
 var dill = built.required.concat(built.covered).filter(function (r) { return r.flavor === "Dill Pickle"; })[0];
 assert(dill && dill.onHand === 7200 && dill.demand === 5052, "Dill keeps the larger count and adds the unshipped 4 oz queue once");
 assert(dill.ecom === 12, "shipped ShipStation rows are not demand");
 assert(built.ecom.oz15 === 6, "1.5 oz queue is counted aside, not as 4 oz");
 assert(dill.film === 0 && dill.filmHeld === 200000, "film over 100,000 is held");
 assert(built.dollarTree.total === 7920, "Dollar Tree units stay on the display");
-assert(built.headline.demand === 5040 + 12 + 288 + 72, "headline demand skips excluded Target and ASN");
+assert(built.headline.demand === 5040 + 12 + 288 + 72 + 100 + 80, "headline demand keeps every open Target PO");
 assert(!built.required.concat(built.covered).some(function (r) { return r.flavor === "BBQ"; }), "Dollar Tree flavor is not a 4 oz row");
 var pack = plan.emailPack(built);
 assert(pack.plain.indexOf("Attached/below is this week's demand report (week of 11/9).") === 0, "email opens with the week line");
 assert(pack.html.indexOf("Production required") >= 0 && pack.html.indexOf("Covered from stock") >= 0 && pack.html.indexOf("Demand by customer") >= 0, "email has the three tables");
-assert(pack.plain.indexOf("10002133500") >= 0 && pack.plain.indexOf("10002144994") >= 0, "email lists excluded Target POs");
+assert(pack.plain.indexOf("Excluded Target") < 0 && plan.view(built).indexOf("Excluded Target") < 0, "excluded Target notes are gone");
+assert(read("app.js").indexOf("Excluded Target POs") < 0, "order board does not list excluded Target POs");
 assert(plan.view(built).indexOf("\u2014") < 0 && plan.view(built).indexOf("\u2013") < 0, "plan view has no em dash");
 assert(read("make-plan.js").indexOf("\u2014") < 0 && read("make-plan.js").indexOf("\u2013") < 0, "source has no em dash");
 assert(read("app.js").indexOf("function viewMakePlan") >= 0 && read("app.js").indexOf("makePlanCopy") >= 0, "Make Plan is a view and can be copied");
 assert(read("app.js").indexOf("async function receive(item, qty, lot, op, meta)") < 0 || read("db.js").indexOf("async function receive(item, qty, lot, op, meta)") >= 0, "receive signature stays in db");
 assert(read("make-plan.js").indexOf(".insert(") < 0 && read("make-plan.js").indexOf(".update(") < 0 && read("make-plan.js").indexOf(".delete(") < 0, "plan does not write");
 assert(read("dept-homes.js").indexOf('primary: "makeplan"') >= 0, "Demand opens Make Plan");
-assert(read("index.html").indexOf("make-plan.js?b=2") >= 0, "script tag");
+assert(read("index.html").indexOf("make-plan.js?b=3") >= 0, "script tag");
 assert(read("service-worker.js").indexOf('"./make-plan.js"') >= 0, "precached");
 
 var refused = plan.build({

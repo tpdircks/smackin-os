@@ -199,8 +199,8 @@ eq(app.indexOf("POLINES.previewHtml()") >= 0 && app.indexOf("POLINES.linesForSav
 eq(app.indexOf("POLINES.savedEditorHtml(s)") >= 0 && app.indexOf("POLINES.assemble(") >= 0, "saved PO edit is wired");
 eq(app.indexOf('data-po-act="delete"') >= 0, "edit form remove writes the line");
 eq(src.indexOf('data-po-act="delete"') >= 0 && src.indexOf("addEventListener(\"click\", onDocClick, true)") >= 0, "clicks are delegated");
-eq(html.indexOf("po-lines.js?b=2") >= 0 && html.indexOf("app.js?b=216") >= 0, "script bust");
-eq(sw.indexOf("./po-lines.js") >= 0 && sw.indexOf('const CACHE = "smackin-inv-v309"') >= 0, "cache");
+eq(html.indexOf("po-lines.js?b=2") >= 0 && html.indexOf("app.js?b=217") >= 0, "script bust");
+eq(sw.indexOf("./po-lines.js") >= 0 && sw.indexOf('const CACHE = "smackin-inv-v310"') >= 0, "cache");
 eq(app.indexOf("ROLE_TABS_API") >= 0 && src.indexOf("visibleFor") < 0, "tabs stay open");
 eq(src.indexOf("\u2014") < 0 && src.indexOf("\u2013") < 0, "no em dash");
 

@@ -91,37 +91,18 @@
     var st = String((line && line.status) || "Open");
     return st === "Open" || st === "New";
   }
-  function classifyLine(line, now) {
+  function classifyLine(line) {
     if (!line || !spsCandidate(line)) return { keep: false, reason: "status" };
     var stage = stageOf(line);
     if (stage && SKIP_STAGE[stage]) return { keep: false, reason: "stage" };
-    if (isTarget(line.partner)) {
-      var due = parseDue(line.due_date);
-      var start = weekMonday(now);
-      if (due && due < start) return { keep: false, reason: "target-week", due: due, week: start };
-    }
     return { keep: true };
   }
   function splitLines(lines, now) {
     var kept = [];
-    var excluded = [];
-    var seen = {};
     (lines || []).forEach(function (line) {
-      var mark = classifyLine(line, now);
-      if (mark.keep) { kept.push(line); return; }
-      if (mark.reason !== "target-week") return;
-      var po = String(line.po || "");
-      if (!po || seen[po]) return;
-      seen[po] = 1;
-      excluded.push({
-        po: po,
-        partner: line.partner || "Target",
-        due: parseDue(line.due_date) || String(line.due_date || ""),
-        week: mark.week
-      });
+      if (classifyLine(line).keep) kept.push(line);
     });
-    excluded.sort(function (a, b) { return String(a.due).localeCompare(String(b.due)) || a.po.localeCompare(b.po); });
-    return { kept: kept, excluded: excluded, week: weekMonday(now) };
+    return { kept: kept, excluded: [], week: weekMonday(now) };
   }
 
   function parseShipItem(bit) {
@@ -563,10 +544,6 @@
     var notes = [];
     required.filter(function (r) { return r.kind === "blocked"; }).forEach(function (r) {
       notes.push(r.flavor + " is blocked. Confirmed film is " + (r.filmHeld > 0 && !(r.film > 0) ? "held" : fmt(r.film)) + " and " + fmt(r.toProduce) + " bags are still to produce.");
-    });
-    if (!split.excluded.length) notes.push("No Target POs were excluded for an old due date.");
-    split.excluded.forEach(function (ex) {
-      notes.push("Excluded Target PO " + ex.po + " (due " + ex.due + "). Due before the week of " + weekLabel(week) + ".");
     });
     notes.push(wip.note);
     notes.push("E-com is the ShipStation unshipped queue (awaiting_shipment), " + ecom.orders + " orders" + (ecom.asOf ? ", as of " + ecom.asOf.slice(0, 16).replace("T", " ") + " UTC" : "") + ". The e-com demand snapshot is not used.");
