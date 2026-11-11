@@ -4153,8 +4153,6 @@
     // sort by due date then partner then po
     rows = rows.slice().sort((a, b) => ((dueISO(a.due_date) || "9999") + a.partner + a.po).localeCompare((dueISO(b.due_date) || "9999") + b.partner + b.po));
     const openRows = all.filter(planLineOpen);
-    const excluded = (window.MAKE_PLAN && MAKE_PLAN.splitLines) ? MAKE_PLAN.splitLines(all, new Date()).excluded : [];
-    const excludedNote = excluded.length ? '<p class="hint">Excluded Target POs (due before this week): ' + excluded.map(function (ex) { return esc(ex.po) + " due " + esc(ex.due); }).join("; ") + ".</p>" : "";
     const totCases = openRows.reduce((s, r) => s + (Number(r.cases) || 0), 0);
     const totBags = openRows.reduce((s, r) => s + (Number(r.bags) || 0), 0);
     const openPOs = new Set(openRows.map(r => r.source + r.po)).size;
@@ -4167,7 +4165,7 @@
     const head = '<div class="card"><div class="suprow"><h2 style="flex:1;margin:0">' + L("demand") + ' ' + freshChip(dhMax(DB.demandLines ? DB.demandLines() : []), 1) + '</h2>' +
       (all.some(r => /^UNMAPPED/i.test(String(r.flavor || ""))) ? '<button class="ghost sm" style="color:#C55A11;border-color:#C55A11" onclick="UI.demandRemap()">&#128260; Re-map ' + all.filter(r => /^UNMAPPED/i.test(String(r.flavor || ""))).length + ' unmapped</button> ' : "") +
       '<button class="ghost sm" onclick="UI_go(\'demandimport\')">&#8635; ' + L("demandimport") + '</button></div>' +
-      '<p class="hint">' + L("dmHint") + '</p>' + excludedNote +
+      '<p class="hint">' + L("dmHint") + '</p>' +
       '<div class="kpis"><div class="kpi"><div class="n">' + fmt(openPOs) + '</div><div class="l">' + L("dmPOs") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(totCases) + '</div><div class="l">' + L("dmCases") + '</div></div>' +
       '<div class="kpi"><div class="n">' + fmt(totBags) + '</div><div class="l">' + L("dmBags") + '</div></div></div>' +
