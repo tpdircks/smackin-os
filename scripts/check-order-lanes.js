@@ -66,7 +66,7 @@ eq(read("order-lanes.js").indexOf("\u2014") < 0 && read("order-lanes.js").indexO
   eq(app.indexOf(key) >= 0, key);
 });
 eq(app.indexOf("Shopify, TikTok, ShipStation, Faire, and Stripe") >= 0, "ecom channels named");
-eq(read("supabase/functions/sps-sync/index.js").indexOf('Deno.env.get("SPS_FOLDER") || "testout"') >= 0, "SPS_FOLDER untouched");
+eq(read("supabase/functions/sps-sync/index.js").indexOf('Deno.env.get("SPS_FOLDER") || "out"') >= 0, "SPS_FOLDER default is out");
 
 if (fail.length) {
   console.error(fail.join("\n"));

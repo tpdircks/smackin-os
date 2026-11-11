@@ -244,7 +244,7 @@ async function main() {
   eq(fn.indexOf("pmac:last_sync") >= 0 && fn.indexOf("pmac:source") >= 0 && fn.indexOf("pmac:lock") >= 0, "kv keys");
   eq(fn.indexOf("mixing_history") < 0 && parseSrc.indexOf("mixing_history") < 0, "does not write mixing");
   eq(fn.indexOf('Deno.env.get("SPS_FOLDER")') < 0, "does not touch SPS_FOLDER");
-  eq(read("supabase/functions/sps-sync/index.js").indexOf('Deno.env.get("SPS_FOLDER") || "testout"') >= 0, "SPS_FOLDER untouched");
+  eq(read("supabase/functions/sps-sync/index.js").indexOf('Deno.env.get("SPS_FOLDER") || "out"') >= 0, "SPS_FOLDER default is out");
   eq(read("supabase/config.toml").indexOf("[functions.prod-tracking-sync]") >= 0 && read("supabase/config.toml").indexOf("verify_jwt = false") >= 0, "verify_jwt false");
   eq(fn.indexOf("/sites/Production/Shared Documents/Production Files/1736 - Production Tracking_v12.xlsm") >= 0, "comment path");
   eq(fn.indexOf("Mixing Detail is in the same workbook and is NOT imported") >= 0, "mixing deferred comment");
@@ -267,7 +267,7 @@ async function main() {
   eq(read("index.html").indexOf("mfg-upload.js?b=4") >= 0, "upload cache bust");
   eq(read("mfg-upload.js").indexOf('existing[k] = (existing[k] || 0) + 1') >= 0, "upload counts P-Mac lines");
   eq(read("index.html").indexOf("mfg-history.js?b=8") >= 0, "history cache bust");
-  eq(read("service-worker.js").indexOf('const CACHE = "smackin-inv-v308"') >= 0, "cache bump");
+  eq(read("service-worker.js").indexOf('const CACHE = "smackin-inv-v309"') >= 0, "cache bump");
 
   var ui = upload.slice(upload.indexOf("Live link to Allen"));
   eq(ui.indexOf("\u2014") < 0 && ui.indexOf("\u2013") < 0, "upload copy has no em dash");

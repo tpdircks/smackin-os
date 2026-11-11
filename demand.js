@@ -3,7 +3,7 @@
 (function (root) {
   "use strict";
 
-  const FLAVOR_CODES = { "OG Original":"S01","Cinnamon Churro":"S02","Backyard BBQ":"S03","Garlic Parmesan":"S04","Dill Pickle":"S05","Cracked Pepper":"S06","Cheddar Jalapeno":"S07","Ranch":"S08","Maple Brown Sugar":"S09","Lemon Pepper":"S10","Sour Cream & Onion":"S11","Cheeseburger":"L25","PCA Pizza":"L20","Variety Pack":"VP48" };
+  const FLAVOR_CODES = { "OG Original":"S01","Cinnamon Churro":"S02","Backyard BBQ":"S03","Garlic Parmesan":"S04","Dill Pickle":"S05","Cracked Pepper":"S06","Cheddar Jalapeno":"S07","Ranch":"S08","Maple Brown Sugar":"S09","Lemon Pepper":"S10","Sour Cream & Onion":"S11","Cheeseburger":"L25","PCA Pizza":"L20","Variety Pack":"VP48","Cotton Candy":"L56","Cashews BBQ":"NUTS-BBQ","Cashews Cinnamon Churro":"NUTS-CINNAMONCHURRO","Mini Bucket Mixed":"SMA77037" };
   // Target "Vendor Style" code -> flavor
   const STYLE_MAP = { "101":"Cinnamon Churro","102":"Garlic Parmesan","103":"Backyard BBQ","104":"Dill Pickle","105":"Cracked Pepper","106":"OG Original","107":"Cheddar Jalapeno","108":"Ranch","109":"Maple Brown Sugar","110":"Lemon Pepper","111":"Sour Cream & Onion","135":"Cheeseburger" };
   // description keyword -> flavor (fallback + non-Target). Descriptions come from SPS 850 exports and are often
@@ -14,6 +14,10 @@
   // Distributor lines also wrap the flavor in brand and pack noise ("SMACKIN' SEEDS SNFL ... 4Z", "SNFLWR SDS",
   // "4OZ"). cleanFlavorText strips that, and a stored "UNMAPPED:" label, before these rules run.
   const DESC_RULES = [
+    [/cashews?\b.*\b(bbq|backyard)\b|\b(bbq|backyard)\b.*\bcashews?\b/i, "Cashews BBQ"],
+    [/cashews?\b.*\b(cinnamon|churro)\b|\b(cinnamon|churro)\b.*\bcashews?\b/i, "Cashews Cinnamon Churro"],
+    [/mini\s*bucket/i, "Mini Bucket Mixed"],
+    [/cotton\s*candy/i, "Cotton Candy"],
     [/cinnamon|churro/i, "Cinnamon Churro"],
     [/garlic|parm|\bgrlc\b|prmsn|\bgrl\b|\bprm\b/i, "Garlic Parmesan"],
     [/backyard|bbq|barbe|\bbyrd\b/i, "Backyard BBQ"],
@@ -143,6 +147,17 @@
       // bags 0 so it doesn't double-count against the 72-bags/case flavor math), then explode the known
       // composition into component-flavor lines (bags only, cases expressed as bag-equivalent so build/production
       // need — computeBuildNeed() in app.js — picks up the real bag demand for those flavors).
+      if (/mini\s*bucket|SMA77037/i.test(desc + " " + style)) {
+        const eachesMini = /each|ea\b/i.test(uom);
+        const miniBags = eachesMini ? qty : qty * 24;
+        lines.push({
+          source: "SPS", partner: m.partner || "Unknown", po: order, dc,
+          flavor: "Mini Bucket Mixed", flavor_code: "SMA77037",
+          uom, qty, cases: eachesMini ? Math.round(qty / 24) : qty, bags: miniBags,
+          unit_price: price, due_date: m.due || "", desc
+        });
+        continue;
+      }
       if (isVarietyFourPack(desc)) {
         const packs = qty; // each ordered unit = one 48-bag (4-flavor x 12) display/case
         lines.push({
@@ -162,7 +177,7 @@
         continue;
       }
       const flavor = flavorFromStyleOrDesc(style, desc);
-      const bucket = isBucketOrVariety(desc);
+      const bucket = flavor === "Mini Bucket Mixed" ? false : isBucketOrVariety(desc);
       const eaches = /each|ea\b/i.test(uom);
       let cases, bags;
       if (eaches) { bags = bucket ? 0 : qty; cases = Math.round(qty / BAGS_PER_CASE); }

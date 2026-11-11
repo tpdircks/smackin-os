@@ -15,12 +15,19 @@
     "OG Original": "S01", "Cinnamon Churro": "S02", "Backyard BBQ": "S03", "Garlic Parmesan": "S04",
     "Dill Pickle": "S05", "Cracked Pepper": "S06", "Cheddar Jalapeno": "S07", "Ranch": "S08",
     "Maple Brown Sugar": "S09", "Lemon Pepper": "S10", "Sour Cream & Onion": "S11",
-    "Cheeseburger": "L25", "PCA Pizza": "L20", "Variety Pack": "VP48"
+    "Cheeseburger": "L25", "PCA Pizza": "L20", "Variety Pack": "VP48",
+    "Cotton Candy": "L56",
+    "Cashews BBQ": "NUTS-BBQ", "Cashews Cinnamon Churro": "NUTS-CINNAMONCHURRO",
+    "Mini Bucket Mixed": "SMA77037"
   };
   // Same description rules as demand.js. GRL / PRM are whole words. ORIG stays last so it cannot steal a flavor above.
   // cleanFlavorText drops a stored UNMAPPED prefix, pack sizes (4Z / 4OZ), and brand/seed noise
   // (SMACKIN, SNFL, SNFLWR, SDS, SD) before these rules run.
   var DESC_RULES = [
+    [/cashews?\b.*\b(bbq|backyard)\b|\b(bbq|backyard)\b.*\bcashews?\b/i, "Cashews BBQ"],
+    [/cashews?\b.*\b(cinnamon|churro)\b|\b(cinnamon|churro)\b.*\bcashews?\b/i, "Cashews Cinnamon Churro"],
+    [/mini\s*bucket/i, "Mini Bucket Mixed"],
+    [/cotton\s*candy/i, "Cotton Candy"],
     [/cinnamon|churro/i, "Cinnamon Churro"],
     [/garlic|parm|\bgrlc\b|prmsn|\bgrl\b|\bprm\b/i, "Garlic Parmesan"],
     [/backyard|bbq|barbe|\bbyrd\b/i, "Backyard BBQ"],
@@ -623,15 +630,30 @@
     return out;
   }
 
+  function buyerCode(line) {
+    return String((line && (line.buyerItem || line.sku || line.vendorItem)) || "").toUpperCase();
+  }
+  function packKind(line) {
+    var desc = String((line && line.description) || "");
+    var buyer = buyerCode(line);
+    if (/SMA77037/.test(buyer) || /mini\s*bucket/i.test(desc)) return "minibucket";
+    if (/SMA55478|SMA55479/.test(buyer) || /\bcashews?\b/i.test(desc)) return "cashew";
+    return "seed4";
+  }
   function casesBags(line) {
     var qty = Number(line.qty) || 0;
     var desc = line.description || "";
     var uom = line.uom || "";
-    var pack = line.pack && line.pack > 0 ? line.pack : BAGS_PER_CASE;
-    if (isVarietyFourPack(desc)) {
-      return { flavor: "Variety Pack", code: FLAVOR_CODES["Variety Pack"], cases: qty, bags: 0, components: true, packQty: qty };
+    var kind = packKind(line);
+    if (kind === "seed4" && isVarietyFourPack(desc)) {
+      return { flavor: "Variety Pack", code: FLAVOR_CODES["Variety Pack"], cases: qty, bags: 0, components: true, packQty: qty, pack: "seed4" };
     }
     var flavor = flavorFromDesc(desc);
+    if (kind === "cashew" && flavor !== "Cashews BBQ" && flavor !== "Cashews Cinnamon Churro") {
+      flavor = /churro|cinnamon|SMA55479/i.test(desc + " " + buyerCode(line)) ? "Cashews Cinnamon Churro" : "Cashews BBQ";
+    }
+    if (kind === "minibucket") flavor = "Mini Bucket Mixed";
+    var pack = kind === "minibucket" ? 24 : ((line.pack && line.pack > 0 && kind === "seed4") ? line.pack : BAGS_PER_CASE);
     var eaches = /each|^ea$|\bea\b/i.test(uom);
     var cases, bags;
     if (eaches) { bags = qty; cases = Math.round(qty / pack); }
@@ -639,7 +661,7 @@
     return {
       flavor: flavor || ("UNMAPPED: " + (desc || line.buyerItem || line.upc || "line")),
       code: flavor ? (FLAVOR_CODES[flavor] || "") : "",
-      cases: cases, bags: bags, components: false
+      cases: cases, bags: bags, components: false, pack: kind
     };
   }
 
@@ -734,7 +756,7 @@
         _key: "line|" + (line.lineNo || "") + "|" + (line.upc || line.buyerItem || ""),
         flavor: math.flavor, flavor_code: math.code,
         qty: line.qty || 0, cases: math.cases, bags: math.bags,
-        notes: "[[SPSFEED:" + (line.lineNo || "") + ":" + (line.upc || "") + "]]" + bits + " " +
+        notes: "[[PACK:" + (math.pack || "seed4") + "]] [[SPSFEED:" + (line.lineNo || "") + ":" + (line.upc || "") + "]]" + bits + " " +
           (line.description || "") + (line.buyerItem ? " · buyer " + line.buyerItem : "") +
           (line.retail != null ? " · retail " + money(line.retail) : "")
       }));
@@ -745,7 +767,7 @@
             _key: "comp|" + (line.lineNo || "") + "|" + flavor,
             flavor: flavor, flavor_code: FLAVOR_CODES[flavor] || "",
             uom: "Bags", qty: 0, cases: compBags / BAGS_PER_CASE, bags: compBags, unit_price: 0,
-            notes: "[[SPSFEED:comp:" + flavor + "]]" + bits + " Variety Pack component"
+            notes: "[[PACK:seed4]] [[SPSFEED:comp:" + flavor + "]]" + bits + " Variety Pack component"
           }));
         });
       }
