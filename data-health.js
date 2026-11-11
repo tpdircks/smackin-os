@@ -370,9 +370,10 @@
       return summary;
     }).catch(function () { return null; });
     var excPmac = loadMissingPmac(c);
+    var excGuard = loadGuard(c);
 
-    Promise.all([Promise.all(jobs), excOrders, excDemand, excPmac]).then(function (all) {
-      var rows = all[0], stuckOrders = all[1], oldDemand = all[2], missingPmac = all[3];
+    Promise.all([Promise.all(jobs), excOrders, excDemand, excPmac, excGuard]).then(function (all) {
+      var rows = all[0], stuckOrders = all[1], oldDemand = all[2], missingPmac = all[3], guard = all[4];
       var body = rows.map(renderRow).join("");
       var totals = tally(rows);
       var summary = summaryHtml(totals);
@@ -406,6 +407,7 @@
       } else {
         exc += '<div class="ex ok">No missing weekday P-Mac days in the last ' + LOOKBACK_DAYS + ' days.</div>';
       }
+      exc += guardHtml(guard);
 
       host.innerHTML =
         '<div class="card"><h2>Data Health</h2>' +
@@ -464,8 +466,163 @@
       "<h3>Already matching</h3><p class=\"sm\">" + matched.length + " lines already match. The first 40 are listed.</p><div class=\"tblwrap\"><table><thead>" + head + "</thead><tbody>" + syncRows(matched, 40) + "</tbody></table></div>";
   }
 
+  function dateISO(v) {
+    var m = String(v || "").match(/(\d{4}-\d{2}-\d{2})/);
+    return m ? m[1] : "";
+  }
+  function calendarDays(from, to) {
+    var a = Date.parse(String(from) + "T00:00:00Z");
+    var b = Date.parse(String(to) + "T00:00:00Z");
+    if (isNaN(a) || isNaN(b)) return 0;
+    return Math.round((b - a) / 86400000);
+  }
+  function shieldedLoc(loc) {
+    var u = String(loc || "").toUpperCase().replace(/[\s_]+/g, "");
+    return u === "QUARANTINE" || u === "QA-HOLD" || u === "QAHOLD";
+  }
+  function rowExpiry(row) {
+    var own = dateISO(row && row.expires_on);
+    if (own) return own;
+    var lot = String(row && row.lot || "");
+    var m = lot.match(/FHF\s*EXP\s*(\d{4}-\d{2}-\d{2})/i);
+    return m ? m[1] : "";
+  }
+  function itemName(items, id) {
+    var i;
+    for (i = 0; i < (items || []).length; i++) {
+      if (items[i].id === id || items[i].code === id) return items[i].name || items[i].code || id;
+    }
+    return String(id || "");
+  }
+  function expiredOutsideHold(stock, items, today) {
+    today = today || denverStamp(new Date()).date;
+    var out = [];
+    (stock || []).forEach(function (row) {
+      if (!row || !(Number(row.qty) > 0)) return;
+      if (shieldedLoc(row.location)) return;
+      var exp = rowExpiry(row);
+      if (!exp || exp >= today) return;
+      out.push({
+        item: itemName(items, row.item_id),
+        item_id: row.item_id || "",
+        lot: String(row.lot || ""),
+        location: String(row.location || ""),
+        qty: Number(row.qty),
+        expiration: exp,
+        days: calendarDays(exp, today)
+      });
+    });
+    out.sort(function (a, b) { return b.days - a.days || a.item.localeCompare(b.item); });
+    return out;
+  }
+  function lotWarning(lot, stock, items, today) {
+    var key = String(lot || "").trim().toLowerCase();
+    if (!key) return "";
+    var hits = expiredOutsideHold(stock, items, today).filter(function (row) {
+      if (String(row.lot || "").trim().toLowerCase() === key) return true;
+      return /fhf/i.test(key) && key.indexOf(row.expiration) >= 0;
+    });
+    if (!hits.length) return "";
+    var h = hits[0];
+    return h.item + ", lot " + h.lot + ", expired " + prettyDay(h.expiration) + " (" + h.days + " days). It is in " + h.location + ". Warning only. The lot is not blocked.";
+  }
+  function spsQuiet(opts) {
+    opts = opts || {};
+    var now = opts.now instanceof Date ? opts.now : new Date(opts.now || Date.now());
+    var last = "";
+    if (opts.lastFile) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(String(opts.lastFile))) last = String(opts.lastFile);
+      else {
+        var parsed = new Date(opts.lastFile);
+        last = isNaN(parsed.getTime()) ? "" : denverStamp(parsed).date;
+      }
+    }
+    if (!last) return { quiet: true, last: "", days: null, never: true };
+    var days = businessDaysAgo(last, now);
+    return { quiet: days >= 2, last: last, days: days, never: false };
+  }
+  function receivingGap(opts) {
+    opts = opts || {};
+    var now = opts.now instanceof Date ? opts.now : new Date(opts.now || Date.now());
+    var last = dateISO(opts.lastReceipt);
+    if (!last) return { gap: true, last: "", days: null };
+    var days = businessDaysAgo(last, now);
+    return { gap: days >= 5, last: last, days: days };
+  }
+  function readList(q) {
+    return q.then(function (r) { return r; }).catch(function () { return { data: [], error: true }; });
+  }
+  function loadGuard(c) {
+    return Promise.all([
+      readList(c.from("stock").select("item_id,location,lot,qty,expires_on").gt("qty", 0).limit(5000)),
+      readList(c.from("items").select("id,name,code").limit(5000)),
+      readList(c.from("sps_transactions").select("received_at,status,payload").order("received_at", { ascending: false }).limit(40)),
+      readList(c.from("receiving_log").select("recv_date").order("recv_date", { ascending: false }).limit(30))
+    ]).then(function (rs) {
+      var now = new Date();
+      var today = denverStamp(now).date;
+      var stock = (rs[0] && rs[0].data) || [];
+      var items = (rs[1] && rs[1].data) || [];
+      var files = (rs[2] && rs[2].data) || [];
+      var recvs = (rs[3] && rs[3].data) || [];
+      var lastFile = "";
+      if (!(rs[2] && rs[2].error)) {
+        files.forEach(function (row) {
+          if (String(row.status || "").toLowerCase() === "test") return;
+          var folder = row.payload && row.payload.folder;
+          if (folder === "paste") return;
+          if (!lastFile || String(row.received_at || "") > lastFile) lastFile = row.received_at || "";
+        });
+      }
+      var lastRecv = "";
+      if (!(rs[3] && rs[3].error)) {
+        recvs.forEach(function (row) {
+          var d = dateISO(row.recv_date);
+          if (d > lastRecv) lastRecv = d;
+        });
+      }
+      return {
+        expired: (rs[0] && rs[0].error) ? null : expiredOutsideHold(stock, items, today),
+        sps: (rs[2] && rs[2].error) ? null : spsQuiet({ lastFile: lastFile, now: now }),
+        recv: (rs[3] && rs[3].error) ? null : receivingGap({ lastReceipt: lastRecv, now: now })
+      };
+    }).catch(function () { return null; });
+  }
+  function guardHtml(guard) {
+    if (!guard) return "";
+    var html = "";
+    if (guard.expired) {
+      if (!guard.expired.length) {
+        html += '<div class="ex ok"><b>Expired stock.</b> No on-hand lot is past its date outside quarantine and QA-hold.</div>';
+      } else {
+        html += '<div class="ex bad"><b>Expired stock outside quarantine.</b> ' + guard.expired.length + " lot" + (guard.expired.length === 1 ? "" : "s") + ". Owner: Quality (Brittney Christensen, Monica Smith). Nothing was moved.</div>";
+        html += '<div class="tblwrap"><table><thead><tr><th>Item</th><th>Lot</th><th>Location</th><th class="right">Qty</th><th>Expiration</th><th class="right">Days expired</th></tr></thead><tbody>' +
+          guard.expired.map(function (row) {
+            return "<tr><td>" + esc(row.item) + "</td><td>" + esc(row.lot) + "</td><td>" + esc(row.location) + "</td><td class=\"right\">" + esc(row.qty) + "</td><td>" + esc(prettyDay(row.expiration)) + "</td><td class=\"right\">" + esc(row.days) + "</td></tr>";
+          }).join("") + "</tbody></table></div>";
+      }
+    }
+    if (guard.sps) {
+      if (guard.sps.quiet) {
+        var when = guard.sps.never ? "never" : prettyDay(guard.sps.last);
+        var span = guard.sps.never ? "" : ", " + guard.sps.days + " business days ago";
+        html += '<div class="ex bad"><b>SPS feed.</b> Last file received ' + esc(when) + esc(span) + ". New 850s currently need a manual load.</div>";
+      } else {
+        html += '<div class="ex ok"><b>SPS feed.</b> Last file received ' + esc(prettyDay(guard.sps.last)) + ".</div>";
+      }
+    }
+    if (guard.recv) {
+      if (guard.recv.gap) {
+        html += '<div class="ex warn"><b>Receiving gap.</b> No receipts in the last 5 business days. Last receipt ' + esc(guard.recv.last ? prettyDay(guard.recv.last) : "never") + ".</div>";
+      } else {
+        html += '<div class="ex ok"><b>Receiving.</b> A receipt is inside the last 5 business days. Last receipt ' + esc(prettyDay(guard.recv.last)) + ".</div>";
+      }
+    }
+    return html;
+  }
+
   var dhOpen = false;
-  window.DATAHEALTH = { forTest: { isTestRow: isTestRow, stuckSummary: stuckSummary, missingPmacDays: missingPmacDays, prettyPmacDate: prettyPmacDate, prettyDay: prettyDay, denverStamp: denverStamp, addDays: addDays, LOOKBACK_DAYS: LOOKBACK_DAYS, sources: SOURCES, PAUSED_FEEDS: PAUSED_FEEDS, daysAgo: daysAgo, businessDaysAgo: businessDaysAgo, ageOf: ageOf, statusOf: statusOf, renderRow: renderRow, tally: tally, summaryHtml: summaryHtml }, open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); dhOpen = true; markActive(); render(); } };
+  window.DATAHEALTH = { forTest: { isTestRow: isTestRow, stuckSummary: stuckSummary, missingPmacDays: missingPmacDays, prettyPmacDate: prettyPmacDate, prettyDay: prettyDay, denverStamp: denverStamp, addDays: addDays, LOOKBACK_DAYS: LOOKBACK_DAYS, sources: SOURCES, PAUSED_FEEDS: PAUSED_FEEDS, daysAgo: daysAgo, businessDaysAgo: businessDaysAgo, ageOf: ageOf, statusOf: statusOf, renderRow: renderRow, tally: tally, summaryHtml: summaryHtml, expiredOutsideHold: expiredOutsideHold, lotWarning: lotWarning, spsQuiet: spsQuiet, receivingGap: receivingGap, shieldedLoc: shieldedLoc }, lotWarning: lotWarning, expiredOutsideHold: expiredOutsideHold, open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); dhOpen = true; markActive(); render(); } };
 
   function markActive() { try { var nav = $("nav"); if (!nav) return; nav.querySelectorAll(".navitem.active").forEach(function (b) { b.classList.remove("active"); }); var m = $("dh-nav"); if (m) m.classList.add("active"); } catch (e) {} }
   function injectNav() {
