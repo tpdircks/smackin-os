@@ -339,11 +339,13 @@
     var excDemand = Promise.all([
       c.from("demand_lines").select("due_date,status,batch_id,batch_label,partner,po,bags,cases,load,notes").eq("status", "Open").limit(10000),
       c.from("stock_build").select("item_key,on_hand").limit(200).then(function (r) { return r; }).catch(function () { return { data: [] }; }),
-      c.from("orders").select("customer_po,appointment,notes,carrier").limit(2000).then(function (r) { return r; }).catch(function () { return { data: [] }; })
+      c.from("orders").select("customer_po,appointment,notes,carrier").limit(2000).then(function (r) { return r; }).catch(function () { return { data: [] }; }),
+      c.from("demand_po_stage").select("partner,po,pickup_date,note").limit(500).then(function (r) { return r; }).catch(function () { return { data: [] }; })
     ]).then(function (pair) {
       var rows = (pair[0] && pair[0].data) || [];
       var sb = (pair[1] && pair[1].data) || [];
       var orders = (pair[2] && pair[2].data) || [];
+      var stagedPos = (pair[3] && pair[3].data) || [];
       var midnight = new Date(); midnight.setHours(0, 0, 0, 0);
       var summary = stuckSummary(rows, midnight.getTime());
       if (window.MAKE_PLAN && typeof MAKE_PLAN.openDemandStates === "function") {
@@ -355,7 +357,8 @@
         var st = MAKE_PLAN.openDemandStates(rows, {
           today: typeof MAKE_PLAN.denverISO === "function" ? MAKE_PLAN.denverISO(new Date()) : new Date().toISOString().slice(0, 10),
           stagedCases: staged,
-          bookings: bookings
+          bookings: bookings,
+          stagedPos: stagedPos
         });
         summary = {
           pos: st.past.pos,
@@ -389,7 +392,8 @@
       if (oldDemand && oldDemand.awaiting && oldDemand.awaiting.pos > 0) {
         exc += '<div class="ex ok"><b>Built, awaiting pickup.</b> <b>' + oldDemand.awaiting.pos + '</b> Target PO(s) are built and waiting for pickup across ' + oldDemand.awaiting.lines + ' lines: ' +
           (oldDemand.awaiting.list || []).map(function (g) {
-            return esc(g.partner) + " PO " + esc(g.po) + " (" + g.lines + " lines)";
+            var when = g.pickup ? ", pickup " + esc(g.pickup) : "";
+            return esc(g.partner) + " PO " + esc(g.po) + " (" + g.lines + " lines" + when + ")";
           }).join("; ") +
           '. They are not past due.</div>';
       }

@@ -97,6 +97,30 @@
     if (stage && SKIP_STAGE[stage]) return { keep: false, reason: "stage" };
     return { keep: true };
   }
+  function poStageKey(partner, po) {
+    return String(partner || "").trim().toLowerCase() + "\n" + String(po || "").trim();
+  }
+  function indexStagedPos(rows) {
+    var map = {};
+    (rows || []).forEach(function (row) {
+      if (!row) return;
+      var po = String(row.po || "").trim();
+      if (!po) return;
+      var pickup = parseDue(row.pickup_date || row.pickup) || String(row.pickup_date || row.pickup || "").slice(0, 10);
+      map[poStageKey(row.partner, po)] = {
+        partner: String(row.partner || ""),
+        po: po,
+        pickup: pickup,
+        note: String(row.note || "")
+      };
+    });
+    return map;
+  }
+  function prettyDay(iso) {
+    var p = String(iso || "").split("-");
+    if (p.length < 3 || p[0].length !== 4) return String(iso || "");
+    return String(parseInt(p[1], 10)) + "/" + String(parseInt(p[2], 10)) + "/" + p[0];
+  }
   function splitLines(lines, now) {
     var kept = [];
     (lines || []).forEach(function (line) {
@@ -408,10 +432,20 @@
     var targetLines = [];
     var otherLines = [];
     var spsAsOf = "";
+    var stagedPos = indexStagedPos(input.stagedPos);
+    var held = {};
     split.kept.forEach(function (line) {
+      var bags = num(line.bags);
+      var heldMark = stagedPos[poStageKey(line.partner, line.po)];
+      if (heldMark) {
+        var hk = poStageKey(line.partner, line.po);
+        if (!held[hk]) held[hk] = { partner: line.partner || "", po: String(line.po || ""), bags: 0, cases: 0, pickup: heldMark.pickup, note: heldMark.note };
+        held[hk].bags = round3(held[hk].bags + bags);
+        held[hk].cases = round3(held[hk].cases + num(line.cases));
+        return;
+      }
       var f = line.flavor || "Unmapped";
       var pack = linePack(line);
-      var bags = num(line.bags);
       if (!demand[f]) demand[f] = { sps: 0, ecom: 0, pack: pack, target: 0 };
       if (demand[f].pack !== pack) f = pack + ": " + f;
       if (!demand[f]) demand[f] = { sps: 0, ecom: 0, pack: pack, target: 0 };
@@ -555,6 +589,7 @@
 
     var weeks = { past: 0, thisWeek: 0, next: 0, later: 0, undated: 0 };
     split.kept.forEach(function (line) {
+      if (stagedPos[poStageKey(line.partner, line.po)]) return;
       var due = parseDue(line.due_date);
       var bags = num(line.bags);
       if (!due) { weeks.undated = round3(weeks.undated + bags); return; }
@@ -582,6 +617,12 @@
     notes.push("On hand for 4 oz seed uses usable bags (returns, quarantine, QA-hold, and other hold locations are out). Master Case and other non-Target Stock Build cases are the same finished goods as those bags, so the larger of the two counts is kept and the smaller is not added. Target staged cases are reserved against Target demand by flavor first. They are not mixed into on hand, and that larger-of rule does not drop them. PCA Pizza, Deep Dish Pizza, and Cheezy Pizza are one flavor.");
     notes.push("Cashews use NUTS-BBQ and NUTS-CINNAMONCHURRO only. Mini Bucket Mixed is 24 per case from mini-bucket items. Neither is subtracted from 4 oz seed stock.");
     if (built.mixed) notes.push(fmt(built.mixed) + " Stock Build bags are variety or mixed packs and are not assigned to one flavor.");
+    Object.keys(held).sort().forEach(function (key) {
+      var h = held[key];
+      var when = h.pickup ? " Pickup " + prettyDay(h.pickup) + "." : "";
+      var extra = h.note ? " " + h.note + "." : "";
+      notes.push(h.partner + " " + h.po + " is built and awaiting pickup." + when + extra + " Those " + fmt(h.bags) + " bags are left out of to-produce and are not counted against on-hand stock.");
+    });
     notes.push("Dollar Tree 2.75 oz is display only and is not netted against demand.");
     if (dt.refused) notes.push("The unconfirmed 332,800 Dollar Tree units were not used.");
     flavors.forEach(function (r) {
@@ -614,6 +655,7 @@
       ecom: ecom,
       dedupe: hand.notes,
       targetStaged: { bags: stagedBagsTotal, cases: casesOf(stagedBagsTotal) },
+      heldPOs: Object.keys(held).map(function (key) { return held[key]; }),
       dollarTree: dt,
       wip: wip,
       notes: notes,
@@ -805,6 +847,7 @@
       items: DB && DB.items ? DB.items() : [],
       stock: DB && DB.stock ? DB.stock() : [],
       stockBuild: sb,
+      stagedPos: DB && DB.demandPoStage ? DB.demandPoStage() : [],
       purchaseOrders: DB && DB.purchaseOrders ? DB.purchaseOrders() : [],
       mapRow: root.ECOM && root.ECOM.mapRow,
       recipe: root.RECIPE_LOOKUP
@@ -846,6 +889,7 @@
     opts = opts || {};
     var today = opts.today || denverISO(new Date());
     var bookings = opts.bookings || {};
+    var marks = indexStagedPos(opts.stagedPos);
     var groups = {};
     (lines || []).forEach(function (line) {
       if (!classifyLine(line).keep) return;
@@ -869,15 +913,24 @@
       if (bookings[po] || String(line.appointment || "").trim() || String(line.pickup_date || "").trim() || isBookedText(g.text)) g.booked = true;
     });
     var pastCandidates = [];
+    var awaiting = [];
     Object.keys(groups).forEach(function (po) {
       var g = groups[po];
+      var mark = marks[poStageKey(g.partner, g.po)];
+      if (mark) {
+        g.state = "awaiting";
+        g.pickup = mark.pickup || "";
+        g.note = mark.note || "";
+        g.marked = true;
+        awaiting.push(g);
+        return;
+      }
       if (!g.due || g.due >= today) { g.state = "open"; return; }
       pastCandidates.push(g);
     });
     pastCandidates.sort(function (a, b) { return a.due < b.due ? -1 : a.due > b.due ? 1 : (a.po < b.po ? -1 : a.po > b.po ? 1 : 0); });
     var left = num(opts.stagedCases);
     var past = [];
-    var awaiting = [];
     pastCandidates.forEach(function (g) {
       var target = isTarget(g.partner);
       var need = groupNeedCases(g);
@@ -917,6 +970,7 @@
     palletsOf: palletsOf,
     denverISO: denverISO,
     bookingsFromOrders: bookingsFromOrders,
+    indexStagedPos: indexStagedPos,
     openDemandStates: openDemandStates
   };
   if (typeof module !== "undefined" && module.exports) module.exports = api;

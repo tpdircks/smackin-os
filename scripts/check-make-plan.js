@@ -97,7 +97,7 @@ assert(read("app.js").indexOf("function viewMakePlan") >= 0 && read("app.js").in
 assert(read("app.js").indexOf("async function receive(item, qty, lot, op, meta)") < 0 || read("db.js").indexOf("async function receive(item, qty, lot, op, meta)") >= 0, "receive signature stays in db");
 assert(read("make-plan.js").indexOf(".insert(") < 0 && read("make-plan.js").indexOf(".update(") < 0 && read("make-plan.js").indexOf(".delete(") < 0, "plan does not write");
 assert(read("dept-homes.js").indexOf('primary: "makeplan"') >= 0, "Demand opens Make Plan");
-assert(read("index.html").indexOf("make-plan.js?b=4") >= 0, "script tag");
+assert(read("index.html").indexOf("make-plan.js?b=5") >= 0, "script tag");
 assert(read("service-worker.js").indexOf('"./make-plan.js"') >= 0, "precached");
 
 var refused = plan.build({
@@ -236,6 +236,52 @@ assert(posOf(shipOnly.past.list) === "10002157898-1,3942350,SHORT", "a ship wind
 assert(posOf(shipOnly.awaiting.list) === "BOOKED", "New Legend pickup text is a booking even when staged cases are zero");
 assert(read("app.js").indexOf("Built, awaiting pickup") >= 0, "order board names the awaiting pickup state");
 assert(read("data-health.js").indexOf("Built, awaiting pickup") >= 0, "past-due view names the awaiting pickup state");
+
+var keheNote = "On pallet since 9/25; KeHE picking up with PO 4012582 (Daniel Jones email 11/10)";
+var heldPlan = plan.build({
+  now: NOW,
+  lines: [
+    { partner: "KeHE", po: "3942350", due_date: "10/7/2026", flavor: "Cinnamon Churro", bags: 720, cases: 10, status: "Open" },
+    { partner: "KeHE", po: "3942350", due_date: "10/7/2026", flavor: "Garlic Parmesan", bags: 720, cases: 10, status: "Open" },
+    { partner: "KeHE", po: "4012582", due_date: "11/16/2026", flavor: "Cinnamon Churro", bags: 1080, cases: 15, status: "Open" },
+    { partner: "Target", po: "T1", due_date: "11/09/2026", flavor: "Backyard BBQ", bags: 3600, cases: 50, status: "Open" }
+  ],
+  items: [
+    { id: "BAG4-S02", category: "bag4", flavor: "Cinnamon Churro" },
+    { id: "BAG4-S04", category: "bag4", flavor: "Garlic Parmesan" }
+  ],
+  stock: [
+    { item_id: "BAG4-S02", location: "RECEIVING", qty: 100 },
+    { item_id: "BAG4-S04", location: "RECEIVING", qty: 50 }
+  ],
+  stockBuild: [{ flavor: "Backyard BBQ", bags: 3600, on_hand: 50, bagsEach: 72, targetStaged: true }],
+  stagedPos: [{ partner: "KeHE", po: "3942350", pickup_date: "2026-11-19", note: keheNote }],
+  purchaseOrders: []
+});
+var churro = heldPlan.required.concat(heldPlan.covered).filter(function (r) { return r.flavor === "Cinnamon Churro"; })[0];
+var garlic = heldPlan.required.concat(heldPlan.covered).filter(function (r) { return r.flavor === "Garlic Parmesan"; })[0];
+var heldBbq = heldPlan.required.concat(heldPlan.covered).filter(function (r) { return r.flavor === "Backyard BBQ"; })[0];
+assert(churro && churro.demand === 1080 && churro.onHand === 100 && churro.toProduce === 980, "a staged PO is left out of to-produce and is not added to on hand");
+assert(!garlic || garlic.demand === 0, "both flavors on the staged PO leave the plan");
+assert(heldBbq && heldBbq.targetStaged === 3600 && heldBbq.toProduce === 0, "Target staged stock still nets Target demand");
+assert(heldPlan.headline.demand === 1080 + 3600, "headline demand keeps the unmarked PO");
+assert(heldPlan.heldPOs.some(function (h) { return h.po === "3942350" && h.bags === 1440 && h.pickup === "2026-11-19"; }), "the staged PO is listed with its pickup");
+assert(plan.view(heldPlan).indexOf(keheNote) >= 0, "the staged note is on the plan");
+assert(!heldPlan.heldPOs.some(function (h) { return h.po === "4012582"; }), "an unmarked PO stays in the plan");
+var marked = plan.openDemandStates([
+  { partner: "KeHE", po: "3942350", due_date: "10/7/2026", flavor: "Cinnamon Churro", bags: 720, cases: 10, status: "Open", load: "ship 10/07/2026" },
+  { partner: "KeHE", po: "4012582", due_date: "11/16/2026", flavor: "Cinnamon Churro", bags: 1080, cases: 15, status: "Open" },
+  { partner: "KeHE", po: "OLD", due_date: "10/1/2026", flavor: "Ranch", bags: 72, cases: 1, status: "Open" }
+], { today: "2026-11-11", stagedCases: 0, stagedPos: [{ partner: "KeHE", po: "3942350", pickup_date: "2026-11-19", note: keheNote }] });
+assert(marked.past.pos === 1 && marked.past.list[0].po === "OLD", "only an unmarked past-due PO stays past due");
+assert(marked.byPo["3942350"].state === "awaiting" && marked.byPo["3942350"].pickup === "2026-11-19", "a marked PO is awaiting pickup on its date");
+assert(marked.byPo["4012582"].state === "open", "4012582 is not marked staged");
+assert(read("app.js").indexOf("POLINES.canEditCurrent") >= 0, "Order Board uses the PO line editors");
+assert(read("db.js").indexOf("POLINES.canEdit") >= 0, "the save refuses anyone who cannot edit PO lines");
+assert(read("po-lines.js").indexOf('"troy.dircks@smackinsnacks.com"') >= 0 && read("po-lines.js").indexOf('"michelle.nydegger@smackinsnacks.com"') >= 0 && read("po-lines.js").indexOf('"mattb@smackinsnacks.com"') >= 0, "the same three editors remain");
+var stageSql = read("supabase/migrations/20261111150000_demand_po_stage.sql");
+assert(stageSql.indexOf("3942350") >= 0 && stageSql.indexOf("2026-11-19") >= 0 && stageSql.indexOf(keheNote) >= 0, "KeHE 3942350 is seeded staged");
+assert(stageSql.indexOf("'4012582'") < 0, "4012582 is not stored as a staged PO");
 
 if (failed) {
   console.error(failed + " failed");

@@ -66,8 +66,8 @@ assert(src.indexOf('hint.textContent = tx("expHint")') < 0, "hint write is guard
 assert(src.indexOf('setText(label, tx("exp"))') >= 0, "label uses setText");
 assert(src.indexOf('setText(hint, tx("expHint"))') >= 0, "hint uses setText");
 assert(html.indexOf('src="pack-receive.js?b=4"') >= 0, "receive cache bust");
-assert(sw.indexOf('const CACHE = "smackin-inv-v311"') >= 0, "cache");
-assert(read("build-id.txt").trim() === "smackin-inv-v311", "build id");
+assert(sw.indexOf('const CACHE = "smackin-inv-v312"') >= 0, "cache");
+assert(read("build-id.txt").trim() === "smackin-inv-v312", "build id");
 assert(src.indexOf("\u2014") < 0 && src.indexOf("\u2013") < 0, "dash");
 
 if (failed) {

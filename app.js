@@ -801,6 +801,7 @@
   // ---- Demand section state ----
   let retMode = "major";   // Returns entry mode: "major" (customer) | "ecom" (Amazon/marketplace)
   let dmdPartner = "", dmdFlavor = "", dmdStatus = "Open";  // Demand Board filters
+  let stageDraft = null;
   let dmdParsed = null;   // Import preview: { rows, warnings, recon, files }
   let dmdBusy = false;    // import in progress
   let dmdDept = "mixing"; // Demand section: which department dashboard (mixing | pmac | ful)
@@ -1317,7 +1318,7 @@
         if (pickup) {
           overduePOs = pickup.past.pos;
           overdueLines = pickup.past.lines;
-          if (pickup.awaiting.pos) push("low", plural(pickup.awaiting.pos, "Target PO") + " built, awaiting pickup (" + pickup.awaiting.lines + " lines)");
+          if (pickup.awaiting.pos) push("low", plural(pickup.awaiting.pos, "PO") + " built, awaiting pickup (" + pickup.awaiting.lines + " lines)");
         } else {
           const openRows = dl.filter(r => (r.status || "Open") === "Open" && !isTest(r) && r.po);
           const overdueByPO = {};
@@ -4161,8 +4162,14 @@
     return MAKE_PLAN.openDemandStates(DB.demandLines ? DB.demandLines() : [], {
       today: typeof MAKE_PLAN.denverISO === "function" ? MAKE_PLAN.denverISO(new Date()) : new Date().toISOString().slice(0, 10),
       stagedCases: staged,
-      bookings: bookings
+      bookings: bookings,
+      stagedPos: DB.demandPoStage ? DB.demandPoStage() : []
     });
+  }
+  function pickupWhen(iso) {
+    var p = String(iso || "").split("-");
+    if (p.length < 3 || p[0].length !== 4) return String(iso || "");
+    return String(parseInt(p[1], 10)) + "/" + String(parseInt(p[2], 10)) + "/" + p[0];
   }
   function viewDemandBoard() {
     const all = (DB.demandLines ? DB.demandLines() : []);
@@ -4183,6 +4190,18 @@
     const pickup = demandPickupStates();
     const awaitingN = pickup ? pickup.awaiting.pos : 0;
     const pastN = pickup ? pickup.past.pos : 0;
+    const canStage = !!(window.POLINES && POLINES.canEditCurrent && POLINES.canEditCurrent());
+    const seenStage = {};
+    let stageForm = "";
+    if (stageDraft && canStage) {
+      stageForm = '<div class="card" id="stage-editor"><h2 class="sub2">Built, awaiting pickup</h2>' +
+        '<p class="hint">' + esc(stageDraft.partner) + " " + esc(stageDraft.po) + ". The PO stays open in SPS. Its bags leave Make Plan to-produce and leave the past-due list.</p>" +
+        '<div class="row"><div><label>Pickup date</label><input id="stg-pickup" type="date" value="' + esc(stageDraft.pickup || "") + '"></div></div>' +
+        '<div><label>Note</label><textarea id="stg-note" rows="3">' + esc(stageDraft.note || "") + '</textarea></div>' +
+        '<p><button class="primary" type="button" onclick="UI.stagePoSave()">Save</button> ' +
+        '<button class="ghost" type="button" onclick="UI.stagePoClear()">Clear mark</button> ' +
+        '<button class="ghost" type="button" onclick="UI.stagePoCancel()">Cancel</button></p></div>';
+    }
     const psel = '<select onchange="UI.dmdSet(\'partner\',this.value)"><option value="">' + L("dmAllPartners") + '</option>' +
       partners.map(p => '<option' + (p === dmdPartner ? ' selected' : '') + '>' + esc(p) + '</option>').join("") + '</select>';
     const fsel = '<select onchange="UI.dmdSet(\'flavor\',this.value)"><option value="">' + L("dmAllFlavors") + '</option>' +
@@ -4203,8 +4222,11 @@
       const open = (r.status || "Open") === "Open";
       const stage = open && window.SPSMap && typeof SPSMap.stageLabel === "function" ? SPSMap.stageLabel(r) : "";
       const poState = pickup && pickup.byPo ? pickup.byPo[r.po] : null;
-      const statePill = poState && poState.state === "awaiting" ? ' <span class="pill ok">Built, awaiting pickup</span>' : (poState && poState.state === "past" ? ' <span class="pill out">Past due</span>' : "");
-      const shipBtn = open ? '<button class="ghost sm" onclick="UI.dmShip(\'' + r.source + '\',\'' + esc(r.po) + '\')">' + L("dmShip") + '</button>' + (stage ? '<div class="muted sm">' + esc(stage) + '</div>' : '') + statePill
+      const when = poState && poState.pickup ? " " + pickupWhen(poState.pickup) : "";
+      const statePill = poState && poState.state === "awaiting" ? ' <span class="pill ok">Built, awaiting pickup' + esc(when) + '</span>' + (poState.note ? '<div class="muted sm">' + esc(poState.note) + '</div>' : "") : (poState && poState.state === "past" ? ' <span class="pill out">Past due</span>' : "");
+      const stageKey = String(r.partner || "") + "\n" + String(r.po || "");
+      const stageBtn = (canStage && open && !seenStage[stageKey]) ? (seenStage[stageKey] = 1, ' <button class="ghost sm" type="button" onclick="UI.stagePo(\'' + esc(r.partner) + '\',\'' + esc(r.po) + '\')">' + (poState && poState.marked ? "Edit staged" : "Mark built") + '</button>') : "";
+      const shipBtn = open ? '<button class="ghost sm" onclick="UI.dmShip(\'' + r.source + '\',\'' + esc(r.po) + '\')">' + L("dmShip") + '</button>' + (stage ? '<div class="muted sm">' + esc(stage) + '</div>' : '') + statePill + stageBtn
         : '<span class="muted sm">' + esc(r.status || L("dmShipped")) + '</span>';
       const dc = (r.dc || (r.notes || "")) ? esc(r.dc || "") : "";
       return '<tr><td>' + esc(r.partner) + '</td><td><b>' + esc(r.po) + '</b>' + (r.load ? ' <span class="muted sm">L' + esc(r.load) + '</span>' : '') + '</td>' +
@@ -4215,7 +4237,7 @@
     const table = '<div class="card"><div class="tblwrap"><table class="sortable"><thead><tr>' +
       '<th>' + L("dmPartner") + '</th><th>' + L("dmPO") + '</th><th>' + L("dmFlavor") + '</th>' +
       '<th class="right">' + L("dmCases") + '</th><th class="right">' + L("dmBags") + '</th><th>' + L("dmDue") + '</th><th data-nosort>' + L("dmStatusH") + '</th></tr></thead><tbody>' + body + '</tbody></table></div></div>';
-    return head + table;
+    return stageForm + head + table;
   }
   // Shared production-need engine: per-flavor bags/cases to build from open demand minus on-hand.
   // Used by the Fulfillment Production Schedule AND the Mixing / P-Mac "What to Build" panels.
@@ -5123,6 +5145,33 @@
       const m = (DB.lineStatus ? DB.lineStatus() : []).find(r => String(r.id) === String(id));
       const op = opValFor("fl-op-" + (m ? m.area : "mixing"));
       await DB.deleteMachine(id, op); toast("✓"); render();
+    },
+    stagePo(partner, po) {
+      if (!window.POLINES || !POLINES.canEditCurrent()) return;
+      const rows = DB.demandPoStage ? DB.demandPoStage() : [];
+      const cur = rows.filter(r => r.partner === partner && r.po === po)[0] || {};
+      stageDraft = { partner: partner, po: po, pickup: cur.pickup_date || "", note: cur.note || "" };
+      render();
+    },
+    stagePoCancel() { stageDraft = null; render(); },
+    async stagePoSave() {
+      if (!stageDraft || !window.POLINES || !POLINES.canEditCurrent()) return;
+      const pickup = (document.getElementById("stg-pickup") || {}).value || "";
+      const note = (document.getElementById("stg-note") || {}).value || "";
+      const r = await DB.saveDemandPoStage({ partner: stageDraft.partner, po: stageDraft.po, pickup_date: pickup, note: note }, POLINES.currentEmail());
+      if (!r || !r.ok) { toast(r && r.reason === "forbidden" ? "That sign-in cannot edit PO lines." : "Could not save the staged mark."); return; }
+      stageDraft = null;
+      toast("Saved");
+      render();
+    },
+    async stagePoClear() {
+      if (!stageDraft || !window.POLINES || !POLINES.canEditCurrent()) return;
+      if (!confirm("Clear the built mark for " + stageDraft.partner + " " + stageDraft.po + "?")) return;
+      const r = await DB.clearDemandPoStage(stageDraft.partner, stageDraft.po, POLINES.currentEmail());
+      if (!r || !r.ok) { toast("Could not clear the staged mark."); return; }
+      stageDraft = null;
+      toast("Cleared");
+      render();
     },
     async dmShip(source, po) {
       if (!confirm(L("dmShipQ") + "\n\n" + source + " " + po)) return;
