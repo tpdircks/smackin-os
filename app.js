@@ -3996,7 +3996,8 @@
     return '<div class="card" data-slot="consume"><h2>' + L(titleKey) + '</h2><p class="hint">' + L("conHint") + '</p>' +
       itemScan("con-code", "con-qty") +
       '<div class="row"><div><label>' + L("qty") + '</label><input id="con-qty" type="number" min="0" step="any" inputmode="decimal" placeholder="' + L("enter") + '"></div>' +
-      '<div><label>' + L("conLot") + '</label><input id="con-lot" autocomplete="off" placeholder="LOT..."></div></div>' +
+      '<div><label>' + L("conLot") + '</label><input id="con-lot" autocomplete="off" placeholder="LOT..." oninput="UI.conLotWarn()"></div></div>' +
+      '<p id="con-exp-warn" style="color:#8d1f1a;font-weight:700;min-height:0"></p>' +
       opField() +
       '<button class="primary" onclick="UI.consume(\'' + dept + '\')">' + L("conBtn") + '</button>' +
       '<h3 class="sub2" style="margin-top:16px">' + L("conRecent") + '</h3>' +
@@ -6617,13 +6618,30 @@
     odocSearch(val) { const q = (val || "").toLowerCase().trim();
       document.querySelectorAll("#odocBody .odcust").forEach(c => { const t = c.getAttribute("data-txt") || ""; c.style.display = (!q || t.indexOf(q) >= 0) ? "" : "none"; }); },
     // ---- Mixing / P-Mac consumption (scan material out to production) ----
+    lotExpireNote(lot) {
+      if (!window.DATAHEALTH || typeof DATAHEALTH.lotWarning !== "function") return "";
+      var today = "";
+      try { today = DATAHEALTH.forTest.denverStamp(new Date()).date; } catch (e) { today = ""; }
+      return DATAHEALTH.lotWarning(lot, DB.stock ? DB.stock() : [], DB.items ? DB.items() : [], today);
+    },
+    conLotWarn() {
+      var el = $("con-exp-warn");
+      if (!el) return;
+      el.textContent = UI.lotExpireNote($("con-lot") ? $("con-lot").value : "");
+    },
+    woLotWarn() {
+      var el = $("wo-exp-warn");
+      if (!el) return;
+      el.textContent = UI.lotExpireNote($("wo-slot") ? $("wo-slot").value : "");
+    },
     async consume(dept) {
       const code = ($("con-code") ? $("con-code").value : "").trim();
       const qty = parseFloat($("con-qty") ? $("con-qty").value : "") || 0;
       const lot = ($("con-lot") ? $("con-lot").value : "").trim();
       if (!code || !qty || !lot) return toast(L("conErr"));
+      const warn = UI.lotExpireNote(lot);
       const res = await DB.consume(code, qty, lot, dept, opVal());
-      toast(L("conBtn") + " ✓" + (res && res.itemFound === false ? " (" + code + " " + L("conNotInList") + ")" : ""));
+      toast(L("conBtn") + " ✓" + (res && res.itemFound === false ? " (" + code + " " + L("conNotInList") + ")" : "") + (warn ? " " + warn : ""));
       render();
     },
     // ---- Purchase Orders ----

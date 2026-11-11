@@ -163,6 +163,46 @@ assert.ok(sum.indexOf("2 stale") >= 0 && sum.indexOf("4 paused") >= 0, "summary 
 assert.ok(sum.indexOf("6 stale") < 0 && sum.indexOf("All sources current") < 0);
 var quiet = api.summaryHtml({ reds: 0, ambers: 0, paused: 4 });
 assert.ok(quiet.indexOf("All sources current") >= 0 && quiet.indexOf("4 paused") >= 0 && quiet.indexOf("stale") < 0);
+var guardItems = [
+  { id: "TMP-SEAS-BUFFALOWING", name: "Seasoning - Buffalo Wing" },
+  { id: "TMP-SEAS-CINNAMONROLLFROSTING", name: "Seasoning - Cinnamon Roll Frosting" },
+  { id: "TMP-SEAS-BANANAPUDDING", name: "Seasoning - Banana Pudding" }
+];
+var guardStock = [
+  { item_id: "TMP-SEAS-BUFFALOWING", location: "RECEIVING", lot: "FHF EXP 2026-08-05", qty: 18, expires_on: "2026-08-05" },
+  { item_id: "TMP-SEAS-CINNAMONROLLFROSTING", location: "RECEIVING", lot: "FHF EXP 2026-11-10", qty: 22.8, expires_on: null },
+  { item_id: "TMP-SEAS-BANANAPUDDING", location: "QUARANTINE", lot: "FHF EXP 2026-10-29", qty: 20.01, expires_on: "2026-10-29" },
+  { item_id: "TMP-SEAS-BUFFALOWING", location: "QA-HOLD", lot: "FHF EXP 2026-01-01", qty: 5, expires_on: "2026-01-01" },
+  { item_id: "TMP-SEAS-BUFFALOWING", location: "RECEIVING", lot: "FHF EXP 2027-01-01", qty: 1, expires_on: "2027-01-01" },
+  { item_id: "TMP-SEAS-BUFFALOWING", location: "RECEIVING", lot: "gone", qty: 0, expires_on: "2020-01-01" }
+];
+var expired = api.expiredOutsideHold(guardStock, guardItems, "2026-11-11");
+assert.equal(expired.map(function (r) { return r.item; }).join(" | "), "Seasoning - Buffalo Wing | Seasoning - Cinnamon Roll Frosting", "expired outside quarantine is flagged");
+assert.equal(expired[0].location, "RECEIVING");
+assert.equal(expired[0].qty, 18);
+assert.equal(expired[0].expiration, "2026-08-05");
+assert.ok(expired[0].days > 1, "buffalo days expired");
+assert.equal(expired[1].expiration, "2026-11-10");
+assert.equal(expired[1].days, 1, "cinnamon roll frosting is one day expired from the lot label");
+assert.equal(expired.some(function (r) { return r.location === "QUARANTINE" || r.location === "QA-HOLD"; }), false, "quarantine and QA-hold stay off the list");
+var note = api.lotWarning("FHF EXP 2026-11-10", guardStock, guardItems, "2026-11-11");
+assert.ok(note.indexOf("expired") >= 0 && note.indexOf("not blocked") >= 0 && note.indexOf("Nov 10, 2026") >= 0, "lot warning names the date and does not block");
+assert.equal(api.lotWarning("FHF EXP 2026-10-29", guardStock, guardItems, "2026-11-11"), "", "a quarantined lot is not a pick warning");
+var mon = new Date("2026-11-09T18:00:00Z");
+var tue = new Date("2026-11-10T18:00:00Z");
+assert.equal(api.spsQuiet({ lastFile: "2026-11-06T18:00:00Z", now: mon }).quiet, false, "Friday file is not quiet on Monday");
+assert.equal(api.spsQuiet({ lastFile: "2026-11-06", now: tue }).quiet, true, "Friday file is quiet on Tuesday");
+assert.equal(api.spsQuiet({ lastFile: "2026-11-06", now: tue }).days, 2, "weekend is not two extra business days");
+assert.equal(api.spsQuiet({ lastFile: "", now: tue }).never, true, "no file is never");
+var wed = new Date("2026-11-11T18:00:00Z");
+assert.equal(api.receivingGap({ lastReceipt: "2026-11-04", now: wed }).gap, true, "Nov 4 is outside the last 5 business days on Nov 11");
+assert.equal(api.receivingGap({ lastReceipt: "2026-11-04", now: wed }).days, 5, "five business days since Nov 4");
+assert.equal(api.receivingGap({ lastReceipt: "2026-11-06", now: wed }).gap, false, "a Friday receipt is still inside five business days on Wednesday");
+assert.ok(src.indexOf("New 850s currently need a manual load") >= 0, "SPS tile names the manual load");
+assert.ok(src.indexOf("No receipts in the last 5 business days") >= 0, "receiving tile names the gap");
+assert.ok(src.indexOf("Nothing was moved") >= 0, "expired stock is detection only");
+assert.equal(api.sources.some(function (s) { return s.t === "sps_transactions"; }), false, "the new checks are not freshness rows");
+assert.ok(app.indexOf("UI.conLotWarn") >= 0 && app.indexOf("await DB.consume") >= 0, "mixing still consumes after the warning");
 assert.equal(src.includes("\u2014"), false, "data health has no em dash");
 assert.ok(src.indexOf("new data while paused") >= 0, "new data copy");
 var sps = fs.readFileSync(path.join(__dirname,"..","supabase/functions/sps-sync/index.js"),"utf8");

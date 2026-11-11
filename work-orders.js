@@ -825,7 +825,8 @@
       "<div><label>" + esc(tx("status")) + '</label><select id="wo-status">' + statusOpts + "</select></div>" +
       "<div><label>" + esc(tx("operators")) + '</label><input id="wo-ops" value="' + esc((w.operators || []).join(", ")) + '" placeholder="Leo, Wilson"></div>' +
       "<div><label>" + esc(tx("who")) + '</label><input id="wo-who" value="' + esc(w.updated_by || "") + '"></div></div>' +
-      "<div><label>" + esc(tx("seasLot")) + '</label><input id="wo-slot" autocomplete="off" value="' + esc(w.seasoning_lot_on_file || "") + '"></div>' +
+      "<div><label>" + esc(tx("seasLot")) + '</label><input id="wo-slot" autocomplete="off" oninput="if(window.UI&&UI.woLotWarn)UI.woLotWarn()" value="' + esc(w.seasoning_lot_on_file || "") + '"></div>' +
+      '<p id="wo-exp-warn" style="color:#8d1f1a;font-weight:700">' + esc(window.DATAHEALTH && DATAHEALTH.lotWarning && window.DB ? DATAHEALTH.lotWarning(w.seasoning_lot_on_file || "", DB.stock ? DB.stock() : [], DB.items ? DB.items() : [], (DATAHEALTH.forTest && DATAHEALTH.forTest.denverStamp ? DATAHEALTH.forTest.denverStamp(new Date()).date : "")) : "") + "</p>" +
       '<label class="wo-check"><input type="checkbox" id="wo-sver"' + (w.seasoning_lot_verified === "Y" ? " checked" : "") + "> " + esc(tx("seasVer")) + "</label>" +
       '<p class="hint">' + esc(tx("seasHint")) + "</p>" +
       '<div class="wo-stages">' + stages + "</div>" +
