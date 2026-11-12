@@ -4263,10 +4263,11 @@
       const stockNeed = Math.max(0, (goal[f] || 0) - onHand);
       const toProduce = Math.max(demandNeed, stockNeed);
       const driver = toProduce <= 0 ? "" : (demandNeed >= stockNeed && demandNeed > 0 ? "order" : "stock");
+      const per = (code === "SMA77037" || /mini\s*bucket/i.test(f)) ? 24 : 72;
       const film = demandFilmBags(code);
-      const kind = toProduce <= 0 ? "covered" : (film != null && film < toProduce * 72) ? "blocked" : "produce";
-      const pallets = toProduce > 0 ? Math.ceil(toProduce / 30 * 10) / 10 : 0;
-      return { flavor: f, code: code, cases: d.cases, bags: d.bags, goalCases: goal[f] || 0, onHand: onHand, onHandBags: onHand * 72, toProduce: toProduce, toProduceBags: toProduce * 72, driver: driver, film: film, kind: kind, pallets: pallets };
+      const kind = toProduce <= 0 ? "covered" : (film != null && film < toProduce * per) ? "blocked" : "produce";
+      const pallets = toProduce > 0 ? Math.ceil(toProduce * per / 2500 * 10) / 10 : 0;
+      return { flavor: f, code: code, cases: d.cases, bags: d.bags, goalCases: goal[f] || 0, onHand: onHand, onHandBags: onHand * per, toProduce: toProduce, toProduceBags: toProduce * per, driver: driver, film: film, kind: kind, pallets: pallets };
     });
     list.sort((a, b) => (b.toProduce - a.toProduce) || (DMD_FLAVOR_ORDER.indexOf(a.flavor) - DMD_FLAVOR_ORDER.indexOf(b.flavor)));
     const T = { demandCases: 0, demandBags: 0, onHandCases: 0, toProduceCases: 0, toProduceBags: 0 };
@@ -4406,41 +4407,10 @@
     return MAKE_PLAN.view(MAKE_PLAN.fromDb(DB));
   }
   function viewDemandSched() {
-    const open = (DB.demandLines ? DB.demandLines() : []).filter(demandCountsForBuild);
-    if (!open.length) return '<div class="card"><h2>' + L("demandsched") + '</h2><p class="muted">' + L("dsNone") + '</p>' +
-      '<button class="primary" onclick="UI_go(\'demandimport\')">' + L("demandimport") + '</button></div>';
-    const byF = {};
-    open.forEach(r => { const f = r.flavor; if (!byF[f]) byF[f] = { flavor: f, code: r.flavor_code, cases: 0, bags: 0 }; byF[f].cases += Number(r.cases) || 0; byF[f].bags += Number(r.bags) || 0; });
-    let list = Object.values(byF).map(x => {
-      const onHand = demandOnHandCases(x.flavor);
-      const toProduce = Math.max(0, x.cases - onHand);
-      const film = demandFilmBags(x.code);
-      const kind = toProduce <= 0 ? "covered" : (film != null && film < toProduce * 72) ? "blocked" : "produce";
-      const pallets = toProduce > 0 ? Math.ceil(toProduce / 30 * 10) / 10 : 0;
-      return Object.assign(x, { onHand, toProduce, film, kind, pallets });
-    });
-    // order by DMD_FLAVOR_ORDER for known flavors, then by toProduce desc
-    list.sort((a, b) => (b.toProduce - a.toProduce) || (DMD_FLAVOR_ORDER.indexOf(a.flavor) - DMD_FLAVOR_ORDER.indexOf(b.flavor)));
-    const gDem = list.reduce((s, x) => s + x.cases, 0), gOn = list.reduce((s, x) => s + x.onHand, 0), gProd = list.reduce((s, x) => s + x.toProduce, 0);
-    const rowsHtml = list.map(x => '<tr><td>' + esc(x.flavor) + (x.code ? ' <span class="muted sm">' + esc(x.code) + '</span>' : '') + '</td>' +
-      '<td class="right">' + fmt(x.cases) + '</td><td class="right muted">' + fmt(x.bags) + '</td>' +
-      '<td class="right">' + fmt(x.onHand) + '</td><td class="right"><b>' + fmt(x.toProduce) + '</b></td>' +
-      '<td class="right"><b>' + fmt(x.toProduce * 72) + '</b></td>' +
-      '<td class="right muted sm">' + (x.toProduce > 0 ? x.pallets : "—") + '</td>' +
-      '<td class="right muted sm">' + (x.film != null ? fmt(x.film) : "—") + '</td>' +
-      '<td>' + dmdDot(x.kind) + '</td></tr>').join("");
-    const head = '<div class="card"><h2>' + L("demandsched") + '</h2><p class="hint">' + L("dsHint") + '</p>' +
-      '<div class="kpis"><div class="kpi"><div class="n">' + fmt(gDem) + '</div><div class="l">' + L("dsDemandCs") + '</div></div>' +
-      '<div class="kpi"><div class="n">' + fmt(gOn) + '</div><div class="l">' + L("dsOnHand") + '</div></div>' +
-      '<div class="kpi"><div class="n">' + fmt(gProd) + '</div><div class="l">' + L("dsToProduce") + '</div></div></div></div>';
-    const table = '<div class="card"><div class="tblwrap"><table class="sortable"><thead><tr>' +
-      '<th>' + L("dsFlavor") + '</th><th class="right">' + L("dsDemandCs") + '</th><th class="right">' + L("dsDemandBags") + '</th>' +
-      '<th class="right">' + L("dsOnHand") + '</th><th class="right">' + L("dsToProduce") + '</th><th class="right">' + L("bnToProduceBags") + '</th><th class="right">' + L("dsPallets") + '</th>' +
-      '<th class="right">' + L("dsFilm") + '</th><th data-nosort>' + L("dmStatusH") + '</th></tr></thead><tbody>' + rowsHtml +
-      '<tr style="background:#E8E8E8"><td><b>' + L("dsGrand") + '</b></td><td class="right"><b>' + fmt(gDem) + '</b></td><td></td>' +
-      '<td class="right"><b>' + fmt(gOn) + '</b></td><td class="right"><b>' + fmt(gProd) + '</b></td><td class="right"><b>' + fmt(gProd * 72) + '</b></td><td></td><td></td><td></td></tr>' +
-      '</tbody></table></div></div>';
-    return head + table;
+    if (!window.MAKE_PLAN || typeof MAKE_PLAN.fromDb !== "function" || typeof MAKE_PLAN.scheduleView !== "function") {
+      return '<div class="card"><h2>' + L("demandsched") + '</h2><p class="hint">The schedule did not load. Refresh the page.</p></div>';
+    }
+    return MAKE_PLAN.scheduleView(MAKE_PLAN.fromDb(DB));
   }
   function viewDemandImport() {
     const cur = (DB.demandLines ? DB.demandLines() : []);
@@ -4449,7 +4419,7 @@
       '<div class="row"><div style="flex:2"><label>' + L("diDrop") + '</label>' +
       '<input id="dmd-files" type="file" accept=".csv,text/csv" multiple onchange="UI.diFiles(this)"></div>' +
       '<div><label>' + L("diLabel") + '</label><input id="dmd-label" placeholder="' + new Date().toISOString().slice(0, 10) + '"></div></div>' +
-      '<p class="hint" style="margin:6px 0 0">' + L("diReplace") + '</p>' +
+      '<p class="hint" style="margin:6px 0 0"><label><input id="dmd-full" type="checkbox" checked> Full SPS saved search (Target and Exclude Target). Inserts new POs, updates quantities, and closes open rows that are not in the files with [[CLOSED:date:not-live-sps-open]]. Staged POs stay open unless the file shows them closed. Uncheck to replace only the POs in the file.</label></p>' +
       '<div style="margin-top:10px"><button class="ghost sm danger" onclick="UI.diClearAll()">' + L("diClear") + ' (' + cur.length + ')</button></div></div>';
     if (!dmdParsed) return drop;
     const p = dmdParsed;
@@ -4459,7 +4429,8 @@
     const byF = {}; p.rows.forEach(r => { byF[r.flavor] = (byF[r.flavor] || 0) + (Number(r.cases) || 0); });
     const previewRows = p.rows.slice(0, 60).map(r => '<tr><td>' + esc(r.partner) + '</td><td>' + esc(r.po) + '</td><td>' + esc(r.flavor) + '</td><td class="right">' + fmt(r.cases) + '</td><td class="right muted">' + fmt(r.bags) + '</td><td class="sm">' + esc(r.due_date || "") + '</td></tr>').join("");
     const totCs = p.rows.reduce((s, r) => s + (Number(r.cases) || 0), 0);
-    const preview = '<div class="card"><div class="suprow"><h2 class="sub2" style="flex:1;margin:0">' + L("diParse") + ' — ' + p.rows.length + ' ' + L("diLinesW") + ' / ' + fmt(totCs) + ' ' + L("dmCases") + '</h2>' +
+    const planNote = (p.plan && !p.plan.refused) ? '<p class="hint">Full reconcile: insert ' + p.plan.insert.length + ', update ' + p.plan.update.length + ', close ' + p.plan.close.length + ' (not-live-sps-open), leave ' + p.plan.unchanged + ' unchanged. Staged POs missing from the file are not in that close count.</p>' : '';
+    const preview = planNote + '<div class="card"><div class="suprow"><h2 class="sub2" style="flex:1;margin:0">' + L("diParse") + ' — ' + p.rows.length + ' ' + L("diLinesW") + ' / ' + fmt(totCs) + ' ' + L("dmCases") + '</h2>' +
       '<button class="primary" onclick="UI.diCommit()"' + (dmdBusy ? ' disabled' : '') + '>' + (dmdBusy ? '…' : L("diCommit")) + '</button></div>' +
       '<div class="tblwrap"><table><thead><tr><th>' + L("dmPartner") + '</th><th>' + L("dmPO") + '</th><th>' + L("dmFlavor") + '</th><th class="right">' + L("dmCases") + '</th><th class="right">' + L("dmBags") + '</th><th>' + L("dmDue") + '</th></tr></thead><tbody>' + previewRows +
       (p.rows.length > 60 ? '<tr><td colspan="6" class="muted sm">+' + (p.rows.length - 60) + ' …</td></tr>' : '') + '</tbody></table></div></div>';
@@ -4581,15 +4552,10 @@
       '<th class="right">' + L("fcApp15") + '</th><th class="right">' + L("fcWip15") + '</th><th class="right" data-nosort>' + L("fcDelta15") + '</th></tr></thead><tbody>' + rows + '</tbody></table></div></div>';
     let latestAt = "";
     fc.forEach(r => { const t = String(r.updated_at || ""); if (t > latestAt) latestAt = t; });
-    const asOf = latestAt ? latestAt.slice(0, 10) : "";
-    const forecastAge = asOf ? Math.floor((Date.now() - new Date(asOf + "T00:00:00Z").getTime()) / 86400000) : null;
-    const staleLine = !fc.length
-      ? '<p class="hint">Demand forecast is not in use yet. No rows are stored.</p>'
-      : (forecastAge != null && forecastAge > 30
-        ? '<p class="hint">As of ' + esc(asOf) + '. No data since ' + esc(asOf) + '. This snapshot is not current.</p>'
-        : (asOf ? '<p class="hint">As of ' + esc(asOf) + '.</p>' : ''));
-    const head = '<div class="card"><h2>&#9878; ' + L("forecast") + '</h2><p class="hint">' + L("fcHint") + (sourceMonth ? ' ' + L("fcSnapshot") + ': ' + esc(sourceMonth) + '.' : '') + '</p>' + staleLine + '</div>';
-    return head + table;
+    const asOf = latestAt ? latestAt.slice(0, 10) : "2026-07-17";
+    const paused = '<div class="card" style="background:#F4F1EA"><h2>Forecast vs Target is paused</h2><p class="hint">Not in use. Owner: Troy Dircks. Data as of ' + esc(asOf) + '. This is not missing demand.</p></div>';
+    const head = '<div class="card"><h2>&#9878; ' + L("forecast") + '</h2><p class="hint">' + L("fcHint") + (sourceMonth ? ' ' + L("fcSnapshot") + ': ' + esc(sourceMonth) + '.' : '') + '</p></div>';
+    return paused + '<details class="card"><summary>Old snapshot</summary>' + head + table + '</details>';
   }
   function viewFacility() {
     return '<div class="card"><div class="suprow"><h2 style="flex:1;margin:0">' + L("facility") + '</h2>' +
@@ -5192,15 +5158,37 @@
           else if (type === "sps") { const r = D.parseSPS(fo.text); sps = sps.concat(r.lines); fileInfo.push({ name: fo.name, type: "SPS", count: r.lines.length }); (r.warnings || []).forEach(w => warnings.push(fo.name + ": " + w)); }
           else { fileInfo.push({ name: fo.name, type: "unknown", count: 0 }); }
         });
+        sps.forEach(function (r) {
+          const s = shipiq.byPO[r.po];
+          if (!s) return;
+          if (s.pickup) r.due_date = s.pickup;
+          if (s.load) r.load = s.load;
+        });
         const agg = D.aggregate(sps, shipiq);
-        dmdParsed = { rows: agg, warnings, recon: agg._recon || [], files: fileInfo };
+        const plan = D.reconcileOpen(DB.demandLines ? DB.demandLines() : [], sps, { staged: DB.demandPoStage ? DB.demandPoStage() : [], today: D.denverToday() });
+        dmdParsed = { rows: agg, lines: sps, plan: plan, warnings, recon: agg._recon || [], files: fileInfo };
         render();
       });
     },
     async diCommit() {
       if (!dmdParsed || !dmdParsed.rows.length || dmdBusy) return;
-      dmdBusy = true; render();
+      const full = !$("dmd-full") || $("dmd-full").checked;
       const label = (($("dmd-label") || {}).value || "").trim() || new Date().toISOString().slice(0, 10);
+      if (full) {
+        const lines = dmdParsed.lines || [];
+        if (!lines.length) return toast("No SPS lines to reconcile.");
+        const closes = dmdParsed.plan && dmdParsed.plan.close ? dmdParsed.plan.close.length : 0;
+        if (closes && !confirm("Close " + closes + " open lines that are not in this export? Staged POs stay open unless the file shows them closed.")) return;
+        dmdBusy = true; render();
+        const res = await DB.reconcileDemandOpen(lines, { batch_label: label, batch_id: "SPS-UI-" + label }, opVal());
+        dmdBusy = false; dmdParsed = null;
+        if (!res || res.ok === false) { toast((res && res.msg) || "Reconcile did not save."); render(); return; }
+        const p = res.plan || {};
+        toast("Reconciled. Insert " + ((p.insert && p.insert.length) || 0) + ", update " + ((p.update && p.update.length) || 0) + ", close " + ((p.close && p.close.length) || 0) + ".");
+        go("makeplan");
+        return;
+      }
+      dmdBusy = true; render();
       const rows = dmdParsed.rows.map(r => ({ source: r.source, partner: r.partner, po: r.po, dc: (r.dcs || []).join(","), flavor: r.flavor, flavor_code: r.flavor_code, uom: r.uom, qty: r.qty, cases: r.cases, bags: r.bags, unit_price: r.unit_price, due_date: r.due_date, load: r.load || "" }));
       const res = await DB.importDemand(rows, { batch_label: label }, opVal());
       dmdBusy = false; dmdParsed = null;

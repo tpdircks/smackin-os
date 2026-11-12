@@ -97,7 +97,7 @@ assert(read("app.js").indexOf("function viewMakePlan") >= 0 && read("app.js").in
 assert(read("app.js").indexOf("async function receive(item, qty, lot, op, meta)") < 0 || read("db.js").indexOf("async function receive(item, qty, lot, op, meta)") >= 0, "receive signature stays in db");
 assert(read("make-plan.js").indexOf(".insert(") < 0 && read("make-plan.js").indexOf(".update(") < 0 && read("make-plan.js").indexOf(".delete(") < 0, "plan does not write");
 assert(read("dept-homes.js").indexOf('primary: "makeplan"') >= 0, "Demand opens Make Plan");
-assert(read("index.html").indexOf("make-plan.js?b=5") >= 0, "script tag");
+assert(read("index.html").indexOf("make-plan.js?b=6") >= 0, "script tag");
 assert(read("service-worker.js").indexOf('"./make-plan.js"') >= 0, "precached");
 
 var refused = plan.build({

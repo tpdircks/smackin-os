@@ -2144,6 +2144,74 @@ window.DB = (function () {
     }
     emit(); return { ok: true, count: clean.length, batch_id };
   }
+  function demandApi() { return (typeof window !== "undefined" && window.DEMAND) ? window.DEMAND : null; }
+  async function reconcileDemandOpen(rows, meta, op) {
+    meta = meta || {}; op = op || "";
+    const api = demandApi();
+    if (!api || typeof api.reconcileOpen !== "function") return { ok: false, msg: "reconcile is not loaded" };
+    const today = meta.today || (api.denverToday ? api.denverToday() : new Date().toISOString().slice(0, 10));
+    const plan = api.reconcileOpen(cache.demandLines || [], rows || [], { staged: cache.demandPoStage || [], today: today });
+    if (plan.refused) return { ok: false, msg: "The export has no lines. Open demand was not changed.", plan: plan };
+    const before = api.openCensus ? api.openCensus(cache.demandLines || []) : null;
+    const batch_id = meta.batch_id || ("SPS-UI-" + today);
+    const label = meta.batch_label || ("SPS UI " + today);
+    const now = new Date().toISOString();
+    const logEntry = { a: "Demand reconciled", d: label + " insert " + plan.insert.length + ", update " + plan.update.length + ", close " + plan.close.length, u: op, t: now };
+    function applyCache() {
+      plan.close.forEach(function (c) {
+        const row = (cache.demandLines || []).find(function (x) { return String(x.id) === String(c.id); });
+        if (!row) return;
+        row.status = "Complete";
+        row.notes = c.notes;
+      });
+      plan.update.forEach(function (u) {
+        const row = (cache.demandLines || []).find(function (x) { return String(x.id) === String(u.id); });
+        if (!row) return;
+        row.qty = u.qty; row.cases = u.cases; row.bags = u.bags;
+        if (u.due_date) row.due_date = u.due_date;
+        if (u.uom) row.uom = u.uom;
+        row.batch_id = batch_id; row.batch_label = label;
+      });
+      plan.insert.forEach(function (r) {
+        const row = Object.assign({}, r, {
+          id: "DMD-" + Math.random().toString(36).slice(2, 9),
+          batch_id: batch_id, batch_label: label, status: "Open",
+          source: r.source || "SPS", imported_by: op, created_at: now
+        });
+        (cache.demandLines = cache.demandLines || []).unshift(row);
+      });
+    }
+    if (mode === "cloud") {
+      for (const c of plan.close) await must(sb.from("demand_lines").update({ status: "Complete", notes: c.notes }).eq("id", c.id), "demand_lines");
+      for (const u of plan.update) {
+        const patch = { qty: u.qty, cases: u.cases, bags: u.bags, batch_id: batch_id, batch_label: label };
+        if (u.due_date) patch.due_date = u.due_date;
+        if (u.uom) patch.uom = u.uom;
+        await must(sb.from("demand_lines").update(patch).eq("id", u.id), "demand_lines");
+      }
+      const clean = plan.insert.map(function (r) {
+        return Object.assign(cleanDmd(r), {
+          batch_id: batch_id, batch_label: label, status: "Open",
+          source: r.source || "SPS", imported_by: op, notes: r.notes || ""
+        });
+      });
+      for (let i = 0; i < clean.length; i += 100) await must(sb.from("demand_lines").insert(clean.slice(i, i + 100)), "demand_lines");
+      await cloud.addLog(logEntry);
+      await cloud.loadAll();
+    } else {
+      applyCache();
+      local.addLog(logEntry);
+      local.save();
+    }
+    const afterLines = cache.demandLines || [];
+    const after = api.openCensus ? api.openCensus(afterLines) : null;
+    if (before && after) {
+      const snap = { at: now, current: Object.assign({ at: now }, after), previous: Object.assign({ at: now }, before) };
+      try { await kvSet("demand:open-snapshot", JSON.stringify(snap)); } catch (e) {}
+    }
+    emit();
+    return { ok: true, plan: plan, batch_id: batch_id, before: before, after: after };
+  }
   async function saveDemandPoStage(rec, email) {
     if (!stageEditorEmail(email)) return { ok: false, reason: "forbidden" };
     rec = rec || {};
@@ -3034,7 +3102,7 @@ window.DB = (function () {
 
   return {
     init, onChange, refresh: function () { return refreshFromCloud(true); }, get mode() { return mode; },
-    demandLines, demandPoStage, saveDemandPoStage, clearDemandPoStage, importDemand, setDemandStatus, shipDemandPO, clearDemandBatch, clearAllDemand, remapDemandFlavors,
+    demandLines, demandPoStage, saveDemandPoStage, clearDemandPoStage, importDemand, reconcileDemandOpen, setDemandStatus, shipDemandPO, clearDemandBatch, clearAllDemand, remapDemandFlavors,
     productionOutput, addProdOutput, deleteProdOutput,
     lineStatus, addMachine, setLineStatus, deleteMachine,
     forecast,

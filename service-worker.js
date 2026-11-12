@@ -5,7 +5,7 @@
    never touched.
    On every deploy, bump CACHE, build-id.txt, and EMBEDDED in sw-escape.js
    and index.html together. */
-const CACHE = "smackin-inv-v313";
+const CACHE = "smackin-inv-v314";
 const ASSETS = [
   "./", "./index.html", "./styles.css", "./ui-polish.css", "./ui-polish.js", "./stock-alerts.js", "./dept-homes.js", "./dept-boards.js", "./dashboard.js", "./demand-wos.js", "./vendor-seed.js", "./vendor-lead.js", "./mixing-recipes.js", "./wip-production.js",
   "./config.js", "./auth-gate.js", "./session-bind.js", "./role-tabs.js", "./seed-data.js", "./skus.js", "./demand.js", "./make-plan.js", "./demand-autoclose.js", "./demand-close-cleanup.js", "./demand-flavor-remap.js", "./kits.js", "./ecom.js", "./recipes.js", "./prod-ready.js", "./production-orders.js", "./work-orders.js", "./allen-wo-data.js", "./allen-lots.js", "./allen-wo.js", "./shortdated.js", "./launch-schedule.js", "./allen-reorder.js", "./recv-match.js", "./db.js", "./gusto-roster.js", "./order-lanes.js", "./app.js", "./daily-metrics.js", "./returns-workflow.js", "./fg-lots.js", "./ecom-lot-log.js", "./trace.js", "./trace-recall.js", "./receiving-sop.js", "./pmac-log.js", "./po-format.js", "./mfg-history-model.js", "./mfg-history.js", "./mfg-upload.js", "./data-health.js", "./services.js", "./sps-map.js", "./po-status.js", "./po-lines.js", "./batch-record.js", "./sqf-tasks.js", "./qa-checklists.js", "./fulfillment-analytics.js", "./data/wip-fulfillment-errors.json", "./shipping-sync.js", "./shipping-lanes.js", "./outbound-folders.js", "./sps-feed.js", "./history.js", "./slc-count-latest.js", "./inv-lot-plan.js", "./adriana-latest.js",
