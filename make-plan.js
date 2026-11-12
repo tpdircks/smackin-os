@@ -7,6 +7,9 @@
 
   var BAGS_PER_CASE = 72;
   var BAGS_PER_PALLET = 2500;
+  // 4 oz seed and cashew masters (12pk and 6pk) are 72 bags. Mini buckets are 24.
+  // Cashew bucket (24) is a different SKU and is not a demand pack.
+  var PACK_BAGS = { seed4: 72, minibucket: 24, cashew: 72 };
   var FILM_HOLD = 100000;
   var DT_REFUSED = 332800;
   var BAGS_PER_BATCH_4 = 400;
@@ -29,8 +32,16 @@
   function esc(s) {
     return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
   }
-  function casesOf(bags) {
-    return Math.round(num(bags) / BAGS_PER_CASE);
+  function bagsPerCase(pack) {
+    return PACK_BAGS[pack] || BAGS_PER_CASE;
+  }
+  function casesOf(bags, pack) {
+    return Math.round(num(bags) / bagsPerCase(pack));
+  }
+  function lineCases(line, pack) {
+    var stored = num(line && line.cases);
+    if (stored > 0) return stored;
+    return casesOf(num(line && line.bags), pack);
   }
   function palletsOf(bags) {
     return Math.round(num(bags) / BAGS_PER_PALLET * 10) / 10;
@@ -62,6 +73,78 @@
     } catch (e) {
       return new Date(now).toISOString().slice(0, 10);
     }
+  }
+  function stampDenver(iso) {
+    if (!iso) return "";
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return String(iso);
+    try {
+      var date = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Denver", month: "short", day: "numeric", year: "numeric"
+      }).format(d);
+      var time = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Denver", hour: "numeric", minute: "2-digit"
+      }).format(d);
+      var tz = "";
+      new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Denver", timeZoneName: "short"
+      }).formatToParts(d).forEach(function (p) {
+        if (p.type === "timeZoneName") tz = p.value;
+      });
+      return date + ", " + time + (tz ? " " + tz : "");
+    } catch (e2) {
+      return String(iso);
+    }
+  }
+  function businessHoursSince(iso, now) {
+    var start = new Date(iso);
+    var end = now instanceof Date ? now : new Date(now || Date.now());
+    if (isNaN(start.getTime()) || isNaN(end.getTime()) || end <= start) return 0;
+    if (end.getTime() - start.getTime() > 21 * 86400000) return 24 * 15;
+    var hours = 0;
+    var cursor = start.getTime();
+    while (cursor < end.getTime()) {
+      var slice = Math.min(end.getTime(), cursor + 3600000);
+      var mid = new Date((cursor + slice) / 2);
+      var wd = "Mon";
+      try {
+        wd = new Intl.DateTimeFormat("en-US", { timeZone: "America/Denver", weekday: "short" }).format(mid);
+      } catch (e3) { wd = "Mon"; }
+      if (wd !== "Sat" && wd !== "Sun") hours += (slice - cursor) / 3600000;
+      cursor = slice;
+    }
+    return Math.round(hours * 10) / 10;
+  }
+  function openCensus(lines) {
+    var keys = {};
+    var bags = 0;
+    var n = 0;
+    (lines || []).forEach(function (line) {
+      if (!classifyLine(line).keep) return;
+      n += 1;
+      bags = round3(bags + num(line.bags));
+      var key = poStageKey(line.partner, line.po);
+      keys[key] = 1;
+    });
+    var list = Object.keys(keys).sort();
+    return { bags: bags, pos: list.length, lines: n, keys: list };
+  }
+  function censusDiff(prev, next) {
+    prev = prev || { bags: 0, pos: 0, lines: 0, keys: [] };
+    next = next || { bags: 0, pos: 0, lines: 0, keys: [] };
+    var prevSet = {};
+    (prev.keys || []).forEach(function (k) { prevSet[k] = 1; });
+    var nextSet = {};
+    (next.keys || []).forEach(function (k) { nextSet[k] = 1; });
+    var added = (next.keys || []).filter(function (k) { return !prevSet[k]; });
+    var closed = (prev.keys || []).filter(function (k) { return !nextSet[k]; });
+    return {
+      bags: round3(num(next.bags) - num(prev.bags)),
+      pos: num(next.pos) - num(prev.pos),
+      lines: num(next.lines) - num(prev.lines),
+      added: added.length,
+      closed: closed.length
+    };
   }
   function weekMonday(now) {
     var iso = denverISO(now || new Date());
@@ -457,9 +540,10 @@
       var due = parseDue(line.due_date);
       if (due && (!earliest[f] || due < earliest[f])) earliest[f] = due;
       var partner = line.partner || "Unknown";
-      if (!customers[partner]) customers[partner] = { pos: {}, bags: 0 };
+      if (!customers[partner]) customers[partner] = { pos: {}, bags: 0, cases: 0 };
       if (line.po) customers[partner].pos[line.po] = 1;
       customers[partner].bags = round3(customers[partner].bags + bags);
+      customers[partner].cases = round3(customers[partner].cases + lineCases(line, pack));
       var row = {
         partner: partner, po: line.po || "", dc: line.dc || "", due: due || String(line.due_date || ""),
         flavor: f, bags: bags
@@ -473,8 +557,9 @@
       if (!demand[f]) demand[f] = { sps: 0, ecom: 0, pack: "seed4", target: 0 };
       demand[f].ecom = round3(demand[f].ecom + ecom.byFlavor[f]);
       if (!demand[f].pack) demand[f].pack = "seed4";
-      if (!customers["E-com"]) customers["E-com"] = { pos: {}, bags: 0 };
+      if (!customers["E-com"]) customers["E-com"] = { pos: {}, bags: 0, cases: 0 };
       customers["E-com"].bags = round3(customers["E-com"].bags + ecom.byFlavor[f]);
+      customers["E-com"].cases = round3(customers["E-com"].cases + casesOf(ecom.byFlavor[f], "seed4"));
       customers["E-com"].pos["queue"] = ecom.orders;
     });
 
@@ -530,7 +615,8 @@
         targetStaged: stagedBags,
         targetDemand: targetDem,
         toProduce: produce,
-        cases: casesOf(produce),
+        demandCases: casesOf(dem, pack),
+        cases: casesOf(produce, pack),
         pallets: palletsOf(produce),
         film: filmConfirmed,
         filmHeld: filmHeld,
@@ -545,7 +631,7 @@
       return row.demand > 0 || row.onHand > 0 || row.targetStaged > 0;
     });
 
-    function roll(rows) {
+    function roll(rows, packId) {
       var demandBags = 0;
       var onHandBags = 0;
       var produceBags = 0;
@@ -563,13 +649,13 @@
       return {
         required: required,
         covered: covered,
-        headline: { demand: demandBags, onHand: onHandBags, toProduce: produceBags, cases: casesOf(produceBags), pallets: palletsOf(produceBags) }
+        headline: { demand: demandBags, onHand: onHandBags, toProduce: produceBags, cases: casesOf(produceBags, packId), pallets: palletsOf(produceBags) }
       };
     }
     var packs = [
-      Object.assign({ id: "seed4", title: "4 oz seed" }, roll(flavors.filter(function (r) { return r.pack !== "cashew" && r.pack !== "minibucket"; }))),
-      Object.assign({ id: "cashew", title: "Cashews" }, roll(flavors.filter(function (r) { return r.pack === "cashew"; }))),
-      Object.assign({ id: "minibucket", title: "Mini buckets" }, roll(flavors.filter(function (r) { return r.pack === "minibucket"; })))
+      Object.assign({ id: "seed4", title: "4 oz seed" }, roll(flavors.filter(function (r) { return r.pack !== "cashew" && r.pack !== "minibucket"; }), "seed4")),
+      Object.assign({ id: "cashew", title: "Cashews" }, roll(flavors.filter(function (r) { return r.pack === "cashew"; }), "cashew")),
+      Object.assign({ id: "minibucket", title: "Mini buckets" }, roll(flavors.filter(function (r) { return r.pack === "minibucket"; }), "minibucket"))
     ];
     var required = packs[0].required;
     var covered = packs[0].covered;
@@ -580,7 +666,7 @@
     var custRows = Object.keys(customers).map(function (name) {
       var c = customers[name];
       var poN = name === "E-com" ? (ecom.orders || 0) : Object.keys(c.pos).length;
-      return { channel: name, pos: poN, bags: c.bags, cases: casesOf(c.bags) };
+      return { channel: name, pos: poN, bags: c.bags, cases: num(c.cases) };
     }).sort(function (a, b) { return b.bags - a.bags || a.channel.localeCompare(b.channel); });
     var custBags = custRows.reduce(function (s, c) { return s + c.bags; }, 0);
     custRows.forEach(function (c) {
@@ -600,20 +686,24 @@
     });
     weeks.thisWeek = round3(weeks.thisWeek + Object.keys(ecom.byFlavor).reduce(function (s, f) { return s + ecom.byFlavor[f]; }, 0));
 
+    var spsWhen = String(input.spsRefresh || "");
+    if (spsAsOf > spsWhen) spsWhen = spsAsOf;
+    var spsHours = spsWhen ? businessHoursSince(spsWhen, now) : null;
+
     var notes = [];
     required.filter(function (r) { return r.kind === "blocked"; }).forEach(function (r) {
       notes.push(r.flavor + " is blocked. Confirmed film is " + (r.filmHeld > 0 && !(r.film > 0) ? "held" : fmt(r.film)) + " and " + fmt(r.toProduce) + " bags are still to produce.");
     });
     notes.push(wip.note);
-    notes.push("E-com is the ShipStation unshipped queue (awaiting_shipment), " + ecom.orders + " orders" + (ecom.asOf ? ", as of " + ecom.asOf.slice(0, 16).replace("T", " ") + " UTC" : "") + ". The e-com demand snapshot is not used.");
+    notes.push("E-com is the ShipStation unshipped queue (awaiting_shipment), " + ecom.orders + " orders" + (ecom.asOf ? ", as of " + stampDenver(ecom.asOf) : "") + ". The e-com demand snapshot is not used.");
     if (ecom.oz15) notes.push("ShipStation also has " + fmt(ecom.oz15) + " bags of 1.5 oz. Those are not in the 4 oz plan.");
     if (ecom.unmapped) notes.push(fmt(ecom.unmapped) + " ShipStation units did not map to a flavor.");
-    if (seas.asOf) notes.push("Seasoning on hand as of " + seas.asOf.slice(0, 16).replace("T", " ") + " UTC.");
-    if (film.asOf) notes.push("Film on hand as of " + film.asOf.slice(0, 16).replace("T", " ") + " UTC. A film count over 100,000 is held and is not available.");
-    if (loose.asOf) notes.push("4 oz bag stock as of " + loose.asOf.slice(0, 16).replace("T", " ") + " UTC.");
-    if (built.asOf) notes.push("Stock Build as of " + built.asOf.slice(0, 16).replace("T", " ") + " UTC.");
-    if (stagedAsOf) notes.push("Target staged as of " + stagedAsOf.slice(0, 16).replace("T", " ") + " UTC.");
-    if (spsAsOf) notes.push("SPS demand lines as of " + spsAsOf.slice(0, 16).replace("T", " ") + " UTC.");
+    if (seas.asOf) notes.push("Seasoning on hand as of " + stampDenver(seas.asOf) + ".");
+    if (film.asOf) notes.push("Film on hand as of " + stampDenver(film.asOf) + ". A film count over 100,000 is held and is not available.");
+    if (loose.asOf) notes.push("Adri bag count as of " + stampDenver(loose.asOf) + ".");
+    if (built.asOf) notes.push("Stock Build as of " + stampDenver(built.asOf) + ".");
+    if (stagedAsOf) notes.push("Target staged as of " + stampDenver(stagedAsOf) + ".");
+    if (spsWhen) notes.push("SPS open demand as of " + stampDenver(spsWhen) + ".");
     notes.push("On hand for 4 oz seed uses usable bags (returns, quarantine, QA-hold, and other hold locations are out). Master Case and other non-Target Stock Build cases are the same finished goods as those bags, so the larger of the two counts is kept and the smaller is not added. Target staged cases are reserved against Target demand by flavor first. They are not mixed into on hand, and that larger-of rule does not drop them. PCA Pizza, Deep Dish Pizza, and Cheezy Pizza are one flavor.");
     notes.push("Cashews use NUTS-BBQ and NUTS-CINNAMONCHURRO only. Mini Bucket Mixed is 24 per case from mini-bucket items. Neither is subtracted from 4 oz seed stock.");
     if (built.mixed) notes.push(fmt(built.mixed) + " Stock Build bags are variety or mixed packs and are not assigned to one flavor.");
@@ -633,6 +723,28 @@
 
     var stagedBagsTotal = 0;
     Object.keys(staged).forEach(function (f) { stagedBagsTotal = round3(stagedBagsTotal + staged[f]); });
+
+    var targetBags = 0;
+    var nonTargetBags = 0;
+    flavors.forEach(function (r) {
+      if (r.pack !== "seed4") return;
+      targetBags = round3(targetBags + num(r.targetDemand));
+      nonTargetBags = round3(nonTargetBags + Math.max(0, num(r.demand) - num(r.targetDemand)));
+    });
+    var fulfillTotal = round3(targetBags + nonTargetBags);
+    var fulfillment = {
+      target: targetBags,
+      nonTarget: nonTargetBags,
+      total: fulfillTotal,
+      onHand: onHandBags,
+      variance: round3(onHandBags - fulfillTotal),
+      cover: fulfillTotal > 0 ? onHandBags / fulfillTotal : 0
+    };
+    var loadCompare = null;
+    var snap = input.loadSnapshot || null;
+    if (snap && snap.current && snap.previous) {
+      loadCompare = { at: snap.at || snap.current.at || "", current: snap.current, previous: snap.previous, diff: censusDiff(snap.previous, snap.current) };
+    }
 
     return {
       week: week,
@@ -659,7 +771,18 @@
       dollarTree: dt,
       wip: wip,
       notes: notes,
-      asOf: { sps: spsAsOf, ecom: ecom.asOf, stock: loose.asOf, stockBuild: built.asOf, film: film.asOf, seasoning: seas.asOf }
+      fulfillment: fulfillment,
+      loadCompare: loadCompare,
+      asOf: {
+        sps: spsWhen,
+        ecom: ecom.asOf,
+        stock: loose.asOf,
+        stockBuild: built.asOf,
+        film: film.asOf,
+        seasoning: seas.asOf,
+        spsHours: spsHours,
+        spsStale: spsHours != null && spsHours > 24
+      }
     };
   }
 
@@ -675,7 +798,8 @@
   function emailPack(plan) {
     var intro = "Attached/below is this week's demand report (week of " + plan.weekLabel + ").";
     function line(cells) { return cells.join("\t"); }
-    var plain = [intro, "", "Demand " + fmt(plan.headline.demand) + " bags. On hand " + fmt(plan.headline.onHand) + ". To produce " + fmt(plan.headline.toProduce) + " bags (" + fmt(plan.headline.cases) + " cases / " + plan.headline.pallets + " pallets).", "", "PRODUCTION REQUIRED"];
+    var f = plan.fulfillment || {};
+    var plain = [intro, "", "Demand " + fmt(plan.headline.demand) + " bags. On hand " + fmt(plan.headline.onHand) + ". To produce " + fmt(plan.headline.toProduce) + " bags (" + fmt(plan.headline.cases) + " cases / " + plan.headline.pallets + " pallets).", "Fulfillment summary (4 oz): Target " + fmt(f.target) + ", non-Target " + fmt(f.nonTarget) + ", total " + fmt(f.total) + ", on hand " + fmt(f.onHand) + ", variance " + fmt(f.variance) + ", cover " + pct(f.cover) + ".", "", "PRODUCTION REQUIRED"];
     plain.push(line(["Flavor", "Code", "Demand", "On Hand", "Target staged", "To Produce", "Cases", "Pallets", "Film", "Seasoning lbs", "Earliest Due", "Ready"]));
     plan.required.forEach(function (r) {
       plain.push(line([r.flavor, r.code, r.demand, r.onHand, r.targetStaged || 0, r.toProduce, r.cases, r.pallets, filmCell(r), r.seasoning, r.earliest, r.ready]));
@@ -744,22 +868,57 @@
       return "<th" + right + ">" + esc(h) + "</th>";
     }).join("") + "</tr>";
   }
+  function sourceBit(label, iso) {
+    return label + (iso ? " " + stampDenver(iso) : " not loaded");
+  }
+  function dataBanner(plan) {
+    var a = plan.asOf || {};
+    var stale = !!a.spsStale;
+    var text = "Data as of. SPS open demand " + sourceBit("", a.sps).replace(/^ /, "") +
+      ". E-com (ShipStation) " + (a.ecom ? stampDenver(a.ecom) : "not loaded") +
+      ". Stock Build " + (a.stockBuild ? stampDenver(a.stockBuild) : "not loaded") +
+      ". Adri bag count " + (a.stock ? stampDenver(a.stock) : "not loaded") + ".";
+    if (stale) text += " SPS open demand is more than 24 business hours old.";
+    var style = stale ? ' style="background:#FFF6E0;border-radius:8px;padding:8px 10px"' : "";
+    return '<p class="hint mp-asof"' + style + "><b>Data as of.</b> " + esc(text.replace(/^Data as of\. /, "")) + "</p>";
+  }
+  function fulfillmentStrip(plan) {
+    var f = plan.fulfillment || { target: 0, nonTarget: 0, total: 0, onHand: 0, variance: 0, cover: 0 };
+    return '<div class="card" data-slot="fulfillment"><h2 class="sub2">Fulfillment summary</h2><p class="hint">4 oz seed only, so mini buckets do not swamp the cover. Variance is on hand minus demand.</p><div class="kpis">' +
+      '<div class="kpi"><div class="n">' + fmt(f.target) + '</div><div class="l">Target bags</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(f.nonTarget) + '</div><div class="l">Non-Target bags</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(f.total) + '</div><div class="l">Total bags</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(f.onHand) + '</div><div class="l">On hand</div></div>' +
+      '<div class="kpi"><div class="n">' + fmt(f.variance) + '</div><div class="l">Variance</div></div>' +
+      '<div class="kpi"><div class="n">' + pct(f.cover) + '</div><div class="l">Cover</div></div></div></div>';
+  }
+  function loadLine(plan) {
+    var c = plan.loadCompare;
+    if (!c || !c.previous || !c.current) {
+      return '<p class="hint">Vs last load: no earlier open-demand snapshot is stored yet. The next SPS saved-search import keeps this load so the one after it can compare open bags, POs, and lines.</p>';
+    }
+    var d = c.diff || censusDiff(c.previous, c.current);
+    var sign = function (n) { return (n > 0 ? "+" : "") + fmt(n); };
+    return '<p class="hint">Vs last load' + (c.at ? " (" + esc(stampDenver(c.at)) + ")" : "") +
+      ": open bags " + fmt(c.current.bags) + " (was " + fmt(c.previous.bags) + ", " + sign(d.bags) + ")" +
+      ", POs " + fmt(c.current.pos) + " (was " + fmt(c.previous.pos) + ", " + sign(d.pos) + ")" +
+      ", lines " + fmt(c.current.lines) + " (was " + fmt(c.previous.lines) + ", " + sign(d.lines) + ")" +
+      ". Added " + fmt(d.added) + " POs. Closed " + fmt(d.closed) + " POs.</p>";
+  }
   function view(plan) {
     var h = plan.headline;
     var packLine = (plan.packs || []).map(function (p) {
       return "<b>" + esc(p.title) + "</b> demand " + fmt(p.headline.demand) + ", on hand " + fmt(p.headline.onHand) + ", to produce " + fmt(p.headline.toProduce);
     }).join("<br>");
     var head = '<div class="card" data-slot="makeplan"><h2>Make Plan</h2>' +
+      dataBanner(plan) +
       '<p class="hint">Week of ' + esc(plan.weekLabel) + ' (Monday to Sunday, America/Denver). View only. Pack types are not netted against each other.</p>' +
       '<p style="font-size:18px;margin:8px 0"><b>Demand</b> ' + fmt(h.demand) + ' bags &nbsp; <b>On hand</b> ' + fmt(h.onHand) + ' &nbsp; <b>To produce</b> ' + fmt(h.toProduce) + ' bags (' + fmt(h.cases) + ' cs / ' + h.pallets + ' pallets)</p>' +
       (packLine ? '<p class="hint">' + packLine + "</p>" : "") +
+      loadLine(plan) +
       (plan.targetStaged && plan.targetStaged.bags > 0 ? '<p class="hint">Target staged ' + fmt(plan.targetStaged.bags) + " bags (" + fmt(plan.targetStaged.cases) + " cases). Reserved against Target demand by flavor, and not mixed into on hand.</p>" : "") +
       '<p class="hint">Key: <span class="mp-dot" style="background:#2E7D32"></span> Covered &nbsp; <span class="mp-dot" style="background:#B7791F"></span> Produce this week (film on hand) &nbsp; <span class="mp-dot" style="background:#B42318"></span> Blocked, no film. Production required is largest first.</p>' +
-      '<p><button class="primary" type="button" onclick="UI.makePlanCopy()">Copy as email</button> <button class="ghost" type="button" onclick="UI.makePlanCsv()">Download CSV</button></p>' +
-      '<p class="hint">Sources: SPS open lines' + (plan.asOf.sps ? " as of " + esc(plan.asOf.sps.slice(0, 16).replace("T", " ")) + " UTC" : "") +
-      ". E-com ShipStation unshipped" + (plan.asOf.ecom ? " as of " + esc(plan.asOf.ecom.slice(0, 16).replace("T", " ")) + " UTC" : "") +
-      ". 4 oz stock" + (plan.asOf.stock ? " as of " + esc(plan.asOf.stock.slice(0, 16).replace("T", " ")) + " UTC" : "") +
-      ". Stock Build" + (plan.asOf.stockBuild ? " as of " + esc(plan.asOf.stockBuild.slice(0, 16).replace("T", " ")) + " UTC" : "") + ".</p></div>";
+      '<p><button class="primary" type="button" onclick="UI.makePlanCopy()">Copy as email</button> <button class="ghost" type="button" onclick="UI.makePlanCsv()">Download CSV</button></p></div>';
     var reqBody = plan.required.map(function (r) {
       return "<tr class=\"mp-" + r.kind + "\"><td>" + esc(r.flavor) + "</td><td>" + esc(r.code) + "</td><td class=\"right\">" + fmt(r.demand) + "</td><td class=\"right\">" + fmt(r.onHand) + "</td><td class=\"right\">" + fmt(r.targetStaged || 0) + "</td><td class=\"right\"><b>" + fmt(r.toProduce) + "</b></td><td class=\"right\">" + fmt(r.cases) + "</td><td class=\"right\">" + r.pallets + "</td><td class=\"right\">" + esc(filmCell(r)) + "</td><td class=\"right\">" + fmt(r.seasoning) + "</td><td>" + esc(r.earliest || "") + "</td><td>" + esc(r.ready) + "</td></tr>";
     }).join("") || '<tr><td colspan="12">No production required. Open demand is covered from stock.</td></tr>';
@@ -811,7 +970,35 @@
       '<details class="card"><summary><b>Non-Target PO, ship-to, and due</b></summary>' + other + "</details>" +
       '<div class="card"><h2 class="sub2">Dollar Tree 2.75 oz (display only)</h2><p class="hint">Not netted against 4 oz demand. The unconfirmed 332,800 units are not used.</p>' + dtRows + "</div>";
     var css = "<style>.mp-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px}.mp-produce td{background:#FFF6E0}.mp-blocked td{background:#FDECEC}.mp-covered td{background:#EAF6EE}</style>";
-    return css + head + req + cov + cust + strip + note + folds;
+    return css + head + fulfillmentStrip(plan) + req + cov + cust + strip + note + folds;
+  }
+
+  function scheduleView(plan) {
+    var h = plan.headline;
+    var packLine = (plan.packs || []).map(function (p) {
+      return "<b>" + esc(p.title) + "</b> to produce " + fmt(p.headline.toProduce) + " bags (" + fmt(p.headline.cases) + " cs / " + p.headline.pallets + " pallets)";
+    }).join("<br>");
+    var rows = [];
+    (plan.packs || []).forEach(function (p) {
+      (p.required || []).concat(p.covered || []).forEach(function (r) {
+        if (!(r.demand > 0)) return;
+        rows.push(r);
+      });
+    });
+    rows.sort(function (a, b) { return b.toProduce - a.toProduce || a.flavor.localeCompare(b.flavor); });
+    var body = rows.map(function (r) {
+      return "<tr><td>" + esc(r.flavor) + "</td><td>" + esc(r.pack || "") + "</td><td class=\"right\">" + fmt(r.demand) + "</td><td class=\"right\">" + fmt(r.demandCases || casesOf(r.demand, r.pack)) + "</td><td class=\"right\">" + fmt(r.onHand) + "</td><td class=\"right\"><b>" + fmt(r.toProduce) + "</b></td><td class=\"right\">" + fmt(r.cases) + "</td><td class=\"right\">" + r.pallets + "</td><td>" + esc(r.ready) + "</td></tr>";
+    }).join("") || '<tr><td colspan="9">No open demand.</td></tr>';
+    var produceAll = 0;
+    (plan.packs || []).forEach(function (p) { produceAll = round3(produceAll + p.headline.toProduce); });
+    return '<div class="card" data-slot="demandsched"><h2>Production Schedule</h2>' +
+      '<p class="hint">Same Make Plan numbers. To produce drops staged POs and Target staged stock the same way. Cases use the pack (4 oz and cashews 72, mini buckets 24). Pallets are 2,500 bags.</p>' +
+      dataBanner(plan) +
+      '<p style="font-size:18px;margin:8px 0"><b>To produce</b> ' + fmt(h.toProduce) + " bags (" + fmt(h.cases) + " cs / " + h.pallets + " pallets)</p>" +
+      (packLine ? '<p class="hint">' + packLine + "</p>" : "") +
+      '<p class="hint">All packs to produce ' + fmt(produceAll) + " bags. The headline number above is 4 oz seed, matching Make Plan.</p></div>" +
+      '<div class="card"><div class="tblwrap"><table class="sortable"><thead><tr><th>Flavor</th><th>Pack</th><th class="right">Demand bags</th><th class="right">Demand cs</th><th class="right">On hand</th><th class="right">To produce</th><th class="right">To produce cs</th><th class="right">Pallets</th><th>Ready</th></tr></thead><tbody>' +
+      body + "</tbody></table></div></div>";
   }
 
   function fromDb(DB, now) {
@@ -840,6 +1027,11 @@
         sb[sb.length - 1].bags = round3(num(row.on_hand) * ((/48 bags/.test(item.name) ? 48 : (/12 bags/.test(item.name) ? 12 : 12))));
       }
     });
+    var snap = null;
+    try {
+      var raw = DB && DB.kvGet ? DB.kvGet("demand:open-snapshot") : null;
+      if (raw) snap = JSON.parse(raw);
+    } catch (e) { snap = null; }
     return build({
       now: now || new Date(),
       lines: DB && DB.demandLines ? DB.demandLines() : [],
@@ -850,7 +1042,9 @@
       stagedPos: DB && DB.demandPoStage ? DB.demandPoStage() : [],
       purchaseOrders: DB && DB.purchaseOrders ? DB.purchaseOrders() : [],
       mapRow: root.ECOM && root.ECOM.mapRow,
-      recipe: root.RECIPE_LOOKUP
+      recipe: root.RECIPE_LOOKUP,
+      loadSnapshot: snap,
+      spsRefresh: snap && (snap.at || (snap.current && snap.current.at)) || ""
     });
   }
 
@@ -967,8 +1161,14 @@
     view: view,
     fromDb: fromDb,
     casesOf: casesOf,
+    bagsPerCase: bagsPerCase,
     palletsOf: palletsOf,
     denverISO: denverISO,
+    stampDenver: stampDenver,
+    businessHoursSince: businessHoursSince,
+    openCensus: openCensus,
+    censusDiff: censusDiff,
+    scheduleView: scheduleView,
     bookingsFromOrders: bookingsFromOrders,
     indexStagedPos: indexStagedPos,
     openDemandStates: openDemandStates

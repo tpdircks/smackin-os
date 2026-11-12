@@ -154,7 +154,8 @@
           source: "SPS", partner: m.partner || "Unknown", po: order, dc,
           flavor: "Mini Bucket Mixed", flavor_code: "SMA77037",
           uom, qty, cases: eachesMini ? Math.round(qty / 24) : qty, bags: miniBags,
-          unit_price: price, due_date: m.due || "", desc
+          unit_price: price, due_date: m.due || "", desc,
+          notes: "[[PACK:minibucket]] [[SPSSTAGE:open]] " + desc
         });
         continue;
       }
@@ -163,7 +164,8 @@
         lines.push({
           source: "SPS", partner: m.partner || "Unknown", po: order, dc,
           flavor: "Variety Pack", flavor_code: FLAVOR_CODES["Variety Pack"] || "",
-          uom, qty, cases: packs, bags: 0, unit_price: price, due_date: m.due || "", desc
+          uom, qty, cases: packs, bags: 0, unit_price: price, due_date: m.due || "", desc,
+          notes: "[[PACK:seed4]] [[SPSSTAGE:open]] " + desc
         });
         VARIETY_4PACK_COMPONENTS.forEach(function (compFlavor) {
           const compBags = packs * BAGS_PER_VARIETY_FLAVOR;
@@ -171,7 +173,8 @@
             source: "SPS", partner: m.partner || "Unknown", po: order, dc,
             flavor: compFlavor, flavor_code: FLAVOR_CODES[compFlavor] || "",
             uom: "Bags", qty: 0, cases: compBags / BAGS_PER_CASE, bags: compBags,
-            unit_price: 0, due_date: m.due || "", desc: "Variety Pack component (" + desc + ")"
+            unit_price: 0, due_date: m.due || "", desc: "Variety Pack component (" + desc + ")",
+            notes: "[[PACK:seed4]] [[SPSSTAGE:open]] Variety Pack component (" + desc + ")"
           });
         });
         continue;
@@ -179,6 +182,7 @@
       const flavor = flavorFromStyleOrDesc(style, desc);
       const bucket = flavor === "Mini Bucket Mixed" ? false : isBucketOrVariety(desc);
       const eaches = /each|ea\b/i.test(uom);
+      const packKind = /^cashews?\b/i.test(flavor || "") ? "cashew" : "seed4";
       let cases, bags;
       if (eaches) { bags = bucket ? 0 : qty; cases = Math.round(qty / BAGS_PER_CASE); }
       else { cases = qty; bags = bucket ? 0 : qty * BAGS_PER_CASE; }
@@ -186,7 +190,8 @@
       lines.push({
         source: "SPS", partner: m.partner || "Unknown", po: order, dc,
         flavor: flavor || ("UNMAPPED: " + (desc || style)), flavor_code: flavor ? (FLAVOR_CODES[flavor] || "") : "",
-        uom, qty, cases, bags, unit_price: price, due_date: m.due || "", desc
+        uom, qty, cases, bags, unit_price: price, due_date: m.due || "", desc,
+        notes: "[[PACK:" + packKind + "]] [[SPSSTAGE:open]] " + desc
       });
     }
     Object.keys(unmatched).forEach(k => warnings.push("Unmapped flavor (" + unmatched[k] + " lines): " + k));
@@ -258,6 +263,121 @@
     return out;
   }
 
+  function normPart(s) { return String(s || "").trim().toLowerCase(); }
+  function lineMatchKey(r) {
+    return [normPart(r && r.partner), normPart(r && r.po), normPart(r && r.dc), normPart(r && r.flavor)].join("|");
+  }
+  function stageKey(partner, po) { return normPart(partner) + "\n" + normPart(po); }
+  function isLiveOpen(r) {
+    if (!r) return false;
+    var st = String(r.status || "");
+    if (st !== "Open" && st !== "New") return false;
+    if (String(r.batch_id || "") === "SPS-TEST") return false;
+    if (String(r.batch_label || "").toLowerCase().indexOf("testout") >= 0) return false;
+    return true;
+  }
+  function closedStatus(st) {
+    st = String(st || "").toLowerCase();
+    return st === "complete" || st === "closed" || st === "cancelled" || st === "canceled";
+  }
+  function closeNote(existing, today, reason) {
+    var tag = "[[CLOSED:" + today + ":" + (reason || "not-live-sps-open") + "]]";
+    var cur = String(existing || "").trim();
+    if (cur.indexOf(tag) >= 0) return cur;
+    return cur ? cur + " " + tag : tag;
+  }
+  function denverToday(now) {
+    try {
+      return new Intl.DateTimeFormat("en-CA", {
+        timeZone: "America/Denver", year: "numeric", month: "2-digit", day: "2-digit"
+      }).format(now || new Date());
+    } catch (e) {
+      return new Date(now || Date.now()).toISOString().slice(0, 10);
+    }
+  }
+  function numSum(n) { n = Number(n); return isFinite(n) ? n : 0; }
+  function openCensus(lines) {
+    var keys = {};
+    var bags = 0;
+    var n = 0;
+    (lines || []).forEach(function (line) {
+      if (!isLiveOpen(line)) return;
+      n += 1;
+      bags += numSum(line.bags);
+      keys[stageKey(line.partner, line.po)] = 1;
+    });
+    var list = Object.keys(keys).sort();
+    return { bags: Math.round(bags * 1000) / 1000, pos: list.length, lines: n, keys: list };
+  }
+  // Full saved-search reconcile. incoming is the live New and Open set.
+  // Staged POs stay open unless the file itself shows that PO closed.
+  function reconcileOpen(existing, incoming, opts) {
+    opts = opts || {};
+    var today = opts.today || denverToday();
+    if (!incoming || !incoming.length) return { insert: [], update: [], close: [], unchanged: 0, refused: "empty", today: today };
+    var staged = {};
+    (opts.staged || []).forEach(function (row) {
+      if (row && row.po) staged[stageKey(row.partner, row.po)] = true;
+    });
+    var closedPo = {};
+    incoming.forEach(function (row) {
+      if (closedStatus(row.status)) closedPo[stageKey(row.partner, row.po)] = true;
+    });
+    var want = {};
+    incoming.forEach(function (row) {
+      if (closedStatus(row.status)) return;
+      var k = lineMatchKey(row);
+      if (!want[k]) want[k] = Object.assign({}, row, { qty: 0, cases: 0, bags: 0 });
+      want[k].qty += numSum(row.qty);
+      want[k].cases += numSum(row.cases);
+      want[k].bags += numSum(row.bags);
+      if (!want[k].due_date && row.due_date) want[k].due_date = row.due_date;
+      if (!want[k].notes && row.notes) want[k].notes = row.notes;
+    });
+    var have = {};
+    (existing || []).forEach(function (row) {
+      if (!isLiveOpen(row)) return;
+      var k = lineMatchKey(row);
+      if (!have[k]) have[k] = [];
+      have[k].push(row);
+    });
+    var insert = [];
+    var update = [];
+    var close = [];
+    var unchanged = 0;
+    Object.keys(want).forEach(function (k) {
+      var next = want[k];
+      var rows = have[k] || [];
+      if (!rows.length) { insert.push(next); return; }
+      var keeper = rows[0];
+      var due = String(next.due_date || "");
+      var sameDue = !due || due === String(keeper.due_date || "");
+      var same = numSum(keeper.bags) === numSum(next.bags) && numSum(keeper.cases) === numSum(next.cases) && numSum(keeper.qty) === numSum(next.qty) && sameDue;
+      if (same) unchanged += 1;
+      else update.push({
+        id: keeper.id,
+        qty: next.qty,
+        cases: next.cases,
+        bags: next.bags,
+        due_date: due || keeper.due_date || "",
+        uom: next.uom || keeper.uom || ""
+      });
+      rows.slice(1).forEach(function (extra) {
+        close.push({ id: extra.id, partner: extra.partner, po: extra.po, notes: closeNote(extra.notes, today, "merged-duplicate"), reason: "merged-duplicate" });
+      });
+      have[k] = [];
+    });
+    Object.keys(have).forEach(function (k) {
+      (have[k] || []).forEach(function (row) {
+        var sk = stageKey(row.partner, row.po);
+        if (staged[sk] && !closedPo[sk]) return;
+        var reason = closedPo[sk] ? "sps-closed" : "not-live-sps-open";
+        close.push({ id: row.id, partner: row.partner, po: row.po, notes: closeNote(row.notes, today, reason), reason: reason });
+      });
+    });
+    return { insert: insert, update: update, close: close, unchanged: unchanged, today: today };
+  }
+
   function detectType(text) {
     const nl = text.indexOf("\n"); const head = (nl > 0 ? text.slice(0, nl) : text).toLowerCase();
     if (head.indexOf("purchase order number") >= 0 && head.indexOf("cartons") >= 0) return "shipiq";
@@ -265,5 +385,6 @@
     return "unknown";
   }
 
-  root.DEMAND = { parseCSV, parseSPS, parseShipIQ, aggregate, orderNum, cleanPartner, detectType, FLAVOR_CODES, STYLE_MAP, BAGS_PER_CASE, VARIETY_4PACK_COMPONENTS, isVarietyFourPack, cleanFlavorText, resolveFlavor, flavorFromStyleOrDesc };
-})(window);
+  root.DEMAND = { parseCSV, parseSPS, parseShipIQ, aggregate, orderNum, cleanPartner, detectType, FLAVOR_CODES, STYLE_MAP, BAGS_PER_CASE, VARIETY_4PACK_COMPONENTS, isVarietyFourPack, cleanFlavorText, resolveFlavor, flavorFromStyleOrDesc, reconcileOpen, openCensus, closeNote, lineMatchKey, denverToday };
+  if (typeof module !== "undefined" && module.exports) module.exports = root.DEMAND;
+})(typeof window !== "undefined" ? window : globalThis);

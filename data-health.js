@@ -526,6 +526,62 @@
     var h = hits[0];
     return h.item + ", lot " + h.lot + ", expired " + prettyDay(h.expiration) + " (" + h.days + " days). It is in " + h.location + ". Warning only. The lot is not blocked.";
   }
+  function stampDenver(iso) {
+    if (!iso) return "";
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return String(iso);
+    try {
+      var date = new Intl.DateTimeFormat("en-US", { timeZone: "America/Denver", month: "short", day: "numeric", year: "numeric" }).format(d);
+      var time = new Intl.DateTimeFormat("en-US", { timeZone: "America/Denver", hour: "numeric", minute: "2-digit" }).format(d);
+      var tz = "";
+      new Intl.DateTimeFormat("en-US", { timeZone: "America/Denver", timeZoneName: "short" }).formatToParts(d).forEach(function (p) {
+        if (p.type === "timeZoneName") tz = p.value;
+      });
+      return date + ", " + time + (tz ? " " + tz : "");
+    } catch (e) { return String(iso); }
+  }
+  function businessHoursSince(iso, now) {
+    var start = new Date(iso);
+    var end = now instanceof Date ? now : new Date(now || Date.now());
+    if (isNaN(start.getTime()) || isNaN(end.getTime()) || end <= start) return 0;
+    if (end.getTime() - start.getTime() > 21 * 86400000) return 24 * 15;
+    var hours = 0;
+    var cursor = start.getTime();
+    while (cursor < end.getTime()) {
+      var slice = Math.min(end.getTime(), cursor + 3600000);
+      var mid = new Date((cursor + slice) / 2);
+      var wd = "Mon";
+      try { wd = new Intl.DateTimeFormat("en-US", { timeZone: "America/Denver", weekday: "short" }).format(mid); } catch (e2) { wd = "Mon"; }
+      if (wd !== "Sat" && wd !== "Sun") hours += (slice - cursor) / 3600000;
+      cursor = slice;
+    }
+    return Math.round(hours * 10) / 10;
+  }
+  function spsFeed(opts) {
+    opts = opts || {};
+    var now = opts.now instanceof Date ? opts.now : new Date(opts.now || Date.now());
+    var sync = opts.sync || null;
+    var demandAt = opts.demandAt || "";
+    var hours = demandAt ? businessHoursSince(demandAt, now) : null;
+    var level = "bad";
+    if (hours == null) level = "bad";
+    else if (hours > 72) level = "bad";
+    else if (hours > 24) level = "warn";
+    else level = "ok";
+    var connection = "SPS connection: no sps-sync run is stored.";
+    if (sync) {
+      var when = sync.at ? stampDenver(sync.at) : "unknown time";
+      var folder = sync.folder || "out";
+      var listed = sync.listed == null ? "file count not stored" : (sync.listed + " files listed");
+      var health = sync.ok ? "last run succeeded" : ("last run failed" + (sync.message ? " (" + sync.message + ")" : ""));
+      connection = "SPS connection: " + health + " at " + when + ". Folder " + folder + ". " + listed + ".";
+    }
+    var demand = "Open demand: no SPS open-demand refresh is on record.";
+    if (demandAt) {
+      demand = "Open demand last refreshed " + stampDenver(demandAt) + (opts.demandBatch ? " (" + opts.demandBatch + ")" : "") + ".";
+    }
+    return { level: level, hours: hours, connection: connection, demand: demand };
+  }
   function spsQuiet(opts) {
     opts = opts || {};
     var now = opts.now instanceof Date ? opts.now : new Date(opts.now || Date.now());
@@ -556,26 +612,42 @@
     return Promise.all([
       readList(c.from("stock").select("item_id,location,lot,qty,expires_on").gt("qty", 0).limit(5000)),
       readList(c.from("items").select("id,name,code").limit(5000)),
-      readList(c.from("sps_transactions").select("received_at,status,payload").order("received_at", { ascending: false }).limit(40)),
-      readList(c.from("receiving_log").select("recv_date").order("recv_date", { ascending: false }).limit(30))
+      readList(c.from("receiving_log").select("recv_date").order("recv_date", { ascending: false }).limit(30)),
+      readList(c.from("kv_status").select("key,value").in("key", ["sps:last_sync", "demand:open-snapshot"])),
+      readList(c.from("demand_lines").select("created_at,batch_id,batch_label,source,status").in("status", ["Open", "New"]).order("created_at", { ascending: false }).limit(40))
     ]).then(function (rs) {
       var now = new Date();
       var today = denverStamp(now).date;
       var stock = (rs[0] && rs[0].data) || [];
       var items = (rs[1] && rs[1].data) || [];
-      var files = (rs[2] && rs[2].data) || [];
-      var recvs = (rs[3] && rs[3].data) || [];
-      var lastFile = "";
-      if (!(rs[2] && rs[2].error)) {
-        files.forEach(function (row) {
-          if (String(row.status || "").toLowerCase() === "test") return;
-          var folder = row.payload && row.payload.folder;
-          if (folder === "paste") return;
-          if (!lastFile || String(row.received_at || "") > lastFile) lastFile = row.received_at || "";
+      var recvs = (rs[2] && rs[2].data) || [];
+      var kvRows = (rs[3] && rs[3].data) || [];
+      var demandRows = (rs[4] && rs[4].data) || [];
+      var sync = null;
+      var snapAt = "";
+      if (!(rs[3] && rs[3].error)) {
+        kvRows.forEach(function (row) {
+          var parsed = null;
+          try { parsed = JSON.parse(row.value); } catch (e) { parsed = null; }
+          if (row.key === "sps:last_sync") sync = parsed;
+          if (row.key === "demand:open-snapshot" && parsed) snapAt = parsed.at || (parsed.current && parsed.current.at) || "";
         });
       }
+      var demandAt = "";
+      var demandBatch = "";
+      if (!(rs[4] && rs[4].error)) {
+        demandRows.forEach(function (row) {
+          if (isTestRow(row)) return;
+          var src = String(row.source || "");
+          var batch = String(row.batch_id || "");
+          if (src !== "SPS" && batch.indexOf("SPS") !== 0) return;
+          var at = String(row.created_at || "");
+          if (at > demandAt) { demandAt = at; demandBatch = batch; }
+        });
+      }
+      if (snapAt > demandAt) demandAt = snapAt;
       var lastRecv = "";
-      if (!(rs[3] && rs[3].error)) {
+      if (!(rs[2] && rs[2].error)) {
         recvs.forEach(function (row) {
           var d = dateISO(row.recv_date);
           if (d > lastRecv) lastRecv = d;
@@ -583,8 +655,8 @@
       }
       return {
         expired: (rs[0] && rs[0].error) ? null : expiredOutsideHold(stock, items, today),
-        sps: (rs[2] && rs[2].error) ? null : spsQuiet({ lastFile: lastFile, now: now }),
-        recv: (rs[3] && rs[3].error) ? null : receivingGap({ lastReceipt: lastRecv, now: now })
+        spsFeed: (rs[3] && rs[3].error && rs[4] && rs[4].error) ? null : spsFeed({ sync: sync, demandAt: demandAt, demandBatch: demandBatch, now: now }),
+        recv: (rs[2] && rs[2].error) ? null : receivingGap({ lastReceipt: lastRecv, now: now })
       };
     }).catch(function () { return null; });
   }
@@ -601,6 +673,10 @@
             return "<tr><td>" + esc(row.item) + "</td><td>" + esc(row.lot) + "</td><td>" + esc(row.location) + "</td><td class=\"right\">" + esc(row.qty) + "</td><td>" + esc(prettyDay(row.expiration)) + "</td><td class=\"right\">" + esc(row.days) + "</td></tr>";
           }).join("") + "</tbody></table></div>";
       }
+    }
+    if (guard.spsFeed) {
+      var klass = guard.spsFeed.level === "ok" ? "ok" : (guard.spsFeed.level === "warn" ? "warn" : "bad");
+      html += '<div class="ex ' + klass + '"><b>SPS.</b> ' + esc(guard.spsFeed.connection) + " " + esc(guard.spsFeed.demand) + "</div>";
     }
     if (guard.sps) {
       if (guard.sps.quiet) {
@@ -622,7 +698,7 @@
   }
 
   var dhOpen = false;
-  window.DATAHEALTH = { forTest: { isTestRow: isTestRow, stuckSummary: stuckSummary, missingPmacDays: missingPmacDays, prettyPmacDate: prettyPmacDate, prettyDay: prettyDay, denverStamp: denverStamp, addDays: addDays, LOOKBACK_DAYS: LOOKBACK_DAYS, sources: SOURCES, PAUSED_FEEDS: PAUSED_FEEDS, daysAgo: daysAgo, businessDaysAgo: businessDaysAgo, ageOf: ageOf, statusOf: statusOf, renderRow: renderRow, tally: tally, summaryHtml: summaryHtml, expiredOutsideHold: expiredOutsideHold, lotWarning: lotWarning, spsQuiet: spsQuiet, receivingGap: receivingGap, shieldedLoc: shieldedLoc, guardHtml: guardHtml }, lotWarning: lotWarning, expiredOutsideHold: expiredOutsideHold, open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); dhOpen = true; markActive(); render(); } };
+  window.DATAHEALTH = { forTest: { isTestRow: isTestRow, stuckSummary: stuckSummary, missingPmacDays: missingPmacDays, prettyPmacDate: prettyPmacDate, prettyDay: prettyDay, denverStamp: denverStamp, stampDenver: stampDenver, businessHoursSince: businessHoursSince, addDays: addDays, LOOKBACK_DAYS: LOOKBACK_DAYS, sources: SOURCES, PAUSED_FEEDS: PAUSED_FEEDS, daysAgo: daysAgo, businessDaysAgo: businessDaysAgo, ageOf: ageOf, statusOf: statusOf, renderRow: renderRow, tally: tally, summaryHtml: summaryHtml, expiredOutsideHold: expiredOutsideHold, lotWarning: lotWarning, spsQuiet: spsQuiet, spsFeed: spsFeed, receivingGap: receivingGap, shieldedLoc: shieldedLoc, guardHtml: guardHtml }, lotWarning: lotWarning, expiredOutsideHold: expiredOutsideHold, open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); dhOpen = true; markActive(); render(); } };
 
   function markActive() { try { var nav = $("nav"); if (!nav) return; nav.querySelectorAll(".navitem.active").forEach(function (b) { b.classList.remove("active"); }); var m = $("dh-nav"); if (m) m.classList.add("active"); } catch (e) {} }
   function injectNav() {
