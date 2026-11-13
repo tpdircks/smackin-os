@@ -125,8 +125,12 @@
     if (s === "na" || s === "notapplicable") return "na";
     return "";
   }
-  function shouldHold(it, answer, released) {
+  function isFireHouseSupplier(name) {
+    return /fire\s*house/i.test(String(name || ""));
+  }
+  function shouldHold(it, answer, released, supplier) {
     if (released) return false;
+    if (isFireHouseSupplier(supplier)) return false;
     return normAnswer(answer) === "no" && isHighRisk(it);
   }
   function holdLocation(cond, loc) {
@@ -569,7 +573,7 @@
     wrapped.__rc = true;
     D[name] = wrapped;
   }
-  function planFrom(it, answer, prev, by, lot, recvId, code, loc, qty, itemName) {
+  function planFrom(it, answer, prev, by, lot, recvId, code, loc, qty, itemName, supplier) {
     var wasNo = !!(prev && normAnswer(prev.coa_received) === "no");
     var wasReleased = !!(prev && prev.coa_released_at);
     var keepRelease = wasNo && wasReleased && answer === "no";
@@ -584,7 +588,7 @@
       loc: loc || "",
       qty: qty,
       itemName: itemName || (it ? it.name : ""),
-      hold: shouldHold(it, answer, keepRelease),
+      hold: shouldHold(it, answer, keepRelease, supplier),
       clearHold: wasNo && answer !== "no" && !wasReleased,
       clearRelease: shouldHold(it, answer, false) && wasReleased && !keepRelease,
       keepRelease: keepRelease,
@@ -602,9 +606,9 @@
         if (p && (p.answer || p.allowClear) && res && res.ok !== false) {
           p.used = true;
           var it = itemById(rec && rec.item_id) || itemByCode(p.code);
-          var plan = planFrom(it, p.answer, null, p.by, (rec && rec.lot) || p.lot, (res && res.id) || p.recvId, p.code, p.loc, (rec && rec.qty_received) || p.qty, (rec && rec.contents) || p.itemName);
+          var plan = planFrom(it, p.answer, null, p.by, (rec && rec.lot) || p.lot, (res && res.id) || p.recvId, p.code, p.loc, (rec && rec.qty_received) || p.qty, (rec && rec.contents) || p.itemName, p.supplier || (rec && rec.supplier) || "");
           plan.note = p.note;
-          plan.hold = p.holdWanted != null ? (p.answer === "no" && isHighRisk(it) && !p.keepRelease) : plan.hold;
+          plan.hold = p.holdWanted != null ? (p.answer === "no" && isHighRisk(it) && !p.keepRelease && !isFireHouseSupplier(p.supplier || (rec && rec.supplier))) : plan.hold;
           plan.clearRelease = plan.hold && p.wasReleased;
           await stamp(plan);
         }
@@ -624,7 +628,7 @@
           var savedRow = findLog(id);
           var it = itemById((savedRow && savedRow.item_id) || (rec && rec.item_id)) || itemByCode(p.code);
           var prev = savedRow || findLog(recvId);
-          var plan = planFrom(it, p.answer, prev, p.by, (rec && rec.lot != null ? rec.lot : p.lot) || "", recvId, p.code, p.loc, rec && rec.qty_received, (rec && rec.contents) || "");
+          var plan = planFrom(it, p.answer, prev, p.by, (rec && rec.lot != null ? rec.lot : p.lot) || "", recvId, p.code, p.loc, rec && rec.qty_received, (rec && rec.contents) || "", (rec && rec.supplier) || (savedRow && savedRow.supplier) || p.supplier || "");
           plan.note = p.note;
           await stamp(plan);
         }
@@ -637,7 +641,8 @@
         var on = el && el.getAttribute("data-rc-on") === "1";
         var answer = on ? normAnswer(el.value) : "";
         var it = receiveItem();
-        var hold = on && shouldHold(it, answer, false);
+        var supplier = val("r-sup");
+        var hold = on && shouldHold(it, answer, false, supplier);
         var locEl = document.getElementById("r-loc");
         var prevLoc = locEl ? locEl.value : "";
         var loc = hold ? holdLocation(val("r-cond"), val("r-loc")) : (val("r-loc").toUpperCase() || "RECEIVING");
@@ -727,6 +732,7 @@
           itemId: el.getAttribute("data-item-id") || "",
           recvId: el.getAttribute("data-recv-id") || (prev && prev.id) || "",
           loc: "",
+          supplier: val("rl-supplier") || (prev && prev.supplier) || "",
           allowClear: true,
           keepRelease: !!(prev && normAnswer(prev.coa_received) === "no" && prev.coa_released_at && answer === "no"),
           wasReleased: !!(prev && prev.coa_released_at),
@@ -871,6 +877,7 @@
     isMaltodextrin: isMaltodextrin,
     isOilOrStevia: isOilOrStevia,
     normAnswer: normAnswer,
+    isFireHouseSupplier: isFireHouseSupplier,
     shouldHold: shouldHold,
     holdLocation: holdLocation,
     releaseRecord: releaseRecord,

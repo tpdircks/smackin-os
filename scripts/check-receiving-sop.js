@@ -16,10 +16,10 @@ var app = read("app.js");
 var html = read("index.html");
 var sw = read("service-worker.js");
 
-eq(sw.indexOf('const CACHE = "smackin-inv-v314"') >= 0, "cache bump");
+eq(sw.indexOf('const CACHE = "smackin-inv-v315"') >= 0, "cache bump");
 eq(html.indexOf("receiving-sop.js?b=9") >= 0, "sop cache bust");
 eq(html.indexOf("services.js?b=4") >= 0, "services cache bust");
-eq(html.indexOf("raw-coa.js?b=7") >= 0, "coa script kept");
+eq(html.indexOf("raw-coa.js?b=8") >= 0, "coa script kept");
 eq(html.indexOf("coa-docs.js?b=2") >= 0, "coa file script");
 eq(html.indexOf("dept-homes.js?b=38") >= 0, "dept homes cache bust");
 var homes = read("dept-homes.js");

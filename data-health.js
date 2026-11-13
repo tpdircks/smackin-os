@@ -457,7 +457,7 @@
       return "<div class=\"ex warn\"><b>" + esc(n.title || n.item || "Note") + ".</b> " + esc(n.reason || "") + "</div>";
     }).join("");
     el.innerHTML = "<h2 class=\"sub2\">Inventory Sync</h2>" +
-      "<p class=\"hint\">Adriana's Inventory SLC 2026 count " + esc(latest.countDate) + ". This check compares OS on-hand, per item and per lot, with that block. A difference over 0.5% or over 1 unit is listed. Nothing on this screen writes.</p>" +
+      "<p class=\"hint\">Adriana's Inventory SLC 2026 count " + esc(latest.countDate) + ". This check compares OS on-hand, per item and per lot, with that block. A Fire House lot printed as expiration plus item number matches the sheet item number, so a format difference is not listed. A quantity gap still is. A difference over 0.5% or over 1 unit is listed. Nothing on this screen writes.</p>" +
       exc +
       "<p class=\"sm\">" + drifts.length + " to apply, " + matched.length + " already matching, " + holds.length + " held.</p>" +
       (drifts.length ? "<h3>Still different</h3><div class=\"tblwrap\"><table class=\"sortable\"><thead>" + head + "</thead><tbody>" + syncRows(drifts, 80) + "</tbody></table></div>" : "") +

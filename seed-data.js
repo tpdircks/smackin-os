@@ -230,6 +230,14 @@
     items.push({ id:"DISPLAY-4OZ", code:"DISPLAY-4OZ", name:"Retail Display 4oz", flavor:"Display", category:"display", unit:"each", reorder:1000, supplier:"pack" });
     put("DISPLAY-4OZ", "D-10-L1", 6150);
 
+    // Nov 13, 2026 receipts that had no SKU. Opening stock stays empty here.
+    // Live on-hand is placed in RECEIVING by the idempotent catalog receive, not by this seed.
+    items.push({ id:"TMP-ADV-12DAYSGREEN", code:"TMP-ADV-12DAYSGREEN", name:"Advent Calendar 12 Days (Green)", flavor:"Advent Calendar 12 Days (Green)", category:"packaging", unit:"ea", reorder:0, supplier:null });
+    items.push({ id:"TMP-ADV-24DAYSGREEN", code:"TMP-ADV-24DAYSGREEN", name:"Advent Calendar 24 Days (Green)", flavor:"Advent Calendar 24 Days (Green)", category:"packaging", unit:"ea", reorder:0, supplier:null });
+    items.push({ id:"TMP-BOXADV-12DAYS", code:"TMP-BOXADV-12DAYS", name:"Box Advent Calendar 12 Days", flavor:"Box Advent Calendar 12 Days", category:"packaging", unit:"ea", reorder:0, supplier:null });
+    items.push({ id:"TMP-BOXADV-24DAYS", code:"TMP-BOXADV-24DAYS", name:"Box Advent Calendar 24 Days", flavor:"Box Advent Calendar 24 Days", category:"packaging", unit:"ea", reorder:0, supplier:null });
+    items.push({ id:"TMP-SEAS-BUFFALORANCHPOPCORN", code:"TMP-SEAS-BUFFALORANCHPOPCORN", name:"Seasoning - Buffalo Ranch Popcorn", flavor:"Buffalo Ranch Popcorn", category:"seasoning", unit:"lbs", reorder:0, supplier:null });
+
     const slv = [["S01",19920],["S02",31200],["S03",19360],["S04",28580],["S05",14040],["S07",32160],["S08",22800],["CHZ",24000]];
     slv.forEach(([c, qty]) => {
       const nm = c === "CHZ" ? "Cheeseburger" : (FL.find(f => f[0] === c) || [null, c])[1];

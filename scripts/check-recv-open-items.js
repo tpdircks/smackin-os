@@ -94,6 +94,35 @@ assert.equal(fields["r-tracking"], "375-909332");
 assert.equal(fields["r-pal"], "5");
 assert.equal(fields["r-notes"], "need lots");
 
+var kvItems = api.collect({
+  receivingLog: [],
+  openHolds: [],
+  skipKnown: true,
+  today: "2026-11-13",
+  kv: {
+    as_of: "2026-11-13",
+    items: [
+      { id: "kehe-returned-pallets", title: "KeHE returned pallets", note: "Adri is inspecting the KeHE returned pallets case by case for quantities and dates, then waiting for Troy's return instructions." },
+      { id: "expired-seas-salt-vinegar-11657", title: "Salt & Vinegar lot #11657 expired", item: "TMP-SEAS-SALTVINEGAR", lot: "#11657", qty: 950, exp: "2026-11-12", location: "RECEIVING" },
+      { id: "expired-seas-buffalo-wing", title: "Buffalo Wing Fire House expired", item: "TMP-SEAS-BUFFALOWING", qty: 18, exp: "2026-08-05", location: "RECEIVING" },
+      { id: "expired-seas-cinnamon-roll-frosting", title: "Cinnamon Roll Frosting Fire House expired", item: "TMP-SEAS-CINNAMONROLLFROSTING", qty: 22.8, exp: "2026-11-10", location: "RECEIVING" },
+      { id: "held-in-quarantine", title: "Already quarantined", item: "TMP-SEAS-X", lot: "OLD", qty: 1, exp: "2026-01-01", location: "QUARANTINE" }
+    ]
+  }
+});
+assert.equal(kvItems.length, 5, "kv open items");
+assert.ok(kvItems.some(function (i) { return /KeHE returned pallets/.test(i.title) && /Troy/.test(i.detail); }), "KeHE note");
+assert.ok(kvItems.some(function (i) { return /#11657/.test(i.detail) && i.badge === "expired"; }), "salt and vinegar badge");
+assert.ok(kvItems.some(function (i) { return /08\/05\/2026\/7205E/.test(i.detail) && /18 lb/.test(i.detail); }), "buffalo printed lot");
+assert.ok(kvItems.some(function (i) { return /11\/10\/2026\/7008E/.test(i.detail) && /22.8 lb/.test(i.detail); }), "cinnamon printed lot");
+var quarantined = kvItems.filter(function (i) { return i.id === "kv-held-in-quarantine"; })[0];
+assert.ok(quarantined && !quarantined.badge, "quarantine row has no decision badge");
+var kvHtml = api.renderHtml(kvItems);
+assert.ok(kvHtml.indexOf("Expired, decision needed (Quality)") >= 0, "red badge copy");
+assert.equal((kvHtml.match(/data-recv-open/g) || []).length, 0, "kv rows have no receive button");
+assert.ok(src.indexOf(".insert(") < 0 && src.indexOf(".update(") < 0 && src.indexOf(".delete(") < 0, "kv panel still does not write");
+assert.ok(src.indexOf(api.OPEN_KEY) >= 0, "reads the Nov 13 open-items key");
+
 var html = api.renderHtml(items);
 assert.ok(html.indexOf("Open items") >= 0, "title");
 assert.ok(html.indexOf("Open Receive") >= 0, "button");
@@ -102,7 +131,7 @@ assert.ok(html.indexOf("does not change any data") >= 0, "read-only hint");
 
 var index = read("index.html");
 var sw = read("service-worker.js");
-assert.ok(index.indexOf('recv-open-items.js?b=1') >= 0, "index wires the module");
+assert.ok(index.indexOf('recv-open-items.js?b=2') >= 0, "index wires the module");
 assert.ok(sw.indexOf("./recv-open-items.js") >= 0, "sw caches the module");
 assert.ok(read("app.js").indexOf('id="r-qty"') >= 0 && read("app.js").indexOf('UI_go') >= 0, "Receive form still exists");
 

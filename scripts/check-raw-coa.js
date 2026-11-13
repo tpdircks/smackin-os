@@ -51,6 +51,11 @@ assert(rc.shouldHold(oilCat, "no", false) && rc.shouldHold(steviaCat, "no", fals
 assert(!rc.shouldHold(oilLive, "yes", false) && !rc.shouldHold(steviaLive, "na", false), "oil and stevia Yes and N/A do not hold");
 assert(!rc.shouldHold(oilLive, "no", true) && !rc.shouldHold(steviaCat, "no", true), "a released oil or stevia No does not hold again");
 assert(rc.shouldHold(maltoSeed, "no", false), "maltodextrin No holds");
+assert(rc.isFireHouseSupplier("Fire House Flavors") && rc.isFireHouseSupplier("Fire House"), "Fire House supplier");
+assert(!rc.shouldHold(seas, "no", false, "Fire House Flavors"), "Fire House No does not hold");
+assert(!rc.shouldHold(seas, "No", false, "Fire House"), "Fire House does not get a COA hold");
+assert(rc.shouldHold(seas, "no", false, "Rocky Mountain Spice Company"), "another seasoning supplier still holds on No");
+assert(rc.shouldHold(seas, "no", false), "a seasoning No without a supplier still holds");
 
 assert(rc.holdLocation("Good", "") === "QA-HOLD", "empty dock location becomes QA-HOLD");
 assert(rc.holdLocation("Good", "A-01-L1") === "QA-HOLD", "a bin is not used for a COA hold");
@@ -113,12 +118,12 @@ assert(db.indexOf('from: "RECEIVING", to: "QA-HOLD"') < 0, "move is not hardcode
 assert(db.indexOf('"QA-HOLD"') >= 0 && db.indexOf("hold_log") >= 0, "uses QA-HOLD and the hold log");
 assert(db.indexOf("fn_apply_delta") >= 0, "stock moves stay on the existing delta helper");
 assert(src.indexOf("fn_apply_delta") < 0, "ui module does not call the delta rpc");
-assert(sw.indexOf('const CACHE = "smackin-inv-v314"') >= 0 && sw.indexOf("./raw-coa.js") >= 0, "cache and asset");
-assert(html.indexOf("raw-coa.js?b=7") >= 0, "script bust");
+assert(sw.indexOf('const CACHE = "smackin-inv-v315"') >= 0 && sw.indexOf("./raw-coa.js") >= 0, "cache and asset");
+assert(html.indexOf("raw-coa.js?b=8") >= 0, "script bust");
 assert(html.indexOf("coa-docs.js?b=2") >= 0, "coa docs script");
-assert(html.indexOf('var EMBEDDED = "smackin-inv-v314"') >= 0, "embedded build");
-assert(read("build-id.txt").trim() === "smackin-inv-v314", "build id");
-assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v314"') >= 0, "escape build");
+assert(html.indexOf('var EMBEDDED = "smackin-inv-v315"') >= 0, "embedded build");
+assert(read("build-id.txt").trim() === "smackin-inv-v315", "build id");
+assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v315"') >= 0, "escape build");
 assert(html.indexOf("db.js?b=109") >= 0, "db bust");
 assert(read("receiving-sop.js").indexOf("afterHoldLogReleased") >= 0, "hold log release notifies COA");
 
