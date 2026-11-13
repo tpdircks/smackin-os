@@ -16,7 +16,9 @@
       hold: "Receiving hold",
       coa: "COA marked No",
       reconcile: "Inventory hold",
-      known: "Open question"
+      known: "Open question",
+      status: "Open item",
+      expired: "Expired, decision needed (Quality)"
     },
     es: {
       title: "Pendientes",
@@ -28,7 +30,9 @@
       hold: "Retenido en recibo",
       coa: "COA marcado No",
       reconcile: "Retenido de inventario",
-      known: "Pregunta abierta"
+      known: "Pregunta abierta",
+      status: "Item abierto",
+      expired: "Vencido, decision necesaria (Calidad)"
     },
     pt: {
       title: "Itens em aberto",
@@ -40,8 +44,18 @@
       hold: "Retido no recebimento",
       coa: "COA marcado Nao",
       reconcile: "Retido do inventario",
-      known: "Pergunta em aberto"
+      known: "Pergunta em aberto",
+      status: "Item em aberto",
+      expired: "Vencido, decisao necessaria (Qualidade)"
     }
+  };
+
+  var OPEN_KEY = "inventory-open-items-2026-11-13";
+  /* The kv row names the Salt & Vinegar lot. These two printed lots are the
+     RECEIVING rows for the other expired seasonings when the kv value omits them. */
+  var PRINTED_LOTS = {
+    "expired-seas-buffalo-wing": "08/05/2026/7205E",
+    "expired-seas-cinnamon-roll-frosting": "11/10/2026/7008E"
   };
 
   var KNOWN_OPEN = [
@@ -241,6 +255,36 @@
       }
     };
   }
+  function quarantineLoc(loc) {
+    return String(loc || "").toUpperCase().replace(/[\s_]+/g, "") === "QUARANTINE";
+  }
+  function fromKv(record, today) {
+    record = record || {};
+    var asOf = String(record.as_of || today || "2026-11-13").slice(0, 10);
+    return (record.items || []).map(function (row) {
+      row = row || {};
+      var lot = row.lot || PRINTED_LOTS[row.id] || "";
+      var exp = String(row.exp || "").slice(0, 10);
+      var loc = row.location || "";
+      var bits = [];
+      if (lot) bits.push("lot " + lot);
+      if (row.qty != null && row.qty !== "") bits.push(String(row.qty) + (row.item ? " lb" : ""));
+      if (exp) bits.push("exp " + exp);
+      if (loc) bits.push(loc);
+      if (row.note) bits.push(row.note);
+      var expired = !!(exp && exp < asOf && !quarantineLoc(loc));
+      return {
+        id: "kv-" + (row.id || row.title || "row"),
+        source: "status",
+        title: row.title || "Open item",
+        detail: bits.join(". "),
+        date: asOf,
+        displayOnly: true,
+        badge: expired ? "expired" : "",
+        prefill: {}
+      };
+    });
+  }
   function collect(opts) {
     opts = opts || {};
     var receivingLog = opts.receivingLog || [];
@@ -253,6 +297,7 @@
       seen[item.id] = 1;
       items.push(item);
     }
+    fromKv(opts.kv, opts.today).forEach(add);
     receivingLog.forEach(function (row) {
       if (!row) return;
       if (row.invoice_pending === true) add(fromRow(row, "invoice_pending", "Invoice pending"));
@@ -316,6 +361,7 @@
     if (source === "receiving_hold") return tx("hold");
     if (source === "coa_no") return tx("coa");
     if (source === "reconcile_hold") return tx("reconcile");
+    if (source === "status") return tx("status");
     return tx("known");
   }
   function renderHtml(items, state) {
@@ -327,12 +373,15 @@
     else {
       body = rows.map(function (item) {
         var payload = JSON.stringify(item.id);
+        var badge = item.badge === "expired" ? ' <span class="pill out">' + esc(tx("expired")) + "</span>" : "";
+        var button = item.displayOnly ? "" :
+          '<button type="button" class="ghost sm" data-recv-open="' + esc(payload) + '" onclick="RECVOPEN.openItem(JSON.parse(this.getAttribute(\'data-recv-open\')))">' +
+          esc(tx("open")) + "</button>";
         return '<div class="ex warn recv-open-row" data-open-id="' + esc(item.id) + '">' +
           '<div class="sm">' + esc(sourceLabel(item.source)) + (item.date ? " · " + esc(item.date) : "") + "</div>" +
-          "<b>" + esc(item.title) + "</b>" +
+          "<b>" + esc(item.title) + "</b>" + badge +
           (item.detail ? '<div>' + esc(item.detail) + "</div>" : "") +
-          '<button type="button" class="ghost sm" data-recv-open="' + esc(payload) + '" onclick="RECVOPEN.openItem(JSON.parse(this.getAttribute(\'data-recv-open\')))">' +
-          esc(tx("open")) + "</button></div>";
+          button + "</div>";
       }).join("");
     }
     return '<div class="card" id="recv-open-card"><h2 class="sub2">' + esc(tx("title")) +
@@ -390,15 +439,23 @@
     }
     loading = !lastItems.length;
     if (loading) paint(fallback);
-    return c.from("receiving_log").select("id,recv_date,supplier,po_num,transport_ref,tracking,carrier,contents,lot,item_id,qty_received,invoice_pending,on_hold,coa_received,coa_released_at,notes").limit(2000)
-      .then(function (r) {
+    return Promise.all([
+      c.from("receiving_log").select("id,recv_date,supplier,po_num,transport_ref,tracking,carrier,contents,lot,item_id,qty_received,invoice_pending,on_hold,coa_received,coa_released_at,notes").limit(2000),
+      c.from("kv_status").select("key,value").eq("key", OPEN_KEY).limit(1)
+    ]).then(function (pair) {
         loading = false;
-        if (r && r.error) {
+        var r = pair[0] || {};
+        var kv = pair[1] || {};
+        var record = null;
+        if (kv.data && kv.data[0] && kv.data[0].value) {
+          try { record = JSON.parse(kv.data[0].value); } catch (e) { record = null; }
+        }
+        if (r.error && !record) {
           lastItems = fallback;
           paint(lastItems);
           return lastItems;
         }
-        lastItems = collect({ receivingLog: (r && r.data) || [], openHolds: holds });
+        lastItems = collect({ receivingLog: (r && r.data) || [], openHolds: holds, kv: record });
         paint(lastItems);
         return lastItems;
       })
@@ -429,7 +486,9 @@
   }
 
   var api = {
+    OPEN_KEY: OPEN_KEY,
     KNOWN_OPEN: KNOWN_OPEN,
+    fromKv: fromKv,
     TXT: TXT,
     collect: collect,
     knownRetired: knownRetired,

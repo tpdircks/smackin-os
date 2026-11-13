@@ -235,14 +235,35 @@ assert(homes.indexOf('"produce", "fglots"') >= 0, "fulfillment subtab");
 assert(homes.indexOf('subs: ["pmac", "fglots"') >= 0, "pmac subtab");
 assert(homes.indexOf('"trLabels", "fglots"') >= 0, "quality subtab");
 assert(health.indexOf('t: "trace_events"') >= 0, "data health source");
-assert(html.indexOf('src="fg-lots.js?b=6"') >= 0 && html.indexOf("fg-lots.js") < html.indexOf("trace.js"), "script order");
+assert(html.indexOf('src="fg-lots.js?b=7"') >= 0 && html.indexOf("fg-lots.js") < html.indexOf("trace.js"), "script order");
 assert(html.indexOf('src="trace.js?b=26"') >= 0, "trace cache bust");
 assert(html.indexOf('src="dept-homes.js?b=38"') >= 0, "dept homes cache bust");
-assert(html.indexOf('src="data-health.js?b=15"') >= 0, "data health cache bust");
-assert(sw.indexOf('const CACHE = "smackin-inv-v314"') >= 0 && sw.indexOf("./fg-lots.js") >= 0 && sw.indexOf("./prod-ready.js") >= 0, "cache and asset");
-assert(read("build-id.txt").trim() === "smackin-inv-v314", "build id");
-assert(html.indexOf('var EMBEDDED = "smackin-inv-v314"') >= 0, "index embedded");
-assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v314"') >= 0, "escape embedded");
+assert(html.indexOf('src="data-health.js?b=16"') >= 0, "data health cache bust");
+assert(sw.indexOf('const CACHE = "smackin-inv-v315"') >= 0 && sw.indexOf("./fg-lots.js") >= 0 && sw.indexOf("./prod-ready.js") >= 0, "cache and asset");
+assert(read("build-id.txt").trim() === "smackin-inv-v315", "build id");
+assert(html.indexOf('var EMBEDDED = "smackin-inv-v315"') >= 0, "index embedded");
+assert(read("sw-escape.js").indexOf('var EMBEDDED = "smackin-inv-v315"') >= 0, "escape embedded");
+
+var fg = require("../fg-lots.js");
+var recount = fg.recountHtml({
+  source: "Adri recount email",
+  dollar_tree_excluded: true,
+  windows: {
+    earlier_than_may_2027: { bags: 1235 },
+    may_through_august_2027: { bags: 32072 },
+    later_than_august_2027: { bags: 110016 }
+  }
+});
+assert(recount.indexOf(fg.RECOUNT_ASOF) >= 0, "as-of line");
+assert(recount.indexOf("Source: Adri recount email") >= 0, "source line");
+assert(recount.indexOf("32,072 bags, May to Aug 2027") >= 0, "May to Aug");
+assert(recount.indexOf("1,235 bags before May 2027") >= 0, "before May");
+assert(recount.indexOf("110,016 bags in Target and master cases, Sep to Dec 2027") >= 0, "later window");
+assert(recount.indexOf("Dollar Tree excluded") >= 0, "Dollar Tree excluded");
+assert(recount.indexOf("fgl-recount") >= 0, "recount section");
+assert(fg.RECOUNT_KEY === "fg-expiry-review-2026-11-13", "recount key");
+assert(src.indexOf("id=\"fgl-recount\"") >= 0 || src.indexOf("fgl-recount") >= 0, "render keeps a recount section");
+assert(src.indexOf("trace_labels") >= 0, "pallet label view stays");
 
 if (failed) {
   console.error(failed + " failed");

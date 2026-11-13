@@ -22,6 +22,8 @@
   var SHORT_DAYS = 90;
   var LEGACY_DAYS = 180;
   var SHELF_KEY = "fg_shelf_life";
+  var RECOUNT_KEY = "fg-expiry-review-2026-11-13";
+  var RECOUNT_ASOF = "Inventory recount, Nov 13, 2026";
   var BAGCODE_RE = /^[SLA]\d{4}\/\d[A-Z]\d\.\d{1,2}$/;
 
   // Codes tab (Allen, confirmed 2026-11-10). Tuple: code, name, status, successor, former, note.
@@ -616,6 +618,42 @@
     });
     return lines.join("\n") + "\n";
   }
+  function recountModel(record) {
+    if (!record || typeof record !== "object") return null;
+    var windows = record.windows || {};
+    function bags(key) {
+      var row = windows[key];
+      if (!row || row.bags == null || row.bags === "") return null;
+      var n = Number(row.bags);
+      return n === n ? n : null;
+    }
+    return {
+      asOf: RECOUNT_ASOF,
+      source: String(record.source || ""),
+      dollarTreeExcluded: !!record.dollar_tree_excluded,
+      earlier: bags("earlier_than_may_2027"),
+      may: bags("may_through_august_2027"),
+      later: bags("later_than_august_2027")
+    };
+  }
+  function fmtBags(n) {
+    if (n == null) return "";
+    return Math.round(n).toLocaleString("en-US");
+  }
+  function recountHtml(record) {
+    var model = recountModel(record);
+    if (!model) return "";
+    var lines = [];
+    if (model.may != null) lines.push(fmtBags(model.may) + " bags, May to Aug 2027");
+    if (model.earlier != null) lines.push(fmtBags(model.earlier) + " bags before May 2027");
+    if (model.later != null) lines.push(fmtBags(model.later) + " bags in Target and master cases, Sep to Dec 2027");
+    if (model.dollarTreeExcluded) lines.push("Dollar Tree excluded");
+    return '<div class="card" id="fgl-recount"><h2 class="sub2">Finished goods recount</h2>' +
+      '<p class="hint">' + esc(model.asOf) + "</p>" +
+      (model.source ? '<p class="muted fgl-note">Source: ' + esc(model.source) + "</p>" : "") +
+      lines.map(function (line) { return "<p>" + esc(line) + "</p>"; }).join("") +
+      "</div>";
+  }
   function healthLine(h, code) {
     var pack = textPack(code || "en");
     h = h || {};
@@ -666,7 +704,7 @@
 
   var active = false;
   var ui = { q: "", flavor: "", size: "", status: "", source: "", short: false, onHand: false };
-  var cache = { rows: [], health: { count: null, latest: "", fg: 0 }, err: "", rule: null };
+  var cache = { rows: [], health: { count: null, latest: "", fg: 0 }, err: "", rule: null, recount: null };
 
   function $(id) { return root.document ? root.document.getElementById(id) : null; }
   function onScreen() { return !!($("fgl-root")); }
@@ -705,7 +743,8 @@
       c.from("trace_labels").select("created_at,updated_at").order("created_at", { ascending: false }).limit(1),
       c.from("trace_labels").select("*").eq("kind", "FG").order("created_at", { ascending: false }).limit(20000),
       c.from("production_days").select("prod_date,channel,lot").eq("channel", "retail").gte("prod_date", since).order("prod_date", { ascending: false }).limit(500),
-      ensureRule()
+      ensureRule(),
+      c.from("kv_status").select("key,value").eq("key", RECOUNT_KEY).limit(1)
     ]).then(function (all) {
       var countRes = all[0] || {};
       var latestRes = all[1] || {};
@@ -718,10 +757,16 @@
       var labels = fgRes.data || [];
       var days = dayRes.data || [];
       var rows = failed ? [] : mergeRegister(labels, days, { today: today });
+      var recount = null;
+      var kv = all[5] || {};
+      if (!kv.error && kv.data && kv.data[0] && kv.data[0].value) {
+        try { recount = JSON.parse(kv.data[0].value); } catch (e3) { recount = null; }
+      }
       return {
         err: failed,
         rows: rows,
         rule: all[4] || null,
+        recount: recount,
         health: { count: failed ? null : (count || 0), latest: latest, fg: labels.length }
       };
     }).catch(function (e) {
@@ -777,7 +822,7 @@
     var focusId = root.document.activeElement && root.document.activeElement.id;
     var caret = root.document.activeElement && root.document.activeElement.selectionStart;
     host.innerHTML =
-      '<div id="fgl-root"><div class="card"><h2>' + esc(L("title")) + "</h2>" +
+      '<div id="fgl-root">' + recountHtml(cache.recount) + '<div class="card"><h2>' + esc(L("title")) + "</h2>" +
       '<p class="hint">' + esc(L("hint")) + "</p>" +
       '<div class="fgl-health ' + healthCls + '">' + esc(healthTxt) + "</div>" +
       '<p class="fgl-note">' + esc(rule ? L("hasRule") : L("noRule")) + "</p>" +
@@ -860,6 +905,7 @@
       cache.health = res.health || { count: null, latest: "", fg: 0 };
       cache.err = res.err || "";
       cache.rule = res.rule || null;
+      cache.recount = res.recount || null;
       if (res.err === "offline") {
         var host2 = $("view");
         if (host2) host2.innerHTML = '<div id="fgl-root"><div class="card"><h2>' + esc(L("title")) + "</h2><p>" + esc(L("offline")) + "</p></div></div>";
@@ -921,7 +967,11 @@
     currentRule: currentRule,
     ruleStatus: ruleStatus,
     flavorName: flavorName,
-    flavorRecord: flavorRecord
+    flavorRecord: flavorRecord,
+    RECOUNT_KEY: RECOUNT_KEY,
+    RECOUNT_ASOF: RECOUNT_ASOF,
+    recountModel: recountModel,
+    recountHtml: recountHtml
   };
   root.FGLOTS = api;
 

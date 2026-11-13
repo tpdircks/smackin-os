@@ -131,6 +131,59 @@
     return itemById(code);
   }
 
+  var FH_HINT = "Fire House: enter the lot exactly as printed, expiration plus item number, e.g. 11/05/2027/4214. Fire House does not provide COAs.";
+  function isFireHouseSupplier(name) {
+    return /fire\s*house/i.test(String(name || ""));
+  }
+  function bareFhItem(lot) {
+    var s = String(lot || "").trim();
+    if (!s || s.indexOf("/") >= 0) return "";
+    var m = /^#?\s*([A-Za-z0-9](?:[A-Za-z0-9 ]*[A-Za-z0-9])?)\s*$/.exec(s);
+    if (!m) return "";
+    return m[1].replace(/\s+/g, " ").trim();
+  }
+  function usFromIso(iso) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ""));
+    if (!m) return "";
+    return m[2] + "/" + m[3] + "/" + m[1];
+  }
+  function suggestFireHouseLot(supplier, expIso, lot) {
+    var current = lot == null ? "" : String(lot);
+    if (!isFireHouseSupplier(supplier)) return { active: false, hint: "", value: current, placeholder: "" };
+    var printed = /^\s*\d{1,2}\/\d{1,2}\/\d{2,4}\/.+/.test(current);
+    var item = bareFhItem(current);
+    var us = usFromIso(dateISO(expIso) || expIso);
+    var value = current;
+    if (!printed && item && us) value = us + "/" + item;
+    return { active: true, hint: FH_HINT, value: value, placeholder: "11/05/2027/4214" };
+  }
+  function applyLotSuggestion(lotId, expId, supId) {
+    if (typeof document === "undefined") return;
+    var lot = document.getElementById(lotId);
+    if (!lot) return;
+    var exp = document.getElementById(expId);
+    var sup = document.getElementById(supId);
+    var next = suggestFireHouseLot(sup && sup.value, exp && exp.value, lot.value);
+    var hint = document.getElementById(lotId + "-fh");
+    if (!next.active) {
+      if (hint && hint.parentNode) hint.parentNode.removeChild(hint);
+      return;
+    }
+    if (!hint) {
+      hint = document.createElement("p");
+      hint.id = lotId + "-fh";
+      hint.className = "hint";
+      if (lot.parentNode) lot.parentNode.appendChild(hint);
+    }
+    hint.textContent = next.hint;
+    lot.placeholder = next.placeholder;
+    var owned = lot.getAttribute("data-fh-suggest") && lot.getAttribute("data-fh-suggest") === lot.value;
+    if (next.value !== lot.value && (bareFhItem(lot.value) || owned)) {
+      lot.value = next.value;
+      lot.setAttribute("data-fh-suggest", next.value);
+    }
+  }
+
   // Stock expires_on wins. Else the newest receiving_log row for the same
   // item and the same lot key. A row.exp value is ignored on purpose.
   function resolveExpires(row, it, stock, recv) {
@@ -346,6 +399,7 @@
     var box = existing ? existing.closest(".rx-field") : null;
     if (box) box.style.display = show ? "" : "none";
     if (existing) existing.setAttribute("data-rx-on", show ? "1" : "0");
+    applyLotSuggestion("r-lot", "r-exp", "r-sup");
   }
 
   function paintLogForm() {
@@ -361,6 +415,7 @@
     var hold = document.createElement("div");
     hold.innerHTML = fieldHtml("rl-exp", match ? dateISO(match.expires_on) : kept, match ? match.id : "", match ? match.item_id : "");
     row.parentNode.insertBefore(hold.firstChild, row.nextSibling);
+    applyLotSuggestion("rl-lot", "rl-exp", "rl-supplier");
   }
 
   function paintLogTable() {
@@ -668,6 +723,8 @@
       var t = e.target;
       if (!t) return;
       if (t.id === "r-code" || t.id === "r-newcat" || t.id === "r-newcode") paintReceive();
+      if (t.id === "r-lot" || t.id === "r-exp" || t.id === "r-sup") applyLotSuggestion("r-lot", "r-exp", "r-sup");
+      if (t.id === "rl-lot" || t.id === "rl-exp" || t.id === "rl-supplier") applyLotSuggestion("rl-lot", "rl-exp", "rl-supplier");
     });
     onView();
   }
@@ -704,6 +761,9 @@
     releaseWarning: releaseWarning,
     confirmRelease: confirmRelease,
     age: age,
+    FH_HINT: FH_HINT,
+    isFireHouseSupplier: isFireHouseSupplier,
+    suggestFireHouseLot: suggestFireHouseLot,
     WRITE_STOCK: false
   };
 

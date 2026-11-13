@@ -144,8 +144,8 @@ assert(index.indexOf('src="ecom-lot-log.js?b=1"') >= 0 && index.indexOf("ecom-lo
 assert(index.indexOf('src="trace.js?b=26"') >= 0, "trace cache bust");
 assert(index.indexOf('src="trace-recall.js?b=2"') >= 0, "recall cache bust");
 assert(index.indexOf('src="dept-homes.js?b=38"') >= 0, "dept homes cache bust");
-assert(sw.indexOf('const CACHE = "smackin-inv-v314"') >= 0 && sw.indexOf("./ecom-lot-log.js") >= 0, "cache and asset");
-assert(read("build-id.txt").trim() === "smackin-inv-v314", "build id");
+assert(sw.indexOf('const CACHE = "smackin-inv-v315"') >= 0 && sw.indexOf("./ecom-lot-log.js") >= 0, "cache and asset");
+assert(read("build-id.txt").trim() === "smackin-inv-v315", "build id");
 
 if (failed) {
   console.error(failed + " failed");

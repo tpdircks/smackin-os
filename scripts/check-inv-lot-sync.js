@@ -171,6 +171,66 @@ assert(cashewPlan.holds.some(function (h) { return /pallet 8/.test(h.reason); })
 assert(ready.kindOf({ id: "MALTO", code: "MALTO", category: "retired", name: "Retired: Maltodextrin" }) === "retired", "retired malto leaves the pool");
 assert(ready.kindOf({ id: "TMP-SEAS-MALTODEXTRINCLINTOSECR", code: "TMP-SEAS-MALTODEXTRINCLINTOSECR", category: "seasoning", name: "Seasoning - Maltodextrin Clintose CR-10" }) === "malto", "clintose stays the malto record");
 
+var printed = plan.parseFhPrinted("11/05/2027/4214");
+assert(printed && printed.date === "2027-11-05" && printed.item === "4214", "printed Fire House lot");
+var cheeseLot = plan.parseFhPrinted("07/02/2027/4209 E");
+assert(cheeseLot && cheeseLot.date === "2027-07-02" && cheeseLot.item === "4209E", "cheese pizza printed lot");
+assert(plan.parseFhPrinted("# 4214") == null && plan.parseFhPrinted("J1926") == null, "sheet and non Fire House lots are not printed form");
+assert(plan.lotsMatch("07/02/2027/4209 E", "2027-07-02", "#4209 E", "2027-08-24", "SEAS-L02"), "cheese pizza matches on item number");
+assert(plan.lotsMatch("11/05/2027/4214", "2027-11-05", "# 4214", "11/05/2027", "TMP-SEAS-BUFFALORANCHPOPCORN"), "date plus item number matches");
+assert(!plan.lotsMatch("J1926", "2027-10-23", "H 26268", "2027-09-23", "NUTS-BBQ"), "a non Fire House lot is unaffected");
+assert(plan.lotsMatch("LOT # j1926", "2027-10-23", "# J1926", "2027-10-23", "SEAS-S05"), "same non Fire House lot still matches on its own key");
+
+var pizza = plan.planItemLots("SEAS-L02", [
+  { item: "SEAS-L02", lot: "#4209 E", qty: 380.25, exp: "2027-07-28", locCode: "L20" },
+  { item: "SEAS-L02", lot: "#4209 E", qty: 405, exp: "2027-08-24", locCode: "L20" }
+], [
+  { source_id: "SEAS-L02", location: "L-20", lot: "07/02/2027/4209 E", qty: 785.25, expires_on: "2027-07-02", updated_at: "2026-11-13T15:58:29Z" }
+], { today: "2026-11-13", sheetAsOf: AS_OF });
+assert(!pizza.actions.some(function (a) { return a.op === "insert" || a.op === "delete" || a.op === "update"; }), "cheese pizza merge is not recreated");
+assert(pizza.actions.some(function (a) { return a.op === "match" && a.lot === "07/02/2027/4209 E" && a.qty === 785.25; }), "cheese pizza stays on the earliest printed lot");
+
+var ranch = plan.planItemLots("TMP-SEAS-BUFFALORANCHPOPCORN", [
+  { item: "TMP-SEAS-BUFFALORANCHPOPCORN", lot: "# 4214", qty: 45, exp: "11/05/2027", locCode: "" }
+], [
+  { source_id: "TMP-SEAS-BUFFALORANCHPOPCORN", location: "RECEIVING", lot: "11/05/2027/4214", qty: 45, expires_on: "2027-11-05", updated_at: "2026-11-13T16:00:00Z" }
+], { today: "2026-11-13", sheetAsOf: AS_OF });
+assert(ranch.actions.some(function (a) { return a.op === "match" && a.lot === "11/05/2027/4214"; }), "printed date plus item matches");
+assert(!ranch.actions.some(function (a) { return a.op === "insert" || a.op === "delete"; }), "a matching printed lot is not recreated");
+
+var gap = plan.reconcile({
+  lots: [
+    { item: "SEAS-L02", lot: "#4209 E", qty: 380.25, exp: "2027-07-28" },
+    { item: "SEAS-L02", lot: "#4209 E", qty: 405, exp: "2027-08-24" },
+    { item: "TMP-SEAS-BUFFALOWING", lot: "# 7205E", qty: 18, exp: "2026-08-05" },
+    { item: "TMP-SEAS-CHILILIMEPOPCORN", lot: "#4073 E", qty: 45, exp: "2027-09-25" },
+    { item: "NUTS-BBQ", lot: "H 26268", qty: 10, exp: "2027-09-25" }
+  ]
+}, [
+  { item_id: "SEAS-L02", location: "L-20", lot: "07/02/2027/4209 E", qty: 785.25, expires_on: "2027-07-02" },
+  { item_id: "TMP-SEAS-BUFFALOWING", location: "RECEIVING", lot: "08/05/2026/7205E", qty: 18, expires_on: "2026-08-05" },
+  { item_id: "TMP-SEAS-CHILILIMEPOPCORN", location: "RECEIVING", lot: "09/25/2027/4073 E", qty: 34.5, expires_on: "2027-09-25" },
+  { item_id: "NUTS-BBQ", location: "RACK B", lot: "H 26268", qty: 10, expires_on: "2027-09-25" }
+], [
+  { id: "SEAS-L02", code: "SEAS-L02", category: "seasoning" },
+  { id: "TMP-SEAS-BUFFALOWING", code: "TMP-SEAS-BUFFALOWING", category: "seasoning" },
+  { id: "TMP-SEAS-CHILILIMEPOPCORN", code: "TMP-SEAS-CHILILIMEPOPCORN", category: "seasoning" },
+  { id: "NUTS-BBQ", code: "NUTS-BBQ", category: "cashews" }
+]);
+assert(!gap.some(function (f) { return f.item === "SEAS-L02"; }), "cheese pizza quantity is not a format flag");
+assert(!gap.some(function (f) { return f.item === "TMP-SEAS-BUFFALOWING"; }), "matching printed qty is not a flag");
+assert(gap.some(function (f) { return f.item === "TMP-SEAS-CHILILIMEPOPCORN" && f.os === 34.5 && f.sheet === 45; }), "a real Fire House quantity gap still flags");
+assert(!gap.some(function (f) { return f.item === "NUTS-BBQ"; }), "a non Fire House lot that already matches stays quiet");
+
+var seed = require("../seed-data.js").build();
+["TMP-ADV-12DAYSGREEN", "TMP-ADV-24DAYSGREEN", "TMP-BOXADV-12DAYS", "TMP-BOXADV-24DAYS", "TMP-SEAS-BUFFALORANCHPOPCORN"].forEach(function (id) {
+  assert(seed.items.some(function (i) { return i.id === id; }), "catalog item " + id);
+  assert(!seed.stock.some(function (s) { return s.item_id === id; }), "seed does not stock " + id);
+});
+var ranchItem = seed.items.filter(function (i) { return i.id === "TMP-SEAS-BUFFALORANCHPOPCORN"; })[0];
+assert(ranchItem && ranchItem.unit === "lbs" && ranchItem.category === "seasoning" && !ranchItem.allergen && ranchItem.name.indexOf("Milk") < 0, "Buffalo Ranch allergens stay blank");
+assert(seed.items.some(function (i) { return i.id === "TMP-ADV-12DAYSGREEN" && i.unit === "ea" && i.name === "Advent Calendar 12 Days (Green)"; }), "12 day calendar name");
+
 if (failed) {
   console.error(failed + " failed");
   process.exit(1);

@@ -110,6 +110,28 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
     if (!s || /^0+$/.test(s)) return "";
     return s;
   }
+  /* Fire House lots: printed form is MM/DD/YYYY/item, e.g. 11/05/2027/4214.
+     Sheet lots are still "# 4214" or "#4209 E" with a date in the exp column.
+     Cheese Pizza (SEAS-L02, 4209 E) is merged to the earliest date; match on item number only. */
+  var FH_MERGE_ITEM = { "SEAS-L02": "4209E" };
+  function parseFhPrinted(lot) {
+    var m = /^\s*(\d{1,2})\/(\d{1,2})\/(\d{2,4})\/(.+)\s*$/.exec(String(lot || ""));
+    if (!m) return null;
+    return { date: parseExp(m[1] + "/" + m[2] + "/" + m[3]), item: lotKey(m[4]) };
+  }
+  function lotsMatch(osLot, osExp, sheetLot, sheetExp, itemId) {
+    var aKey = lotKey(osLot);
+    var bKey = lotKey(sheetLot);
+    if (aKey && aKey === bKey) return true;
+    var printed = parseFhPrinted(osLot);
+    var sheetItem = lotKey(sheetLot);
+    var sheetDate = parseExp(sheetExp) || "";
+    if (!printed || !sheetItem) return false;
+    if (FH_MERGE_ITEM[itemId] && printed.item === FH_MERGE_ITEM[itemId] && sheetItem === printed.item) return true;
+    if (printed.item === sheetItem && printed.date && sheetDate && printed.date === sheetDate) return true;
+    if (printed.item === sheetItem && printed.date && !sheetDate && parseExp(osExp) === printed.date) return true;
+    return false;
+  }
   function parseExp(v) {
     var s = String(v || "").trim();
     if (!s || s === "*" || /no date/i.test(s) || /^\*+$/.test(s)) return "";
@@ -337,7 +359,11 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
       return -1;
     }
     function sameTarget(r, t) {
-      return lotKey(r.lot) === t.lotKey && r.location === t.location && num(r.qty) === num(t.qty) && (r.expires_on || "") === (t.exp || "");
+      var keyOk = lotKey(r.lot) === t.lotKey || lotsMatch(r.lot, r.expires_on, t.lot, t.exp, itemId);
+      if (!keyOk) return false;
+      if (r.location !== t.location || num(r.qty) !== num(t.qty)) return false;
+      if (FH_MERGE_ITEM[itemId] && parseFhPrinted(r.lot) && parseFhPrinted(r.lot).item === FH_MERGE_ITEM[itemId]) return true;
+      return (r.expires_on || "") === (t.exp || "");
     }
     targets.forEach(function (t) {
       var exact = [];
@@ -355,7 +381,7 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
       var blanks = [];
       (rows || []).forEach(function (r, i) {
         if (r._alias || shield(r)) return;
-        if (t.lotKey && lotKey(r.lot) === t.lotKey) same.push(i);
+        if (t.lotKey && (lotKey(r.lot) === t.lotKey || lotsMatch(r.lot, r.expires_on, t.lot, t.exp, itemId))) same.push(i);
         else if (!lotKey(r.lot)) blanks.push(i);
       });
       blanks.sort(function (a, b) { return num(rows[b].qty) - num(rows[a].qty); });
@@ -365,7 +391,7 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
       if (idx >= 0) {
         used[idx] = 1;
         var r = rows[idx];
-        var lot = (t.lotKey && lotKey(r.lot) === t.lotKey && String(r.lot || "").trim()) ? String(r.lot) : t.lot;
+        var lot = (String(r.lot || "").trim() && (lotKey(r.lot) === t.lotKey || lotsMatch(r.lot, r.expires_on, t.lot, t.exp, itemId))) ? String(r.lot) : t.lot;
         var exp = t.exp || "";
         var unchanged = num(r.qty) === num(t.qty) && r.location === t.location && String(r.lot || "") === lot && (r.expires_on || "") === exp;
         actions.push({
@@ -381,7 +407,11 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
         });
         return;
       }
-      var blocked = (rows || []).some(function (r) { return !used[rows.indexOf(r)] && shield(r) && lotKey(r.lot) === t.lotKey; });
+      var blocked = (rows || []).some(function (r) {
+        if (used[rows.indexOf(r)] || !shield(r)) return false;
+        if (t.lotKey && lotKey(r.lot) === t.lotKey) return true;
+        return lotsMatch(r.lot, r.expires_on, t.lot, t.exp, itemId);
+      });
       if (blocked) {
         holds.push({ item: itemId, lot: t.lot, sheet: num(t.qty), reason: "Lot " + (t.lot || "(blank)") + " was not rewritten. A newer manual edit or a special hold already covers it." });
         return;
@@ -407,6 +437,11 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
         return;
       }
       if (!(num(r.qty) > 0)) return;
+      var covered = targets.some(function (t) { return lotsMatch(r.lot, r.expires_on, t.lot, t.exp, itemId); });
+      if (covered) {
+        holds.push({ item: r.source_id || itemId, lot: r.lot || "", location: r.location, os: num(r.qty), reason: "Fire House lot is already in the printed expiration-plus-item format and matches a sheet item number. Left unchanged so the next sync does not recreate the old lot." });
+        return;
+      }
       actions.push({ op: "delete", item: r.source_id || itemId, location: r.location, lot: r.lot || "", qty: 0, from: { location: r.location, lot: r.lot || "", qty: num(r.qty) }, sheet: 0 });
     });
     return { actions: actions, holds: holds, notes: notes };
@@ -696,8 +731,11 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
     (lines || []).forEach(function (line) {
       if (!line.item || line.hold || !(num(line.qty) > 0) || num(line.qty) > CAP) return;
       var key = line.item + "\n" + lotKey(line.lot);
-      if (!out[key]) out[key] = { item: line.item, lot: line.lot || "", qty: 0 };
+      if (!out[key]) out[key] = { item: line.item, lot: line.lot || "", qty: 0, exp: line.exp || "" };
       out[key].qty = num(out[key].qty + num(line.qty));
+      var nextExp = parseExp(line.exp);
+      var curExp = parseExp(out[key].exp);
+      if (nextExp && (!curExp || nextExp < curExp)) out[key].exp = line.exp;
     });
     return Object.keys(out).map(function (k) { return out[k]; });
   }
@@ -717,6 +755,14 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
       var it = findItem(items, line.item) || { id: line.item, code: line.item };
       var os = osLotQty(stock, it);
       var have = num(os[lotKey(line.lot)] || 0);
+      if (!have) {
+        have = rowsFor(stock, it).reduce(function (s, r) {
+          if (lotsMatch(r.lot, r.expires_on, line.lot, line.exp, it.id)) return s + num(r.qty);
+          var printed = parseFhPrinted(r.lot);
+          if (printed && printed.item && printed.item === lotKey(line.lot)) return s + num(r.qty);
+          return s;
+        }, 0);
+      }
       seen[line.item + "\n" + lotKey(line.lot)] = 1;
       if (drifted(have, line.qty)) flags.push({ item: line.item, lot: line.lot || "", os: have, sheet: num(line.qty), kind: "lot" });
     });
@@ -764,6 +810,8 @@ var SHEET_AS_OF = "2026-11-06T07:00:00.000Z";
     confirmedLarge: confirmedLarge,
     parseSeedLine: parseSeedLine,
     lotKey: lotKey,
+    parseFhPrinted: parseFhPrinted,
+    lotsMatch: lotsMatch,
     mapLocation: mapLocation,
     parseExp: parseExp,
     drifted: drifted,
