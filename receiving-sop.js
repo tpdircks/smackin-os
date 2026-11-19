@@ -78,7 +78,7 @@
       holdFail: "Receipt saved. HOLD Log write failed.",
       dup: "This item and lot already have a receiving row. Edit that row.",
       dateReq: "Date is required.", timeReq: "Time is required.", recvReq: "Receiver is required.",
-      supReq: "Supplier is required.", matReq: "Raw material is required.",
+      supReq: "I need a real supplier before I can save this receipt. Blank and Unknown are not a supplier.", matReq: "Raw material is required.",
       lotReq: "Lot # is required.", qtyReq: "# of cases is required.",
       ynReq: " needs Y or N.", auReq: " needs A or UA.",
       sealReq: "Seal # is required when the trailer is sealed.",
@@ -124,7 +124,7 @@
       holdFail: "Recibo guardado. No se escribio el registro HOLD.",
       dup: "Este articulo y lote ya tienen una fila de recibo. Edite esa fila.",
       dateReq: "La fecha es obligatoria.", timeReq: "La hora es obligatoria.", recvReq: "Quien recibe es obligatorio.",
-      supReq: "El proveedor es obligatorio.", matReq: "La materia prima es obligatoria.",
+      supReq: "Necesito un proveedor real antes de guardar este recibo. En blanco y Unknown no cuentan como proveedor.", matReq: "La materia prima es obligatoria.",
       lotReq: "El lote es obligatorio.", qtyReq: "El numero de cajas es obligatorio.",
       ynReq: " necesita Y o N.", auReq: " necesita A o UA.",
       sealReq: "El sello es obligatorio cuando el trailer esta sellado.",
@@ -170,7 +170,7 @@
       holdFail: "Recebimento salvo. O registro HOLD nao foi gravado.",
       dup: "Este item e lote ja tem uma linha de recebimento. Edite essa linha.",
       dateReq: "A data e obrigatoria.", timeReq: "A hora e obrigatoria.", recvReq: "Quem recebe e obrigatorio.",
-      supReq: "O fornecedor e obrigatorio.", matReq: "A materia-prima e obrigatoria.",
+      supReq: "Preciso de um fornecedor real antes de salvar este recebimento. Em branco e Unknown nao contam como fornecedor.", matReq: "A materia-prima e obrigatoria.",
       lotReq: "O lote e obrigatorio.", qtyReq: "O numero de caixas e obrigatorio.",
       ynReq: " precisa de Y ou N.", auReq: " precisa de A ou UA.",
       sealReq: "O lacre e obrigatorio quando o trailer esta lacrado.",
@@ -326,13 +326,45 @@
     if (n >= 80 && n <= 110) return "";
     return tx("tempWarn").replace("{n}", String(n));
   }
+  function supplierText(name) {
+    return String(name == null ? "" : name).replace(/^\s+|\s+$/g, "");
+  }
+  function supplierBad(name) {
+    var s = supplierText(name);
+    return !s || s.toLowerCase() === "unknown";
+  }
+  function supplierProblem(name) {
+    return supplierBad(name) ? tx("supReq") : "";
+  }
+  function pushSupplier(out, seen, name) {
+    var s = supplierText(name);
+    if (!s || s.toLowerCase() === "unknown") return;
+    var key = s.toLowerCase();
+    if (seen[key]) return;
+    seen[key] = 1;
+    out.push(s);
+  }
+  // Names already on the receive list, supplier POs, or earlier receipts.
+  // A typed name that is not in this list is still allowed. Unknown is not offered.
+  function supplierChoices(parts) {
+    parts = parts || {};
+    var out = [];
+    var seen = {};
+    (parts.listed || []).forEach(function (n) { pushSupplier(out, seen, n); });
+    (parts.pos || []).forEach(function (p) { pushSupplier(out, seen, p && (p.supplier || p.name)); });
+    (parts.receipts || []).forEach(function (r) { pushSupplier(out, seen, r && r.supplier); });
+    (parts.suppliers || []).forEach(function (s) { pushSupplier(out, seen, s && (s.name || s.id)); });
+    out.sort(function (a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+    return out;
+  }
   function validate(input) {
     input = input || {};
     var errors = [];
     if (!String(input.recv_date || "").trim()) errors.push(tx("dateReq"));
     if (!String(input.received_time || "").trim()) errors.push(tx("timeReq"));
     if (!String(input.received_by || "").trim()) errors.push(tx("recvReq"));
-    if (!String(input.supplier || "").trim()) errors.push(tx("supReq"));
+    var supMsg = supplierProblem(input.supplier);
+    if (supMsg) errors.push(supMsg);
     if (!String(input.contents || "").trim()) errors.push(tx("matReq"));
     if (!normLot(input.lot)) errors.push(tx("lotReq"));
     if (String(input.qty_received == null ? "" : input.qty_received).trim() === "" || isNaN(Number(input.qty_received))) errors.push(tx("qtyReq"));
@@ -358,7 +390,7 @@
   function draftGaps(input) {
     input = input || {};
     var gaps = [];
-    if (!String(input.supplier || "").trim()) gaps.push("supplier");
+    if (supplierBad(input.supplier)) gaps.push("supplier");
     if (!String(input.contents || "").trim()) gaps.push("contents");
     if (!normLot(input.lot)) gaps.push("lot");
     var qty = input.qty_received;
@@ -1342,6 +1374,9 @@
     ensureLoaded: ensureLoaded,
     normLot: normLot,
     draftGaps: draftGaps,
+    supplierBad: supplierBad,
+    supplierProblem: supplierProblem,
+    supplierChoices: supplierChoices,
     resolveInvoicePending: resolveInvoicePending,
     invoiceTrail: invoiceTrail,
     invoicePendingCell: invoicePendingCell
@@ -1431,6 +1466,9 @@
       holdCsv: holdCsv,
       normLot: normLot,
       draftGaps: draftGaps,
+      supplierBad: supplierBad,
+      supplierProblem: supplierProblem,
+      supplierChoices: supplierChoices,
       dispPhrase: dispPhrase,
       resolveInvoicePending: resolveInvoicePending,
       invoiceTrail: invoiceTrail,

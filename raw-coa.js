@@ -682,7 +682,8 @@
             var landed = !!(p && (p.used || afterQty > beforeQty + 0.0001));
             if (!landed && locEl) locEl.value = prevLoc;
             if (!root.__smkRecvLogTried && p && p.answer && landed && !p.used && made && isCoaItem(made)) {
-              if (p.holdWanted && root.DB && root.DB.addReceivingLog) {
+              var supplierOk = String(p.supplier || "").trim() && String(p.supplier || "").trim().toLowerCase() !== "unknown";
+              if (p.holdWanted && supplierOk && root.DB && root.DB.addReceivingLog) {
                 var today = new Date().toISOString().slice(0, 10);
                 await root.DB.addReceivingLog({
                   recv_date: today,
