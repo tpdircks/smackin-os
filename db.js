@@ -1020,7 +1020,25 @@ window.DB = (function () {
       t: resolution.when || new Date().toISOString()
     };
   }
+  function supplierText(name) {
+    return String(name == null ? "" : name).trim();
+  }
+  function supplierRejected(name) {
+    const s = supplierText(name);
+    if (!s || s.toLowerCase() === "unknown") return "I need a real supplier before I can save this receipt. Blank and Unknown are not a supplier.";
+    return "";
+  }
+  // A hold rewrite can keep a bad supplier that is already stored.
+  // A new receipt, or a change to blank or Unknown, is refused.
+  function supplierChangeBlocked(prevName, nextName) {
+    const err = supplierRejected(nextName);
+    if (!err) return "";
+    if (supplierText(prevName).toLowerCase() === supplierText(nextName).toLowerCase()) return "";
+    return err;
+  }
   async function addReceivingLog(rec, file, op) {
+    const supErr = supplierRejected(rec && rec.supplier);
+    if (supErr) return { ok: false, msg: supErr };
     let file_name = file ? file.name : "", file_path = "", file_url = "";
     if (mode === "cloud" && file) {
       try {
@@ -1035,7 +1053,7 @@ window.DB = (function () {
     const resolution = stampInvoice(rec, null, op);
     const row = Object.assign({
       recv_date: rec.recv_date || new Date().toISOString().slice(0, 10),
-      supplier: rec.supplier || "", po_num: rec.po_num || "", carrier: rec.carrier || "",
+      supplier: supplierText(rec.supplier), po_num: rec.po_num || "", carrier: rec.carrier || "",
       tracking: rec.tracking || "", contents: rec.contents || "", lot: rec.lot || "",
       qty_ordered: rec.qty_ordered === "" || rec.qty_ordered == null ? null : Number(rec.qty_ordered),
       qty_received: rec.qty_received === "" || rec.qty_received == null ? null : Number(rec.qty_received),
@@ -1076,6 +1094,9 @@ window.DB = (function () {
     return { ok: true, id: newId };
   }
   async function updateReceivingLog(id, rec, file, op) {
+    const prevEarly = (cache.receivingLog || []).find(x => String(x.id) === String(id)) || null;
+    const supErr = supplierChangeBlocked(prevEarly && prevEarly.supplier, rec && rec.supplier);
+    if (supErr) return { ok: false, msg: supErr };
     let filePatch = {};
     if (mode === "cloud" && file) {
       try {
@@ -1089,7 +1110,7 @@ window.DB = (function () {
     const prev = (cache.receivingLog || []).find(x => String(x.id) === String(id)) || null;
     const resolution = stampInvoice(rec, prev, op);
     const patch = Object.assign({
-      recv_date: rec.recv_date || null, supplier: rec.supplier || "", po_num: rec.po_num || "",
+      recv_date: rec.recv_date || null, supplier: supplierText(rec.supplier), po_num: rec.po_num || "",
       carrier: rec.carrier || "", tracking: rec.tracking || "", contents: rec.contents || "", lot: rec.lot || "",
       qty_ordered: rec.qty_ordered === "" || rec.qty_ordered == null ? null : Number(rec.qty_ordered),
       qty_received: rec.qty_received === "" || rec.qty_received == null ? null : Number(rec.qty_received),

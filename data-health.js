@@ -597,6 +597,68 @@
     var days = businessDaysAgo(last, now);
     return { quiet: days >= 2, last: last, days: days, never: false };
   }
+  var INVOICE_PENDING_DAYS = 3;
+  function invoiceFlagOn(v) {
+    return v === true || v === "1" || v === "true" || v === "t" || v === "TRUE";
+  }
+  function supplierMissing(name) {
+    var s = String(name == null ? "" : name).replace(/^\s+|\s+$/g, "");
+    return !s || s.toLowerCase() === "unknown";
+  }
+  function receiptItem(row) {
+    var contents = String(row && row.contents || "").replace(/^\s+|\s+$/g, "");
+    if (contents) return contents;
+    return String(row && row.item_id || "").replace(/^\s+|\s+$/g, "");
+  }
+  function pendingInvoices(rows, today) {
+    today = today || denverStamp(new Date()).date;
+    var out = [];
+    (rows || []).forEach(function (row) {
+      if (!row) return;
+      var po = String(row.po_num == null ? "" : row.po_num).replace(/^\s+|\s+$/g, "");
+      if (po) return;
+      if (!invoiceFlagOn(row.invoice_pending)) return;
+      var day = dateISO(row.recv_date);
+      if (!day) return;
+      var days = calendarDays(day, today);
+      if (!(days > INVOICE_PENDING_DAYS)) return;
+      out.push({
+        recv_date: day,
+        supplier: String(row.supplier || "").replace(/^\s+|\s+$/g, ""),
+        item: receiptItem(row),
+        lot: String(row.lot || "").replace(/^\s+|\s+$/g, ""),
+        qty: row.qty_received,
+        days: days
+      });
+    });
+    out.sort(function (a, b) { return b.days - a.days || a.item.localeCompare(b.item) || a.lot.localeCompare(b.lot); });
+    return out;
+  }
+  function unknownSuppliers(rows) {
+    var out = [];
+    (rows || []).forEach(function (row) {
+      if (!row || !supplierMissing(row.supplier)) return;
+      out.push({
+        recv_date: dateISO(row.recv_date),
+        supplier: String(row.supplier || "").replace(/^\s+|\s+$/g, ""),
+        item: receiptItem(row),
+        lot: String(row.lot || "").replace(/^\s+|\s+$/g, ""),
+        qty: row.qty_received
+      });
+    });
+    out.sort(function (a, b) { return String(b.recv_date).localeCompare(String(a.recv_date)) || a.item.localeCompare(b.item) || a.lot.localeCompare(b.lot); });
+    return out;
+  }
+  function receiptTable(rows, withDays) {
+    var head = "<tr><th>Receive date</th><th>Supplier</th><th>Item</th><th>Lot</th><th class=\"right\">Qty</th>" +
+      (withDays ? "<th class=\"right\">Days pending</th>" : "") + "</tr>";
+    var body = rows.map(function (row) {
+      var supplier = row.supplier ? esc(row.supplier) : "blank";
+      return "<tr><td>" + esc(row.recv_date) + "</td><td>" + supplier + "</td><td>" + esc(row.item) + "</td><td>" + esc(row.lot) + "</td><td class=\"right\">" + esc(row.qty) + "</td>" +
+        (withDays ? "<td class=\"right\">" + esc(row.days) + "</td>" : "") + "</tr>";
+    }).join("");
+    return '<div class="tblwrap"><table><thead>' + head + "</thead><tbody>" + body + "</tbody></table></div>";
+  }
   function receivingGap(opts) {
     opts = opts || {};
     var now = opts.now instanceof Date ? opts.now : new Date(opts.now || Date.now());
@@ -614,7 +676,8 @@
       readList(c.from("items").select("id,name,code").limit(5000)),
       readList(c.from("receiving_log").select("recv_date").order("recv_date", { ascending: false }).limit(30)),
       readList(c.from("kv_status").select("key,value").in("key", ["sps:last_sync", "demand:open-snapshot"])),
-      readList(c.from("demand_lines").select("created_at,batch_id,batch_label,source,status").in("status", ["Open", "New"]).order("created_at", { ascending: false }).limit(40))
+      readList(c.from("demand_lines").select("created_at,batch_id,batch_label,source,status").in("status", ["Open", "New"]).order("created_at", { ascending: false }).limit(40)),
+      readList(c.from("receiving_log").select("recv_date,supplier,po_num,contents,lot,qty_received,invoice_pending,item_id").order("recv_date", { ascending: false }).limit(3000))
     ]).then(function (rs) {
       var now = new Date();
       var today = denverStamp(now).date;
@@ -646,6 +709,7 @@
         });
       }
       if (snapAt > demandAt) demandAt = snapAt;
+      var receipts = (rs[5] && rs[5].data) || [];
       var lastRecv = "";
       if (!(rs[2] && rs[2].error)) {
         recvs.forEach(function (row) {
@@ -656,7 +720,9 @@
       return {
         expired: (rs[0] && rs[0].error) ? null : expiredOutsideHold(stock, items, today),
         spsFeed: (rs[3] && rs[3].error && rs[4] && rs[4].error) ? null : spsFeed({ sync: sync, demandAt: demandAt, demandBatch: demandBatch, now: now }),
-        recv: (rs[2] && rs[2].error) ? null : receivingGap({ lastReceipt: lastRecv, now: now })
+        recv: (rs[2] && rs[2].error) ? null : receivingGap({ lastReceipt: lastRecv, now: now }),
+        invoicePending: (rs[5] && rs[5].error) ? null : pendingInvoices(receipts, today),
+        unknownSupplier: (rs[5] && rs[5].error) ? null : unknownSuppliers(receipts)
       };
     }).catch(function () { return null; });
   }
@@ -694,11 +760,29 @@
         html += '<div class="ex ok"><b>Receiving.</b> A receipt is inside the last 5 business days. Last receipt ' + esc(prettyDay(guard.recv.last)) + ".</div>";
       }
     }
+    if (guard.invoicePending) {
+      if (!guard.invoicePending.length) {
+        html += '<div class="ex ok"><b>Invoice pending.</b> I do not see a receipt still waiting on an invoice more than 3 days after the receive date.</div>';
+      } else {
+        var nInv = guard.invoicePending.length;
+        html += '<div class="ex warn"><b>Invoice pending more than 3 days.</b> I see ' + nInv + " receipt" + (nInv === 1 ? "" : "s") + " still waiting on an invoice more than 3 days after the receive date. I am only listing them. I did not change a receipt.</div>";
+        html += receiptTable(guard.invoicePending, true);
+      }
+    }
+    if (guard.unknownSupplier) {
+      if (!guard.unknownSupplier.length) {
+        html += '<div class="ex ok"><b>Supplier.</b> I do not see a receipt with a blank or Unknown supplier.</div>';
+      } else {
+        var nSup = guard.unknownSupplier.length;
+        html += '<div class="ex bad"><b>Supplier missing.</b> I see ' + nSup + " receipt" + (nSup === 1 ? "" : "s") + " with a blank or Unknown supplier. Adri can fill the supplier in on the receipt edit. I did not change any row.</div>";
+        html += receiptTable(guard.unknownSupplier, false);
+      }
+    }
     return html;
   }
 
   var dhOpen = false;
-  window.DATAHEALTH = { forTest: { isTestRow: isTestRow, stuckSummary: stuckSummary, missingPmacDays: missingPmacDays, prettyPmacDate: prettyPmacDate, prettyDay: prettyDay, denverStamp: denverStamp, stampDenver: stampDenver, businessHoursSince: businessHoursSince, addDays: addDays, LOOKBACK_DAYS: LOOKBACK_DAYS, sources: SOURCES, PAUSED_FEEDS: PAUSED_FEEDS, daysAgo: daysAgo, businessDaysAgo: businessDaysAgo, ageOf: ageOf, statusOf: statusOf, renderRow: renderRow, tally: tally, summaryHtml: summaryHtml, expiredOutsideHold: expiredOutsideHold, lotWarning: lotWarning, spsQuiet: spsQuiet, spsFeed: spsFeed, receivingGap: receivingGap, shieldedLoc: shieldedLoc, guardHtml: guardHtml }, lotWarning: lotWarning, expiredOutsideHold: expiredOutsideHold, open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); dhOpen = true; markActive(); render(); } };
+  window.DATAHEALTH = { forTest: { isTestRow: isTestRow, stuckSummary: stuckSummary, missingPmacDays: missingPmacDays, prettyPmacDate: prettyPmacDate, prettyDay: prettyDay, denverStamp: denverStamp, stampDenver: stampDenver, businessHoursSince: businessHoursSince, addDays: addDays, LOOKBACK_DAYS: LOOKBACK_DAYS, sources: SOURCES, PAUSED_FEEDS: PAUSED_FEEDS, daysAgo: daysAgo, businessDaysAgo: businessDaysAgo, ageOf: ageOf, statusOf: statusOf, renderRow: renderRow, tally: tally, summaryHtml: summaryHtml, expiredOutsideHold: expiredOutsideHold, lotWarning: lotWarning, spsQuiet: spsQuiet, spsFeed: spsFeed, receivingGap: receivingGap, pendingInvoices: pendingInvoices, unknownSuppliers: unknownSuppliers, calendarDays: calendarDays, INVOICE_PENDING_DAYS: INVOICE_PENDING_DAYS, shieldedLoc: shieldedLoc, guardHtml: guardHtml }, lotWarning: lotWarning, expiredOutsideHold: expiredOutsideHold, open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); dhOpen = true; markActive(); render(); } };
 
   function markActive() { try { var nav = $("nav"); if (!nav) return; nav.querySelectorAll(".navitem.active").forEach(function (b) { b.classList.remove("active"); }); var m = $("dh-nav"); if (m) m.classList.add("active"); } catch (e) {} }
   function injectNav() {

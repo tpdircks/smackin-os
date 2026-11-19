@@ -963,10 +963,33 @@
   }
 
   // =========================== RECEIVE ===========================
+  function supplierBad(name) {
+    if (window.RECVSOP && typeof RECVSOP.supplierBad === "function") return RECVSOP.supplierBad(name);
+    var s = String(name == null ? "" : name).replace(/^\s+|\s+$/g, "");
+    return !s || s.toLowerCase() === "unknown";
+  }
+  function supplierProblem(name) {
+    if (window.RECVSOP && typeof RECVSOP.supplierProblem === "function") return RECVSOP.supplierProblem(name);
+    return supplierBad(name) ? "I need a real supplier before I can save this receipt. Blank and Unknown are not a supplier." : "";
+  }
+  function traceSuppliers() {
+    if (window.RECVSOP && typeof RECVSOP.supplierChoices === "function" && window.DB) {
+      var pos = [], receipts = [], suppliers = [];
+      try { pos = DB.supplierPos ? DB.supplierPos() : []; } catch (e1) {}
+      try { receipts = DB.receivingLog ? DB.receivingLog() : []; } catch (e2) {}
+      try { suppliers = DB.suppliers ? DB.suppliers() : []; } catch (e3) {}
+      return RECVSOP.supplierChoices({ listed: DB.recvSuppliers || [], pos: pos, receipts: receipts, suppliers: suppliers });
+    }
+    var sups = [];
+    try { sups = (window.DB && DB.suppliers ? DB.suppliers() : []).map(function (s) { return s.name || s.id; }).filter(Boolean); } catch (e) {}
+    return sups.filter(function (n) { return !supplierBad(n); });
+  }
   function vRecv() {
     var r = W.recv, ty = typeBy(r.type);
     var items = []; try { items = (window.DB && DB.items ? DB.items() : []).map(function (i) { return i.name; }).filter(Boolean); } catch (e) {}
-    var sups = []; try { sups = (window.DB && DB.suppliers ? DB.suppliers() : []).map(function (s) { return s.name || s.id; }).filter(Boolean); } catch (e) {}
+    var sups = traceSuppliers();
+    var needSup = !r.existing && r.type !== "FG";
+    var supProblem = needSup ? supplierProblem(r.supplier) : "";
     var h = '<div class="card"><h2 class="sub2">' + esc(L("tRecv")) + '</h2><div class="trc-grid">';
     h += '<div><label>' + esc(L("type")) + '</label>' + sel("trc-r-type", TYPES.map(function (t) { return { v: t.k, t: LT(t) }; }), r.type, "TRACE.recvType(this.value)") + '</div>';
     h += '<div><label>' + esc(L("item")) + '</label><input id="trc-r-item" list="trc-items" value="' + esc(r.item || "") + '"><datalist id="trc-items">' + items.map(function (n) { return '<option value="' + esc(n) + '">'; }).join("") + '</datalist></div>';
@@ -977,7 +1000,7 @@
       h += '<div><label>' + esc(L("loc")) + '</label><input id="trc-r-loc" value="' + esc(r.loc || "STAGING") + '"></div>';
       h += bestByBox("trc-r-exp", !!r.expTouched, r.exp || "", r.size || "4oz", r.flavor || "");
     } else {
-      h += '<div><label>' + esc(L("supplier")) + '</label><input id="trc-r-sup" list="trc-sups" value="' + esc(r.supplier || "") + '"><datalist id="trc-sups">' + sups.map(function (n) { return '<option value="' + esc(n) + '">'; }).join("") + '</datalist></div>';
+      h += '<div><label>' + esc(L("supplier")) + '</label><input id="trc-r-sup" list="trc-sups" value="' + esc(r.supplier || "") + '" oninput="TRACE.recvSupWatch()"><datalist id="trc-sups">' + sups.map(function (n) { return '<option value="' + esc(n) + '">'; }).join("") + '</datalist><p class="hint" id="trc-r-sup-msg"' + (supProblem ? "" : " hidden") + ">" + esc(supProblem) + "</p></div>";
       if (!r.existing) h += '<div><label>' + esc(L("po")) + '</label><input id="trc-r-po" value="' + esc(r.po || "") + '"></div>';
       h += '<div><label>' + esc(L("slot")) + '</label><input id="trc-r-lot" class="trc-scan" style="font-size:18px;padding:10px" value="' + esc(r.lot || "") + '" onkeydown="if(event.key===\'Enter\'){event.preventDefault();var n=document.getElementById(\'trc-r-exp\');if(n)n.focus();}"></div>';
       h += '<div><label>' + esc(L("exp")) + '</label><input id="trc-r-exp" type="date" value="' + esc(r.exp || "") + '"></div>';
@@ -993,7 +1016,7 @@
       if (ty.food) h += '<label style="font-weight:500"><input type="checkbox" id="trc-r-rel" style="width:auto" ' + (r.rel ? "checked" : "") + '> ' + esc(L("relNow")) + '</label>';
       if ((r.type === "SEED" || r.type === "SEAS" || r.type === "MALTO") && !r.existing) h += '<label style="font-weight:500"><input type="checkbox" id="trc-r-reg" style="width:auto" ' + (r.reg ? "checked" : "") + '> ' + esc(L("registry")) + '</label>';
     }
-    h += '<button class="primary" onclick="TRACE.recvSave()">' + esc(L("save")) + ' + ' + esc(L("print")) + '</button>';
+    h += '<button class="primary" id="trc-r-save" onclick="TRACE.recvSave()"' + (supProblem ? " disabled" : "") + ">" + esc(L("save")) + " + " + esc(L("print")) + "</button>";
     h += '</div>';
     var recent = allLabels().filter(function (l) { return l.kind === "RM" || (l.kind === "FG" && l.data && l.data.legacy); }).sort(byNewest).slice(0, 15);
     h += '<div class="card"><h2 class="sub2">Recent</h2>' + labelTable(recent) + '</div>';
@@ -1012,10 +1035,25 @@
   }
   function recvType(v) { recvCapture(); if (W.recv.type !== v) { W.recv.item = ""; W.recv.flavor = ""; W.recv.seedCode = ""; W.recv.lot = ""; W.recv.exp = ""; } W.recv.type = v; W.recv.uom = typeBy(v).uom; render(); }
   function recvExisting(b) { recvCapture(); W.recv.existing = !!b; render(); }
+  function recvSupWatch() {
+    recvCapture();
+    var r = W.recv;
+    var need = !r.existing && r.type !== "FG";
+    var problem = need ? supplierProblem(r.supplier) : "";
+    var msg = $("trc-r-sup-msg");
+    var btn = $("trc-r-save");
+    if (msg) { msg.hidden = !problem; msg.textContent = problem; }
+    if (btn) btn.disabled = !!problem;
+  }
   function recvSave() {
     if (needOp()) return;
     recvCapture();
     var r = W.recv, ty = typeBy(r.type), units = Math.max(1, Math.min(200, Math.floor(num(r.units) || 1))), qty = num(r.qty);
+    if (!r.existing && r.type !== "FG" && supplierBad(r.supplier)) {
+      flash(supplierProblem(r.supplier), "err");
+      recvSupWatch();
+      return;
+    }
     var lot = cleanScan(r.lot);
     if (!lot) { flash(L("needLot"), "err"); render(); return; }
     if (!(qty > 0)) { flash(L("qtyEach") + "?", "err"); render(); return; }
@@ -3035,7 +3073,7 @@
     go: function (t, ev) { if (ev && ev.preventDefault) ev.preventDefault(); ST.tab = t; saveST(); W.msg = null; open(); },
     toggleGroup: function () { injectNav(); },
     setOp: function (v) { rememberOp(v); render(); },
-    recvType: recvType, recvExisting: recvExisting, recvSave: recvSave,
+    recvType: recvType, recvExisting: recvExisting, recvSave: recvSave, recvSupWatch: recvSupWatch,
     qa: qaSet, qaScan: qaScan, qaIssue: qaIssue, releaseStock: releaseStock,
     setMixer: function (v) { ST.mixer = v; saveST(); render(); },
     mixFlavor: function (v) { W.mix.flavor = v; W.mix.prefix = v ? lastPrefixFor(v) : ""; render(); },
