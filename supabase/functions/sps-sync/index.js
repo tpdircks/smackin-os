@@ -555,7 +555,30 @@ Deno.serve(async function (req) {
     try { nightly = await nightlyPastDue(); }
     catch (nightErr) { nightly = { ok: false, error: redact(nightErr && nightErr.message) }; }
     var started = Date.now();
-    var tokenResult = await getSpsToken(clientId, clientSecret, { log: console.log });
+    var tokenResult;
+    try {
+      tokenResult = await getSpsToken(clientId, clientSecret, { log: console.log });
+    } catch (authErr) {
+      var authMessage = redact(authErr && authErr.message);
+      var authSummary = {
+        at: new Date().toISOString(),
+        ok: false,
+        folder: folder,
+        auth_failed: true,
+        message: authMessage,
+        nightly: nightly,
+        mergedOrders: merged.removed,
+        listed: 0,
+        skipped: 0,
+        pending: 0,
+        processed: 0,
+        flagged: 0,
+        errors: [authMessage]
+      };
+      await setKv("sps:last_sync", authSummary);
+      console.log("sps-sync auth failed; nightly closed=" + ((nightly && nightly.closed) || 0));
+      return json(Object.assign({ ok: false }, authSummary));
+    }
     var token = tokenResult.token;
     var files = await listFiles(token, folder);
     var seen = await listProcessed();
