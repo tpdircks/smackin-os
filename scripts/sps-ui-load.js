@@ -15,7 +15,8 @@
    3. Apply when the dry run looks right:
       node scripts/sps-ui-load.js --apply target.csv exclude-target.csv
    The apply inserts new POs and lines, updates quantities on matching
-   partner + PO + DC + flavor rows, and closes other Open rows with
+   partner + PO + DC + flavor rows (a blank DC updates the one real DC and
+   does not insert), and closes other Open rows with
    [[CLOSED:YYYY-MM-DD:not-live-sps-open]]. Rows marked in demand_po_stage
    stay open unless the file shows that PO closed. Running it twice with
    the same files changes no demand rows the second time.

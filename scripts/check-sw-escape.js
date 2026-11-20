@@ -11,7 +11,7 @@ var fail = [];
 function eq(cond, msg) { if (!cond) fail.push(msg); }
 function read(rel) { return fs.readFileSync(path.join(root, rel), "utf8"); }
 
-var BUILD = "smackin-inv-v316";
+var BUILD = "smackin-inv-v317";
 var sw = read("service-worker.js");
 var html = read("index.html");
 var boot = read("sw-boot.js");
@@ -50,8 +50,8 @@ var escape = require(path.join(root, "sw-escape.js"));
 eq(escape.EMBEDDED === BUILD, "export embedded");
 eq(escape.versionNum("smackin-inv-v253") === 253, "version parse");
 eq(escape.chooseTarget(BUILD, "smackin-inv-v254") === BUILD, "older probe does not downgrade");
-eq(escape.chooseTarget(BUILD, "smackin-inv-v317") === "smackin-inv-v317", "newer probe wins");
-eq(escape.parseId("\nsmackin-inv-v316\n") === BUILD, "parse id");
+eq(escape.chooseTarget(BUILD, "smackin-inv-v318") === "smackin-inv-v318", "newer probe wins");
+eq(escape.parseId("\nsmackin-inv-v317\n") === BUILD, "parse id");
 eq(escape.isSmackinReg({
   scope: "https://tpdircks.github.io/smackin-os/",
   active: { scriptURL: "https://tpdircks.github.io/smackin-os/service-worker.js" }
@@ -82,10 +82,10 @@ eq(decided({
   embedded: BUILD, remote: BUILD, caches: ["smackin-inv-v253", BUILD], online: true, busted: ""
 }) === "drop-old", "current cache is not unregistered");
 eq(decided({
-  embedded: "smackin-inv-v259", remote: "smackin-inv-v316", caches: ["smackin-inv-v259"], online: true, busted: ""
+  embedded: "smackin-inv-v259", remote: "smackin-inv-v317", caches: ["smackin-inv-v259"], online: true, busted: ""
 }) === "reset", "newer build-id resets");
 eq(decided({
-  embedded: "smackin-inv-v259", remote: "", caches: ["smackin-inv-v316"], online: true, busted: ""
+  embedded: "smackin-inv-v259", remote: "", caches: ["smackin-inv-v317"], online: true, busted: ""
 }) === "stay", "newer cache is not downgraded");
 eq(decided({
   embedded: BUILD, remote: "", caches: ["smackin-inv-v253"], online: false, probeFailed: true, busted: ""

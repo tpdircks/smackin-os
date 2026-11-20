@@ -3,10 +3,13 @@
 // Live /out approved by Troy on 2026-11-10. Reads new files from
 // /transactions/v5/data/out/ with GET only and never deletes or moves them.
 import "../../../sps-map.js";
+import "../../../demand.js";
 import { getSpsToken } from "../_shared/sps-auth.mjs";
 
 var SPS = globalThis.SPSMap;
 if (!SPS || typeof SPS.mapDocument !== "function") throw new Error("sps-map.js did not load");
+var DEMAND = globalThis.DEMAND;
+if (!DEMAND || typeof DEMAND.planInvoiceClose !== "function") throw new Error("demand.js did not load");
 
 var PUBLISHABLE = "sb_publishable_KlPxfCQUmxbIAVc2p_M5Lw_ligy0COY";
 var MAX_PAGES = 40;
@@ -222,6 +225,135 @@ async function upsertOrder(state, folder, flagInfo) {
   await rest("orders", { method: "POST", headers: { Prefer: "return=minimal" }, body: created });
   return { wrote: true };
 }
+async function addLog(entry) {
+  await rest("transactions", {
+    method: "POST",
+    headers: { Prefer: "return=minimal" },
+    body: { action: entry.a, detail: entry.d, operator: entry.u || "sps-sync" }
+  });
+}
+async function readAll(path, cap) {
+  var rows = [];
+  var offset = 0;
+  cap = cap || 8000;
+  while (offset < cap) {
+    var join = path.indexOf("?") >= 0 ? "&" : "?";
+    var page = await rest(path + join + "limit=1000&offset=" + offset);
+    if (!Array.isArray(page) || !page.length) break;
+    rows = rows.concat(page);
+    if (page.length < 1000) break;
+    offset += page.length;
+  }
+  return rows;
+}
+var boardCache = null;
+async function loadBoard() {
+  if (boardCache) return boardCache;
+  boardCache = {
+    lines: await readAll("demand_lines?select=id,partner,po,status,notes,source,imported_by,batch_id,due_date&status=in.(Open,New)"),
+    orders: await readAll("orders?select=id,customer,customer_po,status,notes,entered_by&status=in.(Open,New)&entered_by=like.SPS%20UI*"),
+    staged: await readAll("demand_po_stage?select=partner,po")
+  };
+  return boardCache;
+}
+function rememberClosed(plan) {
+  if (!boardCache || !plan) return;
+  var gone = {};
+  (plan.lines || []).forEach(function (c) { gone[String(c.id)] = 1; });
+  boardCache.lines = (boardCache.lines || []).filter(function (r) { return !gone[String(r.id)]; });
+  var goneO = {};
+  (plan.orders || []).forEach(function (c) { goneO[String(c.id)] = 1; });
+  boardCache.orders = (boardCache.orders || []).filter(function (r) { return !goneO[String(r.id)]; });
+}
+// Status changes only. Demand and SPS UI order rows are never deleted.
+async function applyCloses(plan) {
+  var lines = (plan && plan.lines) || [];
+  var orders = (plan && plan.orders) || [];
+  for (var i = 0; i < lines.length; i++) {
+    await rest("demand_lines?" + pgEq("id", lines[i].id), {
+      method: "PATCH",
+      headers: { Prefer: "return=minimal" },
+      body: { status: "Complete", notes: lines[i].notes }
+    });
+  }
+  for (var j = 0; j < orders.length; j++) {
+    await rest("orders?" + pgEq("id", orders[j].id), {
+      method: "PATCH",
+      headers: { Prefer: "return=minimal" },
+      body: { status: "Complete", notes: orders[j].notes }
+    });
+  }
+  var logs = (plan && plan.logs) || [];
+  for (var k = 0; k < logs.length; k++) await addLog(logs[k]);
+  rememberClosed(plan);
+  return lines.length + orders.length;
+}
+// 810, or 856 Accepted/Complete, sets Open lines and SPS UI orders to Complete
+// with [[CLOSED:<Denver date>:sps-810]]. Status only. No deletes.
+async function closeInvoicedPo(state) {
+  boardCache = null;
+  var evidence = DEMAND.evidenceFromStates({ states: { one: state } });
+  if (!evidence.length) return 0;
+  var board = await loadBoard();
+  var plan = DEMAND.planInvoiceClose(board.lines, board.orders, evidence, {
+    staged: board.staged, today: DEMAND.denverToday(), operator: "sps-sync"
+  });
+  if (!plan.lines.length && !plan.orders.length) return 0;
+  return applyCloses(plan);
+}
+async function nightlyPastDue() {
+  var today = DEMAND.denverToday();
+  var prev = await getKv("demand:nightly");
+  if (prev && prev.day === today && prev.ok) return { skipped: true, day: today };
+  var tx = await readAll("sps_transactions?select=doc_type,partner,po_number,status,payload&or=(doc_type.ilike.*810*,doc_type.ilike.*856*)");
+  var flat = (tx || []).map(function (r) {
+    var payload = r.payload || {};
+    return {
+      doc_type: r.doc_type, partner: r.partner, po_number: r.po_number, status: r.status,
+      doc_status: payload.doc_status || payload.docStatus || ""
+    };
+  });
+  var evidence = DEMAND.evidenceFromRows(flat);
+  var entries = [];
+  (tx || []).forEach(function (r) {
+    if (String(r.status || "") === "rejected") return;
+    var doc = rawDoc(r.payload);
+    if (!doc) return;
+    entries.push({ json: doc, docStatus: (r.payload && (r.payload.doc_status || r.payload.docStatus)) || "" });
+  });
+  evidence = evidence.concat(DEMAND.evidenceFromStates(SPS.interpret(entries)));
+  var board = await loadBoard();
+  var safety = DEMAND.pastDueSafety(board.lines, evidence, { today: today, staged: board.staged, operator: "sps-sync" });
+  var orderPlan = DEMAND.planInvoiceClose([], board.orders, evidence, { staged: board.staged, today: today, operator: "sps-sync" });
+  var closing = {};
+  safety.close.forEach(function (c) { closing[DEMAND.partnerNorm(c.partner) + "|" + DEMAND.poNorm(c.po)] = 1; });
+  orderPlan.orders = (orderPlan.orders || []).filter(function (o) {
+    return closing[DEMAND.partnerNorm(o.partner) + "|" + DEMAND.poNorm(o.po)];
+  });
+  orderPlan.logs = (orderPlan.logs || []).filter(function (log) { return log.a === "Order closed"; });
+  var plan = {
+    lines: safety.close,
+    orders: orderPlan.orders,
+    logs: (safety.logs || []).concat(orderPlan.logs || [])
+  };
+  var closed = 0;
+  if (plan.lines.length || plan.orders.length) closed = await applyCloses(plan);
+  var noInvoice = [];
+  var seenNi = {};
+  (safety.noInvoice || []).forEach(function (r) {
+    var k = String(r.partner || "") + "|" + String(r.po || "");
+    if (seenNi[k]) return;
+    seenNi[k] = 1;
+    noInvoice.push({ partner: r.partner, po: r.po });
+  });
+  var health = {
+    at: new Date().toISOString(), day: today,
+    pastDueOpen: safety.pastDueOpen, flags: safety.flags, noInvoice: noInvoice
+  };
+  await setKv("demand:health", health);
+  await setKv("demand:nightly", { day: today, at: health.at, ok: true, closed: closed, flags: safety.flags });
+  return { ok: true, day: today, closed: closed, flags: safety.flags, pastDueOpen: safety.pastDueOpen };
+}
 async function replaceDemand(state, folder) {
   if (!state.po) return;
   var planned = SPS.buildDemand(state, folder);
@@ -240,12 +372,22 @@ async function replaceDemand(state, folder) {
       body: rows
     });
   }
-  var existing = await rest("demand_lines?select=id&" + pgEq("imported_by", "SPS Feed") + "&" + pgEq("po", state.po) + "&" + pgEq("partner", state.partner || "") + "&limit=500");
+  var existing = await rest("demand_lines?select=id,notes,status&" + pgEq("imported_by", "SPS Feed") + "&" + pgEq("po", state.po) + "&" + pgEq("partner", state.partner || "") + "&limit=500");
   var keep = {};
   rows.forEach(function (r) { keep[r.id] = 1; });
-  var drop = (existing || []).map(function (r) { return r.id; }).filter(function (id) { return !keep[id]; });
+  var drop = (existing || []).filter(function (r) {
+    return r && !keep[r.id] && (r.status === "Open" || r.status === "New");
+  });
   if (drop.length) {
-    await rest("demand_lines?id=in.(" + drop.join(",") + ")", { method: "DELETE", headers: { Prefer: "return=minimal" } });
+    var today = DEMAND.denverToday();
+    for (var d = 0; d < drop.length; d++) {
+      await rest("demand_lines?" + pgEq("id", drop[d].id), {
+        method: "PATCH",
+        headers: { Prefer: "return=minimal" },
+        body: { status: "Complete", notes: DEMAND.closeNote(drop[d].notes, today, "not-in-850") }
+      });
+    }
+    await addLog({ a: "Demand closed", d: (state.partner || "") + " " + state.po + " " + drop.length + " lines [[CLOSED:" + today + ":not-in-850]]", u: "sps-sync" });
   }
 }
 function txPathFilter(path) {
@@ -334,6 +476,8 @@ async function processFile(token, file, folder) {
     var orderResult = await upsertOrder(state, folder, one);
     if (orderResult.skipped) boardNotes.push("PO " + state.po + " is already on the orders board, so that row was left as-is.");
     if ((state.orderLines || []).length) await replaceDemand(state, folder);
+    var evidence = DEMAND.evidenceFromStates({ states: { one: state } });
+    if (evidence.length) await closeInvoicedPo(state);
   }
   if (mapped.docType === "856" && mapped.shipment) {
     var shipId = await uuidNamed("ship|" + file.path);
@@ -407,6 +551,9 @@ Deno.serve(async function (req) {
     await setKv("sps:lock", { at: new Date().toISOString() });
     locked = true;
     var merged = await mergeDuplicateOrders(folder);
+    var nightly = { ok: false };
+    try { nightly = await nightlyPastDue(); }
+    catch (nightErr) { nightly = { ok: false, error: redact(nightErr && nightErr.message) }; }
     var started = Date.now();
     var tokenResult = await getSpsToken(clientId, clientSecret, { log: console.log });
     var token = tokenResult.token;
@@ -438,6 +585,7 @@ Deno.serve(async function (req) {
       processed: processed,
       flagged: flagged,
       mergedOrders: merged.removed,
+      nightly: nightly,
       errors: errors
     };
     await setKv("sps:last_sync", summary);

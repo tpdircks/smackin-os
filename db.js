@@ -2173,6 +2173,19 @@ window.DB = (function () {
     const today = meta.today || (api.denverToday ? api.denverToday() : new Date().toISOString().slice(0, 10));
     const plan = api.reconcileOpen(cache.demandLines || [], rows || [], { staged: cache.demandPoStage || [], today: today });
     if (plan.refused) return { ok: false, msg: "The export has no lines. Open demand was not changed.", plan: plan };
+    if (typeof api.blankDcDuplicates === "function") {
+      const dupes = api.blankDcDuplicates(cache.demandLines || [], { staged: cache.demandPoStage || [], today: today });
+      const seen = {};
+      plan.close.forEach(function (c) { seen[String(c.id)] = c; });
+      dupes.forEach(function (c) {
+        const prev = seen[String(c.id)];
+        if (!prev) { plan.close.push(c); seen[String(c.id)] = c; return; }
+        if (c.reason === "merged-duplicate" && prev.reason !== "sps-closed") {
+          prev.reason = "merged-duplicate";
+          prev.notes = c.notes;
+        }
+      });
+    }
     const before = api.openCensus ? api.openCensus(cache.demandLines || []) : null;
     const batch_id = meta.batch_id || ("SPS-UI-" + today);
     const label = meta.batch_label || ("SPS UI " + today);
@@ -2191,6 +2204,7 @@ window.DB = (function () {
         row.qty = u.qty; row.cases = u.cases; row.bags = u.bags;
         if (u.due_date) row.due_date = u.due_date;
         if (u.uom) row.uom = u.uom;
+        if (u.dc) row.dc = u.dc;
         row.batch_id = batch_id; row.batch_label = label;
       });
       plan.insert.forEach(function (r) {
@@ -2208,6 +2222,7 @@ window.DB = (function () {
         const patch = { qty: u.qty, cases: u.cases, bags: u.bags, batch_id: batch_id, batch_label: label };
         if (u.due_date) patch.due_date = u.due_date;
         if (u.uom) patch.uom = u.uom;
+        if (u.dc) patch.dc = u.dc;
         await must(sb.from("demand_lines").update(patch).eq("id", u.id), "demand_lines");
       }
       const clean = plan.insert.map(function (r) {

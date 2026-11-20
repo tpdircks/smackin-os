@@ -267,7 +267,73 @@
   function lineMatchKey(r) {
     return [normPart(r && r.partner), normPart(r && r.po), normPart(r && r.dc), normPart(r && r.flavor)].join("|");
   }
+  function flavorKey(r) {
+    return [normPart(r && r.partner), normPart(r && r.po), normPart(r && r.flavor)].join("|");
+  }
   function stageKey(partner, po) { return normPart(partner) + "\n" + normPart(po); }
+  // Either side blank matches. Two different non-blank DCs stay distinct.
+  function matchesIgnoringBlankDc(a, b) {
+    if (!a || !b) return false;
+    if (normPart(a.partner) !== normPart(b.partner)) return false;
+    if (normPart(a.po) !== normPart(b.po)) return false;
+    if (normPart(a.flavor) !== normPart(b.flavor)) return false;
+    var da = normPart(a.dc), db = normPart(b.dc);
+    if (!da || !db) return true;
+    return da === db;
+  }
+  // Alphanumeric, no leading zeros. A trailing release or DC (-01, -015, -3868)
+  // is dropped so a KeHE 810 PO still matches the 850 number.
+  function poNorm(po) {
+    var s = String(po || "").toUpperCase().trim();
+    s = s.replace(/[\s#]+/g, "");
+    s = s.replace(/[-_/]+(\d{1,6})$/, "");
+    s = s.replace(/[^A-Z0-9]/g, "");
+    s = s.replace(/^0+/, "");
+    return s;
+  }
+  function poMatch(a, b) {
+    var x = poNorm(a), y = poNorm(b);
+    if (!x || !y) return false;
+    if (x === y) return true;
+    if (!/^\d+$/.test(x) || !/^\d+$/.test(y)) return false;
+    var short = x.length <= y.length ? x : y;
+    var longer = x.length <= y.length ? y : x;
+    if (short.length < 5 || longer.indexOf(short) !== 0) return false;
+    var extra = longer.length - short.length;
+    return extra >= 1 && extra <= 4;
+  }
+  function partnerNorm(p) {
+    var s = String(p || "").trim();
+    if (s === "2241") return "target";
+    if (/^JRZ/i.test(s)) return "kehe";
+    var c = cleanPartner(s);
+    if (/vistar/i.test(c)) return "vistar";
+    return c.toLowerCase();
+  }
+  function samePartner(a, b) {
+    var x = partnerNorm(a), y = partnerNorm(b);
+    return !!x && x === y;
+  }
+  function dueISO(s) {
+    var t = String(s || "").trim();
+    var m = t.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return m[1] + "-" + m[2] + "-" + m[3];
+    m = t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+    if (!m) return "";
+    var y = +m[3]; if (y < 100) y += 2000;
+    return y + "-" + ("0" + m[1]).slice(-2) + "-" + ("0" + m[2]).slice(-2);
+  }
+  function isSpsDemandLine(row) {
+    if (!row) return false;
+    var src = String(row.source || "");
+    var by = String(row.imported_by || "");
+    var batch = String(row.batch_id || "");
+    if (src === "SPS") return true;
+    if (by === "SPS Feed" || by === "SPS Sync" || by === "SPS Auto") return true;
+    if (by.indexOf("SPS UI") === 0) return true;
+    if (batch === "SPS-FEED" || batch.indexOf("SPS-UI") === 0 || batch.indexOf("SPS-FEED") === 0) return true;
+    return false;
+  }
   function isLiveOpen(r) {
     if (!r) return false;
     var st = String(r.status || "");
@@ -309,73 +375,308 @@
     var list = Object.keys(keys).sort();
     return { bags: Math.round(bags * 1000) / 1000, pos: list.length, lines: n, keys: list };
   }
+  function addQty(into, row) {
+    into.qty += numSum(row.qty);
+    into.cases += numSum(row.cases);
+    into.bags += numSum(row.bags);
+    if (!into.due_date && row.due_date) into.due_date = row.due_date;
+    if (!into.notes && row.notes) into.notes = row.notes;
+    if (!into.uom && row.uom) into.uom = row.uom;
+  }
+  function stagedMap(list) {
+    var staged = {};
+    (list || []).forEach(function (row) {
+      if (row && row.po) staged[stageKey(row.partner, row.po)] = true;
+    });
+    return staged;
+  }
+  function isStaged(staged, partner, po) {
+    if (staged[stageKey(partner, po)]) return true;
+    var keys = Object.keys(staged);
+    for (var i = 0; i < keys.length; i++) {
+      var parts = keys[i].split("\n");
+      if (samePartner(parts[0], partner) && poMatch(parts[1], po)) return true;
+    }
+    return false;
+  }
   // Full saved-search reconcile. incoming is the live New and Open set.
+  // A blank DC matches the one real DC for that partner, PO, and flavor and
+  // keeps that DC. It never inserts a second row. Two different DCs stay apart.
   // Staged POs stay open unless the file itself shows that PO closed.
   function reconcileOpen(existing, incoming, opts) {
     opts = opts || {};
     var today = opts.today || denverToday();
     if (!incoming || !incoming.length) return { insert: [], update: [], close: [], unchanged: 0, refused: "empty", today: today };
-    var staged = {};
-    (opts.staged || []).forEach(function (row) {
-      if (row && row.po) staged[stageKey(row.partner, row.po)] = true;
-    });
+    var staged = stagedMap(opts.staged);
     var closedPo = {};
     incoming.forEach(function (row) {
       if (closedStatus(row.status)) closedPo[stageKey(row.partner, row.po)] = true;
     });
-    var want = {};
+    var wantExact = {};
+    var wantBlank = {};
     incoming.forEach(function (row) {
       if (closedStatus(row.status)) return;
+      if (!normPart(row.dc)) {
+        var fk0 = flavorKey(row);
+        if (!wantBlank[fk0]) wantBlank[fk0] = Object.assign({}, row, { qty: 0, cases: 0, bags: 0, dc: "" });
+        addQty(wantBlank[fk0], row);
+        return;
+      }
       var k = lineMatchKey(row);
-      if (!want[k]) want[k] = Object.assign({}, row, { qty: 0, cases: 0, bags: 0 });
-      want[k].qty += numSum(row.qty);
-      want[k].cases += numSum(row.cases);
-      want[k].bags += numSum(row.bags);
-      if (!want[k].due_date && row.due_date) want[k].due_date = row.due_date;
-      if (!want[k].notes && row.notes) want[k].notes = row.notes;
+      if (!wantExact[k]) wantExact[k] = Object.assign({}, row, { qty: 0, cases: 0, bags: 0 });
+      addQty(wantExact[k], row);
     });
-    var have = {};
+    var haveExact = {};
+    var haveFlavor = {};
     (existing || []).forEach(function (row) {
       if (!isLiveOpen(row)) return;
       var k = lineMatchKey(row);
-      if (!have[k]) have[k] = [];
-      have[k].push(row);
+      if (!haveExact[k]) haveExact[k] = [];
+      haveExact[k].push(row);
+      var fk = flavorKey(row);
+      if (!haveFlavor[fk]) haveFlavor[fk] = [];
+      haveFlavor[fk].push(row);
     });
+    var used = {};
+    function mark(rows) { (rows || []).forEach(function (r) { if (r && r.id != null) used[String(r.id)] = 1; }); }
+    function unusedOf(rows) { return (rows || []).filter(function (r) { return r && !used[String(r.id)]; }); }
     var insert = [];
     var update = [];
     var close = [];
     var unchanged = 0;
-    Object.keys(want).forEach(function (k) {
-      var next = want[k];
-      var rows = have[k] || [];
-      if (!rows.length) { insert.push(next); return; }
-      var keeper = rows[0];
+    function pushUpdate(keeper, next) {
       var due = String(next.due_date || "");
       var sameDue = !due || due === String(keeper.due_date || "");
-      var same = numSum(keeper.bags) === numSum(next.bags) && numSum(keeper.cases) === numSum(next.cases) && numSum(keeper.qty) === numSum(next.qty) && sameDue;
-      if (same) unchanged += 1;
-      else update.push({
+      var fillDc = !normPart(keeper.dc) && !!normPart(next.dc);
+      var same = numSum(keeper.bags) === numSum(next.bags) && numSum(keeper.cases) === numSum(next.cases) && numSum(keeper.qty) === numSum(next.qty) && sameDue && !fillDc;
+      if (same) { unchanged += 1; return; }
+      var rec = {
         id: keeper.id,
         qty: next.qty,
         cases: next.cases,
         bags: next.bags,
         due_date: due || keeper.due_date || "",
         uom: next.uom || keeper.uom || ""
-      });
-      rows.slice(1).forEach(function (extra) {
+      };
+      if (fillDc) rec.dc = next.dc;
+      update.push(rec);
+    }
+    function pushDup(rows) {
+      (rows || []).forEach(function (extra) {
         close.push({ id: extra.id, partner: extra.partner, po: extra.po, notes: closeNote(extra.notes, today, "merged-duplicate"), reason: "merged-duplicate" });
       });
-      have[k] = [];
+    }
+    Object.keys(wantExact).forEach(function (k) {
+      var next = wantExact[k];
+      var rows = unusedOf(haveExact[k]);
+      if (!rows.length) {
+        var fk = flavorKey(next);
+        var family = haveFlavor[fk] || [];
+        var otherDc = family.some(function (r) { return normPart(r.dc) && normPart(r.dc) !== normPart(next.dc); });
+        var blanks = unusedOf(family).filter(function (r) { return !normPart(r.dc); });
+        if (blanks.length && !otherDc) {
+          pushUpdate(blanks[0], next);
+          pushDup(blanks.slice(1));
+          mark(blanks);
+          return;
+        }
+        insert.push(next);
+        return;
+      }
+      pushUpdate(rows[0], next);
+      pushDup(rows.slice(1));
+      mark(rows);
     });
-    Object.keys(have).forEach(function (k) {
-      (have[k] || []).forEach(function (row) {
+    Object.keys(wantBlank).forEach(function (fk) {
+      var next = wantBlank[fk];
+      var all = haveFlavor[fk] || [];
+      var distinct = {};
+      all.forEach(function (r) { if (normPart(r.dc)) distinct[normPart(r.dc)] = r; });
+      var dcKeys = Object.keys(distinct);
+      if (dcKeys.length > 1) {
+        var blanks = unusedOf(all).filter(function (r) { return !normPart(r.dc); });
+        pushDup(blanks);
+        mark(blanks);
+        return;
+      }
+      if (dcKeys.length === 1) {
+        var keeper = distinct[dcKeys[0]];
+        var already = !!used[String(keeper.id)];
+        if (!already) pushUpdate(keeper, next);
+        var rest = unusedOf(all).filter(function (r) { return String(r.id) !== String(keeper.id); });
+        pushDup(rest);
+        mark(all);
+        return;
+      }
+      var onlyBlank = unusedOf(all);
+      if (!onlyBlank.length) { insert.push(next); return; }
+      pushUpdate(onlyBlank[0], next);
+      pushDup(onlyBlank.slice(1));
+      mark(onlyBlank);
+    });
+    Object.keys(haveExact).forEach(function (k) {
+      (haveExact[k] || []).forEach(function (row) {
+        if (used[String(row.id)]) return;
         var sk = stageKey(row.partner, row.po);
         if (staged[sk] && !closedPo[sk]) return;
-        var reason = closedPo[sk] ? "sps-closed" : "not-live-sps-open";
+        var fk = flavorKey(row);
+        var siblingKept = (haveFlavor[fk] || []).some(function (s) {
+          return String(s.id) !== String(row.id) && normPart(s.dc) && used[String(s.id)] && !close.some(function (c) { return String(c.id) === String(s.id); });
+        });
+        var reason = closedPo[sk] ? "sps-closed" : (!normPart(row.dc) && siblingKept ? "merged-duplicate" : "not-live-sps-open");
         close.push({ id: row.id, partner: row.partner, po: row.po, notes: closeNote(row.notes, today, reason), reason: reason });
       });
     });
     return { insert: insert, update: update, close: close, unchanged: unchanged, today: today };
+  }
+  // Blank-DC open rows close when a non-blank DC sibling for the same
+  // partner, PO, and flavor is still open. Target store DCs are not merged.
+  function blankDcDuplicates(lines, opts) {
+    opts = opts || {};
+    var today = opts.today || denverToday();
+    var staged = stagedMap(opts.staged);
+    var by = {};
+    (lines || []).forEach(function (row) {
+      if (!isLiveOpen(row)) return;
+      var k = flavorKey(row);
+      if (!by[k]) by[k] = [];
+      by[k].push(row);
+    });
+    var close = [];
+    Object.keys(by).forEach(function (k) {
+      var rows = by[k];
+      var dcRows = rows.filter(function (r) { return normPart(r.dc); });
+      if (!dcRows.length) return;
+      if (isStaged(staged, rows[0].partner, rows[0].po)) return;
+      rows.forEach(function (r) {
+        if (normPart(r.dc)) return;
+        close.push({ id: r.id, partner: r.partner, po: r.po, notes: closeNote(r.notes, today, "merged-duplicate"), reason: "merged-duplicate" });
+      });
+    });
+    return close;
+  }
+  function hasEvidence(evidence, partner, po) {
+    return (evidence || []).some(function (e) {
+      return e && (e.invoice || e.asn) && samePartner(e.partner, partner) && poMatch(e.po, po);
+    });
+  }
+  function evidenceFromRows(rows) {
+    return (rows || []).map(function (r) {
+      var doc = String(r.doc_type || r.docType || "");
+      var st = String(r.doc_status || r.docStatus || "");
+      var rejected = String(r.status || "") === "rejected" || !!r.rejected;
+      return {
+        partner: r.partner || "",
+        po: r.po_number || r.po || "",
+        invoice: /810/.test(doc) && !rejected,
+        asn: /856/.test(doc) && (st === "Accepted" || st === "Accepted Manually" || st === "Complete")
+      };
+    }).filter(function (e) { return e.invoice || e.asn; });
+  }
+  function evidenceFromStates(interpreted) {
+    var states = (interpreted && interpreted.states) || interpreted || {};
+    var out = [];
+    Object.keys(states).forEach(function (key) {
+      var st = states[key];
+      if (!st) return;
+      var invoices = (st.invoices || []).filter(function (inv) { return inv && !inv.rejected; });
+      var w = st.workflow || {};
+      var asn = w.shipment === "Accepted" || w.shipment === "Accepted Manually" || w.shipment === "Complete";
+      if (!invoices.length && !asn) return;
+      out.push({ partner: st.partner || "", po: st.po || "", invoice: invoices.length > 0, asn: !!asn });
+    });
+    return out;
+  }
+  function closeLogs(lineClose, orderClose, today, who) {
+    var logs = [];
+    var byPo = {};
+    (lineClose || []).forEach(function (c) {
+      var k = partnerNorm(c.partner) + "|" + poNorm(c.po);
+      if (!byPo[k]) byPo[k] = { partner: c.partner, po: c.po, n: 0 };
+      byPo[k].n += 1;
+    });
+    Object.keys(byPo).forEach(function (k) {
+      var c = byPo[k];
+      logs.push({ a: "Demand closed", d: c.partner + " " + c.po + " " + c.n + " lines [[CLOSED:" + today + ":sps-810]]", u: who || "sps-sync" });
+    });
+    (orderClose || []).forEach(function (c) {
+      logs.push({ a: "Order closed", d: "SPS UI " + c.partner + " " + c.po + " [[CLOSED:" + today + ":sps-810]]", u: who || "sps-sync" });
+    });
+    return logs;
+  }
+  // 810 present, or 856 Accepted/Complete, closes every Open line for that
+  // partner + PO (any imported_by) and Open SPS UI orders. Rows are not deleted.
+  function planInvoiceClose(lines, orders, evidence, opts) {
+    opts = opts || {};
+    var today = opts.today || denverToday();
+    var staged = stagedMap(opts.staged);
+    var lineClose = [];
+    var orderClose = [];
+    (lines || []).forEach(function (line) {
+      if (!isLiveOpen(line)) return;
+      if (opts.spsOnly && !isSpsDemandLine(line)) return;
+      if (isStaged(staged, line.partner, line.po)) return;
+      if (!hasEvidence(evidence, line.partner, line.po)) return;
+      lineClose.push({
+        id: line.id, partner: line.partner, po: line.po, status: "Complete",
+        notes: closeNote(line.notes, today, "sps-810"), reason: "sps-810"
+      });
+    });
+    (orders || []).forEach(function (o) {
+      var by = String(o && o.entered_by || "");
+      if (by.indexOf("SPS UI") !== 0) return;
+      var st = String(o.status || "");
+      if (st !== "Open" && st !== "New") return;
+      var partner = o.customer || o.partner || "";
+      var po = o.customer_po || o.po || "";
+      if (isStaged(staged, partner, po)) return;
+      if (!hasEvidence(evidence, partner, po)) return;
+      orderClose.push({
+        id: o.id, partner: partner, po: po, status: "Complete",
+        notes: closeNote(o.notes, today, "sps-810"), reason: "sps-810"
+      });
+    });
+    return {
+      lines: lineClose, orders: orderClose,
+      logs: closeLogs(lineClose, orderClose, today, opts.operator),
+      deleted: 0, today: today
+    };
+  }
+  // Open SPS lines at least one day past due. Invoice evidence closes them.
+  // Without an invoice they stay open and the Data Health flags are raised.
+  // Staged POs are not past due.
+  function pastDueSafety(lines, evidence, opts) {
+    opts = opts || {};
+    var today = opts.today || denverToday();
+    var staged = stagedMap(opts.staged);
+    var close = [];
+    var noInvoice = [];
+    var seen = {};
+    (lines || []).forEach(function (line) {
+      if (!isLiveOpen(line)) return;
+      if (isStaged(staged, line.partner, line.po)) return;
+      var due = dueISO(line.due_date);
+      if (!due || due >= today) return;
+      seen[stageKey(line.partner, line.po)] = 1;
+      if (!isSpsDemandLine(line)) return;
+      if (hasEvidence(evidence, line.partner, line.po)) {
+        close.push({
+          id: line.id, partner: line.partner, po: line.po, status: "Complete",
+          notes: closeNote(line.notes, today, "sps-810"), reason: "sps-810"
+        });
+      } else {
+        noInvoice.push({ id: line.id, partner: line.partner, po: line.po, due: due });
+      }
+    });
+    var pastDueOpen = Object.keys(seen).length;
+    var flags = [];
+    if (pastDueOpen > 0) flags.push("past-due Open demand > 0");
+    if (noInvoice.length) flags.push("past due, no SPS invoice");
+    return {
+      close: close, noInvoice: noInvoice, flags: flags,
+      pastDueOpen: pastDueOpen, logs: closeLogs(close, [], today, opts.operator),
+      deleted: 0, today: today
+    };
   }
 
   function detectType(text) {
@@ -385,6 +686,6 @@
     return "unknown";
   }
 
-  root.DEMAND = { parseCSV, parseSPS, parseShipIQ, aggregate, orderNum, cleanPartner, detectType, FLAVOR_CODES, STYLE_MAP, BAGS_PER_CASE, VARIETY_4PACK_COMPONENTS, isVarietyFourPack, cleanFlavorText, resolveFlavor, flavorFromStyleOrDesc, reconcileOpen, openCensus, closeNote, lineMatchKey, denverToday };
+  root.DEMAND = { parseCSV, parseSPS, parseShipIQ, aggregate, orderNum, cleanPartner, detectType, FLAVOR_CODES, STYLE_MAP, BAGS_PER_CASE, VARIETY_4PACK_COMPONENTS, isVarietyFourPack, cleanFlavorText, resolveFlavor, flavorFromStyleOrDesc, reconcileOpen, openCensus, closeNote, lineMatchKey, matchesIgnoringBlankDc, poNorm, poMatch, partnerNorm, blankDcDuplicates, evidenceFromRows, evidenceFromStates, planInvoiceClose, pastDueSafety, isSpsDemandLine, denverToday };
   if (typeof module !== "undefined" && module.exports) module.exports = root.DEMAND;
 })(typeof window !== "undefined" ? window : globalThis);

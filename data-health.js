@@ -38,6 +38,25 @@
     list.sort(function (a, b) { return (a.partner + a.po).localeCompare(b.partner + b.po); });
     return { pos: list.length, lines: list.reduce(function (sum, g) { return sum + g.lines; }, 0), list: list };
   }
+  function demandFlagHtml(safety) {
+    if (!safety || !safety.flags || !safety.flags.length) return "";
+    var html = "";
+    if (safety.flags.indexOf("past-due Open demand > 0") >= 0) {
+      html += '<div class="ex bad"><b>past-due Open demand > 0.</b> ' + safety.pastDueOpen + " open PO(s) are past due. This screen does not close them.</div>";
+    }
+    if (safety.flags.indexOf("past due, no SPS invoice") >= 0) {
+      var seen = {};
+      var list = [];
+      (safety.noInvoice || []).forEach(function (g) {
+        var key = String(g.partner || "") + "|" + String(g.po || "");
+        if (seen[key]) return;
+        seen[key] = 1;
+        list.push(esc(g.partner) + " PO " + esc(g.po));
+      });
+      html += '<div class="ex bad"><b>past due, no SPS invoice.</b> ' + list.slice(0, 12).join("; ") + ". These stay open. This screen does not close them.</div>";
+    }
+    return html;
+  }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 
   // sources: freshness column + expected cadence (warn/bad in days)
@@ -337,15 +356,17 @@
     var excOrders = c.from("orders").select("id,status,ship_date,created_at,entered_by").neq("status", "Complete").neq("status", "Test").is("ship_date", null)
       .then(function (r) { var d = (r && r.data) || []; var cut = Date.now() - 30 * 86400000; return d.filter(function (o) { var t = new Date(o.created_at).getTime(); return !isTestRow(o) && !isNaN(t) && t < cut; }).length; }).catch(function () { return null; });
     var excDemand = Promise.all([
-      c.from("demand_lines").select("due_date,status,batch_id,batch_label,partner,po,bags,cases,load,notes").eq("status", "Open").limit(10000),
+      c.from("demand_lines").select("due_date,status,batch_id,batch_label,source,imported_by,partner,po,dc,bags,cases,load,notes").eq("status", "Open").limit(10000),
       c.from("stock_build").select("item_key,on_hand").limit(200).then(function (r) { return r; }).catch(function () { return { data: [] }; }),
       c.from("orders").select("customer_po,appointment,notes,carrier").limit(2000).then(function (r) { return r; }).catch(function () { return { data: [] }; }),
-      c.from("demand_po_stage").select("partner,po,pickup_date,note").limit(500).then(function (r) { return r; }).catch(function () { return { data: [] }; })
+      c.from("demand_po_stage").select("partner,po,pickup_date,note").limit(500).then(function (r) { return r; }).catch(function () { return { data: [] }; }),
+      c.from("sps_transactions").select("doc_type,partner,po_number,status,payload").or("doc_type.ilike.%810%,doc_type.ilike.%856%").limit(500).then(function (r) { return r; }).catch(function () { return { data: [] }; })
     ]).then(function (pair) {
       var rows = (pair[0] && pair[0].data) || [];
       var sb = (pair[1] && pair[1].data) || [];
       var orders = (pair[2] && pair[2].data) || [];
       var stagedPos = (pair[3] && pair[3].data) || [];
+      var txRows = (pair[4] && pair[4].data) || [];
       var midnight = new Date(); midnight.setHours(0, 0, 0, 0);
       var summary = stuckSummary(rows, midnight.getTime());
       if (window.MAKE_PLAN && typeof MAKE_PLAN.openDemandStates === "function") {
@@ -366,6 +387,17 @@
           list: st.past.list.map(function (g) { return { po: g.po, partner: g.partner, lines: g.lines, bags: g.bags, due: g.dueRaw || g.due }; }),
           awaiting: st.awaiting
         };
+      }
+      if (window.DEMAND && typeof DEMAND.pastDueSafety === "function" && typeof DEMAND.evidenceFromRows === "function") {
+        var evidence = DEMAND.evidenceFromRows(txRows.map(function (r) {
+          var payload = r.payload || {};
+          return {
+            doc_type: r.doc_type, partner: r.partner, po_number: r.po_number, status: r.status,
+            doc_status: payload.doc_status || payload.docStatus || ""
+          };
+        }));
+        var today = typeof DEMAND.denverToday === "function" ? DEMAND.denverToday() : denverStamp(new Date()).date;
+        summary.safety = DEMAND.pastDueSafety(rows, evidence, { today: today, staged: stagedPos });
       }
       return summary;
     }).catch(function () { return null; });
@@ -390,6 +422,7 @@
           }).join("; ") +
           '. These stay open until a source proves status. This screen does not close them.</div>'
         : '<div class="ex ok">No real open POs past due.</div>');
+      exc += demandFlagHtml(oldDemand && oldDemand.safety);
       if (oldDemand && oldDemand.awaiting && oldDemand.awaiting.pos > 0) {
         exc += '<div class="ex ok"><b>Built, awaiting pickup.</b> <b>' + oldDemand.awaiting.pos + '</b> Target PO(s) are built and waiting for pickup across ' + oldDemand.awaiting.lines + ' lines: ' +
           (oldDemand.awaiting.list || []).map(function (g) {
@@ -782,7 +815,7 @@
   }
 
   var dhOpen = false;
-  window.DATAHEALTH = { forTest: { isTestRow: isTestRow, stuckSummary: stuckSummary, missingPmacDays: missingPmacDays, prettyPmacDate: prettyPmacDate, prettyDay: prettyDay, denverStamp: denverStamp, stampDenver: stampDenver, businessHoursSince: businessHoursSince, addDays: addDays, LOOKBACK_DAYS: LOOKBACK_DAYS, sources: SOURCES, PAUSED_FEEDS: PAUSED_FEEDS, daysAgo: daysAgo, businessDaysAgo: businessDaysAgo, ageOf: ageOf, statusOf: statusOf, renderRow: renderRow, tally: tally, summaryHtml: summaryHtml, expiredOutsideHold: expiredOutsideHold, lotWarning: lotWarning, spsQuiet: spsQuiet, spsFeed: spsFeed, receivingGap: receivingGap, pendingInvoices: pendingInvoices, unknownSuppliers: unknownSuppliers, calendarDays: calendarDays, INVOICE_PENDING_DAYS: INVOICE_PENDING_DAYS, shieldedLoc: shieldedLoc, guardHtml: guardHtml }, lotWarning: lotWarning, expiredOutsideHold: expiredOutsideHold, open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); dhOpen = true; markActive(); render(); } };
+  window.DATAHEALTH = { forTest: { isTestRow: isTestRow, stuckSummary: stuckSummary, demandFlagHtml: demandFlagHtml, missingPmacDays: missingPmacDays, prettyPmacDate: prettyPmacDate, prettyDay: prettyDay, denverStamp: denverStamp, stampDenver: stampDenver, businessHoursSince: businessHoursSince, addDays: addDays, LOOKBACK_DAYS: LOOKBACK_DAYS, sources: SOURCES, PAUSED_FEEDS: PAUSED_FEEDS, daysAgo: daysAgo, businessDaysAgo: businessDaysAgo, ageOf: ageOf, statusOf: statusOf, renderRow: renderRow, tally: tally, summaryHtml: summaryHtml, expiredOutsideHold: expiredOutsideHold, lotWarning: lotWarning, spsQuiet: spsQuiet, spsFeed: spsFeed, receivingGap: receivingGap, pendingInvoices: pendingInvoices, unknownSuppliers: unknownSuppliers, calendarDays: calendarDays, INVOICE_PENDING_DAYS: INVOICE_PENDING_DAYS, shieldedLoc: shieldedLoc, guardHtml: guardHtml }, lotWarning: lotWarning, expiredOutsideHold: expiredOutsideHold, open: function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); dhOpen = true; markActive(); render(); } };
 
   function markActive() { try { var nav = $("nav"); if (!nav) return; nav.querySelectorAll(".navitem.active").forEach(function (b) { b.classList.remove("active"); }); var m = $("dh-nav"); if (m) m.classList.add("active"); } catch (e) {} }
   function injectNav() {
