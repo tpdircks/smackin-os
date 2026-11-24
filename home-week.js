@@ -134,7 +134,7 @@
     retailNone: L("No retail shipment logged this week. Log loads in Shipping, or check SPS.", "No hay envio retail registrado esta semana. Registre en Envios o revise SPS.", "Nenhum envio varejo registrado esta semana. Registre em Envios ou veja o SPS."),
     today: L("today", "hoy", "hoje"),
     prio: L("3. Retail order priorities", "3. Prioridades de ordenes retail", "3. Prioridades de pedidos varejo"),
-    prioSub: L("Work top to bottom. A PO leaves this list by itself when it is invoiced (gone from SPS New/Open, or green on the WIP PO tab). Past-due POs are not shown.", "Trabaje de arriba hacia abajo. Una PO sale sola de la lista cuando se factura (sale de SPS New/Open o queda verde en la pestana WIP PO). No se muestran las vencidas.", "Trabalhe de cima para baixo. Um PO sai sozinho da lista quando e faturado (sai do SPS New/Open ou fica verde na aba WIP PO). Atrasados nao aparecem."),
+    prioSub: L("Work top to bottom. A PO leaves this list by itself when it is invoiced (gone from SPS New/Open, an SPS 810 invoice, or green on the WIP PO tab). Past-due POs are not shown.", "Trabaje de arriba hacia abajo. Una PO sale sola de la lista cuando se factura (sale de SPS New/Open, tiene factura SPS 810 o queda verde en la pestana WIP PO). No se muestran las vencidas.", "Trabalhe de cima para baixo. Um PO sai sozinho da lista quando e faturado (sai do SPS New/Open, tem fatura SPS 810 ou fica verde na aba WIP PO). Atrasados nao aparecem."),
     prioRule: L("Order starts from the 11/24 priority email. New POs are slotted in by ship date (earliest first); POs with no date go last.", "El orden viene del correo de prioridades del 11/24. Las POs nuevas entran por fecha de envio (la mas pronta primero); las que no tienen fecha van al final.", "A ordem vem do email de prioridades de 11/24. POs novos entram pela data de envio (mais cedo primeiro); sem data vao por ultimo."),
     prioNone: L("No open retail POs right now.", "No hay POs retail abiertas ahora.", "Nenhum PO varejo aberto agora."),
     newPo: L("New, not on 11/24 list", "Nueva, no esta en la lista del 11/24", "Novo, fora da lista de 11/24"),
@@ -260,9 +260,22 @@
     ]
   };
   function poKey(po) {
-    var s = String(po || "").toUpperCase().replace(/^\s*PO\s*#?/, "").trim();
+    var s = String(po || "").toUpperCase().replace(/^\s*PO\b[\s#:\-]*/, "").replace(/^[#\-\s]+/, "").trim();
     s = s.split(/[\s\/]/)[0] || "";
     return s.split("-")[0];
+  }
+  function numKey(po) { var d = poKey(po).replace(/^[A-Z]+(?=\d)/, ""); return /^\d{3,}$/.test(d) ? d : ""; }
+  // Manual hide list (kv_status "home:priorities:hide"): JSON array of PO numbers, or
+  // {"pos": [...]}. Lets an invoiced PO come off Home with a data change, no deploy.
+  function hideSet(rows) {
+    var out = {};
+    (rows || []).forEach(function (r) {
+      var v = r && r.value;
+      try { v = typeof v === "string" ? JSON.parse(v) : v; } catch (e) { v = null; }
+      var list = Array.isArray(v) ? v : (v && Array.isArray(v.pos) ? v.pos : []);
+      list.forEach(function (x) { var k = poKey(x), n = numKey(x); if (k) out[k] = 1; if (n) out["#" + n] = 1; });
+    });
+    return out;
   }
   function custKey(c) { return String(c || "").toLowerCase().replace(/[^a-z0-9]/g, "").replace(/s/g, ""); }
   function mdyIso(s) {
@@ -283,17 +296,39 @@
     raw = raw || {};
     var ws = weekStart(today);
     var orders = raw.orders || [];
-    var complete = {}, ordInfo = {};
+    var complete = {}, ordInfo = {}, doneInv = {}, doneNum = {};
     orders.forEach(function (o) {
+      var st = String(o.status || "");
+      if (st === "Complete") { // green on the WIP PO tab = invoiced
+        var n0 = numKey(o.customer_po);
+        if (n0) doneNum[n0] = 1;
+        if (o.order_id) doneInv[String(o.order_id).trim().toUpperCase()] = 1;
+      }
       var k = poKey(o.customer_po);
       if (!k) return;
-      var st = String(o.status || "");
-      if (st === "Complete") complete[k] = 1; // green on the WIP PO tab = invoiced
+      if (st === "Complete") complete[k] = 1;
       if (st !== "Open") return;
       var w = shipWindow(o.ship_date);
       var cur = ordInfo[k] || (ordInfo[k] = { win: null });
       if (w && (!cur.win || w.to > cur.win.to)) cur.win = w;
     });
+    var inv810 = {};
+    (raw.invoices || []).forEach(function (t) {
+      if (!/^810/.test(String(t.doc_type || ""))) return;
+      var k = poKey(t.po_number), n = numKey(t.po_number);
+      if (k) inv810[k] = 1; if (n) inv810["#" + n] = 1;
+    });
+    var manual = hideSet(raw.hide);
+    var hidden = { pastDue: [], invoiced: [], sps810: [], manual: [] };
+    function done(r, alias) {
+      var keys = [r.key].concat(alias || []);
+      var nums = keys.map(numKey).filter(Boolean);
+      var hit = function (set) { return keys.some(function (k) { return set[k]; }) || nums.some(function (n) { return set["#" + n]; }); };
+      if (keys.some(function (k) { return complete[k]; }) || nums.some(function (n) { return doneNum[n]; }) || (r.inv && doneInv[r.inv])) { hidden.invoiced.push(r.key); return true; }
+      if (hit(inv810)) { hidden.sps810.push(r.key); return true; }
+      if (hit(manual)) { hidden.manual.push(r.key); return true; }
+      return false;
+    }
     var staged = {};
     (raw.stage || []).forEach(function (s) { var k = poKey(s.po); if (k) staged[k] = s; });
     // SPS demand, one row per PO
@@ -322,17 +357,18 @@
       if (!seed && !(created && created >= addDays(today, -14))) return;
       var k = poKey(o.customer_po) || (seed ? seed[1] : "") || ck;
       if (seed) k = seed[1];
-      if (complete[k]) return;
-      var r = wip[k] || (wip[k] = { key: k, po: k, customer: seed ? seed[0] : String(o.customer || ""), cases: null, bags: null, due: "", kind: "wip", lines: 0, note: "" });
+      var r = wip[k] || (wip[k] = { key: k, po: k, customer: seed ? seed[0] : String(o.customer || ""), cases: null, bags: null, due: "", kind: "wip", lines: 0, note: "", inv: "", alias: [] });
+      if (o.order_id && !r.inv) r.inv = String(o.order_id).trim().toUpperCase();
+      var pk = poKey(o.customer_po);
+      if (pk && pk !== k && r.alias.indexOf(pk) < 0) r.alias.push(pk);
       r.lines++;
       var nd = mdyIso(o.notes);
       if (nd && (!r.due || nd < r.due)) r.due = nd;
       if (!r.note && /will\s*call/i.test(String(o.notes || ""))) r.note = "willcall";
     });
     var all = [];
-    Object.keys(by).forEach(function (k) { if (!complete[k]) all.push(by[k]); });
-    Object.keys(wip).forEach(function (k) { if (!by[k]) all.push(wip[k]); });
-    var hidden = { pastDue: [], invoiced: Object.keys(by).filter(function (k) { return complete[k]; }) };
+    Object.keys(by).forEach(function (k) { if (!done(by[k])) all.push(by[k]); });
+    Object.keys(wip).forEach(function (k) { if (!by[k] && !done(wip[k], wip[k].alias)) all.push(wip[k]); });
     var rows = [];
     all.forEach(function (r) {
       var oi = ordInfo[r.key];
@@ -398,12 +434,14 @@
     try { sb = root.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY); } catch (e) { sb = null; }
     return sb;
   }
-  function fetchRange(table, cols, dateCol, from, to) {
+  function fetchRange(table, cols, dateCol, from, to, filter) {
     var c = client();
     if (!c) return Promise.reject(new Error("no client"));
     var all = [], step = 1000;
     function page(off) {
-      return c.from(table).select(cols).gte(dateCol, from).lte(dateCol, to).order(dateCol, { ascending: true }).range(off, off + step - 1).then(function (r) {
+      var q = c.from(table).select(cols).gte(dateCol, from).lte(dateCol, to);
+      if (filter) q = filter(q);
+      return q.order(dateCol, { ascending: true }).range(off, off + step - 1).then(function (r) {
         if (r && r.error) throw new Error(table + ": " + (r.error.message || "error"));
         var rows = (r && r.data) || [];
         all = all.concat(rows);
@@ -428,6 +466,14 @@
     var c = client();
     if (!c) return Promise.reject(new Error("no client"));
     return pagedQuery(function () { return c.from(table).select(cols).eq(col, val).order("po", { ascending: true }); }, table);
+  }
+  function fetchKv(key) {
+    var c = client();
+    if (!c) return Promise.reject(new Error("no client"));
+    return c.from("kv_status").select("key,value").eq("key", key).limit(1).then(function (r) {
+      if (r && r.error) throw new Error("kv_status: " + (r.error.message || "error"));
+      return (r && r.data) || [];
+    });
   }
   function fetchAll(table, cols) {
     var c = client();
@@ -468,9 +514,11 @@
       settled(fetchLatest("shipping_log", "ship_date", "ship_date", function (q) { return q.not("entered_by", "like", "sync:%"); }), "team ship latest"),
       settled(fetchLatest("sps_transactions", "received_at", "received_at", function (q) { return q.like("doc_type", "856%"); }), "sps 856 latest"),
       settled(fetchEq("demand_lines", "partner,po,cases,bags,due_date,status,source", "status", "Open"), "demand_lines"),
-      settled(fetchRange("orders", "customer,customer_po,ship_date,status,stripe_link,notes,created_at", "created_at", addDays(today, -60), today + "T23:59:59"), "orders"),
+      settled(fetchRange("orders", "customer,customer_po,order_id,ship_date,status,stripe_link,notes,created_at", "created_at", addDays(today, -60), today + "T23:59:59"), "orders"),
       settled(fetchAll("demand_po_stage", "partner,po,pickup_date,note,updated_at"), "demand_po_stage"),
-      settled(fetchRange("production_pallets", "prod_date,channel,cases,notes", "prod_date", addDays(today, -30), today), "production_pallets 30d")
+      settled(fetchRange("production_pallets", "prod_date,channel,cases,notes", "prod_date", addDays(today, -30), today), "production_pallets 30d"),
+      settled(fetchRange("sps_transactions", "doc_type,po_number,received_at", "received_at", addDays(today, -90), today + "T23:59:59", function (q) { return q.like("doc_type", "810%"); }), "sps 810"),
+      settled(fetchKv("home:priorities:hide"), "priorities hide")
     ];
     return Promise.all(jobs).then(function (p) {
       var errs = p.filter(function (x) { return !x.ok; }).map(function (x) { return x.err; });
@@ -486,6 +534,7 @@
           sps856: maxDay(p[13].rows, function (r) { return dayOfTs(r.received_at); })
         },
         demand: p[14].rows, orders: p[15].rows, stage: p[16].rows, palletsLong: p[17].rows,
+        invoices: p[18].rows, hide: p[19].rows,
         errors: errs
       };
     });

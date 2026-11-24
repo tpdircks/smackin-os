@@ -83,7 +83,7 @@
       readback: "Saved, but the read-back did not match. Check the log.",
       photoFail: "Record saved. Photo upload failed: ",
       from: "From", to: "To", status: "Status", all: "All", released: "RELEASED", rejected: "REJECTED",
-      csv: "Export CSV", xlsx: "Export XLSX", empty: "No release records yet.", loading: "Loading…",
+      csv: "Export CSV", xlsx: "Export XLSX", empty: "No release records yet. This log starts with the first load released in Smackin OS (live Nov 24, 2026). Loads shipped before that are not in this log.", emptyFilt: "No records match these filters.", loading: "Loading…",
       date: "Date", by: "Released by", view: "View", back: "Back to log", pdf: "Download PDF",
       packet: "Add PDF to Order Docs", packetDone: "Added to Order Docs", reason: "Reason",
       newFor: "New release for this PO", correction: "Records are not edited. To correct one, save a new record and note it.",
@@ -133,7 +133,7 @@
       readback: "Guardado, pero la verificacion no coincidio. Revise el registro.",
       photoFail: "Registro guardado. La foto no se subio: ",
       from: "Desde", to: "Hasta", status: "Estado", all: "Todos", released: "LIBERADO", rejected: "RECHAZADO",
-      csv: "Exportar CSV", xlsx: "Exportar XLSX", empty: "Aun no hay registros.", loading: "Cargando…",
+      csv: "Exportar CSV", xlsx: "Exportar XLSX", empty: "Aun no hay registros. Este registro empieza con la primera carga liberada en Smackin OS (desde el 24 de nov. de 2026). Las cargas enviadas antes no estan en este registro.", emptyFilt: "Ningun registro coincide con estos filtros.", loading: "Cargando…",
       date: "Fecha", by: "Liberado por", view: "Ver", back: "Volver al registro", pdf: "Descargar PDF",
       packet: "Agregar PDF a Order Docs", packetDone: "Agregado a Order Docs", reason: "Razon",
       newFor: "Nueva liberacion para esta PO", correction: "Los registros no se editan. Para corregir, guarde uno nuevo y anotelo.",
@@ -598,7 +598,7 @@
       '<option value="REJECTED"' + (f.status === "REJECTED" ? " selected" : "") + '>' + esc(T("rejected")) + '</option></select></div></div>' +
       '<div class="obr-actions"><button type="button" class="ghost" data-obr-act="csv">' + esc(T("csv")) + '</button><button type="button" class="ghost" data-obr-act="xlsx">' + esc(T("xlsx")) + '</button></div>' +
       (state.err ? '<p class="obr-err">' + esc(state.err) + '</p>' : "") + '</div>';
-    var body = !list.length ? '<p class="muted">' + esc(T("empty")) + '</p>' :
+    var body = !list.length ? '<p class="muted">' + esc(T((state.rows || []).length ? "emptyFilt" : "empty")) + '</p>' :
       '<div class="tblwrap"><table><thead><tr><th>' + esc(T("date")) + '</th><th>' + esc(T("status")) + '</th><th>' + esc(T("customer")) + '</th><th>' + esc(T("po")) + '</th><th>' + esc(T("carrier")) + '</th><th>' + esc(T("trailer")) + '</th><th>' + esc(T("seal")) + '</th><th>' + esc(T("lot")) + '</th><th>' + esc(T("by")) + '</th><th></th></tr></thead><tbody>' +
       list.map(function (r) {
         var h = r.header || {};
