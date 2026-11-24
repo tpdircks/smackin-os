@@ -16,7 +16,8 @@
    item and its button). Step cards keep one orange button; other links
    are plain text links. Rarely used screens moved to the More fold in
    the subtabs (dept-homes.js), so the "Other screens" boxes are gone.
-   Outbound step 2 opens the Fulfillment page (data-smk-go, simple-home.js).
+   Outbound step 2 opens the Retail pallet log (data-smk-go, simple-home.js).
+   Step buttons for screens another tab owns open on that tab (DEPT owner).
    counts() feeds the Home job buttons.
    v322 (visuals): SMK_VIZ.inbound / SMK_VIZ.outbound draw charts under the
    step cards. Past-due outbound rows are hidden (hidePastDue).
@@ -530,7 +531,7 @@
       s1: { en: "Order comes in", es: "Llega la orden", pt: "Chega o pedido" },
       s1w: { en: "Retail POs come from SPS (850). Check the ship date and cases. E-com orders are a separate board.", es: "Las OC retail llegan de SPS (850). Revise fecha y cajas. E-com es otro tablero.", pt: "Pedidos de varejo chegam do SPS (850). Confira data e caixas. E-com e outro painel." },
       s2: { en: "Pick and build the pallets", es: "Surtir y armar tarimas", pt: "Separar e montar paletes" },
-      s2w: { en: "Build or pull pallets for the PO on the Fulfillment page. Oldest lot first. Check best-by.", es: "Arme o saque paletas para la OC en Fulfillment. Lote mas viejo primero. Revise la fecha.", pt: "Monte ou separe paletes do pedido no Fulfillment. Lote mais antigo primeiro. Confira a validade." },
+      s2w: { en: "Build or pull pallets for the PO on the Retail tab. Oldest lot first. Check best-by.", es: "Arme o saque paletas para la OC en la pestana Retail. Lote mas viejo primero. Revise la fecha.", pt: "Monte ou separe paletes do pedido na aba Varejo. Lote mais antigo primeiro. Confira a validade." },
       s3: { en: "Inspect trailer and release (SQF)", es: "Inspeccionar trailer y liberar (SQF)", pt: "Inspecionar trailer e liberar (SQF)" },
       s3w: { en: "Before loading: 7 dry van checks, lots, best-by, seal. Any fail means do not load.", es: "Antes de cargar: 7 revisiones, lotes, fecha, sello. Si falla, no se carga.", pt: "Antes de carregar: 7 checagens, lotes, validade, lacre. Falhou, nao carrega." },
       s4: { en: "Ship and record tracking", es: "Enviar y registrar rastreo", pt: "Enviar e registrar rastreio" },
@@ -552,7 +553,7 @@
 
     var steps = '<div class="ioh-steps ioh-steps5">' +
       stepCard(1, tx(t.s1), tx(t.s1w), st1, subBtn("ordersRetail", tx({ en: "Retail orders", es: "Ordenes retail", pt: "Pedidos varejo" }), true) + subBtn("ordersEcom", tx({ en: "E-com orders", es: "Ordenes e-com", pt: "Pedidos e-com" }))) + arrow() +
-      stepCard(2, tx(t.s2), tx(t.s2w), st2, '<button type="button" class="ioh-btn ioh-btn-p" data-smk-go="ful">' + esc(tx({ en: "Fulfillment", es: "Fulfillment", pt: "Fulfillment" })) + "</button>" + subBtn("trShip", tx({ en: "Scan pallets out", es: "Escanear paletas", pt: "Escanear paletes" }))) + arrow() +
+      stepCard(2, tx(t.s2), tx(t.s2w), st2, '<button type="button" class="ioh-btn ioh-btn-p" data-smk-go="ret">' + esc(tx({ en: "Build retail pallets", es: "Armar paletas retail", pt: "Montar paletes varejo" })) + "</button>" + subBtn("trShip", tx({ en: "Scan pallets out", es: "Escanear paletas", pt: "Escanear paletes" }))) + arrow() +
       stepCard(3, tx(t.s3), tx(t.s3w), st3, subBtn("trailer", tx({ en: "Trailer Release", es: "Liberar trailer", pt: "Liberar trailer" }), true)) + arrow() +
       stepCard(4, tx(t.s4), tx(t.s4w), st4, subBtn("shiplog", tx({ en: "Shipping log", es: "Registro de envios", pt: "Registro de envios" }), true) + subBtn("shipments", tx({ en: "Carrier shipments", es: "Envios del transportista", pt: "Envios da transportadora" }))) + arrow() +
       stepCard(5, tx(t.s5), tx(t.s5w), st5, subBtn("orderdocs", tx({ en: "Order docs", es: "Docs de orden", pt: "Docs do pedido" }), true)) +
@@ -703,7 +704,7 @@
     }
     if (t.closest("[data-ioh-ful]")) {
       state.active = false;
-      if (root.DEPT && root.DEPT.show) root.DEPT.show("ful");
+      if (root.DEPT && root.DEPT.show) root.DEPT.show("ret");
     }
   }
 

@@ -83,7 +83,7 @@
 
   // Inbound and Outbound hubs (inout-hubs.js) reuse the Purchasing and
   // Fulfillment boards for the same screens.
-  var BOARD_ALIAS = { inb: "purch", outb: "ful" };
+  var BOARD_ALIAS = { inb: "purch", outb: "ful", ret: "ful", ecom: "ful" };
   function boardId(dept) { return BOARD_ALIAS[dept] || dept; }
 
   function planFor(dept, here) {
