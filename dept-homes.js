@@ -23,6 +23,15 @@
    release > ship > docs). The old purch, recv, and ship departments stay
    defined with hidden: true and bar: so DEPT.show and old links still work
    and light up the new tab.
+   Simple layout (v322): seven top tabs. Home (Today: one big button per
+   job, by role), Inbound, Production (plan > mix > P-Mac > finished lots;
+   Demand, Mixing, and P-Mac stay as station pages under it), Inventory,
+   Outbound (Fulfillment is a station page under it), Quality, and Admin
+   (was Ops). Stations use hidden: true, keep: true, bar: so they open as
+   before but light up the tab that holds them. Rarely used subtabs sit
+   behind one "More" button (fold: list); they are still in subs, so old
+   links and deptOfNav still work. DEPT.go(dept, tool) opens a tool on its
+   department page (used by Home and Production steps).
    No writes. No timers.
    ========================================================================== */
 (function () {
@@ -73,7 +82,7 @@
     demand: "demand", makeplan: "demand", demandboard: "demand", demandsched: "demand", demandimport: "demand",
     ecomdemand: "demand", forecast: "demand",
     people: "ops", improve: "ops", rd: "ops", log: "ops",
-    reference: "ops", board: "mixing", settings: "ops"
+    reference: "ops", board: "mixing", settings: "ops", history: "ops"
   };
 
   function tx(v) {
@@ -450,6 +459,134 @@
     return null;
   }
 
+  // ---- v322 simple layout --------------------------------------------------
+  // Plain names, fewer top tabs, one More fold for rarely used subtabs.
+  TOOLS.today = { fn: "today", icon: "sun", title: { en: "Today", es: "Hoy", pt: "Hoje" }, blurb: { en: "Your jobs for today, one big button each.", es: "Sus tareas de hoy, un boton grande por tarea.", pt: "Suas tarefas de hoje, um botao grande por tarefa." } };
+  TOOLS.prodhub = { fn: "prodhub", icon: "factory", title: { en: "Production steps", es: "Pasos de produccion", pt: "Etapas de producao" }, blurb: { en: "Plan, mix, pack on P-Mac, finish the pallet. In order.", es: "Plan, mezcla, empaque en P-Mac, terminar paleta. En orden.", pt: "Plano, mistura, embalar na P-Mac, fechar palete. Em ordem." } };
+  TOOLS.stDemand = { dept: "demand", icon: "clipboard-list", title: { en: "Plan", es: "Plan", pt: "Plano" }, blurb: { en: "Make plan, order board, schedule, forecast.", es: "Plan, tablero, programa, pronostico.", pt: "Plano, painel, programa, previsao." } };
+  TOOLS.stMix = { dept: "mixing", icon: "flask-conical", title: { en: "Mixing", es: "Mezcla", pt: "Mistura" }, blurb: { en: "Mixing station page.", es: "Pagina de la estacion de mezcla.", pt: "Pagina da estacao de mistura." } };
+  TOOLS.stPmac = { dept: "pmac", icon: "factory", title: { en: "P-Mac", es: "P-Mac", pt: "P-Mac" }, blurb: { en: "P-Mac bagging station page.", es: "Pagina de la estacion P-Mac.", pt: "Pagina da estacao P-Mac." } };
+  TOOLS.stFul = { dept: "ful", icon: "package", title: { en: "Fulfillment", es: "Fulfillment", pt: "Fulfillment" }, blurb: { en: "Build retail pallets and e-com orders.", es: "Armar paletas retail y ordenes e-com.", pt: "Montar paletes varejo e pedidos e-com." } };
+  (function plainNames() {
+    function t(id, en, es, pt) { if (TOOLS[id]) TOOLS[id].title = { en: en, es: es, pt: pt || es }; }
+    function b(id, en, es, pt) { if (TOOLS[id]) TOOLS[id].blurb = { en: en, es: es, pt: pt || es }; }
+    t("recvlog", "Dock checklist", "Lista del muelle", "Lista do cais");
+    b("recvlog", "One checklist per lot: trailer, seal, condition, paperwork. A No or Unable answer puts the lot on hold.", "Una lista por lote: trailer, sello, condicion, papeles. Un No o No se puede retiene el lote.", "Uma lista por lote: trailer, lacre, condicao, papeis. Um Nao ou Nao deu retem o lote.");
+    t("quarantine", "On hold", "Retenido", "Retido");
+    t("trQa", "Hold or release a lot", "Retener o liberar lote", "Reter ou liberar lote");
+    t("shortdated", "Short-dated stock", "Producto con fecha corta", "Produto com validade curta");
+    t("fglots", "Best-by dates", "Fechas de consumo", "Validades");
+    t("quality", "CCP checks", "Controles CCP", "Controles CCP");
+    t("recipes", "Recipes", "Recetas", "Receitas");
+    t("reordertracker", "Reorder tracker", "Seguimiento de reorden", "Acompanhar reposicao");
+    t("launch", "New product launches", "Lanzamientos", "Lancamentos");
+    t("hist", "Production history", "Historial de produccion", "Historico de producao");
+    t("upload", "Upload production file", "Subir archivo de produccion", "Enviar arquivo de producao");
+    t("pmacout", "Log bags off P-Mac", "Registrar bolsas de P-Mac", "Registrar sacos da P-Mac");
+    t("sps", "Retailer orders (SPS)", "Ordenes de clientes (SPS)", "Pedidos de clientes (SPS)");
+    t("shipments", "Carrier shipments", "Envios de transportista", "Envios da transportadora");
+    t("daily", "Daily numbers", "Numeros del dia", "Numeros do dia");
+    t("desk", "Big picture", "Resumen general", "Visao geral");
+    t("health", "Data check", "Revision de datos", "Checagem de dados");
+    t("acct", "Activity log", "Registro de actividad", "Registro de atividade");
+    t("trace", "Find a lot", "Buscar un lote", "Achar um lote");
+    t("trLabels", "Lot labels", "Etiquetas de lote", "Etiquetas de lote");
+    t("printlabels", "Item labels", "Etiquetas de item", "Etiquetas de item");
+    t("trShip", "Scan pallets out", "Escanear paletas de salida", "Escanear paletes de saida");
+    t("trMove", "Move a lot (scan)", "Mover lote (escanear)", "Mover lote (escanear)");
+    t("trMix", "Scan mixing lots", "Escanear lotes de mezcla", "Escanear lotes da mistura");
+    t("trPmac", "Finish a pallet", "Terminar una paleta", "Fechar um palete");
+    t("trRecv", "Receive: scan lots", "Recibir: escanear lotes", "Receber: escanear lotes");
+    t("fulfillerr", "Fulfillment errors", "Errores de fulfillment", "Erros de fulfillment");
+    t("board", "TV board", "Pizarra TV", "Painel TV");
+    t("prodorders", "Work orders", "Ordenes de trabajo", "Ordens de trabalho");
+  })();
+  (function simpleLayout() {
+    function d(id) { for (var i = 0; i < DEPTS.length; i++) if (DEPTS[i].id === id) return DEPTS[i]; return null; }
+    function idx(id) { for (var i = 0; i < DEPTS.length; i++) if (DEPTS[i].id === id) return i; return -1; }
+    function L(en, es, pt) { return { en: en, es: es, pt: pt || es }; }
+    function noBoard(dept) { if (dept && dept.actions) dept.actions = dept.actions.filter(function (a) { return a !== "board"; }); }
+    var home = d("home");
+    if (home) {
+      home.primary = "today";
+      home.actions = [];
+      home.subs = ["today", "desk", "daily", "board"];
+      home.fold = ["board"];
+      home.short = { today: L("Today", "Hoy", "Hoje"), desk: L("Big picture", "Resumen", "Visao geral"), daily: L("Daily numbers", "Numeros del dia", "Numeros do dia") };
+      home.icon = "home";
+      home.label = L("Home", "Inicio", "Inicio");
+      home.title = L("Home", "Inicio", "Inicio");
+      home.intro = L("Pick your job. Each big button opens one task.", "Elija su trabajo. Cada boton grande abre una tarea.", "Escolha sua funcao. Cada botao grande abre uma tarefa.");
+    }
+    var inb = d("inb");
+    if (inb) {
+      inb.fold = ["expreceipts", "quarantine", "returns", "services", "reorder15"];
+      inb.short.recvlog = L("2 Dock checklist", "2 Lista del muelle", "2 Lista do cais");
+      inb.short.quarantine = L("On hold", "Retenido", "Retido");
+      inb.short.reorder15 = L("1.5oz reorder", "Reorden 1.5oz", "Reposicao 1.5oz");
+    }
+    // Production: one tab for plan, mixing, P-Mac.
+    var prod = {
+      id: "prod",
+      primary: "prodhub",
+      actions: [],
+      subs: ["prodhub", "stDemand", "stMix", "stPmac", "fglots", "prodorders", "hist", "upload", "launch"],
+      fold: ["prodorders", "hist", "upload", "launch"],
+      short: {
+        prodhub: L("Steps", "Pasos", "Etapas"),
+        stDemand: L("1 Plan", "1 Plan", "1 Plano"),
+        stMix: L("2 Mixing", "2 Mezcla", "2 Mistura"),
+        stPmac: L("3 P-Mac", "3 P-Mac", "3 P-Mac"),
+        fglots: L("4 Best-by dates", "4 Fechas de consumo", "4 Validades")
+      },
+      icon: "factory",
+      label: L("Production", "Produccion", "Producao"),
+      title: L("Production", "Produccion", "Producao"),
+      intro: L("Plan, mix, pack on P-Mac, finish the pallet.", "Plan, mezcla, empaque en P-Mac, terminar paleta.", "Plano, mistura, embalar na P-Mac, fechar palete.")
+    };
+    if (!d("prod")) DEPTS.splice(idx("inb") + 1, 0, prod);
+    ["demand", "mixing", "pmac"].forEach(function (id) { var x = d(id); if (x) { x.hidden = true; x.keep = true; x.bar = "prod"; } });
+    var dem = d("demand");
+    if (dem) dem.fold = ["demand", "floor", "demandsched", "ecomdemand", "forecast"];
+    var mix = d("mixing");
+    if (mix) { noBoard(mix); mix.fold = ["reordertracker", "launch", "hist", "upload"]; mix.short.mixing = L("Mixing status", "Estado", "Status"); mix.actionShort.trMix = L("Scan lots", "Escanear lotes", "Escanear lotes"); }
+    var pm = d("pmac");
+    if (pm) { noBoard(pm); pm.fold = ["hist", "upload"]; pm.short.pmac = L("P-Mac status", "Estado", "Status"); pm.actionShort.trPmac = L("Finish a pallet", "Terminar paleta", "Fechar palete"); pm.actionShort.pmacout = L("Log bags", "Registrar bolsas", "Registrar sacos"); }
+    var inv = d("inv");
+    if (inv) { inv.fold = ["dtfg", "facility", "seed", "skus", "printlabels", "analytics", "trMove"]; inv.short = inv.short || {}; inv.short.dash = L("On hand", "Existencias", "Em estoque"); }
+    var ful = d("ful");
+    if (ful) {
+      ful.hidden = true; ful.keep = true; ful.bar = "outb";
+      noBoard(ful);
+      ful.fold = ["skulookup", "flavinv", "stockbuild", "produce", "fglots", "trElog", "fulfillerr"];
+      ful.actionShort.outhub = L("Outbound steps", "Pasos de salida", "Etapas de saida");
+    }
+    var outb = d("outb");
+    if (outb) {
+      outb.subs = ["outhub", "ordersRetail", "stFul", "trailer", "shiplog", "orderdocs", "trShip", "ordersEcom", "sps", "shipments"];
+      outb.fold = ["trShip", "ordersEcom", "sps", "shipments"];
+      outb.short.stFul = L("2 Build pallets", "2 Armar paletas", "2 Montar paletes");
+      outb.short.trShip = L("Scan pallets out", "Escanear paletas", "Escanear paletes");
+      outb.short.sps = L("Retailer orders (SPS)", "Ordenes SPS", "Pedidos SPS");
+    }
+    var qa = d("qa");
+    if (qa) {
+      qa.subs = ["qacheck", "sqftasks", "coalib", "trace", "trElog", "trLabels", "fglots", "compliance", "shortdated"];
+      qa.fold = ["trElog", "trLabels", "fglots", "compliance", "shortdated"];
+      qa.short = { qacheck: L("Checklists", "Listas", "Listas"), coalib: L("Supplier COAs", "COA proveedores", "COA fornecedores"), trElog: L("E-com lots", "Lotes e-com", "Lotes e-com") };
+      qa.actionShort = { trQa: L("Hold or release a lot", "Retener o liberar", "Reter ou liberar"), quality: L("CCP checks", "Controles CCP", "Controles CCP") };
+    }
+    var ops = d("ops");
+    if (ops) {
+      ops.subs = ["maintenance", "people", "reference", "settings", "improve", "rd", "acct", "health", "board"];
+      ops.fold = ["improve", "rd", "acct", "health", "board"];
+      ops.label = L("Admin", "Admin", "Admin");
+      ops.title = L("Admin", "Admin", "Admin");
+      ops.intro = L("Maintenance, people, SOPs, settings.", "Mantenimiento, personal, SOPs, ajustes.", "Manutencao, pessoas, SOPs, ajustes.");
+    }
+  })();
+
+
   function entryInProgress() {
     if (document.getElementById("po-vendor") || document.getElementById("po-sup") ||
         document.getElementById("spo-vendor") || document.getElementById("po-em-body") ||
@@ -463,6 +600,9 @@
     if (!/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return false;
     var typ = String(ae.type || "").toLowerCase();
     if (typ === "button" || typ === "submit" || typ === "checkbox" || typ === "radio" || typ === "file") return false;
+    // A date or search box with focus is a filter (E-com lot log "from"
+    // date, list searches), not an entry. Only typed text elsewhere counts.
+    if (typ === "date" || typ === "time" || typ === "datetime-local" || typ === "search") return viewTyped(ae);
     if (ae.tagName === "SELECT" || String(ae.value || "").trim() !== "") return true;
     // An empty box that only has focus because the screen autofocused it
     // (Receive item box, lot station scan box) is not an entry, unless
@@ -531,6 +671,10 @@
     if (btn.id === "sqf-nav" || btn.id === "coa-nav") return "qa";
     if (btn.id === "fa-nav") return "ful";
     if (btn.id === "mp-nav-entry" || btn.id === "mp-nav-log") return "mixing";
+    // v322: menu items that lit no tab.
+    if (btn.id === "awo-nav") return "mixing";
+    if (btn.id === "qa-nav") return "qa";
+    if (btn.id === "fgl-nav") return "prod";
     var trcHome = {
       "trc-nav-use": "ful",
       "trc-nav-ship": "ful",
@@ -594,7 +738,10 @@
       else toast(Lmissing());
       return;
     }
+    if (tool.dept) { showHome(tool.dept); return; }
     var fn = tool.fn;
+    if (fn === "today" && window.SIMPLE_HOME && typeof SIMPLE_HOME.open === "function") { SIMPLE_HOME.open("home"); return; }
+    if (fn === "prodhub" && window.SIMPLE_HOME && typeof SIMPLE_HOME.open === "function") { SIMPLE_HOME.open("prod"); return; }
     if (fn === "svc" && window.SERVICES && typeof SERVICES.open === "function") { SERVICES.open(); return; }
     if (fn === "hist" && window.MFGHIST && typeof MFGHIST.open === "function") { MFGHIST.open(); return; }
     if (fn === "up" && window.MFGUPLOAD && typeof MFGUPLOAD.open === "function") { MFGUPLOAD.open(); return; }
@@ -2354,9 +2501,10 @@
     if (blocked) { toast(Lbusy()); return; }
     var dept = deptById(id);
     // Purchasing, Receiving, and Shipping moved into Inbound and Outbound.
-    if (dept && dept.hidden && dept.bar && deptById(dept.bar)) { id = dept.bar; dept = deptById(id); }
+    if (dept && dept.hidden && !dept.keep && dept.bar && deptById(dept.bar)) { id = dept.bar; dept = deptById(id); }
     if (!dept || dept.passthrough) return;
     if (id !== "inv") document.body.classList.remove("inv-floor");
+    if (barKey(id) !== barKey(barCurrent)) foldOpen = {};
     releaseOtherViews();
     leaveBoardMode();
     barCurrent = id;
@@ -2425,12 +2573,22 @@
     var tool = TOOLS[id];
     return tool ? tx(tool.title) : id;
   }
+  // Rarely used subtabs sit behind one More button (dept.fold). Open when
+  // one of them is showing, or after More is pressed on this department.
+  var foldOpen = {};
   function subsHtml(dept) {
-    return '<div class="ordtabs dept-subs" role="tablist">' + dept.subs.map(function (id) {
+    var fold = dept.fold || [];
+    var open = !!foldOpen[dept.id] || fold.indexOf(shellHere) >= 0;
+    var tab = function (id) {
       var on = shellHere === id;
-      return '<button type="button" class="' + (on ? "active" : "") + '" role="tab" data-dept-sub="' + esc(id) + '"' +
+      return '<button type="button" class="' + (on ? "active" : "") + (fold.indexOf(id) >= 0 ? " dept-sub-fold" : "") + '" role="tab" data-dept-sub="' + esc(id) + '"' +
         (on ? ' aria-selected="true"' : ' aria-selected="false"') + '>' + esc(subLabel(dept, id)) + "</button>";
-    }).join("") + "</div>";
+    };
+    var main = dept.subs.filter(function (id) { return fold.indexOf(id) < 0; });
+    var extra = dept.subs.filter(function (id) { return fold.indexOf(id) >= 0; });
+    var moreBtn = extra.length ? '<button type="button" class="dept-more" data-dept-fold="' + esc(dept.id) + '" aria-expanded="' + (open ? "true" : "false") + '">' +
+      esc(open ? tx({ en: "Less", es: "Menos", pt: "Menos" }) : tx({ en: "More", es: "Mas", pt: "Mais" }) + " (" + extra.length + ")") + ' <span aria-hidden="true">' + (open ? "&#9662;" : "&#9656;") + "</span></button>" : "";
+    return '<div class="ordtabs dept-subs" role="tablist">' + main.map(tab).join("") + moreBtn + (open ? extra.map(tab).join("") : "") + "</div>";
   }
   function actionsHtml(dept) {
     if (!dept.actions || !dept.actions.length) return "";
@@ -2487,6 +2645,16 @@
   }
 
   function onViewClick(e) {
+    var fb = e.target && e.target.closest ? e.target.closest("[data-dept-fold]") : null;
+    if (fb) {
+      var fid = fb.getAttribute("data-dept-fold");
+      var fdept = deptById(fid);
+      foldOpen[fid] = !(foldOpen[fid] || (fdept && (fdept.fold || []).indexOf(shellHere) >= 0));
+      var sh = document.getElementById("dept-shell");
+      if (sh) sh.setAttribute("data-here", "~");
+      dressShell();
+      return;
+    }
     var sub = e.target && e.target.closest ? e.target.closest("[data-dept-sub]") : null;
     if (sub) {
       openSub(sub.getAttribute("data-dept-sub"));
@@ -2661,6 +2829,8 @@
       "@media print{#dept-backbar{display:none!important}}",
       "#dept-shell{position:sticky;top:var(--dept-stack-h,0px);z-index:45;background:#eef1f5;margin:-4px -6px 8px;padding:8px 6px 6px}",
       "#dept-shell .dept-subs{flex-wrap:wrap;margin:0}",
+      "#dept-shell .dept-more{font:inherit;font-weight:700;font-size:13px;color:#006DB6;background:#fff;border:1px dashed #9fb3c8;border-radius:999px;padding:6px 12px;cursor:pointer}",
+      "#dept-shell .dept-sub-fold{opacity:.9;font-style:italic}",
       "#dept-shell .dept-actions{margin-top:8px}",
       "#dept-shell .dept-sec{margin:0 0 4px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#5c6b7c;font-weight:800}",
       "#dept-shell .dept-action-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}",
@@ -2803,9 +2973,21 @@
   window.DEPT = {
     show: showHome,
     tool: openTool,
+    // Open a tool on its department page: the tab lights up, subtabs and
+    // Back line up. Tool empty or the primary: just the department.
+    go: function (deptId, toolId) {
+      showHome(deptId);
+      if (barKey(barCurrent) !== barKey(deptId)) return;
+      var dept = deptById(barCurrent);
+      if (!toolId || !dept || toolId === dept.primary || !TOOLS[toolId]) return;
+      if (toolInSubs(dept, toolId)) openSub(toolId);
+      else openTool(toolId, true);
+    },
     back: goBack,
     fulfillment: function () { showHome("ful"); },
     current: function () { return { home: homeId, bar: barCurrent }; },
+    // Read-only view of the tab layout, for checks and other modules.
+    layout: function () { return { depts: DEPTS, tools: TOOLS }; },
     more: function (btn) {
       var card = btn && btn.parentNode;
       if (!card) return;

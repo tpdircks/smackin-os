@@ -623,6 +623,14 @@
     root.innerHTML = rootHtml();
     var anchor = card.querySelector(".catbar");
     if (anchor) card.insertBefore(root, anchor); else card.appendChild(root);
+    // v322: stock health and finished bags by flavor charts (smk-viz.js), above the cards.
+    try {
+      if (window.SMK_VIZ && typeof SMK_VIZ.inventory === "function" && !$("vz-inv")) {
+        var vz = document.createElement("div");
+        vz.innerHTML = SMK_VIZ.inventory();
+        if (vz.firstChild) card.insertBefore(vz.firstChild, root);
+      }
+    } catch (eVz) {}
     card.classList.add("ivx-dashcard");
     applyMode(card);
   }
