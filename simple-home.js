@@ -114,7 +114,7 @@
 
   // ---- words ------------------------------------------------------------------
   var W = {
-    hello: { en: "What do you need to do?", es: "Que necesita hacer?", pt: "O que voce precisa fazer?" },
+    hello: { en: "Your jobs", es: "Sus tareas", pt: "Suas tarefas" },
     pick: { en: "Pick your job once. This device remembers it.", es: "Elija su trabajo una vez. Este equipo lo recuerda.", pt: "Escolha sua funcao uma vez. Este aparelho lembra." },
     yourJob: { en: "Your job:", es: "Su trabajo:", pt: "Sua funcao:" },
     change: { en: "Change", es: "Cambiar", pt: "Trocar" },
@@ -142,22 +142,18 @@
       (n > 0 ? '<span class="shm-cnt">' + esc(countLabel(j.count, n)) + "</span>" : "") +
       "</button>";
   }
+  // Home opens on "This week": production and orders-out numbers first
+  // (home-week.js), then the per-role job buttons, then the smaller cards.
+  function week(fn) {
+    try { return root.HOME_WEEK && typeof root.HOME_WEEK[fn] === "function" ? root.HOME_WEEK[fn]() || "" : ""; } catch (e) { return ""; }
+  }
+  // v323b (Troy, Nov 24): Home is numbers only. No job buttons, no role picker,
+  // no to-do lists. Week numbers (home-week.js) here; Big picture and Daily
+  // numbers are the other Home subtabs.
   function homeHtml() {
-    var role = roleById(getRole());
-    var c = counts();
-    var head = '<div class="shm-lead"><h2>' + esc(tx(W.hello)) + "</h2>" +
-      (role ? '<p>' + esc(tx(W.yourJob)) + " <b>" + esc(tx(role.t)) + '</b> <button type="button" class="shm-link" data-shm-change="1">' + esc(tx(W.change)) + "</button></p>" : '<p>' + esc(tx(W.pick)) + "</p>") +
-      "</div>";
-    var picker = '<div class="shm-roles" role="radiogroup">' + ROLES.map(function (r) {
-      var on = role && role.id === r.id;
-      return '<button type="button" class="shm-role' + (on ? " on" : "") + '" role="radio" aria-checked="' + (on ? "true" : "false") + '" data-shm-role="' + r.id + '">' + esc(tx(r.t)) + "</button>";
-    }).join("") + "</div>";
-    var showPicker = !role || state.picking;
-    var jobs = role ? '<div class="shm-jobs">' + role.jobs.map(function (id) { return jobCard(id, c); }).join("") + "</div>" : "";
-    return '<div id="shm-root" class="shm" data-shm="home" data-lang="' + lang() + '">' + head +
+    return '<div id="shm-root" class="shm" data-shm="home" data-lang="' + lang() + '">' +
       (cloud() ? "" : '<div class="shm-banner">' + esc(tx(W.offline)) + "</div>") +
-      (showPicker ? picker : "") + jobs + viz("homeStrip", role ? role.id : "") +
-      '<p class="shm-foot">' + esc(tx(W.elsewhere)) + "</p></div>";
+      week("top") + week("below") + "</div>";
   }
   function stepCard(n, title, what, go, label, extra) {
     return '<div class="shm-step"><div class="shm-n">' + n + '</div><div class="shm-body"><h3>' + esc(title) + "</h3>" +
@@ -205,6 +201,8 @@
     ".shm-jh{font-size:14px;color:#4b5563;line-height:1.3}",
     ".shm-cnt{align-self:flex-start;margin-top:4px;font-size:13px;font-weight:800;border-radius:999px;padding:3px 10px;background:#fff1db;color:#8a5200}",
     ".shm-hot{border-color:#F26B21}",
+    ".shm-lead-s{padding:10px 14px}.shm-lead-s h2{font-size:18px}",
+    ".shm-jobs-s{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}.shm-jobs-s .shm-job{min-height:0;padding:12px}.shm-jobs-s .shm-jt{font-size:17px}",
     ".shm-foot{color:#6b7280;font-size:13px;margin:0}",
     ".shm-link{font:inherit;font-size:13px;font-weight:700;color:#006DB6;background:none;border:0;padding:0 4px;cursor:pointer;text-decoration:underline}",
     ".shm-steps{display:grid;grid-template-columns:1fr 18px 1fr 18px 1fr 18px 1fr;gap:6px;align-items:stretch}",

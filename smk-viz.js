@@ -222,13 +222,14 @@
     var t = today();
     return arr(function () { return root.DB.shippingLog(); }).filter(function (r) { return isParcel(r) && isoOf(r.ship_date) === t; }).length;
   }
-  // P-Mac bags per day. production_output.prod_date is saved as the UTC day
-  // (app.js dqToday), so "today" here uses the same day the app writes.
-  function pmacDaily(days) {
-    var utcToday = new Date().toISOString().slice(0, 10);
-    var rows = arr(function () { return root.DB.productionOutput ? root.DB.productionOutput() : []; }).filter(function (r) { return String(r.dept || "") === "pmac"; });
-    return perDay(rows, function (r) { return String(r.prod_date || "").slice(0, 10); }, function (r) { return num(r.bags); }, days, utcToday);
+  // P-Mac bags per Denver day from pmac_history (home-week.js reads it).
+  // v322 read production_output, which has had no rows since Nov 9 2026.
+  function pmacInfo(days) {
+    try { if (root.HOME_WEEK && root.HOME_WEEK.pmacDaily) return root.HOME_WEEK.pmacDaily(days); } catch (e) {}
+    return { days: perDay([], function () { return ""; }, null, days), loaded: false, latest: "" };
   }
+  function pmacDaily(days) { return pmacInfo(days).days; }
+
   function hubCounts() {
     try { return (root.INOUT_HUBS && root.INOUT_HUBS.counts) ? root.INOUT_HUBS.counts() || {} : {}; } catch (e) { return {}; }
   }
@@ -389,14 +390,16 @@
     var pct = avg ? (todayV / avg) * 100 : 0;
     var tone = !avg ? "mute" : (pct >= 90 ? "ok" : (pct >= 50 ? "warn" : "bad"));
     if (!d.some(function (x) { return x.v > 0; })) {
-      return '<p class="vz-empty">' + esc(tx({ en: "No P-Mac bags logged in the last 14 days.", es: "No hay bolsas P-Mac registradas en 14 dias.", pt: "Nenhum saco P-Mac registrado em 14 dias." })) + "</p>" +
+      var pi = pmacInfo(14);
+      return '<p class="vz-empty">' + esc(tx({ en: "No P-Mac bags logged in the last 14 days.", es: "No hay bolsas P-Mac registradas en 14 dias.", pt: "Nenhum saco P-Mac registrado em 14 dias." })) +
+        (pi.latest ? " " + esc(tx({ en: "Latest entry", es: "Ultimo registro", pt: "Ultimo registro" })) + ": " + esc(pi.latest) + "." : "") + "</p>" +
         '<p class="vz-sub">' + esc(tx({ en: "Log bags on the P-Mac page and this chart fills in.", es: "Registre bolsas en la pagina P-Mac y la grafica se llena.", pt: "Registre sacos na pagina P-Mac e o grafico aparece." })) + "</p>";
     }
     var cols = columns(d.map(function (x, i) { return { label: i === d.length - 1 ? tx({ en: "Today", es: "Hoy", pt: "Hoje" }) : dayLabel(x.day), v: x.v, tone: i === d.length - 1 ? "orange" : "info" }; }), { h: 130, aria: "P-Mac bags per day" });
     return '<div class="vz-prodrow"><div class="vz-gw">' + gauge(pct, "today vs average", tone) +
       '<div class="vz-gcap"><b>' + esc(fmt(todayV)) + "</b> " + esc(tx(W.bags)) + "<br><span>" + esc(tx({ en: "vs 14-day avg", es: "vs prom. 14 dias", pt: "vs media 14 dias" })) + " " + esc(fmt(avg)) + "</span></div></div>" +
       '<div class="vz-gcols">' + cols + "</div></div>" +
-      '<p class="vz-sub">' + esc(tx({ en: "Bags logged on P-Mac. Average counts only days with output. The daily build target is on the P-Mac page.", es: "Bolsas registradas en P-Mac. El promedio cuenta solo dias con produccion. La meta del dia esta en la pagina P-Mac.", pt: "Sacos registrados na P-Mac. A media conta so dias com producao. A meta do dia esta na pagina P-Mac." })) + "</p>";
+      '<p class="vz-sub">' + esc(tx({ en: "P-Mac packages from pmac_history. Average counts only days with output. The daily build target is on the P-Mac page.", es: "Paquetes P-Mac de pmac_history. El promedio cuenta solo dias con produccion. La meta del dia esta en la pagina P-Mac.", pt: "Pacotes P-Mac de pmac_history. A media conta so dias com producao. A meta do dia esta na pagina P-Mac." })) + "</p>";
   }
 
   // Home > Big picture

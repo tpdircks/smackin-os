@@ -20,7 +20,7 @@ var depts = lay.depts, tools = lay.tools;
 function d(id) { return depts.filter(function (x) { return x.id === id; })[0]; }
 var shown = depts.filter(function (x) { return !x.hidden; }).map(function (x) { return x.id; });
 eq(JSON.stringify(shown) === JSON.stringify(["home", "inb", "prod", "inv", "outb", "qa", "ops"]), "seven top tabs in order: " + shown.join(","));
-eq(d("home").label.en === "Home" && d("home").label.es === "Inicio" && d("home").primary === "today", "Home tab opens Today");
+eq(d("home").label.en === "Home" && d("home").label.es === "Inicio" && d("home").primary === "today", "Home tab opens This week (sub id today)");
 eq(d("ops").label.en === "Admin", "Ops is called Admin");
 eq(d("prod").label.en === "Production" && d("prod").primary === "prodhub", "Production tab opens its steps");
 
@@ -102,14 +102,14 @@ eq(hubs.indexOf("inboundNext(m) + steps") >= 0 && hubs.indexOf("outboundNext(m) 
 
 // Wiring and versions
 var html = read("index.html");
-var iH = html.indexOf('src="inout-hubs.js?b=2"'), iS = html.indexOf('src="simple-home.js?b=1"'), iN = html.indexOf('src="simple-nav.js?b=1"');
+var iH = html.indexOf('src="inout-hubs.js?b=2"'), iS = html.indexOf('src="simple-home.js?b=2"'), iN = html.indexOf('src="simple-nav.js?b=1"');
 eq(iH > 0 && iS > iH && iN > iS, "simple-home and simple-nav load after inout-hubs");
-eq(html.indexOf('src="dept-homes.js?b=40"') > 0 && html.indexOf('src="sw-escape.js?b=39"') > 0, "cache bust dept-homes 40, sw-escape 39");
-eq(html.indexOf('var EMBEDDED = "smackin-inv-v322"') > 0, "index build v322");
-eq(read("sw-escape.js").indexOf('"smackin-inv-v322"') > 0, "sw-escape v322");
+eq(html.indexOf('src="dept-homes.js?b=41"') > 0 && html.indexOf('src="sw-escape.js?b=40"') > 0, "cache bust dept-homes 41, sw-escape 40");
+eq(html.indexOf('var EMBEDDED = "smackin-inv-v323"') > 0, "index build v323");
+eq(read("sw-escape.js").indexOf('"smackin-inv-v323"') > 0, "sw-escape v323");
 var sw = read("service-worker.js");
-eq(sw.indexOf('const CACHE = "smackin-inv-v322"') >= 0 && sw.indexOf('"./simple-home.js"') > 0 && sw.indexOf('"./simple-nav.js"') > 0, "service worker v322 caches the new files");
-eq(read("build-id.txt").trim() === "smackin-inv-v322", "build-id v322");
+eq(sw.indexOf('const CACHE = "smackin-inv-v323"') >= 0 && sw.indexOf('"./home-week.js"') > 0 && sw.indexOf('"./simple-home.js"') > 0 && sw.indexOf('"./simple-nav.js"') > 0, "service worker v323 caches the new files");
+eq(read("build-id.txt").trim() === "smackin-inv-v323", "build-id v323");
 eq(read("app.js").length > 600000, "app.js is whole");
 
 if (failed) { console.log(failed + " simplify check(s) failed"); process.exit(1); }
