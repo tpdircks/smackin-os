@@ -3553,7 +3553,21 @@
   window.SMK_VIEW_LOCKS = window.SMK_VIEW_LOCKS || [];
   window.SMK_VIEW_LOCKS.push(function () { return ACTIVE; });
   window.SMK_BUSY = window.SMK_BUSY || [];
-  window.SMK_BUSY.push(function () { return ACTIVE && typingTrace(); });
+  // Department switch guard: an empty scan box that only has autofocus is
+  // not an entry. A typed value in any lot-station box still blocks.
+  function traceTyped() {
+    var root = $("trc-root");
+    if (!root) return false;
+    var els = root.querySelectorAll("input, textarea");
+    for (var i = 0; i < els.length; i++) {
+      var t = String(els[i].type || "text").toLowerCase();
+      if (t === "button" || t === "submit" || t === "checkbox" || t === "radio" || t === "file" || t === "hidden") continue;
+      if (String(els[i].value || "").trim() !== "" && els[i].value !== els[i].defaultValue) return true;
+    }
+    var ae = document.activeElement;
+    return !!(ae && root.contains(ae) && ae.tagName !== "SELECT" && String(ae.value || "").trim() !== "");
+  }
+  window.SMK_BUSY.push(function () { return ACTIVE && typingTrace() && traceTyped(); });
   if (typeof module !== "undefined" && module.exports) {
     module.exports = {
       pageWindow: pageWindow,

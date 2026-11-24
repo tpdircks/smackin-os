@@ -81,7 +81,13 @@
     ];
   }
 
+  // Inbound and Outbound hubs (inout-hubs.js) reuse the Purchasing and
+  // Fulfillment boards for the same screens.
+  var BOARD_ALIAS = { inb: "purch", outb: "ful" };
+  function boardId(dept) { return BOARD_ALIAS[dept] || dept; }
+
   function planFor(dept, here) {
+    dept = boardId(dept);
     var plan = PLANS[dept];
     if (!plan || !plan.here[here]) return null;
     if (dept === "ful") return { sections: fulSections(here) };
@@ -147,7 +153,7 @@
       if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
       var board = document.createElement("div");
       board.className = "dept-board";
-      board.setAttribute("data-dept-board", dept);
+      board.setAttribute("data-dept-board", boardId(dept));
       board.setAttribute("data-dept", dept);
       board.setAttribute("data-here", here);
       board.setAttribute("data-lang", lang());
