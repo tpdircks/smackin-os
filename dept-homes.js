@@ -17,6 +17,12 @@
    screen or the department primary view. It is a compact chip in the same
    language as the department tabs: navy label, Lucide chevron.
    The primary view does not show Back when Back would only reopen it.
+   Inbound and Outbound (inout-hubs.js): Purchasing + Receiving are one
+   Inbound tab and Shipping is the Outbound tab. Each opens a step page
+   (supplier PO > receive > COA/QA > put away; order > pick > trailer
+   release > ship > docs). The old purch, recv, and ship departments stay
+   defined with hidden: true and bar: so DEPT.show and old links still work
+   and light up the new tab.
    No writes. No timers.
    ========================================================================== */
 (function () {
@@ -203,6 +209,16 @@
   // primary: tool opened when the department tab is tapped.
   // actions: do-tools on that primary view only. subs: jobs, primary first.
   // floorSel: Inventory actions show only when this element is on the Floor.
+  TOOLS.inhub = { fn: "inhub", icon: "arrow-down-to-line", title: { en: "Inbound steps", es: "Pasos de entrada", pt: "Etapas de entrada" }, blurb: { en: "Supplier PO, receive, COA check, put away. In order, with what is open.", es: "OC, recibir, COA, guardar. En orden, con lo pendiente.", pt: "OC, receber, COA, guardar. Em ordem, com o que esta aberto." } };
+  TOOLS.outhub = { fn: "outhub", icon: "arrow-up-from-line", title: { en: "Outbound steps", es: "Pasos de salida", pt: "Etapas de saida" }, blurb: { en: "Order in, pick, trailer release, ship, docs. In order, with what is open.", es: "Orden, surtir, liberar trailer, enviar, papeles. En orden.", pt: "Pedido, separar, liberar trailer, enviar, papeis. Em ordem." } };
+  TOOLS.trailer = { fn: "trailer", icon: "clipboard-check", title: { en: "Trailer Release", es: "Liberacion de trailer", pt: "Liberacao de trailer" }, blurb: { en: "Inspect the trailer and release the load (SQF).", es: "Inspeccione el trailer y libere la carga (SQF).", pt: "Inspecione o trailer e libere a carga (SQF)." } };
+
+  // Old department id -> the top tab that now holds it.
+  var NEW_HOME = { purch: "inb", recv: "inb", ship: "outb" };
+  // Screens that moved to Inbound or Outbound, by sidebar tab or button id.
+  var MOVED_TAB = { orderdocs: "outb", shiplog: "outb" };
+  var MOVED_BTN = { "trc-nav-ship": "outb", "obr-nav": "outb", "sf-nav": "outb" };
+
   var DEPTS = [
     {
       id: "home",
@@ -234,7 +250,32 @@
       intro: { en: "Make Plan is the production view. Order Board, Import, E-Com, and Forecast stay on their own tabs.", es: "El plan de produccion es la vista de produccion. El tablero, importar, e-com y el pronostico siguen en sus pestanas.", pt: "O plano de producao e a visao de producao. O painel, importar, e-com e a previsao continuam nas suas abas." }
     },
     {
+      id: "inb",
+      primary: "inhub",
+      actions: [],
+      subs: ["inhub", "purchasing", "expreceipts", "receive", "recvlog", "coalib", "quarantine", "move", "returns", "services", "reorder15"],
+      short: {
+        inhub: { en: "Steps", es: "Pasos", pt: "Etapas" },
+        purchasing: { en: "1 Supplier POs", es: "1 OC proveedor", pt: "1 OCs fornecedor" },
+        expreceipts: { en: "Due in", es: "Por llegar", pt: "A chegar" },
+        receive: { en: "2 Receive", es: "2 Recibir", pt: "2 Receber" },
+        recvlog: { en: "Dock checklist", es: "Lista del muelle", pt: "Lista do cais" },
+        coalib: { en: "3 COAs", es: "3 COAs", pt: "3 COAs" },
+        quarantine: { en: "On hold", es: "Retenido", pt: "Retido" },
+        move: { en: "4 Put away", es: "4 Guardar", pt: "4 Guardar" },
+        returns: { en: "Returns", es: "Devoluciones", pt: "Devolucoes" },
+        services: { en: "Services", es: "Servicios", pt: "Servicos" },
+        reorder15: { en: "1.5oz", es: "1.5oz", pt: "1.5oz" }
+      },
+      icon: "arrow-down-to-line",
+      label: { en: "Inbound", es: "Entrada", pt: "Entrada" },
+      title: { en: "Inbound", es: "Entrada", pt: "Entrada" },
+      intro: { en: "Supplier PO, receive at the dock, COA and QA check, put away. Steps is the page that shows them in order.", es: "OC, recibir en el muelle, COA y calidad, guardar. Pasos los muestra en orden.", pt: "OC, receber no cais, COA e qualidade, guardar. Etapas mostra em ordem." }
+    },
+    {
       id: "purch",
+      hidden: true,
+      bar: "inb",
       primary: "purchasing",
       actions: ["expreceipts"],
       actionShort: { expreceipts: { en: "Due in", es: "Por llegar", pt: "A chegar" } },
@@ -251,6 +292,8 @@
     },
     {
       id: "recv",
+      hidden: true,
+      bar: "inb",
       primary: "recvlog",
       actions: ["receive", "services", "trRecv"],
       actionShort: {
@@ -316,15 +359,15 @@
     {
       id: "ful",
       primary: "ordersRetail",
-      actions: ["board", "retailprod", "ecomprod", "trShip", "trUse"],
+      actions: ["board", "retailprod", "ecomprod", "trUse", "outhub"],
       actionShort: {
         board: { en: "TV board", es: "Pizarra TV", pt: "Painel TV" },
         retailprod: { en: "Log retail", es: "Registrar retail", pt: "Registrar varejo" },
         ecomprod: { en: "Log e-com", es: "Registrar e-com", pt: "Registrar e-com" },
-        trShip: { en: "Ship", es: "Enviar", pt: "Enviar" },
-        trUse: { en: "Lot pull", es: "Salida lote", pt: "Saida lote" }
+        trUse: { en: "Lot pull", es: "Salida lote", pt: "Saida lote" },
+        outhub: { en: "Ship a load: Outbound", es: "Enviar carga: Salida", pt: "Enviar carga: Saida" }
       },
-      subs: ["ordersRetail", "ordersEcom", "fulfilldaily", "prodlog", "skulookup", "orderdocs", "flavinv", "stockbuild", "produce", "fglots", "trElog", "fulfillerr"],
+      subs: ["ordersRetail", "ordersEcom", "fulfilldaily", "prodlog", "skulookup", "flavinv", "stockbuild", "produce", "fglots", "trElog", "fulfillerr"],
       short: {
         ordersRetail: { en: "Retail", es: "Retail", pt: "Varejo" },
         ordersEcom: { en: "E-Commerce", es: "E-Commerce", pt: "E-Commerce" },
@@ -339,7 +382,30 @@
       intro: { en: "Retail orders and e-commerce orders are separate boards with their own counts. Retail is this tab. E-Commerce is the next tab. The TV board and the log buttons are the actions.", es: "Las ordenes retail y las de e-commerce son tableros separados, cada uno con su conteo. Retail es esta pestana. E-Commerce es la siguiente. La pizarra TV y los registros son las acciones.", pt: "Pedidos de varejo e de e-commerce sao paineis separados, cada um com sua contagem. Varejo e esta aba. E-Commerce e a proxima. O painel TV e os registros sao as acoes." }
     },
     {
+      id: "outb",
+      primary: "outhub",
+      actions: [],
+      subs: ["outhub", "ordersRetail", "ordersEcom", "sps", "trShip", "trailer", "shiplog", "shipments", "orderdocs"],
+      short: {
+        outhub: { en: "Steps", es: "Pasos", pt: "Etapas" },
+        ordersRetail: { en: "1 Retail orders", es: "1 Ordenes retail", pt: "1 Pedidos varejo" },
+        ordersEcom: { en: "E-com orders", es: "Ordenes e-com", pt: "Pedidos e-com" },
+        sps: { en: "SPS docs", es: "Docs SPS", pt: "Docs SPS" },
+        trShip: { en: "2 Pick / build", es: "2 Surtir / armar", pt: "2 Separar / montar" },
+        trailer: { en: "3 Trailer release", es: "3 Liberar trailer", pt: "3 Liberar trailer" },
+        shiplog: { en: "4 Shipping log", es: "4 Registro de envios", pt: "4 Registro de envios" },
+        shipments: { en: "Carrier shipments", es: "Envios transportista", pt: "Envios transportadora" },
+        orderdocs: { en: "5 Order docs", es: "5 Docs de orden", pt: "5 Docs do pedido" }
+      },
+      icon: "arrow-up-from-line",
+      label: { en: "Outbound", es: "Salida", pt: "Saida" },
+      title: { en: "Outbound", es: "Salida", pt: "Saida" },
+      intro: { en: "Order in, pick and build pallets, trailer release, ship and tracking, paperwork. Steps is the page that shows them in order.", es: "Orden, surtir, liberar trailer, enviar, papeles. Pasos los muestra en orden.", pt: "Pedido, separar, liberar trailer, enviar, papeis. Etapas mostra em ordem." }
+    },
+    {
       id: "ship",
+      hidden: true,
+      bar: "outb",
       primary: "shipments",
       actions: ["shiplog"],
       subs: ["shipments"],
@@ -371,6 +437,14 @@
     }
   ];
 
+  // Hidden departments light up the tab that now holds them.
+  function barKey(id) {
+    var d = deptById(id);
+    return d && d.bar ? d.bar : id;
+  }
+  function shownDepts() {
+    return DEPTS.filter(function (d) { return !d.hidden; });
+  }
   function deptById(id) {
     for (var i = 0; i < DEPTS.length; i++) if (DEPTS[i].id === id) return DEPTS[i];
     return null;
@@ -389,7 +463,25 @@
     if (!/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return false;
     var typ = String(ae.type || "").toLowerCase();
     if (typ === "button" || typ === "submit" || typ === "checkbox" || typ === "radio" || typ === "file") return false;
-    return true;
+    if (ae.tagName === "SELECT" || String(ae.value || "").trim() !== "") return true;
+    // An empty box that only has focus because the screen autofocused it
+    // (Receive item box, lot station scan box) is not an entry, unless
+    // something else on the screen was typed.
+    return viewTyped(ae);
+  }
+  function viewTyped(skip) {
+    var view = document.getElementById("view");
+    if (!view) return false;
+    var els = view.querySelectorAll("input, textarea");
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      if (el === skip) continue;
+      var t = String(el.type || "text").toLowerCase();
+      if (t === "button" || t === "submit" || t === "checkbox" || t === "radio" || t === "file" || t === "hidden" || t === "date" || t === "time" || t === "datetime-local" || t === "search") continue;
+      var v = String(el.value || "").trim();
+      if (v !== "" && el.value !== el.defaultValue) return true;
+    }
+    return false;
   }
 
   function closeDrawer() {
@@ -422,6 +514,14 @@
   }
 
   function deptOfNav(btn) {
+    if (!btn) return "";
+    if (MOVED_BTN[btn.id]) return MOVED_BTN[btn.id];
+    var mv = (btn.getAttribute("onclick") || "").match(/UI_go\('([^']+)'\)/);
+    if (mv && MOVED_TAB[mv[1]]) return MOVED_TAB[mv[1]];
+    var raw = deptOfNavRaw(btn);
+    return NEW_HOME[raw] || raw;
+  }
+  function deptOfNavRaw(btn) {
     if (!btn) return "";
     if (btn.id === "svc-nav") return "recv";
     if (btn.id === "dh-nav") return "ops";
@@ -508,6 +608,9 @@
     if (fn === "coa" && window.COA_DOCS && typeof COA_DOCS.open === "function") { COA_DOCS.open(); return; }
     if (fn === "fglots" && window.FGLOTS && typeof FGLOTS.open === "function") { FGLOTS.open(); return; }
     if (fn === "dtfg" && window.DTFINISHED && typeof DTFINISHED.open === "function") { DTFINISHED.open(); return; }
+    if (fn === "inhub" && window.INOUT_HUBS && typeof INOUT_HUBS.open === "function") { INOUT_HUBS.open("in"); return; }
+    if (fn === "outhub" && window.INOUT_HUBS && typeof INOUT_HUBS.open === "function") { INOUT_HUBS.open("out"); return; }
+    if (fn === "trailer" && window.OUTBOUND_RELEASE && typeof OUTBOUND_RELEASE.open === "function") { OUTBOUND_RELEASE.open(); return; }
     toast(Lmissing());
   }
 
@@ -2198,8 +2301,9 @@
     if (!bar) return;
     shownLang = lang();
     bar.setAttribute("aria-label", tx({ en: "Departments", es: "Departamentos", pt: "Departamentos" }));
-    bar.innerHTML = DEPTS.map(function (d) {
-      var on = d.id === barCurrent;
+    var lit = barKey(barCurrent);
+    bar.innerHTML = shownDepts().map(function (d) {
+      var on = d.id === lit;
       return '<button type="button" class="dept-tab' + (on ? " on" : "") + '" data-dept="' + d.id + '" title="' + esc(tx(d.title || d.label)) + '"' +
         (on ? ' aria-current="page"' : "") + '>' +
         '<i class="dept-tab-ico" data-lucide="' + esc(d.icon || "circle") + '" aria-hidden="true"></i>' +
@@ -2215,7 +2319,7 @@
     if (lang() !== shownLang) { renderBar(); return; }
     var buttons = bar.querySelectorAll("[data-dept]");
     for (var i = 0; i < buttons.length; i++) {
-      var on = buttons[i].getAttribute("data-dept") === barCurrent;
+      var on = buttons[i].getAttribute("data-dept") === barKey(barCurrent);
       buttons[i].classList.toggle("on", on);
       if (on) buttons[i].setAttribute("aria-current", "page");
       else buttons[i].removeAttribute("aria-current");
@@ -2249,6 +2353,8 @@
     touchArmed = false;
     if (blocked) { toast(Lbusy()); return; }
     var dept = deptById(id);
+    // Purchasing, Receiving, and Shipping moved into Inbound and Outbound.
+    if (dept && dept.hidden && dept.bar && deptById(dept.bar)) { id = dept.bar; dept = deptById(id); }
     if (!dept || dept.passthrough) return;
     if (id !== "inv") document.body.classList.remove("inv-floor");
     releaseOtherViews();
@@ -2430,7 +2536,7 @@
     var current = homeId || barCurrent;
     var buttons = nav.querySelectorAll("#dept-nav-homes [data-dept-nav]");
     for (var i = 0; i < buttons.length; i++) {
-      buttons[i].classList.toggle("active", buttons[i].getAttribute("data-dept-nav") === current);
+      buttons[i].classList.toggle("active", buttons[i].getAttribute("data-dept-nav") === barKey(current));
     }
   }
 
@@ -2446,8 +2552,8 @@
     block.setAttribute("data-lang", lang());
     var label = tx({ en: "Departments", es: "Departamentos", pt: "Departamentos" });
     block.innerHTML = '<div class="navlabel">' + esc(label) + '</div>' +
-      DEPTS.map(function (d) {
-        var on = d.id === (homeId || barCurrent);
+      shownDepts().map(function (d) {
+        var on = d.id === barKey(homeId || barCurrent);
         return '<button type="button" class="navitem' + (on ? " active" : "") + '" data-dept-nav="' + esc(d.id) + '">' +
           '<i class="navico" data-lucide="' + esc(d.icon || "layout-grid") + '"></i><span>' + esc(tx(d.title || d.label)) + '</span></button>';
       }).join("");
