@@ -1,5 +1,5 @@
 /* ============================================================================
-   Lot Trace & Scan  (trace.js)  b=21
+   Lot Trace & Scan  (trace.js)  b=28
    One scan chain from the dock to the customer, built for SQF traceability.
 
      RECEIVE   raw material in -> our own RM label per pallet/box/roll (supplier lot, exp)
@@ -18,6 +18,10 @@
                that lot's e-com window only. Another lot of the same flavor
                does not. Lot picks follow FEFO: the oldest dated on-hand lot
                is filled in, and a later lot asks first.
+               A search box at the top matches a lot (spaces and slashes
+               ignored) or a flavor name. It lists in-use lots, out-of-use
+               history, and on-hand lots, with In use / Out of use on the row.
+               Clearing the box restores this form. Typing filters in place.
      SHIP      build an outbound pallet for a PO: scan pallets, bags -> OB label w/ lots.
                Scanning a later-dated lot asks before that pallet is added.
      TRACE     type/scan any LPN, lot, supplier lot, PO or seed code -> back + forward
@@ -274,7 +278,21 @@
       palletHeldInherit: "This lot has product on hold. The new pallet is on hold too.",
       bestBy: "Best-by",
       bestByNotSet: "Not set. Type the date printed on the bag.",
-      bestByBlank: "Best-by is blank. Save without the date printed on the bag?"
+      bestByBlank: "Best-by is blank. Save without the date printed on the bag?",
+      findLbl: "Search lot or flavor",
+      findPh: "Lot number or flavor name",
+      findHint: "Type part of a lot or a flavor. Capital letters do not matter. Spaces and slashes in the lot are ignored. Clear this box to see the usual screen.",
+      findInUse: "In use now",
+      findOutHist: "Out of use",
+      findStock: "On hand",
+      findNone: "No lot or flavor matches that search.",
+      findMore: "Showing the first 40. Type more to narrow it.",
+      findIn: "In use",
+      findOutBtn: "Out of use",
+      findBags: "bags",
+      findPulled: "Pulled",
+      findThrough: "Out",
+      findExp: "Best-by"
     },
     es: {
       title: "Rastreo de Lotes y Escaneo (SQF)", navLbl: "Rastreo de Lotes", grpQ: "Calidad",
@@ -355,7 +373,21 @@
       palletHeldInherit: "Este lote tiene producto retenido. La tarima nueva también queda retenida.",
       bestBy: "Consumir antes",
       bestByNotSet: "No definido. Escriba la fecha impresa en la bolsa.",
-      bestByBlank: "Consumir antes esta vacio. ¿Guardar sin la fecha impresa en la bolsa?"
+      bestByBlank: "Consumir antes esta vacio. ¿Guardar sin la fecha impresa en la bolsa?",
+      findLbl: "Buscar lote o sabor",
+      findPh: "Numero de lote o sabor",
+      findHint: "Escriba parte de un lote o un sabor. No importan mayusculas. Los espacios y las barras del lote se ignoran. Borre esta caja para ver la pantalla de siempre.",
+      findInUse: "En uso ahora",
+      findOutHist: "Fuera de uso",
+      findStock: "En mano",
+      findNone: "Ningun lote o sabor coincide con esa busqueda.",
+      findMore: "Se muestran los primeros 40. Escriba mas para reducir.",
+      findIn: "En uso",
+      findOutBtn: "Fuera de uso",
+      findBags: "bolsas",
+      findPulled: "Salida",
+      findThrough: "Fuera",
+      findExp: "Consumir antes"
     },
     pt: {
       loadingRows: "Carregando registros de rastreio...",
@@ -376,7 +408,21 @@
       outSize: "Esse tamanho nao combina com a saida e-com aberta.",
       fromRackPh: "Rack, ex. A-05-L3",
       ecomWinOpen: "ainda no pick", ecomWinOut: "fora do pick",
-      qaRelease: "Liberar qualidade"
+      qaRelease: "Liberar qualidade",
+      findLbl: "Buscar lote ou sabor",
+      findPh: "Numero do lote ou sabor",
+      findHint: "Digite parte de um lote ou um sabor. Maiusculas nao importam. Espacos e barras no lote sao ignorados. Apague esta caixa para ver a tela de sempre.",
+      findInUse: "Em uso agora",
+      findOutHist: "Fora de uso",
+      findStock: "Em estoque",
+      findNone: "Nenhum lote ou sabor combina com essa busca.",
+      findMore: "Mostrando os primeiros 40. Digite mais para reduzir.",
+      findIn: "Em uso",
+      findOutBtn: "Fora de uso",
+      findBags: "sacos",
+      findPulled: "Saida",
+      findThrough: "Fora",
+      findExp: "Validade"
     }
   };
   function lang() {
@@ -794,6 +840,13 @@
       "#trc-root .trc-fefo-note.ok{color:#17692f}",
       "#trc-root .trc-fefo-note.warn{color:#8a5a00}",
       "#trc-root .trc-fefo-ship{margin:4px 0;font-size:16px;font-weight:700;color:#1F3864}",
+      "#trc-root .trc-use-find{border:2px solid #1F3864}",
+      "#trc-root #trc-u-find{width:100%;box-sizing:border-box}",
+      "#trc-root .trc-find-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;border:1px solid #e3e8ef;border-radius:12px;padding:12px;margin:8px 0}",
+      "#trc-root .trc-find-main{flex:1 1 200px;min-width:0}",
+      "#trc-root .trc-find-lot{display:block;font-family:monospace;font-size:18px;word-break:break-all}",
+      "#trc-root .trc-find-acts{display:flex;flex-wrap:wrap;gap:8px;flex:1 1 200px}",
+      "#trc-root .trc-find-acts button{flex:1 1 120px;min-height:48px;font-size:16px;font-weight:800}",
       "@media print{body.trc-printing header,body.trc-printing nav,body.trc-printing .trc-noprint{display:none!important}}"
     ].join("\n");
     document.head.appendChild(s);
@@ -868,6 +921,7 @@
     if (want && $(want)) f = $(want);
     else if (focusId === "trc-op" && $("trc-op")) f = $("trc-op");
     else if (inForm) f = $(focusId);
+    else if (ST.tab === "use" && $("trc-u-normal") && $("trc-u-normal").hidden && $("trc-u-find")) f = $("trc-u-find");
     else if (ST.tab === "use" && opName() && $("trc-u-mlot")) f = $("trc-u-mlot");
     else if (ST.tab === "use" && !opName()) f = $("trc-op");
     else if (ST.tab === "elog" && $("trc-elog-from")) f = $("trc-elog-from");
@@ -880,7 +934,14 @@
       RECVSOP.ensureLoaded().then(function (rev) {
         if (rev === recvHoldRev) return;
         recvHoldRev = rev;
-        if (ACTIVE && !RENDERING && (ST.tab === "use" || ST.tab === "ship")) render();
+        if (!ACTIVE || RENDERING) return;
+        // A full render() rebuilds the search box and drops the caret.
+        // Refresh the result list in place while that box is focused.
+        if (typingTrace()) {
+          if (ST.tab === "use" && String((W.use && W.use.find) || "").trim()) paintUseFind();
+          return;
+        }
+        if (ST.tab === "use" || ST.tab === "ship") render();
       });
     }
     kickShelf();
@@ -2169,6 +2230,7 @@
     if ($("trc-u-mdate")) W.use.mdate = val("trc-u-mdate");
     if ($("trc-u-msize")) W.use.msize = val("trc-u-msize");
     if ($("trc-u-rack")) W.use.mrack = val("trc-u-rack");
+    if ($("trc-u-find")) W.use.find = val("trc-u-find");
   }
   function chosenFrom() {
     var kind = String((W.use && W.use.mfrom) || "");
@@ -2191,13 +2253,282 @@
     h += '<p class="' + (kind ? "hint" : "trc-lot-empty") + '">' + esc(kind ? L("fromHint") : L("fromNeed")) + "</p>";
     return h;
   }
+  // Lot match ignores spaces and slashes. Flavor match is partial and case-insensitive.
+  function normFindLot(s) { return String(s || "").toUpperCase().replace(/[\s\/\\]+/g, ""); }
+  function normFindName(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, ""); }
+  function findQuery(q) {
+    q = String(q == null ? "" : q).trim();
+    return { raw: q, lot: normFindLot(q), name: normFindName(q) };
+  }
+  function recordMatches(q, rec) {
+    if (!q || !q.raw || !rec) return false;
+    if (q.lot && normFindLot(rec.lot).indexOf(q.lot) >= 0) return true;
+    if (!q.name) return false;
+    var bits = [rec.flavor, rec.name, rec.product, rec.fc, rec.flavorCode];
+    for (var i = 0; i < bits.length; i++) {
+      if (bits[i] && normFindName(bits[i]).indexOf(q.name) >= 0) return true;
+    }
+    return false;
+  }
+  function useFind(query, pack) {
+    var q = findQuery(query);
+    pack = pack || {};
+    if (!q.raw) return { active: false, inUse: [], out: [], stock: [] };
+    function keep(list) {
+      return (list || []).filter(function (r) { return recordMatches(q, r); });
+    }
+    return { active: true, inUse: keep(pack.inUse), out: keep(pack.out), stock: keep(pack.stock) };
+  }
+  function namedLot(fc, fallback) {
+    fc = String(fc || "").toUpperCase();
+    var fl = flavorBy(fc);
+    var raw = String(fallback || "").trim();
+    var flavor = fl ? displayName(fl) : raw;
+    var product = raw && flavor && raw.toLowerCase() !== flavor.toLowerCase() ? raw : "";
+    return { fc: fc, flavor: flavor, product: product };
+  }
+  function windowRec(w) {
+    var names = namedLot(w.flavorCode, w.flavor);
+    return {
+      lot: w.lot || "",
+      flavor: names.flavor || w.flavor || "",
+      product: names.product,
+      fc: names.fc || w.flavorCode || "",
+      size: w.size || "",
+      bags: w.bags,
+      day: w.pulledDay || "",
+      through: w.open ? "" : (w.finishedDay || ""),
+      by: w.by || "",
+      loc: (w.froms || []).filter(Boolean).join(", "),
+      open: !!w.open
+    };
+  }
+  function byRecent(a, b) {
+    var da = a.through || a.day || "";
+    var db = b.through || b.day || "";
+    if (da !== db) return da < db ? 1 : -1;
+    return String(a.lot).localeCompare(String(b.lot));
+  }
+  function useCatalog() {
+    var inUse = [], out = [];
+    ecomWindows(S.events).forEach(function (w) {
+      if (!w || !w.lot) return;
+      (w.open ? inUse : out).push(windowRec(w));
+    });
+    inUse.sort(byRecent);
+    out.sort(byRecent);
+    var stockMap = {};
+    function addStock(row) {
+      var lot = String(row.lot || "").trim();
+      var keyLot = normLot(lot);
+      if (!keyLot || !(num(row.qty) > 0)) return;
+      var size = normSize(row.size || "");
+      var key = keyLot + "|" + size;
+      var names = namedLot(row.fc, row.flavor);
+      var cur = stockMap[key];
+      if (!cur) {
+        stockMap[key] = {
+          lot: lot,
+          flavor: names.flavor,
+          product: names.product,
+          fc: names.fc,
+          size: size,
+          qty: num(row.qty),
+          loc: row.loc || "",
+          exp: row.exp ? String(row.exp).slice(0, 10) : ""
+        };
+        return;
+      }
+      cur.qty += num(row.qty);
+      if (row.loc && cur.loc.indexOf(row.loc) < 0) cur.loc = cur.loc ? cur.loc + ", " + row.loc : row.loc;
+      if (row.exp) {
+        var exp = String(row.exp).slice(0, 10);
+        if (exp && (!cur.exp || exp < cur.exp)) cur.exp = exp;
+      }
+      if (!cur.flavor && names.flavor) cur.flavor = names.flavor;
+      if (!cur.product && names.product) cur.product = names.product;
+    }
+    allLabels().forEach(function (l) {
+      if (!l || l.kind !== "FG") return;
+      addStock({
+        lot: l.lot,
+        flavor: l.flavor || "",
+        fc: l.flavor_code || "",
+        size: l.size || "",
+        qty: l.qty_left,
+        loc: l.location || "",
+        exp: l.exp || ""
+      });
+    });
+    if (window.DB && DB.stock && DB.items) {
+      try {
+        var items = {};
+        DB.items().forEach(function (it) {
+          if (!it) return;
+          if (it.id) items[it.id] = it;
+          if (it.code) items[it.code] = it;
+        });
+        DB.stock().forEach(function (r) {
+          if (!r || !(num(r.qty) > 0)) return;
+          var loc = String(r.location || "");
+          if (isQuarantineLoc(loc)) return;
+          var lot = String(r.lot || "");
+          if (!lot) return;
+          var it = items[r.item_id] || {};
+          var cat = String(it.category || "");
+          var size = "";
+          if (cat === "bag4") size = "4oz";
+          else if (cat === "bag15") size = "1.5oz";
+          else if (/2\.75/.test(String(it.name || ""))) size = "2.75oz";
+          if (!size && !BAGCODE_RE.test(normLot(lot))) return;
+          if (stockMap[normLot(lot) + "|" + normSize(size)]) return;
+          addStock({
+            lot: lot,
+            flavor: it.flavor || "",
+            fc: lotFlavorPrefix(lot),
+            size: size,
+            qty: r.qty,
+            loc: loc,
+            exp: ""
+          });
+        });
+      } catch (e) {}
+    }
+    var stock = Object.keys(stockMap).map(function (k) { return stockMap[k]; });
+    stock.sort(function (a, b) {
+      return String(a.flavor).localeCompare(String(b.flavor)) || String(a.lot).localeCompare(String(b.lot)) || String(a.size).localeCompare(String(b.size));
+    });
+    return { inUse: inUse, out: out, stock: stock };
+  }
+  var FIND_CAP = 40;
+  var findTimer = null;
+  function useFindBox(q) {
+    return '<div class="card trc-use-find"><label for="trc-u-find">' + esc(L("findLbl")) + '</label><input id="trc-u-find" class="trc-touch" type="search" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="' + esc(L("findPh")) + '" value="' + esc(q || "") + '" oninput="TRACE.useFindInput()" aria-label="' + esc(L("findLbl")) + '"><p class="hint">' + esc(L("findHint")) + "</p></div>";
+  }
+  function findRowHtml(kind, i, r) {
+    var hold = "";
+    try { hold = lotPullBlock(r.lot) || ""; } catch (e) { hold = ""; }
+    var meta = [];
+    if (r.size) meta.push(r.size);
+    if (r.day) meta.push(L("findPulled") + " " + r.day);
+    if (r.through) meta.push(L("findThrough") + " " + r.through);
+    if (r.bags != null && r.bags !== "") meta.push(fmt(r.bags) + " " + L("findBags"));
+    if (r.qty != null && r.qty !== "") meta.push(fmt(Math.round(num(r.qty))) + " " + L("findBags"));
+    if (r.loc) meta.push(r.loc);
+    if (r.exp) meta.push(L("findExp") + " " + String(r.exp).slice(0, 10));
+    if (r.by) meta.push(r.by);
+    var h = '<article class="trc-find-row"><div class="trc-find-main"><b class="trc-find-lot">' + esc(r.lot) + "</b><div>";
+    h += esc(r.flavor || r.fc || "");
+    if (meta.length) h += " &middot; " + meta.map(esc).join(" &middot; ");
+    h += "</div>";
+    if (hold) h += '<div class="trc-badge-hold">' + esc(hold) + "</div>";
+    h += '</div><div class="trc-find-acts">';
+    h += '<button type="button" class="primary" onclick="TRACE.useFindIn(\'' + kind + "'," + i + ')">' + esc(L("findIn")) + "</button>";
+    h += '<button type="button" class="ghost" onclick="TRACE.useFindOut(\'' + kind + "'," + i + ')">' + esc(L("findOutBtn")) + "</button>";
+    h += "</div></article>";
+    return h;
+  }
+  function useFindHtml(found) {
+    var blocks = [
+      ["inUse", "findInUse", found.inUse],
+      ["out", "findOutHist", found.out],
+      ["stock", "findStock", found.stock]
+    ];
+    var any = false;
+    var h = "";
+    blocks.forEach(function (b) {
+      var rows = b[2] || [];
+      if (!rows.length) return;
+      any = true;
+      var shown = rows.slice(0, FIND_CAP);
+      h += '<div class="card"><h2 class="sub2">' + esc(L(b[1])) + " (" + rows.length + ")</h2>";
+      if (rows.length > shown.length) h += '<p class="hint">' + esc(L("findMore")) + "</p>";
+      shown.forEach(function (r, i) { h += findRowHtml(b[0], i, r); });
+      h += "</div>";
+    });
+    if (!any) h += '<div class="card"><p class="hint">' + esc(L("findNone")) + "</p></div>";
+    return h;
+  }
+  function paintUseFind() {
+    var hits = $("trc-u-hits");
+    var normal = $("trc-u-normal");
+    if (!hits || !normal) return;
+    var found = useFind(W.use.find || "", useCatalog());
+    W.use._find = found;
+    if (!found.active) {
+      hits.hidden = true;
+      hits.innerHTML = "";
+      normal.hidden = false;
+      return;
+    }
+    hits.hidden = false;
+    hits.innerHTML = useFindHtml(found);
+    normal.hidden = !W.use._findShowForm;
+  }
+  function useFindInput() {
+    var el = $("trc-u-find");
+    if (el) W.use.find = el.value;
+    if (findTimer) { clearTimeout(findTimer); findTimer = null; }
+    if (!String(W.use.find || "").trim()) {
+      W.use._findShowForm = false;
+      paintUseFind();
+      return;
+    }
+    findTimer = setTimeout(function () {
+      findTimer = null;
+      if (!ACTIVE || ST.tab !== "use") return;
+      paintUseFind();
+    }, 200);
+  }
+  function findListed(kind, i) {
+    if (kind !== "inUse" && kind !== "out" && kind !== "stock") return null;
+    var list = (W.use._find && W.use._find[kind]) || [];
+    i = Number(i);
+    if (i !== (i | 0) || i < 0 || i >= list.length) return null;
+    return list[i];
+  }
+  function useFindIn(kind, i) {
+    var row = findListed(kind, i);
+    if (!row) return;
+    var block = lotPullBlock(row.lot);
+    if (block) { flash(block, "err"); return; }
+    captureUse();
+    W.use.mlot = row.lot;
+    W.use._fefoAuto = false;
+    var fc = String(row.fc || lotFlavorPrefix(row.lot) || "").toUpperCase();
+    if (fc && flavorBy(fc)) {
+      W.use.mflav = fc;
+      W.use._flavFromLot = fc;
+      W.use._flavManual = false;
+    }
+    var sz = normSize(row.size || "");
+    if (sz === "4oz" || sz === "1.5oz" || sz === "2.75oz") W.use.msize = sz;
+    W.use._findShowForm = true;
+    W.use.focusId = "trc-u-mbags";
+    render();
+  }
+  function useFindOut(kind, i) {
+    var row = findListed(kind, i);
+    if (!row) return;
+    captureUse();
+    var fc = row.fc || lotFlavorPrefix(row.lot) || "";
+    var size = row.size || W.use.msize || "4oz";
+    var day = String(W.use.mdate || today()).slice(0, 10);
+    saveEcomOut(row.lot, fc, size, day);
+  }
   function vUse() {
     var u = W.use;
     if (!u.dest) u.dest = "ECOM";
     if (!u.msize) u.msize = "4oz";
     syncFefoDefault();
     var dateVal = u.mdate || today();
-    var h = '<div class="card trc-use-primary"><h2 class="sub2">' + esc(L("manTitle")) + '</h2><p class="hint">' + esc(L("manHint")) + '</p>';
+    var found = useFind(u.find || "", useCatalog());
+    u._find = found;
+    var showNormal = !found.active || u._findShowForm;
+    var h = useFindBox(u.find || "");
+    h += '<div id="trc-u-hits"' + (found.active ? "" : " hidden") + ">" + (found.active ? useFindHtml(found) : "") + "</div>";
+    h += '<div id="trc-u-normal"' + (showNormal ? "" : " hidden") + ">";
+    h += '<div class="card trc-use-primary"><h2 class="sub2">' + esc(L("manTitle")) + '</h2><p class="hint">' + esc(L("manHint")) + '</p>';
     h += heldBannerHtml();
     h += '<div class="trc-dests" role="group" aria-label="' + esc(L("dest")) + '">';
     DESTS.forEach(function (d) {
@@ -2241,6 +2572,7 @@
       var dest = e.type === "ECOM_OUT" ? L("ecomWinOut") : (e.to_loc || "");
       return '<tr><td>' + esc(when) + '</td><td>' + (e.lpn ? esc(e.lpn) : '<i>' + esc(L("byHand")) + '</i>') + '</td><td>' + esc(e.lot) + (e.data && (e.data.flavor || e.data.flavor_code) ? '<br><span class="muted sm">' + esc(e.data.flavor || e.data.flavor_code) + ' ' + esc(e.data.size || "") + '</span>' : "") + '</td><td>' + bags + '</td><td>' + esc(e.from_loc || (e.data && e.data.from_loc) || "") + " &rarr; " + esc(dest) + (e.ref ? " &middot; " + esc(e.ref) : "") + '</td><td>' + esc(e.operator) + '</td></tr>';
     }).join("") + '</tbody></table></div>';
+    h += "</div>";
     return h;
   }
   function syncLotEmpty() {
@@ -3095,7 +3427,7 @@
       if (id === "trc-r-exp") { W.recv.exp = v; W.recv.expTouched = true; }
     },
     pmScan: pmScan, pmChange: pmChange, pmFinish: pmFinish, pmScrap: pmScrap,
-    moveScan: moveScan, useDest: useDest, useFrom: useFrom, useScan: useScan, useManual: useManual, useOut: useOut, ecomOut: saveEcomOut, useSize: useSize, useKey: useKey, useLotInput: useLotInput, useFlavorPick: useFlavorPick, usePickLot: usePickLot,
+    moveScan: moveScan, useDest: useDest, useFrom: useFrom, useScan: useScan, useManual: useManual, useOut: useOut, ecomOut: saveEcomOut, useSize: useSize, useKey: useKey, useLotInput: useLotInput, useFlavorPick: useFlavorPick, usePickLot: usePickLot, useFindInput: useFindInput, useFindIn: useFindIn, useFindOut: useFindOut,
     shipField: shipField, shipScan: shipScan, shipRemove: shipRemove, shipFinish: shipFinish,
     traceQ: traceQ, drill: drill, printEvidence: printEvidence, recallExport: recallExport, lotAct: lotAct,
     traceOf: function (lpn) { ST.tab = "trace"; W.trace.q = lpn; markActive(); render(); },
@@ -3230,7 +3562,8 @@
       reclaimAction: reclaimAction,
       viewIsForeign: viewIsForeign,
       allowReclaim: allowReclaim,
-      PAGE: TRACE_PAGE
+      PAGE: TRACE_PAGE,
+      useFind: useFind
     };
   }
   bootDom();
