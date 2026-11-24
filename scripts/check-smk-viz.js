@@ -41,13 +41,15 @@ var DB = {
   demandLines: function () { return demand; },
   receivingLog: function () { return [{ recv_date: T }, { recv_date: T }, { recv_date: PAST }]; },
   shippingLog: function () { return [{ ship_date: T, entered_by: "Jesus" }, { ship_date: PAST, entered_by: "Jesus" }, { ship_date: T, entered_by: "sync:shipstation" }, { ship_date: T, entered_by: "sync:shipstation" }]; },
-  productionOutput: function () { var u = new Date().toISOString().slice(0, 10); return [{ dept: "pmac", prod_date: u, bags: 1200 }, { dept: "mixing", prod_date: u, bags: 999 }]; },
   stock: function () { return [{ updated_at: "2026-11-20T10:00:00Z" }]; }
 };
 var docStub = { getElementById: function () { return null; }, addEventListener: function () {}, createElement: function () { return {}; }, head: { appendChild: function () {} } };
 var win = { DB: DB, document: docStub };
 var sandbox = { window: win, document: docStub, Intl: Intl, Date: Date, Math: Math, console: console };
 vm.runInNewContext(read("smk-viz.js"), sandbox);
+// v323: P-Mac bags come from pmac_history through home-week.js (production_output is dead).
+vm.runInNewContext(read("home-week.js"), sandbox);
+win.HOME_WEEK.inject({ pmac: [{ run_date: T, dept: "P-Mac", total_pkgs: 1200 }, { run_date: T, dept: "Mixing", total_pkgs: 999 }], latest: { pmac: T } }, T);
 var V = win.SMK_VIZ;
 eq(!!(V && V.dashboard && V.homeStrip && V.inbound && V.outbound && V.inventory && V.production), "SMK_VIZ api");
 var H = V._h;
@@ -104,6 +106,7 @@ eq(ob.indexOf("1 / 1") >= 0 && ob.indexOf("OLD") < 0, "outbound visuals skip pas
 eq(/vz-cols/.test(V.inbound({ pos: [{ expect: SOON }, { expect: "" }], inRecv: [1], coaMissing: [], held: [] })), "inbound visuals");
 eq(/vz-donut/.test(V.inventory()), "inventory visuals");
 eq(/vz-gauge/.test(V.production()), "production visuals");
+eq(V.production().indexOf("1,200") >= 0 && V.production().indexOf("999") < 0, "P-Mac panel reads pmac_history P-Mac dept only");
 
 // local mode shows the not-live banner
 DB.mode = "local";
@@ -130,12 +133,12 @@ eq(hc.shipSoon <= 1, "counts(): past-due PO R0 is not counted in shipSoon");
 
 // wiring
 var html = read("index.html"), sw = read("service-worker.js"), dashJs = read("dashboard.js"), hubs = read("inout-hubs.js"), home = read("simple-home.js"), inv = read("inventory-visual.js");
-eq(html.indexOf('src="smk-viz.js?b=1"') > html.indexOf('src="dashboard.js?b=7"') && html.indexOf('src="smk-viz.js?b=1"') < html.indexOf('src="inventory-visual.js?b=5"'), "smk-viz.js wired after dashboard.js, before inventory-visual.js");
-eq(sw.indexOf('"./smk-viz.js"') >= 0 && sw.indexOf('smackin-inv-v322') >= 0, "service worker caches smk-viz.js on v322");
+eq(html.indexOf('src="smk-viz.js?b=2"') > html.indexOf('src="dashboard.js?b=7"') && html.indexOf('src="smk-viz.js?b=2"') < html.indexOf('src="inventory-visual.js?b=5"'), "smk-viz.js wired after dashboard.js, before inventory-visual.js");
+eq(sw.indexOf('"./smk-viz.js"') >= 0 && sw.indexOf('smackin-inv-v323') >= 0, "service worker caches smk-viz.js on v323");
 eq(dashJs.indexOf("SMK_VIZ.dashboard()") >= 0, "dashboard calls SMK_VIZ");
 eq(dashJs.indexOf("pastDueCard(late)") < 0 && dashJs.indexOf('kpiBtn("df-pastdue"') < 0, "dashboard no longer shows past-due demand");
 eq(hubs.indexOf('viz("inbound", m)') >= 0 && hubs.indexOf('viz("outbound", m)') >= 0 && hubs.indexOf("m = hidePastDue(m)") >= 0, "hubs draw visuals and hide past-due");
-eq(home.indexOf('viz("homeStrip"') >= 0 && home.indexOf('viz("production")') >= 0, "home and production steps draw visuals");
+eq(home.indexOf('week("top")') >= 0 && home.indexOf('week("below")') >= 0 && home.indexOf('viz("production")') >= 0, "home draws This week; production steps draw visuals");
 eq(inv.indexOf("SMK_VIZ.inventory()") >= 0, "inventory page draws visuals");
 eq(read("smk-viz.js").indexOf("setInterval") < 0 && read("smk-viz.js").indexOf("setTimeout") < 0, "no timers in smk-viz.js");
 

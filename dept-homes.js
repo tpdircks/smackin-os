@@ -461,7 +461,7 @@
 
   // ---- v322 simple layout --------------------------------------------------
   // Plain names, fewer top tabs, one More fold for rarely used subtabs.
-  TOOLS.today = { fn: "today", icon: "sun", title: { en: "Today", es: "Hoy", pt: "Hoje" }, blurb: { en: "Your jobs for today, one big button each.", es: "Sus tareas de hoy, un boton grande por tarea.", pt: "Suas tarefas de hoje, um botao grande por tarefa." } };
+  TOOLS.today = { fn: "today", icon: "sun", title: { en: "This week", es: "Esta semana", pt: "Esta semana" }, blurb: { en: "Bags made, orders out, retail priorities and stock, this week.", es: "Bolsas hechas, ordenes enviadas, prioridades retail y stock, esta semana.", pt: "Sacos feitos, pedidos enviados, prioridades varejo e estoque, esta semana." } };
   TOOLS.prodhub = { fn: "prodhub", icon: "factory", title: { en: "Production steps", es: "Pasos de produccion", pt: "Etapas de producao" }, blurb: { en: "Plan, mix, pack on P-Mac, finish the pallet. In order.", es: "Plan, mezcla, empaque en P-Mac, terminar paleta. En orden.", pt: "Plano, mistura, embalar na P-Mac, fechar palete. Em ordem." } };
   TOOLS.stDemand = { dept: "demand", icon: "clipboard-list", title: { en: "Plan", es: "Plan", pt: "Plano" }, blurb: { en: "Make plan, order board, schedule, forecast.", es: "Plan, tablero, programa, pronostico.", pt: "Plano, painel, programa, previsao." } };
   TOOLS.stMix = { dept: "mixing", icon: "flask-conical", title: { en: "Mixing", es: "Mezcla", pt: "Mistura" }, blurb: { en: "Mixing station page.", es: "Pagina de la estacion de mezcla.", pt: "Pagina da estacao de mistura." } };
@@ -510,13 +510,13 @@
     if (home) {
       home.primary = "today";
       home.actions = [];
-      home.subs = ["today", "desk", "daily", "board"];
+      home.subs = ["today", "daily", "desk", "board"];
       home.fold = ["board"];
-      home.short = { today: L("Today", "Hoy", "Hoje"), desk: L("Big picture", "Resumen", "Visao geral"), daily: L("Daily numbers", "Numeros del dia", "Numeros do dia") };
+      home.short = { today: L("Week", "Semana", "Semana"), desk: L("Big picture", "Resumen", "Visao geral"), daily: L("Daily numbers", "Numeros del dia", "Numeros do dia") };
       home.icon = "home";
       home.label = L("Home", "Inicio", "Inicio");
       home.title = L("Home", "Inicio", "Inicio");
-      home.intro = L("Pick your job. Each big button opens one task.", "Elija su trabajo. Cada boton grande abre una tarea.", "Escolha sua funcao. Cada botao grande abre uma tarefa.");
+      home.intro = L("Plant numbers: this week, each day, and the big picture.", "Numeros de la planta: esta semana, cada dia y el resumen.", "Numeros da planta: esta semana, cada dia e o resumo.");
     }
     var inb = d("inb");
     if (inb) {
