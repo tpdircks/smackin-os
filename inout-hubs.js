@@ -441,7 +441,7 @@
   function inboundHtml(m) {
     var t = {
       s1: { en: "Order from the supplier", es: "Pedir al proveedor", pt: "Pedir ao fornecedor" },
-      s1w: { en: "Create the supplier PO and send it. Due in shows what should arrive and when.", es: "Cree la OC y enviela. Por llegar muestra que debe llegar y cuando.", pt: "Crie a OC e envie. A chegar mostra o que deve chegar e quando." },
+      s1w: { en: "Create the supplier PO on Purchasing and send it. Due in shows what should arrive and when.", es: "Cree la OC en Compras y enviela. Por llegar muestra que debe llegar y cuando.", pt: "Crie a OC em Compras e envie. A chegar mostra o que deve chegar e quando." },
       s2: { en: "Receive at the dock", es: "Recibir en el muelle", pt: "Receber no cais" },
       s2w: { en: "Count it and save it on Receive (item, lot, qty, best-by). Then finish the Dock checklist: trailer, seal, condition, paperwork.", es: "Cuente y guarde en Recibir (item, lote, cantidad, fecha). Luego termine la lista del muelle: trailer, sello, condicion, papeles.", pt: "Conte e salve em Receber (item, lote, qtd, validade). Depois termine a lista do cais: trailer, lacre, condicao, papeis." },
       s3: { en: "COA and quality check", es: "COA y revision de calidad", pt: "COA e checagem de qualidade" },
@@ -460,7 +460,7 @@
     var st4 = m.inRecv.length ? chip(m.inRecv.length + " " + tx({ en: "lots received in 14 days still in RECEIVING", es: "lotes de 14 dias aun en RECEIVING", pt: "lotes de 14 dias ainda em RECEIVING" }), "warn") : chip(tx({ en: "Recent receipts are put away", es: "Recibos recientes guardados", pt: "Recebimentos recentes guardados" }), "ok");
 
     var steps = '<div class="ioh-steps">' +
-      stepCard(1, tx(t.s1), tx(t.s1w), st1, subBtn("purchasing", tx({ en: "Supplier POs", es: "OC de proveedor", pt: "OCs de fornecedor" }), true) + subBtn("expreceipts", tx({ en: "Due in", es: "Por llegar", pt: "A chegar" }))) + arrow() +
+      stepCard(1, tx(t.s1), tx(t.s1w), st1, '<button type="button" class="ioh-btn ioh-btn-p" data-smk-go="purch">' + esc(tx({ en: "Purchasing", es: "Compras", pt: "Compras" })) + "</button>" + '<button type="button" class="ioh-btn" data-smk-go="purch:expreceipts">' + esc(tx({ en: "Due in", es: "Por llegar", pt: "A chegar" })) + "</button>") + arrow() +
       stepCard(2, tx(t.s2), tx(t.s2w), st2, subBtn("receive", tx({ en: "Receive", es: "Recibir", pt: "Receber" }), true) + subBtn("recvlog", tx({ en: "Dock checklist", es: "Lista del muelle", pt: "Lista do cais" }))) + arrow() +
       stepCard(3, tx(t.s3), tx(t.s3w), st3, subBtn("coalib", tx({ en: "Upload / find COA", es: "Subir / buscar COA", pt: "Enviar / achar COA" }), true) + subBtn("quarantine", tx({ en: "On hold", es: "Retenido", pt: "Retido" }))) + arrow() +
       stepCard(4, tx(t.s4), tx(t.s4w), st4, subBtn("move", tx({ en: "Put away", es: "Guardar", pt: "Guardar" }), true)) +

@@ -1,5 +1,5 @@
 /* home-week.js  (v323)
-   Home > This week. The first screen anyone sees.
+   Home > This week. The Week section on Home. Big picture opens first.
 
    Top, in this order (Troy, Nov 24 2026):
      1. Bags produced this week: Mixing, P-Mac, Retail Production.

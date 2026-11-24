@@ -133,8 +133,8 @@ eq(hc.shipSoon <= 1, "counts(): past-due PO R0 is not counted in shipSoon");
 
 // wiring
 var html = read("index.html"), sw = read("service-worker.js"), dashJs = read("dashboard.js"), hubs = read("inout-hubs.js"), home = read("simple-home.js"), inv = read("inventory-visual.js");
-eq(html.indexOf('src="smk-viz.js?b=2"') > html.indexOf('src="dashboard.js?b=7"') && html.indexOf('src="smk-viz.js?b=2"') < html.indexOf('src="inventory-visual.js?b=5"'), "smk-viz.js wired after dashboard.js, before inventory-visual.js");
-eq(sw.indexOf('"./smk-viz.js"') >= 0 && sw.indexOf('smackin-inv-v325') >= 0, "service worker caches smk-viz.js on v323");
+eq(html.indexOf('src="smk-viz.js?b=3"') > html.indexOf('src="dashboard.js?b=7"') && html.indexOf('src="smk-viz.js?b=3"') < html.indexOf('src="inventory-visual.js?b=5"'), "smk-viz.js wired after dashboard.js, before inventory-visual.js");
+eq(sw.indexOf('"./smk-viz.js"') >= 0 && sw.indexOf('smackin-inv-v326') >= 0, "service worker caches smk-viz.js on v326");
 eq(dashJs.indexOf("SMK_VIZ.dashboard()") >= 0, "dashboard calls SMK_VIZ");
 eq(dashJs.indexOf("pastDueCard(late)") < 0 && dashJs.indexOf('kpiBtn("df-pastdue"') < 0, "dashboard no longer shows past-due demand");
 eq(hubs.indexOf('viz("inbound", m)') >= 0 && hubs.indexOf('viz("outbound", m)') >= 0 && hubs.indexOf("m = hidePastDue(m)") >= 0, "hubs draw visuals and hide past-due");

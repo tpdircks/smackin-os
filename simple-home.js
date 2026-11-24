@@ -69,10 +69,10 @@
     ccp:       { go: "qa:quality", icon: "microscope", t: { en: "CCP checks", es: "Controles CCP", pt: "Controles CCP" }, h: { en: "Allergen changeover, label check, metal detector.", es: "Cambio de alergenos, etiqueta, detector de metales.", pt: "Troca de alergenos, rotulo, detector de metais." } },
     coa:       { go: "inb:coalib", icon: "file-check", t: { en: "Supplier COAs", es: "COA de proveedores", pt: "COA de fornecedores" }, h: { en: "Upload or find a COA. No COA = lot on hold.", es: "Suba o busque un COA. Sin COA = lote retenido.", pt: "Envie ou ache um COA. Sem COA = lote retido." }, count: "noCoa" },
     sqf:       { go: "qa:sqftasks", icon: "list-todo", t: { en: "SQF tasks", es: "Tareas SQF", pt: "Tarefas SQF" }, h: { en: "What is due for SQF this week.", es: "Lo que vence de SQF esta semana.", pt: "O que vence do SQF esta semana." } },
-    pos:       { go: "inb:purchasing", icon: "shopping-cart", t: { en: "Supplier POs", es: "OC de proveedor", pt: "OCs de fornecedor" }, h: { en: "Create, send, and track supplier POs.", es: "Cree, envie y siga OC de proveedor.", pt: "Crie, envie e acompanhe OCs." }, count: "dueIn" },
+    pos:       { go: "purch:purchasing", icon: "shopping-cart", t: { en: "Supplier POs", es: "OC de proveedor", pt: "OCs de fornecedor" }, h: { en: "Create, send, and track supplier POs.", es: "Cree, envie y siga OC de proveedor.", pt: "Crie, envie e acompanhe OCs." }, count: "dueIn" },
     sps:       { go: "ret:sps", icon: "plug", t: { en: "Retailer orders (SPS)", es: "Ordenes de clientes (SPS)", pt: "Pedidos de clientes (SPS)" }, h: { en: "New POs and documents from SPS.", es: "OC nuevas y documentos de SPS.", pt: "Pedidos novos e documentos do SPS." } },
     importord: { go: "demand:demandimport", icon: "file-up", t: { en: "Load SPS / ShipIQ files", es: "Cargar archivos SPS / ShipIQ", pt: "Carregar arquivos SPS / ShipIQ" }, h: { en: "Put new orders on the demand board.", es: "Ponga ordenes nuevas en el tablero.", pt: "Coloque pedidos novos no painel." } },
-    fix:       { go: "ops:maintenance", icon: "hard-hat", t: { en: "Report something broken", es: "Reportar algo roto", pt: "Reportar algo quebrado" }, h: { en: "Maintenance requests and their status.", es: "Solicitudes de mantenimiento y su estado.", pt: "Pedidos de manutencao e status." } },
+    fix:       { go: "maintenance", icon: "hard-hat", t: { en: "Report something broken", es: "Reportar algo roto", pt: "Reportar algo quebrado" }, h: { en: "Maintenance requests and their status.", es: "Solicitudes de mantenimiento y su estado.", pt: "Pedidos de manutencao e status." } },
     big:       { go: "home:desk", icon: "layout-dashboard", t: { en: "Big picture", es: "Resumen general", pt: "Visao geral" }, h: { en: "Out of stock, late orders, open inbound.", es: "Agotados, ordenes tarde, entradas abiertas.", pt: "Esgotados, pedidos atrasados, entradas abertas." } },
     daily:     { go: "home:daily", icon: "calendar-days", t: { en: "Daily numbers", es: "Numeros del dia", pt: "Numeros do dia" }, h: { en: "Today's counts by department.", es: "Conteos de hoy por departamento.", pt: "Contagens de hoje por departamento." } },
     inhub:     { go: "inb", icon: "arrow-down-to-line", t: { en: "Inbound steps", es: "Pasos de entrada", pt: "Etapas de entrada" }, h: { en: "Supplier to shelf, what is open.", es: "Del proveedor al estante, lo pendiente.", pt: "Do fornecedor a prateleira." } },
@@ -142,14 +142,14 @@
       (n > 0 ? '<span class="shm-cnt">' + esc(countLabel(j.count, n)) + "</span>" : "") +
       "</button>";
   }
-  // Home opens on "This week": production and orders-out numbers first
-  // (home-week.js), then the per-role job buttons, then the smaller cards.
+  // Week section (home-week.js): production and orders-out numbers.
+  // Home itself opens on Big picture. This view is the Week section tab.
   function week(fn) {
     try { return root.HOME_WEEK && typeof root.HOME_WEEK[fn] === "function" ? root.HOME_WEEK[fn]() || "" : ""; } catch (e) { return ""; }
   }
-  // v323b (Troy, Nov 24): Home is numbers only. No job buttons, no role picker,
-  // no to-do lists. Week numbers (home-week.js) here; Big picture and Daily
-  // numbers are the other Home subtabs.
+  // v323b (Troy, Nov 24): the Week section is numbers only. No job buttons,
+  // no role picker, no to-do lists. Big picture is the Home default.
+  // Daily numbers is the other Home section tab.
   function homeHtml() {
     return '<div id="shm-root" class="shm" data-shm="home" data-lang="' + lang() + '">' +
       (cloud() ? "" : '<div class="shm-banner">' + esc(tx(W.offline)) + "</div>") +

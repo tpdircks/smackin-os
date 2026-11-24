@@ -460,7 +460,7 @@
       out: function () { return tile({ label: tx({ en: "Out of stock", es: "Agotado", pt: "Esgotado" }), value: h.out, sub: h.low + " " + tx({ en: "low", es: "bajos", pt: "baixos" }), tone: h.out ? "bad" : (h.low ? "warn" : "ok"), go: "inv:alerts" }); },
       recv: function () { return tile({ label: tx({ en: "In RECEIVING", es: "En RECEIVING", pt: "Em RECEIVING" }), value: num(c.putAway), sub: tx({ en: "lots to put away", es: "lotes por guardar", pt: "lotes para guardar" }), tone: num(c.putAway) ? "warn" : "ok", go: "inb:move" }); },
       hold: function () { return tile({ label: tx({ en: "On hold / no COA", es: "Retenido / sin COA", pt: "Retido / sem COA" }), value: num(c.onHold) + num(c.noCoa), tone: num(c.onHold) + num(c.noCoa) ? "bad" : "ok", go: "qa:trQa" }); },
-      due: function () { return tile({ label: tx({ en: "Deliveries due", es: "Entregas por llegar", pt: "Entregas a chegar" }), value: num(c.dueIn), sub: tx({ en: "this week", es: "esta semana", pt: "esta semana" }), tone: num(c.dueIn) ? "info" : "ok", go: "inb:purchasing" }); },
+      due: function () { return tile({ label: tx({ en: "Deliveries due", es: "Entregas por llegar", pt: "Entregas a chegar" }), value: num(c.dueIn), sub: tx({ en: "this week", es: "esta semana", pt: "esta semana" }), tone: num(c.dueIn) ? "info" : "ok", go: "purch:purchasing" }); },
       ship: function () { return tile({ label: tx({ en: "Ship in 2 days", es: "Salen en 2 dias", pt: "Saem em 2 dias" }), value: num(c.shipSoon), sub: num(c.toRelease) + " " + tx({ en: "trailers not released", es: "trailers sin liberar", pt: "trailers sem liberar" }), tone: num(c.toRelease) ? "warn" : "info", go: "outb" }); },
       pmac: function () {
         var d = pmacDaily(14), v = d[d.length - 1].v;
@@ -494,7 +494,7 @@
       for (var i = 0; i < wk.length; i++) if (p.expect >= wk[i].from && p.expect <= wk[i].to) { wk[i].n++; return; }
     });
     var flow = [
-      { v: (m.posSoon || 0) + (m.posLate || 0), tone: "info", label: tx({ en: "1 Due this week", es: "1 Llegan esta semana", pt: "1 Chegam esta semana" }), go: "inb:purchasing" },
+      { v: (m.posSoon || 0) + (m.posLate || 0), tone: "info", label: tx({ en: "1 Due this week", es: "1 Llegan esta semana", pt: "1 Chegam esta semana" }), go: "purch:purchasing" },
       { v: (m.inRecv || []).length, tone: "warn", label: tx({ en: "2 In RECEIVING", es: "2 En RECEIVING", pt: "2 Em RECEIVING" }), go: "inb:move" },
       { v: (m.coaMissing || []).length, tone: "bad", label: tx({ en: "3 Missing COA", es: "3 Sin COA", pt: "3 Sem COA" }), go: "inb:coalib" },
       { v: (m.held || []).length, tone: "bad", label: tx({ en: "On hold", es: "Retenido", pt: "Retido" }), go: "inb:quarantine" }
@@ -505,7 +505,7 @@
         columns(recv.map(function (x) { return { label: dow(x.day), sub: dayLabel(x.day), v: x.v, tone: x.day === t ? "orange" : "ok" }; }), { h: 130, aria: "deliveries per day" }), "inb:recvlog") +
       card(tx({ en: "Open supplier POs by expected week", es: "OC abiertas por semana esperada", pt: "OCs abertas por semana prevista" }),
         (late ? late + " " + tx({ en: "past expected date", es: "pasadas de fecha", pt: "passadas da data" }) + " · " : "") + (nodate ? nodate + " " + tx({ en: "with no date", es: "sin fecha", pt: "sem data" }) : ""),
-        columns(wk.map(function (w, i) { return { label: i === 0 ? tx({ en: "This wk", es: "Esta sem", pt: "Esta sem" }) : dayLabel(w.from), v: w.n, tone: i === 0 ? "orange" : "info" }; }), { h: 130, aria: "POs by week" }), "inb:purchasing") +
+        columns(wk.map(function (w, i) { return { label: i === 0 ? tx({ en: "This wk", es: "Esta sem", pt: "Esta sem" }) : dayLabel(w.from), v: w.n, tone: i === 0 ? "orange" : "info" }; }), { h: 130, aria: "POs by week" }), "purch:purchasing") +
       "</div>" + stamp() + "</div>";
   }
 
