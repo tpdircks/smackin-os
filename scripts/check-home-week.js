@@ -87,6 +87,29 @@ eq(cm.prog.kind === "none" && cm.isNew, "no progress data = not started / no dat
 var th = P.rows.filter(function (r) { return r.key === "174676"; })[0];
 eq(th && th.kind === "wip" && th.due === "2026-12-02" && th.customer === "Thrifty Retail Services", "WIP PO tab order shows with its delivery date");
 
+// v324: drop rules for invoiced POs
+eq(F.poKey("PO - #177505 ") === "177505" && F.poKey("PO - 000258") === "000258" && F.poKey("PO 174676") === "174676" && F.poKey("10002181608-0554") === "10002181608", "poKey reads PO - #nnn and PO - nnn formats");
+function pr2(extra) { var r = JSON.parse(JSON.stringify(praw)); Object.keys(extra).forEach(function (k) { r[k] = (r[k] || []).concat(extra[k]); }); return F.buildPriorities(r, T); }
+var thOpen = { orders: [{ customer: "Thrifty Retail Services", customer_po: "PO 174676", order_id: "HEGLKTVY-0020", status: "Open", stripe_link: "x", created_at: "2026-11-24T16:10:00Z" }] };
+eq(pr2(thOpen).rows.some(function (r) { return r.key === "174676"; }), "Thrifty shows while its WIP row is Open");
+var P2 = pr2({ orders: thOpen.orders.concat([{ customer: "Thrifty Retail Services", customer_po: "PO 174676", order_id: "HEGLKTVY-0020", status: "Complete", stripe_link: "x", created_at: "2026-11-24T18:10:00Z" }]) });
+eq(!P2.rows.some(function (r) { return r.key === "174676"; }) && P2.hidden.invoiced.indexOf("174676") >= 0, "Thrifty drops when a Complete (green) WIP row lands, even with older Open copies");
+var sdOpen = { customer: "Sidelines Sports", customer_po: "PO - 000258", order_id: "FA714FB8-0023", status: "Open", stripe_link: "x", notes: "WILL CALL PICK UP", created_at: "2026-11-24T13:10:00Z" };
+eq(pr2({ orders: [sdOpen] }).rows.some(function (r) { return r.key === "P000258"; }), "Sidelines (list P000258, sheet PO - 000258) shows while Open");
+var sdDone = JSON.parse(JSON.stringify(sdOpen)); sdDone.status = "Complete"; sdDone.customer_po = "PO - 000258";
+eq(!pr2({ orders: [sdOpen, sdDone] }).rows.some(function (r) { return r.key === "P000258"; }), "Sidelines drops when green: PO - 000258 matches list P000258");
+var sdInv = JSON.parse(JSON.stringify(sdOpen)); sdInv.status = "Complete"; sdInv.customer_po = "";
+eq(!pr2({ orders: [sdOpen, sdInv] }).rows.some(function (r) { return r.key === "P000258"; }), "WIP order drops by its Stripe invoice # when the PO cell is blank");
+var P3 = pr2({ invoices: [{ doc_type: "810 Invoice", po_number: "15006058", received_at: "2026-11-24T15:00:00Z" }] });
+eq(!P3.rows.some(function (r) { return r.key === "15006058"; }) && P3.hidden.sps810.indexOf("15006058") >= 0, "SPS 810 invoice drops the PO from Home (display only)");
+var P4 = pr2({ invoices: [{ doc_type: "850 Purchase Order", po_number: "15006058" }] });
+eq(P4.rows.some(function (r) { return r.key === "15006058"; }), "an 850 alone does not drop a PO");
+var P5 = pr2({ orders: thOpen.orders, hide: [{ key: "home:priorities:hide", value: JSON.stringify(["PO 174676", "10002181608"]) }] });
+eq(!P5.rows.some(function (r) { return r.key === "174676" || r.key === "10002181608"; }) && P5.hidden.manual.length === 2, "kv home:priorities:hide removes POs with a data change");
+var P6 = pr2({ orders: thOpen.orders, hide: [{ key: "home:priorities:hide", value: "not json" }] });
+eq(P6.rows.some(function (r) { return r.key === "174676"; }), "bad hide value is ignored, nothing hidden");
+eq(src.indexOf('fetchKv("home:priorities:hide")') > 0 && /like\("doc_type", "810%"\)/.test(src), "Home reads the hide list and SPS 810s");
+
 // rendering (EN and ES) via a tiny DOM stub
 function render(langEs) {
   var cls = { contains: function (c) { return c === "active"; } };
@@ -120,8 +143,8 @@ eq(src.indexOf("setInterval") < 0 && src.indexOf("setTimeout") < 0, "no timers i
 
 // wiring
 var html = read("index.html"), sw = read("service-worker.js"), home = read("simple-home.js");
-eq(html.indexOf('src="home-week.js?b=1"') > 0 && html.indexOf('src="home-week.js?b=1"') < html.indexOf('src="simple-home.js?b=2"'), "home-week.js loads before simple-home.js");
-eq(sw.indexOf('"./home-week.js"') > 0 && sw.indexOf('const CACHE = "smackin-inv-v323"') >= 0, "service worker caches home-week.js on v323");
+eq(html.indexOf('src="home-week.js?b=2"') > 0 && html.indexOf('src="home-week.js?b=2"') < html.indexOf('src="simple-home.js?b=2"'), "home-week.js loads before simple-home.js");
+eq(sw.indexOf('"./home-week.js"') > 0 && sw.indexOf('const CACHE = "smackin-inv-v324"') >= 0, "service worker caches home-week.js on v324");
 var hh = home.slice(home.indexOf("function homeHtml()"), home.indexOf("function stepCard("));
 eq(hh.indexOf('week("top") + week("below")') >= 0, "Home draws the week numbers");
 eq(hh.indexOf("jobCard") < 0 && hh.indexOf("shm-roles") < 0 && hh.indexOf("W.hello") < 0, "Home has no job buttons, role picker or to-do list (v323b)");

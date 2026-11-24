@@ -105,11 +105,11 @@ var html = read("index.html");
 var iH = html.indexOf('src="inout-hubs.js?b=2"'), iS = html.indexOf('src="simple-home.js?b=2"'), iN = html.indexOf('src="simple-nav.js?b=1"');
 eq(iH > 0 && iS > iH && iN > iS, "simple-home and simple-nav load after inout-hubs");
 eq(html.indexOf('src="dept-homes.js?b=41"') > 0 && html.indexOf('src="sw-escape.js?b=40"') > 0, "cache bust dept-homes 41, sw-escape 40");
-eq(html.indexOf('var EMBEDDED = "smackin-inv-v323"') > 0, "index build v323");
-eq(read("sw-escape.js").indexOf('"smackin-inv-v323"') > 0, "sw-escape v323");
+eq(html.indexOf('var EMBEDDED = "smackin-inv-v324"') > 0, "index build v324");
+eq(read("sw-escape.js").indexOf('"smackin-inv-v324"') > 0, "sw-escape v324");
 var sw = read("service-worker.js");
-eq(sw.indexOf('const CACHE = "smackin-inv-v323"') >= 0 && sw.indexOf('"./home-week.js"') > 0 && sw.indexOf('"./simple-home.js"') > 0 && sw.indexOf('"./simple-nav.js"') > 0, "service worker v323 caches the new files");
-eq(read("build-id.txt").trim() === "smackin-inv-v323", "build-id v323");
+eq(sw.indexOf('const CACHE = "smackin-inv-v324"') >= 0 && sw.indexOf('"./home-week.js"') > 0 && sw.indexOf('"./simple-home.js"') > 0 && sw.indexOf('"./simple-nav.js"') > 0, "service worker v324 caches the new files");
+eq(read("build-id.txt").trim() === "smackin-inv-v324", "build-id v324");
 eq(read("app.js").length > 600000, "app.js is whole");
 
 if (failed) { console.log(failed + " simplify check(s) failed"); process.exit(1); }
