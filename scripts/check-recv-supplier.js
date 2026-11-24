@@ -127,13 +127,13 @@ eq(read("raw-coa.js").indexOf('toLowerCase() !== "unknown"') >= 0, "coa fallback
 var rawExp = read("raw-exp.js");
 eq(rawExp.indexOf("function suggestFireHouseLot") >= 0 && rawExp.indexOf("11/05/2027/4214") >= 0, "Fire House lot hint stays");
 eq(rawExp.indexOf("us + \"/\" + item") >= 0, "Fire House lot is still expiration plus item number");
-eq(read("service-worker.js").indexOf('const CACHE = "smackin-inv-v318"') >= 0, "cache");
-eq(read("build-id.txt").trim() === "smackin-inv-v318", "build id");
+eq(read("service-worker.js").indexOf('const CACHE = "smackin-inv-v319"') >= 0, "cache");
+eq(read("build-id.txt").trim() === "smackin-inv-v319", "build id");
 var index = read("index.html");
 eq(index.indexOf('src="app.js?b=222"') >= 0, "app bust");
 eq(index.indexOf('src="db.js?b=111"') >= 0, "db bust");
 eq(index.indexOf('src="data-health.js?b=18"') >= 0, "data health bust");
-eq(index.indexOf('src="trace.js?b=27"') >= 0, "trace bust");
+eq(index.indexOf('src="trace.js?b=28"') >= 0, "trace bust");
 eq(index.indexOf('src="receiving-sop.js?b=10"') >= 0, "sop bust");
 eq(index.indexOf('src="raw-coa.js?b=9"') >= 0, "coa bust");
 eq(index.indexOf('src="sw-escape.js?b=36"') >= 0, "escape bust");
