@@ -143,15 +143,15 @@ eq(src.indexOf("setInterval") < 0 && src.indexOf("setTimeout") < 0, "no timers i
 
 // wiring
 var html = read("index.html"), sw = read("service-worker.js"), home = read("simple-home.js");
-eq(html.indexOf('src="home-week.js?b=2"') > 0 && html.indexOf('src="home-week.js?b=2"') < html.indexOf('src="simple-home.js?b=3"'), "home-week.js loads before simple-home.js");
-eq(sw.indexOf('"./home-week.js"') > 0 && sw.indexOf('const CACHE = "smackin-inv-v325"') >= 0, "service worker caches home-week.js on v325");
+eq(html.indexOf('src="home-week.js?b=2"') > 0 && html.indexOf('src="home-week.js?b=2"') < html.indexOf('src="simple-home.js?b=4"'), "home-week.js loads before simple-home.js");
+eq(sw.indexOf('"./home-week.js"') > 0 && sw.indexOf('const CACHE = "smackin-inv-v326"') >= 0, "service worker caches home-week.js on v326");
 var hh = home.slice(home.indexOf("function homeHtml()"), home.indexOf("function stepCard("));
 eq(hh.indexOf('week("top") + week("below")') >= 0, "Home draws the week numbers");
 eq(hh.indexOf("jobCard") < 0 && hh.indexOf("shm-roles") < 0 && hh.indexOf("W.hello") < 0, "Home has no job buttons, role picker or to-do list (v323b)");
 eq(src.indexOf("dueNext7") < 0 && en.indexOf("Due in the next 7 days") < 0, "no due-next-7-days to-do card on Home");
 eq(en.indexOf("hw-sbad") >= 0 && en.indexOf("Low or out") >= 0, "low/out stock shown as numbers");
 var dh = read("dept-homes.js");
-eq(dh.indexOf('home.subs = ["today", "daily", "desk", "board"]') >= 0 && dh.indexOf('today: L("Week", "Semana"') >= 0, "Home subtabs: Week (default), Daily numbers, Big picture");
+eq(dh.indexOf('home.subs = ["desk", "today", "daily", "board"]') >= 0 && dh.indexOf('tab("home", NL("Home", "Inicio", "Inicio"), "home", "desk", "", "desk today daily board")') >= 0, "Home subtabs: Big picture (default), Week, Daily numbers, TV board");
 
 if (failed) { console.log(failed + " home-week check(s) failed"); process.exit(1); }
 console.log("home-week ok");

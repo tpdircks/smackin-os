@@ -81,15 +81,15 @@
     prodorders: "mixing", reordertracker: "mixing", launch: "mixing", mixing: "mixing",
     pmac: "pmac", pmacout: "pmac", floor: "demand",
     compliance: "qa", quality: "qa", disposition: "qa",
-    maintenance: "ops",
+    maintenance: "maintenance",
     produce: "ful", retailprod: "ful", ecomprod: "ful", skulookup: "ful",
     prodlog: "ful", fulfilldaily: "ful", flavinv: "ful", stockbuild: "ful",
     orders: "ful", ordersretail: "ful", ordersecom: "ful", orderdocs: "ful",
     shiplog: "ship",
     demand: "demand", makeplan: "demand", demandboard: "demand", demandsched: "demand", demandimport: "demand",
     ecomdemand: "demand", forecast: "demand",
-    people: "ops", improve: "ops", rd: "ops", log: "ops",
-    reference: "ops", board: "mixing", settings: "ops", history: "ops"
+    people: "people", improve: "ops", rd: "rd", log: "ops",
+    reference: "people", board: "mixing", settings: "ops", history: "ops"
   };
 
   function tx(v) {
@@ -230,7 +230,7 @@
   TOOLS.trailer = { fn: "trailer", icon: "clipboard-check", title: { en: "Trailer Release", es: "Liberacion de trailer", pt: "Liberacao de trailer" }, blurb: { en: "Inspect the trailer and release the load (SQF).", es: "Inspeccione el trailer y libere la carga (SQF).", pt: "Inspecione o trailer e libere a carga (SQF)." } };
 
   // Old department id -> the top tab that now holds it.
-  var NEW_HOME = { purch: "inb", recv: "inb", ship: "outb" };
+  var NEW_HOME = { recv: "inb", ship: "outb" };
   // Screens that moved to Inbound or Outbound, by sidebar tab or button id.
   var MOVED_TAB = { orderdocs: "outb", shiplog: "outb" };
   var MOVED_BTN = { "trc-nav-ship": "outb", "obr-nav": "outb", "sf-nav": "outb" };
@@ -515,15 +515,15 @@
     function noBoard(dept) { if (dept && dept.actions) dept.actions = dept.actions.filter(function (a) { return a !== "board"; }); }
     var home = d("home");
     if (home) {
-      home.primary = "today";
+      home.primary = "desk";
       home.actions = [];
-      home.subs = ["today", "daily", "desk", "board"];
+      home.subs = ["desk", "today", "daily", "board"];
       home.fold = ["board"];
       home.short = { today: L("Week", "Semana", "Semana"), desk: L("Big picture", "Resumen", "Visao geral"), daily: L("Daily numbers", "Numeros del dia", "Numeros do dia") };
       home.icon = "home";
       home.label = L("Home", "Inicio", "Inicio");
       home.title = L("Home", "Inicio", "Inicio");
-      home.intro = L("Plant numbers: this week, each day, and the big picture.", "Numeros de la planta: esta semana, cada dia y el resumen.", "Numeros da planta: esta semana, cada dia e o resumo.");
+      home.intro = L("Plant numbers: the big picture, this week, and each day.", "Numeros de la planta: el resumen, esta semana y cada dia.", "Numeros da planta: o resumo, esta semana e cada dia.");
     }
     var inb = d("inb");
     if (inb) {
@@ -589,7 +589,7 @@
       ops.fold = ["improve", "rd", "acct", "health", "board"];
       ops.label = L("Admin", "Admin", "Admin");
       ops.title = L("Admin", "Admin", "Admin");
-      ops.intro = L("Maintenance, people, SOPs, settings.", "Mantenimiento, personal, SOPs, ajustes.", "Manutencao, pessoas, SOPs, ajustes.");
+      ops.intro = L("Settings, improvement ideas, the activity log, and the data check.", "Ajustes, ideas de mejora, el registro de actividad y la revision de datos.", "Ajustes, ideias de melhoria, o registro de atividade e a checagem de dados.");
     }
   })();
   // ---- v325 nav (Troy, Nov 24): eleven top tabs, grouped section tabs ------
@@ -612,9 +612,10 @@
   };
   var NAV_TABS = [];
   function tab(id, label, icon, primary, actions, groups) { NAV_TABS.push({ id: id, label: label, icon: icon, primary: primary, actions: actions, groups: groups }); }
-  tab("home", NL("Home", "Inicio", "Inicio"), "home", "today", "", "today daily desk board");
+  tab("home", NL("Home", "Inicio", "Inicio"), "home", "desk", "", "desk today daily board");
   tab("demand", NL("Plan", "Plan", "Plano"), "activity", "makeplan", "demandimport", "plan: makeplan demandboard demandsched forecast | run: prodhub prodorders | records: hist upload launch | more: demand floor");
-  tab("inb", NL("Inbound", "Entrada", "Entrada"), "arrow-down-to-line", "inhub", "", "inhub | buy: purchasing expreceipts reorder15 | dock: receive recvlog services | check: coalib quarantine | store: move");
+  tab("purch", NL("Purchasing", "Compras", "Compras"), "shopping-cart", "purchasing", "", "purchasing expreceipts reorder15");
+  tab("inb", NL("Inbound", "Entrada", "Entrada"), "arrow-down-to-line", "inhub", "", "inhub | dock: receive recvlog services | check: coalib quarantine | store: move");
   tab("mixing", NL("Mixing", "Mezcla", "Mistura"), "cooking-pot", "mixing", "prodorders trMix batchrec", "today: mixing prodready | supplies: seasoning reordertracker | recipes: recipes");
   tab("pmac", NL("P-Mac", "P-Mac", "P-Mac"), "package", "pmac", "prodorders pmacout trPmac", "today: pmac fglots | more: produce");
   tab("inv", NL("Inventory", "Inventario", "Estoque"), "boxes", "dash", "receive adjust count move alerts", "stock: dash finbags flavinv dtfg seed returns | where: locations facility trMove | catalog: skus printlabels analytics");
@@ -622,9 +623,12 @@
   tab("ecom", NL("E-commerce", "E-commerce", "E-commerce"), "shopping-cart", "ordersEcom", "ecomprod trUse", "orders: ordersEcom | pack: fulfilldaily skulookup | lots: trElog | plan: ecomdemand | issues: fulfillerr");
   tab("outb", NL("Outbound", "Salida", "Saida"), "arrow-up-from-line", "outhub", "", "outhub | ship: trShip trailer shiplog shipments | docs: orderdocs");
   tab("qa", NL("Quality", "Calidad", "Qualidade"), "shield-check", "qacheck", "trQa quality", "daily: qacheck sqftasks | lots: trace trLabels shortdated | program: compliance");
-  tab("ops", NL("Admin", "Admin", "Admin"), "settings", "maintenance", "", "facility: maintenance | team: people reference | improve: improve rd | system: settings acct health");
+  tab("maintenance", NL("Maintenance", "Mantenimiento", "Manutenção"), "hard-hat", "maintenance", "", "maintenance");
+  tab("people", NL("People", "Personal", "Pessoas"), "users", "people", "", "people reference");
+  tab("rd", NL("R&D", "I+D", "P&D"), "flask-conical", "rd", "", "rd");
+  tab("ops", NL("Admin", "Admin", "Admin"), "settings", "settings", "", "settings improve acct health");
   // Old department id -> [tab that owns it now, tool to open there].
-  var LEGACY = { prod: ["demand", "prodhub"], ful: ["ret", ""], ship: ["outb", "shipments"], purch: ["inb", "purchasing"], recv: ["inb", "recvlog"] };
+  var LEGACY = { prod: ["demand", "prodhub"], ful: ["ret", ""], ship: ["outb", "shipments"], recv: ["inb", "recvlog"] };
   // Short names on the section tabs and action cards (tool title otherwise).
   var NAV_SHORT = {
     today: NL("Week", "Semana", "Semana"), daily: NL("Daily numbers", "Numeros del dia", "Numeros do dia"), desk: NL("Big picture", "Resumen", "Visao geral"),
@@ -656,7 +660,13 @@
   var NAV_INTRO = {
     ret: NL("Retail orders, the SPS feed, and retail pallets.", "Ordenes retail, SPS y paletas retail.", "Pedidos de varejo, SPS e paletes de varejo."),
     ecom: NL("E-commerce orders, the daily log, lots, and errors.", "Ordenes e-commerce, diario, lotes y errores.", "Pedidos e-commerce, diario, lotes e erros."),
-    demand: NL("Make plan, order board, schedule, and production records.", "Plan, tablero, programa y registros de produccion.", "Plano, painel, programa e registros de producao.")
+    demand: NL("Make plan, order board, schedule, and production records.", "Plan, tablero, programa y registros de produccion.", "Plano, painel, programa e registros de producao."),
+    purch: NL("Supplier POs, what is due in, and the 1.5oz reorder.", "OC de proveedor, lo que llega y la reorden 1.5oz.", "OCs de fornecedor, o que chega e a reposicao 1.5oz."),
+    inb: NL("Receive at the dock, check the COA, then put it away.", "Reciba en el muelle, revise el COA y luego guardelo.", "Receba no cais, confira o COA e depois guarde."),
+    maintenance: NL("Requests, repairs, and projects.", "Solicitudes, reparaciones y proyectos.", "Pedidos, reparos e projetos."),
+    people: NL("Team directory, SOPs, and docs.", "Directorio del equipo, SOPs y documentos.", "Diretorio da equipe, SOPs e documentos."),
+    rd: NL("Research requests and what is still out.", "Solicitudes de investigacion y lo que sigue pendiente.", "Pedidos de pesquisa e o que ainda esta pendente."),
+    ops: NL("Settings, improvement ideas, the activity log, and the data check.", "Ajustes, ideas de mejora, el registro de actividad y la revision de datos.", "Ajustes, ideias de melhoria, o registro de atividade e a checagem de dados.")
   };
   // Which top tab owns each screen. First section tab wins, then actions.
   var OWNER = {};
@@ -3076,11 +3086,11 @@
       "#deptbar .dept-tab.on{color:#fff;background:rgba(242,107,33,.18);border-bottom-color:var(--orange,#F26B21);box-shadow:none}",
       "#deptbar .dept-tab.on .dept-tab-ico,#deptbar .dept-tab.on svg.dept-tab-ico{color:var(--orange,#F26B21);opacity:1}",
       "#deptbar .dept-tab:focus-visible{outline:2px solid #fff;outline-offset:-2px}",
-      "@media(max-width:1240px){#deptbar .dept-tab{padding:7px 7px 6px;font-size:12.5px;gap:4px}}",
-      "@media(max-width:1100px){#deptbar{padding:0 4px}#deptbar .dept-tab{padding:7px 6px 6px;font-size:12px;gap:3px}#deptbar .dept-tab svg.dept-tab-ico{width:12px;height:12px}}",
-      "@media(max-width:900px){#deptbar{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px;padding:5px 6px 6px}#deptbar .dept-tab{justify-content:center;border:0;border-radius:7px;background:rgba(255,255,255,.07);padding:6px 4px}#deptbar .dept-tab.on{background:var(--orange,#F26B21);color:#fff}#deptbar .dept-tab.on svg.dept-tab-ico{color:#fff}}",
-      "@media(max-width:640px){#deptbar{gap:2px;padding:4px 4px 5px}#deptbar .dept-tab{flex-direction:column;gap:2px;font-size:10px;letter-spacing:-.1px;padding:5px 1px;min-height:40px}#deptbar .dept-tab .dept-tab-label{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}#deptbar .dept-tab svg.dept-tab-ico{width:15px;height:15px}}",
-      "@media(max-width:340px){#deptbar{grid-template-columns:repeat(4,minmax(0,1fr))}}",
+      "@media(max-width:1400px){#deptbar .dept-tab{padding:7px 8px 6px;font-size:12.5px;gap:4px}}",
+      "@media(max-width:1280px){#deptbar{padding:0 4px}#deptbar .dept-tab{padding:6px 5px 5px;font-size:12px;gap:3px}#deptbar .dept-tab svg.dept-tab-ico{width:13px;height:13px}}",
+      "@media(max-width:1100px){#deptbar .dept-tab{padding:6px 3px 5px;font-size:11px;gap:2px}#deptbar .dept-tab svg.dept-tab-ico{width:12px;height:12px}}",
+      "@media(max-width:900px){#deptbar{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px;padding:5px 6px 6px}#deptbar .dept-tab{justify-content:center;border:0;border-radius:7px;background:rgba(255,255,255,.07);padding:6px 4px;white-space:normal}#deptbar .dept-tab .dept-tab-label{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.05}#deptbar .dept-tab.on{background:var(--orange,#F26B21);color:#fff}#deptbar .dept-tab.on svg.dept-tab-ico{color:#fff}}",
+      "@media(max-width:640px){#deptbar{grid-template-columns:repeat(4,minmax(0,1fr));gap:2px;padding:4px 4px 5px}#deptbar .dept-tab{flex-direction:column;gap:2px;font-size:11px;letter-spacing:0;padding:5px 2px;min-height:44px}#deptbar .dept-tab .dept-tab-label{max-width:100%;overflow:visible;text-overflow:clip;white-space:normal;display:block;line-height:1.05}#deptbar .dept-tab svg.dept-tab-ico{width:15px;height:15px}}",
       "#dept-shell{background:#fff;border-bottom:1px solid var(--line,#d7dde6);margin:-4px -6px 8px;padding:3px 8px}",
       ".dsg-wrap{position:relative}",
       "#dept-shell .dept-subs-g{display:flex;flex-wrap:nowrap;align-items:center;gap:0;margin:0;padding:1px 0;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}",
@@ -3209,9 +3219,18 @@
     }
     window.SMK_VIEW_LOCKS = window.SMK_VIEW_LOCKS || [];
     window.SMK_VIEW_LOCKS.push(function () { return !!homeId; });
+    // v326: Home opens on Big picture. A floor TV link (?board=) is left alone.
+    if (!boardLink()) {
+      barCurrent = "home";
+      shellHere = "desk";
+      markBar();
+    }
     noteDashboard();
     dressShell();
     syncBackBar();
+  }
+  function boardLink() {
+    try { return !!(new URLSearchParams(location.search).get("board")); } catch (e) { return false; }
   }
 
   window.DEPT = {
