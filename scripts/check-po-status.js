@@ -30,7 +30,7 @@ eq(app.indexOf("Partially received") >= 0, "expected receipts pill");
 eq(app.indexOf("notesWithStatus") >= 0, "status tag preserved");
 eq(dash.indexOf("pill partial") >= 0 && dash.indexOf("pill status") >= 0, "dashboard chips");
 eq(html.indexOf("po-status.js?b=4") >= 0, "po-status cache bust");
-eq(html.indexOf("dashboard.js?b=6") >= 0, "dashboard cache bust");
+eq(html.indexOf("dashboard.js?b=7") >= 0, "dashboard cache bust");
 eq(html.indexOf("dept-density.css?b=2") >= 0, "density css");
 eq(sw.indexOf("./dept-density.css") >= 0, "density css cached");
 eq(dash.indexOf("Stock exceptions") >= 0 && dash.indexOf("Orders pulled") >= 0 && dash.indexOf('class="dept-grid"') >= 0, "dashboard sections");

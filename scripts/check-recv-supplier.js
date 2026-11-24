@@ -133,7 +133,7 @@ var index = read("index.html");
 eq(index.indexOf('src="app.js?b=222"') >= 0, "app bust");
 eq(index.indexOf('src="db.js?b=111"') >= 0, "db bust");
 eq(index.indexOf('src="data-health.js?b=18"') >= 0, "data health bust");
-eq(index.indexOf('src="trace.js?b=29"') >= 0, "trace bust");
+eq(index.indexOf('src="trace.js?b=30"') >= 0, "trace bust");
 eq(index.indexOf('src="receiving-sop.js?b=10"') >= 0, "sop bust");
 eq(index.indexOf('src="raw-coa.js?b=9"') >= 0, "coa bust");
 eq(index.indexOf('src="sw-escape.js?b=36"') >= 0, "escape bust");

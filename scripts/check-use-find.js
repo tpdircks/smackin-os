@@ -84,7 +84,7 @@ assert(trace.indexOf("\u2014") < 0 && trace.indexOf("\u2013") < 0, "no dash char
 
 var html = read("index.html");
 var sw = read("service-worker.js");
-assert(html.indexOf('src="trace.js?b=29"') >= 0, "trace cache bust");
+assert(html.indexOf('src="trace.js?b=30"') >= 0, "trace cache bust");
 assert(sw.indexOf('const CACHE = "smackin-inv-v319"') >= 0, "cache");
 assert(read("build-id.txt").trim() === "smackin-inv-v319", "build id");
 

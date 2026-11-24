@@ -3562,9 +3562,13 @@
     for (var i = 0; i < els.length; i++) {
       var t = String(els[i].type || "text").toLowerCase();
       if (t === "button" || t === "submit" || t === "checkbox" || t === "radio" || t === "file" || t === "hidden") continue;
+      // Date and search boxes are filters (E-com lot log dates), not entries.
+      if (t === "date" || t === "time" || t === "datetime-local" || t === "search") continue;
       if (String(els[i].value || "").trim() !== "" && els[i].value !== els[i].defaultValue) return true;
     }
     var ae = document.activeElement;
+    var aeT = ae ? String(ae.type || "").toLowerCase() : "";
+    if (aeT === "date" || aeT === "time" || aeT === "datetime-local" || aeT === "search") return false;
     return !!(ae && root.contains(ae) && ae.tagName !== "SELECT" && String(ae.value || "").trim() !== "");
   }
   window.SMK_BUSY.push(function () { return ACTIVE && typingTrace() && traceTyped(); });

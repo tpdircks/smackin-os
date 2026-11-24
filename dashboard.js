@@ -13,6 +13,8 @@
      - Inbound: open and partially received supplier_pos (po-status.js) plus
        legacy purchase_orders still ordered or partial. Closed, received, and
        cancelled POs are out. [[STATUS:...]] notes show as a pill on the PO.
+   v322: smk-viz.js draws the visual summary on top (tiles, charts). Past-due
+   demand is no longer shown here (standing rule).
    Layout is a section board (dept-density.css): stock, pulled orders,
    inbound, and ops pulse. Same data as before. No writes. No refresh timer.
    ========================================================================== */
@@ -576,12 +578,11 @@
       pt: "Este navegador nao esta na base compartilhada. O que aparece abaixo nao e dado ao vivo da planta."
     }) + '</div>';
 
-    var late = [];
-    try { late = pastDueGroups(); } catch (e4) { late = []; }
+    // v322: past-due demand is never shown (standing rule). pastDueGroups()
+    // stays for the order board; the dashboard no longer lists it.
     var watch = inbound.filter(function (r) { return r.partial || (r.expect && r.expect < today); });
     var counts = '<div class="fc-kpis">' +
       kpiBtn("df-out", split.out.length, tx({ en: "Out of stock", es: "Agotado", pt: "Esgotado" }), split.out.length ? "bad" : "ok") +
-      kpiBtn("df-pastdue", late.length, tx({ en: "Past-due demand", es: "Demanda vencida", pt: "Demanda vencida" }), late.length ? "bad" : "ok") +
       kpiBtn("df-inbound", watch.length || inbound.length, watch.length
         ? tx({ en: "Inbound to watch", es: "Entrada a revisar", pt: "Entrada para ver" })
         : tx({ en: "Inbound open", es: "Entrada abierta", pt: "Entrada aberta" }), watch.length ? "warn" : "ok") +
@@ -608,10 +609,14 @@
 
     var lead = '<div class="card df-lead"><div class="df-lead-copy"><h2>' + tx({ en: "Dashboard", es: "Panel", pt: "Painel" }) + '</h2>' +
       '<p class="hint">' + tx({
-        en: "Start here: stockouts, past-due demand, and inbound that still needs a receive or a status check.",
-        es: "Empiece aqui: agotados, demanda vencida y entrada que aun hay que recibir o revisar.",
-        pt: "Comece aqui: esgotados, demanda vencida e entrada que ainda precisa de recebimento ou revisao."
+        en: "Start here: stockouts and inbound that still needs a receive or a status check.",
+        es: "Empiece aqui: agotados y entrada que aun hay que recibir o revisar.",
+        pt: "Comece aqui: esgotados e entrada que ainda precisa de recebimento ou revisao."
       }) + "</p></div>" + counts + "</div>";
+    // v322: visual summary (smk-viz.js) replaces the text lead when loaded.
+    var viz = "";
+    try { if (window.SMK_VIZ && typeof SMK_VIZ.dashboard === "function") viz = SMK_VIZ.dashboard(); } catch (eViz) { viz = ""; }
+    if (viz) { lead = ""; banner = ""; }
 
     var stock = section("stock", tx({ en: "Stock exceptions", es: "Excepciones de stock", pt: "Excecoes de estoque" }),
       '<div class="dept-grid">' + stockCard("out", split.out) + stockCard("low", split.low) + "</div>");
@@ -620,11 +625,12 @@
     var inbound = section("inbound", tx({ en: "Inbound / Purchasing", es: "Entrada / Compras", pt: "Entrada / Compras" }),
       '<div class="card" id="df-inbound">' + head(tx({ en: "Inbound still open", es: "Entrada aun abierta", pt: "Entrada ainda aberta" }), go("purchasing", "Purchasing") + go("expreceipts", tx({ en: "Receive", es: "Recibir", pt: "Receber" }))) + inboundBody + "</div>");
     var pulse = section("pulse", tx({ en: "Ops pulse", es: "Pulso operativo", pt: "Pulso operacional" }),
-      pastDueCard(late) + note);
+      note);
 
     scheduleFit();
     return banner +
-      '<div class="dept-board df-board" id="df-board">' + lead + stock + orders + inbound + pulse + "</div>";
+      viz + '<h3 class="dept-sec df-detail">' + tx({ en: "Details", es: "Detalle", pt: "Detalhes" }) + '</h3>' +
+      '<div class="dept-board df-board' + (viz ? " df-board-viz" : "") + '" id="df-board">' + lead + stock + orders + inbound + pulse + "</div>";
   }
 
   function fitBoard() {

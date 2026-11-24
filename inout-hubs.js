@@ -12,6 +12,14 @@
    ORDER_LANE (same retail list as the Retail orders board), OUTBOUND_FOLDERS, and a
    read-only select on qc_forms (form_type outbound_trailer_release).
    Opened by dept-homes.js (tools inhub / outhub). No app.js edit.
+   v322: each hub opens with one "Do this next" box (the most urgent open
+   item and its button). Step cards keep one orange button; other links
+   are plain text links. Rarely used screens moved to the More fold in
+   the subtabs (dept-homes.js), so the "Other screens" boxes are gone.
+   Outbound step 2 opens the Fulfillment page (data-smk-go, simple-home.js).
+   counts() feeds the Home job buttons.
+   v322 (visuals): SMK_VIZ.inbound / SMK_VIZ.outbound draw charts under the
+   step cards. Past-due outbound rows are hidden (hidePastDue).
    Exposes window.INOUT_HUBS. No DOM timers.
    ========================================================================== */
 (function (root) {
@@ -20,7 +28,7 @@
   var doc = root.document;
   var RELEASE_TYPE = "outbound_trailer_release";
   var HOLD_ZONES = ["QA-HOLD", "QUARANTINE", "RETURNS-HOLD"];
-  var ROW_CAP = 15;
+  var ROW_CAP = 6;
   var PUTAWAY_DAYS = 14;
   var state = { which: "", active: false, painting: false, rel: null, relAt: 0, relErr: "", relBusy: false, allIn: false, allOut: false };
   var sb = null;
@@ -98,9 +106,11 @@
   // ---- words ----------------------------------------------------------
   var W = {
     inTitle: { en: "Inbound: supplier to shelf", es: "Entrada: del proveedor al estante", pt: "Entrada: do fornecedor a prateleira" },
-    inIntro: { en: "Every delivery goes through these 4 steps, in order. Each step shows what is open now. Click a button to open that screen.", es: "Cada entrega pasa por estos 4 pasos, en orden. Cada paso muestra lo pendiente. Haga clic en un boton para abrir esa pantalla.", pt: "Cada entrega passa por estas 4 etapas, em ordem. Cada etapa mostra o que esta aberto. Clique num botao para abrir a tela." },
+    inIntro: { en: "4 steps, in order. Do the orange box first.", es: "4 pasos, en orden. Haga primero el cuadro naranja.", pt: "4 etapas, em ordem. Faca primeiro o quadro laranja." },
     outTitle: { en: "Outbound: order to truck", es: "Salida: de la orden al camion", pt: "Saida: do pedido ao caminhao" },
-    outIntro: { en: "Every retail load goes through these 5 steps, in order. The table below shows each open PO and which steps are done.", es: "Cada carga retail pasa por estos 5 pasos, en orden. La tabla muestra cada OC abierta y que pasos estan hechos.", pt: "Cada carga de varejo passa por estas 5 etapas, em ordem. A tabela mostra cada pedido aberto e quais etapas estao feitas." },
+    outIntro: { en: "5 steps, in order. Do the orange box first.", es: "5 pasos, en orden. Haga primero el cuadro naranja.", pt: "5 etapas, em ordem. Faca primeiro o quadro laranja." },
+    next: { en: "Do this next", es: "Haga esto ahora", pt: "Faca isto agora" },
+    allClear: { en: "Nothing urgent right now.", es: "Nada urgente ahora.", pt: "Nada urgente agora." },
     offline: { en: "This browser is not on the shared cloud database. Counts below are not live plant data.", es: "Este navegador no esta en la base compartida. Lo de abajo no es dato en vivo.", pt: "Este navegador nao esta na base compartilhada. O que aparece abaixo nao e dado ao vivo." },
     attention: { en: "Needs attention", es: "Requiere atencion", pt: "Precisa de atencao" },
     nothing: { en: "Nothing open.", es: "Nada pendiente.", pt: "Nada aberto." },
@@ -382,6 +392,50 @@
     return '<button type="button" class="ioh-link" data-ioh-more="' + kind + '">' + esc(tx(W.showAll)) + " (" + total + ")</button>";
   }
 
+  function nextBox(text, button) {
+    return '<section class="ioh-next"><div class="ioh-next-l">' + esc(tx(W.next)) + '</div><p>' + esc(text) + "</p>" + (button || "") + "</section>";
+  }
+  function inboundNext(m) {
+    var r;
+    if (m.coaMissing.length) {
+      r = m.coaMissing[0];
+      return nextBox(tx({ en: "Upload the COA for ", es: "Suba el COA de ", pt: "Envie o COA de " }) + (r.contents || r.item_id || "") + (r.lot ? " (lot " + r.lot + ")" : "") + ". " + tx({ en: "The lot stays on hold until then.", es: "El lote queda retenido hasta entonces.", pt: "O lote fica retido ate la." }),
+        subBtn("coalib", tx({ en: "Upload COA", es: "Subir COA", pt: "Enviar COA" }), true));
+    }
+    if (m.recvHolds.length) {
+      r = m.recvHolds[0];
+      return nextBox(tx({ en: "On hold at receiving: ", es: "Retenido en recibo: ", pt: "Retido no recebimento: " }) + (r.contents || r.item_id || "") + ". " + tx({ en: "Quality must release it.", es: "Calidad debe liberarlo.", pt: "A Qualidade deve liberar." }),
+        subBtn("quarantine", tx({ en: "See holds", es: "Ver retenidos", pt: "Ver retidos" }), true));
+    }
+    var late = m.pos.filter(function (p) { return p.late; });
+    if (late.length) {
+      return nextBox(tx({ en: "PO ", es: "OC ", pt: "OC " }) + late[0].num + " (" + late[0].vendor + ") " + tx({ en: "is past its date. Receive it, or ask the supplier for a new date.", es: "esta vencida. Recibala o pida nueva fecha al proveedor.", pt: "esta vencida. Receba ou peca nova data ao fornecedor." }) +
+        (late.length > 1 ? " (+" + (late.length - 1) + ")" : ""), subBtn("receive", tx({ en: "Receive", es: "Recibir", pt: "Receber" }), true));
+    }
+    if (m.inRecv.length) {
+      r = m.inRecv[0];
+      return nextBox(tx({ en: "Put away ", es: "Guarde ", pt: "Guarde " }) + r.name + " (lot " + r.lot + "). " + tx({ en: "It is still in RECEIVING.", es: "Sigue en RECEIVING.", pt: "Ainda esta em RECEIVING." }),
+        subBtn("move", tx({ en: "Put away", es: "Guardar", pt: "Guardar" }), true));
+    }
+    var soon = m.pos.filter(function (p) { return p.soon; });
+    if (soon.length) {
+      return nextBox(tx({ en: "Next delivery: PO ", es: "Proxima entrega: OC ", pt: "Proxima entrega: OC " }) + soon[0].num + " (" + soon[0].vendor + ") " + shortDay(soon[0].expect) + ".",
+        subBtn("receive", tx({ en: "Receive", es: "Recibir", pt: "Receber" }), true));
+    }
+    return nextBox(tx(W.allClear), "");
+  }
+  function outboundNext(m) {
+    for (var i = 0; i < m.rows.length; i++) {
+      var r = m.rows[i];
+      if (!(r.late || r.soon)) continue;
+      if (r.release && r.release.result === "RELEASED") continue;
+      return nextBox(tx({ en: "Release the trailer for PO ", es: "Libere el trailer de la OC ", pt: "Libere o trailer do pedido " }) + r.po + " (" + r.customer + ", " + tx({ en: "ships ", es: "sale ", pt: "sai " }) + (r.due ? shortDay(r.due) : "?") + ")" +
+        (r.late ? " - " + tx(W.late) : "") + ".",
+        '<button type="button" class="ioh-btn ioh-btn-p" data-ioh-release="' + esc(r.po) + '" data-ioh-cust="' + esc(r.customer) + '">' + esc(tx({ en: "Start trailer release", es: "Iniciar liberacion", pt: "Iniciar liberacao" })) + "</button>");
+    }
+    return nextBox(tx(W.allClear), "");
+  }
+
   // ---- inbound page ---------------------------------------------------------
   function inboundHtml(m) {
     var t = {
@@ -450,16 +504,33 @@
     return '<div id="ioh-root" class="ioh" data-ioh="in" data-lang="' + lang() + '">' +
       '<div class="ioh-lead"><h2>' + esc(tx(W.inTitle)) + '</h2><p>' + esc(tx(W.inIntro)) + "</p></div>" +
       (cloud() ? "" : '<div class="ioh-banner">' + esc(tx(W.offline)) + "</div>") +
-      steps + '<div class="ioh-grid">' + attHtml + dueHtml + "</div>" + other + "</div>";
+      inboundNext(m) + steps + viz("inbound", m) + '<div class="ioh-grid">' + attHtml + dueHtml + "</div>" + "</div>";
   }
 
   // ---- outbound page --------------------------------------------------------
+  // v322: past-due demand is never shown (standing rule). Rows with a ship
+  // date before today drop out of the page, the Home counts and the charts.
+  // outboundModel() still marks them (tests and other callers rely on it).
+  function hidePastDue(m) {
+    var out = {}, k;
+    for (k in m) if (Object.prototype.hasOwnProperty.call(m, k)) out[k] = m[k];
+    out.rows = (m.rows || []).filter(function (r) { return !r.late; });
+    out.late = 0;
+    out.soon = out.rows.filter(function (r) { return r.soon; }).length;
+    out.notReleasedSoon = out.rows.filter(function (r) { return r.soon && !(r.release && r.release.result === "RELEASED"); }).length;
+    out.withDocs = out.rows.filter(function (r) { return r.docs > 0; }).length;
+    return out;
+  }
+  function viz(fn, m) {
+    try { return root.SMK_VIZ && typeof root.SMK_VIZ[fn] === "function" ? root.SMK_VIZ[fn](m) || "" : ""; } catch (e) { return ""; }
+  }
   function outboundHtml(m) {
+    m = hidePastDue(m);
     var t = {
       s1: { en: "Order comes in", es: "Llega la orden", pt: "Chega o pedido" },
       s1w: { en: "Retail POs come from SPS (850). Check the ship date and cases. E-com orders are a separate board.", es: "Las OC retail llegan de SPS (850). Revise fecha y cajas. E-com es otro tablero.", pt: "Pedidos de varejo chegam do SPS (850). Confira data e caixas. E-com e outro painel." },
       s2: { en: "Pick and build the pallets", es: "Surtir y armar tarimas", pt: "Separar e montar paletes" },
-      s2w: { en: "Pull finished pallets for the PO. Use the oldest lot first and check best-by.", es: "Saque tarimas para la OC. Use el lote mas viejo primero y revise la fecha.", pt: "Separe paletes para o pedido. Use o lote mais antigo primeiro e confira a validade." },
+      s2w: { en: "Build or pull pallets for the PO on the Fulfillment page. Oldest lot first. Check best-by.", es: "Arme o saque paletas para la OC en Fulfillment. Lote mas viejo primero. Revise la fecha.", pt: "Monte ou separe paletes do pedido no Fulfillment. Lote mais antigo primeiro. Confira a validade." },
       s3: { en: "Inspect trailer and release (SQF)", es: "Inspeccionar trailer y liberar (SQF)", pt: "Inspecionar trailer e liberar (SQF)" },
       s3w: { en: "Before loading: 7 dry van checks, lots, best-by, seal. Any fail means do not load.", es: "Antes de cargar: 7 revisiones, lotes, fecha, sello. Si falla, no se carga.", pt: "Antes de carregar: 7 checagens, lotes, validade, lacre. Falhou, nao carrega." },
       s4: { en: "Ship and record tracking", es: "Enviar y registrar rastreo", pt: "Enviar e registrar rastreio" },
@@ -471,7 +542,7 @@
       (m.soon ? chip(m.soon + " " + tx({ en: "ship in 2 days", es: "salen en 2 dias", pt: "saem em 2 dias" }), "warn") : "") +
       (m.late ? chip(m.late + " " + tx({ en: "past ship date", es: "fecha vencida", pt: "data vencida" }), "bad") : "") +
       (m.dupRows ? chip(m.dupRows + " " + tx({ en: "duplicate order rows (same PO)", es: "filas duplicadas (misma OC)", pt: "linhas duplicadas (mesmo pedido)" }), "warn") : "");
-    var st2 = chip(tx({ en: "Scan station (Lot Trace)", es: "Estacion de escaneo", pt: "Estacao de leitura" }), "mute");
+    var st2 = "";
     var st3 = (state.rel == null && cloud() ? chip(tx(W.loading), "mute") :
       chip(m.relToday + " " + tx({ en: "released today", es: "liberados hoy", pt: "liberados hoje" }), m.relToday ? "ok" : "mute") +
       (m.rejToday ? chip(m.rejToday + " " + tx({ en: "rejected today", es: "rechazados hoy", pt: "rejeitados hoje" }), "bad") : "") +
@@ -480,8 +551,8 @@
     var st5 = chip(m.withDocs + " / " + m.rows.length + " " + tx({ en: "open POs have docs in the OS", es: "OC con documentos", pt: "pedidos com documentos" }), m.withDocs ? "info" : "mute");
 
     var steps = '<div class="ioh-steps ioh-steps5">' +
-      stepCard(1, tx(t.s1), tx(t.s1w), st1, subBtn("ordersRetail", tx({ en: "Retail orders", es: "Ordenes retail", pt: "Pedidos varejo" }), true) + subBtn("ordersEcom", tx({ en: "E-com orders", es: "Ordenes e-com", pt: "Pedidos e-com" })) + subBtn("sps", tx({ en: "SPS documents", es: "Documentos SPS", pt: "Documentos SPS" }))) + arrow() +
-      stepCard(2, tx(t.s2), tx(t.s2w), st2, subBtn("trShip", tx({ en: "Pick / build pallet", es: "Surtir / armar", pt: "Separar / montar" }), true)) + arrow() +
+      stepCard(1, tx(t.s1), tx(t.s1w), st1, subBtn("ordersRetail", tx({ en: "Retail orders", es: "Ordenes retail", pt: "Pedidos varejo" }), true) + subBtn("ordersEcom", tx({ en: "E-com orders", es: "Ordenes e-com", pt: "Pedidos e-com" }))) + arrow() +
+      stepCard(2, tx(t.s2), tx(t.s2w), st2, '<button type="button" class="ioh-btn ioh-btn-p" data-smk-go="ful">' + esc(tx({ en: "Fulfillment", es: "Fulfillment", pt: "Fulfillment" })) + "</button>" + subBtn("trShip", tx({ en: "Scan pallets out", es: "Escanear paletas", pt: "Escanear paletes" }))) + arrow() +
       stepCard(3, tx(t.s3), tx(t.s3w), st3, subBtn("trailer", tx({ en: "Trailer Release", es: "Liberar trailer", pt: "Liberar trailer" }), true)) + arrow() +
       stepCard(4, tx(t.s4), tx(t.s4w), st4, subBtn("shiplog", tx({ en: "Shipping log", es: "Registro de envios", pt: "Registro de envios" }), true) + subBtn("shipments", tx({ en: "Carrier shipments", es: "Envios del transportista", pt: "Envios da transportadora" }))) + arrow() +
       stepCard(5, tx(t.s5), tx(t.s5w), st5, subBtn("orderdocs", tx({ en: "Order docs", es: "Docs de orden", pt: "Docs do pedido" }), true)) +
@@ -505,7 +576,7 @@
       return [dueCell, esc(r.customer), "<b>" + esc(r.po) + "</b>", r.cases ? fmt(r.cases) : "", relCell, shipCell, docsCell];
     });
     var tbl = '<section class="ioh-card"><h3>' + esc(tx({ en: "Open retail POs: what is done", es: "OC retail abiertas: que esta hecho", pt: "Pedidos varejo abertos: o que esta feito" })) + "</h3>" +
-      '<p class="ioh-meta">' + esc(tx({ en: "Late first, then by ship date. Step 3 reads Trailer Release. Step 4 matches the Shipping log by PO #. Step 5 counts Order Docs by PO #; BOLs kept only on Drive show as None in OS.", es: "Atrasadas primero, luego por fecha. Paso 3 lee Liberar trailer. Paso 4 busca la OC en el registro de envios. Paso 5 cuenta Docs de orden por OC.", pt: "Atrasados primeiro, depois por data. Etapa 3 le Liberar trailer. Etapa 4 procura o pedido no registro de envios. Etapa 5 conta Docs por pedido." })) + "</p>" +
+      '<p class="ioh-meta">' + esc(tx({ en: "By ship date, today first. Step 3 reads Trailer Release. Step 4 matches the Shipping log by PO #. Step 5 counts Order Docs by PO #; BOLs kept only on Drive show as None in OS.", es: "Por fecha de salida, hoy primero. Paso 3 lee Liberar trailer. Paso 4 busca la OC en el registro de envios. Paso 5 cuenta Docs de orden por OC.", pt: "Por data de saida, hoje primeiro. Etapa 3 le Liberar trailer. Etapa 4 procura o pedido no registro de envios. Etapa 5 conta Docs por pedido." })) + "</p>" +
       table([tx({ en: "Ship by", es: "Salida", pt: "Saida" }), tx({ en: "Customer", es: "Cliente", pt: "Cliente" }), "PO", tx({ en: "Cases", es: "Cajas", pt: "Caixas" }), "3 · " + tx({ en: "Trailer release", es: "Liberacion", pt: "Liberacao" }), "4 · " + tx({ en: "Shipped", es: "Enviado", pt: "Enviado" }), "5 · Docs"], rows, state.allOut ? "" : moreBtn("out", m.rows.length)) +
       (state.relErr ? '<p class="ioh-meta">Trailer Release: ' + esc(state.relErr) + "</p>" : "") + "</section>";
 
@@ -516,7 +587,7 @@
     return '<div id="ioh-root" class="ioh" data-ioh="out" data-lang="' + lang() + '">' +
       '<div class="ioh-lead"><h2>' + esc(tx(W.outTitle)) + '</h2><p>' + esc(tx(W.outIntro)) + "</p></div>" +
       (cloud() ? "" : '<div class="ioh-banner">' + esc(tx(W.offline)) + "</div>") +
-      steps + tbl + other + "</div>";
+      outboundNext(m) + steps + viz("outbound", m) + tbl + "</div>";
   }
 
   // ---- screen --------------------------------------------------------------
@@ -554,6 +625,11 @@
     ".ioh-empty{color:#6b7280;font-size:13px;margin:4px 0}",
     ".ioh-link{font:inherit;font-size:12px;font-weight:700;color:#006DB6;background:none;border:0;padding:0 2px;cursor:pointer;text-decoration:underline}",
     ".ioh-other .ioh-btns{margin-bottom:6px}",
+    ".ioh-next{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;background:#fff4ec;border:2px solid #F26B21;border-radius:10px;padding:12px 16px}",
+    ".ioh-next-l{font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:#b4480e}",
+    ".ioh-next p{margin:0;font-size:16px;font-weight:700;color:#04223B;flex:1;min-width:220px}",
+    ".ioh-next .ioh-btn{font-size:15px;padding:9px 14px}",
+    ".ioh-step .ioh-btn:not(.ioh-btn-p){border:0;background:none;text-decoration:underline;padding:6px 2px}",
     "@media(max-width:1180px){.ioh-steps,.ioh-steps5{grid-template-columns:1fr 1fr}.ioh-arrow{display:none}.ioh-grid{grid-template-columns:1fr}}",
     "@media(max-width:640px){.ioh-steps,.ioh-steps5{grid-template-columns:1fr}}",
     "@media print{.ioh-btn,.ioh-link{display:none}}"
@@ -635,7 +711,7 @@
     doc.addEventListener("click", onClick);
     // Leave this screen when another nav or department target is clicked.
     doc.addEventListener("click", function (e) {
-      var t = e.target && e.target.closest ? e.target.closest("#nav .navitem, [data-dept-sub], [data-dept-tool], #deptbar [data-dept], #dept-back") : null;
+      var t = e.target && e.target.closest ? e.target.closest("#nav .navitem, [data-dept-sub], [data-dept-tool], #deptbar [data-dept], #dept-back, [data-smk-go]") : null;
       if (!t) return;
       state.active = false;
     }, true);
@@ -682,7 +758,27 @@
     if (!hookDb.done) doc.addEventListener("DOMContentLoaded", hookDb);
   }
 
+  // Small numbers for the Home job buttons. Read only.
+  function counts() {
+    var c = {};
+    try {
+      var mi = liveInbound(); // liveInbound() already returns the model
+      c.dueIn = mi.posSoon + mi.posLate;
+      c.putAway = mi.inRecv.length;
+      c.noCoa = mi.coaMissing.length;
+      c.onHold = mi.held.length;
+    } catch (e) {}
+    try {
+      var mo = liveOutbound(); // liveOutbound() already returns the model
+      mo = hidePastDue(mo);
+      c.shipSoon = mo.soon;
+      c.toRelease = state.rel == null && cloud() ? 0 : mo.notReleasedSoon;
+    } catch (e2) {}
+    return c;
+  }
+
   var api = {
+    counts: counts,
     open: open,
     inbound: function () { open("in"); },
     outbound: function () { open("out"); },

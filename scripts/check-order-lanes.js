@@ -45,7 +45,8 @@ var fulAt = homes.indexOf('id: "ful"');
 var fulEnd = homes.indexOf('id: "ship"', fulAt);
 var ful = homes.slice(fulAt, fulEnd);
 eq(ful.indexOf('"ordersRetail"') < ful.indexOf('"ordersEcom"'), "retail tab before ecom");
-eq(ful.indexOf('"board"') >= 0, "fulfillment can open the tv board");
+// v322: the TV board left the Fulfillment action row; it is one tap away under Home > More and Admin > More.
+eq(homes.indexOf('home.fold = ["board"]') >= 0 && homes.indexOf('"health", "board"]') >= 0, "tv board stays one tap away (Home and Admin More)");
 eq(ful.indexOf('"produce", "fglots"') >= 0, "rare produce tools stay later");
 var opsAt = homes.indexOf('id: "ops"');
 var ops = homes.slice(opsAt, homes.indexOf("function deptById"));
