@@ -32,6 +32,13 @@
    behind one "More" button (fold: list); they are still in subs, so old
    links and deptOfNav still work. DEPT.go(dept, tool) opens a tool on its
    department page (used by Home and Production steps).
+   v325 nav: eleven top tabs from NAV_TABS (one tab(...) line each): Home,
+   Plan, Inbound, Mixing, P-Mac, Inventory, Retail, E-commerce, Outbound,
+   Quality, Admin. Section tabs sit in labeled groups on one compact row
+   that scrolls sideways with a fade on narrow screens. Each screen has one
+   owner tab (OWNER). A subtab or DEPT.go for a screen another tab owns
+   opens it there. Old ids (prod, ful, ship, purch, recv) open the tab that
+   owns their work now (LEGACY).
    No writes. No timers.
    ========================================================================== */
 (function () {
@@ -585,6 +592,138 @@
       ops.intro = L("Maintenance, people, SOPs, settings.", "Mantenimiento, personal, SOPs, ajustes.", "Manutencao, pessoas, SOPs, ajustes.");
     }
   })();
+  // ---- v325 nav (Troy, Nov 24): eleven top tabs, grouped section tabs ------
+  // One line per top tab. Order here is the order on the bar.
+  // tab(id, label, icon, primary, "actions", "group: subs | group: subs | more: subs")
+  // Group keys are in NAV_GROUPS. "more" is the fold. A group with no key has
+  // no label. To add a tab later, add one tab(...) line and its tools.
+  // Departments not listed here are hidden. LEGACY ids open the tab that owns
+  // their work now, so old links and DEPT.show / DEPT.go keep working.
+  function NL(en, es, pt) { return { en: en, es: es, pt: pt || es }; }
+  var NAV_GROUPS = {
+    plan: NL("Plan", "Plan", "Plano"), run: NL("Run", "Corrida", "Producao"), records: NL("Records", "Registros", "Registros"),
+    buy: NL("1 Buy", "1 Compra", "1 Compra"), dock: NL("2 Dock", "2 Muelle", "2 Cais"), check: NL("3 Check", "3 Revisar", "3 Conferir"), store: NL("4 Store", "4 Guardar", "4 Guardar"),
+    today: NL("Today", "Hoy", "Hoje"), supplies: NL("Supplies", "Insumos", "Insumos"), recipes: NL("Recipes", "Recetas", "Receitas"),
+    stock: NL("Stock", "Existencias", "Estoque"), where: NL("Where", "Donde", "Onde"), catalog: NL("Catalog", "Catalogo", "Catalogo"),
+    orders: NL("Orders", "Ordenes", "Pedidos"), build: NL("Build", "Armar", "Montar"), pack: NL("Pack", "Empacar", "Embalar"),
+    lots: NL("Lots", "Lotes", "Lotes"), issues: NL("Issues", "Problemas", "Problemas"), ship: NL("Ship", "Enviar", "Enviar"),
+    docs: NL("Docs", "Documentos", "Documentos"), daily: NL("Daily", "Diario", "Diario"), program: NL("Program", "Programa", "Programa"),
+    facility: NL("Facility", "Planta", "Planta"), team: NL("Team", "Equipo", "Equipe"), improve: NL("Improve", "Mejorar", "Melhorar"), system: NL("System", "Sistema", "Sistema")
+  };
+  var NAV_TABS = [];
+  function tab(id, label, icon, primary, actions, groups) { NAV_TABS.push({ id: id, label: label, icon: icon, primary: primary, actions: actions, groups: groups }); }
+  tab("home", NL("Home", "Inicio", "Inicio"), "home", "today", "", "today daily desk board");
+  tab("demand", NL("Plan", "Plan", "Plano"), "activity", "makeplan", "demandimport", "plan: makeplan demandboard demandsched forecast | run: prodhub prodorders | records: hist upload launch | more: demand floor");
+  tab("inb", NL("Inbound", "Entrada", "Entrada"), "arrow-down-to-line", "inhub", "", "inhub | buy: purchasing expreceipts reorder15 | dock: receive recvlog services | check: coalib quarantine | store: move");
+  tab("mixing", NL("Mixing", "Mezcla", "Mistura"), "cooking-pot", "mixing", "prodorders trMix batchrec", "today: mixing prodready | supplies: seasoning reordertracker | recipes: recipes");
+  tab("pmac", NL("P-Mac", "P-Mac", "P-Mac"), "package", "pmac", "prodorders pmacout trPmac", "today: pmac fglots | more: produce");
+  tab("inv", NL("Inventory", "Inventario", "Estoque"), "boxes", "dash", "receive adjust count move alerts", "stock: dash finbags flavinv dtfg seed returns | where: locations facility trMove | catalog: skus printlabels analytics");
+  tab("ret", NL("Retail", "Retail", "Varejo"), "store", "ordersRetail", "retailprod trShip", "orders: ordersRetail sps | build: prodlog stockbuild");
+  tab("ecom", NL("E-commerce", "E-commerce", "E-commerce"), "shopping-cart", "ordersEcom", "ecomprod trUse", "orders: ordersEcom | pack: fulfilldaily skulookup | lots: trElog | plan: ecomdemand | issues: fulfillerr");
+  tab("outb", NL("Outbound", "Salida", "Saida"), "arrow-up-from-line", "outhub", "", "outhub | ship: trShip trailer shiplog shipments | docs: orderdocs");
+  tab("qa", NL("Quality", "Calidad", "Qualidade"), "shield-check", "qacheck", "trQa quality", "daily: qacheck sqftasks | lots: trace trLabels shortdated | program: compliance");
+  tab("ops", NL("Admin", "Admin", "Admin"), "settings", "maintenance", "", "facility: maintenance | team: people reference | improve: improve rd | system: settings acct health");
+  // Old department id -> [tab that owns it now, tool to open there].
+  var LEGACY = { prod: ["demand", "prodhub"], ful: ["ret", ""], ship: ["outb", "shipments"], purch: ["inb", "purchasing"], recv: ["inb", "recvlog"] };
+  // Short names on the section tabs and action cards (tool title otherwise).
+  var NAV_SHORT = {
+    today: NL("Week", "Semana", "Semana"), daily: NL("Daily numbers", "Numeros del dia", "Numeros do dia"), desk: NL("Big picture", "Resumen", "Visao geral"),
+    makeplan: NL("Make plan", "Plan", "Plano"), demandboard: NL("Order board", "Tablero", "Painel"), demandsched: NL("Schedule", "Programa", "Programa"), forecast: NL("Forecast", "Pronostico", "Previsao"),
+    prodhub: NL("Production steps", "Pasos de produccion", "Etapas de producao"), hist: NL("History", "Historial", "Historico"), upload: NL("Upload file", "Subir archivo", "Enviar arquivo"),
+    launch: NL("New launches", "Lanzamientos", "Lancamentos"), demand: NL("By department", "Por departamento", "Por departamento"), floor: NL("Now running", "En marcha", "Em andamento"),
+    demandimport: NL("Import orders", "Importar ordenes", "Importar pedidos"),
+    inhub: NL("Steps", "Pasos", "Etapas"), purchasing: NL("Supplier POs", "OC proveedor", "OCs fornecedor"), expreceipts: NL("Due in", "Por llegar", "A chegar"),
+    reorder15: NL("1.5oz reorder", "Reorden 1.5oz", "Reposicao 1.5oz"), receive: NL("Receive", "Recibir", "Receber"), recvlog: NL("Dock checklist", "Lista del muelle", "Lista do cais"),
+    services: NL("Services", "Servicios", "Servicos"), coalib: NL("COAs", "COAs", "COAs"), quarantine: NL("On hold", "Retenido", "Retido"), move: NL("Put away", "Guardar", "Guardar"),
+    mixing: NL("Mixing status", "Estado de mezcla", "Status da mistura"), prodready: NL("Ready to produce", "Listo para producir", "Pronto para produzir"),
+    trMix: NL("Scan lots", "Escanear lotes", "Escanear lotes"), batchrec: NL("Batch record", "Registro de lote", "Registro de lote"), prodorders: NL("Work orders", "Ordenes de trabajo", "Ordens de trabalho"),
+    pmac: NL("P-Mac status", "Estado de P-Mac", "Status da P-Mac"), pmacout: NL("Log bags", "Registrar bolsas", "Registrar sacos"), trPmac: NL("Finish a pallet", "Terminar paleta", "Fechar palete"),
+    dash: NL("On hand", "Existencias", "Em estoque"), finbags: NL("Finished bags", "Bolsas terminadas", "Sacos prontos"), flavinv: NL("Flavor inventory", "Inventario por sabor", "Estoque por sabor"),
+    facility: NL("Facility map", "Mapa de planta", "Mapa da planta"), trMove: NL("Lot move", "Mover lote", "Mover lote"), analytics: NL("Reports", "Reportes", "Relatorios"),
+    ordersRetail: NL("Retail orders", "Ordenes retail", "Pedidos varejo"), sps: NL("SPS feed", "SPS", "SPS"), prodlog: NL("Pallet log", "Paletas", "Paletes"),
+    stockbuild: NL("Stock build", "Construir inventario", "Montar estoque"), retailprod: NL("Log retail pallet", "Registrar paleta retail", "Registrar palete varejo"),
+    ordersEcom: NL("E-com orders", "Ordenes e-com", "Pedidos e-com"), fulfilldaily: NL("Daily log", "Diario", "Diario"), skulookup: NL("SKU lookup", "Buscar SKU", "Buscar SKU"),
+    trElog: NL("E-com lots", "Lotes e-com", "Lotes e-com"), ecomdemand: NL("E-com demand", "Demanda e-com", "Demanda e-com"), ecomprod: NL("Log e-com build", "Registrar e-com", "Registrar e-com"),
+    trUse: NL("Lot pull", "Salida de lote", "Saida de lote"),
+    outhub: NL("Steps", "Pasos", "Etapas"), trShip: NL("Scan pallets out", "Escanear salida", "Escanear saida"), trailer: NL("Trailer release", "Liberar trailer", "Liberar trailer"),
+    shiplog: NL("Shipping log", "Registro de envios", "Registro de envios"), shipments: NL("Carriers", "Transportistas", "Transportadoras"), orderdocs: NL("Order docs", "Docs de orden", "Docs do pedido"),
+    qacheck: NL("Checklists", "Listas", "Listas"), sqftasks: NL("SQF tasks", "Tareas SQF", "Tarefas SQF"), trLabels: NL("Lot labels", "Etiquetas de lote", "Etiquetas de lote"),
+    shortdated: NL("Short-dated", "Fecha corta", "Validade curta"), trQa: NL("Hold or release a lot", "Retener o liberar", "Reter ou liberar"), quality: NL("CCP checks", "Controles CCP", "Controles CCP"),
+    reference: NL("SOPs and docs", "SOPs y documentos", "SOPs e documentos"), improve: NL("Continuous improvement", "Mejora continua", "Melhoria continua"), acct: NL("Activity log", "Registro de actividad", "Registro de atividade"), health: NL("Data check", "Revision de datos", "Checagem de dados")
+  };
+  // Action cards that need a different name than the same screen as a tab.
+  var NAV_ACT_SHORT = { move: NL("Move / Pick", "Mover / Sacar", "Mover / Separar") };
+  var NAV_INTRO = {
+    ret: NL("Retail orders, the SPS feed, and retail pallets.", "Ordenes retail, SPS y paletas retail.", "Pedidos de varejo, SPS e paletes de varejo."),
+    ecom: NL("E-commerce orders, the daily log, lots, and errors.", "Ordenes e-commerce, diario, lotes y errores.", "Pedidos e-commerce, diario, lotes e erros."),
+    demand: NL("Make plan, order board, schedule, and production records.", "Plan, tablero, programa y registros de produccion.", "Plano, painel, programa e registros de producao.")
+  };
+  // Which top tab owns each screen. First section tab wins, then actions.
+  var OWNER = {};
+  (function navV2() {
+    function d(id) { for (var i = 0; i < DEPTS.length; i++) if (DEPTS[i].id === id) return DEPTS[i]; return null; }
+    function words(s) { return String(s || "").split(/\s+/).filter(Boolean); }
+    var order = [];
+    NAV_TABS.forEach(function (t) {
+      var dept = d(t.id);
+      if (!dept) { dept = { id: t.id, short: {}, actionShort: {} }; DEPTS.push(dept); }
+      var groups = [], fold = [], subs = [];
+      String(t.groups).split("|").forEach(function (part) {
+        var m = part.match(/^\s*([a-z]+)\s*:(.*)$/);
+        var key = m ? m[1] : "";
+        var ids = words(m ? m[2] : part);
+        if (key === "more") { fold = fold.concat(ids); return; }
+        groups.push({ key: key, ids: ids });
+        subs = subs.concat(ids);
+      });
+      dept.label = t.label;
+      dept.title = t.label;
+      dept.icon = t.icon;
+      dept.primary = t.primary;
+      dept.actions = words(t.actions);
+      dept.groups = groups;
+      dept.subs = subs.concat(fold);
+      dept.fold = fold;
+      dept.hidden = false;
+      dept.keep = false;
+      dept.bar = "";
+      dept.short = dept.short || {};
+      dept.actionShort = dept.actionShort || {};
+      if (NAV_INTRO[t.id]) dept.intro = NAV_INTRO[t.id];
+      dept.subs.forEach(function (id) { if (NAV_SHORT[id]) dept.short[id] = NAV_SHORT[id]; });
+      dept.actions.forEach(function (id) { var a = NAV_ACT_SHORT[id] || NAV_SHORT[id]; if (a) dept.actionShort[id] = a; });
+      if (t.id === "inv") { dept.floorSel = "#dashBody"; dept.floorClass = "inv-floor"; }
+      else { delete dept.floorSel; delete dept.floorClass; }
+      order.push(dept);
+    });
+    DEPTS.forEach(function (dept) {
+      if (order.indexOf(dept) >= 0) return;
+      var to = LEGACY[dept.id];
+      dept.hidden = true;
+      dept.keep = false;
+      dept.bar = to ? to[0] : "home";
+      dept.alias = to ? to[1] : "";
+      order.push(dept);
+    });
+    DEPTS.length = 0;
+    order.forEach(function (x) { DEPTS.push(x); });
+    DEPTS.forEach(function (dept) {
+      if (dept.hidden) return;
+      dept.subs.forEach(function (id) { if (!OWNER[id]) OWNER[id] = dept.id; });
+    });
+    DEPTS.forEach(function (dept) {
+      if (dept.hidden) return;
+      (dept.actions || []).forEach(function (id) { if (!OWNER[id]) OWNER[id] = dept.id; });
+    });
+    TOOLS.stFul.dept = "ret";
+  })();
+  // A hidden (old) department id -> the top tab that shows its work.
+  function liveDept(id) {
+    var dept = deptById(id);
+    var hops = 0;
+    while (dept && dept.hidden && dept.bar && hops++ < 4) dept = deptById(dept.bar);
+    return dept ? dept.id : "";
+  }
 
 
   function entryInProgress() {
@@ -653,13 +792,37 @@
     closeDrawer();
   }
 
+  // Menu items that open a module screen: the tool they open.
+  var NAV_BTN_TOOL = {
+    "svc-nav": "services", "dh-nav": "health", "sf-nav": "sps", "shs-nav": "shipments", "mfg-hist-nav": "hist",
+    "mfg-up-nav": "upload", "btr-nav": "batchrec", "sqf-nav": "sqftasks", "coa-nav": "coalib", "fa-nav": "fulfillerr",
+    "qa-nav": "qacheck", "fgl-nav": "fglots", "obr-nav": "trailer", "awo-nav": "prodorders",
+    "trc-nav-use": "trUse", "trc-nav-ship": "trShip", "trc-nav-qa": "trQa", "trc-nav-mix": "trMix", "trc-nav-pmac": "trPmac",
+    "trc-nav-move": "trMove", "trc-nav-trace": "trace", "trc-nav-labels": "trLabels", "trc-nav-elog-ful": "trElog", "trc-nav-elog-qa": "trElog"
+  };
+  var NAV_GO_TOOL = { ordersretail: "ordersRetail", ordersecom: "ordersEcom" };
+  function navTool(btn) {
+    var t = NAV_BTN_TOOL[btn.id] || "";
+    if (!t) {
+      var m = (btn.getAttribute("onclick") || "").match(/UI_go\('([^']+)'\)/);
+      if (m) t = NAV_GO_TOOL[m[1]] || toolIdForGo(m[1]);
+    }
+    return t;
+  }
+  function navOwner(btn) {
+    var t = navTool(btn);
+    return t && OWNER[t] ? OWNER[t] : "";
+  }
   function deptOfNav(btn) {
     if (!btn) return "";
+    var own = navOwner(btn);
+    if (own) return own;
     if (MOVED_BTN[btn.id]) return MOVED_BTN[btn.id];
     var mv = (btn.getAttribute("onclick") || "").match(/UI_go\('([^']+)'\)/);
     if (mv && MOVED_TAB[mv[1]]) return MOVED_TAB[mv[1]];
     var raw = deptOfNavRaw(btn);
-    return NEW_HOME[raw] || raw;
+    raw = NEW_HOME[raw] || raw;
+    return liveDept(raw) || raw;
   }
   function deptOfNavRaw(btn) {
     if (!btn) return "";
@@ -2491,7 +2654,7 @@
     var h = stack.offsetHeight || 0;
     if (h) document.documentElement.style.setProperty("--dept-stack-h", h + "px");
     var shell = document.getElementById("dept-shell");
-    if (shell) measureShell(shell);
+    if (shell) { fitSubs(shell); measureShell(shell); }
   }
 
   function showHome(id) {
@@ -2501,7 +2664,8 @@
     if (blocked) { toast(Lbusy()); return; }
     var dept = deptById(id);
     // Purchasing, Receiving, and Shipping moved into Inbound and Outbound.
-    if (dept && dept.hidden && !dept.keep && dept.bar && deptById(dept.bar)) { id = dept.bar; dept = deptById(id); }
+    var alias = "";
+    if (dept && dept.hidden && !dept.keep && dept.bar && liveDept(id)) { alias = dept.alias || ""; id = liveDept(id); dept = deptById(id); }
     if (!dept || dept.passthrough) return;
     if (id !== "inv") document.body.classList.remove("inv-floor");
     if (barKey(id) !== barKey(barCurrent)) foldOpen = {};
@@ -2525,6 +2689,7 @@
       try { window.scrollTo(0, 0); } catch (e) {}
       dressShell();
       syncOffset();
+      if (alias && alias !== dept.primary && toolInSubs(dept, alias)) openSub(alias);
       return;
     }
     homeId = id;
@@ -2554,7 +2719,13 @@
   function openSub(id) {
     var dept = shellDept();
     var tool = TOOLS[id];
-    if (!dept || !tool || !toolInSubs(dept, id)) return;
+    if (!tool) return;
+    if (!dept || !toolInSubs(dept, id)) {
+      // Another tab owns this screen: open it there.
+      var own = OWNER[id];
+      if (own && (!dept || own !== dept.id)) window.DEPT.go(own, id);
+      return;
+    }
     if (backBlocked()) { toast(Lbusy()); return; }
     homeId = "";
     paintTries = 0;
@@ -2581,14 +2752,46 @@
     var open = !!foldOpen[dept.id] || fold.indexOf(shellHere) >= 0;
     var tab = function (id) {
       var on = shellHere === id;
+      var tool = TOOLS[id];
       return '<button type="button" class="' + (on ? "active" : "") + (fold.indexOf(id) >= 0 ? " dept-sub-fold" : "") + '" role="tab" data-dept-sub="' + esc(id) + '"' +
-        (on ? ' aria-selected="true"' : ' aria-selected="false"') + '>' + esc(subLabel(dept, id)) + "</button>";
+        (on ? ' aria-selected="true"' : ' aria-selected="false"') + '>' +
+        (tool && tool.icon ? '<i class="dsg-ico" data-lucide="' + esc(tool.icon) + '" aria-hidden="true"></i>' : "") +
+        '<span>' + esc(subLabel(dept, id)) + "</span></button>";
     };
-    var main = dept.subs.filter(function (id) { return fold.indexOf(id) < 0; });
-    var extra = dept.subs.filter(function (id) { return fold.indexOf(id) >= 0; });
-    var moreBtn = extra.length ? '<button type="button" class="dept-more" data-dept-fold="' + esc(dept.id) + '" aria-expanded="' + (open ? "true" : "false") + '">' +
-      esc(open ? tx({ en: "Less", es: "Menos", pt: "Menos" }) : tx({ en: "More", es: "Mas", pt: "Mais" }) + " (" + extra.length + ")") + ' <span aria-hidden="true">' + (open ? "&#9662;" : "&#9656;") + "</span></button>" : "";
-    return '<div class="ordtabs dept-subs" role="tablist">' + main.map(tab).join("") + moreBtn + (open ? extra.map(tab).join("") : "") + "</div>";
+    var groups = dept.groups || [{ key: "", ids: dept.subs.filter(function (id) { return fold.indexOf(id) < 0; }) }];
+    var body = groups.map(function (g) {
+      var name = g.key && NAV_GROUPS[g.key] ? '<span class="dsg-l">' + esc(tx(NAV_GROUPS[g.key])) + "</span>" : "";
+      return '<div class="dsg">' + name + g.ids.map(tab).join("") + "</div>";
+    }).join("");
+    if (fold.length) {
+      var moreBtn = '<button type="button" class="dept-more" data-dept-fold="' + esc(dept.id) + '" aria-expanded="' + (open ? "true" : "false") + '">' +
+        esc(open ? tx({ en: "Less", es: "Menos", pt: "Menos" }) : tx({ en: "More", es: "Mas", pt: "Mais" }) + " (" + fold.length + ")") + ' <span aria-hidden="true">' + (open ? "&#9662;" : "&#9656;") + "</span></button>";
+      body += '<div class="dsg dsg-more">' + moreBtn + (open ? fold.map(tab).join("") : "") + "</div>";
+    }
+    return '<div class="dsg-wrap"><div class="ordtabs dept-subs dept-subs-g" role="tablist">' + body + "</div>" +
+      '<span class="dsg-fade dsg-fade-l" aria-hidden="true"></span><span class="dsg-fade dsg-fade-r" aria-hidden="true">&rsaquo;</span></div>';
+  }
+  // Section row on a narrow screen: fade the edge that has more tabs past it,
+  // and bring the open tab into view. Runs on render, scroll, and resize.
+  function fitSubs(shell) {
+    var wrap = shell && shell.querySelector ? shell.querySelector(".dsg-wrap") : null;
+    var row = wrap ? wrap.querySelector(".dept-subs-g") : null;
+    if (!row) return;
+    var paint = function () {
+      var max = row.scrollWidth - row.clientWidth;
+      wrap.classList.toggle("dsg-more-l", row.scrollLeft > 2);
+      wrap.classList.toggle("dsg-more-r", max > 2 && row.scrollLeft < max - 2);
+    };
+    if (!row.__dsgScroll) {
+      row.__dsgScroll = true;
+      row.addEventListener("scroll", paint, { passive: true });
+      var on = row.querySelector("button.active");
+      if (on && row.scrollWidth > row.clientWidth) {
+        var left = on.offsetLeft - (row.clientWidth - on.offsetWidth) / 2;
+        row.scrollLeft = Math.max(0, left);
+      }
+    }
+    paint();
   }
   function actionsHtml(dept) {
     if (!dept.actions || !dept.actions.length) return "";
@@ -2635,6 +2838,7 @@
     shell.innerHTML = subsHtml(dept) + (floor ? actionsHtml(dept) : "");
     view.insertBefore(shell, view.firstChild);
     try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
+    fitSubs(shell);
     measureShell(shell);
   }
 
@@ -2857,7 +3061,44 @@
       "@media(max-width:1360px){#deptbar .dept-tab{font-size:12px;gap:4px;padding:8px 4px}#deptbar .dept-tab .dept-tab-ico,#deptbar .dept-tab svg.dept-tab-ico{width:16px;height:16px}}",
       "@media(max-width:1180px){#deptbar .dept-tab{flex:1 0 112px;min-width:112px}}",
       "@media(max-width:640px){#deptbar .dept-tab{flex:1 0 92px;min-width:92px;min-height:54px;flex-direction:column;gap:2px;padding:6px 4px;font-size:11px}#deptbar .dept-tab .dept-tab-label{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-align:center;line-height:1.05}}",
-      "@media print{#deptbar{display:none!important}}"
+      "@media print{#deptbar{display:none!important}}",
+      "#dept-stack header{padding:5px 12px!important;gap:10px!important}",
+      "#dept-stack .logo{font-size:18px!important}",
+      "#dept-stack .sub{font-size:11px!important}",
+      "#dept-stack .beta{font-size:9px!important;padding:1px 5px!important}",
+      "#dept-stack .navtoggle{padding:3px 9px!important;font-size:16px!important}",
+      "#dept-stack .modebadge{padding:2px 8px!important;font-size:10px!important}",
+      "#dept-stack .lang button{padding:3px 8px!important;font-size:12px!important}",
+      "#deptbar{display:flex;flex-wrap:nowrap;gap:1px;align-items:stretch;overflow:visible;background:var(--navy,#04223B);border:0;border-top:1px solid rgba(255,255,255,.08);padding:0 8px}",
+      "#deptbar .dept-tab{flex:0 0 auto;min-width:0;min-height:0;display:flex;flex-direction:row;align-items:center;gap:5px;font-family:inherit;font-weight:700;font-size:13px;line-height:1.1;color:#c3d1df;background:transparent;border:0;border-bottom:2px solid transparent;border-radius:0;padding:7px 11px 6px;box-shadow:none;white-space:nowrap}",
+      "#deptbar .dept-tab .dept-tab-ico,#deptbar .dept-tab svg.dept-tab-ico{width:14px;height:14px;color:currentColor;opacity:.9;stroke-width:2.2}",
+      "#deptbar .dept-tab:hover{color:#fff;background:rgba(255,255,255,.07);border-color:transparent}",
+      "#deptbar .dept-tab.on{color:#fff;background:rgba(242,107,33,.18);border-bottom-color:var(--orange,#F26B21);box-shadow:none}",
+      "#deptbar .dept-tab.on .dept-tab-ico,#deptbar .dept-tab.on svg.dept-tab-ico{color:var(--orange,#F26B21);opacity:1}",
+      "#deptbar .dept-tab:focus-visible{outline:2px solid #fff;outline-offset:-2px}",
+      "@media(max-width:1240px){#deptbar .dept-tab{padding:7px 7px 6px;font-size:12.5px;gap:4px}}",
+      "@media(max-width:1100px){#deptbar{padding:0 4px}#deptbar .dept-tab{padding:7px 6px 6px;font-size:12px;gap:3px}#deptbar .dept-tab svg.dept-tab-ico{width:12px;height:12px}}",
+      "@media(max-width:900px){#deptbar{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px;padding:5px 6px 6px}#deptbar .dept-tab{justify-content:center;border:0;border-radius:7px;background:rgba(255,255,255,.07);padding:6px 4px}#deptbar .dept-tab.on{background:var(--orange,#F26B21);color:#fff}#deptbar .dept-tab.on svg.dept-tab-ico{color:#fff}}",
+      "@media(max-width:640px){#deptbar{gap:2px;padding:4px 4px 5px}#deptbar .dept-tab{flex-direction:column;gap:2px;font-size:10px;letter-spacing:-.1px;padding:5px 1px;min-height:40px}#deptbar .dept-tab .dept-tab-label{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}#deptbar .dept-tab svg.dept-tab-ico{width:15px;height:15px}}",
+      "@media(max-width:340px){#deptbar{grid-template-columns:repeat(4,minmax(0,1fr))}}",
+      "#dept-shell{background:#fff;border-bottom:1px solid var(--line,#d7dde6);margin:-4px -6px 8px;padding:3px 8px}",
+      ".dsg-wrap{position:relative}",
+      "#dept-shell .dept-subs-g{display:flex;flex-wrap:nowrap;align-items:center;gap:0;margin:0;padding:1px 0;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}",
+      "#dept-shell .dept-subs-g::-webkit-scrollbar{display:none}",
+      "#dept-shell .dsg{display:flex;align-items:center;gap:2px;padding:0 8px;border-left:1px solid #e3e8ef;flex:none}",
+      "#dept-shell .dsg:first-child{border-left:0;padding-left:0}",
+      "#dept-shell .dsg-l{font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#7a8797;margin-right:3px;white-space:nowrap}",
+      "#dept-shell .dept-subs-g button[data-dept-sub]{display:inline-flex;align-items:center;gap:4px;font-family:inherit;font-size:12.5px;font-weight:700;line-height:1.2;color:#3b4a5c;background:transparent;border:0;border-radius:6px;padding:4px 8px;white-space:nowrap;cursor:pointer;font-style:normal;opacity:1}",
+      "#dept-shell .dept-subs-g button[data-dept-sub]:hover{background:#E1EEF7}",
+      "#dept-shell .dept-subs-g button[data-dept-sub].active{background:var(--navy,#04223B);color:#fff}",
+      "#dept-shell .dsg-ico,#dept-shell svg.dsg-ico{width:13px;height:13px;flex:none;color:var(--blue,#006DB6);stroke-width:2}",
+      "#dept-shell button.active svg.dsg-ico{color:#fff}",
+      "#dept-shell .dept-subs-g .dept-more{font-family:inherit;font-size:12px;font-weight:700;color:var(--blue,#006DB6);background:#fff;border:1px dashed #9fb3c8;border-radius:6px;padding:3px 8px;white-space:nowrap;cursor:pointer}",
+      "#dept-shell .dsg-fade{position:absolute;top:0;bottom:0;width:36px;pointer-events:none;display:none;align-items:center;justify-content:flex-end;padding-right:3px;color:var(--blue,#006DB6);font-weight:800;font-size:18px}",
+      "#dept-shell .dsg-fade-l{left:0;background:linear-gradient(90deg,#fff,rgba(255,255,255,0))}",
+      "#dept-shell .dsg-fade-r{right:0;background:linear-gradient(270deg,#fff 45%,rgba(255,255,255,0))}",
+      "#dept-shell .dsg-more-l .dsg-fade-l,#dept-shell .dsg-more-r .dsg-fade-r{display:flex}",
+      "@media(max-width:640px){#dept-shell .dept-subs-g button[data-dept-sub]{font-size:13px;padding:6px 9px}}"
     ].join("");
     document.head.appendChild(s);
   }
@@ -2946,6 +3187,9 @@
         if (!t || t.id === "dept-release" || t.getAttribute("data-dept-nav")) return;
         if (homeId) homeId = "";
         barCurrent = deptOfNav(t);
+        // Light the section tab for the screen this menu item opens.
+        var navT = navTool(t);
+        if (navT && toolInSubs(deptById(barCurrent), navT)) shellHere = navT;
         markBar();
         paintDeptActive();
       }, true);
@@ -2976,8 +3220,13 @@
     // Open a tool on its department page: the tab lights up, subtabs and
     // Back line up. Tool empty or the primary: just the department.
     go: function (deptId, toolId) {
-      showHome(deptId);
-      if (barKey(barCurrent) !== barKey(deptId)) return;
+      var old = deptById(deptId);
+      if (old && old.hidden && !toolId) toolId = old.alias || "";
+      var target = liveDept(deptId) || deptId;
+      var tdept = deptById(target);
+      if (toolId && tdept && OWNER[toolId] && OWNER[toolId] !== target && !toolInSubs(tdept, toolId) && (tdept.actions || []).indexOf(toolId) < 0) target = OWNER[toolId];
+      showHome(target);
+      if (barKey(barCurrent) !== barKey(target)) return;
       var dept = deptById(barCurrent);
       if (!toolId || !dept || toolId === dept.primary || !TOOLS[toolId]) return;
       if (toolInSubs(dept, toolId)) openSub(toolId);
@@ -2986,6 +3235,9 @@
     back: goBack,
     fulfillment: function () { showHome("ful"); },
     current: function () { return { home: homeId, bar: barCurrent }; },
+    // Top tab that owns a screen, and the live tab for an old department id.
+    owner: function (toolId) { return OWNER[toolId] || ""; },
+    live: function (deptId) { return liveDept(deptId) || ""; },
     // Read-only view of the tab layout, for checks and other modules.
     layout: function () { return { depts: DEPTS, tools: TOOLS }; },
     more: function (btn) {

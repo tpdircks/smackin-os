@@ -19,48 +19,23 @@ var lay = DEPT.layout();
 var depts = lay.depts, tools = lay.tools;
 function d(id) { return depts.filter(function (x) { return x.id === id; })[0]; }
 var shown = depts.filter(function (x) { return !x.hidden; }).map(function (x) { return x.id; });
-eq(JSON.stringify(shown) === JSON.stringify(["home", "inb", "prod", "inv", "outb", "qa", "ops"]), "seven top tabs in order: " + shown.join(","));
+// v325: eleven top tabs (check-nav-v2.js checks the rest of the layout).
+eq(JSON.stringify(shown) === JSON.stringify(["home", "demand", "inb", "mixing", "pmac", "inv", "ret", "ecom", "outb", "qa", "ops"]), "eleven top tabs in order: " + shown.join(","));
 eq(d("home").label.en === "Home" && d("home").label.es === "Inicio" && d("home").primary === "today", "Home tab opens This week (sub id today)");
 eq(d("ops").label.en === "Admin", "Ops is called Admin");
-eq(d("prod").label.en === "Production" && d("prod").primary === "prodhub", "Production tab opens its steps");
-
-// Stations: hidden from the bar, still open as their own page, light up the holder tab.
-[["demand", "prod"], ["mixing", "prod"], ["pmac", "prod"], ["ful", "outb"]].forEach(function (p) {
-  var x = d(p[0]);
-  eq(x && x.hidden === true && x.keep === true && x.bar === p[1], p[0] + " is a station under " + p[1]);
-});
-[["purch", "inb"], ["recv", "inb"], ["ship", "outb"]].forEach(function (p) {
+eq(d("demand").label.en === "Plan" && d("demand").subs.indexOf("prodhub") >= 0, "Plan tab holds the production steps");
+[["prod", "demand"], ["ful", "ret"], ["purch", "inb"], ["recv", "inb"], ["ship", "outb"]].forEach(function (p) {
   var x = d(p[0]);
   eq(x && x.hidden === true && !x.keep && x.bar === p[1], p[0] + " still redirects to " + p[1]);
 });
-
 // Every subtab and action points at a real tool; every fold item is a subtab.
 depts.forEach(function (x) {
   (x.subs || []).concat(x.actions || []).forEach(function (t) { eq(!!tools[t], x.id + " tool exists: " + t); });
   (x.fold || []).forEach(function (t) { eq((x.subs || []).indexOf(t) >= 0, x.id + " fold item is a subtab: " + t); });
-  if (!x.hidden) {
-    var main = (x.subs || []).filter(function (t) { return (x.fold || []).indexOf(t) < 0; });
-    eq(main.length <= 6, x.id + " shows at most 6 subtabs before More (" + main.length + ")");
-  }
 });
-// Hub step numbers: numbered subtabs run 1..n in order.
-["inb", "prod", "outb"].forEach(function (id) {
-  var x = d(id), last = 0, okOrder = true;
-  x.subs.forEach(function (t) {
-    var lab = x.short && x.short[t] ? x.short[t].en : "";
-    var m = lab.match(/^(\d) /);
-    if (!m) return;
-    var n = +m[1];
-    if (n < last || n > last + 1) okOrder = false;
-    last = n;
-    eq(/^\d /.test(x.short[t].es || ""), id + " step number in Spanish too: " + t);
-  });
-  eq(okOrder && last >= 4, id + " steps numbered in order");
-});
-// No board on station action rows; still reachable.
-["mixing", "pmac", "ful"].forEach(function (id) { eq(d(id).actions.indexOf("board") < 0, id + " action row has no TV board"); });
-eq(d("home").subs.indexOf("board") >= 0 && d("ops").subs.indexOf("board") >= 0, "TV board under Home and Admin More");
-eq(d("outb").subs.indexOf("trailer") >= 0 && d("outb").fold.indexOf("trailer") < 0 && d("outb").short.trailer.en === "3 Trailer release", "Trailer release stays Outbound step 3, not folded");
+["mixing", "pmac", "ret", "ecom"].forEach(function (id) { eq(d(id).actions.indexOf("board") < 0, id + " action row has no TV board"); });
+eq(d("home").subs.indexOf("board") >= 0 && d("ops").subs.indexOf("board") < 0, "TV board has one home: Home");
+eq(d("outb").subs.indexOf("trailer") >= 0 && d("outb").fold.indexOf("trailer") < 0, "Trailer release stays on Outbound, not folded");
 // Plain names, Spanish filled.
 ["recvlog", "quarantine", "trQa", "fglots", "quality", "recipes", "hist", "upload", "shipments", "daily", "health", "sps", "today", "prodhub"].forEach(function (t) {
   var ti = tools[t].title;
@@ -102,14 +77,14 @@ eq(hubs.indexOf("inboundNext(m) + steps") >= 0 && hubs.indexOf("outboundNext(m) 
 
 // Wiring and versions
 var html = read("index.html");
-var iH = html.indexOf('src="inout-hubs.js?b=2"'), iS = html.indexOf('src="simple-home.js?b=2"'), iN = html.indexOf('src="simple-nav.js?b=1"');
+var iH = html.indexOf('src="inout-hubs.js?b=3"'), iS = html.indexOf('src="simple-home.js?b=3"'), iN = html.indexOf('src="simple-nav.js?b=1"');
 eq(iH > 0 && iS > iH && iN > iS, "simple-home and simple-nav load after inout-hubs");
-eq(html.indexOf('src="dept-homes.js?b=41"') > 0 && html.indexOf('src="sw-escape.js?b=40"') > 0, "cache bust dept-homes 41, sw-escape 40");
-eq(html.indexOf('var EMBEDDED = "smackin-inv-v324"') > 0, "index build v324");
-eq(read("sw-escape.js").indexOf('"smackin-inv-v324"') > 0, "sw-escape v324");
+eq(html.indexOf('src="dept-homes.js?b=42"') > 0 && html.indexOf('src="sw-escape.js?b=41"') > 0, "cache bust dept-homes 42, sw-escape 41");
+eq(html.indexOf('var EMBEDDED = "smackin-inv-v325"') > 0, "index build v325");
+eq(read("sw-escape.js").indexOf('"smackin-inv-v325"') > 0, "sw-escape v325");
 var sw = read("service-worker.js");
-eq(sw.indexOf('const CACHE = "smackin-inv-v324"') >= 0 && sw.indexOf('"./home-week.js"') > 0 && sw.indexOf('"./simple-home.js"') > 0 && sw.indexOf('"./simple-nav.js"') > 0, "service worker v324 caches the new files");
-eq(read("build-id.txt").trim() === "smackin-inv-v324", "build-id v324");
+eq(sw.indexOf('const CACHE = "smackin-inv-v325"') >= 0 && sw.indexOf('"./home-week.js"') > 0 && sw.indexOf('"./simple-home.js"') > 0 && sw.indexOf('"./simple-nav.js"') > 0, "service worker v325 caches the new files");
+eq(read("build-id.txt").trim() === "smackin-inv-v325", "build-id v325");
 eq(read("app.js").length > 600000, "app.js is whole");
 
 if (failed) { console.log(failed + " simplify check(s) failed"); process.exit(1); }
