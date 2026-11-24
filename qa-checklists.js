@@ -909,7 +909,7 @@
         loadError = "";
         return rows;
       }
-      return client().from("qc_forms").select("*").order("created_at", { ascending: false }).limit(200).then(function (r) {
+      return client().from("qc_forms").select("*").in("form_type", TYPES).order("created_at", { ascending: false }).limit(200).then(function (r) {
         if (r && r.error) {
           loadError = tx("loadFail") + ": " + (r.error.message || "not loaded");
           rows = sortRows(local);
