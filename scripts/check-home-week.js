@@ -144,7 +144,7 @@ eq(src.indexOf("setInterval") < 0 && src.indexOf("setTimeout") < 0, "no timers i
 // wiring
 var html = read("index.html"), sw = read("service-worker.js"), home = read("simple-home.js");
 eq(html.indexOf('src="home-week.js?b=2"') > 0 && html.indexOf('src="home-week.js?b=2"') < html.indexOf('src="simple-home.js?b=4"'), "home-week.js loads before simple-home.js");
-eq(sw.indexOf('"./home-week.js"') > 0 && sw.indexOf('const CACHE = "smackin-inv-v326"') >= 0, "service worker caches home-week.js on v326");
+eq(sw.indexOf('"./home-week.js"') > 0 && sw.indexOf('const CACHE = "smackin-inv-v327"') >= 0, "service worker caches home-week.js on v327");
 var hh = home.slice(home.indexOf("function homeHtml()"), home.indexOf("function stepCard("));
 eq(hh.indexOf('week("top") + week("below")') >= 0, "Home draws the week numbers");
 eq(hh.indexOf("jobCard") < 0 && hh.indexOf("shm-roles") < 0 && hh.indexOf("W.hello") < 0, "Home has no job buttons, role picker or to-do list (v323b)");

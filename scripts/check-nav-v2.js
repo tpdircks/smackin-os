@@ -95,7 +95,7 @@ eq(src.indexOf("@media(max-width:900px){#deptbar{display:grid;grid-template-colu
 // Versions.
 var html = read("index.html");
 eq(html.indexOf('src="dept-homes.js?b=43"') > 0 && html.indexOf('src="simple-home.js?b=4"') > 0 && html.indexOf('src="inout-hubs.js?b=4"') > 0 && html.indexOf('src="smk-viz.js?b=3"') > 0 && html.indexOf('src="sw-escape.js?b=42"') > 0, "cache bust on changed files");
-eq(read("service-worker.js").indexOf('const CACHE = "smackin-inv-v326"') >= 0 && read("build-id.txt").trim() === "smackin-inv-v326", "v326");
+eq(read("service-worker.js").indexOf('const CACHE = "smackin-inv-v327"') >= 0 && read("build-id.txt").trim() === "smackin-inv-v327", "v327");
 
 if (failed) { console.log(failed + " nav check(s) failed"); process.exit(1); }
 console.log("nav v2 ok");

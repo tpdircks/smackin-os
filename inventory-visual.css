@@ -22,6 +22,8 @@
 /* sticky filter bar */
 .ivx-bar { position: sticky; top: calc(var(--dept-stack-h, 0px) + var(--inv-shell-h, 0px)); z-index: 5; background: #fff; padding: 8px 0 10px; border-bottom: 1px solid var(--line, #d7dde6);
   display: flex; flex-direction: column; gap: 6px; }
+/* v327 (Brian 11/25): On hand card is its own scroll box; pin the bar to its top edge. -16px cancels the card's 16px top padding. */
+.dept-board[data-dept-board] .ivx-dashcard .ivx-bar { top: -16px; }
 .ivx-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .ivx-chip { min-height: 40px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line, #d7dde6); background: var(--grey, #F2F2F2);
   color: var(--ink, #303030); font: 600 15px Barlow, system-ui, sans-serif; cursor: pointer; }
