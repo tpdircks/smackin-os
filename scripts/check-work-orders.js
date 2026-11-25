@@ -35,7 +35,7 @@ eq(sw.indexOf("./slc-count-panel.js") < 0 && sw.indexOf("./inv-sync-1027d.js") <
 eq(html.indexOf("work-orders.js?b=6") >= 0, "script tag");
 eq(html.indexOf("mixing-recipes.js?b=4") >= 0, "mixing cache bust");
 eq(html.indexOf("dept-homes.js?b=41") >= 0, "dept homes cache bust");
-eq(html.indexOf("inventory-visual.js?b=5") >= 0 && html.indexOf("inventory-visual.css?b=3") >= 0, "visual still wired");
+eq(html.indexOf("inventory-visual.js?b=5") >= 0 && html.indexOf("inventory-visual.css?b=4") >= 0, "visual still wired");
 function deptSlice(id, next) {
   var at = homes.indexOf('id: "' + id + '"');
   eq(at >= 0, id + " dept");
